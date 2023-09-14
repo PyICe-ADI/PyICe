@@ -858,7 +858,7 @@ class interface_factory(communication_node):
     '''The interface factory is a wrapper class that creates interfaces and the instruments inheriting from "communication_node", that they pass on to channels.
     
     Interfaces acquired through the interface factory have a notion of a "parent" which traces back to the physical port of the computer.
-    The parent feature allows the user to request multiple interfaces from the factory without regard for possible collisions that may occur with mutiple endpoints talking through the same physical channel (e.g. COM port).
+    The parent feature allows the user to request multiple interfaces from the factory without regard for possible collisions that may occur with multiple endpoints talking through the same physical channel (e.g. COM port, USB port, etc.).
 
     PyICe will ensure that channels that trace back to a common parent, with a common underlying hardware pointer, will be singulated serially within the threading (during logging for instance) such that all channels will be read sequentially with possibility of a collision in time.
     
@@ -867,7 +867,11 @@ class interface_factory(communication_node):
     This class ventures to be smart about the interfaces and to simplify their creation.
     Its purpose is also to encourage portable code, and to remove some low level responsibilities from the instruments.
     
-    This also forces you to talk to gpib instruments in a way that works with both visa library and non-visa adapters.
+    There are two use models that can be adopted:
+
+    1) An interface_factory can be instantiated and all interfaces acquired from it using the getter methods. Lab instrument objects, created from the lab_instruments folder, then get their interface handles from interfaces acquired from the interface factory object. These instruments are then usually added to a lab core channel_master for channel aggregation.
+
+    2) Alternatley, the project can go straight to creating a lab_core master (not channel_master). A lab_core master is merely a channel_master that inherits this interface_factory class. In this work flow, interfaces can be acquired from that master object directly (again using the getter methods in this class) without the requirement to create a disposable interface_factory instance. This method results in slightly compacted code but has an interface object flow that seems to double back on itself.
     '''
     _instantiated = False
     def __init__(self):
