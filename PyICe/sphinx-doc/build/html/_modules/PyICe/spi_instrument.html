@@ -1,0 +1,217 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>PyICe.spi_instrument &mdash; PyICe 9000 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '9000',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/tssop.ico"/>
+    <link rel="top" title="PyICe 9000 documentation" href="../../PyICe.html" />
+    <link rel="up" title="Module code" href="../index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for PyICe.spi_instrument</h1><div class="highlight"><pre>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">Channel Wrapper for SPI Devices</span>
+<span class="sd">===============================</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="kn">from</span> <span class="nn">PyICe.lab_core</span> <span class="kn">import</span> <span class="n">instrument</span><span class="p">,</span> <span class="n">delegator</span><span class="p">,</span> <span class="n">integer_channel</span>
+<span class="kn">from</span> <span class="nn">PyICe</span> <span class="kn">import</span> <span class="n">spi_interface</span>
+
+<div class="viewcode-block" id="spiInstrument"><a class="viewcode-back" href="../../_autosummary/PyICe.spi_instrument.html#PyICe.spi_instrument.spiInstrument">[docs]</a><span class="k">class</span> <span class="nc">spiInstrument</span><span class="p">(</span><span class="n">instrument</span><span class="p">,</span> <span class="n">delegator</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Instrument wrapper for basic linear shift register SPI port.</span>
+<span class="sd">    Not apprpriate for context-sensitive (sub addressed) memory.&#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">spiInterface</span><span class="p">,</span> <span class="n">write_shift_register</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">read_shift_register</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Specify at lease one of (write_shift_register, read_shift_register arguments).</span>
+<span class="sd">        If read data has the same meaning as write data (memory readback), send same shift register object to write_shift_register and read_shift_register arguemnts.</span>
+<span class="sd">        If both (write_shift_register, read_shift_register) arguments are specificied, they must be of the same length.&#39;&#39;&#39;</span>
+        <span class="n">delegator</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">instrument</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;{} SPI instrument wrapper&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_base_name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">spiInterface</span><span class="p">,</span> <span class="n">spi_interface</span><span class="o">.</span><span class="n">spiInterface</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spi_interface</span> <span class="o">=</span> <span class="n">spiInterface</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_shift_register</span> <span class="o">=</span> <span class="n">write_shift_register</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">read_shift_register</span> <span class="o">=</span> <span class="n">read_shift_register</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dummy_write_value</span> <span class="o">=</span> <span class="mi">0</span> <span class="c">#data to shift in if SPI is read-only</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transceive_enabled</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">write_shift_register</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_shift_register</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;spiInstrument must specify at least one of write_shift_register, read_shift_register&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">write_shift_register</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_shift_register</span><span class="p">:</span>
+            <span class="c">#channel name conflict</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">read_shift_register</span> <span class="o">=</span> <span class="n">spi_interface</span><span class="o">.</span><span class="n">shift_register</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">bf</span> <span class="ow">in</span> <span class="n">read_shift_register</span><span class="p">:</span>
+                <span class="n">new_name</span> <span class="o">=</span> <span class="s">&#39;{}_readback&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">bf</span><span class="p">)</span>
+                <span class="k">print</span> <span class="s">&quot;WARNING: {} bit field: {} readback renamed to: {} to avoid duplicated channel name.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">bf</span><span class="p">,</span> <span class="n">new_name</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">read_shift_register</span><span class="o">.</span><span class="n">add_bit_field</span><span class="p">(</span><span class="n">new_name</span><span class="p">,</span> <span class="n">read_shift_register</span><span class="p">[</span><span class="n">bf</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">write_shift_register</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_shift_register</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">write_shift_register</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">read_shift_register</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;spiInstrument write_shift_register, read_shift_register must be of equal length&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">write_shift_register</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">write_shift_register</span><span class="p">,</span> <span class="n">spi_interface</span><span class="o">.</span><span class="n">shift_register</span><span class="p">)</span>
+            <span class="c">#offset = 0</span>
+            <span class="k">for</span> <span class="n">bf</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">write_shift_register</span><span class="p">:</span>
+                <span class="n">write_ch</span> <span class="o">=</span> <span class="n">integer_channel</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="n">bf</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">write_shift_register</span><span class="p">[</span><span class="n">bf</span><span class="p">],</span> 
+                                           <span class="n">write_function</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">write_data</span><span class="p">,</span> <span class="n">channel_name</span><span class="o">=</span><span class="n">bf</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transceive</span><span class="p">(</span><span class="n">write_channel_name</span><span class="o">=</span><span class="n">channel_name</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">write_data</span><span class="p">))</span>
+                <span class="n">write_ch</span><span class="o">.</span><span class="n">set_delegator</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+                <span class="c">#write_ch.set_attribute(&quot;offset&quot;,offset) #this is from the beginning of shift (usually MSB)</span>
+                <span class="c">#offset += self.write_shift_register[bf]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_add_channel</span><span class="p">(</span><span class="n">write_ch</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_shift_register</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">read_shift_register</span><span class="p">,</span> <span class="n">spi_interface</span><span class="o">.</span><span class="n">shift_register</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">bf</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_shift_register</span><span class="p">:</span>
+                <span class="n">read_ch</span> <span class="o">=</span> <span class="n">integer_channel</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="n">bf</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_shift_register</span><span class="p">[</span><span class="n">bf</span><span class="p">],</span> <span class="n">read_function</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dummy_read</span><span class="p">)</span>
+                <span class="n">read_ch</span><span class="o">.</span><span class="n">set_delegator</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_add_channel</span><span class="p">(</span><span class="n">read_ch</span><span class="p">)</span>
+<div class="viewcode-block" id="spiInstrument.add_channel_transceive_enable"><a class="viewcode-back" href="../../_autosummary/PyICe.spi_instrument.html#PyICe.spi_instrument.spiInstrument.add_channel_transceive_enable">[docs]</a>    <span class="k">def</span> <span class="nf">add_channel_transceive_enable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel_name</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Add channel to enable/disable SPI port communication.</span>
+<span class="sd">        This can be used to serially change multiple bit fields before sending the data to the SPI slave with a single transaction.</span>
+<span class="sd">        Note that communication is disabled indepent of this setting if not all writable bit fields have been initialized.</span>
+<span class="sd">        Also note that after communication is enabled, a SPI transceive will not take place until a bit field is read or written.&#39;&#39;&#39;</span>
+        <span class="n">trans_en_ch</span> <span class="o">=</span> <span class="n">integer_channel</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">channel_name</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">write_function</span><span class="o">=</span><span class="k">lambda</span> <span class="n">enable</span><span class="p">:</span> <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;_transceive_enabled&#39;</span><span class="p">,</span> <span class="n">enable</span><span class="p">))</span>
+        <span class="n">trans_en_ch</span><span class="o">.</span><span class="n">set_description</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span> <span class="o">+</span> <span class="s">&#39;: &#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_channel_transceive_enable</span><span class="o">.</span><span class="n">__doc__</span><span class="p">)</span>
+        <span class="n">trans_en_ch</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transceive_enabled</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_channel</span><span class="p">(</span><span class="n">trans_en_ch</span><span class="p">)</span></div>
+    <span class="k">def</span> <span class="nf">_transceive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">write_channel_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">no_transceive</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="n">write_data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">channel</span><span class="o">.</span><span class="n">is_writeable</span><span class="p">():</span>
+                <span class="n">write_data</span><span class="p">[</span><span class="n">channel</span><span class="o">.</span><span class="n">get_name</span><span class="p">()]</span> <span class="o">=</span> <span class="n">channel</span><span class="o">.</span><span class="n">read_without_delegator</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">write_channel_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">write_data</span><span class="p">[</span><span class="n">write_channel_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="k">if</span> <span class="n">no_transceive</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transceive_enabled</span><span class="p">:</span>
+            <span class="c">#skip SPI transaction</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_shift_register</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">read_data</span> <span class="o">=</span> <span class="p">{</span><span class="n">bf</span><span class="p">:</span> <span class="bp">None</span> <span class="k">for</span> <span class="n">bf</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_shift_register</span><span class="p">}</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">read_data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">elif</span> <span class="bp">None</span> <span class="ow">in</span> <span class="n">write_data</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="c">#skip SPI transaction</span>
+            <span class="k">print</span> <span class="s">&quot;Deferring {} SPI write until all writable channels are assigned values.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">write_channel_name</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">ch</span> <span class="ow">in</span> <span class="n">write_data</span><span class="p">:</span>
+                <span class="k">print</span> <span class="s">&#39;</span><span class="se">\t</span><span class="s">{}:{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ch</span><span class="p">,</span><span class="n">write_data</span><span class="p">[</span><span class="n">ch</span><span class="p">])</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_shift_register</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">read_data</span> <span class="o">=</span> <span class="p">{</span><span class="n">bf</span><span class="p">:</span> <span class="bp">None</span> <span class="k">for</span> <span class="n">bf</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_shift_register</span><span class="p">}</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">read_data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c">#doing SPI transaction</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">write_shift_register</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">miso</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spi_interface</span><span class="o">.</span><span class="n">transceive</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dummy_write</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">read_shift_register</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">miso</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spi_interface</span><span class="o">.</span><span class="n">transceive</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">write_shift_register</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">write_data</span><span class="p">))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_shift_register</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">read_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_shift_register</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="n">miso</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">read_data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">merged_data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">merged_data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">write_data</span><span class="p">)</span>
+        <span class="n">merged_data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">read_data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">merged_data</span>
+    <span class="k">def</span> <span class="nf">_dummy_read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;Shouldn&#39;t ever get here...&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="spiInstrument.read_delegated_channel_list"><a class="viewcode-back" href="../../_autosummary/PyICe.spi_instrument.html#PyICe.spi_instrument.spiInstrument.read_delegated_channel_list">[docs]</a>    <span class="k">def</span> <span class="nf">read_delegated_channel_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">channels</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;private&#39;&#39;&#39;</span>
+        <span class="n">results_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">spi_data</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">channels</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">channel</span><span class="o">.</span><span class="n">is_writeable</span><span class="p">():</span> <span class="c">#read channel in list; need to do spi transaction</span>
+                <span class="n">spi_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transceive</span><span class="p">()</span>
+                <span class="k">break</span>
+        <span class="k">if</span> <span class="n">spi_data</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="c">#only writable channels; skip spi transaction</span>
+            <span class="n">spi_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transceive</span><span class="p">(</span><span class="n">no_transceive</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">channels</span><span class="p">:</span>
+            <span class="n">results_dict</span><span class="p">[</span><span class="n">channel</span><span class="o">.</span><span class="n">get_name</span><span class="p">()]</span> <span class="o">=</span> <span class="n">spi_data</span><span class="p">[</span><span class="n">channel</span><span class="o">.</span><span class="n">get_name</span><span class="p">()]</span>
+        <span class="k">return</span> <span class="n">results_dict</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../PyICe.html">
+              <img class="logo" src="../../_static/tssop.png" alt="Logo"/>
+            </a></p>
+<h3><a href="../../PyICe.html">Table Of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.lab_instruments.html">PyICe.lab_instruments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.lab_core.html">PyICe.lab_core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.lab_utils.html">PyICe.lab_utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.LTC_plot.html">PyICe.LTC_plot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.lab_gui.html">PyICe.lab_gui</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.lab_interfaces.html">PyICe.lab_interfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.twi_instrument.html">PyICe.twi_instrument</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.twoWireInterface.html">PyICe.twoWireInterface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.spi_instrument.html">PyICe.spi_instrument</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.spi_interface.html">PyICe.spi_interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.visa_wrappers.html">PyICe.visa_wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.xml_registers.html">PyICe.xml_registers</a></li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../PyICe.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Linear Technology Corporation.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

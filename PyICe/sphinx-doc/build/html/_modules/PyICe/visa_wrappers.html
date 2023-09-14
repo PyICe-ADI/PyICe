@@ -1,0 +1,601 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>PyICe.visa_wrappers &mdash; PyICe 9000 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '9000',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/tssop.ico"/>
+    <link rel="top" title="PyICe 9000 documentation" href="../../PyICe.html" />
+    <link rel="up" title="Module code" href="../index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for PyICe.visa_wrappers</h1><div class="highlight"><pre>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">VISA Emulation Layer</span>
+<span class="sd">====================</span>
+
+<span class="sd">Interface wrappers to use various interfaces as if they were VISA resources</span>
+<span class="sd">without requiring an installed VISA library. Facilitates seamless transition </span>
+<span class="sd">between physical inrefaces and operating systems.</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">struct</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">visa</span>
+    <span class="n">visaMissing</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="n">visaMissing</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">ctypes</span>
+    <span class="n">ctypesMissing</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="n">ctypesMissing</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">serial</span>
+    <span class="n">serialMissing</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="n">serialMissing</span> <span class="o">=</span> <span class="bp">True</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">deps.RL1009.RL1009_SERIAL_CLASS</span> <span class="kn">as</span> <span class="nn">RL1009_SERIAL_CLASS</span>
+    <span class="n">RL1009SerialMissing</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="n">RL1009SerialMissing</span> <span class="o">=</span> <span class="bp">True</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">deps.RL1009.RL1009_DLL_INTERFACE</span> <span class="kn">as</span> <span class="nn">RL1009_DLL_INTERFACE</span>
+    <span class="n">RL1009DLLMissing</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="n">RL1009DLLMissing</span> <span class="o">=</span> <span class="bp">True</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">deps.vxi11.vxi11</span> <span class="kn">as</span> <span class="nn">vxi11</span>
+    <span class="n">vxi11Missing</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="n">vxi11Missing</span> <span class="o">=</span> <span class="bp">True</span>
+    
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">telnetlib</span>
+    <span class="n">telnetlibMissing</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="n">telnetlibMissing</span> <span class="o">=</span> <span class="bp">True</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">deps.keithley_kxci.KXCIclient</span> <span class="kn">as</span> <span class="nn">KXCIclient</span>
+    <span class="n">KXCIclientMissing</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="n">KXCIclientMissing</span> <span class="o">=</span> <span class="bp">True</span>
+
+<span class="k">class</span> <span class="nc">visaWrapperException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="k">class</span> <span class="nc">visa_wrapper</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&#39;Interface Not Fully Implemented: __init__()&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&#39;Interface Not Fully Implemented: read()&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&#39;Interface Not Fully Implemented: write()&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">read_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&#39;Interface Not Fully Implemented: read_values()&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">read_values_binary</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">format_str</span><span class="o">=</span><span class="s">&#39;=B&#39;</span><span class="p">,</span> <span class="n">byte_order</span><span class="o">=</span><span class="s">&#39;=&#39;</span><span class="p">,</span> <span class="n">terminationCharacter</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Follows Definite Length Arbitrary Block format</span>
+<span class="sd">        ie ASCII header &#39;#&lt;heder_bytes_following&gt;&lt;data_bytes_following&gt;&lt;data0&gt;...&lt;dataN&gt;</span>
+<span class="sd">        eg #40003&lt;byte0&gt;&lt;byte1&gt;&lt;byte2&gt;&lt;byte3&gt;</span>
+<span class="sd">        format_str and byte_order are passed to struct library for to set word boundaries for unpacking and conversion to numeric types</span>
+<span class="sd">        https://docs.python.org/2/library/struct.html#format-strings&#39;&#39;&#39;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&#39;Interface Not Fully Implemented: read_values_binary()&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">ask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">ask_for_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_values</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">ask_for_values_binary</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">format_str</span><span class="o">=</span><span class="s">&#39;B&#39;</span><span class="p">,</span> <span class="n">byte_order</span><span class="o">=</span><span class="s">&#39;=&#39;</span><span class="p">,</span> <span class="n">terminationCharacter</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Follows Definite Length Arbitrary Block format</span>
+<span class="sd">        ie ASCII header &#39;#&lt;heder_bytes_following&gt;&lt;data_bytes_following&gt;&lt;data0&gt;...&lt;dataN&gt;</span>
+<span class="sd">        eg #40003&lt;byte0&gt;&lt;byte1&gt;&lt;byte2&gt;&lt;byte3&gt;</span>
+<span class="sd">        format_str and byte_order are passed to struct library for to set word boundaries for unpacking and conversion to numeric types</span>
+<span class="sd">        https://docs.python.org/2/library/struct.html#format-strings&#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_values_binary</span><span class="p">(</span><span class="n">format_str</span><span class="p">,</span> <span class="n">byte_order</span><span class="p">,</span> <span class="n">terminationCharacter</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&#39;Interface Not Fully Implemented: clear()&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">clear_errors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s">&quot;Interface Not Fully Implemented: clear_errors()&#39;&quot;</span>
+    <span class="k">def</span> <span class="nf">trigger</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&#39;Interface Not Fully Implemented: trigger()&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">read_raw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&#39;Interface Not Fully Implemented: read_raw()&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">resync</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;flush buffers to resync after communication fault - usb-serial problem&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="s">&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+    <span class="k">def</span> <span class="nf">__getTimeout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&#39;Interface Not Fully Implemented: timeout&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__setTimeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&#39;Interface Not Fully Implemented: timeout&#39;</span><span class="p">)</span>
+    <span class="n">timeout</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">__getTimeout</span><span class="p">,</span><span class="n">__setTimeout</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__getTerminationChars</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&#39;Interface Not Fully Implemented: term_chars&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__setTerminationChars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">term_chars</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&#39;Interface Not Fully Implemented: term_chars&#39;</span><span class="p">)</span>
+    <span class="n">term_chars</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">__getTerminationChars</span><span class="p">,</span><span class="n">__setTerminationChars</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">visa_wrapper_serial</span><span class="p">(</span><span class="n">visa_wrapper</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">timeout</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">baudrate</span> <span class="o">=</span> <span class="mi">9600</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">serial</span><span class="o">.</span><span class="n">SerialBase</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ser</span> <span class="o">=</span> <span class="n">address</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">telnetlib</span><span class="o">.</span><span class="n">Telnet</span><span class="p">):</span> <span class="c">#TODO: migrate telnet library to use serial_for_url rfc2217://&lt;host&gt;:&lt;port&gt;[?&lt;option&gt;[&amp;&lt;option&gt;]] class rfc2217.Serial</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ser</span> <span class="o">=</span> <span class="n">address</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ser</span> <span class="o">=</span> <span class="n">serial</span><span class="o">.</span><span class="n">Serial</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">address</span>		<span class="c"># open the specified serial port</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="n">timeout</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">baudrate</span> <span class="o">=</span> <span class="n">baudrate</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">terminationCharacter</span> <span class="o">=</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span> <span class="c"># readline inherits from &quot;io&quot; which doesn&#39;t support termination character</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resync</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">readline</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c">#TODO: speed this up using buffered IO to wrap serial port</span>
+        <span class="c">#readline() of ser doesn&#39;t work correctly</span>
+        <span class="c">#https://docs.python.org/2/library/io.html#io.TextIOWrapper</span>
+        <span class="c">#http://pyserial.readthedocs.org/en/latest/shortintro.html#eol</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="n">char</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">response</span> <span class="o">+=</span> <span class="n">char</span>
+            <span class="k">if</span> <span class="n">char</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">terminationCharacter</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="k">elif</span> <span class="n">char</span> <span class="o">==</span> <span class="s">&quot;&quot;</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">visaWrapperException</span><span class="p">(</span><span class="s">&quot;Serial timeout on port {}!&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">port</span><span class="p">))</span>
+                <span class="c">#print &quot;Serial timeout on port {}!&quot;.format(self.ser.port)</span>
+        <span class="k">return</span> <span class="n">response</span>        
+    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">terminationCharacter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">terminationCharacter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">read_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;,&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">read_values_binary</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">format_str</span><span class="o">=</span><span class="s">&#39;B&#39;</span><span class="p">,</span> <span class="n">byte_order</span><span class="o">=</span><span class="s">&#39;=&#39;</span><span class="p">,</span> <span class="n">terminationCharacter</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Follows Definite Length Arbitrary Block format</span>
+<span class="sd">        ie ASCII header &#39;#&lt;heder_bytes_following&gt;&lt;data_bytes_following&gt;&lt;data0&gt;...&lt;dataN&gt;</span>
+<span class="sd">        eg #40003&lt;byte0&gt;&lt;byte1&gt;&lt;byte2&gt;&lt;byte3&gt;</span>
+
+<span class="sd">        format_str is passed to struct library for to set word boundaries for unpacking and conversion to numeric types</span>
+<span class="sd">        https://docs.python.org/2/library/struct.html#format-strings</span>
+<span class="sd">        https://en.wikipedia.org/wiki/IEEE_754-1985</span>
+<span class="sd">        &#39;B&#39;: default unsigned single byte</span>
+<span class="sd">        &#39;b&#39;: signed single byte</span>
+
+<span class="sd">        &#39;H&#39;: unsigned short 2-byte integer</span>
+<span class="sd">        &#39;h&#39;: signed short 2-byte integer</span>
+
+<span class="sd">        &#39;I&#39;: unsigned 4-byte integer</span>
+<span class="sd">        &#39;i&#39;: signed 4-byte integer</span>
+
+<span class="sd">        &#39;Q&#39;: unsigned long long 8-byte integer</span>
+<span class="sd">        &#39;q&#39;: signed long long 8-byte integer</span>
+
+<span class="sd">        &#39;f&#39;: 4-byte IEEE_754-1985 float</span>
+<span class="sd">        &#39;d&#39;: 8-byte IEEE_754-1985 double precision float</span>
+
+<span class="sd">        &#39;&lt;n&gt;s&#39;: An &lt;n&gt;-byte long string</span>
+
+<span class="sd">        byte_order sets endianness:</span>
+<span class="sd">        &#39;=&#39;: native</span>
+<span class="sd">        &#39;&lt;&#39;: little-endian (LSByte first)</span>
+<span class="sd">        &#39;&gt;&#39;: big-endian (MSByte first)</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="nb">hash</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">while</span> <span class="nb">hash</span> <span class="o">!=</span> <span class="s">&#39;#&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">hash</span><span class="p">):</span>
+                <span class="k">print</span> <span class="s">&#39;Saw extra character code: {} in read_values_binary header&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">ord</span><span class="p">(</span><span class="nb">hash</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span> <span class="c">#timeout</span>
+                <span class="k">raise</span> <span class="n">visaWrapperException</span><span class="p">(</span><span class="s">&#39;Timeout in read_values_binary header&#39;</span><span class="p">)</span>
+            <span class="nb">hash</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">header_len</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">data_len</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">header_len</span><span class="p">))</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">data_len</span><span class="p">)</span>
+        <span class="n">term</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">terminationCharacter</span><span class="p">))</span>
+        <span class="n">format_len</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">calcsize</span><span class="p">(</span><span class="n">format_str</span><span class="p">)</span>
+        <span class="n">format</span> <span class="o">=</span> <span class="n">byte_order</span> <span class="o">+</span> <span class="n">format_str</span> <span class="o">*</span> <span class="p">(</span><span class="n">data_len</span> <span class="o">/</span> <span class="n">format_len</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="n">format</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">read_raw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">write_raw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">print</span> <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">resync</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">inWaiting</span><span class="p">())</span>
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">__getTimeout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">timeout</span>
+    <span class="k">def</span> <span class="nf">__setTimeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="n">timeout</span>
+    <span class="n">timeout</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">__getTimeout</span><span class="p">,</span><span class="n">__setTimeout</span><span class="p">)</span>
+    
+<span class="k">class</span> <span class="nc">visa_wrapper_tcp</span><span class="p">(</span><span class="n">visa_wrapper_serial</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">timeout</span> <span class="o">=</span> <span class="mi">5</span><span class="p">):</span>
+        <span class="n">port</span> <span class="o">=</span> <span class="n">serial</span><span class="o">.</span><span class="n">serial_for_url</span><span class="p">(</span><span class="s">&#39;socket://{}:{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ip_address</span><span class="p">,</span><span class="n">port</span><span class="p">),</span><span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="n">visa_wrapper_serial</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">resync</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s">&#39;TCP Resync in progress.&#39;</span>
+        <span class="n">resp_all</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+            <span class="n">resp_all</span> <span class="o">+=</span> <span class="n">resp</span>
+            <span class="k">while</span> <span class="n">resp</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">:]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">terminationCharacter</span><span class="p">:</span>
+                <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+                <span class="n">resp_all</span> <span class="o">+=</span> <span class="n">resp</span>
+        <span class="k">except</span> <span class="n">visaWrapperException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span> <span class="c">#what happened???</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">resp_all</span>
+    <span class="k">def</span> <span class="nf">__getTimeout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">timeout</span>
+    <span class="k">def</span> <span class="nf">__setTimeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="n">timeout</span>
+    <span class="n">timeout</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">__getTimeout</span><span class="p">,</span><span class="n">__setTimeout</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">visa_wrapper_telnet</span><span class="p">(</span><span class="n">visa_wrapper_serial</span><span class="p">):</span>
+    <span class="c">#TODO?: migrate telnet library to use serial_for_url rfc2217://&lt;host&gt;:&lt;port&gt;[?&lt;option&gt;[&amp;&lt;option&gt;]] class rfc2217.Serial</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">timeout</span> <span class="o">=</span> <span class="mi">5</span><span class="p">):</span>
+        <span class="n">port</span> <span class="o">=</span> <span class="n">telnetlib</span><span class="o">.</span><span class="n">Telnet</span><span class="p">(</span><span class="n">ip_address</span><span class="p">,</span><span class="n">port</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span> <span class="o">=</span> <span class="n">timeout</span>
+        <span class="n">visa_wrapper_serial</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">resync</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">read_very_eager</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">readline</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">read_until</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">terminationCharacter</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">response</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">terminationCharacter</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;Telnet timeout on port {}!&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">port</span><span class="p">)</span>
+            <span class="c"># prolly should raise exception here (I am Dave)</span>
+        <span class="k">return</span> <span class="n">response</span>        
+    <span class="k">def</span> <span class="nf">__getTimeout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span>
+    <span class="k">def</span> <span class="nf">__setTimeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span> <span class="o">=</span> <span class="n">timeout</span>
+    <span class="n">timeout</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">__getTimeout</span><span class="p">,</span><span class="n">__setTimeout</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">visa_wrapper_vxi11</span><span class="p">(</span><span class="n">visa_wrapper</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">terminationCharacter</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vxi_interface</span> <span class="o">=</span> <span class="n">vxi11</span><span class="o">.</span><span class="n">Instrument</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">term_char</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">terminationCharacter</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">60</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">vxi_interface</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vxi_interface</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">read_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c">#ascii transfer only</span>
+        <span class="c">#see visa.py for binary parsing example</span>
+        <span class="n">float_regex</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&quot;[-+]?(?:\d+(?:\.\d*)?|\d*\.\d+)&quot;</span>
+                                     <span class="s">&quot;(?:[eE][-+]?\d+)?&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">raw_value</span><span class="p">)</span> <span class="k">for</span> <span class="n">raw_value</span> <span class="ow">in</span>
+            <span class="n">float_regex</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">())]</span>
+    <span class="k">def</span> <span class="nf">ask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">vxi_interface</span><span class="o">.</span><span class="n">ask</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">ask_for_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_values</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&#39;Interface Not Fully Implemented: clear()&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">trigger</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vxi_interface</span><span class="o">.</span><span class="n">trigger</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">read_raw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vxi_interface</span><span class="o">.</span><span class="n">read_raw</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">resync</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;flush buffers to resync after communication fault - usb-serial problem&#39;&#39;&#39;</span>
+        <span class="k">pass</span>
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vxi_interface</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vxi_interface</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">__getTimeout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">vxi_interface</span><span class="o">.</span><span class="n">io_timeout</span>
+    <span class="k">def</span> <span class="nf">__setTimeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">):</span>
+        <span class="c">#not sure if this will actually take effect</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vxi_interface</span><span class="o">.</span><span class="n">io_timeout</span> <span class="o">=</span> <span class="n">timeout</span>
+    <span class="n">timeout</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">__getTimeout</span><span class="p">,</span><span class="n">__setTimeout</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">visa_wrapper_keithley_kxci</span><span class="p">(</span><span class="n">visa_wrapper</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">,</span> <span class="n">port</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">error_int</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">POINTER</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">)()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ret_str</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">create_string_buffer</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\x00</span><span class="s">&#39;</span><span class="o">*</span><span class="mi">1024</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">KXCIclientMissing</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;KXCIclient DLL missing.  Try copying from deps/keithley_kxci to c:\windows\system&#39;</span><span class="p">)</span>
+        <span class="n">KXCIclient</span><span class="o">.</span><span class="n">kxcilib</span><span class="o">.</span><span class="n">OpenKXCIConnection_C</span><span class="p">(</span><span class="n">ip_address</span><span class="p">,</span><span class="n">port</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">error_int</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span> <span class="o">=</span> <span class="mi">1</span> <span class="c">#not used</span>
+    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;return value will be discarded&#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ask</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">ask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="n">KXCIclient</span><span class="o">.</span><span class="n">kxcilib</span><span class="o">.</span><span class="n">SendKXCICommand_C</span><span class="p">(</span><span class="n">message</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">ret_str</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">error_int</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ret_str</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">KXCIclient</span><span class="o">.</span><span class="n">kxcilib</span><span class="o">.</span><span class="n">CloseKXCIConnection_C</span><span class="p">()</span>
+    <span class="c">#KXCIclient.kxcilib.GetKXCISpollByte_C() not implemented</span>
+    <span class="k">def</span> <span class="nf">__getTimeout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;not used&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span>
+    <span class="k">def</span> <span class="nf">__setTimeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;not used&#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span> <span class="o">=</span> <span class="n">timeout</span>
+    <span class="n">timeout</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">__getTimeout</span><span class="p">,</span><span class="n">__setTimeout</span><span class="p">)</span>
+        
+<div class="viewcode-block" id="visa_interface"><a class="viewcode-back" href="../../_autosummary/PyICe.visa_wrappers.html#PyICe.visa_wrappers.visa_interface">[docs]</a><span class="k">class</span> <span class="nc">visa_interface</span><span class="p">(</span><span class="n">visa_wrapper</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;agilent visa strips trailing termination character, but NI VISA seems to leave them in response.&#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">visaMissing</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">visaWrapperException</span><span class="p">(</span><span class="s">&#39;VISA library missing from this system&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="s">&quot;instrument&quot;</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">visa</span><span class="p">):</span>  <span class="c"># Old API from PyVISA rev &lt; 1.5</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">visaInterface</span> <span class="o">=</span> <span class="n">visa</span><span class="o">.</span><span class="n">instrument</span><span class="p">(</span><span class="n">resource_name</span><span class="o">=</span><span class="n">address</span><span class="p">)</span><span class="c">#, timeout=timeout)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">timeout_scale</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c"># Use new API PyVISA rev &gt;= 1.5</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">visaInterface</span> <span class="o">=</span> <span class="n">visa</span><span class="o">.</span><span class="n">ResourceManager</span><span class="p">()</span><span class="o">.</span><span class="n">open_resource</span><span class="p">(</span><span class="n">address</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">timeout_scale</span> <span class="o">=</span> <span class="mf">1e-3</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="n">timeout</span>
+    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">visaInterface</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">visaInterface</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">read_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">visaInterface</span><span class="o">.</span><span class="n">read_values</span><span class="p">()</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">ask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">visaInterface</span><span class="o">.</span><span class="n">ask</span><span class="p">(</span><span class="n">message</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">ask_for_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">visaInterface</span><span class="o">.</span><span class="n">ask_for_values</span><span class="p">(</span><span class="n">message</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">visaInterface</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">trigger</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">visaInterface</span><span class="o">.</span><span class="n">trigger</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">read_raw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">visaInterface</span><span class="o">.</span><span class="n">read_raw</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">visaInterface</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">__getTimeout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">visaInterface</span><span class="o">.</span><span class="n">timeout</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeout_scale</span>
+    <span class="k">def</span> <span class="nf">__setTimeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">visaInterface</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="n">timeout</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeout_scale</span>
+    <span class="k">def</span> <span class="nf">__delTimeout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">visaInterface</span><span class="o">.</span><span class="n">timeout</span>
+    <span class="n">timeout</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">__getTimeout</span><span class="p">,</span> <span class="n">__setTimeout</span><span class="p">,</span> <span class="n">__delTimeout</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__getTerminationChars</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">visaInterface</span><span class="o">.</span><span class="n">term_chars</span>
+    <span class="k">def</span> <span class="nf">__setTerminationChars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">term_chars</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">visaInterface</span><span class="o">.</span><span class="n">term_chars</span> <span class="o">=</span> <span class="n">term_chars</span>
+    <span class="n">term_chars</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">__getTerminationChars</span><span class="p">,</span><span class="n">__setTerminationChars</span><span class="p">)</span>
+</div>
+<span class="k">class</span> <span class="nc">rl1009_visa_wrapper_generic</span><span class="p">(</span><span class="n">visa_wrapper</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Instantiate serial or dll subclasses&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">set_timeouts</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_raw</span><span class="p">()</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span> <span class="c">#remove whitespace to emulate pyvisa behavior</span>
+    <span class="k">def</span> <span class="nf">read_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ascii_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">)</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">ascii_values</span><span class="p">:</span>
+            <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">eval</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">values</span>
+    <span class="k">def</span> <span class="nf">ask_for_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="n">ascii_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">message</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">)</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">ascii_values</span><span class="p">:</span>
+            <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">eval</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">values</span>
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">close_connection</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">set_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">set_timeouts</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">timeout</span><span class="o">*</span><span class="mi">1000</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">timeout</span><span class="o">*</span><span class="mi">1000</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">get_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">get_timeouts</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="mi">1000</span>
+    <span class="n">timeout</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">get_timeout</span><span class="p">,</span><span class="n">set_timeout</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_getTerminationChars</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">term_index</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">get_terminator</span><span class="p">()]</span>
+    <span class="k">def</span> <span class="nf">_setTerminationChars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">term_chars</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">set_terminator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">term_index</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">term_chars</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;Termination characters restricted to [&#39;&#39;,&#39;</span><span class="se">\\</span><span class="s">n&#39;,&#39;</span><span class="se">\\</span><span class="s">r&#39;,&#39;</span><span class="se">\\</span><span class="s">r</span><span class="se">\\</span><span class="s">n&#39;] by RL1009 DLL&quot;</span>
+            <span class="k">raise</span> <span class="n">e</span>
+    <span class="n">term_chars</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">_getTerminationChars</span><span class="p">,</span><span class="n">_setTerminationChars</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">rl1009_visa_wrapper_serial</span><span class="p">(</span><span class="n">rl1009_visa_wrapper_generic</span><span class="p">):</span>
+    <span class="c">#Static reference to single serial interface shared amongst all object instances of class</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">GPIBAddress</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">serialPort</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">RL1009SerialMissing</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">visaWrapperException</span><span class="p">(</span><span class="s">&#39;RL1009 Serial Driver class missing&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">serialPort</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span> <span class="o">=</span> <span class="n">RL1009_SERIAL_CLASS</span><span class="o">.</span><span class="n">RL1009</span><span class="p">(</span><span class="n">serialPort</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">visaWrapperException</span><span class="p">(</span><span class="s">&#39;Must specify serial port in constructor before/while creating interface&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">GPIBAddress</span> <span class="o">=</span> <span class="n">GPIBAddress</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_my_timeout</span> <span class="o">=</span> <span class="n">timeout</span> <span class="c">#multiple gpib interfaces can use the same rl1009 on so timeout must be kept outside the rl1009</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">term_index</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;&#39;</span><span class="p">,</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">,</span><span class="s">&#39;</span><span class="se">\r</span><span class="s">&#39;</span><span class="p">,</span><span class="s">&#39;</span><span class="se">\r\n</span><span class="s">&#39;</span><span class="p">]</span>
+    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">set_address</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GPIBAddress</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_timeout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_my_timeout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.030</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">error</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">visaWrapperException</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">error_description</span><span class="p">())</span>
+    <span class="k">def</span> <span class="nf">ask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">set_address</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GPIBAddress</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_timeout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_my_timeout</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">message</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">error</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">visaWrapperException</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">error_description</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">response</span>
+    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_timeout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_my_timeout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">device_clear</span><span class="p">()</span> <span class="c">#clear_errors()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">error</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">visaWrapperException</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">error_description</span><span class="p">())</span>
+    <span class="k">def</span> <span class="nf">clear_errors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_timeout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_my_timeout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">clear_errors</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">error</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">visaWrapperException</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">error_description</span><span class="p">())</span>
+    <span class="k">def</span> <span class="nf">trigger</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_timeout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_my_timeout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">group_trigger</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%02d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">GPIBAddress</span><span class="p">)</span>        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">error</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">visaWrapperException</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">error_description</span><span class="p">())</span>
+    <span class="k">def</span> <span class="nf">read_raw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">set_address</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GPIBAddress</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_timeout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_my_timeout</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">error</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">visaWrapperException</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">error_description</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">response</span>
+    <span class="k">def</span> <span class="nf">__getGPIBAddress</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__GPIBAddress</span>
+    <span class="k">def</span> <span class="nf">__setGPIBAddress</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">GPIBAddress</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__GPIBAddress</span> <span class="o">=</span> <span class="n">GPIBAddress</span>
+    <span class="n">GPIBAddress</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">__getGPIBAddress</span><span class="p">,</span><span class="n">__setGPIBAddress</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">rl1009_visa_wrapper_dll</span><span class="p">(</span><span class="n">rl1009_visa_wrapper_generic</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">GPIBAddress</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">RL1009DLLMissing</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">visaWrapperException</span><span class="p">(</span><span class="s">&#39;RL1009 DLL Driver class missing&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span> <span class="o">=</span> <span class="n">RL1009_DLL_INTERFACE</span><span class="o">.</span><span class="n">RL1009</span><span class="p">(</span><span class="n">address</span><span class="o">=</span><span class="n">GPIBAddress</span><span class="p">,</span> <span class="n">rlib</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="n">timeout</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">term_index</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;&#39;</span><span class="p">,</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">,</span><span class="s">&#39;</span><span class="se">\r</span><span class="s">&#39;</span><span class="p">,</span><span class="s">&#39;</span><span class="se">\r\n</span><span class="s">&#39;</span><span class="p">]</span>
+    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">gpib_error</span><span class="p">()</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">visaWrapperException</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">error_description</span><span class="p">())</span>
+    <span class="k">def</span> <span class="nf">ask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">message</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">gpib_error</span><span class="p">()</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">visaWrapperException</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">error_description</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">response</span>
+    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">device_clear</span><span class="p">()</span> <span class="c">#clear_error()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">gpib_error</span><span class="p">()</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">visaWrapperException</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">error_description</span><span class="p">())</span>
+    <span class="k">def</span> <span class="nf">clear_errors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">clear_error</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">gpib_error</span><span class="p">()</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">visaWrapperException</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">error_description</span><span class="p">())</span>
+    <span class="k">def</span> <span class="nf">trigger</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">group_trigger</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%02d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">GPIBAddress</span><span class="p">)</span>        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">gpib_error</span><span class="p">()</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">visaWrapperException</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">error_description</span><span class="p">())</span>
+    <span class="k">def</span> <span class="nf">read_raw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">gpib_error</span><span class="p">()</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">visaWrapperException</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">error_description</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">response</span>
+    <span class="k">def</span> <span class="nf">__getGPIBAddress</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">address</span>
+    <span class="k">def</span> <span class="nf">__setGPIBAddress</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">GPIBAddress</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rl1009</span><span class="o">.</span><span class="n">address</span> <span class="o">=</span> <span class="n">GPIBAddress</span>
+    <span class="n">GPIBAddress</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">__getGPIBAddress</span><span class="p">,</span><span class="n">__setGPIBAddress</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../PyICe.html">
+              <img class="logo" src="../../_static/tssop.png" alt="Logo"/>
+            </a></p>
+<h3><a href="../../PyICe.html">Table Of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.lab_instruments.html">PyICe.lab_instruments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.lab_core.html">PyICe.lab_core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.lab_utils.html">PyICe.lab_utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.LTC_plot.html">PyICe.LTC_plot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.lab_gui.html">PyICe.lab_gui</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.lab_interfaces.html">PyICe.lab_interfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.twi_instrument.html">PyICe.twi_instrument</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.twoWireInterface.html">PyICe.twoWireInterface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.spi_instrument.html">PyICe.spi_instrument</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.spi_interface.html">PyICe.spi_interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.visa_wrappers.html">PyICe.visa_wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.xml_registers.html">PyICe.xml_registers</a></li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../PyICe.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Linear Technology Corporation.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

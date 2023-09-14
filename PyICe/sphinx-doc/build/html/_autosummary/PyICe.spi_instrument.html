@@ -1,0 +1,223 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>PyICe.spi_instrument &mdash; PyICe 9000 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '9000',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/tssop.ico"/>
+    <link rel="top" title="PyICe 9000 documentation" href="../PyICe.html" />
+    <link rel="next" title="PyICe.spi_interface" href="PyICe.spi_interface.html" />
+    <link rel="prev" title="PyICe.twoWireInterface" href="PyICe.twoWireInterface.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-PyICe.spi_instrument">
+<span id="pyice-spi-instrument"></span><h1>PyICe.spi_instrument<a class="headerlink" href="#module-PyICe.spi_instrument" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="channel-wrapper-for-spi-devices">
+<h2>Channel Wrapper for SPI Devices<a class="headerlink" href="#channel-wrapper-for-spi-devices" title="Permalink to this headline">¶</a></h2>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#PyICe.spi_instrument.spiInstrument" title="PyICe.spi_instrument.spiInstrument"><code class="xref py py-obj docutils literal"><span class="pre">spiInstrument</span></code></a>(name,&nbsp;spiInterface[,&nbsp;...])</td>
+<td>Instrument wrapper for basic linear shift register SPI port.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="PyICe.spi_instrument.spiInstrument">
+<em class="property">class </em><code class="descclassname">PyICe.spi_instrument.</code><code class="descname">spiInstrument</code><span class="sig-paren">(</span><em>name</em>, <em>spiInterface</em>, <em>write_shift_register=None</em>, <em>read_shift_register=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/spi_instrument.html#spiInstrument"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.spi_instrument.spiInstrument" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="PyICe.lab_core.html#PyICe.lab_core.instrument" title="PyICe.lab_core.instrument"><code class="xref py py-class docutils literal"><span class="pre">PyICe.lab_core.instrument</span></code></a>, <a class="reference internal" href="PyICe.lab_core.html#PyICe.lab_core.delegator" title="PyICe.lab_core.delegator"><code class="xref py py-class docutils literal"><span class="pre">PyICe.lab_core.delegator</span></code></a></p>
+<p>Instrument wrapper for basic linear shift register SPI port.
+Not apprpriate for context-sensitive (sub addressed) memory.</p>
+<dl class="method">
+<dt id="PyICe.spi_instrument.spiInstrument.add_channel">
+<code class="descname">add_channel</code><span class="sig-paren">(</span><em>channel_name</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.spi_instrument.spiInstrument.add_channel" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Usage: Add channel name to instrument.  For multi-channel instruments,</dt>
+<dd>typically also takes a second argument representing the physical
+channel of the instrument. May also take channel configuration arguments specific to the instrument.</dd>
+</dl>
+<p>Operation:  This method should create the channel object then call self._add_channel(channel) to add it to the internal channel group</p>
+<blockquote>
+<div>Method must be overloaded by each instrument driver.</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.spi_instrument.spiInstrument.add_channel_transceive_enable">
+<code class="descname">add_channel_transceive_enable</code><span class="sig-paren">(</span><em>channel_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/spi_instrument.html#spiInstrument.add_channel_transceive_enable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.spi_instrument.spiInstrument.add_channel_transceive_enable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add channel to enable/disable SPI port communication.
+This can be used to serially change multiple bit fields before sending the data to the SPI slave with a single transaction.
+Note that communication is disabled indepent of this setting if not all writable bit fields have been initialized.
+Also note that after communication is enabled, a SPI transceive will not take place until a bit field is read or written.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.spi_instrument.spiInstrument.get_error">
+<code class="descname">get_error</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.spi_instrument.spiInstrument.get_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the first error from the instrument.  Overload in scpi_instrument or the actual instrument class</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.spi_instrument.spiInstrument.get_errors">
+<code class="descname">get_errors</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.spi_instrument.spiInstrument.get_errors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of all errors from the instrument.  Overload in scpi_instrument or the actual instrument class</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.spi_instrument.spiInstrument.get_flat_channel_group">
+<code class="descname">get_flat_channel_group</code><span class="sig-paren">(</span><em>name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.spi_instrument.spiInstrument.get_flat_channel_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns a channel_group directly containing all channels this one can resolve</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.spi_instrument.spiInstrument.merge_in_channel_group">
+<code class="descname">merge_in_channel_group</code><span class="sig-paren">(</span><em>channel_group_object</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.spi_instrument.spiInstrument.merge_in_channel_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>merges in a channel group</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.spi_instrument.spiInstrument.read_all_channels">
+<code class="descname">read_all_channels</code><span class="sig-paren">(</span><em>categories=None</em>, <em>exclusions=[]</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.spi_instrument.spiInstrument.read_all_channels" title="Permalink to this definition">¶</a></dt>
+<dd><p>read all readable channels in channel group and return orderd dictionary of results. Optionally filter by list of categories.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.spi_instrument.spiInstrument.read_channels">
+<code class="descname">read_channels</code><span class="sig-paren">(</span><em>item_list</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.spi_instrument.spiInstrument.read_channels" title="Permalink to this definition">¶</a></dt>
+<dd><p>item list is a list of channel objects, names or channel_groups</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.spi_instrument.spiInstrument.read_delegated_channel_list">
+<code class="descname">read_delegated_channel_list</code><span class="sig-paren">(</span><em>channels</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/spi_instrument.html#spiInstrument.read_delegated_channel_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.spi_instrument.spiInstrument.read_delegated_channel_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>private</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.spi_instrument.spiInstrument.resolve_channel_list">
+<code class="descname">resolve_channel_list</code><span class="sig-paren">(</span><em>item_list</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.spi_instrument.spiInstrument.resolve_channel_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>takes a list of channels, channel_names, or channel_groups and produces a single channel group</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.spi_instrument.spiInstrument.write_html">
+<code class="descname">write_html</code><span class="sig-paren">(</span><em>file_name=None</em>, <em>verbose=True</em>, <em>sort_categories=False</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.spi_instrument.spiInstrument.write_html" title="Permalink to this definition">¶</a></dt>
+<dd><p>return html document string and optionally write to file_name
+if verbose, include tables of presets and attributes for each channel
+if sort_categories, group channel names first by category before alphabetical sort of channel name</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../PyICe.html">
+              <img class="logo" src="../_static/tssop.png" alt="Logo"/>
+            </a></p>
+<h3><a href="../PyICe.html">Table Of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="PyICe.lab_instruments.html">PyICe.lab_instruments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.lab_core.html">PyICe.lab_core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.lab_utils.html">PyICe.lab_utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.LTC_plot.html">PyICe.LTC_plot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.lab_gui.html">PyICe.lab_gui</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.lab_interfaces.html">PyICe.lab_interfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.twi_instrument.html">PyICe.twi_instrument</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.twoWireInterface.html">PyICe.twoWireInterface</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">PyICe.spi_instrument</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#channel-wrapper-for-spi-devices">Channel Wrapper for SPI Devices</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.spi_interface.html">PyICe.spi_interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.visa_wrappers.html">PyICe.visa_wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.xml_registers.html">PyICe.xml_registers</a></li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../PyICe.html">Documentation overview</a><ul>
+      <li>Previous: <a href="PyICe.twoWireInterface.html" title="previous chapter">PyICe.twoWireInterface</a></li>
+      <li>Next: <a href="PyICe.spi_interface.html" title="next chapter">PyICe.spi_interface</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/_autosummary/PyICe.spi_instrument.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Linear Technology Corporation.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="../_sources/_autosummary/PyICe.spi_instrument.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

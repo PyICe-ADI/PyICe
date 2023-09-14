@@ -1,0 +1,1382 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>PyICe.lab_utils &mdash; PyICe 9000 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '9000',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/tssop.ico"/>
+    <link rel="top" title="PyICe 9000 documentation" href="../PyICe.html" />
+    <link rel="next" title="PyICe.LTC_plot" href="PyICe.LTC_plot.html" />
+    <link rel="prev" title="PyICe.lab_core" href="PyICe.lab_core.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-PyICe.lab_utils">
+<span id="pyice-lab-utils"></span><h1>PyICe.lab_utils<a class="headerlink" href="#module-PyICe.lab_utils" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="miscellaneous-utilities">
+<h2>Miscellaneous Utilities<a class="headerlink" href="#miscellaneous-utilities" title="Permalink to this headline">¶</a></h2>
+<p>Includes:</p>
+<ul class="simple">
+<li>database access toools</li>
+<li>servo delay loop</li>
+<li>string sanitization</li>
+<li>filters and other numeric transforms</li>
+<li>floating point number utilites</li>
+<li>email/SMS notification</li>
+</ul>
+<p class="rubric">Functions</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">bounded</span></code>(value[,&nbsp;min_value,&nbsp;max_value,&nbsp;key])</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">clean_c</span></code>(str)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#PyICe.lab_utils.column_formatter" title="PyICe.lab_utils.column_formatter"><code class="xref py py-obj docutils literal"><span class="pre">column_formatter</span></code></a>(rows_of_columns[,&nbsp;padding,&nbsp;...])</td>
+<td>takes data of form: [[&#8216;ID:&#8217;, &#8216;REL_NOW_TIME&#8217;, &#8216;DURATION&#8217;, &#8216;FMT&#8217;, &#8216;RAW &#8216;, &#8216;COUNT&#8217;],</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#PyICe.lab_utils.decadeListRange" title="PyICe.lab_utils.decadeListRange"><code class="xref py py-obj docutils literal"><span class="pre">decadeListRange</span></code></a>(decadePoints,&nbsp;decades)</td>
+<td>log step range function similar to python built-in range()</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#PyICe.lab_utils.decimate" title="PyICe.lab_utils.decimate"><code class="xref py py-obj docutils literal"><span class="pre">decimate</span></code></a>(rec_array,&nbsp;downsample_factor,&nbsp;**kwargs)</td>
+<td>Reduce row count by factor of downsample_factor.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#PyICe.lab_utils.delete_file" title="PyICe.lab_utils.delete_file"><code class="xref py py-obj docutils literal"><span class="pre">delete_file</span></code></a>(filename[,&nbsp;max_tries,&nbsp;retry_delay])</td>
+<td>Tries to delete a file, retrying if the file is locked (e.g.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#PyICe.lab_utils.detrend_constant" title="PyICe.lab_utils.detrend_constant"><code class="xref py py-obj docutils literal"><span class="pre">detrend_constant</span></code></a>(rec_array,&nbsp;**kwargs)</td>
+<td>Remove data mean from all columns except first one (assumed x-axis)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#PyICe.lab_utils.detrend_linear" title="PyICe.lab_utils.detrend_linear"><code class="xref py py-obj docutils literal"><span class="pre">detrend_linear</span></code></a>(rec_array,&nbsp;**kwargs)</td>
+<td>Remove data mean from all columns except first one (assumed x-axis)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#PyICe.lab_utils.differential_nonlinearity" title="PyICe.lab_utils.differential_nonlinearity"><code class="xref py py-obj docutils literal"><span class="pre">differential_nonlinearity</span></code></a>(rec_array[,&nbsp;lsb_size])</td>
+<td>transform (code, voltage) data into DNL.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#PyICe.lab_utils.egg_timer" title="PyICe.lab_utils.egg_timer"><code class="xref py py-obj docutils literal"><span class="pre">egg_timer</span></code></a>(timeout[,&nbsp;message,&nbsp;length,&nbsp;...])</td>
+<td>Provides a blocking delay with a graphic to indicate progress so far so the computer doesn&#8217;t look idle optionally, display a message on the line above the timer graphic optionally, specify a display_callback function to insert extra progress information after the timer display.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#PyICe.lab_utils.eng_string" title="PyICe.lab_utils.eng_string"><code class="xref py py-obj docutils literal"><span class="pre">eng_string</span></code></a>(x[,&nbsp;fmt,&nbsp;si])</td>
+<td>Returns float/int value &lt;x&gt; formatted in a simplified engineering format - using an exponent that is a multiple of 3.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#PyICe.lab_utils.expand_tabs" title="PyICe.lab_utils.expand_tabs"><code class="xref py py-obj docutils literal"><span class="pre">expand_tabs</span></code></a>(string,&nbsp;*column_widths,&nbsp;...)</td>
+<td>like string.expandtabs, but works only on a single line and allows for varying column widths.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#PyICe.lab_utils.floatRange" title="PyICe.lab_utils.floatRange"><code class="xref py py-obj docutils literal"><span class="pre">floatRange</span></code></a>(start[,&nbsp;stop,&nbsp;step])</td>
+<td>Returns a list of numbers similar to python range() builtin but supports floats.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#PyICe.lab_utils.floatRangeInc" title="PyICe.lab_utils.floatRangeInc"><code class="xref py py-obj docutils literal"><span class="pre">floatRangeInc</span></code></a>(start[,&nbsp;stop,&nbsp;step])</td>
+<td>Same as float range, however it is inclusive of the last value</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#PyICe.lab_utils.float_distance" title="PyICe.lab_utils.float_distance"><code class="xref py py-obj docutils literal"><span class="pre">float_distance</span></code></a>(x,&nbsp;y)</td>
+<td>return signed difference between x and y expressed as distance between representable floating point numbers.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#PyICe.lab_utils.float_next" title="PyICe.lab_utils.float_next"><code class="xref py py-obj docutils literal"><span class="pre">float_next</span></code></a>(val)</td>
+<td>return next Python double precision floating point nuber larger than x.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#PyICe.lab_utils.float_prior" title="PyICe.lab_utils.float_prior"><code class="xref py py-obj docutils literal"><span class="pre">float_prior</span></code></a>(val)</td>
+<td>return next Python double precision floating point nuber smaller than x.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#PyICe.lab_utils.integral_nonlinearity" title="PyICe.lab_utils.integral_nonlinearity"><code class="xref py py-obj docutils literal"><span class="pre">integral_nonlinearity</span></code></a>(rec_array[,&nbsp;lsb_size])</td>
+<td>transform (code, voltage) data into INL</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#PyICe.lab_utils.isclose" title="PyICe.lab_utils.isclose"><code class="xref py py-obj docutils literal"><span class="pre">isclose</span></code></a>(a,&nbsp;b[,&nbsp;rel_tol,&nbsp;abs_tol])</td>
+<td>returns True if a is close in value to b. False otherwise</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#PyICe.lab_utils.logRange" title="PyICe.lab_utils.logRange"><code class="xref py py-obj docutils literal"><span class="pre">logRange</span></code></a>(start,&nbsp;stop[,&nbsp;stepsPerDecade,&nbsp;...])</td>
+<td>log step range function similar to python built-in range()</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#PyICe.lab_utils.logger_time_str" title="PyICe.lab_utils.logger_time_str"><code class="xref py py-obj docutils literal"><span class="pre">logger_time_str</span></code></a>(datetime)</td>
+<td>return time string in same format as used by lab_core.logger.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#PyICe.lab_utils.modulate" title="PyICe.lab_utils.modulate"><code class="xref py py-obj docutils literal"><span class="pre">modulate</span></code></a>(data1,&nbsp;data2)</td>
+<td>data1 and data2 are tuples of x and y data that may not have the same number of &#8216;x&#8217; values. The result is interpolated up to the higher of the two.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#PyICe.lab_utils.polyfit" title="PyICe.lab_utils.polyfit"><code class="xref py py-obj docutils literal"><span class="pre">polyfit</span></code></a>(rec_array[,&nbsp;degree])</td>
+<td>returns polynomial fit coefficients list, highest order first</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#PyICe.lab_utils.ramer_douglas_peucker" title="PyICe.lab_utils.ramer_douglas_peucker"><code class="xref py py-obj docutils literal"><span class="pre">ramer_douglas_peucker</span></code></a>(rec_array,&nbsp;epsilon[,&nbsp;...])</td>
+<td>reduce number of points in line-sigment curve such that reduced line segment count approximates original curve within epsilon tolerance.</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">remove_html</span></code>(text)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">remove_non_ascii</span></code>(text)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#PyICe.lab_utils.scalar_transform" title="PyICe.lab_utils.scalar_transform"><code class="xref py py-obj docutils literal"><span class="pre">scalar_transform</span></code></a>(rec_array,&nbsp;...[,&nbsp;column_names])</td>
+<td>Transform column data by processing through user-supplied function column_scalar_functions is a list of functions for each column and should have a length equal to the number of columns.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#PyICe.lab_utils.signedToTwosComplement" title="PyICe.lab_utils.signedToTwosComplement"><code class="xref py py-obj docutils literal"><span class="pre">signedToTwosComplement</span></code></a>(signed,&nbsp;bitCount)</td>
+<td>take python int and convert to two&#8217;s complement representation using specified number of bits</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#PyICe.lab_utils.smooth_filtfile" title="PyICe.lab_utils.smooth_filtfile"><code class="xref py py-obj docutils literal"><span class="pre">smooth_filtfile</span></code></a>(rec_array)</td>
+<td>somebody finish this.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#PyICe.lab_utils.smooth_spline" title="PyICe.lab_utils.smooth_spline"><code class="xref py py-obj docutils literal"><span class="pre">smooth_spline</span></code></a>(rec_array,&nbsp;rms_error[,&nbsp;verbose])</td>
+<td>uses <a class="reference external" href="http://scipy.github.io/devdocs/generated/scipy.interpolate.UnivariateSpline.html">http://scipy.github.io/devdocs/generated/scipy.interpolate.UnivariateSpline.html</a> with movable knots</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">str2num</span></code>(str_in)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#PyICe.lab_utils.swap_endian" title="PyICe.lab_utils.swap_endian"><code class="xref py py-obj docutils literal"><span class="pre">swap_endian</span></code></a>(word,&nbsp;elementCount[,&nbsp;elementSize])</td>
+<td>reverse endianness of multi-byte word</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#PyICe.lab_utils.twosComplementToSigned" title="PyICe.lab_utils.twosComplementToSigned"><code class="xref py py-obj docutils literal"><span class="pre">twosComplementToSigned</span></code></a>(binary,&nbsp;bitCount)</td>
+<td>take two&#8217;s complement number with specified number of bits and convert to python int representation</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#PyICe.lab_utils.unit_least_precision" title="PyICe.lab_utils.unit_least_precision"><code class="xref py py-obj docutils literal"><span class="pre">unit_least_precision</span></code></a>(val[,&nbsp;increasing])</td>
+<td>return positive increment/decrement to next representable floating point number above/below val</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#PyICe.lab_utils.vector_transform" title="PyICe.lab_utils.vector_transform"><code class="xref py py-obj docutils literal"><span class="pre">vector_transform</span></code></a>(rec_array,&nbsp;...[,&nbsp;column_names])</td>
+<td>Generic filter function.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#PyICe.lab_utils.US_Eastern_Time" title="PyICe.lab_utils.US_Eastern_Time"><code class="xref py py-obj docutils literal"><span class="pre">US_Eastern_Time</span></code></a>()</td>
+<td>US Eastern time zone.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#PyICe.lab_utils.US_Pacific_Time" title="PyICe.lab_utils.US_Pacific_Time"><code class="xref py py-obj docutils literal"><span class="pre">US_Pacific_Time</span></code></a>()</td>
+<td>US Pacific time zone.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#PyICe.lab_utils.US_Time_Zone" title="PyICe.lab_utils.US_Time_Zone"><code class="xref py py-obj docutils literal"><span class="pre">US_Time_Zone</span></code></a></td>
+<td>Generic Timezone parent class.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#PyICe.lab_utils.UTC" title="PyICe.lab_utils.UTC"><code class="xref py py-obj docutils literal"><span class="pre">UTC</span></code></a>()</td>
+<td>UTC / GMT / Zulu time zone.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#PyICe.lab_utils.csv_logger" title="PyICe.lab_utils.csv_logger"><code class="xref py py-obj docutils literal"><span class="pre">csv_logger</span></code></a>(output_file[,&nbsp;encoding])</td>
+<td>set up columns, then pass results dictionary from logger or channel group to write() method.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#PyICe.lab_utils.csv_writer" title="PyICe.lab_utils.csv_writer"><code class="xref py py-obj docutils literal"><span class="pre">csv_writer</span></code></a>()</td>
+<td>shared functions for higher level interfaces</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#PyICe.lab_utils.debug_log" title="PyICe.lab_utils.debug_log"><code class="xref py py-obj docutils literal"><span class="pre">debug_log</span></code></a>([log_file_name,&nbsp;debug])</td>
+<td>Log messages into a file and optionally print to screen.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#PyICe.lab_utils.delay_loop" title="PyICe.lab_utils.delay_loop"><code class="xref py py-obj docutils literal"><span class="pre">delay_loop</span></code></a>([strict,&nbsp;begin,&nbsp;no_drift])</td>
+<td>make constant loop delay independent of loop processing time by measuring time at beginning</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">dlog</span></code>([filename])</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#PyICe.lab_utils.email" title="PyICe.lab_utils.email"><code class="xref py py-obj docutils literal"><span class="pre">email</span></code></a>(destination[,&nbsp;login,&nbsp;pw,&nbsp;domain])</td>
+<td>sends email to specified destination from dedicated gmail account, or account of your choosing</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">interpolator</span></code>()</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">ordered_pair</span></code></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">oscilloscope_channel</span></code>(time_points,&nbsp;channel_data)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#PyICe.lab_utils.sms" title="PyICe.lab_utils.sms"><code class="xref py py-obj docutils literal"><span class="pre">sms</span></code></a>(mobile_number,&nbsp;carrier[,&nbsp;login,&nbsp;pw,&nbsp;domain])</td>
+<td>Extends email class to send sms messages through several carriers&#8217; email to sms gateways</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#PyICe.lab_utils.sqlite_data" title="PyICe.lab_utils.sqlite_data"><code class="xref py py-obj docutils literal"><span class="pre">sqlite_data</span></code></a>([table_name,&nbsp;database_file,&nbsp;...])</td>
+<td>Produce iteratable object returning row sequence, where each column within each row is accessible by either column name or position.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#PyICe.lab_utils.sqlite_to_csv" title="PyICe.lab_utils.sqlite_to_csv"><code class="xref py py-obj docutils literal"><span class="pre">sqlite_to_csv</span></code></a>(table_name[,&nbsp;database_file])</td>
+<td>Formats data stored in an SQLite database so that it can be browsed interactively.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#PyICe.lab_utils.sqlite_to_easylog" title="PyICe.lab_utils.sqlite_to_easylog"><code class="xref py py-obj docutils literal"><span class="pre">sqlite_to_easylog</span></code></a>(chart_name,&nbsp;table_name[,&nbsp;...])</td>
+<td>Wrapper to make specific format required by Easy Log Graph software.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#PyICe.lab_utils.threaded_writer" title="PyICe.lab_utils.threaded_writer"><code class="xref py py-obj docutils literal"><span class="pre">threaded_writer</span></code></a>([verbose])</td>
+<td>helper to perform some task in parallel with test script at fixed rate</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">ticker</span></code>([stock_list])</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="PyICe.lab_utils.US_Eastern_Time">
+<em class="property">class </em><code class="descclassname">PyICe.lab_utils.</code><code class="descname">US_Eastern_Time</code><a class="reference internal" href="../_modules/PyICe/lab_utils.html#US_Eastern_Time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.US_Eastern_Time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.lab_utils.US_Time_Zone" title="PyICe.lab_utils.US_Time_Zone"><code class="xref py py-class docutils literal"><span class="pre">PyICe.lab_utils.US_Time_Zone</span></code></a></p>
+<p>US Eastern time zone. (NYC/BOS)</p>
+<dl class="method">
+<dt id="PyICe.lab_utils.US_Eastern_Time.dst">
+<code class="descname">dst</code><span class="sig-paren">(</span><em>dt</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.US_Eastern_Time.dst" title="Permalink to this definition">¶</a></dt>
+<dd><p>return DST offset from standard local time based on calendar date.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.US_Eastern_Time.first_sunday_on_or_after">
+<code class="descname">first_sunday_on_or_after</code><span class="sig-paren">(</span><em>dt</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.US_Eastern_Time.first_sunday_on_or_after" title="Permalink to this definition">¶</a></dt>
+<dd><p>return date of first Sunday on or after dt.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.US_Eastern_Time.fromutc">
+<code class="descname">fromutc</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.US_Eastern_Time.fromutc" title="Permalink to this definition">¶</a></dt>
+<dd><p>datetime in UTC -&gt; datetime in local time.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.US_Eastern_Time.tzname">
+<code class="descname">tzname</code><span class="sig-paren">(</span><em>dt</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.US_Eastern_Time.tzname" title="Permalink to this definition">¶</a></dt>
+<dd><p>return DST aware local time zone name based on calendar date.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.US_Eastern_Time.utcoffset">
+<code class="descname">utcoffset</code><span class="sig-paren">(</span><em>dt</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.US_Eastern_Time.utcoffset" title="Permalink to this definition">¶</a></dt>
+<dd><p>return DST aware offset from GMT/UTC based on calendar date.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="PyICe.lab_utils.US_Pacific_Time">
+<em class="property">class </em><code class="descclassname">PyICe.lab_utils.</code><code class="descname">US_Pacific_Time</code><a class="reference internal" href="../_modules/PyICe/lab_utils.html#US_Pacific_Time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.US_Pacific_Time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.lab_utils.US_Time_Zone" title="PyICe.lab_utils.US_Time_Zone"><code class="xref py py-class docutils literal"><span class="pre">PyICe.lab_utils.US_Time_Zone</span></code></a></p>
+<p>US Pacific time zone. (LAX/SMF)</p>
+<dl class="method">
+<dt id="PyICe.lab_utils.US_Pacific_Time.dst">
+<code class="descname">dst</code><span class="sig-paren">(</span><em>dt</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.US_Pacific_Time.dst" title="Permalink to this definition">¶</a></dt>
+<dd><p>return DST offset from standard local time based on calendar date.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.US_Pacific_Time.first_sunday_on_or_after">
+<code class="descname">first_sunday_on_or_after</code><span class="sig-paren">(</span><em>dt</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.US_Pacific_Time.first_sunday_on_or_after" title="Permalink to this definition">¶</a></dt>
+<dd><p>return date of first Sunday on or after dt.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.US_Pacific_Time.fromutc">
+<code class="descname">fromutc</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.US_Pacific_Time.fromutc" title="Permalink to this definition">¶</a></dt>
+<dd><p>datetime in UTC -&gt; datetime in local time.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.US_Pacific_Time.tzname">
+<code class="descname">tzname</code><span class="sig-paren">(</span><em>dt</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.US_Pacific_Time.tzname" title="Permalink to this definition">¶</a></dt>
+<dd><p>return DST aware local time zone name based on calendar date.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.US_Pacific_Time.utcoffset">
+<code class="descname">utcoffset</code><span class="sig-paren">(</span><em>dt</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.US_Pacific_Time.utcoffset" title="Permalink to this definition">¶</a></dt>
+<dd><p>return DST aware offset from GMT/UTC based on calendar date.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="PyICe.lab_utils.US_Time_Zone">
+<em class="property">class </em><code class="descclassname">PyICe.lab_utils.</code><code class="descname">US_Time_Zone</code><a class="reference internal" href="../_modules/PyICe/lab_utils.html#US_Time_Zone"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.US_Time_Zone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">datetime.tzinfo</span></code></p>
+<p>Generic Timezone parent class.
+Implements methods required by datetime.tzinfo with US DST rules (second Sunday of March and first Sunday of November).
+Requires subclass to define local timezone parameters:</p>
+<blockquote>
+<div>self.tz_name
+self.tz_name_dst
+self.gmt_offset
+self.dst_offset</div></blockquote>
+<dl class="method">
+<dt id="PyICe.lab_utils.US_Time_Zone.dst">
+<code class="descname">dst</code><span class="sig-paren">(</span><em>dt</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#US_Time_Zone.dst"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.US_Time_Zone.dst" title="Permalink to this definition">¶</a></dt>
+<dd><p>return DST offset from standard local time based on calendar date.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.US_Time_Zone.first_sunday_on_or_after">
+<code class="descname">first_sunday_on_or_after</code><span class="sig-paren">(</span><em>dt</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#US_Time_Zone.first_sunday_on_or_after"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.US_Time_Zone.first_sunday_on_or_after" title="Permalink to this definition">¶</a></dt>
+<dd><p>return date of first Sunday on or after dt.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.US_Time_Zone.fromutc">
+<code class="descname">fromutc</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.US_Time_Zone.fromutc" title="Permalink to this definition">¶</a></dt>
+<dd><p>datetime in UTC -&gt; datetime in local time.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.US_Time_Zone.tzname">
+<code class="descname">tzname</code><span class="sig-paren">(</span><em>dt</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#US_Time_Zone.tzname"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.US_Time_Zone.tzname" title="Permalink to this definition">¶</a></dt>
+<dd><p>return DST aware local time zone name based on calendar date.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.US_Time_Zone.utcoffset">
+<code class="descname">utcoffset</code><span class="sig-paren">(</span><em>dt</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#US_Time_Zone.utcoffset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.US_Time_Zone.utcoffset" title="Permalink to this definition">¶</a></dt>
+<dd><p>return DST aware offset from GMT/UTC based on calendar date.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="PyICe.lab_utils.UTC">
+<em class="property">class </em><code class="descclassname">PyICe.lab_utils.</code><code class="descname">UTC</code><a class="reference internal" href="../_modules/PyICe/lab_utils.html#UTC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.UTC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.lab_utils.US_Time_Zone" title="PyICe.lab_utils.US_Time_Zone"><code class="xref py py-class docutils literal"><span class="pre">PyICe.lab_utils.US_Time_Zone</span></code></a></p>
+<p>UTC / GMT / Zulu time zone.</p>
+<dl class="method">
+<dt id="PyICe.lab_utils.UTC.dst">
+<code class="descname">dst</code><span class="sig-paren">(</span><em>dt</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.UTC.dst" title="Permalink to this definition">¶</a></dt>
+<dd><p>return DST offset from standard local time based on calendar date.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.UTC.first_sunday_on_or_after">
+<code class="descname">first_sunday_on_or_after</code><span class="sig-paren">(</span><em>dt</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.UTC.first_sunday_on_or_after" title="Permalink to this definition">¶</a></dt>
+<dd><p>return date of first Sunday on or after dt.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.UTC.fromutc">
+<code class="descname">fromutc</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.UTC.fromutc" title="Permalink to this definition">¶</a></dt>
+<dd><p>datetime in UTC -&gt; datetime in local time.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.UTC.tzname">
+<code class="descname">tzname</code><span class="sig-paren">(</span><em>dt</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.UTC.tzname" title="Permalink to this definition">¶</a></dt>
+<dd><p>return DST aware local time zone name based on calendar date.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.UTC.utcoffset">
+<code class="descname">utcoffset</code><span class="sig-paren">(</span><em>dt</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.UTC.utcoffset" title="Permalink to this definition">¶</a></dt>
+<dd><p>return DST aware offset from GMT/UTC based on calendar date.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="PyICe.lab_utils.column_formatter">
+<code class="descclassname">PyICe.lab_utils.</code><code class="descname">column_formatter</code><span class="sig-paren">(</span><em>rows_of_columns</em>, <em>padding=3</em>, <em>justification='left'</em>, <em>fist_line_justification='center'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#column_formatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.column_formatter" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>takes data of form: [[&#8216;ID:&#8217;, &#8216;REL_NOW_TIME&#8217;, &#8216;DURATION&#8217;, &#8216;FMT&#8217;, &#8216;RAW &#8216;, &#8216;COUNT&#8217;],</dt>
+<dd><blockquote class="first">
+<div>[u&#8216;00:&#8217;, &#8216;-00:00:35.290 &#8216;, &#8216; 00:00:00.431 &#8216;, u&#8216;41.974488V&#8217;, 28438, 1],
+[u&#8216;01:&#8217;, &#8216;-00:00:34.859 &#8216;, &#8216; 00:00:07.216 &#8216;, u&#8217;-20.675808V&#8217;, 51528, 1],
+[u&#8216;02:&#8217;, &#8216;-00:00:27.643 &#8216;, &#8216; 00:00:00.586 &#8216;, u&#8217;-30.318516V&#8217;, 44995, 1],
+[u&#8216;03:&#8217;, &#8216;-00:00:27.057 &#8216;, &#8216; 00:00:17.777 &#8216;, u&#8216;38.97378V&#8217;, 26405, 1],
+[u&#8216;04:&#8217;, &#8216;-00:00:09.280 &#8216;, &#8216; 00:00:00.897 &#8216;, u&#8216;21.428568V&#8217;, 14518, 1],
+[u&#8216;05:&#8217;, &#8216;-00:00:08.383 &#8216;, &#8216; 00:00:08.383+&#8217;, u&#8217;-23.781312V&#8217;, 49424, 1]</div></blockquote>
+<p class="last">]</p>
+</dd>
+<dt>produces formatted output of form: ID:    REL_NOW_TIME       DURATION          FMT        RAW    COUNT</dt>
+<dd>00:   -00:00:35.290     00:00:00.431    41.974488V    28438   1
+01:   -00:00:34.859     00:00:07.216    -20.675808V   51528   1
+02:   -00:00:27.643     00:00:00.586    -30.318516V   44995   1
+03:   -00:00:27.057     00:00:17.777    38.97378V     26405   1
+04:   -00:00:09.280     00:00:00.897    21.428568V    14518   1
+05:   -00:00:08.383     00:00:08.383+   -23.781312V   49424   1</dd>
+</dl>
+<p>padding sets spacing between columns
+first_line_justification and justification control aligment for first and subsequent lines respectively.</p>
+<blockquote>
+<div>valid arguments are &#8216;left&#8217;,&#8217;right&#8217; and &#8216;center&#8217;</div></blockquote>
+</dd></dl>
+
+<dl class="class">
+<dt id="PyICe.lab_utils.csv_logger">
+<em class="property">class </em><code class="descclassname">PyICe.lab_utils.</code><code class="descname">csv_logger</code><span class="sig-paren">(</span><em>output_file</em>, <em>encoding='utf-8'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#csv_logger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.csv_logger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.lab_utils.csv_writer" title="PyICe.lab_utils.csv_writer"><code class="xref py py-class docutils literal"><span class="pre">PyICe.lab_utils.csv_writer</span></code></a></p>
+<p>set up columns, then pass results dictionary from logger or channel group to write() method.
+Can be used to provide automated test script &#8216;marching waves&#8217; with a program such as Live Graph (<a class="reference external" href="http://www.live-graph.org/">http://www.live-graph.org/</a>).</p>
+<dl class="method">
+<dt id="PyICe.lab_utils.csv_logger.add_column">
+<code class="descname">add_column</code><span class="sig-paren">(</span><em>channel</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#csv_logger.add_column"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.csv_logger.add_column" title="Permalink to this definition">¶</a></dt>
+<dd><p>set up output to include channel object as column data source</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.csv_logger.add_columns">
+<code class="descname">add_columns</code><span class="sig-paren">(</span><em>channel_list</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#csv_logger.add_columns"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.csv_logger.add_columns" title="Permalink to this definition">¶</a></dt>
+<dd><p>set up output to include channel objects in channel_list as column data sources</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.csv_logger.add_comment">
+<code class="descname">add_comment</code><span class="sig-paren">(</span><em>comment_str</em>, <em>comment_character='#'</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.csv_logger.add_comment" title="Permalink to this definition">¶</a></dt>
+<dd><p>add comment line(s) to the top of the output file.
+Live Graph treats &#8216;&#64;&#8217; as a &#8216;description line&#8217; and &#8216;#&#8217; as a &#8216;comment line&#8217;.
+Neither has any effect on the data interpretation.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.csv_logger.add_elapsed_days">
+<code class="descname">add_elapsed_days</code><span class="sig-paren">(</span><em>display_name='elapsed_days'</em>, <em>format=''</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.csv_logger.add_elapsed_days" title="Permalink to this definition">¶</a></dt>
+<dd><p>computes elapsed days since first row of table</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.csv_logger.add_elapsed_hours">
+<code class="descname">add_elapsed_hours</code><span class="sig-paren">(</span><em>display_name='elapsed_hours'</em>, <em>format=''</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.csv_logger.add_elapsed_hours" title="Permalink to this definition">¶</a></dt>
+<dd><p>computes elapsed hours since first row of table</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.csv_logger.add_elapsed_minutes">
+<code class="descname">add_elapsed_minutes</code><span class="sig-paren">(</span><em>display_name='elapsed_minutes'</em>, <em>format=''</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.csv_logger.add_elapsed_minutes" title="Permalink to this definition">¶</a></dt>
+<dd><p>computes elapsed minutes since first row of table</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.csv_logger.add_elapsed_seconds">
+<code class="descname">add_elapsed_seconds</code><span class="sig-paren">(</span><em>display_name='elapsed_seconds'</em>, <em>format=''</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.csv_logger.add_elapsed_seconds" title="Permalink to this definition">¶</a></dt>
+<dd><p>computes elapsed seconds since first row of table</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.csv_logger.add_timestamps">
+<code class="descname">add_timestamps</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#csv_logger.add_timestamps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.csv_logger.add_timestamps" title="Permalink to this definition">¶</a></dt>
+<dd><p>add rowid and datetime fields to output</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.csv_logger.register_logger_callback">
+<code class="descname">register_logger_callback</code><span class="sig-paren">(</span><em>logger</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#csv_logger.register_logger_callback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.csv_logger.register_logger_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>register this csv_logger instance with a lab_core.logger instance for automatic data plotting</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.csv_logger.unregister_logger_callback">
+<code class="descname">unregister_logger_callback</code><span class="sig-paren">(</span><em>logger</em>, <em>close_file=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#csv_logger.unregister_logger_callback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.csv_logger.unregister_logger_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>clean up in case lab_core.logger will be re-used for a new test.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.csv_logger.write">
+<code class="descname">write</code><span class="sig-paren">(</span><em>channel_data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#csv_logger.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.csv_logger.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>write selected columns with data supplied in channel_data dictionary</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="PyICe.lab_utils.csv_writer">
+<em class="property">class </em><code class="descclassname">PyICe.lab_utils.</code><code class="descname">csv_writer</code><a class="reference internal" href="../_modules/PyICe/lab_utils.html#csv_writer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.csv_writer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>shared functions for higher level interfaces</p>
+<dl class="method">
+<dt id="PyICe.lab_utils.csv_writer.add_column">
+<code class="descname">add_column</code><span class="sig-paren">(</span><em>query_name</em>, <em>display_name=None</em>, <em>format=''</em>, <em>transform=None</em>, <em>query_function=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#csv_writer.add_column"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.csv_writer.add_column" title="Permalink to this definition">¶</a></dt>
+<dd><p>add single column to output file.
+provides more customization options than addign a list of columns
+transform is a python function applied to the query results before formatting
+format is a format string to alter the column data.  Ex: 3.2f.
+query function is a function that returns data directly from Python rather than from external data source. Ex: time</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.csv_writer.add_columns">
+<code class="descname">add_columns</code><span class="sig-paren">(</span><em>column_list</em>, <em>format=''</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#csv_writer.add_columns"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.csv_writer.add_columns" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shortcut method to add multiple data columns at once.
+column_list selects additional data columns to output.
+format is a format string to alter the column data.  Ex: 3.2f.
+For more flexibility, add columns individually using add_column() method.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.csv_writer.add_comment">
+<code class="descname">add_comment</code><span class="sig-paren">(</span><em>comment_str</em>, <em>comment_character='#'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#csv_writer.add_comment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.csv_writer.add_comment" title="Permalink to this definition">¶</a></dt>
+<dd><p>add comment line(s) to the top of the output file.
+Live Graph treats &#8216;&#64;&#8217; as a &#8216;description line&#8217; and &#8216;#&#8217; as a &#8216;comment line&#8217;.
+Neither has any effect on the data interpretation.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.csv_writer.add_elapsed_days">
+<code class="descname">add_elapsed_days</code><span class="sig-paren">(</span><em>display_name='elapsed_days'</em>, <em>format=''</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#csv_writer.add_elapsed_days"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.csv_writer.add_elapsed_days" title="Permalink to this definition">¶</a></dt>
+<dd><p>computes elapsed days since first row of table</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.csv_writer.add_elapsed_hours">
+<code class="descname">add_elapsed_hours</code><span class="sig-paren">(</span><em>display_name='elapsed_hours'</em>, <em>format=''</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#csv_writer.add_elapsed_hours"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.csv_writer.add_elapsed_hours" title="Permalink to this definition">¶</a></dt>
+<dd><p>computes elapsed hours since first row of table</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.csv_writer.add_elapsed_minutes">
+<code class="descname">add_elapsed_minutes</code><span class="sig-paren">(</span><em>display_name='elapsed_minutes'</em>, <em>format=''</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#csv_writer.add_elapsed_minutes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.csv_writer.add_elapsed_minutes" title="Permalink to this definition">¶</a></dt>
+<dd><p>computes elapsed minutes since first row of table</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.csv_writer.add_elapsed_seconds">
+<code class="descname">add_elapsed_seconds</code><span class="sig-paren">(</span><em>display_name='elapsed_seconds'</em>, <em>format=''</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#csv_writer.add_elapsed_seconds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.csv_writer.add_elapsed_seconds" title="Permalink to this definition">¶</a></dt>
+<dd><p>computes elapsed seconds since first row of table</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="PyICe.lab_utils.debug_log">
+<em class="property">class </em><code class="descclassname">PyICe.lab_utils.</code><code class="descname">debug_log</code><span class="sig-paren">(</span><em>log_file_name='PyICe.lab_utils.log'</em>, <em>debug=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#debug_log"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.debug_log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Log messages into a file and optionally print to screen.</p>
+<dl class="method">
+<dt id="PyICe.lab_utils.debug_log.write">
+<code class="descname">write</code><span class="sig-paren">(</span><em>msg</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#debug_log.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.debug_log.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a message to the log file. Also print the message if debug is True</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="PyICe.lab_utils.decadeListRange">
+<code class="descclassname">PyICe.lab_utils.</code><code class="descname">decadeListRange</code><span class="sig-paren">(</span><em>decadePoints</em>, <em>decades</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#decadeListRange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.decadeListRange" title="Permalink to this definition">¶</a></dt>
+<dd><p>log step range function similar to python built-in range()
+accepts list input of points in a single decade and repeats
+these points over the specified number of decades</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PyICe.lab_utils.decimate">
+<code class="descclassname">PyICe.lab_utils.</code><code class="descname">decimate</code><span class="sig-paren">(</span><em>rec_array</em>, <em>downsample_factor</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#decimate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.decimate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reduce row count by factor of downsample_factor.
+By default an order 8 Chebyshev type I filter is used independently on each column.
+Set kwarg ftype=&#8217;fir&#8217; to instead use a 30 point FIR filter with hamming window (recommended).
+<a class="reference external" href="http://docs.scipy.org/doc/scipy-0.16.1/reference/generated/scipy.signal.decimate.html">http://docs.scipy.org/doc/scipy-0.16.1/reference/generated/scipy.signal.decimate.html</a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="PyICe.lab_utils.delay_loop">
+<em class="property">class </em><code class="descclassname">PyICe.lab_utils.</code><code class="descname">delay_loop</code><span class="sig-paren">(</span><em>strict=False</em>, <em>begin=True</em>, <em>no_drift=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#delay_loop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.delay_loop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>make constant loop delay independent of loop processing time by measuring time at beginning
+and end of loop and adding extra delay as necessary</p>
+<dl class="method">
+<dt id="PyICe.lab_utils.delay_loop.achieved_loop_time">
+<code class="descname">achieved_loop_time</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#delay_loop.achieved_loop_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.delay_loop.achieved_loop_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return previous actual achieved loop time (including any overrun).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.delay_loop.begin">
+<code class="descname">begin</code><span class="sig-paren">(</span><em>offset=0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#delay_loop.begin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.delay_loop.begin" title="Permalink to this definition">¶</a></dt>
+<dd><p>make note of begin time for loop measurement. Use offset to adjust the begin time in case of overrun on last cycle.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.delay_loop.delay">
+<code class="descname">delay</code><span class="sig-paren">(</span><em>seconds</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#delay_loop.delay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.delay_loop.delay" title="Permalink to this definition">¶</a></dt>
+<dd><p>delay extra time to make loop time constant
+returns actual delay time achieved</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.delay_loop.delay_margin">
+<code class="descname">delay_margin</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#delay_loop.delay_margin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.delay_loop.delay_margin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return extra time remaining (ie sleep time) before last call to delay().</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.delay_loop.get_count">
+<code class="descname">get_count</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#delay_loop.get_count"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.delay_loop.get_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns total number of times delay() method called</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.delay_loop.get_total_time">
+<code class="descname">get_total_time</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#delay_loop.get_total_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.delay_loop.get_total_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns total number of seconds since first delay</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.delay_loop.time_remaining">
+<code class="descname">time_remaining</code><span class="sig-paren">(</span><em>loop_time</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#delay_loop.time_remaining"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.delay_loop.time_remaining" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use this in a while loop to perform another function for duration loop_time. Test the result for 0 or less.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="PyICe.lab_utils.delete_file">
+<code class="descclassname">PyICe.lab_utils.</code><code class="descname">delete_file</code><span class="sig-paren">(</span><em>filename</em>, <em>max_tries=20</em>, <em>retry_delay=5</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#delete_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.delete_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tries to delete a file, retrying if the file is locked (e.g. because it is open
+in Notepad++, SQLite Manager, or another program), failing gracefully if the file
+doesn&#8217;t (yet) exist. Gives up after a number of retries and raises RuntimeError.
+Good for removing stale sqlite DBs and log files from old runs.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PyICe.lab_utils.detrend_constant">
+<code class="descclassname">PyICe.lab_utils.</code><code class="descname">detrend_constant</code><span class="sig-paren">(</span><em>rec_array</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#detrend_constant"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.detrend_constant" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove data mean from all columns except first one (assumed x-axis)
+<a class="reference external" href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.detrend.html">http://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.detrend.html</a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PyICe.lab_utils.detrend_linear">
+<code class="descclassname">PyICe.lab_utils.</code><code class="descname">detrend_linear</code><span class="sig-paren">(</span><em>rec_array</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#detrend_linear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.detrend_linear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove data mean from all columns except first one (assumed x-axis)
+<a class="reference external" href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.detrend.html">http://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.detrend.html</a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PyICe.lab_utils.differential_nonlinearity">
+<code class="descclassname">PyICe.lab_utils.</code><code class="descname">differential_nonlinearity</code><span class="sig-paren">(</span><em>rec_array</em>, <em>lsb_size=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#differential_nonlinearity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.differential_nonlinearity" title="Permalink to this definition">¶</a></dt>
+<dd><p>transform (code, voltage) data into DNL.
+optional lsb_size argument scales y-axis data from real units to lsb count.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PyICe.lab_utils.egg_timer">
+<code class="descclassname">PyICe.lab_utils.</code><code class="descname">egg_timer</code><span class="sig-paren">(</span><em>timeout</em>, <em>message=None</em>, <em>length=30</em>, <em>display_callback=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#egg_timer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.egg_timer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides a blocking delay with a graphic to indicate progress so far so the computer doesn&#8217;t look idle
+optionally, display a message on the line above the timer graphic
+optionally, specify a display_callback function to insert extra progress information after the timer display.
+display_callback function should accept a single dictionary argument and return a string.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="PyICe.lab_utils.email">
+<em class="property">class </em><code class="descclassname">PyICe.lab_utils.</code><code class="descname">email</code><span class="sig-paren">(</span><em>destination</em>, <em>login='ltlabboston'</em>, <em>pw='PythonLab'</em>, <em>domain='gmail.com'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#email"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.email" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>sends email to specified destination from dedicated gmail account, or account of your choosing</p>
+<dl class="method">
+<dt id="PyICe.lab_utils.email.send">
+<code class="descname">send</code><span class="sig-paren">(</span><em>body</em>, <em>subject=None</em>, <em>attachments=[]</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#email.send"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.email.send" title="Permalink to this definition">¶</a></dt>
+<dd><p>compose MIME message with proper headers and send</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="PyICe.lab_utils.eng_string">
+<code class="descclassname">PyICe.lab_utils.</code><code class="descname">eng_string</code><span class="sig-paren">(</span><em>x</em>, <em>fmt=':.3g'</em>, <em>si=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#eng_string"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.eng_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns float/int value &lt;x&gt; formatted in a simplified engineering format -
+using an exponent that is a multiple of 3.</p>
+<p>format: printf-style string used to format the value before the exponent.</p>
+<p>si: if true, use SI suffix for exponent, e.g. k instead of e3, n instead of
+e-9 etc.</p>
+<dl class="docutils">
+<dt>E.g. with format=&#8217;%.2f&#8217;:</dt>
+<dd><blockquote class="first">
+<div><dl class="docutils">
+<dt>1.23e-08 =&gt; 12.30e-9</dt>
+<dd><blockquote class="first">
+<div>123 =&gt; 123.00</div></blockquote>
+<p class="last">1230.0 =&gt; 1.23e3</p>
+</dd>
+</dl>
+</div></blockquote>
+<p class="last">-1230000.0 =&gt; -1.23e6</p>
+</dd>
+<dt>and with si=True:</dt>
+<dd><blockquote class="first">
+<div>1230.0 =&gt; 1.23k</div></blockquote>
+<p class="last">-1230000.0 =&gt; -1.23M</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="PyICe.lab_utils.expand_tabs">
+<code class="descclassname">PyICe.lab_utils.</code><code class="descname">expand_tabs</code><span class="sig-paren">(</span><em>string</em>, <em>*column_widths</em>, <em>**default_column_width</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#expand_tabs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.expand_tabs" title="Permalink to this definition">¶</a></dt>
+<dd><p>like string.expandtabs, but works only on a single line and allows for varying column widths.
+accepts variable number of positional arguments for each column width.
+accepts keyword argument &#8220;default_column_width&#8221; if not all column widths are specified.
+accepts keyword argument &#8220;verbose&#8221; to warn if column width is too narrow for contents.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PyICe.lab_utils.floatRange">
+<code class="descclassname">PyICe.lab_utils.</code><code class="descname">floatRange</code><span class="sig-paren">(</span><em>start</em>, <em>stop=None</em>, <em>step=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#floatRange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.floatRange" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of numbers similar to python range() builtin but supports floats.
+start is inclusive, stop is exclusive
+When called with a single argument, start=0 and the argument becomes stop.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PyICe.lab_utils.floatRangeInc">
+<code class="descclassname">PyICe.lab_utils.</code><code class="descname">floatRangeInc</code><span class="sig-paren">(</span><em>start</em>, <em>stop=None</em>, <em>step=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#floatRangeInc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.floatRangeInc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Same as float range, however it is inclusive of the last value</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PyICe.lab_utils.float_distance">
+<code class="descclassname">PyICe.lab_utils.</code><code class="descname">float_distance</code><span class="sig-paren">(</span><em>x</em>, <em>y</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#float_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.float_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>return signed difference between x and y expressed as distance between representable floating point numbers.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PyICe.lab_utils.float_next">
+<code class="descclassname">PyICe.lab_utils.</code><code class="descname">float_next</code><span class="sig-paren">(</span><em>val</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#float_next"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.float_next" title="Permalink to this definition">¶</a></dt>
+<dd><p>return next Python double precision floating point nuber larger than x.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PyICe.lab_utils.float_prior">
+<code class="descclassname">PyICe.lab_utils.</code><code class="descname">float_prior</code><span class="sig-paren">(</span><em>val</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#float_prior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.float_prior" title="Permalink to this definition">¶</a></dt>
+<dd><p>return next Python double precision floating point nuber smaller than x.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PyICe.lab_utils.integral_nonlinearity">
+<code class="descclassname">PyICe.lab_utils.</code><code class="descname">integral_nonlinearity</code><span class="sig-paren">(</span><em>rec_array</em>, <em>lsb_size=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#integral_nonlinearity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.integral_nonlinearity" title="Permalink to this definition">¶</a></dt>
+<dd><p>transform (code, voltage) data into INL
+optional lsb_size argument scales y-axis data from real units to lsb count.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PyICe.lab_utils.isclose">
+<code class="descclassname">PyICe.lab_utils.</code><code class="descname">isclose</code><span class="sig-paren">(</span><em>a</em>, <em>b</em>, <em>rel_tol=1e-09</em>, <em>abs_tol=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#isclose"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.isclose" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns True if a is close in value to b. False otherwise
+:param a: one of the values to be tested
+:param b: the other value to be tested
+:param rel_tol=1e-9: The relative tolerance &#8211; the amount of error</p>
+<blockquote>
+<div>allowed, relative to the absolute value of the
+larger input values.</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>abs_tol=0.0</strong> &#8211; The minimum absolute tolerance level &#8211; useful
+for comparisons to zero.</td>
+</tr>
+</tbody>
+</table>
+<p>NOTES:
+-inf, inf and NaN behave similarly to the IEEE 754 Standard. That
+is, NaN is not close to anything, even itself. inf and -inf are
+only close to themselves.
+The function can be used with any type that supports comparison,
+substratcion and multiplication, including Decimal, Fraction, and
+Complex
+Complex values are compared based on their absolute value.
+See PEP-0485 for a detailed description</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PyICe.lab_utils.logRange">
+<code class="descclassname">PyICe.lab_utils.</code><code class="descname">logRange</code><span class="sig-paren">(</span><em>start</em>, <em>stop</em>, <em>stepsPerDecade=None</em>, <em>stepsPerOctave=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#logRange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.logRange" title="Permalink to this definition">¶</a></dt>
+<dd><p>log step range function similar to python built-in range()</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PyICe.lab_utils.logger_time_str">
+<code class="descclassname">PyICe.lab_utils.</code><code class="descname">logger_time_str</code><span class="sig-paren">(</span><em>datetime</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#logger_time_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.logger_time_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>return time string in same format as used by lab_core.logger.
+Requires timezone-aware datetime object argument to correctly convert to UTC times used by logger.
+if datetime object is naieve of timezone, add it with datetime.replace(tzinfo=lab_utils.US_Eastern_Time()) or datetime.replace(tzinfo=lab_utils.UTC())</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PyICe.lab_utils.modulate">
+<code class="descclassname">PyICe.lab_utils.</code><code class="descname">modulate</code><span class="sig-paren">(</span><em>data1</em>, <em>data2</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#modulate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.modulate" title="Permalink to this definition">¶</a></dt>
+<dd><p>data1 and data2 are tuples of x and y data that may not have the same number of &#8216;x&#8217; values. The result is interpolated up to the higher of the two.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PyICe.lab_utils.polyfit">
+<code class="descclassname">PyICe.lab_utils.</code><code class="descname">polyfit</code><span class="sig-paren">(</span><em>rec_array</em>, <em>degree=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#polyfit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.polyfit" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns polynomial fit coefficients list, highest order first
+<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.polyfit.html">https://docs.scipy.org/doc/numpy/reference/generated/numpy.polyfit.html</a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PyICe.lab_utils.ramer_douglas_peucker">
+<code class="descclassname">PyICe.lab_utils.</code><code class="descname">ramer_douglas_peucker</code><span class="sig-paren">(</span><em>rec_array</em>, <em>epsilon</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#ramer_douglas_peucker"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.ramer_douglas_peucker" title="Permalink to this definition">¶</a></dt>
+<dd><p>reduce number of points in line-sigment curve such that reduced line segment count approximates original curve within epsilon tolerance.
+<a class="reference external" href="https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm">https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm</a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PyICe.lab_utils.scalar_transform">
+<code class="descclassname">PyICe.lab_utils.</code><code class="descname">scalar_transform</code><span class="sig-paren">(</span><em>rec_array</em>, <em>column_scalar_functions</em>, <em>column_names=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#scalar_transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.scalar_transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform column data by processing through user-supplied function
+column_scalar_functions is a list of functions for each column and should have a length equal to the number of columns.
+To leave a column unchanged, set column scalar function to None.
+The column scalar function will be applied to each point in the column individually.
+Thus it is appropriate for scaling, offseting changing data type, etc.
+This function cannot be used for filtering or convolution operations that need access to adjacent data points.
+Instead, use vector_transform().
+column_names is a list of names for each column in the returned record array.
+To leave a column name unchanged from input record array, set column name to None.
+To leave all column names unchanged from input record array, set column_names to None.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PyICe.lab_utils.signedToTwosComplement">
+<code class="descclassname">PyICe.lab_utils.</code><code class="descname">signedToTwosComplement</code><span class="sig-paren">(</span><em>signed</em>, <em>bitCount</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#signedToTwosComplement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.signedToTwosComplement" title="Permalink to this definition">¶</a></dt>
+<dd><p>take python int and convert to two&#8217;s complement representation using specified number of bits</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PyICe.lab_utils.smooth_filtfile">
+<code class="descclassname">PyICe.lab_utils.</code><code class="descname">smooth_filtfile</code><span class="sig-paren">(</span><em>rec_array</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#smooth_filtfile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.smooth_filtfile" title="Permalink to this definition">¶</a></dt>
+<dd><p>somebody finish this.
+<a class="reference external" href="https://docs.scipy.org/doc/scipy-0.18.1/reference/generated/scipy.signal.filtfilt.html">https://docs.scipy.org/doc/scipy-0.18.1/reference/generated/scipy.signal.filtfilt.html</a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PyICe.lab_utils.smooth_spline">
+<code class="descclassname">PyICe.lab_utils.</code><code class="descname">smooth_spline</code><span class="sig-paren">(</span><em>rec_array</em>, <em>rms_error</em>, <em>verbose=True</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#smooth_spline"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.smooth_spline" title="Permalink to this definition">¶</a></dt>
+<dd><p>uses <a class="reference external" href="http://scipy.github.io/devdocs/generated/scipy.interpolate.UnivariateSpline.html">http://scipy.github.io/devdocs/generated/scipy.interpolate.UnivariateSpline.html</a> with movable knots
+set rms_error to change number of knots to bound smoothed data rms deviation from original data points.
+rec_array is modified in place
+returns number of knots used to contstruct spline</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="PyICe.lab_utils.sms">
+<em class="property">class </em><code class="descclassname">PyICe.lab_utils.</code><code class="descname">sms</code><span class="sig-paren">(</span><em>mobile_number</em>, <em>carrier</em>, <em>login='ltlabboston'</em>, <em>pw='PythonLab'</em>, <em>domain='gmail.com'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#sms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.sms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.lab_utils.email" title="PyICe.lab_utils.email"><code class="xref py py-class docutils literal"><span class="pre">PyICe.lab_utils.email</span></code></a></p>
+<p>Extends email class to send sms messages through several carriers&#8217; email to sms gateways</p>
+<dl class="method">
+<dt id="PyICe.lab_utils.sms.send">
+<code class="descname">send</code><span class="sig-paren">(</span><em>body</em>, <em>subject=None</em>, <em>attachments=[]</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.sms.send" title="Permalink to this definition">¶</a></dt>
+<dd><p>compose MIME message with proper headers and send</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="PyICe.lab_utils.sqlite_data">
+<em class="property">class </em><code class="descclassname">PyICe.lab_utils.</code><code class="descname">sqlite_data</code><span class="sig-paren">(</span><em>table_name=None</em>, <em>database_file='data_log.sqlite'</em>, <em>timezone=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#sqlite_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.sqlite_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">_abcoll.Sequence</span></code></p>
+<p>Produce iteratable object returning row sequence, where each column within each row is accessible by either column name or position.
+table_name can be an expression returning a synthetic non-table relation.</p>
+<dl class="method">
+<dt id="PyICe.lab_utils.sqlite_data.column_query">
+<code class="descname">column_query</code><span class="sig-paren">(</span><em>column_list</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#sqlite_data.column_query"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.sqlite_data.column_query" title="Permalink to this definition">¶</a></dt>
+<dd><p>return partial query string separating column names with comma characters.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.sqlite_data.count">
+<code class="descname">count</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span> &rarr; integer -- return number of occurrences of value<a class="headerlink" href="#PyICe.lab_utils.sqlite_data.count" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.sqlite_data.csv">
+<code class="descname">csv</code><span class="sig-paren">(</span><em>output_file</em>, <em>elapsed_time_columns=False</em>, <em>append=False</em>, <em>encoding='utf-8'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#sqlite_data.csv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.sqlite_data.csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>write data to csv output_file.
+set output_file to None to just return csv string.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.sqlite_data.expand_vector_data">
+<code class="descname">expand_vector_data</code><span class="sig-paren">(</span><em>csv_filename=None</em>, <em>csv_append=False</em>, <em>csv_encoding='utf-8'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#sqlite_data.expand_vector_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.sqlite_data.expand_vector_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Expand vector list data (from oscilloscope, network analyzer, etc) to full row-rank.
+Scalar data will be expanded to vector length.
+Returns numpy record array.
+Optionally write output to comma separated file if csv_filname argument is specified.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.sqlite_data.filter_change">
+<code class="descname">filter_change</code><span class="sig-paren">(</span><em>column_name_list</em>, <em>table_name=None</em>, <em>first_row=False</em>, <em>preceding_row=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#sqlite_data.filter_change"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.sqlite_data.filter_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>return tuple of rowid values where any column in column_name_list changed value.
+result tuple can be fed into a new query(&#8220;SELECT ... WHERE rowid in {}&#8221;.format(sqlite_data_obj.filter_change())).
+it table_name is omitted, instance default will be used.
+setting preceding_row to True will also return the rowid before the change occurred.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.sqlite_data.get_column_names">
+<code class="descname">get_column_names</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#sqlite_data.get_column_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.sqlite_data.get_column_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>return tuple of column names.
+Column names can be used for future queries or used to select column from query row results.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.sqlite_data.get_column_types">
+<code class="descname">get_column_types</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#sqlite_data.get_column_types"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.sqlite_data.get_column_types" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return dictionary of data types stored in each column.
+Note that SQLite does not enforce types within a column, nor does the PyICe logger.
+The types of data stored in the first row will be returned, which may not match data stored elsewhere in the relation.
+Used by numpy array conversion to define data stride.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.sqlite_data.get_distinct">
+<code class="descname">get_distinct</code><span class="sig-paren">(</span><em>column_name</em>, <em>table_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#sqlite_data.get_distinct"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.sqlite_data.get_distinct" title="Permalink to this definition">¶</a></dt>
+<dd><p>return one copy of each value (set) in specified column
+table_name can be an expression returning a synthetic non-table relation.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.sqlite_data.index">
+<code class="descname">index</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span> &rarr; integer -- return first index of value.<a class="headerlink" href="#PyICe.lab_utils.sqlite_data.index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raises ValueError if the value is not present.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.sqlite_data.numpy_recarray">
+<code class="descname">numpy_recarray</code><span class="sig-paren">(</span><em>force_float_dtype=False</em>, <em>data_types=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#sqlite_data.numpy_recarray"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.sqlite_data.numpy_recarray" title="Permalink to this definition">¶</a></dt>
+<dd><p>return NumPy record array containing data.
+Rows can be accessed by index, ex arr[2].
+Columns can be accessed by column name attribute, ex arr.vbat.
+Use with data filtering, smoothing, compressing, etc matrix operations provided by SciPy and lab_utils.transform, lab_utils.decimate.
+Use automaticic column names, but force data type to float with force_float_dtype boolean argument.
+Override automatic coulumn names and data types (first row) by specifying data_type iterable of (column_name,example_contents) for each column matching query order.
+<a class="reference external" href="http://docs.scipy.org/doc/numpy-1.10.1/reference/generated/numpy.recarray.html">http://docs.scipy.org/doc/numpy-1.10.1/reference/generated/numpy.recarray.html</a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.sqlite_data.optimize">
+<code class="descname">optimize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#sqlite_data.optimize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.sqlite_data.optimize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defragment database file, reducing file size and speeding future queries.
+Also re-runs query plan optimizer to spped future queries.
+WARNING: May take a lot time to complete when operating on a large database.
+WARNING: May re-order rowid&#8217;s</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.sqlite_data.query">
+<code class="descname">query</code><span class="sig-paren">(</span><em>sql_query</em>, <em>*params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#sqlite_data.query"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.sqlite_data.query" title="Permalink to this definition">¶</a></dt>
+<dd><p>return iterable with query results.
+columns within each row can be accessed by column name or by position</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.sqlite_data.time_delta_query">
+<code class="descname">time_delta_query</code><span class="sig-paren">(</span><em>time_div=1</em>, <em>column_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#sqlite_data.time_delta_query"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.sqlite_data.time_delta_query" title="Permalink to this definition">¶</a></dt>
+<dd><p>return partial query string which will compute fractional delta seconds from first entry in the table as a column.
+Feed back into query to get elapsed time column.
+Ex &#8220;SELECT rowid, {}, * FROM ...&#8221;.format(sqlite_data_obj.time_delta_query())
+Use time_div to convert from second to your choice of time scales, example: time_div=3600 would be hours.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.sqlite_data.to_list">
+<code class="descname">to_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#sqlite_data.to_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.sqlite_data.to_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>return copy of data in list object</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.sqlite_data.xlsx">
+<code class="descname">xlsx</code><span class="sig-paren">(</span><em>output_file</em>, <em>elapsed_time_columns=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#sqlite_data.xlsx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.sqlite_data.xlsx" title="Permalink to this definition">¶</a></dt>
+<dd><p>write data to excel output_file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.sqlite_data.zip">
+<code class="descname">zip</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#sqlite_data.zip"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.sqlite_data.zip" title="Permalink to this definition">¶</a></dt>
+<dd><p>return query data transposed into column_list of row_lists.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="PyICe.lab_utils.sqlite_to_csv">
+<em class="property">class </em><code class="descclassname">PyICe.lab_utils.</code><code class="descname">sqlite_to_csv</code><span class="sig-paren">(</span><em>table_name</em>, <em>database_file='data_log.sqlite'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#sqlite_to_csv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.sqlite_to_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.lab_utils.csv_writer" title="PyICe.lab_utils.csv_writer"><code class="xref py py-class docutils literal"><span class="pre">PyICe.lab_utils.csv_writer</span></code></a></p>
+<p>Formats data stored in an SQLite database so that it can be browsed interactively.
+Use a program like Live Graph (www.www.live-graph.org) or KST (kst-plot.kde.org) to visualize data.</p>
+<dl class="method">
+<dt id="PyICe.lab_utils.sqlite_to_csv.add_column">
+<code class="descname">add_column</code><span class="sig-paren">(</span><em>query_name</em>, <em>display_name=None</em>, <em>format=''</em>, <em>transform=None</em>, <em>query_function=None</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.sqlite_to_csv.add_column" title="Permalink to this definition">¶</a></dt>
+<dd><p>add single column to output file.
+provides more customization options than addign a list of columns
+transform is a python function applied to the query results before formatting
+format is a format string to alter the column data.  Ex: 3.2f.
+query function is a function that returns data directly from Python rather than from external data source. Ex: time</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.sqlite_to_csv.add_columns">
+<code class="descname">add_columns</code><span class="sig-paren">(</span><em>column_list</em>, <em>format=''</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.sqlite_to_csv.add_columns" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shortcut method to add multiple data columns at once.
+column_list selects additional data columns to output.
+format is a format string to alter the column data.  Ex: 3.2f.
+For more flexibility, add columns individually using add_column() method.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.sqlite_to_csv.add_comment">
+<code class="descname">add_comment</code><span class="sig-paren">(</span><em>comment_str</em>, <em>comment_character='#'</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.sqlite_to_csv.add_comment" title="Permalink to this definition">¶</a></dt>
+<dd><p>add comment line(s) to the top of the output file.
+Live Graph treats &#8216;&#64;&#8217; as a &#8216;description line&#8217; and &#8216;#&#8217; as a &#8216;comment line&#8217;.
+Neither has any effect on the data interpretation.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.sqlite_to_csv.add_elapsed_days">
+<code class="descname">add_elapsed_days</code><span class="sig-paren">(</span><em>display_name='elapsed_days'</em>, <em>format=''</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.sqlite_to_csv.add_elapsed_days" title="Permalink to this definition">¶</a></dt>
+<dd><p>computes elapsed days since first row of table</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.sqlite_to_csv.add_elapsed_hours">
+<code class="descname">add_elapsed_hours</code><span class="sig-paren">(</span><em>display_name='elapsed_hours'</em>, <em>format=''</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.sqlite_to_csv.add_elapsed_hours" title="Permalink to this definition">¶</a></dt>
+<dd><p>computes elapsed hours since first row of table</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.sqlite_to_csv.add_elapsed_minutes">
+<code class="descname">add_elapsed_minutes</code><span class="sig-paren">(</span><em>display_name='elapsed_minutes'</em>, <em>format=''</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.sqlite_to_csv.add_elapsed_minutes" title="Permalink to this definition">¶</a></dt>
+<dd><p>computes elapsed minutes since first row of table</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.sqlite_to_csv.add_elapsed_seconds">
+<code class="descname">add_elapsed_seconds</code><span class="sig-paren">(</span><em>display_name='elapsed_seconds'</em>, <em>format=''</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.sqlite_to_csv.add_elapsed_seconds" title="Permalink to this definition">¶</a></dt>
+<dd><p>computes elapsed seconds since first row of table</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.sqlite_to_csv.add_timestamps">
+<code class="descname">add_timestamps</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#sqlite_to_csv.add_timestamps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.sqlite_to_csv.add_timestamps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add rowid and datetime columns to csv output.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.sqlite_to_csv.write">
+<code class="descname">write</code><span class="sig-paren">(</span><em>output_file</em>, <em>append=False</em>, <em>encoding='utf-8'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#sqlite_to_csv.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.sqlite_to_csv.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>write previously selected column data to output_file.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="PyICe.lab_utils.sqlite_to_easylog">
+<em class="property">class </em><code class="descclassname">PyICe.lab_utils.</code><code class="descname">sqlite_to_easylog</code><span class="sig-paren">(</span><em>chart_name</em>, <em>table_name</em>, <em>y1_axis_units='V'</em>, <em>y2_axis_units='A'</em>, <em>database_file='data_log.sqlite'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#sqlite_to_easylog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.sqlite_to_easylog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.lab_utils.sqlite_to_csv" title="PyICe.lab_utils.sqlite_to_csv"><code class="xref py py-class docutils literal"><span class="pre">PyICe.lab_utils.sqlite_to_csv</span></code></a></p>
+<p>Wrapper to make specific format required by Easy Log Graph software.
+Formats data stored in an SQLite database so that it can be browsed inteactively.
+Use EasyLogGraph (<a class="reference external" href="http://www.lascarelectronics.com/data-logger/easylogger-software.php">http://www.lascarelectronics.com/data-logger/easylogger-software.php</a>) to visualize data.</p>
+<dl class="method">
+<dt id="PyICe.lab_utils.sqlite_to_easylog.add_column">
+<code class="descname">add_column</code><span class="sig-paren">(</span><em>query_name</em>, <em>second_y_axis=False</em>, <em>display_name=None</em>, <em>format=''</em>, <em>transform=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#sqlite_to_easylog.add_column"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.sqlite_to_easylog.add_column" title="Permalink to this definition">¶</a></dt>
+<dd><p>query name is the name of the sqlite column
+second_y_axis is a boolean.  Setting to True places data on the right-side y-axis scale
+display_name, if not None, sets csv column header title differently from database column name
+format controls appearance of queried data. Ex: &#8220;3.2f&#8221;</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.sqlite_to_easylog.add_columns">
+<code class="descname">add_columns</code><span class="sig-paren">(</span><em>column_list</em>, <em>second_y_axis=False</em>, <em>format=''</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#sqlite_to_easylog.add_columns"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.sqlite_to_easylog.add_columns" title="Permalink to this definition">¶</a></dt>
+<dd><p>adds a list of sqlite column names at once
+all columns will be placed on left-side y-axis scale unless second_y_axis is True
+format controls appearance of queried data. Ex: &#8220;3.2f&#8221;</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.sqlite_to_easylog.add_elapsed_days">
+<code class="descname">add_elapsed_days</code><span class="sig-paren">(</span><em>display_name='elapsed_days'</em>, <em>format=''</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.sqlite_to_easylog.add_elapsed_days" title="Permalink to this definition">¶</a></dt>
+<dd><p>computes elapsed days since first row of table</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.sqlite_to_easylog.add_elapsed_hours">
+<code class="descname">add_elapsed_hours</code><span class="sig-paren">(</span><em>display_name='elapsed_hours'</em>, <em>format=''</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.sqlite_to_easylog.add_elapsed_hours" title="Permalink to this definition">¶</a></dt>
+<dd><p>computes elapsed hours since first row of table</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.sqlite_to_easylog.add_elapsed_minutes">
+<code class="descname">add_elapsed_minutes</code><span class="sig-paren">(</span><em>display_name='elapsed_minutes'</em>, <em>format=''</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.sqlite_to_easylog.add_elapsed_minutes" title="Permalink to this definition">¶</a></dt>
+<dd><p>computes elapsed minutes since first row of table</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.sqlite_to_easylog.add_elapsed_seconds">
+<code class="descname">add_elapsed_seconds</code><span class="sig-paren">(</span><em>display_name='elapsed_seconds'</em>, <em>format=''</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.sqlite_to_easylog.add_elapsed_seconds" title="Permalink to this definition">¶</a></dt>
+<dd><p>computes elapsed seconds since first row of table</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.sqlite_to_easylog.add_timestamps">
+<code class="descname">add_timestamps</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.sqlite_to_easylog.add_timestamps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add rowid and datetime columns to csv output.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.sqlite_to_easylog.write">
+<code class="descname">write</code><span class="sig-paren">(</span><em>output_file</em>, <em>append=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#sqlite_to_easylog.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.sqlite_to_easylog.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>write queried data to output_file after column setup is complete</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="PyICe.lab_utils.swap_endian">
+<code class="descclassname">PyICe.lab_utils.</code><code class="descname">swap_endian</code><span class="sig-paren">(</span><em>word</em>, <em>elementCount</em>, <em>elementSize=8</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#swap_endian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.swap_endian" title="Permalink to this definition">¶</a></dt>
+<dd><p>reverse endianness of multi-byte word
+elementCount is number of bytes, or other atomic memory block if not of elementSize 8 bits</p>
+<p>to reverse bit order, set elementCount to the number of bits and set elementSize to 1.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="PyICe.lab_utils.threaded_writer">
+<em class="property">class </em><code class="descclassname">PyICe.lab_utils.</code><code class="descname">threaded_writer</code><span class="sig-paren">(</span><em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#threaded_writer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.threaded_writer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>helper to perform some task in parallel with test script at fixed rate</p>
+<dl class="method">
+<dt id="PyICe.lab_utils.threaded_writer.add_function">
+<code class="descname">add_function</code><span class="sig-paren">(</span><em>function</em>, <em>time_interval</em>, <em>start=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#threaded_writer.add_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.threaded_writer.add_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>Periodically execute function.
+No thread safety. Use caution with shared interfaces or use separate remote channel clients with each function. See example above.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.threaded_writer.connect_channel">
+<code class="descname">connect_channel</code><span class="sig-paren">(</span><em>channel_name</em>, <em>time_interval</em>, <em>sequence=None</em>, <em>start=True</em>, <em>address='localhost'</em>, <em>port=5001</em>, <em>authkey='ltc_lab'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#threaded_writer.connect_channel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.threaded_writer.connect_channel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write each element of sequence in turn to channel_name, waiting time_interval between writes.
+If sequence is None, Periodically read and re-write channel as keepalive.
+Thread safety provided by remote channel server infrastructure.
+First thread must call master.serve() and test script should call master.attach().</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.threaded_writer.stop_all">
+<code class="descname">stop_all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#threaded_writer.stop_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.threaded_writer.stop_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>stop all threads. threads cannot be restarted.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="PyICe.lab_utils.threaded_writer.stop_thread">
+<em class="property">class </em><code class="descname">stop_thread</code><span class="sig-paren">(</span><em>stop_event</em>, <em>stopped_event</em>, <em>queue</em>, <em>group=None</em>, <em>target=None</em>, <em>name=None</em>, <em>args=()</em>, <em>kwargs={}</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#threaded_writer.stop_thread"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.threaded_writer.stop_thread" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">threading.Thread</span></code></p>
+<p>Thread extended to have stop() method. Threads cannot be restarted after stopping. Make a new one to restart.</p>
+<dl class="attribute">
+<dt id="PyICe.lab_utils.threaded_writer.stop_thread.daemon">
+<code class="descname">daemon</code><a class="headerlink" href="#PyICe.lab_utils.threaded_writer.stop_thread.daemon" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean value indicating whether this thread is a daemon thread (True) or not (False).</p>
+<p>This must be set before start() is called, otherwise RuntimeError is
+raised. Its initial value is inherited from the creating thread; the
+main thread is not a daemon thread and therefore all threads created in
+the main thread default to daemon = False.</p>
+<p>The entire Python program exits when no alive non-daemon threads are
+left.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="PyICe.lab_utils.threaded_writer.stop_thread.ident">
+<code class="descname">ident</code><a class="headerlink" href="#PyICe.lab_utils.threaded_writer.stop_thread.ident" title="Permalink to this definition">¶</a></dt>
+<dd><p>Thread identifier of this thread or None if it has not been started.</p>
+<p>This is a nonzero integer. See the thread.get_ident() function. Thread
+identifiers may be recycled when a thread exits and another thread is
+created. The identifier is available even after the thread has exited.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.threaded_writer.stop_thread.isAlive">
+<code class="descname">isAlive</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.threaded_writer.stop_thread.isAlive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return whether the thread is alive.</p>
+<p>This method returns True just before the run() method starts until just
+after the run() method terminates. The module function enumerate()
+returns a list of all alive threads.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.threaded_writer.stop_thread.is_alive">
+<code class="descname">is_alive</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.threaded_writer.stop_thread.is_alive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return whether the thread is alive.</p>
+<p>This method returns True just before the run() method starts until just
+after the run() method terminates. The module function enumerate()
+returns a list of all alive threads.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.threaded_writer.stop_thread.join">
+<code class="descname">join</code><span class="sig-paren">(</span><em>timeout=None</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.threaded_writer.stop_thread.join" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wait until the thread terminates.</p>
+<p>This blocks the calling thread until the thread whose join() method is
+called terminates &#8211; either normally or through an unhandled exception
+or until the optional timeout occurs.</p>
+<p>When the timeout argument is present and not None, it should be a
+floating point number specifying a timeout for the operation in seconds
+(or fractions thereof). As join() always returns None, you must call
+isAlive() after join() to decide whether a timeout happened &#8211; if the
+thread is still alive, the join() call timed out.</p>
+<p>When the timeout argument is not present or None, the operation will
+block until the thread terminates.</p>
+<p>A thread can be join()ed many times.</p>
+<p>join() raises a RuntimeError if an attempt is made to join the current
+thread as that would cause a deadlock. It is also an error to join() a
+thread before it has been started and attempts to do so raises the same
+exception.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="PyICe.lab_utils.threaded_writer.stop_thread.name">
+<code class="descname">name</code><a class="headerlink" href="#PyICe.lab_utils.threaded_writer.stop_thread.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A string used for identification purposes only.</p>
+<p>It has no semantics. Multiple threads may be given the same name. The
+initial name is set by the constructor.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.threaded_writer.stop_thread.run">
+<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.threaded_writer.stop_thread.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method representing the thread&#8217;s activity.</p>
+<p>You may override this method in a subclass. The standard run() method
+invokes the callable object passed to the object&#8217;s constructor as the
+target argument, if any, with sequential and keyword arguments taken
+from the args and kwargs arguments, respectively.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.threaded_writer.stop_thread.start">
+<code class="descname">start</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_utils.threaded_writer.stop_thread.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start the thread&#8217;s activity.</p>
+<p>It must be called at most once per thread object. It arranges for the
+object&#8217;s run() method to be invoked in a separate thread of control.</p>
+<p>This method will raise a RuntimeError if called more than once on the
+same thread object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_utils.threaded_writer.stop_thread.stop">
+<code class="descname">stop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#threaded_writer.stop_thread.stop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.threaded_writer.stop_thread.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>stop thread. thread cannot be restarted.</p>
+</dd></dl>
+
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="PyICe.lab_utils.twosComplementToSigned">
+<code class="descclassname">PyICe.lab_utils.</code><code class="descname">twosComplementToSigned</code><span class="sig-paren">(</span><em>binary</em>, <em>bitCount</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#twosComplementToSigned"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.twosComplementToSigned" title="Permalink to this definition">¶</a></dt>
+<dd><p>take two&#8217;s complement number with specified number of bits and convert to python int representation</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PyICe.lab_utils.unit_least_precision">
+<code class="descclassname">PyICe.lab_utils.</code><code class="descname">unit_least_precision</code><span class="sig-paren">(</span><em>val</em>, <em>increasing=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#unit_least_precision"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.unit_least_precision" title="Permalink to this definition">¶</a></dt>
+<dd><p>return positive increment/decrement to next representable floating point number above/below val</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="PyICe.lab_utils.vector_transform">
+<code class="descclassname">PyICe.lab_utils.</code><code class="descname">vector_transform</code><span class="sig-paren">(</span><em>rec_array</em>, <em>column_vector_functions</em>, <em>column_names=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_utils.html#vector_transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_utils.vector_transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generic filter function.
+column_vector_functions is a list of functions for each column and should have a length equal to the number of columns.
+To leave a column unchanged, set column vector function to None.
+Each column vector function will be applied to the whole column vector.
+Thus it is appropriate for 1-d filtering and decimation where access to values in adjacent columns is not required.
+column_names is a list of names for each column in the returned record array.
+To leave a column name unchanged from input record array, set column name to None.
+To leave all column names unchanged from input record array, set column_names to None.
+To smooth data, use something like scipy.signal.filtfilt and scipy.signal.butter for the column_vector_functions
+<a class="reference external" href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html">http://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html</a>
+<a class="reference external" href="http://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.signal.butter.html">http://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.signal.butter.html</a></p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../PyICe.html">
+              <img class="logo" src="../_static/tssop.png" alt="Logo"/>
+            </a></p>
+<h3><a href="../PyICe.html">Table Of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="PyICe.lab_instruments.html">PyICe.lab_instruments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.lab_core.html">PyICe.lab_core</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">PyICe.lab_utils</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#miscellaneous-utilities">Miscellaneous Utilities</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.LTC_plot.html">PyICe.LTC_plot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.lab_gui.html">PyICe.lab_gui</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.lab_interfaces.html">PyICe.lab_interfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.twi_instrument.html">PyICe.twi_instrument</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.twoWireInterface.html">PyICe.twoWireInterface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.spi_instrument.html">PyICe.spi_instrument</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.spi_interface.html">PyICe.spi_interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.visa_wrappers.html">PyICe.visa_wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.xml_registers.html">PyICe.xml_registers</a></li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../PyICe.html">Documentation overview</a><ul>
+      <li>Previous: <a href="PyICe.lab_core.html" title="previous chapter">PyICe.lab_core</a></li>
+      <li>Next: <a href="PyICe.LTC_plot.html" title="next chapter">PyICe.LTC_plot</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/_autosummary/PyICe.lab_utils.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Linear Technology Corporation.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="../_sources/_autosummary/PyICe.lab_utils.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

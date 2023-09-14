@@ -1,0 +1,274 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>PyICe.twi_instrument &mdash; PyICe 9000 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '9000',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/tssop.ico"/>
+    <link rel="top" title="PyICe 9000 documentation" href="../PyICe.html" />
+    <link rel="next" title="PyICe.twoWireInterface" href="PyICe.twoWireInterface.html" />
+    <link rel="prev" title="PyICe.lab_interfaces" href="PyICe.lab_interfaces.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-PyICe.twi_instrument">
+<span id="pyice-twi-instrument"></span><h1>PyICe.twi_instrument<a class="headerlink" href="#module-PyICe.twi_instrument" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="channel-wraper-for-smbus-compliant-devices">
+<h2>Channel Wraper for SMBus Compliant Devices<a class="headerlink" href="#channel-wraper-for-smbus-compliant-devices" title="Permalink to this headline">¶</a></h2>
+<p>Can automatically populate channels/reisters from XML description</p>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">twi_instrument</span></code>(interface_twi[,&nbsp;...])</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#PyICe.twi_instrument.twi_instrument_dummy" title="PyICe.twi_instrument.twi_instrument_dummy"><code class="xref py py-obj docutils literal"><span class="pre">twi_instrument_dummy</span></code></a>()</td>
+<td>use for formatters, etc without having to set up a master and physical hardware.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="PyICe.twi_instrument.twi_instrument_dummy">
+<em class="property">class </em><code class="descclassname">PyICe.twi_instrument.</code><code class="descname">twi_instrument_dummy</code><a class="reference internal" href="../_modules/PyICe/twi_instrument.html#twi_instrument_dummy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.twi_instrument.twi_instrument_dummy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">PyICe.twi_instrument.twi_instrument</span></code></p>
+<p>use for formatters, etc without having to set up a master and physical hardware.</p>
+<dl class="method">
+<dt id="PyICe.twi_instrument.twi_instrument_dummy.add_channel">
+<code class="descname">add_channel</code><span class="sig-paren">(</span><em>channel_name</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.twi_instrument.twi_instrument_dummy.add_channel" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Usage: Add channel name to instrument.  For multi-channel instruments,</dt>
+<dd>typically also takes a second argument representing the physical
+channel of the instrument. May also take channel configuration arguments specific to the instrument.</dd>
+</dl>
+<p>Operation:  This method should create the channel object then call self._add_channel(channel) to add it to the internal channel group</p>
+<blockquote>
+<div>Method must be overloaded by each instrument driver.</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.twi_instrument.twi_instrument_dummy.create_format">
+<code class="descname">create_format</code><span class="sig-paren">(</span><em>format_name</em>, <em>format_function</em>, <em>unformat_function</em>, <em>signed=False</em>, <em>description=None</em>, <em>units=''</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.twi_instrument.twi_instrument_dummy.create_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new format definition or modify an existing definition.</p>
+<p>format_function should take a single argument of integer raw data from the register and return a version of the data scaled to appropriate units.
+unformat_function should take a single argument of data in real units and return an integer version of the data scaled to the register LSB weight.
+If the data is signed in two&#8217;s-complement format, set signed=True.
+After creating format, use set_active_format method to make the new format active.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.twi_instrument.twi_instrument_dummy.get_constant">
+<code class="descname">get_constant</code><span class="sig-paren">(</span><em>constant</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.twi_instrument.twi_instrument_dummy.get_constant" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the constants found in the datasheet used by the formatters to convert from real world values to digital value and back.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.twi_instrument.twi_instrument_dummy.get_error">
+<code class="descname">get_error</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.twi_instrument.twi_instrument_dummy.get_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the first error from the instrument.  Overload in scpi_instrument or the actual instrument class</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.twi_instrument.twi_instrument_dummy.get_errors">
+<code class="descname">get_errors</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.twi_instrument.twi_instrument_dummy.get_errors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of all errors from the instrument.  Overload in scpi_instrument or the actual instrument class</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.twi_instrument.twi_instrument_dummy.get_flat_channel_group">
+<code class="descname">get_flat_channel_group</code><span class="sig-paren">(</span><em>name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.twi_instrument.twi_instrument_dummy.get_flat_channel_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns a channel_group directly containing all channels this one can resolve</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.twi_instrument.twi_instrument_dummy.list_constants">
+<code class="descname">list_constants</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.twi_instrument.twi_instrument_dummy.list_constants" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the list of constants found in the datasheet used by the formatters to convert from real world values to digital value and back.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.twi_instrument.twi_instrument_dummy.merge_in_channel_group">
+<code class="descname">merge_in_channel_group</code><span class="sig-paren">(</span><em>channel_group_object</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.twi_instrument.twi_instrument_dummy.merge_in_channel_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>merges in a channel group</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.twi_instrument.twi_instrument_dummy.populate_from_file">
+<code class="descname">populate_from_file</code><span class="sig-paren">(</span><em>xml_file</em>, <em>format_dict={}</em>, <em>access_list=[]</em>, <em>use_case=None</em>, <em>channel_prefix=''</em>, <em>channel_suffix=''</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.twi_instrument.twi_instrument_dummy.populate_from_file" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div>xml_register parsing accepts xml input complying with the following DTD (register_map.dtd):</div></blockquote>
+<p>&lt;!&#8211; Visit <a class="reference external" href="http://en.wikipedia.org/wiki/Document_Type_Definition">http://en.wikipedia.org/wiki/Document_Type_Definition</a> for an excellent explanation of DTD syntax &#8211;&gt;
+&lt;!ELEMENT register_map (chip+, use*, format_definitions?)&gt;
+&lt;!ELEMENT chip (description, address+, command_code*)&gt;
+&lt;!ELEMENT address EMPTY&gt;
+&lt;!ELEMENT command_code (description?, access+, bit_field+)&gt;
+&lt;!ELEMENT access EMPTY&gt;
+&lt;!ELEMENT bit_field (description, default?, preset*, format*)&gt;
+&lt;!ELEMENT description (#PCDATA)&gt;
+&lt;!ELEMENT default (#PCDATA)&gt;
+&lt;!ELEMENT preset (description?)&gt;
+&lt;!ELEMENT format EMPTY&gt;
+&lt;!ELEMENT use (category+)&gt;
+&lt;!ELEMENT category (#PCDATA)&gt;
+&lt;!ELEMENT format_definitions (format_definition+)&gt;
+&lt;!ELEMENT format_definition (description, transformed_units?, piecewise_linear_points?)&gt;
+&lt;!ELEMENT transformed_units (#PCDATA)&gt;
+&lt;!ELEMENT piecewise_linear_points (point,point+)&gt;
+&lt;!ELEMENT point EMPTY&gt;
+&lt;!ATTLIST chip name CDATA #REQUIRED word_size CDATA #REQUIRED&gt;
+&lt;!ATTLIST address address_7bit CDATA #REQUIRED&gt;
+&lt;!ATTLIST command_code name ID #REQUIRED value CDATA #REQUIRED&gt;
+&lt;!ATTLIST bit_field name ID #REQUIRED size CDATA #REQUIRED offset CDATA #REQUIRED category CDATA #REQUIRED&gt;
+&lt;!ATTLIST access mode CDATA #REQUIRED type (read | write) #REQUIRED&gt;
+&lt;!ATTLIST preset name CDATA #REQUIRED value CDATA #REQUIRED&gt;
+&lt;!ATTLIST format name IDREF #REQUIRED&gt;
+&lt;!ATTLIST use name CDATA #REQUIRED&gt;
+&lt;!ATTLIST format_definition name ID #REQUIRED signed (True | False | 1 | 0) #REQUIRED&gt;
+&lt;!ATTLIST point native CDATA #REQUIRED transformed CDATA #REQUIRED&gt;</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.twi_instrument.twi_instrument_dummy.read_all_channels">
+<code class="descname">read_all_channels</code><span class="sig-paren">(</span><em>categories=None</em>, <em>exclusions=[]</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.twi_instrument.twi_instrument_dummy.read_all_channels" title="Permalink to this definition">¶</a></dt>
+<dd><p>read all readable channels in channel group and return orderd dictionary of results. Optionally filter by list of categories.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.twi_instrument.twi_instrument_dummy.read_channels">
+<code class="descname">read_channels</code><span class="sig-paren">(</span><em>item_list</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.twi_instrument.twi_instrument_dummy.read_channels" title="Permalink to this definition">¶</a></dt>
+<dd><p>item list is a list of channel objects, names or channel_groups</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.twi_instrument.twi_instrument_dummy.resolve_channel_list">
+<code class="descname">resolve_channel_list</code><span class="sig-paren">(</span><em>item_list</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.twi_instrument.twi_instrument_dummy.resolve_channel_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>takes a list of channels, channel_names, or channel_groups and produces a single channel group</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.twi_instrument.twi_instrument_dummy.set_constant">
+<code class="descname">set_constant</code><span class="sig-paren">(</span><em>constant</em>, <em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.twi_instrument.twi_instrument_dummy.set_constant" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the constants found in the datasheet used by the formatters to convert from real world values to digital value and back.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.twi_instrument.twi_instrument_dummy.write_html">
+<code class="descname">write_html</code><span class="sig-paren">(</span><em>file_name=None</em>, <em>verbose=True</em>, <em>sort_categories=False</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.twi_instrument.twi_instrument_dummy.write_html" title="Permalink to this definition">¶</a></dt>
+<dd><p>return html document string and optionally write to file_name
+if verbose, include tables of presets and attributes for each channel
+if sort_categories, group channel names first by category before alphabetical sort of channel name</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../PyICe.html">
+              <img class="logo" src="../_static/tssop.png" alt="Logo"/>
+            </a></p>
+<h3><a href="../PyICe.html">Table Of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="PyICe.lab_instruments.html">PyICe.lab_instruments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.lab_core.html">PyICe.lab_core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.lab_utils.html">PyICe.lab_utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.LTC_plot.html">PyICe.LTC_plot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.lab_gui.html">PyICe.lab_gui</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.lab_interfaces.html">PyICe.lab_interfaces</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">PyICe.twi_instrument</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#channel-wraper-for-smbus-compliant-devices">Channel Wraper for SMBus Compliant Devices</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.twoWireInterface.html">PyICe.twoWireInterface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.spi_instrument.html">PyICe.spi_instrument</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.spi_interface.html">PyICe.spi_interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.visa_wrappers.html">PyICe.visa_wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.xml_registers.html">PyICe.xml_registers</a></li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../PyICe.html">Documentation overview</a><ul>
+      <li>Previous: <a href="PyICe.lab_interfaces.html" title="previous chapter">PyICe.lab_interfaces</a></li>
+      <li>Next: <a href="PyICe.twoWireInterface.html" title="next chapter">PyICe.twoWireInterface</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/_autosummary/PyICe.twi_instrument.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Linear Technology Corporation.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="../_sources/_autosummary/PyICe.twi_instrument.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

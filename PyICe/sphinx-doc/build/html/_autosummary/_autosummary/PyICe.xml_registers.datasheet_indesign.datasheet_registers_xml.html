@@ -1,0 +1,207 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>PyICe.xml_registers.datasheet_indesign.datasheet_registers_xml &mdash; PyICe 9000 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '9000',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/tssop.ico"/>
+    <link rel="top" title="PyICe 9000 documentation" href="../../PyICe.html" />
+    <link rel="up" title="PyICe.xml_registers" href="../PyICe.xml_registers.html" />
+    <link rel="next" title="PyICe.xml_registers.doc.doc_generator" href="PyICe.xml_registers.doc.doc_generator.html" />
+    <link rel="prev" title="PyICe.xml_registers.cpp_ets_api.generate_cpp" href="PyICe.xml_registers.cpp_ets_api.generate_cpp.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-PyICe.xml_registers.datasheet_indesign.datasheet_registers_xml">
+<span id="pyice-xml-registers-datasheet-indesign-datasheet-registers-xml"></span><h1>PyICe.xml_registers.datasheet_indesign.datasheet_registers_xml<a class="headerlink" href="#module-PyICe.xml_registers.datasheet_indesign.datasheet_registers_xml" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="adobe-indesign-datasheet-register-table-and-hyperlink-generator">
+<h2>Adobe Indesign (Datasheet) Register Table and Hyperlink Generator<a class="headerlink" href="#adobe-indesign-datasheet-register-table-and-hyperlink-generator" title="Permalink to this headline">¶</a></h2>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#PyICe.xml_registers.datasheet_indesign.datasheet_registers_xml.csv_converter" title="PyICe.xml_registers.datasheet_indesign.datasheet_registers_xml.csv_converter"><code class="xref py py-obj docutils literal"><span class="pre">csv_converter</span></code></a>(csvfilename,&nbsp;**kwargs)</td>
+<td>converts csv input file to appropriate XML format for import to InDesign</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#PyICe.xml_registers.datasheet_indesign.datasheet_registers_xml.inDesignOutput" title="PyICe.xml_registers.datasheet_indesign.datasheet_registers_xml.inDesignOutput"><code class="xref py py-obj docutils literal"><span class="pre">inDesignOutput</span></code></a>([source_revision,&nbsp;source_date])</td>
+<td>shared methods between XML conversion program and CSV conversion program</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">xml_converter</span></code>(xmlfilename,&nbsp;use_case,&nbsp;access_list)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="PyICe.xml_registers.datasheet_indesign.datasheet_registers_xml.csv_converter">
+<em class="property">class </em><code class="descclassname">PyICe.xml_registers.datasheet_indesign.datasheet_registers_xml.</code><code class="descname">csv_converter</code><span class="sig-paren">(</span><em>csvfilename</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/PyICe/xml_registers/datasheet_indesign/datasheet_registers_xml.html#csv_converter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.xml_registers.datasheet_indesign.datasheet_registers_xml.csv_converter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.xml_registers.datasheet_indesign.datasheet_registers_xml.inDesignOutput" title="PyICe.xml_registers.datasheet_indesign.datasheet_registers_xml.inDesignOutput"><code class="xref py py-class docutils literal"><span class="pre">PyICe.xml_registers.datasheet_indesign.datasheet_registers_xml.inDesignOutput</span></code></a></p>
+<p>converts csv input file to appropriate XML format for import to InDesign
+Expects 6 columns to be ordered: SYMBOL_NAME, COMMAND_CODE, ACCESS ex(R/W), BIT_RANGE ex(15:0), DEFAULT, DESCRIPTION</p>
+<dl class="method">
+<dt id="PyICe.xml_registers.datasheet_indesign.datasheet_registers_xml.csv_converter.access_str">
+<code class="descname">access_str</code><span class="sig-paren">(</span><em>readable</em>, <em>writable</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.xml_registers.datasheet_indesign.datasheet_registers_xml.csv_converter.access_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>convert readable and writable booleans to string output format</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.xml_registers.datasheet_indesign.datasheet_registers_xml.csv_converter.bit_range_str">
+<code class="descname">bit_range_str</code><span class="sig-paren">(</span><em>size=None</em>, <em>lsb=None</em>, <em>msb=None</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.xml_registers.datasheet_indesign.datasheet_registers_xml.csv_converter.bit_range_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>specify two of the three arguments to convert symbol size description to string output format</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="PyICe.xml_registers.datasheet_indesign.datasheet_registers_xml.inDesignOutput">
+<em class="property">class </em><code class="descclassname">PyICe.xml_registers.datasheet_indesign.datasheet_registers_xml.</code><code class="descname">inDesignOutput</code><span class="sig-paren">(</span><em>source_revision=''</em>, <em>source_date=''</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/PyICe/xml_registers/datasheet_indesign/datasheet_registers_xml.html#inDesignOutput"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.xml_registers.datasheet_indesign.datasheet_registers_xml.inDesignOutput" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>shared methods between XML conversion program and CSV conversion program</p>
+<dl class="method">
+<dt id="PyICe.xml_registers.datasheet_indesign.datasheet_registers_xml.inDesignOutput.access_str">
+<code class="descname">access_str</code><span class="sig-paren">(</span><em>readable</em>, <em>writable</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/PyICe/xml_registers/datasheet_indesign/datasheet_registers_xml.html#inDesignOutput.access_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.xml_registers.datasheet_indesign.datasheet_registers_xml.inDesignOutput.access_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>convert readable and writable booleans to string output format</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.xml_registers.datasheet_indesign.datasheet_registers_xml.inDesignOutput.bit_range_str">
+<code class="descname">bit_range_str</code><span class="sig-paren">(</span><em>size=None</em>, <em>lsb=None</em>, <em>msb=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/PyICe/xml_registers/datasheet_indesign/datasheet_registers_xml.html#inDesignOutput.bit_range_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.xml_registers.datasheet_indesign.datasheet_registers_xml.inDesignOutput.bit_range_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>specify two of the three arguments to convert symbol size description to string output format</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../PyICe.html">
+              <img class="logo" src="../../_static/tssop.png" alt="Logo"/>
+            </a></p>
+<h3><a href="../../PyICe.html">Table Of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../PyICe.lab_instruments.html">PyICe.lab_instruments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PyICe.lab_core.html">PyICe.lab_core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PyICe.lab_utils.html">PyICe.lab_utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PyICe.LTC_plot.html">PyICe.LTC_plot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PyICe.lab_gui.html">PyICe.lab_gui</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PyICe.lab_interfaces.html">PyICe.lab_interfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PyICe.twi_instrument.html">PyICe.twi_instrument</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PyICe.twoWireInterface.html">PyICe.twoWireInterface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PyICe.spi_instrument.html">PyICe.spi_instrument</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PyICe.spi_interface.html">PyICe.spi_interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PyICe.visa_wrappers.html">PyICe.visa_wrappers</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../PyICe.xml_registers.html">PyICe.xml_registers</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../PyICe.xml_registers.html#xml-register-map-tools-and-generators">XML Register Map Tools and Generators</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../PyICe.xml_registers.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="PyICe.xml_registers.asm_header.xml_to_asm_header.html">PyICe.xml_registers.asm_header.xml_to_asm_header</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.xml_registers.c_api.xml_to_c_api.html">PyICe.xml_registers.c_api.xml_to_c_api</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.xml_registers.c_api.c_configurator.html">PyICe.xml_registers.c_api.c_configurator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.xml_registers.cpp_ets_api.generate_cpp.html">PyICe.xml_registers.cpp_ets_api.generate_cpp</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="">PyICe.xml_registers.datasheet_indesign.datasheet_registers_xml</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#adobe-indesign-datasheet-register-table-and-hyperlink-generator">Adobe Indesign (Datasheet) Register Table and Hyperlink Generator</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.xml_registers.doc.doc_generator.html">PyICe.xml_registers.doc.doc_generator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.xml_registers.doc.html_link_checker.html">PyICe.xml_registers.doc.html_link_checker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.xml_registers.micro16c.xml_to_headers.html">PyICe.xml_registers.micro16c.xml_to_headers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.xml_registers.python_api.generate_python_api.html">PyICe.xml_registers.python_api.generate_python_api</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.xml_registers.register_lint.register_lint.html">PyICe.xml_registers.register_lint.register_lint</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.xml_registers.sanitize.sanitize_xml.html">PyICe.xml_registers.sanitize.sanitize_xml</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.xml_registers.variants.split_variants.html">PyICe.xml_registers.variants.split_variants</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.xml_registers.vb_api.xml_to_vb_api.html">PyICe.xml_registers.vb_api.xml_to_vb_api</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.xml_registers.verilog_header.xml_to_verilog_header.html">PyICe.xml_registers.verilog_header.xml_to_verilog_header</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.xml_registers.verilog_mem_map.xml_to_verilog_mem_map.html">PyICe.xml_registers.verilog_mem_map.xml_to_verilog_mem_map</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.xml_registers.verilog_rtl.xml_to_verilog_rtl.html">PyICe.xml_registers.verilog_rtl.xml_to_verilog_rtl</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../PyICe.html">Documentation overview</a><ul>
+  <li><a href="../PyICe.xml_registers.html">PyICe.xml_registers</a><ul>
+      <li>Previous: <a href="PyICe.xml_registers.cpp_ets_api.generate_cpp.html" title="previous chapter">PyICe.xml_registers.cpp_ets_api.generate_cpp</a></li>
+      <li>Next: <a href="PyICe.xml_registers.doc.doc_generator.html" title="next chapter">PyICe.xml_registers.doc.doc_generator</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/_autosummary/_autosummary/PyICe.xml_registers.datasheet_indesign.datasheet_registers_xml.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Linear Technology Corporation.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="../../_sources/_autosummary/_autosummary/PyICe.xml_registers.datasheet_indesign.datasheet_registers_xml.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

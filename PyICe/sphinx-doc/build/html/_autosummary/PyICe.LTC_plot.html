@@ -1,0 +1,550 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>PyICe.LTC_plot &mdash; PyICe 9000 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '9000',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/tssop.ico"/>
+    <link rel="top" title="PyICe 9000 documentation" href="../PyICe.html" />
+    <link rel="next" title="PyICe.lab_gui" href="PyICe.lab_gui.html" />
+    <link rel="prev" title="PyICe.lab_utils" href="PyICe.lab_utils.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-PyICe.LTC_plot">
+<span id="pyice-ltc-plot"></span><h1>PyICe.LTC_plot<a class="headerlink" href="#module-PyICe.LTC_plot" title="Permalink to this headline">¶</a></h1>
+<p>Marcom Compliant Plot Generator</p>
+<p>This program can be used to generate plots for general lab use or to
+generate Marcom specific plots that can be imported directly into the
+datasheet in SVG format.</p>
+<dl class="docutils">
+<dt>The objects that can be created with this program are:</dt>
+<dd><ol class="first last arabic simple">
+<li>plot</li>
+<li>Page</li>
+<li>Multipage_pdf</li>
+</ol>
+</dd>
+</dl>
+<p>The basic model is simple. You create one or more plots and add things to them
+like traces, histograms, legends, arrows, notes, etc. Once your plots are populated
+you create one or more pages and determine how you want the plots to arrange on
+each page. For instance you can create an 8.5x11 page and add 9 plots to it in
+a standard 3x3 grid. You can make one big page if you want. It doesn&#8217;t have to be
+a standard size if you don&#8217;t care what the printer does with it and it won&#8217;t affect
+your SVG files to Marcom. If you want to have multiple pages of plots you can
+create a Mulipage_pdf and add one or more pages to it.</p>
+<p>If you want larger plots with just one plot per page as in plot_tools.py you can
+create a page per plot, add a plot to each page and add all of the pages to a
+Multipage_pdf.</p>
+<p>So to start, you&#8217;ll need to create a python work file and import this program:
+e.g.</p>
+<div class="highlight-python"><div class="highlight"><pre> ----------- LTCXXXX_plots.py -------------- 
+|import sys                                 |
+|sys.path.append(&quot;../../../PyICe&quot;)          |
+|import LTC_plot                            |
+|    .                                      |
+|    .                                      |
+|    .                                      |
+ ------------------------------------------- 
+</pre></div>
+</div>
+<p>Next you want to create your plots. A generally preferable work flow would be to
+create all of your plots without regard to reference on a Page or Multipage_pdf.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">G0</span> <span class="o">=</span> <span class="n">LTC_plot</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                    <span class="n">plot_title</span>      <span class="o">=</span> <span class="s">&quot;EN/FBIN Thresholds&quot;</span><span class="p">,</span>
+                    <span class="n">plot_name</span>       <span class="o">=</span> <span class="s">&quot;8709 G0&quot;</span><span class="p">,</span>
+                    <span class="n">xaxis_label</span>     <span class="o">=</span> <span class="s">&quot;TEMPERATURE (&quot;</span> <span class="o">+</span> <span class="n">DEGC</span> <span class="o">+</span> <span class="s">&quot;)&quot;</span><span class="p">,</span>
+                    <span class="n">yaxis_label</span>     <span class="o">=</span> <span class="s">&quot;FBIN CHIP ENABLE (V)&quot;</span><span class="p">,</span>
+                    <span class="n">xlims</span>           <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">50</span><span class="p">,</span> <span class="mi">125</span><span class="p">),</span>
+                    <span class="n">ylims</span>           <span class="o">=</span> <span class="p">(</span><span class="mf">1.2</span><span class="p">,</span> <span class="mf">1.4</span><span class="p">),</span>
+                    <span class="n">xminor</span>          <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                    <span class="n">xdivs</span>           <span class="o">=</span> <span class="mi">7</span><span class="p">,</span>
+                    <span class="n">yminor</span>          <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                    <span class="n">ydivs</span>           <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+                    <span class="n">logx</span>            <span class="o">=</span> <span class="bp">False</span><span class="p">,</span>
+                    <span class="n">logy</span>            <span class="o">=</span> <span class="bp">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A plot is nothing more than a record of the plot you want to create. It doesn&#8217;t
+support any outputting methods itself. A plot must eventually be added to a Page
+to be useful. Only a Page can be generated as an SVG file, even if there&#8217;s only
+one plot on the page.</p>
+<p>The arguments of a plot instance are shown below. All plot arguments are required.</p>
+<p>plot_title  : &#8220;string&#8221;
+plot_name   : &#8220;string&#8221;
+xaxis_label : &#8220;string&#8221;
+yaxis_label : &#8220;string&#8221;</p>
+<blockquote>
+<div>Accepts control characters such as n to start a second line. 
+These text fields also respond to Tex formatting for subscripting
+There are a few unicode characters available in LTC_plot
+to help with greek characters and degree signs, etc. Be aware
+that the Marcom minus sign is not the same as the one you type.
+You may wan to use LTC_plot.minus.</div></blockquote>
+<p>xlims : (xmin, xmax)
+ylims : (ymin, ymax)</p>
+<blockquote>
+<div>These two fields also accept python None or string &#8220;auto&#8221;
+for automatic scaling. Autoscaling is useful to view the
+data for the first time and then the final values can be
+entered later once the data is understood.</div></blockquote>
+<dl class="docutils">
+<dt>xminor <span class="classifier-delimiter">:</span> <span class="classifier">0</span></dt>
+<dd>This is the number of minor X divisions per major X division.</dd>
+<dt>xdivs <span class="classifier-delimiter">:</span> <span class="classifier">7</span></dt>
+<dd>This is the number of major X divisions.</dd>
+<dt>yminor <span class="classifier-delimiter">:</span> <span class="classifier">0</span></dt>
+<dd>This is the number of minor Y divisions per major XY division.</dd>
+<dt>ydivs <span class="classifier-delimiter">:</span> <span class="classifier">10</span></dt>
+<dd>This is the number of major Y divisions.</dd>
+<dt>logx <span class="classifier-delimiter">:</span> <span class="classifier">False</span></dt>
+<dd>Sets the X axis to a log scale with locators at [1,2,3,4,5,6,7,8,9].</dd>
+<dt>logy <span class="classifier-delimiter">:</span> <span class="classifier">False</span></dt>
+<dd>Sets the Y axis to a log scale with locators at [1,2,3,4,5,6,7,8,9].</dd>
+<dt>Once you have a plot you can add things to it such as:</dt>
+<dd><ul class="first last simple">
+<li>add_trace()</li>
+<li>add_histogram()</li>
+<li>add_note()</li>
+<li>add_legend()</li>
+<li>add_arrow()</li>
+<li>make_second_y_axis()</li>
+</ul>
+</dd>
+</dl>
+<p>The most common element is a trace. You can add as many traces as you like. The same is true of histograms.
+You can also put traces and histograms on the same plot (for instance to show the Gaussian normal curve).</p>
+<p>When you add a trace you have the option to specify line style and marker. Linear datasheets often use
+dotted or dot dash lines for improved black and white readability but rarely if even use markers so use
+them judiciously.</p>
+<dl class="docutils">
+<dt>Valid linestyles are:</dt>
+<dd><ul class="first last simple">
+<li>&#8216;-&#8216;</li>
+<li>&#8216;&#8211;&#8217;</li>
+<li>&#8216;-.&#8217;</li>
+<li>&#8216;:&#8217;</li>
+</ul>
+</dd>
+<dt>and valid markers are:</dt>
+<dd><ul class="first last simple">
+<li>&#8216;:&#8217;</li>
+<li>&#8216;.&#8217;</li>
+<li>&#8216;,&#8217;</li>
+<li>&#8216;o&#8217;</li>
+<li>&#8216;v&#8217;</li>
+<li>&#8216;^&#8217;</li>
+<li>&#8216;&lt;&#8217;</li>
+<li>&#8216;&gt;&#8217;</li>
+<li>&#8216;1&#8217;</li>
+<li>&#8216;2&#8217;</li>
+<li>&#8216;3&#8217;</li>
+<li>&#8216;4&#8217;</li>
+<li>&#8216;8&#8217;</li>
+<li>&#8216;s&#8217;</li>
+<li>&#8216;p&#8217;</li>
+<li>&#8216;*&#8217;</li>
+<li>&#8216;h&#8217;</li>
+<li>&#8216;H&#8217;</li>
+<li>&#8216;+&#8217;</li>
+<li>&#8216;x&#8217;</li>
+<li>&#8216;D&#8217;</li>
+<li>&#8216;d&#8217;</li>
+<li>&#8216;|&#8217;</li>
+<li>&#8216;_&#8217;</li>
+<li>TICKLEFT</li>
+<li>TICKRIGHT</li>
+<li>TICKUP</li>
+<li>TICKDOWN</li>
+<li>CARETLEFT</li>
+<li>CARETRIGHT</li>
+<li>CARETUP</li>
+<li>CARETDOWN</li>
+</ul>
+</dd>
+</dl>
+<p>Please see matplot lib docs online for more details.</p>
+<dl class="docutils">
+<dt>Trace colors currently supported are:</dt>
+<dd><ul class="first last simple">
+<li>LT_RED_1</li>
+<li>LT_BLUE_1</li>
+<li>LT_GREEN_1</li>
+<li>LT_COPPER_1</li>
+<li>LT_BLACK</li>
+<li>LT_COPPER_2</li>
+<li>LT_RED_2</li>
+<li>LT_BLUE_2</li>
+<li>LT_GREEN_2</li>
+<li>LT_YELLOW_2</li>
+<li>LT_BLUE_2_40PCT</li>
+<li>LT_RED_1_40PCT</li>
+</ul>
+</dd>
+</dl>
+<p>You can make your own colors by entering a list of RGB colors (r,g,b), all of which should be between 0 and 1 rather than 0 to 255.
+<strong>This is strongly discouraged however, as it will not be in compliance with LTC standards and should not make its way to Marcom.</strong></p>
+<dl class="docutils">
+<dt>add_legend takes arguments:</dt>
+<dd><ul class="first last simple">
+<li>axis</li>
+<li>location</li>
+<li>justification</li>
+<li>use_axes_scale</li>
+</ul>
+</dd>
+<dt>axis</dt>
+<dd>The axis from which the legend items have been added.</dd>
+<dt>location</dt>
+<dd>Coordinates in an xy list (x, y) of where to place the legend.
+These are relative, see use_axes_scale.</dd>
+<dt>justification</dt>
+<dd><dl class="first last docutils">
+<dt>Justification of the test of the legend. Accepts:</dt>
+<dd><ul class="first last simple">
+<li>&#8220;best&#8221;</li>
+<li>&#8220;upper right&#8221;</li>
+<li>&#8220;upper left&#8221;</li>
+<li>&#8220;lower left&#8221;</li>
+<li>&#8220;lower right&#8221;</li>
+<li>&#8220;right&#8221;</li>
+<li>&#8220;center left&#8221;</li>
+<li>&#8220;center right&#8221;</li>
+<li>&#8220;lower center&#8221;</li>
+<li>&#8220;upper center&#8221;</li>
+<li>&#8220;center&#8221;</li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt>use_axes_scale:</dt>
+<dd>True means place the legend by the scale of the data values whereas False means use values from 0 to 1 representing data independent percentage of the graph size.</dd>
+</dl>
+<p>Notes, on the other hand, need to have coordinates given.
+Both support the use_axes_scale argument which defaults to True referencing the item to the data values rather than as a percentage (0..1) of the graph limits.</p>
+<p>Data can come from a number of sources such as a CSV file or a .sqlite database and should be a zipped list
+of (x,y) values for a trace and just a list for a histogram. Consult the examples file for details.</p>
+<p>You can also add as many notes as you like. The position of the notes can be set by either referring them
+to the axes_scale, a scale relative to your data or a percentage scale (0..1) of the axes extents. The default
+is to use the scale of your data. This should be easier to help you locate the notes, etc as the graticules
+will more precisely help you picture where the item will be.</p>
+<p>You can only add one legend. For each trace on a given axis, it will place a label preceded by a line stub
+in the same color and width of the trace. Generally the legend will placed along side the axis to which it
+belongs but you can specify where it goes.</p>
+<p>An arrow is based on the matplotlib annotate() object and consists of a text box with an arrow emanating
+from it. You control where the lower left corner of the text goes as well as the arrow tip.</p>
+<p>If you add a second y axis you have to, once again, specify a few required items in a similar manner to when
+you created the plot:
+1)  yaxis_label
+2)  ylims
+3)  yminor
+4)  ydivs
+5)  logy</p>
+<p>As you add traces and histograms you&#8217;ll need to specify to which axis they belong (1 or 2).</p>
+<p>Once you have created all of your plots you will need to add them to a page:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Page1</span> <span class="o">=</span> <span class="n">Page</span><span class="p">(</span><span class="n">rows_x_cols</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">page_size</span> <span class="o">=</span> <span class="p">(</span><span class="mf">8.5</span><span class="p">,</span> <span class="mi">11</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Defaults for rows_x_cols = (1, 1) and for page_size is None. If you omit the page_size
+or specify None, the page will shrink to fit the plots you add to it. If, on the other
+hand, you specify a page size and the plots you add to it don&#8217;t quite fit, the plots
+will overlap a bit. That won&#8217;t matter for datasheet importation as you&#8217;ll see later.
+Alternately, if your plots are swimming on your page, they&#8217;ll be spread out to roughly
+fill the Page.</p>
+<dl class="docutils">
+<dt>Pages support the following methods:</dt>
+<dd><ol class="first last arabic simple">
+<li>add_plot()</li>
+<li>create_pdf()</li>
+<li>create_svg()</li>
+<li>kit_datasheet()</li>
+</ol>
+</dd>
+</dl>
+<p>add_plot() has options to change the plot size on the page such as plot_sizex and
+plot_sizey. These values are extremely specific to datasheets and should not be changed
+if the plots are to be sent to Marcom. It&#8217;s best to enter the plot instance and position
+and leave the rest alone.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Page1</span><span class="o">.</span><span class="n">add_plot</span><span class="p">(</span><span class="n">G01</span><span class="p">,</span> <span class="n">position</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">Page1</span><span class="o">.</span><span class="n">add_plot</span><span class="p">(</span><span class="n">G02</span><span class="p">,</span> <span class="n">position</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">Page1</span><span class="o">.</span><span class="n">add_plot</span><span class="p">(</span><span class="n">G03</span><span class="p">,</span> <span class="n">position</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>As you add plots to the page with a given position, the plots appear on the page top to
+bottom, left to right.</p>
+<p>So a Page that was specified as 3x3 would add up to 9 plots in the following order:</p>
+<div class="highlight-python"><div class="highlight"><pre> ---------------------------
+|                           |
+|   [1]     [2]     [3]     |
+|                           |
+|                           |
+|   [4]     [5]     [6]     |
+|                           |
+|                           |
+|   [7]     [8]     [9]     |
+|                           |
+ ---------------------------
+</pre></div>
+</div>
+<p>Or a 2x2 Page would be positioned as:</p>
+<div class="highlight-python"><div class="highlight"><pre> -------------------
+|                   |
+|   [1]     [2]     |
+|                   |
+|                   |
+|   [3]     [4]     |
+|                   |
+ -------------------
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>Pages support the following methods:</dt>
+<dd><ol class="first last arabic simple">
+<li>create_pdf(&#8220;LTCXXXX_Page1&#8221;)</li>
+<li>create_svg(&#8220;LTCXXXX_Page1&#8221;)</li>
+<li>kit_datasheet(&#8220;LTCXXXX_Page1&#8221;)</li>
+</ol>
+</dd>
+</dl>
+<p>Each of these takes just a file_basename. The file extension is added to match the
+output.</p>
+<p><strong>All output data you request is place in a newly created folder under your work area called &#8220;/plots&#8221;.</strong></p>
+<dl class="docutils">
+<dt>kit_datasheet() performs the following sequence for you:</dt>
+<dd><ol class="first last arabic simple">
+<li>Creates a zip file.</li>
+<li>Creates a disposable page.</li>
+<li>Adds one plot that is found on your Page.</li>
+<li>Creates an SVG file of the disposable page and adds it to the zip file.</li>
+<li>Repeats for each plot on your Page. The disposable Page evaporates.</li>
+<li>Creates a PDF of your entire page for reference and dumps it in the zip file.</li>
+</ol>
+</dd>
+</dl>
+<p>If you end up needing more than one page of plots you can add your pages to
+a Multipage_pdf:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">LTCXXXX_typcurves</span> <span class="o">=</span> <span class="n">Multipage_pdf</span><span class="p">(</span><span class="s">&quot;LTCXXXX_typcurves&quot;</span><span class="p">)</span>
+<span class="n">LTCXXXX_typcurves</span><span class="o">.</span><span class="n">add_page</span><span class="p">(</span><span class="n">Page1</span><span class="p">)</span>
+<span class="n">LTCXXXX_typcurves</span><span class="o">.</span><span class="n">add_page</span><span class="p">(</span><span class="n">Page2</span><span class="p">)</span>
+<span class="n">LTCXXXX_typcurves</span><span class="o">.</span><span class="n">kit_datasheet</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>Multipage_pdfs support the methods:</dt>
+<dd><ol class="first last arabic simple">
+<li>kit_datasheet(&#8220;LTCXXXX_Page1&#8221;)</li>
+<li>create_pdf(&#8220;LTCXXXX_Page1&#8221;)</li>
+</ol>
+</dd>
+</dl>
+<p>To really get going and find more example see:</p>
+<p>PyICeExamplesLTC_plot_exampleLTC_plot_example.py</p>
+<dl class="docutils">
+<dt><strong>* TIP *</strong></dt>
+<dd>If you get a warning about missing Linear fonts and you have them installed,
+try deleting: &#8220;C:\Users\%username%\.matplotlib\fontList.cache and tex.cache&#8221;</dd>
+</dl>
+<p class="rubric">Functions</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">CMYK_to_fracRGB</span></code>(CMYK)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">RGB_to_fracRGB</span></code>(RGB)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">RGB_to_webRGB</span></code>(RGB)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">data_from_file</span></code>(filename)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">fracRGB_to_CMYK</span></code>(RGB)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">fracRGB_to_RGB</span></code>(fracRGB)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">fracRGB_to_webRGB</span></code>(fracRGB)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#PyICe.LTC_plot.list_markers" title="PyICe.LTC_plot.list_markers"><code class="xref py py-obj docutils literal"><span class="pre">list_markers</span></code></a>()</td>
+<td>Valid linestyles are [&#8216;-&#8216; &#8216;&#8211;&#8217; &#8216;-.&#8217; &#8216;:&#8217; &#8216;None&#8217; &#8216; &#8216; &#8216;&#8217;]</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">smooth</span></code>(data[,&nbsp;window])</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">smooth_y_vector</span></code>(data[,&nbsp;window])</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">webRGB_to_RGB</span></code>(webRGB)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">webRGB_to_fracRGB</span></code>(webRGB)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#PyICe.LTC_plot.Multipage_pdf" title="PyICe.LTC_plot.Multipage_pdf"><code class="xref py py-obj docutils literal"><span class="pre">Multipage_pdf</span></code></a>()</td>
+<td>Add one or more Pages to a Multipage_pdf to keep your page sizes manageable (such as 8.5x11).</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">Page</span></code>([rows_x_cols,&nbsp;page_size,&nbsp;plot_count])</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">PyICe_data_base</span></code>(table_name[,&nbsp;file_name])</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#PyICe.LTC_plot.color_gen" title="PyICe.LTC_plot.color_gen"><code class="xref py py-obj docutils literal"><span class="pre">color_gen</span></code></a>([rollover])</td>
+<td>Color yielding generator.</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">plot</span></code>(plot_title,&nbsp;plot_name,&nbsp;xaxis_label,&nbsp;...)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">scope_plot</span></code>(plot_title,&nbsp;plot_name,&nbsp;...)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="PyICe.LTC_plot.Multipage_pdf">
+<em class="property">class </em><code class="descclassname">PyICe.LTC_plot.</code><code class="descname">Multipage_pdf</code><a class="reference internal" href="../_modules/PyICe/LTC_plot.html#Multipage_pdf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.LTC_plot.Multipage_pdf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add one or more Pages to a Multipage_pdf to keep your page sizes manageable (such as 8.5x11).
+Multipage_pdf also support kit_datasheet().</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="PyICe.LTC_plot.color_gen">
+<em class="property">class </em><code class="descclassname">PyICe.LTC_plot.</code><code class="descname">color_gen</code><span class="sig-paren">(</span><em>rollover=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/LTC_plot.html#color_gen"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.LTC_plot.color_gen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Color yielding generator. Returns a new color each time an instance is called</p>
+<dl class="method">
+<dt id="PyICe.LTC_plot.color_gen.reset">
+<code class="descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/LTC_plot.html#color_gen.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.LTC_plot.color_gen.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>start color sequence over</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="PyICe.LTC_plot.list_markers">
+<code class="descclassname">PyICe.LTC_plot.</code><code class="descname">list_markers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/LTC_plot.html#list_markers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.LTC_plot.list_markers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Valid linestyles are [&#8216;-&#8216; &#8216;&#8211;&#8217; &#8216;-.&#8217; &#8216;:&#8217; &#8216;None&#8217; &#8216; &#8216; &#8216;&#8217;]
+Valid markers are [&#8216;:&#8217; &#8216;.&#8217; &#8216;,&#8217; &#8216;o&#8217; &#8216;v&#8217; &#8216;^&#8217; &#8216;&lt;&#8217; &#8216;&gt;&#8217; &#8216;1&#8217; &#8216;2&#8217; &#8216;3&#8217; &#8216;4&#8217; &#8216;8&#8217; &#8216;s&#8217; &#8216;p&#8217; &#8216;*&#8217; &#8216;h&#8217; &#8216;H&#8217; &#8216;+&#8217; &#8216;x&#8217; &#8216;D&#8217; &#8216;d&#8217; &#8216;|&#8217; &#8216;_&#8217; TICKLEFT TICKRIGHT TICKUP TICKDOWN CARETLEFT CARETRIGHT CARETUP CARETDOWN]</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../PyICe.html">
+              <img class="logo" src="../_static/tssop.png" alt="Logo"/>
+            </a></p>
+<h3><a href="../PyICe.html">Table Of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="PyICe.lab_instruments.html">PyICe.lab_instruments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.lab_core.html">PyICe.lab_core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.lab_utils.html">PyICe.lab_utils</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">PyICe.LTC_plot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.lab_gui.html">PyICe.lab_gui</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.lab_interfaces.html">PyICe.lab_interfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.twi_instrument.html">PyICe.twi_instrument</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.twoWireInterface.html">PyICe.twoWireInterface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.spi_instrument.html">PyICe.spi_instrument</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.spi_interface.html">PyICe.spi_interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.visa_wrappers.html">PyICe.visa_wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.xml_registers.html">PyICe.xml_registers</a></li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../PyICe.html">Documentation overview</a><ul>
+      <li>Previous: <a href="PyICe.lab_utils.html" title="previous chapter">PyICe.lab_utils</a></li>
+      <li>Next: <a href="PyICe.lab_gui.html" title="next chapter">PyICe.lab_gui</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/_autosummary/PyICe.LTC_plot.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Linear Technology Corporation.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="../_sources/_autosummary/PyICe.LTC_plot.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PyICe.deps.RL1009 package &mdash; PyICe  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="PyICe.deps.keithley_kxci package" href="PyICe.deps.keithley_kxci.html" />
+    <link rel="prev" title="PyICe.deps.RL1000 package" href="PyICe.deps.RL1000.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            PyICe
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">PyICe</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="PyICe.html">PyICe package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="PyICe.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="PyICe.data_utils.html">PyICe.data_utils package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="PyICe.deps.html">PyICe.deps package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="PyICe.instruments.html">PyICe.instruments package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="PyICe.refid_modules.html">PyICe.refid_modules package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="PyICe.xml_registers.html">PyICe.xml_registers package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.LTC_plot">PyICe.LTC_plot module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.TypicalCurveEditor_input">PyICe.TypicalCurveEditor_input module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.generate_docs">PyICe.generate_docs module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.interpolator">PyICe.interpolator module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.ivy_instruments">PyICe.ivy_instruments module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.lab_core">PyICe.lab_core module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.lab_instruments">PyICe.lab_instruments module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.lab_interfaces">PyICe.lab_interfaces module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.lab_utils">PyICe.lab_utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.logo">PyICe.logo module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.plot_tools">PyICe.plot_tools module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.spi_instrument">PyICe.spi_instrument module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.spi_interface">PyICe.spi_interface module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.twi_instrument">PyICe.twi_instrument module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.twoWireInterface">PyICe.twoWireInterface module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.virtual_instruments">PyICe.virtual_instruments module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.visa_wrappers">PyICe.visa_wrappers module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PyICe</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">PyICe</a></li>
+          <li class="breadcrumb-item"><a href="PyICe.html">PyICe package</a></li>
+          <li class="breadcrumb-item"><a href="PyICe.deps.html">PyICe.deps package</a></li>
+      <li class="breadcrumb-item active">PyICe.deps.RL1009 package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/PyICe.deps.RL1009.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pyice-deps-rl1009-package">
+<h1>PyICe.deps.RL1009 package<a class="headerlink" href="#pyice-deps-rl1009-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-PyICe.deps.RL1009.RL1009_DLL_INTERFACE">
+<span id="pyice-deps-rl1009-rl1009-dll-interface-module"></span><h2>PyICe.deps.RL1009.RL1009_DLL_INTERFACE module<a class="headerlink" href="#module-PyICe.deps.RL1009.RL1009_DLL_INTERFACE" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.deps.RL1009.RL1009_DLL_INTERFACE.</span></span><span class="sig-name descname"><span class="pre">RL1009</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rlib</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>RL1009 USB to GPIB DLL Interface.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.address">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">address</span></span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.address" title="Permalink to this definition"></a></dt>
+<dd><p>GPIB Address</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.clear_error">
+<span class="sig-name descname"><span class="pre">clear_error</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.clear_error" title="Permalink to this definition"></a></dt>
+<dd><p>Clear RL1009 error flag</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.close_connection">
+<span class="sig-name descname"><span class="pre">close_connection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.close_connection" title="Permalink to this definition"></a></dt>
+<dd><p>Close the USB Connection. Call before program termination.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.connected">
+<span class="sig-name descname"><span class="pre">connected</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.connected" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the RL1009 connection status.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.device_clear">
+<span class="sig-name descname"><span class="pre">device_clear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.device_clear" title="Permalink to this definition"></a></dt>
+<dd><p>Execute a GPIB device clear command.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.error_description">
+<span class="sig-name descname"><span class="pre">error_description</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.error_description" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a text description of the current error.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.get_terminator">
+<span class="sig-name descname"><span class="pre">get_terminator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.get_terminator" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the GPIB terminator index.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.get_timeouts">
+<span class="sig-name descname"><span class="pre">get_timeouts</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.get_timeouts" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the GPIB read and write timeout values in ms.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.gpib_error">
+<span class="sig-name descname"><span class="pre">gpib_error</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.gpib_error" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the RL1009 error flag status.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.group_trigger">
+<span class="sig-name descname"><span class="pre">group_trigger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.group_trigger" title="Permalink to this definition"></a></dt>
+<dd><p>Executes a GPIB group trigger for the given address list.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.local">
+<span class="sig-name descname"><span class="pre">local</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.local" title="Permalink to this definition"></a></dt>
+<dd><p>Force the GPIB device into local mode.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.query">
+<span class="sig-name descname"><span class="pre">query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.query" title="Permalink to this definition"></a></dt>
+<dd><p>Execute a GPIB write then read command.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.read">
+<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.read" title="Permalink to this definition"></a></dt>
+<dd><p>Execute a GPIB read.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.serial_poll">
+<span class="sig-name descname"><span class="pre">serial_poll</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.serial_poll" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the result of a GPIB poll command.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.set_led_green">
+<span class="sig-name descname"><span class="pre">set_led_green</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.set_led_green" title="Permalink to this definition"></a></dt>
+<dd><p>Set the RL1009 status led green.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.set_led_off">
+<span class="sig-name descname"><span class="pre">set_led_off</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.set_led_off" title="Permalink to this definition"></a></dt>
+<dd><p>Turn the RL1009 status led off.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.set_led_red">
+<span class="sig-name descname"><span class="pre">set_led_red</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.set_led_red" title="Permalink to this definition"></a></dt>
+<dd><p>Set the RL1009 status led red.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.set_terminator">
+<span class="sig-name descname"><span class="pre">set_terminator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">terminator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.set_terminator" title="Permalink to this definition"></a></dt>
+<dd><p>Set the GPIB termination character index.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.set_timeouts">
+<span class="sig-name descname"><span class="pre">set_timeouts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">read_timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.set_timeouts" title="Permalink to this definition"></a></dt>
+<dd><p>Set GPIB read and write timeouts in ms.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.srq_asserted">
+<span class="sig-name descname"><span class="pre">srq_asserted</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.srq_asserted" title="Permalink to this definition"></a></dt>
+<dd><p>Return the SRQ line state.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.system_error">
+<span class="sig-name descname"><span class="pre">system_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.system_error" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.version">
+<span class="sig-name descname"><span class="pre">version</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.version" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the RL1009 version information.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_DLL_INTERFACE.RL1009.write" title="Permalink to this definition"></a></dt>
+<dd><p>Execute a GPIB write command</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-PyICe.deps.RL1009.RL1009_SERIAL_CLASS">
+<span id="pyice-deps-rl1009-rl1009-serial-class-module"></span><h2>PyICe.deps.RL1009.RL1009_SERIAL_CLASS module<a class="headerlink" href="#module-PyICe.deps.RL1009.RL1009_SERIAL_CLASS" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.deps.RL1009.RL1009_SERIAL_CLASS.</span></span><span class="sig-name descname"><span class="pre">RL1009</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">comport</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>RL1009 USB to GPIB Serial Driver Class.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.clear_errors">
+<span class="sig-name descname"><span class="pre">clear_errors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.clear_errors" title="Permalink to this definition"></a></dt>
+<dd><p>Clear the RL1009 error list and error variable.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.close_connection">
+<span class="sig-name descname"><span class="pre">close_connection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.close_connection" title="Permalink to this definition"></a></dt>
+<dd><p>Close the RL1009 serial connection</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.connected">
+<span class="sig-name descname"><span class="pre">connected</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.connected" title="Permalink to this definition"></a></dt>
+<dd><p>Check Serial Connection</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.device_clear">
+<span class="sig-name descname"><span class="pre">device_clear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.device_clear" title="Permalink to this definition"></a></dt>
+<dd><p>GPIB device clear</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.error">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">error</span></span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.error" title="Permalink to this definition"></a></dt>
+<dd><p>RL1009 Error Indicator</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.error_description">
+<span class="sig-name descname"><span class="pre">error_description</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.error_description" title="Permalink to this definition"></a></dt>
+<dd><p>Get the description of the current error</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.error_list">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">error_list</span></span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.error_list" title="Permalink to this definition"></a></dt>
+<dd><p>RL1009 Error List</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.get_address">
+<span class="sig-name descname"><span class="pre">get_address</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.get_address" title="Permalink to this definition"></a></dt>
+<dd><p>Get the RL1009 GPIB address</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.get_serial_port">
+<span class="sig-name descname"><span class="pre">get_serial_port</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.get_serial_port" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.get_terminator">
+<span class="sig-name descname"><span class="pre">get_terminator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.get_terminator" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the GPIB terminator index.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.get_timeouts">
+<span class="sig-name descname"><span class="pre">get_timeouts</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.get_timeouts" title="Permalink to this definition"></a></dt>
+<dd><p>Get the GPIB read and write timeouts in ms</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.group_trigger">
+<span class="sig-name descname"><span class="pre">group_trigger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.group_trigger" title="Permalink to this definition"></a></dt>
+<dd><p>Group trigger the GPIB Bus</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.local">
+<span class="sig-name descname"><span class="pre">local</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.local" title="Permalink to this definition"></a></dt>
+<dd><p>For the GPIB device into local mode</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.query">
+<span class="sig-name descname"><span class="pre">query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.query" title="Permalink to this definition"></a></dt>
+<dd><p>Query the GPIB device</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.read">
+<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.read" title="Permalink to this definition"></a></dt>
+<dd><p>Read a GPIB response</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.serial_poll">
+<span class="sig-name descname"><span class="pre">serial_poll</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.serial_poll" title="Permalink to this definition"></a></dt>
+<dd><p>Execute a GPIB Serial Poll</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.set_address">
+<span class="sig-name descname"><span class="pre">set_address</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.set_address" title="Permalink to this definition"></a></dt>
+<dd><p>Set the RL1009 GPIB address</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.set_led_green">
+<span class="sig-name descname"><span class="pre">set_led_green</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.set_led_green" title="Permalink to this definition"></a></dt>
+<dd><p>Set the RL1009 Status LED to green</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.set_led_off">
+<span class="sig-name descname"><span class="pre">set_led_off</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.set_led_off" title="Permalink to this definition"></a></dt>
+<dd><p>Set the RL1009 Status LED to off</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.set_led_red">
+<span class="sig-name descname"><span class="pre">set_led_red</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.set_led_red" title="Permalink to this definition"></a></dt>
+<dd><p>Set the RL1009 Status LED to red</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.set_terminator">
+<span class="sig-name descname"><span class="pre">set_terminator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">terminator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.set_terminator" title="Permalink to this definition"></a></dt>
+<dd><p>Set the GPIB termination character index.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.set_timeouts">
+<span class="sig-name descname"><span class="pre">set_timeouts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">read_timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.set_timeouts" title="Permalink to this definition"></a></dt>
+<dd><p>Set the GPIB read and write timeouts in ms. Also update serial port timeout to match</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.srq_asserted">
+<span class="sig-name descname"><span class="pre">srq_asserted</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.srq_asserted" title="Permalink to this definition"></a></dt>
+<dd><p>Check the status of the GPIB SRQ line</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.version">
+<span class="sig-name descname"><span class="pre">version</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.version" title="Permalink to this definition"></a></dt>
+<dd><p>Get the RL1009 version</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1009.RL1009_SERIAL_CLASS.RL1009.write" title="Permalink to this definition"></a></dt>
+<dd><p>Have the RL1009 write a GPIB command</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-PyICe.deps.RL1009">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-PyICe.deps.RL1009" title="Permalink to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="PyICe.deps.RL1000.html" class="btn btn-neutral float-left" title="PyICe.deps.RL1000 package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="PyICe.deps.keithley_kxci.html" class="btn btn-neutral float-right" title="PyICe.deps.keithley_kxci package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Dave Simmons, Steve Martin, Zach Lewko.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

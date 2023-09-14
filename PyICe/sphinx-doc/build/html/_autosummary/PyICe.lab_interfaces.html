@@ -1,0 +1,362 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>PyICe.lab_interfaces &mdash; PyICe 9000 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '9000',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/tssop.ico"/>
+    <link rel="top" title="PyICe 9000 documentation" href="../PyICe.html" />
+    <link rel="next" title="PyICe.twi_instrument" href="PyICe.twi_instrument.html" />
+    <link rel="prev" title="PyICe.lab_gui" href="PyICe.lab_gui.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-PyICe.lab_interfaces">
+<span id="pyice-lab-interfaces"></span><h1>PyICe.lab_interfaces<a class="headerlink" href="#module-PyICe.lab_interfaces" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="physical-communication-interfaces-hierarchy-manager">
+<h2>Physical Communication Interfaces Hierarchy Manager<a class="headerlink" href="#physical-communication-interfaces-hierarchy-manager" title="Permalink to this headline">¶</a></h2>
+<p>Required for multithreaded communication.</p>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#PyICe.lab_interfaces.communication_node" title="PyICe.lab_interfaces.communication_node"><code class="xref py py-obj docutils literal"><span class="pre">communication_node</span></code></a>()</td>
+<td>The purpose of this is to map a network of communication resources to each channel</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">gpib_adapter</span></code>()</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">gpib_adapter_rl1009_dll</span></code>()</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">gpib_adapter_rl1009_serial</span></code>(serialPort)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">gpib_adapter_visa</span></code>()</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#PyICe.lab_interfaces.interface" title="PyICe.lab_interfaces.interface"><code class="xref py py-obj docutils literal"><span class="pre">interface</span></code></a>(name)</td>
+<td>base class all lab instruments should in some way talk to, all have a timeout whether or not it does anything</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#PyICe.lab_interfaces.interface_factory" title="PyICe.lab_interfaces.interface_factory"><code class="xref py py-obj docutils literal"><span class="pre">interface_factory</span></code></a>()</td>
+<td>the goal of the interface factory is both to create interfaces</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#PyICe.lab_interfaces.interface_ftdi_d2xx" title="PyICe.lab_interfaces.interface_ftdi_d2xx"><code class="xref py py-obj docutils literal"><span class="pre">interface_ftdi_d2xx</span></code></a>()</td>
+<td>write this if you want it</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#PyICe.lab_interfaces.interface_libusb" title="PyICe.lab_interfaces.interface_libusb"><code class="xref py py-obj docutils literal"><span class="pre">interface_libusb</span></code></a>(idVendor,&nbsp;idProduct,&nbsp;timeout)</td>
+<td>Bulk transfer through LibUSB/WinUSB.</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">interface_raw_serial</span></code>(serial_port_name,&nbsp;...)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">interface_spi</span></code>(name)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">interface_spi_cfgpro</span></code>(visa_interface,&nbsp;CPOL,&nbsp;CPHA)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">interface_spi_dc590</span></code>(interface_stream[,&nbsp;ss_ctrl])</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">interface_spi_dummy</span></code>([delay])</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#PyICe.lab_interfaces.interface_stream" title="PyICe.lab_interfaces.interface_stream"><code class="xref py py-obj docutils literal"><span class="pre">interface_stream</span></code></a>(name)</td>
+<td>Generic parent class of all stream-type interfaces.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#PyICe.lab_interfaces.interface_stream_serial" title="PyICe.lab_interfaces.interface_stream_serial"><code class="xref py py-obj docutils literal"><span class="pre">interface_stream_serial</span></code></a>(interface_raw_serial)</td>
+<td>PySerial based stream wrapper.</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">interface_twi</span></code>(name)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">interface_twi_buspirate</span></code>(interface_serial,&nbsp;...)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">interface_twi_dc590_serial</span></code>(interface_serial,&nbsp;...)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">interface_twi_dc590listread_serial</span></code>(...)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">interface_twi_dummy</span></code>(delay)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">interface_twi_kernel</span></code>(bus_number)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">interface_twi_scpi</span></code>(interface_serial,&nbsp;timeout)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">interface_twi_scpi_sp</span></code>(interface_serial,&nbsp;...)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">interface_twi_scpi_testhook</span></code>(...)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">interface_visa</span></code>(name)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">interface_visa_direct</span></code>(visa_address_string,&nbsp;...)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">interface_visa_keithley_kxci</span></code>(host_address,&nbsp;port)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">interface_visa_rl1009_dll</span></code>(GPIBAddress,&nbsp;timeout)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">interface_visa_rl1009_serial</span></code>(GPIBAddress,&nbsp;...)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">interface_visa_serial</span></code>(...)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">interface_visa_tcp_ip</span></code>(host_address,&nbsp;port,&nbsp;...)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">interface_visa_telnet</span></code>(host_address,&nbsp;port,&nbsp;...)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">interface_visa_vxi11</span></code>(address,&nbsp;timeout)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="PyICe.lab_interfaces.communication_node">
+<em class="property">class </em><code class="descclassname">PyICe.lab_interfaces.</code><code class="descname">communication_node</code><a class="reference internal" href="../_modules/PyICe/lab_interfaces.html#communication_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_interfaces.communication_node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>The purpose of this is to map a network of communication resources to each channel</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="PyICe.lab_interfaces.interface">
+<em class="property">class </em><code class="descclassname">PyICe.lab_interfaces.</code><code class="descname">interface</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_interfaces.html#interface"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_interfaces.interface" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.lab_interfaces.communication_node" title="PyICe.lab_interfaces.communication_node"><code class="xref py py-class docutils literal"><span class="pre">PyICe.lab_interfaces.communication_node</span></code></a></p>
+<p>base class all lab instruments should in some way talk to, all have a timeout whether or not it does anything</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="PyICe.lab_interfaces.interface_factory">
+<em class="property">class </em><code class="descclassname">PyICe.lab_interfaces.</code><code class="descname">interface_factory</code><a class="reference internal" href="../_modules/PyICe/lab_interfaces.html#interface_factory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_interfaces.interface_factory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.lab_interfaces.communication_node" title="PyICe.lab_interfaces.communication_node"><code class="xref py py-class docutils literal"><span class="pre">PyICe.lab_interfaces.communication_node</span></code></a></p>
+<p>the goal of the interface factory is both to create interfaces
+it also creates the instruments with communication_node, that they pass on to channels</p>
+<p>The purpose of this class is to be smart about the interfaces and to simplify their creation.
+It&#8217;s purpose is also to encourage portable code, and to remove some low level responsibilities 
+from the instruments.</p>
+<p>This also forces you to talk to gpib instruments in a way that works with both visa library and non-visa
+adapters.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="PyICe.lab_interfaces.interface_ftdi_d2xx">
+<em class="property">class </em><code class="descclassname">PyICe.lab_interfaces.</code><code class="descname">interface_ftdi_d2xx</code><a class="reference internal" href="../_modules/PyICe/lab_interfaces.html#interface_ftdi_d2xx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_interfaces.interface_ftdi_d2xx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.lab_interfaces.interface_stream" title="PyICe.lab_interfaces.interface_stream"><code class="xref py py-class docutils literal"><span class="pre">PyICe.lab_interfaces.interface_stream</span></code></a></p>
+<p>write this if you want it
+<a class="reference external" href="https://pypi.python.org/pypi/pylibftdi">https://pypi.python.org/pypi/pylibftdi</a></p>
+<dl class="method">
+<dt id="PyICe.lab_interfaces.interface_ftdi_d2xx.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_interfaces.interface_ftdi_d2xx.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>close the underlying interface if necessary</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_interfaces.interface_ftdi_d2xx.read">
+<code class="descname">read</code><span class="sig-paren">(</span><em>byte_count</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_interfaces.interface_ftdi_d2xx.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read and return tuple  (byte_count bytes, byte_count remaining_bytes) from subclass-specific communication interface.
+If fewer than byte_count bytes are available, return all available.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_interfaces.interface_ftdi_d2xx.write">
+<code class="descname">write</code><span class="sig-paren">(</span><em>byte_list</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_interfaces.interface_ftdi_d2xx.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send byte_list across subclass-specific communication interface.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="PyICe.lab_interfaces.interface_libusb">
+<em class="property">class </em><code class="descclassname">PyICe.lab_interfaces.</code><code class="descname">interface_libusb</code><span class="sig-paren">(</span><em>idVendor</em>, <em>idProduct</em>, <em>timeout</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_interfaces.html#interface_libusb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_interfaces.interface_libusb" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.lab_interfaces.interface" title="PyICe.lab_interfaces.interface"><code class="xref py py-class docutils literal"><span class="pre">PyICe.lab_interfaces.interface</span></code></a></p>
+<p>Bulk transfer through LibUSB/WinUSB.
+Implementation may be overly specific to George B&#8217;s Direct590 protocol and may need additional options or subclassing later.
+Transfers must be in multiples of this 64 byte payload size or will result in a babble error in the underlying library.
+Requires PyUSB: <a class="reference external" href="https://github.com/walac/pyusb">https://github.com/walac/pyusb</a></p>
+<dl class="method">
+<dt id="PyICe.lab_interfaces.interface_libusb.write">
+<code class="descname">write</code><span class="sig-paren">(</span><em>byte_list</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_interfaces.html#interface_libusb.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_interfaces.interface_libusb.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send byte_list across subclass-specific communication interface.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="PyICe.lab_interfaces.interface_stream">
+<em class="property">class </em><code class="descclassname">PyICe.lab_interfaces.</code><code class="descname">interface_stream</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_interfaces.html#interface_stream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_interfaces.interface_stream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.lab_interfaces.interface" title="PyICe.lab_interfaces.interface"><code class="xref py py-class docutils literal"><span class="pre">PyICe.lab_interfaces.interface</span></code></a></p>
+<p>Generic parent class of all stream-type interfaces. 
+Developed for DC590 board variants, but probably has more generic utility if moved into lab_interfaces
+Maybe consider change to inherit from <a class="reference external" href="https://docs.python.org/2/library/io.html">https://docs.python.org/2/library/io.html</a></p>
+<dl class="method">
+<dt id="PyICe.lab_interfaces.interface_stream.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_interfaces.html#interface_stream.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_interfaces.interface_stream.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>close the underlying interface if necessary</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_interfaces.interface_stream.read">
+<code class="descname">read</code><span class="sig-paren">(</span><em>byte_count</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_interfaces.html#interface_stream.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_interfaces.interface_stream.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read and return tuple  (byte_count bytes, byte_count remaining_bytes) from subclass-specific communication interface.
+If fewer than byte_count bytes are available, return all available.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_interfaces.interface_stream.write">
+<code class="descname">write</code><span class="sig-paren">(</span><em>byte_list</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_interfaces.html#interface_stream.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_interfaces.interface_stream.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send byte_list across subclass-specific communication interface.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="PyICe.lab_interfaces.interface_stream_serial">
+<em class="property">class </em><code class="descclassname">PyICe.lab_interfaces.</code><code class="descname">interface_stream_serial</code><span class="sig-paren">(</span><em>interface_raw_serial</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_interfaces.html#interface_stream_serial"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_interfaces.interface_stream_serial" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.lab_interfaces.interface_stream" title="PyICe.lab_interfaces.interface_stream"><code class="xref py py-class docutils literal"><span class="pre">PyICe.lab_interfaces.interface_stream</span></code></a></p>
+<p>PySerial based stream wrapper.</p>
+<dl class="method">
+<dt id="PyICe.lab_interfaces.interface_stream_serial.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_interfaces.html#interface_stream_serial.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_interfaces.interface_stream_serial.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>close the underlying interface</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_interfaces.interface_stream_serial.read">
+<code class="descname">read</code><span class="sig-paren">(</span><em>byte_count</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_interfaces.html#interface_stream_serial.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_interfaces.interface_stream_serial.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read and return tuple  (byte_count bytes, byte_count remaining_bytes) from subclass-specific communication interface.
+If fewer than byte_count bytes are available, return all available.
+If byte_count is None, return all available.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_interfaces.interface_stream_serial.write">
+<code class="descname">write</code><span class="sig-paren">(</span><em>byte_list</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_interfaces.html#interface_stream_serial.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_interfaces.interface_stream_serial.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send byte_list across subclass-specific communication interface.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../PyICe.html">
+              <img class="logo" src="../_static/tssop.png" alt="Logo"/>
+            </a></p>
+<h3><a href="../PyICe.html">Table Of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="PyICe.lab_instruments.html">PyICe.lab_instruments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.lab_core.html">PyICe.lab_core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.lab_utils.html">PyICe.lab_utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.LTC_plot.html">PyICe.LTC_plot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.lab_gui.html">PyICe.lab_gui</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">PyICe.lab_interfaces</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#physical-communication-interfaces-hierarchy-manager">Physical Communication Interfaces Hierarchy Manager</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.twi_instrument.html">PyICe.twi_instrument</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.twoWireInterface.html">PyICe.twoWireInterface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.spi_instrument.html">PyICe.spi_instrument</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.spi_interface.html">PyICe.spi_interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.visa_wrappers.html">PyICe.visa_wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.xml_registers.html">PyICe.xml_registers</a></li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../PyICe.html">Documentation overview</a><ul>
+      <li>Previous: <a href="PyICe.lab_gui.html" title="previous chapter">PyICe.lab_gui</a></li>
+      <li>Next: <a href="PyICe.twi_instrument.html" title="next chapter">PyICe.twi_instrument</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/_autosummary/PyICe.lab_interfaces.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Linear Technology Corporation.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="../_sources/_autosummary/PyICe.lab_interfaces.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

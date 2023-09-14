@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PyICe.refid_modules package &mdash; PyICe  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="PyICe.xml_registers package" href="PyICe.xml_registers.html" />
+    <link rel="prev" title="PyICe.instruments package" href="PyICe.instruments.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            PyICe
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">PyICe</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="PyICe.html">PyICe package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="PyICe.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="PyICe.data_utils.html">PyICe.data_utils package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="PyICe.deps.html">PyICe.deps package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="PyICe.instruments.html">PyICe.instruments package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">PyICe.refid_modules package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="PyICe.xml_registers.html">PyICe.xml_registers package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.LTC_plot">PyICe.LTC_plot module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.TypicalCurveEditor_input">PyICe.TypicalCurveEditor_input module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.generate_docs">PyICe.generate_docs module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.interpolator">PyICe.interpolator module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.ivy_instruments">PyICe.ivy_instruments module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.lab_core">PyICe.lab_core module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.lab_instruments">PyICe.lab_instruments module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.lab_interfaces">PyICe.lab_interfaces module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.lab_utils">PyICe.lab_utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.logo">PyICe.logo module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.plot_tools">PyICe.plot_tools module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.spi_instrument">PyICe.spi_instrument module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.spi_interface">PyICe.spi_interface module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.twi_instrument">PyICe.twi_instrument module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.twoWireInterface">PyICe.twoWireInterface module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.virtual_instruments">PyICe.virtual_instruments module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.visa_wrappers">PyICe.visa_wrappers module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PyICe</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">PyICe</a></li>
+          <li class="breadcrumb-item"><a href="PyICe.html">PyICe package</a></li>
+      <li class="breadcrumb-item active">PyICe.refid_modules package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/PyICe.refid_modules.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pyice-refid-modules-package">
+<h1>PyICe.refid_modules package<a class="headerlink" href="#pyice-refid-modules-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-PyICe.refid_modules.bench_base">
+<span id="pyice-refid-modules-bench-base-module"></span><h2>PyICe.refid_modules.bench_base module<a class="headerlink" href="#module-PyICe.refid_modules.bench_base" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.refid_modules.bench_base.bench_base">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.refid_modules.bench_base.</span></span><span class="sig-name descname"><span class="pre">bench_base</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.bench_base.bench_base" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.bench_base.bench_base.add_cleanup">
+<span class="sig-name descname"><span class="pre">add_cleanup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.bench_base.bench_base.add_cleanup" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.bench_base.bench_base.add_notification">
+<span class="sig-name descname"><span class="pre">add_notification</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.bench_base.bench_base.add_notification" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.bench_base.bench_base.add_traceability_channels">
+<span class="sig-name descname"><span class="pre">add_traceability_channels</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.bench_base.bench_base.add_traceability_channels" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.bench_base.bench_base.cleanup">
+<span class="sig-name descname"><span class="pre">cleanup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.bench_base.bench_base.cleanup" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.bench_base.bench_base.cleanup_oven">
+<span class="sig-name descname"><span class="pre">cleanup_oven</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.bench_base.bench_base.cleanup_oven" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.bench_base.bench_base.close_ports">
+<span class="sig-name descname"><span class="pre">close_ports</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.bench_base.bench_base.close_ports" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.bench_base.bench_base.get_master">
+<span class="sig-name descname"><span class="pre">get_master</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.bench_base.bench_base.get_master" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.bench_base.bench_base.init">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">virtual_oven</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.bench_base.bench_base.init" title="Permalink to this definition"></a></dt>
+<dd><p>‘make this gun work</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.bench_base.bench_base.notify">
+<span class="sig-name descname"><span class="pre">notify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subject</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attachment_filenames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attachment_MIMEParts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.bench_base.bench_base.notify" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-PyICe.refid_modules.bench_identifier">
+<span id="pyice-refid-modules-bench-identifier-module"></span><h2>PyICe.refid_modules.bench_identifier module<a class="headerlink" href="#module-PyICe.refid_modules.bench_identifier" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="PyICe.refid_modules.bench_identifier.get_bench_instruments">
+<span class="sig-prename descclassname"><span class="pre">PyICe.refid_modules.bench_identifier.</span></span><span class="sig-name descname"><span class="pre">get_bench_instruments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project_folder_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">benchsetup</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.bench_identifier.get_bench_instruments" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-PyICe.refid_modules.p4_traceability">
+<span id="pyice-refid-modules-p4-traceability-module"></span><h2>PyICe.refid_modules.p4_traceability module<a class="headerlink" href="#module-PyICe.refid_modules.p4_traceability" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="PyICe.refid_modules.p4_traceability.check_file_writable">
+<span class="sig-prename descclassname"><span class="pre">PyICe.refid_modules.p4_traceability.</span></span><span class="sig-name descname"><span class="pre">check_file_writable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fnm</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.p4_traceability.check_file_writable" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyICe.refid_modules.p4_traceability.get_client_info">
+<span class="sig-prename descclassname"><span class="pre">PyICe.refid_modules.p4_traceability.</span></span><span class="sig-name descname"><span class="pre">get_client_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.p4_traceability.get_client_info" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyICe.refid_modules.p4_traceability.get_describe">
+<span class="sig-prename descclassname"><span class="pre">PyICe.refid_modules.p4_traceability.</span></span><span class="sig-name descname"><span class="pre">get_describe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">change_number</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.p4_traceability.get_describe" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyICe.refid_modules.p4_traceability.get_fstat">
+<span class="sig-prename descclassname"><span class="pre">PyICe.refid_modules.p4_traceability.</span></span><span class="sig-name descname"><span class="pre">get_fstat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">local_file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.p4_traceability.get_fstat" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyICe.refid_modules.p4_traceability.p4_edit">
+<span class="sig-prename descclassname"><span class="pre">PyICe.refid_modules.p4_traceability.</span></span><span class="sig-name descname"><span class="pre">p4_edit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.p4_traceability.p4_edit" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.refid_modules.p4_traceability.results_dict">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.refid_modules.p4_traceability.</span></span><span class="sig-name descname"><span class="pre">results_dict</span></span><a class="headerlink" href="#PyICe.refid_modules.p4_traceability.results_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">OrderedDict</span></code></p>
+<p>Ordered dictionary with pretty print addition.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyICe.refid_modules.p4_traceability.sync_workspace">
+<span class="sig-prename descclassname"><span class="pre">PyICe.refid_modules.p4_traceability.</span></span><span class="sig-name descname"><span class="pre">sync_workspace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template_workspace</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.p4_traceability.sync_workspace" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="pyice-refid-modules-stdf-utils-module">
+<h2>PyICe.refid_modules.stdf_utils module<a class="headerlink" href="#pyice-refid-modules-stdf-utils-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-PyICe.refid_modules.temptroller">
+<span id="pyice-refid-modules-temptroller-module"></span><h2>PyICe.refid_modules.temptroller module<a class="headerlink" href="#module-PyICe.refid_modules.temptroller" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="PyICe.refid_modules.temptroller.ctrlc">
+<span class="sig-prename descclassname"><span class="pre">PyICe.refid_modules.temptroller.</span></span><span class="sig-name descname"><span class="pre">ctrlc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.temptroller.ctrlc" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.refid_modules.temptroller.replotter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.refid_modules.temptroller.</span></span><span class="sig-name descname"><span class="pre">replotter</span></span><a class="headerlink" href="#PyICe.refid_modules.temptroller.replotter" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.temptroller.replotter.add_test_run">
+<span class="sig-name descname"><span class="pre">add_test_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_class</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bench_setup_image</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bench_setup_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bench_instruments</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">refid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_plots</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.temptroller.replotter.add_test_run" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.temptroller.replotter.add_to_markdown">
+<span class="sig-name descname"><span class="pre">add_to_markdown</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">refid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indent_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.temptroller.replotter.add_to_markdown" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.temptroller.replotter.write_html">
+<span class="sig-name descname"><span class="pre">write_html</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">html_file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.temptroller.replotter.write_html" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyICe.refid_modules.temptroller.sig_handler">
+<span class="sig-prename descclassname"><span class="pre">PyICe.refid_modules.temptroller.</span></span><span class="sig-name descname"><span class="pre">sig_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dwCtrlType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hook_sigint=&lt;built-in</span> <span class="pre">function</span> <span class="pre">interrupt_main&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.temptroller.sig_handler" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.refid_modules.temptroller.temptroller">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.refid_modules.temptroller.</span></span><span class="sig-name descname"><span class="pre">temptroller</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">temperatures</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.temptroller.temptroller" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.temptroller.temptroller.add_test">
+<span class="sig-name descname"><span class="pre">add_test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repeat_count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.temptroller.temptroller.add_test" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.temptroller.temptroller.collect">
+<span class="sig-name descname"><span class="pre">collect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.temptroller.temptroller.collect" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.temptroller.temptroller.email_plots">
+<span class="sig-name descname"><span class="pre">email_plots</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot_svg_source</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.temptroller.temptroller.email_plots" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.temptroller.temptroller.get_bench_identity">
+<span class="sig-name descname"><span class="pre">get_bench_identity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.temptroller.temptroller.get_bench_identity" title="Permalink to this definition"></a></dt>
+<dd><p>just used to differentiate notifications. Not necessarily related to acutal bench in use if overridden.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.temptroller.temptroller.hook_functions">
+<span class="sig-name descname"><span class="pre">hook_functions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hook_key</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.temptroller.temptroller.hook_functions" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.temptroller.temptroller.manual_archive">
+<span class="sig-name descname"><span class="pre">manual_archive</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.temptroller.temptroller.manual_archive" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.temptroller.temptroller.notify">
+<span class="sig-name descname"><span class="pre">notify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subject</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attachment_filenames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attachment_MIMEParts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.temptroller.temptroller.notify" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.temptroller.temptroller.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.temptroller.temptroller.plot" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.temptroller.temptroller.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">collect_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_archive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.temptroller.temptroller.run" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.temptroller.temptroller.set_lab_bench_constructor">
+<span class="sig-name descname"><span class="pre">set_lab_bench_constructor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lab_bench_constructor</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.temptroller.temptroller.set_lab_bench_constructor" title="Permalink to this definition"></a></dt>
+<dd><p>override automatic bench lookup mechanism for special equipment setup.
+Usually not necessary
+constructure should be executable with no arguments and return an object with (minimally) channel master and notification function attributes</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-PyICe.refid_modules.test_archive">
+<span id="pyice-refid-modules-test-archive-module"></span><h2>PyICe.refid_modules.test_archive module<a class="headerlink" href="#module-PyICe.refid_modules.test_archive" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_archive.database_archive">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.refid_modules.test_archive.</span></span><span class="sig-name descname"><span class="pre">database_archive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db_source_file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_archive.database_archive" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_archive.database_archive.ask_archive_folder">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ask_archive_folder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">suggestion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_archive.database_archive.ask_archive_folder" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_archive.database_archive.compute_db_destination">
+<span class="sig-name descname"><span class="pre">compute_db_destination</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">archive_folder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_archive.database_archive.compute_db_destination" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_archive.database_archive.copy_interactive">
+<span class="sig-name descname"><span class="pre">copy_interactive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">archive_folder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_folder_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_archive.database_archive.copy_interactive" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_archive.database_archive.copy_table">
+<span class="sig-name descname"><span class="pre">copy_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db_source_table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db_dest_table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db_dest_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db_indices</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_archive.database_archive.copy_table" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_archive.database_archive.delete_table">
+<span class="sig-name descname"><span class="pre">delete_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db_source_table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">commit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_archive.database_archive.delete_table" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_archive.database_archive.disposition_table">
+<span class="sig-name descname"><span class="pre">disposition_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db_dest_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db_indices</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_archive.database_archive.disposition_table" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_archive.database_archive.get_table_names">
+<span class="sig-name descname"><span class="pre">get_table_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_archive.database_archive.get_table_names" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_archive.database_archive.write_plot_script">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">write_plot_script</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_class</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db_table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db_file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_archive.database_archive.write_plot_script" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-PyICe.refid_modules.test_module">
+<span id="pyice-refid-modules-test-module-module"></span><h2>PyICe.refid_modules.test_module module<a class="headerlink" href="#module-PyICe.refid_modules.test_module" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.isnan">
+<span class="sig-prename descclassname"><span class="pre">PyICe.refid_modules.test_module.</span></span><span class="sig-name descname"><span class="pre">isnan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.isnan" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.multitest_module">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.refid_modules.test_module.</span></span><span class="sig-name descname"><span class="pre">multitest_module</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.multitest_module" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.refid_modules.test_module.test_module" title="PyICe.refid_modules.test_module.test_module"><code class="xref py py-class docutils literal notranslate"><span class="pre">test_module</span></code></a></p>
+<p>class template
+all test modules shall inherit from this class and implement these abstract methods.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.multitest_module.add_multitest_unit">
+<span class="sig-name descname"><span class="pre">add_multitest_unit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">multitest_unit_class</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.multitest_module.add_multitest_unit" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.multitest_module.add_multitest_units">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">add_multitest_units</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.multitest_module.add_multitest_units" title="Permalink to this definition"></a></dt>
+<dd><p>Implement with repeated calls to self.add_multitest_unit(multitest_unit_class)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.multitest_module.compile_test_results">
+<span class="sig-name descname"><span class="pre">compile_test_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.multitest_module.compile_test_results" title="Permalink to this definition"></a></dt>
+<dd><p>inspect previously collected data. Check against parametic limits or functional specification to return Pass/Fail aggregated result.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.multitest_module.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_filepath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.multitest_module.plot" title="Permalink to this definition"></a></dt>
+<dd><p>output plot from previously stored data. Static method prevents logger/instrument creation. what about self.get_name()???
+return list of svg sources???</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.multitest_module.register_tests">
+<span class="sig-name descname"><span class="pre">register_tests</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.multitest_module.register_tests" title="Permalink to this definition"></a></dt>
+<dd><p>todo docs</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.multitest_unit">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.refid_modules.test_module.</span></span><span class="sig-name descname"><span class="pre">multitest_unit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent_module</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.multitest_unit" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>class template
+all test modules shall inherit from this class and implement these abstract methods.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.multitest_unit.compile_test_results">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compile_test_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.multitest_unit.compile_test_results" title="Permalink to this definition"></a></dt>
+<dd><p>inspect previously collected data. Check against parametic limits or functional specification to return Pass/Fail aggregated result.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.multitest_unit.debug_mode">
+<span class="sig-name descname"><span class="pre">debug_mode</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.multitest_unit.debug_mode" title="Permalink to this definition"></a></dt>
+<dd><p>query to see if module debug flag is set. useful where otherwise not provided as method argument, ex in setup().</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.multitest_unit.get_correlation_data">
+<span class="sig-name descname"><span class="pre">get_correlation_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">REFID</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.multitest_unit.get_correlation_data" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.multitest_unit.get_correlation_data_scalar">
+<span class="sig-name descname"><span class="pre">get_correlation_data_scalar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">REFID</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.multitest_unit.get_correlation_data_scalar" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.multitest_unit.get_die_traceability_hash_table">
+<span class="sig-name descname"><span class="pre">get_die_traceability_hash_table</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.multitest_unit.get_die_traceability_hash_table" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.multitest_unit.get_name">
+<span class="sig-name descname"><span class="pre">get_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.multitest_unit.get_name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.multitest_unit.get_revid">
+<span class="sig-name descname"><span class="pre">get_revid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.multitest_unit.get_revid" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.multitest_unit.get_test_limits">
+<span class="sig-name descname"><span class="pre">get_test_limits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.multitest_unit.get_test_limits" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.multitest_unit.get_variant_id">
+<span class="sig-name descname"><span class="pre">get_variant_id</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.multitest_unit.get_variant_id" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.multitest_unit.plot">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_filepath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_output</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.multitest_unit.plot" title="Permalink to this definition"></a></dt>
+<dd><p>output plot from previously stored data. Static method prevents logger/instrument creation. what about self.name???
+return list of svg sources???
+if skip_output, return svg source without writing to files</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.multitest_unit.register_tests">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">register_tests</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.multitest_unit.register_tests" title="Permalink to this definition"></a></dt>
+<dd><p>enumerate measurments to be taken, limits, etc before writing test or collcting results
+make repeated calls to self.register_test_*()</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.regressionException">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.refid_modules.test_module.</span></span><span class="sig-name descname"><span class="pre">regressionException</span></span><a class="headerlink" href="#PyICe.refid_modules.test_module.regressionException" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>special exception class to crash not just a single test module, but the whole enchilada.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.test_module">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.refid_modules.test_module.</span></span><span class="sig-name descname"><span class="pre">test_module</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.test_module" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>class template
+all test modules shall inherit from this class and implement these abstract methods.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.test_module.abort_regression">
+<span class="sig-name descname"><span class="pre">abort_regression</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reason</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.test_module.abort_regression" title="Permalink to this definition"></a></dt>
+<dd><p>force crash not just this test, but all of them.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.test_module.collect">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">collect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.test_module.collect" title="Permalink to this definition"></a></dt>
+<dd><p>perform data collection at a single temperature.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.test_module.configure_bench">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">configure_bench</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">components</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.test_module.configure_bench" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.test_module.copy_table">
+<span class="sig-name descname"><span class="pre">copy_table</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.test_module.copy_table" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.test_module.crash_info">
+<span class="sig-name descname"><span class="pre">crash_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.test_module.crash_info" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.test_module.debug_mode">
+<span class="sig-name descname"><span class="pre">debug_mode</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.test_module.debug_mode" title="Permalink to this definition"></a></dt>
+<dd><p>query to see if module debug flag is set. useful where otherwise not provided as method argument, ex in setup().</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.test_module.export_table_xlsx">
+<span class="sig-name descname"><span class="pre">export_table_xlsx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.test_module.export_table_xlsx" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.test_module.get_db">
+<span class="sig-name descname"><span class="pre">get_db</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.test_module.get_db" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.test_module.get_db_table_name">
+<span class="sig-name descname"><span class="pre">get_db_table_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.test_module.get_db_table_name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.test_module.get_import_str">
+<span class="sig-name descname"><span class="pre">get_import_str</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.test_module.get_import_str" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.test_module.get_lab_bench">
+<span class="sig-name descname"><span class="pre">get_lab_bench</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.test_module.get_lab_bench" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.test_module.get_logger">
+<span class="sig-name descname"><span class="pre">get_logger</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.test_module.get_logger" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.test_module.get_max_test_temp">
+<span class="sig-name descname"><span class="pre">get_max_test_temp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.test_module.get_max_test_temp" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.test_module.get_min_test_temp">
+<span class="sig-name descname"><span class="pre">get_min_test_temp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.test_module.get_min_test_temp" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.test_module.get_name">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.test_module.get_name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.test_module.hook_functions">
+<span class="sig-name descname"><span class="pre">hook_functions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hook_key</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.test_module.hook_functions" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.test_module.in_range">
+<span class="sig-name descname"><span class="pre">in_range</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tdegc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.test_module.in_range" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.test_module.is_crashed">
+<span class="sig-name descname"><span class="pre">is_crashed</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.test_module.is_crashed" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.test_module.plot">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_filepath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_output</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.test_module.plot" title="Permalink to this definition"></a></dt>
+<dd><p>output plot from previously stored data. Static method prevents logger/instrument creation. what about self.name???
+return list of svg sources???</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.test_module.plot_from_table">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">plot_from_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.test_module.plot_from_table" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.test_module.reconfigure">
+<span class="sig-name descname"><span class="pre">reconfigure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.test_module.reconfigure" title="Permalink to this definition"></a></dt>
+<dd><p>save channel settings specific to a particular test. Unwound after test at each temperature.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.test_module.register_db_index">
+<span class="sig-name descname"><span class="pre">register_db_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.test_module.register_db_index" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.test_module.register_plugin">
+<span class="sig-name descname"><span class="pre">register_plugin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plugin</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.test_module.register_plugin" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.test_module.run">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">collect_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperatures</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lab_bench_constructor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.test_module.run" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.test_module.run_repeatability">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">run_repeatability</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repeat_count</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperatures</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lab_bench_constructor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.test_module.run_repeatability" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.test_module.set_max_test_temp">
+<span class="sig-name descname"><span class="pre">set_max_test_temp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">temperature</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.test_module.set_max_test_temp" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.test_module.set_min_test_temp">
+<span class="sig-name descname"><span class="pre">set_min_test_temp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">temperature</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.test_module.set_min_test_temp" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.test_module.setup">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channels</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.test_module.setup" title="Permalink to this definition"></a></dt>
+<dd><p>customize logger channels and virtual instruments for test here</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.test_module.teardown">
+<span class="sig-name descname"><span class="pre">teardown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.test_module.teardown" title="Permalink to this definition"></a></dt>
+<dd><p>Any test cleanup required after all temps?</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_module.test_module.temp_is_included">
+<span class="sig-name descname"><span class="pre">temp_is_included</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tdegc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_module.test_module.temp_is_included" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-PyICe.refid_modules.test_results">
+<span id="pyice-refid-modules-test-results-module"></span><h2>PyICe.refid_modules.test_results module<a class="headerlink" href="#module-PyICe.refid_modules.test_results" title="Permalink to this heading"></a></h2>
+<dl class="py exception">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_results.ResultsSchemaMismatchException">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.refid_modules.test_results.</span></span><span class="sig-name descname"><span class="pre">ResultsSchemaMismatchException</span></span><a class="headerlink" href="#PyICe.refid_modules.test_results.ResultsSchemaMismatchException" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Mismatch between writer and reader formats</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_results.correlation_results">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.refid_modules.test_results.</span></span><span class="sig-name descname"><span class="pre">correlation_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_results.correlation_results" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.refid_modules.test_results.generic_results" title="PyICe.refid_modules.test_results.generic_results"><code class="xref py py-class docutils literal notranslate"><span class="pre">generic_results</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_results.correlation_results.get_correlation_declaration">
+<span class="sig-name descname"><span class="pre">get_correlation_declaration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_results.correlation_results.get_correlation_declaration" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_results.correlation_results.get_correlation_declarations">
+<span class="sig-name descname"><span class="pre">get_correlation_declarations</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_results.correlation_results.get_correlation_declarations" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_results.correlation_results.json_report">
+<span class="sig-name descname"><span class="pre">json_report</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_results.correlation_results.json_report" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_results.correlation_results_reload">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.refid_modules.test_results.</span></span><span class="sig-name descname"><span class="pre">correlation_results_reload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results_json</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'correlation_results.json'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_results.correlation_results_reload" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.refid_modules.test_results.correlation_results" title="PyICe.refid_modules.test_results.correlation_results"><code class="xref py py-class docutils literal notranslate"><span class="pre">correlation_results</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_results.correlation_results_reload.json_report">
+<span class="sig-name descname"><span class="pre">json_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'correlation_results_rewrite.json'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_results.correlation_results_reload.json_report" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_results.freeze">
+<span class="sig-prename descclassname"><span class="pre">PyICe.refid_modules.test_results.</span></span><span class="sig-name descname"><span class="pre">freeze</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">o</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_results.freeze" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_results.generic_results">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.refid_modules.test_results.</span></span><span class="sig-name descname"><span class="pre">generic_results</span></span><a class="headerlink" href="#PyICe.refid_modules.test_results.generic_results" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Parent of test_results and correlation_results and keeper of any commonalities.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_results.generic_results.get_name">
+<span class="sig-name descname"><span class="pre">get_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_results.generic_results.get_name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_results.generic_results.get_traceability_info">
+<span class="sig-name descname"><span class="pre">get_traceability_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_results.generic_results.get_traceability_info" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_results.generic_results.set_db_filepath">
+<span class="sig-name descname"><span class="pre">set_db_filepath</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db_filepath</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_results.generic_results.set_db_filepath" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_results.generic_results.set_table_name">
+<span class="sig-name descname"><span class="pre">set_table_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_results.generic_results.set_table_name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_results.make_hash">
+<span class="sig-prename descclassname"><span class="pre">PyICe.refid_modules.test_results.</span></span><span class="sig-name descname"><span class="pre">make_hash</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">o</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_results.make_hash" title="Permalink to this definition"></a></dt>
+<dd><p>makes a hash out of anything that contains only list,dict and hashable types including string and numeric types</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_results.none_abs">
+<span class="sig-prename descclassname"><span class="pre">PyICe.refid_modules.test_results.</span></span><span class="sig-name descname"><span class="pre">none_abs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_results.none_abs" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_results.none_max">
+<span class="sig-prename descclassname"><span class="pre">PyICe.refid_modules.test_results.</span></span><span class="sig-name descname"><span class="pre">none_max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_results.none_max" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_results.none_min">
+<span class="sig-prename descclassname"><span class="pre">PyICe.refid_modules.test_results.</span></span><span class="sig-name descname"><span class="pre">none_min</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_results.none_min" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_results.test_results">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.refid_modules.test_results.</span></span><span class="sig-name descname"><span class="pre">test_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_results.test_results" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.refid_modules.test_results.generic_results" title="PyICe.refid_modules.test_results.generic_results"><code class="xref py py-class docutils literal notranslate"><span class="pre">generic_results</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_results.test_results.get_test_declaration">
+<span class="sig-name descname"><span class="pre">get_test_declaration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_results.test_results.get_test_declaration" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_results.test_results.get_test_declarations">
+<span class="sig-name descname"><span class="pre">get_test_declarations</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_results.test_results.get_test_declarations" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_results.test_results.json_report">
+<span class="sig-name descname"><span class="pre">json_report</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_results.test_results.json_report" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_results.test_results_reload">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.refid_modules.test_results.</span></span><span class="sig-name descname"><span class="pre">test_results_reload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results_json</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'test_results.json'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_results.test_results_reload" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.refid_modules.test_results.test_results" title="PyICe.refid_modules.test_results.test_results"><code class="xref py py-class docutils literal notranslate"><span class="pre">test_results</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.refid_modules.test_results.test_results_reload.json_report">
+<span class="sig-name descname"><span class="pre">json_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'test_results_rewrite.json'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.refid_modules.test_results.test_results_reload.json_report" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-PyICe.refid_modules">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-PyICe.refid_modules" title="Permalink to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="PyICe.instruments.html" class="btn btn-neutral float-left" title="PyICe.instruments package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="PyICe.xml_registers.html" class="btn btn-neutral float-right" title="PyICe.xml_registers package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Dave Simmons, Steve Martin, Zach Lewko.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

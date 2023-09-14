@@ -1,0 +1,1355 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>PyICe.lab_core &mdash; PyICe 9000 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '9000',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/tssop.ico"/>
+    <link rel="top" title="PyICe 9000 documentation" href="../PyICe.html" />
+    <link rel="next" title="PyICe.lab_utils" href="PyICe.lab_utils.html" />
+    <link rel="prev" title="PyICe.lab_instruments" href="PyICe.lab_instruments.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-PyICe.lab_core">
+<span id="pyice-lab-core"></span><h1>PyICe.lab_core<a class="headerlink" href="#module-PyICe.lab_core" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="channel-and-threading-core-framework">
+<h2>Channel and Threading Core Framework<a class="headerlink" href="#channel-and-threading-core-framework" title="Permalink to this headline">¶</a></h2>
+<p>changes to this file should be minimal!</p>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#PyICe.lab_core.channel" title="PyICe.lab_core.channel"><code class="xref py py-obj docutils literal"><span class="pre">channel</span></code></a>(name[,&nbsp;read_function,&nbsp;write_function])</td>
+<td>This is the basic channel object, it can be read and/or written.</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">channel_group</span></code>([name])</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#PyICe.lab_core.channel_master" title="PyICe.lab_core.channel_master"><code class="xref py py-obj docutils literal"><span class="pre">channel_master</span></code></a>([name])</td>
+<td>Master channel collection.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#PyICe.lab_core.delegator" title="PyICe.lab_core.delegator"><code class="xref py py-obj docutils literal"><span class="pre">delegator</span></code></a>()</td>
+<td>base class for a read delegator, this is the lowest level class in the library.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#PyICe.lab_core.instrument" title="PyICe.lab_core.instrument"><code class="xref py py-obj docutils literal"><span class="pre">instrument</span></code></a>(name)</td>
+<td>Superclass for all lab instruments</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#PyICe.lab_core.integer_channel" title="PyICe.lab_core.integer_channel"><code class="xref py py-obj docutils literal"><span class="pre">integer_channel</span></code></a>(name,&nbsp;size[,&nbsp;read_function,&nbsp;...])</td>
+<td>channel limited to writing integer values. Adds presets and formats but retains channel class&#8217;s read/write restrictions.</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">logger</span></code>([channel_master_or_group,&nbsp;database,&nbsp;...])</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">logger_backend</span></code>([database,&nbsp;use_threads])</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">master</span></code>([name])</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#PyICe.lab_core.register" title="PyICe.lab_core.register"><code class="xref py py-obj docutils literal"><span class="pre">register</span></code></a>(name,&nbsp;size[,&nbsp;read_function,&nbsp;...])</td>
+<td>Register primitive superclass, inherits from integer_channel and channel.</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">remote_channel</span></code>(proxy_channel,&nbsp;parent_delegator)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">remote_channel_group_client</span></code>([address,&nbsp;port,&nbsp;...])</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">remote_channel_group_server</span></code>(channel_group_object)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#PyICe.lab_core.scpi_instrument" title="PyICe.lab_core.scpi_instrument"><code class="xref py py-obj docutils literal"><span class="pre">scpi_instrument</span></code></a>(name)</td>
+<td>SCPI Instrument Base Class.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Exceptions</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">ChannelAccessException</span></code></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">ChannelAttributeError</span></code></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">ChannelException</span></code></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">ChannelNameException</span></code></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">ChannelValueException</span></code></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">RegisterFormatException</span></code></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">RemoteChannelGroupException</span></code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="PyICe.lab_core.channel">
+<em class="property">class </em><code class="descclassname">PyICe.lab_core.</code><code class="descname">channel</code><span class="sig-paren">(</span><em>name</em>, <em>read_function=None</em>, <em>write_function=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.lab_core.delegator" title="PyICe.lab_core.delegator"><code class="xref py py-class docutils literal"><span class="pre">PyICe.lab_core.delegator</span></code></a></p>
+<p>This is the basic channel object, it can be read and/or written. attributes can also be stored in it, for
+example channel number in a multi channel instrument</p>
+<dl class="method">
+<dt id="PyICe.lab_core.channel.add_read_callback">
+<code class="descname">add_read_callback</code><span class="sig-paren">(</span><em>read_callback</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel.add_read_callback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel.add_read_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a read callback. This is a function that will be called any time the channel is read. the callback function takes two arguments (channel_object, data)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel.add_write_callback">
+<code class="descname">add_write_callback</code><span class="sig-paren">(</span><em>write_callback</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel.add_write_callback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel.add_write_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a write callback. This is a function that will be called any time the channel is written. the callback function takes two arguments (channel_object, data)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel.format_display">
+<code class="descname">format_display</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel.format_display"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel.format_display" title="Permalink to this definition">¶</a></dt>
+<dd><p>converts data to string according to string formatting rule set by self.set_display_format_str()</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel.get_attribute">
+<code class="descname">get_attribute</code><span class="sig-paren">(</span><em>attribute_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel.get_attribute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel.get_attribute" title="Permalink to this definition">¶</a></dt>
+<dd><p>retrieve value previously set with set_attribute(attribute_name, value)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel.get_attributes">
+<code class="descname">get_attributes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel.get_attributes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel.get_attributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>return dictionary of all channel attributes previously set with set_attribute(attribute_name, value)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel.get_category">
+<code class="descname">get_category</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel.get_category"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel.get_category" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns category membership.  should be a string.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel.get_description">
+<code class="descname">get_description</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel.get_description"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel.get_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>return channel description string.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel.get_max_write_limit">
+<code class="descname">get_max_write_limit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel.get_max_write_limit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel.get_max_write_limit" title="Permalink to this definition">¶</a></dt>
+<dd><p>return max writable channel value.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel.get_min_write_limit">
+<code class="descname">get_min_write_limit</code><span class="sig-paren">(</span><em>formatted=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel.get_min_write_limit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel.get_min_write_limit" title="Permalink to this definition">¶</a></dt>
+<dd><p>return min writable channel value.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel.get_name">
+<code class="descname">get_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel.get_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel.get_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>return channel name</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel.get_write_delay">
+<code class="descname">get_write_delay</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel.get_write_delay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel.get_write_delay" title="Permalink to this definition">¶</a></dt>
+<dd><p>return automatic delay after channel write</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel.is_readable">
+<code class="descname">is_readable</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel.is_readable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel.is_readable" title="Permalink to this definition">¶</a></dt>
+<dd><p>return register readability boolean</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel.is_writeable">
+<code class="descname">is_writeable</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel.is_writeable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel.is_writeable" title="Permalink to this definition">¶</a></dt>
+<dd><p>return register writability boolean</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel.set_attribute">
+<code class="descname">set_attribute</code><span class="sig-paren">(</span><em>attribute_name</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel.set_attribute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel.set_attribute" title="Permalink to this definition">¶</a></dt>
+<dd><p>set attribute_name to value
+value can br retrived later with get_attribute(attribute_name)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel.set_category">
+<code class="descname">set_category</code><span class="sig-paren">(</span><em>category</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel.set_category"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel.set_category" title="Permalink to this definition">¶</a></dt>
+<dd><p>each channel may be a member of a single category for sorting purposes. category argument is usually a string</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel.set_description">
+<code class="descname">set_description</code><span class="sig-paren">(</span><em>description</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel.set_description"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel.set_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>sets the channel description. argument is string</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel.set_display_format_function">
+<code class="descname">set_display_format_function</code><span class="sig-paren">(</span><em>function</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel.set_display_format_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel.set_display_format_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>abandon string formatting and pass data through custom user-supplied function</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel.set_display_format_str">
+<code class="descname">set_display_format_str</code><span class="sig-paren">(</span><em>fmt_str=''</em>, <em>prefix=''</em>, <em>suffix=''</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel.set_display_format_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel.set_display_format_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>format string to alter how data is displayed.  example &#8216;3.2f&#8217;, &#8216;04X&#8217;, &#8216;#06X&#8217;, &#8216;#18b&#8217;, &#8216;.2%&#8217;
+prefix will be displayed immediately before the channel data, example &#8216;0x&#8217;
+suffix will be displayed immediately after the channel data, example &#8216; A&#8217; or &#8216; V&#8217;</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel.set_max_write_limit">
+<code class="descname">set_max_write_limit</code><span class="sig-paren">(</span><em>max</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel.set_max_write_limit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel.set_max_write_limit" title="Permalink to this definition">¶</a></dt>
+<dd><p>set channel&#8217;s maximum writable value. None disables limit</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel.set_min_write_limit">
+<code class="descname">set_min_write_limit</code><span class="sig-paren">(</span><em>min</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel.set_min_write_limit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel.set_min_write_limit" title="Permalink to this definition">¶</a></dt>
+<dd><p>set channel&#8217;s minimum writable value. None disables limit</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel.set_name">
+<code class="descname">set_name</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel.set_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel.set_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>rename channel</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel.set_read_access">
+<code class="descname">set_read_access</code><span class="sig-paren">(</span><em>readable=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel.set_read_access"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel.set_read_access" title="Permalink to this definition">¶</a></dt>
+<dd><p>set or unset register read access</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel.set_write_access">
+<code class="descname">set_write_access</code><span class="sig-paren">(</span><em>writeable=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel.set_write_access"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel.set_write_access" title="Permalink to this definition">¶</a></dt>
+<dd><p>set or unset register write access</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel.set_write_delay">
+<code class="descname">set_write_delay</code><span class="sig-paren">(</span><em>delay</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel.set_write_delay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel.set_write_delay" title="Permalink to this definition">¶</a></dt>
+<dd><p>sets the automatic delay in seconds after channel write</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel.write_unformatted">
+<code class="descname">write_unformatted</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel.write_unformatted"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel.write_unformatted" title="Permalink to this definition">¶</a></dt>
+<dd><p>bypass unformatting stub. Only useful for integer and register channels. intended for use by GUI.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="PyICe.lab_core.channel_master">
+<em class="property">class </em><code class="descclassname">PyICe.lab_core.</code><code class="descname">channel_master</code><span class="sig-paren">(</span><em>name=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel_master"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel_master" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">PyICe.lab_core.channel_group</span></code>, <a class="reference internal" href="#PyICe.lab_core.delegator" title="PyICe.lab_core.delegator"><code class="xref py py-class docutils literal"><span class="pre">PyICe.lab_core.delegator</span></code></a></p>
+<p>Master channel collection. There is typically only one. It replaces the old lab_bench 
+as the main point of interaction with channels.  Channels and channel_groups (instruments) may
+be added to it.  It also creates dummy and virtual channels and adds them to its collection.  It also 
+supports virtual_caching channels; these can use cached data if available during logging or other multiple channel read.</p>
+<dl class="method">
+<dt id="PyICe.lab_core.channel_master.add_channel_counter">
+<code class="descname">add_channel_counter</code><span class="sig-paren">(</span><em>channel_name</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel_master.add_channel_counter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel_master.add_channel_counter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a named timer channel. Returns zero the first time channel is read and increments by one each time thereafter.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel_master.add_channel_delta_timer">
+<code class="descname">add_channel_delta_timer</code><span class="sig-paren">(</span><em>channel_name</em>, <em>reciprocal=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel_master.add_channel_delta_timer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel_master.add_channel_delta_timer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a named timer channel. Returns the time elapsed since the prior channel read.
+Optionally, compute 1/time to return frequency instead.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel_master.add_channel_dummy">
+<code class="descname">add_channel_dummy</code><span class="sig-paren">(</span><em>channel_name</em>, <em>integer_size=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel_master.add_channel_dummy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel_master.add_channel_dummy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a named dummy channel. This can be used if a single physical instrument channel is externally multiplexed to 
+multiple measurement nodes. The user can store the multiple measurement results from a single instrument into
+multiple dummy channels. Also it is useful for logging test conditions.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel_master.add_channel_total_timer">
+<code class="descname">add_channel_total_timer</code><span class="sig-paren">(</span><em>channel_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel_master.add_channel_total_timer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel_master.add_channel_total_timer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a named timer channel. Returns the time elapsed since first channel read.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel_master.add_channel_virtual">
+<code class="descname">add_channel_virtual</code><span class="sig-paren">(</span><em>channel_name</em>, <em>read_function=None</em>, <em>write_function=None</em>, <em>integer_size=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel_master.add_channel_virtual"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel_master.add_channel_virtual" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a channel named channel_name. Channel may have a read_function or a write_function but not both.
+If write_function is supplied, the write function is called with the value when written, and the last written value is returned when read.
+If read_function is supplied, this channel returns the return of read_function when read.
+If integer_size is not None, creates in integer_channel instead of a channel. integer_size should specify the number of data bits.
+Integer channels can add presets, formats.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel_master.add_channel_virtual_caching">
+<code class="descname">add_channel_virtual_caching</code><span class="sig-paren">(</span><em>channel_name</em>, <em>read_function=None</em>, <em>write_function=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel_master.add_channel_virtual_caching"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel_master.add_channel_virtual_caching" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a channel named channel_name. Channel may have a read_function or a write_function but not both.
+If write_function is supplied, the write function is called with the value when written, and the last written value is returned when read.
+If read_function is supplied, this channel returns the return of read_function when read.
+If the read_function calls the creating channel_master&#8217;s read_channel on another channel,
+a cached value may be used if part of a multi-channel channel read. This can improve logging speed in some cases.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel_master.add_read_callback">
+<code class="descname">add_read_callback</code><span class="sig-paren">(</span><em>read_callback</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel_master.add_read_callback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel_master.add_read_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a read callback. This is a function that will be called any time a channel(s) is read. the callback function should accept one argument: the dictionary of results.
+If it is not important to group results by each batch read, consider adding a callback to an individual channel instead.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel_master.add_write_callback">
+<code class="descname">add_write_callback</code><span class="sig-paren">(</span><em>write_callback</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel_master.add_write_callback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel_master.add_write_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a write callback. This is a function that will be called any time a channel is written. the callback function should accept one argument: the dictionary of results.
+In this case, the dictionary will only contain a key,value pair for the single channel that was written. For more flexibility, considering adding a callback to an individual channel instead.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel_master.get_flat_channel_group">
+<code class="descname">get_flat_channel_group</code><span class="sig-paren">(</span><em>name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.channel_master.get_flat_channel_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns a channel_group directly containing all channels this one can resolve</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel_master.merge_in_channel_group">
+<code class="descname">merge_in_channel_group</code><span class="sig-paren">(</span><em>channel_group_object</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.channel_master.merge_in_channel_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>merges in a channel group</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel_master.read_all_channels">
+<code class="descname">read_all_channels</code><span class="sig-paren">(</span><em>categories=None</em>, <em>exclusions=[]</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.channel_master.read_all_channels" title="Permalink to this definition">¶</a></dt>
+<dd><p>read all readable channels in channel group and return orderd dictionary of results. Optionally filter by list of categories.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel_master.read_channels">
+<code class="descname">read_channels</code><span class="sig-paren">(</span><em>item_list</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.channel_master.read_channels" title="Permalink to this definition">¶</a></dt>
+<dd><p>item list is a list of channel objects, names or channel_groups</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel_master.resolve_channel_list">
+<code class="descname">resolve_channel_list</code><span class="sig-paren">(</span><em>item_list</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.channel_master.resolve_channel_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>takes a list of channels, channel_names, or channel_groups and produces a single channel group</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel_master.write_channel">
+<code class="descname">write_channel</code><span class="sig-paren">(</span><em>channel_name</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#channel_master.write_channel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.channel_master.write_channel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delegates channel write to the appropriate registered instrument.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.channel_master.write_html">
+<code class="descname">write_html</code><span class="sig-paren">(</span><em>file_name=None</em>, <em>verbose=True</em>, <em>sort_categories=False</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.channel_master.write_html" title="Permalink to this definition">¶</a></dt>
+<dd><p>return html document string and optionally write to file_name
+if verbose, include tables of presets and attributes for each channel
+if sort_categories, group channel names first by category before alphabetical sort of channel name</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="PyICe.lab_core.delegator">
+<em class="property">class </em><code class="descclassname">PyICe.lab_core.</code><code class="descname">delegator</code><a class="reference internal" href="../_modules/PyICe/lab_core.html#delegator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.delegator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>base class for a read delegator, this is the lowest level class in the library.
+You will probably never use it directly.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="PyICe.lab_core.instrument">
+<em class="property">class </em><code class="descclassname">PyICe.lab_core.</code><code class="descname">instrument</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#instrument"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.instrument" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">PyICe.lab_core.channel_group</span></code></p>
+<p>Superclass for all lab instruments
+To add an instrument to a lab_bench object, it must inherit from instrument or one of its specialized subclasses</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>Rules for adding instruments:</dt>
+<dd><ol class="first last arabic">
+<li><p class="first">extend instrument class</p>
+</li>
+<li><p class="first">call the instrument classes __init__ from its __init__</p>
+</li>
+<li><dl class="first docutils">
+<dt>contain an add_channel (and/or add_channel_XXXXX) methods that:</dt>
+<dd><ol class="first last loweralpha">
+<li><dl class="first docutils">
+<dt>create a channel object with a:</dt>
+<dd><ol class="first last arabic simple">
+<li>name</li>
+<li>EITHER a read_function or write_function</li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p class="first">call the _add_channel method with that channel as an argument</p>
+</li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p class="first">has a name attribute which is a meaningful string about the instrument</p>
+</li>
+</ol>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="method">
+<dt id="PyICe.lab_core.instrument.add_channel">
+<code class="descname">add_channel</code><span class="sig-paren">(</span><em>channel_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#instrument.add_channel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.instrument.add_channel" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Usage: Add channel name to instrument.  For multi-channel instruments,</dt>
+<dd>typically also takes a second argument representing the physical
+channel of the instrument. May also take channel configuration arguments specific to the instrument.</dd>
+</dl>
+<p>Operation:  This method should create the channel object then call self._add_channel(channel) to add it to the internal channel group</p>
+<blockquote>
+<div>Method must be overloaded by each instrument driver.</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.instrument.get_error">
+<code class="descname">get_error</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#instrument.get_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.instrument.get_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the first error from the instrument.  Overload in scpi_instrument or the actual instrument class</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.instrument.get_errors">
+<code class="descname">get_errors</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#instrument.get_errors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.instrument.get_errors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of all errors from the instrument.  Overload in scpi_instrument or the actual instrument class</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.instrument.get_flat_channel_group">
+<code class="descname">get_flat_channel_group</code><span class="sig-paren">(</span><em>name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.instrument.get_flat_channel_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns a channel_group directly containing all channels this one can resolve</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.instrument.merge_in_channel_group">
+<code class="descname">merge_in_channel_group</code><span class="sig-paren">(</span><em>channel_group_object</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.instrument.merge_in_channel_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>merges in a channel group</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.instrument.read_all_channels">
+<code class="descname">read_all_channels</code><span class="sig-paren">(</span><em>categories=None</em>, <em>exclusions=[]</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.instrument.read_all_channels" title="Permalink to this definition">¶</a></dt>
+<dd><p>read all readable channels in channel group and return orderd dictionary of results. Optionally filter by list of categories.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.instrument.read_channels">
+<code class="descname">read_channels</code><span class="sig-paren">(</span><em>item_list</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.instrument.read_channels" title="Permalink to this definition">¶</a></dt>
+<dd><p>item list is a list of channel objects, names or channel_groups</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.instrument.resolve_channel_list">
+<code class="descname">resolve_channel_list</code><span class="sig-paren">(</span><em>item_list</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.instrument.resolve_channel_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>takes a list of channels, channel_names, or channel_groups and produces a single channel group</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.instrument.write_html">
+<code class="descname">write_html</code><span class="sig-paren">(</span><em>file_name=None</em>, <em>verbose=True</em>, <em>sort_categories=False</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.instrument.write_html" title="Permalink to this definition">¶</a></dt>
+<dd><p>return html document string and optionally write to file_name
+if verbose, include tables of presets and attributes for each channel
+if sort_categories, group channel names first by category before alphabetical sort of channel name</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="PyICe.lab_core.integer_channel">
+<em class="property">class </em><code class="descclassname">PyICe.lab_core.</code><code class="descname">integer_channel</code><span class="sig-paren">(</span><em>name</em>, <em>size</em>, <em>read_function=None</em>, <em>write_function=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#integer_channel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.integer_channel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.lab_core.channel" title="PyICe.lab_core.channel"><code class="xref py py-class docutils literal"><span class="pre">PyICe.lab_core.channel</span></code></a></p>
+<p>channel limited to writing integer values. Adds presets and formats but retains channel class&#8217;s read/write restrictions.</p>
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.add_format">
+<code class="descname">add_format</code><span class="sig-paren">(</span><em>format_name</em>, <em>format_function</em>, <em>unformat_function</em>, <em>signed=False</em>, <em>units=''</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#integer_channel.add_format"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.integer_channel.add_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a format to this register.  Formats convert a raw number into a more meaningful string and vice versa 
+Formats can be generic hex, bin, etc, or can be more complicated.
+format_name is the name of the format
+format_function transforms from integer data to real
+unformat_function transforms from real data to integer
+format_function and unformat_function should be reversible
+signed treats integer data as two&#8217;s complement with self.size bit width
+units optionally appended to formatted (real) data when displayed by GUI</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.add_preset">
+<code class="descname">add_preset</code><span class="sig-paren">(</span><em>preset_name</em>, <em>preset_value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#integer_channel.add_preset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.integer_channel.add_preset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a preset named preset_name with value preset_value</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.add_read_callback">
+<code class="descname">add_read_callback</code><span class="sig-paren">(</span><em>read_callback</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.integer_channel.add_read_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a read callback. This is a function that will be called any time the channel is read. the callback function takes two arguments (channel_object, data)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.add_write_callback">
+<code class="descname">add_write_callback</code><span class="sig-paren">(</span><em>write_callback</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.integer_channel.add_write_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a write callback. This is a function that will be called any time the channel is written. the callback function takes two arguments (channel_object, data)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.format">
+<code class="descname">format</code><span class="sig-paren">(</span><em>data</em>, <em>format</em>, <em>use_presets</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#integer_channel.format"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.integer_channel.format" title="Permalink to this definition">¶</a></dt>
+<dd><p>take in integer data, pass through specified formatting function, and return string/real representation.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.format_display">
+<code class="descname">format_display</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.integer_channel.format_display" title="Permalink to this definition">¶</a></dt>
+<dd><p>converts data to string according to string formatting rule set by self.set_display_format_str()</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.format_read">
+<code class="descname">format_read</code><span class="sig-paren">(</span><em>raw_data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#integer_channel.format_read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.integer_channel.format_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>transform from integer to real units according to using_presets_read() and active format</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.format_write">
+<code class="descname">format_write</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#integer_channel.format_write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.integer_channel.format_write" title="Permalink to this definition">¶</a></dt>
+<dd><p>transform from real units to integer according to using_presets_write() and active format</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.get_attribute">
+<code class="descname">get_attribute</code><span class="sig-paren">(</span><em>attribute_name</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.integer_channel.get_attribute" title="Permalink to this definition">¶</a></dt>
+<dd><p>retrieve value previously set with set_attribute(attribute_name, value)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.get_attributes">
+<code class="descname">get_attributes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.integer_channel.get_attributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>return dictionary of all channel attributes previously set with set_attribute(attribute_name, value)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.get_category">
+<code class="descname">get_category</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.integer_channel.get_category" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns category membership.  should be a string.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.get_description">
+<code class="descname">get_description</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.integer_channel.get_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>return channel description string.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.get_format">
+<code class="descname">get_format</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#integer_channel.get_format"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.integer_channel.get_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>return active format as set by set_format(format)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.get_formats">
+<code class="descname">get_formats</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#integer_channel.get_formats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.integer_channel.get_formats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of format_names associate with this register.
+The format_string elements of the returned list may be passed to the format or unformat methods</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.get_max_write_limit">
+<code class="descname">get_max_write_limit</code><span class="sig-paren">(</span><em>formatted=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#integer_channel.get_max_write_limit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.integer_channel.get_max_write_limit" title="Permalink to this definition">¶</a></dt>
+<dd><p>return max writable channel value. If formatted, return max writeable value in transformed units accorting to set_format(format) active format.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.get_min_write_limit">
+<code class="descname">get_min_write_limit</code><span class="sig-paren">(</span><em>formatted=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#integer_channel.get_min_write_limit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.integer_channel.get_min_write_limit" title="Permalink to this definition">¶</a></dt>
+<dd><p>return min writable channel value. If formatted, return min writeable value in transformed units accorting to set_format(format) active format.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.get_name">
+<code class="descname">get_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.integer_channel.get_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>return channel name</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.get_presets">
+<code class="descname">get_presets</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#integer_channel.get_presets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.integer_channel.get_presets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of preset names</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.get_presets_dict">
+<code class="descname">get_presets_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#integer_channel.get_presets_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.integer_channel.get_presets_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dictionary of preset names and value</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.get_units">
+<code class="descname">get_units</code><span class="sig-paren">(</span><em>format</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#integer_channel.get_units"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.integer_channel.get_units" title="Permalink to this definition">¶</a></dt>
+<dd><p>return real units string for specified format. ex &#8216;A&#8217; or &#8216;V&#8217;</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.get_write_delay">
+<code class="descname">get_write_delay</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.integer_channel.get_write_delay" title="Permalink to this definition">¶</a></dt>
+<dd><p>return automatic delay after channel write</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.is_readable">
+<code class="descname">is_readable</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.integer_channel.is_readable" title="Permalink to this definition">¶</a></dt>
+<dd><p>return register readability boolean</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.is_writeable">
+<code class="descname">is_writeable</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.integer_channel.is_writeable" title="Permalink to this definition">¶</a></dt>
+<dd><p>return register writability boolean</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.read_without_delegator">
+<code class="descname">read_without_delegator</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#integer_channel.read_without_delegator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.integer_channel.read_without_delegator" title="Permalink to this definition">¶</a></dt>
+<dd><p>read intercept to apply formats/presets to channel (raw) read</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.remove_format">
+<code class="descname">remove_format</code><span class="sig-paren">(</span><em>format_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#integer_channel.remove_format"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.integer_channel.remove_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>remove format_name from dictionary of available formats</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.set_attribute">
+<code class="descname">set_attribute</code><span class="sig-paren">(</span><em>attribute_name</em>, <em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.integer_channel.set_attribute" title="Permalink to this definition">¶</a></dt>
+<dd><p>set attribute_name to value
+value can br retrived later with get_attribute(attribute_name)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.set_category">
+<code class="descname">set_category</code><span class="sig-paren">(</span><em>category</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.integer_channel.set_category" title="Permalink to this definition">¶</a></dt>
+<dd><p>each channel may be a member of a single category for sorting purposes. category argument is usually a string</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.set_description">
+<code class="descname">set_description</code><span class="sig-paren">(</span><em>description</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.integer_channel.set_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>sets the channel description. argument is string</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.set_display_format_function">
+<code class="descname">set_display_format_function</code><span class="sig-paren">(</span><em>function</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.integer_channel.set_display_format_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>abandon string formatting and pass data through custom user-supplied function</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.set_display_format_str">
+<code class="descname">set_display_format_str</code><span class="sig-paren">(</span><em>fmt_str=''</em>, <em>prefix=''</em>, <em>suffix=''</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.integer_channel.set_display_format_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>format string to alter how data is displayed.  example &#8216;3.2f&#8217;, &#8216;04X&#8217;, &#8216;#06X&#8217;, &#8216;#18b&#8217;, &#8216;.2%&#8217;
+prefix will be displayed immediately before the channel data, example &#8216;0x&#8217;
+suffix will be displayed immediately after the channel data, example &#8216; A&#8217; or &#8216; V&#8217;</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.set_format">
+<code class="descname">set_format</code><span class="sig-paren">(</span><em>format</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#integer_channel.set_format"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.integer_channel.set_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>set active transformation format. reads and writes happen in transformed (real) units instead of native integer.
+Set to None to disable formatting.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.set_max_write_limit">
+<code class="descname">set_max_write_limit</code><span class="sig-paren">(</span><em>max</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.integer_channel.set_max_write_limit" title="Permalink to this definition">¶</a></dt>
+<dd><p>set channel&#8217;s maximum writable value. None disables limit</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.set_min_write_limit">
+<code class="descname">set_min_write_limit</code><span class="sig-paren">(</span><em>min</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.integer_channel.set_min_write_limit" title="Permalink to this definition">¶</a></dt>
+<dd><p>set channel&#8217;s minimum writable value. None disables limit</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.set_name">
+<code class="descname">set_name</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.integer_channel.set_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>rename channel</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.set_read_access">
+<code class="descname">set_read_access</code><span class="sig-paren">(</span><em>readable=True</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.integer_channel.set_read_access" title="Permalink to this definition">¶</a></dt>
+<dd><p>set or unset register read access</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.set_write_access">
+<code class="descname">set_write_access</code><span class="sig-paren">(</span><em>writeable=True</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.integer_channel.set_write_access" title="Permalink to this definition">¶</a></dt>
+<dd><p>set or unset register write access</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.set_write_delay">
+<code class="descname">set_write_delay</code><span class="sig-paren">(</span><em>delay</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.integer_channel.set_write_delay" title="Permalink to this definition">¶</a></dt>
+<dd><p>sets the automatic delay in seconds after channel write</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.signedToTwosComplement">
+<code class="descname">signedToTwosComplement</code><span class="sig-paren">(</span><em>signed</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#integer_channel.signedToTwosComplement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.integer_channel.signedToTwosComplement" title="Permalink to this definition">¶</a></dt>
+<dd><p>transform signed integer to two&#8217;s complement formatted binary number.  Requires register&#8217;s size attribute to be set in __init__</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.twosComplementToSigned">
+<code class="descname">twosComplementToSigned</code><span class="sig-paren">(</span><em>binary</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#integer_channel.twosComplementToSigned"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.integer_channel.twosComplementToSigned" title="Permalink to this definition">¶</a></dt>
+<dd><p>transform two&#8217;s complement formatted binary number to signed integer.  Requires register&#8217;s size attribute to be set in __init__</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.unformat">
+<code class="descname">unformat</code><span class="sig-paren">(</span><em>string</em>, <em>format</em>, <em>use_presets</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#integer_channel.unformat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.integer_channel.unformat" title="Permalink to this definition">¶</a></dt>
+<dd><p>take in formatted string / real, pass through specified unformatting function, and return integer representation.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.use_presets_read">
+<code class="descname">use_presets_read</code><span class="sig-paren">(</span><em>bool</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#integer_channel.use_presets_read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.integer_channel.use_presets_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>enable replacement of integer value with named enum when reading channel</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.use_presets_write">
+<code class="descname">use_presets_write</code><span class="sig-paren">(</span><em>bool</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#integer_channel.use_presets_write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.integer_channel.use_presets_write" title="Permalink to this definition">¶</a></dt>
+<dd><p>enable replacement of named enum with integer value when writing channel</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.using_presets_read">
+<code class="descname">using_presets_read</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#integer_channel.using_presets_read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.integer_channel.using_presets_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>return boolean denoting last setting of use_presets_read()</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.using_presets_write">
+<code class="descname">using_presets_write</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#integer_channel.using_presets_write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.integer_channel.using_presets_write" title="Permalink to this definition">¶</a></dt>
+<dd><p>return boolean denoting last setting of use_presets_write()</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.write">
+<code class="descname">write</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#integer_channel.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.integer_channel.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>write intercept to apply formats/presets before channel write. Coerce to integer and warn about rounding error. Also accepts None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.integer_channel.write_unformatted">
+<code class="descname">write_unformatted</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#integer_channel.write_unformatted"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.integer_channel.write_unformatted" title="Permalink to this definition">¶</a></dt>
+<dd><p>bypass unformatting. intended for use by GUI.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="PyICe.lab_core.register">
+<em class="property">class </em><code class="descclassname">PyICe.lab_core.</code><code class="descname">register</code><span class="sig-paren">(</span><em>name</em>, <em>size</em>, <em>read_function=None</em>, <em>write_function=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#register"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.lab_core.integer_channel" title="PyICe.lab_core.integer_channel"><code class="xref py py-class docutils literal"><span class="pre">PyICe.lab_core.integer_channel</span></code></a></p>
+<p>Register primitive superclass, inherits from integer_channel and channel. Allows read and write access to integer data with presets and formats.</p>
+<dl class="method">
+<dt id="PyICe.lab_core.register.add_format">
+<code class="descname">add_format</code><span class="sig-paren">(</span><em>format_name</em>, <em>format_function</em>, <em>unformat_function</em>, <em>signed=False</em>, <em>units=''</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.add_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a format to this register.  Formats convert a raw number into a more meaningful string and vice versa 
+Formats can be generic hex, bin, etc, or can be more complicated.
+format_name is the name of the format
+format_function transforms from integer data to real
+unformat_function transforms from real data to integer
+format_function and unformat_function should be reversible
+signed treats integer data as two&#8217;s complement with self.size bit width
+units optionally appended to formatted (real) data when displayed by GUI</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.add_preset">
+<code class="descname">add_preset</code><span class="sig-paren">(</span><em>preset_name</em>, <em>preset_value</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.add_preset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a preset named preset_name with value preset_value</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.add_read_callback">
+<code class="descname">add_read_callback</code><span class="sig-paren">(</span><em>read_callback</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.add_read_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a read callback. This is a function that will be called any time the channel is read. the callback function takes two arguments (channel_object, data)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.add_write_callback">
+<code class="descname">add_write_callback</code><span class="sig-paren">(</span><em>write_callback</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.add_write_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a write callback. This is a function that will be called any time the channel is written. the callback function takes two arguments (channel_object, data)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.format">
+<code class="descname">format</code><span class="sig-paren">(</span><em>data</em>, <em>format</em>, <em>use_presets</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.format" title="Permalink to this definition">¶</a></dt>
+<dd><p>take in integer data, pass through specified formatting function, and return string/real representation.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.format_display">
+<code class="descname">format_display</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.format_display" title="Permalink to this definition">¶</a></dt>
+<dd><p>converts data to string according to string formatting rule set by self.set_display_format_str()</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.format_read">
+<code class="descname">format_read</code><span class="sig-paren">(</span><em>raw_data</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.format_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>transform from integer to real units according to using_presets_read() and active format</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.format_write">
+<code class="descname">format_write</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.format_write" title="Permalink to this definition">¶</a></dt>
+<dd><p>transform from real units to integer according to using_presets_write() and active format</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.get_attribute">
+<code class="descname">get_attribute</code><span class="sig-paren">(</span><em>attribute_name</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.get_attribute" title="Permalink to this definition">¶</a></dt>
+<dd><p>retrieve value previously set with set_attribute(attribute_name, value)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.get_attributes">
+<code class="descname">get_attributes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.get_attributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>return dictionary of all channel attributes previously set with set_attribute(attribute_name, value)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.get_category">
+<code class="descname">get_category</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.get_category" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns category membership.  should be a string.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.get_description">
+<code class="descname">get_description</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.get_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>return channel description string.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.get_format">
+<code class="descname">get_format</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.get_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>return active format as set by set_format(format)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.get_formats">
+<code class="descname">get_formats</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.get_formats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of format_names associate with this register.
+The format_string elements of the returned list may be passed to the format or unformat methods</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.get_max_write_limit">
+<code class="descname">get_max_write_limit</code><span class="sig-paren">(</span><em>formatted=False</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.get_max_write_limit" title="Permalink to this definition">¶</a></dt>
+<dd><p>return max writable channel value. If formatted, return max writeable value in transformed units accorting to set_format(format) active format.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.get_min_write_limit">
+<code class="descname">get_min_write_limit</code><span class="sig-paren">(</span><em>formatted=False</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.get_min_write_limit" title="Permalink to this definition">¶</a></dt>
+<dd><p>return min writable channel value. If formatted, return min writeable value in transformed units accorting to set_format(format) active format.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.get_name">
+<code class="descname">get_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.get_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>return channel name</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.get_presets">
+<code class="descname">get_presets</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.get_presets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of preset names</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.get_presets_dict">
+<code class="descname">get_presets_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.get_presets_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dictionary of preset names and value</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.get_units">
+<code class="descname">get_units</code><span class="sig-paren">(</span><em>format</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.get_units" title="Permalink to this definition">¶</a></dt>
+<dd><p>return real units string for specified format. ex &#8216;A&#8217; or &#8216;V&#8217;</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.get_write_delay">
+<code class="descname">get_write_delay</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.get_write_delay" title="Permalink to this definition">¶</a></dt>
+<dd><p>return automatic delay after channel write</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.is_readable">
+<code class="descname">is_readable</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.is_readable" title="Permalink to this definition">¶</a></dt>
+<dd><p>return register readability boolean</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.is_writeable">
+<code class="descname">is_writeable</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.is_writeable" title="Permalink to this definition">¶</a></dt>
+<dd><p>return register writability boolean</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.read_without_delegator">
+<code class="descname">read_without_delegator</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.read_without_delegator" title="Permalink to this definition">¶</a></dt>
+<dd><p>read intercept to apply formats/presets to channel (raw) read</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.remove_format">
+<code class="descname">remove_format</code><span class="sig-paren">(</span><em>format_name</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.remove_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>remove format_name from dictionary of available formats</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.set_attribute">
+<code class="descname">set_attribute</code><span class="sig-paren">(</span><em>attribute_name</em>, <em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.set_attribute" title="Permalink to this definition">¶</a></dt>
+<dd><p>set attribute_name to value
+value can br retrived later with get_attribute(attribute_name)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.set_category">
+<code class="descname">set_category</code><span class="sig-paren">(</span><em>category</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.set_category" title="Permalink to this definition">¶</a></dt>
+<dd><p>each channel may be a member of a single category for sorting purposes. category argument is usually a string</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.set_description">
+<code class="descname">set_description</code><span class="sig-paren">(</span><em>description</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.set_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>sets the channel description. argument is string</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.set_display_format_function">
+<code class="descname">set_display_format_function</code><span class="sig-paren">(</span><em>function</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.set_display_format_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>abandon string formatting and pass data through custom user-supplied function</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.set_display_format_str">
+<code class="descname">set_display_format_str</code><span class="sig-paren">(</span><em>fmt_str=''</em>, <em>prefix=''</em>, <em>suffix=''</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.set_display_format_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>format string to alter how data is displayed.  example &#8216;3.2f&#8217;, &#8216;04X&#8217;, &#8216;#06X&#8217;, &#8216;#18b&#8217;, &#8216;.2%&#8217;
+prefix will be displayed immediately before the channel data, example &#8216;0x&#8217;
+suffix will be displayed immediately after the channel data, example &#8216; A&#8217; or &#8216; V&#8217;</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.set_format">
+<code class="descname">set_format</code><span class="sig-paren">(</span><em>format</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.set_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>set active transformation format. reads and writes happen in transformed (real) units instead of native integer.
+Set to None to disable formatting.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.set_max_write_limit">
+<code class="descname">set_max_write_limit</code><span class="sig-paren">(</span><em>max</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.set_max_write_limit" title="Permalink to this definition">¶</a></dt>
+<dd><p>set channel&#8217;s maximum writable value. None disables limit</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.set_min_write_limit">
+<code class="descname">set_min_write_limit</code><span class="sig-paren">(</span><em>min</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.set_min_write_limit" title="Permalink to this definition">¶</a></dt>
+<dd><p>set channel&#8217;s minimum writable value. None disables limit</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.set_name">
+<code class="descname">set_name</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.set_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>rename channel</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.set_read_access">
+<code class="descname">set_read_access</code><span class="sig-paren">(</span><em>readable=True</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.set_read_access" title="Permalink to this definition">¶</a></dt>
+<dd><p>set or unset register read access</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.set_write_access">
+<code class="descname">set_write_access</code><span class="sig-paren">(</span><em>writeable=True</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.set_write_access" title="Permalink to this definition">¶</a></dt>
+<dd><p>set or unset register write access</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.set_write_delay">
+<code class="descname">set_write_delay</code><span class="sig-paren">(</span><em>delay</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.set_write_delay" title="Permalink to this definition">¶</a></dt>
+<dd><p>sets the automatic delay in seconds after channel write</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.signedToTwosComplement">
+<code class="descname">signedToTwosComplement</code><span class="sig-paren">(</span><em>signed</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.signedToTwosComplement" title="Permalink to this definition">¶</a></dt>
+<dd><p>transform signed integer to two&#8217;s complement formatted binary number.  Requires register&#8217;s size attribute to be set in __init__</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.twosComplementToSigned">
+<code class="descname">twosComplementToSigned</code><span class="sig-paren">(</span><em>binary</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.twosComplementToSigned" title="Permalink to this definition">¶</a></dt>
+<dd><p>transform two&#8217;s complement formatted binary number to signed integer.  Requires register&#8217;s size attribute to be set in __init__</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.unformat">
+<code class="descname">unformat</code><span class="sig-paren">(</span><em>string</em>, <em>format</em>, <em>use_presets</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.unformat" title="Permalink to this definition">¶</a></dt>
+<dd><p>take in formatted string / real, pass through specified unformatting function, and return integer representation.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.use_presets_read">
+<code class="descname">use_presets_read</code><span class="sig-paren">(</span><em>bool</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.use_presets_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>enable replacement of integer value with named enum when reading channel</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.use_presets_write">
+<code class="descname">use_presets_write</code><span class="sig-paren">(</span><em>bool</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.use_presets_write" title="Permalink to this definition">¶</a></dt>
+<dd><p>enable replacement of named enum with integer value when writing channel</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.using_presets_read">
+<code class="descname">using_presets_read</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.using_presets_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>return boolean denoting last setting of use_presets_read()</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.using_presets_write">
+<code class="descname">using_presets_write</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.using_presets_write" title="Permalink to this definition">¶</a></dt>
+<dd><p>return boolean denoting last setting of use_presets_write()</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.write">
+<code class="descname">write</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>write intercept to apply formats/presets before channel write. Coerce to integer and warn about rounding error. Also accepts None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.register.write_unformatted">
+<code class="descname">write_unformatted</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.register.write_unformatted" title="Permalink to this definition">¶</a></dt>
+<dd><p>bypass unformatting. intended for use by GUI.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="PyICe.lab_core.scpi_instrument">
+<em class="property">class </em><code class="descclassname">PyICe.lab_core.</code><code class="descname">scpi_instrument</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#scpi_instrument"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.scpi_instrument" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.lab_core.instrument" title="PyICe.lab_core.instrument"><code class="xref py py-class docutils literal"><span class="pre">PyICe.lab_core.instrument</span></code></a></p>
+<p>SCPI Instrument Base Class. Implements methods common to all SCPI instruments
+Instruments which adhere to the SCPI specification should inherit from the
+scpi_instrument class rather than the instrument class.</p>
+<dl class="method">
+<dt id="PyICe.lab_core.scpi_instrument.add_channel">
+<code class="descname">add_channel</code><span class="sig-paren">(</span><em>channel_name</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.scpi_instrument.add_channel" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Usage: Add channel name to instrument.  For multi-channel instruments,</dt>
+<dd>typically also takes a second argument representing the physical
+channel of the instrument. May also take channel configuration arguments specific to the instrument.</dd>
+</dl>
+<p>Operation:  This method should create the channel object then call self._add_channel(channel) to add it to the internal channel group</p>
+<blockquote>
+<div>Method must be overloaded by each instrument driver.</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.scpi_instrument.beep">
+<code class="descname">beep</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#scpi_instrument.beep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.scpi_instrument.beep" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send a beep command.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.scpi_instrument.clear_status">
+<code class="descname">clear_status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#scpi_instrument.clear_status"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.scpi_instrument.clear_status" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send the <a href="#id1"><span class="problematic" id="id2">*</span></a>CLS command.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.scpi_instrument.display_clear">
+<code class="descname">display_clear</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#scpi_instrument.display_clear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.scpi_instrument.display_clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clear the instrument display</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.scpi_instrument.display_off">
+<code class="descname">display_off</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#scpi_instrument.display_off"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.scpi_instrument.display_off" title="Permalink to this definition">¶</a></dt>
+<dd><p>Turn the instrument display off</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.scpi_instrument.display_on">
+<code class="descname">display_on</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#scpi_instrument.display_on"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.scpi_instrument.display_on" title="Permalink to this definition">¶</a></dt>
+<dd><p>Turn the instrument display on</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.scpi_instrument.display_text">
+<code class="descname">display_text</code><span class="sig-paren">(</span><em>text=''</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#scpi_instrument.display_text"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.scpi_instrument.display_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Display text on instrument front panel</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.scpi_instrument.enable_serial_polling">
+<code class="descname">enable_serial_polling</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#scpi_instrument.enable_serial_polling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.scpi_instrument.enable_serial_polling" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enable the instrument to report operation complete via serial polling</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.scpi_instrument.error">
+<code class="descname">error</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#scpi_instrument.error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.scpi_instrument.error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get error message.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.scpi_instrument.fetch">
+<code class="descname">fetch</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#scpi_instrument.fetch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.scpi_instrument.fetch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send FETCH? query.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.scpi_instrument.get_error">
+<code class="descname">get_error</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#scpi_instrument.get_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.scpi_instrument.get_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the first error from the SCPI instrument.  +0 is the errorcode for no error</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.scpi_instrument.get_errors">
+<code class="descname">get_errors</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#scpi_instrument.get_errors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.scpi_instrument.get_errors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of all accumulated SCPI instrument errors.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.scpi_instrument.get_flat_channel_group">
+<code class="descname">get_flat_channel_group</code><span class="sig-paren">(</span><em>name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.scpi_instrument.get_flat_channel_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns a channel_group directly containing all channels this one can resolve</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.scpi_instrument.identify">
+<code class="descname">identify</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#scpi_instrument.identify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.scpi_instrument.identify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send the <a href="#id3"><span class="problematic" id="id4">*</span></a>IDN? command.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.scpi_instrument.init">
+<code class="descname">init</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#scpi_instrument.init"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.scpi_instrument.init" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send INIT command.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.scpi_instrument.initiate_measurement">
+<code class="descname">initiate_measurement</code><span class="sig-paren">(</span><em>enable_polling=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#scpi_instrument.initiate_measurement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.scpi_instrument.initiate_measurement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initiate a measurement</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.scpi_instrument.merge_in_channel_group">
+<code class="descname">merge_in_channel_group</code><span class="sig-paren">(</span><em>channel_group_object</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.scpi_instrument.merge_in_channel_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>merges in a channel group</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.scpi_instrument.operation_complete">
+<code class="descname">operation_complete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#scpi_instrument.operation_complete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.scpi_instrument.operation_complete" title="Permalink to this definition">¶</a></dt>
+<dd><p>query if current operation is done
+blocks i/o until operation is complete or timeout
+this method retries query until a character is returned in cas of premature timeout
+EDIT - delet retry for now</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.scpi_instrument.read_all_channels">
+<code class="descname">read_all_channels</code><span class="sig-paren">(</span><em>categories=None</em>, <em>exclusions=[]</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.scpi_instrument.read_all_channels" title="Permalink to this definition">¶</a></dt>
+<dd><p>read all readable channels in channel group and return orderd dictionary of results. Optionally filter by list of categories.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.scpi_instrument.read_channels">
+<code class="descname">read_channels</code><span class="sig-paren">(</span><em>item_list</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.scpi_instrument.read_channels" title="Permalink to this definition">¶</a></dt>
+<dd><p>item list is a list of channel objects, names or channel_groups</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.scpi_instrument.read_measurement">
+<code class="descname">read_measurement</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#scpi_instrument.read_measurement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.scpi_instrument.read_measurement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send FETCH? query.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.scpi_instrument.reset">
+<code class="descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#scpi_instrument.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.scpi_instrument.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send the <a href="#id5"><span class="problematic" id="id6">*</span></a>RST command.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.scpi_instrument.resolve_channel_list">
+<code class="descname">resolve_channel_list</code><span class="sig-paren">(</span><em>item_list</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.scpi_instrument.resolve_channel_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>takes a list of channels, channel_names, or channel_groups and produces a single channel group</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.scpi_instrument.trigger">
+<code class="descname">trigger</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/lab_core.html#scpi_instrument.trigger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.lab_core.scpi_instrument.trigger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send the <a href="#id7"><span class="problematic" id="id8">*</span></a>TRG command.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.lab_core.scpi_instrument.write_html">
+<code class="descname">write_html</code><span class="sig-paren">(</span><em>file_name=None</em>, <em>verbose=True</em>, <em>sort_categories=False</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.lab_core.scpi_instrument.write_html" title="Permalink to this definition">¶</a></dt>
+<dd><p>return html document string and optionally write to file_name
+if verbose, include tables of presets and attributes for each channel
+if sort_categories, group channel names first by category before alphabetical sort of channel name</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../PyICe.html">
+              <img class="logo" src="../_static/tssop.png" alt="Logo"/>
+            </a></p>
+<h3><a href="../PyICe.html">Table Of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="PyICe.lab_instruments.html">PyICe.lab_instruments</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">PyICe.lab_core</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#channel-and-threading-core-framework">Channel and Threading Core Framework</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.lab_utils.html">PyICe.lab_utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.LTC_plot.html">PyICe.LTC_plot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.lab_gui.html">PyICe.lab_gui</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.lab_interfaces.html">PyICe.lab_interfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.twi_instrument.html">PyICe.twi_instrument</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.twoWireInterface.html">PyICe.twoWireInterface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.spi_instrument.html">PyICe.spi_instrument</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.spi_interface.html">PyICe.spi_interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.visa_wrappers.html">PyICe.visa_wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.xml_registers.html">PyICe.xml_registers</a></li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../PyICe.html">Documentation overview</a><ul>
+      <li>Previous: <a href="PyICe.lab_instruments.html" title="previous chapter">PyICe.lab_instruments</a></li>
+      <li>Next: <a href="PyICe.lab_utils.html" title="next chapter">PyICe.lab_utils</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/_autosummary/PyICe.lab_core.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Linear Technology Corporation.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="../_sources/_autosummary/PyICe.lab_core.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

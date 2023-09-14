@@ -1,0 +1,218 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>PyICe &mdash; PyICe 9000 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '9000',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/tssop.ico"/>
+    <link rel="top" title="PyICe 9000 documentation" href="#" />
+    <link rel="next" title="PyICe.lab_instruments" href="_autosummary/PyICe.lab_instruments.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="pyice">
+<h1>PyICe<a class="headerlink" href="#pyice" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="python-integrated-circuit-evaluation-environment">
+<h2>Python Integrated Circuit Evaluation Environment<a class="headerlink" href="#python-integrated-circuit-evaluation-environment" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre>                   \|||/
+                   (o o)
++-------------oooO--(_)---------------------+
+| ____           ______   ____              |
+|/\  _`\        /\__  _\ /\  _`\            |
+|\ \ \L\ \__  __\/_/\ \/ \ \ \/\_\     __   |
+| \ \ ,__/\ \/\ \  \ \ \  \ \ \/_/_  /&#39;__`\ |
+|  \ \ \/\ \ \_\ \  \_\ \__\ \ \L\ \/\  __/ |
+|   \ \_\ \/`____ \ /\_____\\ \____/\ \____\|
+|    \/_/  `/___/&gt; \\/_____/ \/___/  \/____/|
+|             /\___/                        |
+|             \/__/                         |
++------------------------oooO---------------+
+                  |  |  |
+                  |__|__|
+                   || ||
+                   || ||
+                  ooO Ooo
+</pre></div>
+</div>
+<p>PyICe is a comprehensive Python framework designed specifically for lab automation.
+It can interact with most lab instruments, treating each aspect of a given instrument
+as an individual &#8220;channel&#8221;. The channel model reduces even the most complex instruments
+to a collection of scalars that can be monitored and controlled by test scripts, a
+graphical user interface, or logged into an SQLite database or Excel worksheet.</p>
+<p>A second distinct aspect of the project is used to interact with internal IC memory in the same way as
+other test equipment channels so that the DUT memory and outside electrical conditions can be
+monitored, controlled, and logged synchronously.
+This part of the project also includes numerous utilites to generate
+both publicly distributable libraries and documentation, and private IC synthesis and test files,
+all from a single common XML-based register map description.</p>
+<p>Check out a series of quick-start tutorials
+and a brief overview of the basic capabilities and usage here:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">PyICe</span><span class="o">/</span><span class="n">Examples</span><span class="o">/</span><span class="n">getting_started_examples</span>
+</pre></div>
+</div>
+<p>The PyICe library is relatively stable but is under ongoing development.</p>
+<p>A working copy can be checked out from the Boston SVN server (linux credentials required) here:</p>
+<div class="highlight-python"><div class="highlight"><pre>http://bos-svn.engineering.linear.com/svn/PyICe/trunk/
+</pre></div>
+</div>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="_autosummary/PyICe.lab_instruments.html#module-PyICe.lab_instruments" title="PyICe.lab_instruments"><code class="xref py py-obj docutils literal"><span class="pre">PyICe.lab_instruments</span></code></a></td>
+<td>Instrument Drivers</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="_autosummary/PyICe.lab_core.html#module-PyICe.lab_core" title="PyICe.lab_core"><code class="xref py py-obj docutils literal"><span class="pre">PyICe.lab_core</span></code></a></td>
+<td>Channel and Threading Core Framework</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="_autosummary/PyICe.lab_utils.html#module-PyICe.lab_utils" title="PyICe.lab_utils"><code class="xref py py-obj docutils literal"><span class="pre">PyICe.lab_utils</span></code></a></td>
+<td>Miscellaneous Utilities</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="_autosummary/PyICe.LTC_plot.html#module-PyICe.LTC_plot" title="PyICe.LTC_plot"><code class="xref py py-obj docutils literal"><span class="pre">PyICe.LTC_plot</span></code></a></td>
+<td>Marcom Compliant Plot Generator</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="_autosummary/PyICe.lab_gui.html#module-PyICe.lab_gui" title="PyICe.lab_gui"><code class="xref py py-obj docutils literal"><span class="pre">PyICe.lab_gui</span></code></a></td>
+<td>Graphical Interface to Channel Objects</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="_autosummary/PyICe.lab_interfaces.html#module-PyICe.lab_interfaces" title="PyICe.lab_interfaces"><code class="xref py py-obj docutils literal"><span class="pre">PyICe.lab_interfaces</span></code></a></td>
+<td>Physical Communication Interfaces Hierarchy Manager</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="_autosummary/PyICe.twi_instrument.html#module-PyICe.twi_instrument" title="PyICe.twi_instrument"><code class="xref py py-obj docutils literal"><span class="pre">PyICe.twi_instrument</span></code></a></td>
+<td>Channel Wraper for SMBus Compliant Devices</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="_autosummary/PyICe.twoWireInterface.html#module-PyICe.twoWireInterface" title="PyICe.twoWireInterface"><code class="xref py py-obj docutils literal"><span class="pre">PyICe.twoWireInterface</span></code></a></td>
+<td>SMBus Interface Hardware Drivers</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="_autosummary/PyICe.spi_instrument.html#module-PyICe.spi_instrument" title="PyICe.spi_instrument"><code class="xref py py-obj docutils literal"><span class="pre">PyICe.spi_instrument</span></code></a></td>
+<td>Channel Wrapper for SPI Devices</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="_autosummary/PyICe.spi_interface.html#module-PyICe.spi_interface" title="PyICe.spi_interface"><code class="xref py py-obj docutils literal"><span class="pre">PyICe.spi_interface</span></code></a></td>
+<td>SPI Interface Hardware Drivers</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="_autosummary/PyICe.visa_wrappers.html#module-PyICe.visa_wrappers" title="PyICe.visa_wrappers"><code class="xref py py-obj docutils literal"><span class="pre">PyICe.visa_wrappers</span></code></a></td>
+<td>VISA Emulation Layer</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="_autosummary/PyICe.xml_registers.html#module-PyICe.xml_registers" title="PyICe.xml_registers"><code class="xref py py-obj docutils literal"><span class="pre">PyICe.xml_registers</span></code></a></td>
+<td>XML Register Map Tools and Generators</td>
+</tr>
+</tbody>
+</table>
+<p>Documentation is a work in progress.</p>
+<dl class="docutils">
+<dt>Please contact us with any questions, requests for documentation, or to volunteer help developing additional instrument drivers:</dt>
+<dd><ul class="first last simple">
+<li>Steve Martin
+<a class="reference external" href="mailto:smartin&#37;&#52;&#48;linear&#46;com">smartin<span>&#64;</span>linear<span>&#46;</span>com</a></li>
+<li>Dave Simmons
+<a class="reference external" href="mailto:dsimmons&#37;&#52;&#48;linear&#46;com">dsimmons<span>&#64;</span>linear<span>&#46;</span>com</a></li>
+<li>Zach Lewko
+<a class="reference external" href="mailto:zlewko&#37;&#52;&#48;linear&#46;com">zlewko<span>&#64;</span>linear<span>&#46;</span>com</a></li>
+</ul>
+</dd>
+</dl>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="#">
+              <img class="logo" src="_static/tssop.png" alt="Logo"/>
+            </a></p>
+<h3><a href="#">Table Of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="_autosummary/PyICe.lab_instruments.html">PyICe.lab_instruments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_autosummary/PyICe.lab_core.html">PyICe.lab_core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_autosummary/PyICe.lab_utils.html">PyICe.lab_utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_autosummary/PyICe.LTC_plot.html">PyICe.LTC_plot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_autosummary/PyICe.lab_gui.html">PyICe.lab_gui</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_autosummary/PyICe.lab_interfaces.html">PyICe.lab_interfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_autosummary/PyICe.twi_instrument.html">PyICe.twi_instrument</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_autosummary/PyICe.twoWireInterface.html">PyICe.twoWireInterface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_autosummary/PyICe.spi_instrument.html">PyICe.spi_instrument</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_autosummary/PyICe.spi_interface.html">PyICe.spi_interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_autosummary/PyICe.visa_wrappers.html">PyICe.visa_wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_autosummary/PyICe.xml_registers.html">PyICe.xml_registers</a></li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+      <li>Next: <a href="_autosummary/PyICe.lab_instruments.html" title="next chapter">PyICe.lab_instruments</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/PyICe.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Linear Technology Corporation.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="_sources/PyICe.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

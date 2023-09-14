@@ -1,0 +1,744 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>PyICe.spi_interface &mdash; PyICe 9000 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '9000',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/tssop.ico"/>
+    <link rel="top" title="PyICe 9000 documentation" href="../../PyICe.html" />
+    <link rel="up" title="Module code" href="../index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for PyICe.spi_interface</h1><div class="highlight"><pre>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">SPI Interface Hardware Drivers</span>
+<span class="sd">==============================</span>
+
+<span class="sd">Created on Feb 23, 2015</span>
+<span class="sd">Heavily modified August 2016 to be more generic.</span>
+
+<span class="sd">@author: JKapasi</span>
+<span class="sd">@author: DSimmons</span>
+
+<span class="sd">The SPI interface is composed of two separate classes: </span>
+
+<span class="sd">1) shift_register</span>
+<span class="sd">    abstracts individual bit-fields into integer representing contents of full-length shift register</span>
+<span class="sd">2) spiInterface: Defines the hardware interface including baudrate, mode (CPOL/CPHA), CS operation.</span>
+<span class="sd">    Specific hardware implementations should overload this class and implement _shift_data method.</span>
+
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="c"># Notes:</span>
+<span class="c"># 1) spiSlave removed. </span>
+    <span class="c"># Generically, SPI data does not represent registers or addresses memory.</span>
+    <span class="c"># There&#39;s no guarantee that returned data has same meaning as transmitted data.</span>
+    <span class="c"># Likewise, SPI doesn&#39;t fit well with the SPI_instrument class generically.</span>
+    <span class="c"># Specifically, the 7-bit address and command code is very SMBus specific and should probably be removed to a slave-specific file.</span>
+<span class="c"># 2) The beaglebond SPI master got broken.</span>
+    <span class="c"># The spiInterface parent class had significant changes to support generic-length SPI DUTs and arbitrary SPI Master hardware requirements.</span>
+    <span class="c"># Because we can&#39;t test/debug operation of the beaglebone port, it&#39;s commented out until someone has a physical test bench.</span>
+
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">Adafruit_BBIO.SPI</span> <span class="kn">import</span> <span class="n">SPI</span>
+    <span class="n">SPI_BBIO_missing</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="n">SPI_BBIO_missing</span> <span class="o">=</span> <span class="bp">True</span>
+
+<span class="kn">import</span> <span class="nn">struct</span><span class="o">,</span> <span class="nn">array</span><span class="o">,</span> <span class="nn">time</span><span class="o">,</span> <span class="nn">numbers</span><span class="o">,</span> <span class="nn">collections</span><span class="o">,</span> <span class="nn">random</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
+
+<div class="viewcode-block" id="shift_register"><a class="viewcode-back" href="../../_autosummary/PyICe.spi_interface.html#PyICe.spi_interface.shift_register">[docs]</a><span class="k">class</span> <span class="nc">shift_register</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;helper class to assemble multiple bit-fields together into a single larger integer and to disassemble received data into individual bit-fields.&#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bit_field_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">bit_field_bit_count</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Instance constructor.</span>
+<span class="sd">        Optionally add single bit_field.</span>
+<span class="sd">        Otherwise, add bit_fields later using repeated calls to add_bit_field()</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bit_field_bit_counts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bit_field_names</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">bit_field_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">bit_field_bit_count</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_bit_field</span><span class="p">(</span><span class="n">bit_field_name</span><span class="p">,</span> <span class="n">bit_field_bit_count</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">bit_field_name</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">bit_field_bit_count</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;If either bit_field_name or bit_field_bit_count is specified, then the other must also be specified.&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;support len() builtin to return total number of bits in shift register&#39;&#39;&#39;</span>
+        <span class="n">bit_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">bfc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bit_field_bit_counts</span><span class="p">:</span>
+            <span class="n">bit_count</span> <span class="o">+=</span> <span class="n">bfc</span>
+        <span class="k">return</span> <span class="n">bit_count</span>
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;graphical view of register structure if object is printed&#39;&#39;&#39;</span>
+        <span class="n">hr</span> <span class="o">=</span> <span class="s">&#39;--&#39;</span>
+        <span class="n">line1</span> <span class="o">=</span> <span class="s">&#39; |&#39;</span>
+        <span class="n">line2</span> <span class="o">=</span> <span class="s">&#39; |&#39;</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span><span class="n">size</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_bit_field_names</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">_bit_field_bit_counts</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">sr</span> <span class="o">=</span> <span class="s">&#39;{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span>
+                <span class="n">bf</span> <span class="o">=</span> <span class="s">&#39;{}[0]&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>                
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">sr</span> <span class="o">=</span> <span class="s">&#39;{}:{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">offset</span><span class="o">+</span><span class="n">size</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">offset</span><span class="p">)</span>
+                <span class="n">bf</span> <span class="o">=</span> <span class="s">&#39;{}[{}:0]&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="n">size</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">offset</span> <span class="o">+=</span> <span class="n">size</span>
+            <span class="n">chars</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sr</span><span class="p">),</span><span class="nb">len</span><span class="p">(</span><span class="n">bf</span><span class="p">))</span>
+            <span class="n">hr</span> <span class="o">+=</span> <span class="s">&#39;-&#39;</span> <span class="o">*</span> <span class="p">(</span><span class="n">chars</span> <span class="o">+</span> <span class="mi">3</span><span class="p">)</span>
+            <span class="n">line1</span> <span class="o">=</span> <span class="s">&#39; | {}{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sr</span><span class="o">.</span><span class="n">center</span><span class="p">(</span><span class="n">chars</span><span class="p">),</span><span class="n">line1</span><span class="p">)</span>
+            <span class="n">line2</span> <span class="o">=</span> <span class="s">&#39; | {}{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">bf</span><span class="o">.</span><span class="n">center</span><span class="p">(</span><span class="n">chars</span><span class="p">),</span><span class="n">line2</span><span class="p">)</span>
+        <span class="n">line1</span> <span class="o">=</span> <span class="n">line1</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span>
+        <span class="n">line2</span> <span class="o">=</span> <span class="n">line2</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span>
+        <span class="n">hr</span> <span class="o">=</span> <span class="n">hr</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span>
+        <span class="k">return</span> <span class="s">&#39;SPI Shift Register Data Mapping Object</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">+</span> <span class="n">hr</span> <span class="o">+</span> <span class="n">line1</span> <span class="o">+</span> <span class="n">hr</span> <span class="o">+</span> <span class="n">line2</span> <span class="o">+</span> <span class="n">hr</span>
+    <span class="k">def</span> <span class="nf">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;support concatenation of multiple instances using &#39;+&#39; operator&#39;&#39;&#39;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span><span class="n">shift_register</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">bf</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">bf</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Duplicated bit field name not allowed when concatenating shift_register instances: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">bf</span><span class="p">))</span>
+        <span class="n">new_sr</span> <span class="o">=</span> <span class="n">shift_register</span><span class="p">()</span>
+        <span class="n">new_sr</span><span class="o">.</span><span class="n">_bit_field_bit_counts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bit_field_bit_counts</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">_bit_field_bit_counts</span>
+        <span class="n">new_sr</span><span class="o">.</span><span class="n">_bit_field_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bit_field_names</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">_bit_field_names</span>
+        <span class="k">return</span> <span class="n">new_sr</span>
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;iterate over bit field names ms field to ls field&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_bit_field_names</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;return size (bit count) of named bit field.</span>
+<span class="sd">        use with dictionary-style lookup: my_shift_register[&#39;my_key&#39;]&#39;&#39;&#39;</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bit_field_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bit_field_bit_counts</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+    <span class="k">def</span> <span class="nf">_check_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">clk_count</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;make sure externally supplied data can fit within allocated bit field width&#39;&#39;&#39;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Integral</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">clk_count</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Integral</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">data</span> <span class="o">&gt;=</span> <span class="mi">0</span> 
+        <span class="k">assert</span> <span class="n">data</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="o">**</span><span class="n">clk_count</span>
+        <span class="k">return</span> <span class="bp">True</span>
+<div class="viewcode-block" id="shift_register.add_bit_field"><a class="viewcode-back" href="../../_autosummary/PyICe.spi_interface.html#PyICe.spi_interface.shift_register.add_bit_field">[docs]</a>    <span class="k">def</span> <span class="nf">add_bit_field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bit_field_name</span><span class="p">,</span> <span class="n">bit_field_bit_count</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;build SPI shift register data protocol sequentially MSB-&gt;LSB with repeated calls to add_bit_field&#39;&#39;&#39;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bit_field_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bit_field_bit_count</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Integral</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">bit_field_bit_count</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">dup_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bit_field_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">bit_field_name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span> <span class="c">#bit field name not already used</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bit_field_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bit_field_name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bit_field_bit_counts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bit_field_bit_count</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Duplicated bit field name: {} at position: {}.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">bit_field_name</span><span class="p">,</span> <span class="n">dup_index</span><span class="p">))</span></div>
+<div class="viewcode-block" id="shift_register.keys"><a class="viewcode-back" href="../../_autosummary/PyICe.spi_interface.html#PyICe.spi_interface.shift_register.keys">[docs]</a>    <span class="k">def</span> <span class="nf">keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;return list of bit-field names registered with instance&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bit_field_names</span><span class="p">[:]</span></div>
+<div class="viewcode-block" id="shift_register.display"><a class="viewcode-back" href="../../_autosummary/PyICe.spi_interface.html#PyICe.spi_interface.shift_register.display">[docs]</a>    <span class="k">def</span> <span class="nf">display</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;print ascii register structure graphic&#39;&#39;&#39;</span>
+        <span class="k">print</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+<div class="viewcode-block" id="shift_register.pack"><a class="viewcode-back" href="../../_autosummary/PyICe.spi_interface.html#PyICe.spi_interface.shift_register.pack">[docs]</a>    <span class="k">def</span> <span class="nf">pack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bit_field_data_dict</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;pack bit fields into single larger integer. also return accumulated clk_count.</span>
+<span class="sd">        Suitable for passing directly to spiInterface.transceive(*shift_register.pack(bit_field_data_dict))</span>
+<span class="sd">        bit_field_data_dict should contain one key-value pair for each defined bit_field&#39;&#39;&#39;</span>
+        <span class="c">#don&#39;t check for extra entries in bit_field_data_dict that don&#39;t go with this shift register. Any reason to???</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span><span class="n">size</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_bit_field_names</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">_bit_field_bit_counts</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_check_size</span><span class="p">(</span><span class="n">bit_field_data_dict</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">size</span><span class="p">)</span>
+            <span class="n">val</span> <span class="o">+=</span> <span class="n">bit_field_data_dict</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="n">offset</span>
+            <span class="n">offset</span> <span class="o">+=</span> <span class="n">size</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span></div>
+<div class="viewcode-block" id="shift_register.unpack"><a class="viewcode-back" href="../../_autosummary/PyICe.spi_interface.html#PyICe.spi_interface.shift_register.unpack">[docs]</a>    <span class="k">def</span> <span class="nf">unpack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;unpack single integer representing full-width shift register data into individual bit field values according to instance-defined boundaries.</span>
+<span class="sd">        return dictionary with key-value pairs for each defined bit_field_name and bit_field data.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">bf_data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">size</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_bit_field_bit_counts</span><span class="p">):</span> <span class="c">#iterate backwards because accumulated shift offsets are not yet known.</span>
+            <span class="n">bf_data</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">int</span><span class="p">(</span><span class="n">data</span> <span class="o">&amp;</span> <span class="mi">2</span><span class="o">**</span><span class="n">size</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span> <span class="o">&gt;&gt;</span> <span class="n">size</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_bit_field_names</span><span class="p">):</span> <span class="c">#reverse order back to MSByte first</span>
+            <span class="n">res</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">bf_data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">res</span>
+</div></div>
+<span class="k">class</span> <span class="nc">spiInterface</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">ABCMeta</span>
+    
+    <span class="c">#If using a GPIO to bit bang the slave select provide a control function (ss_ctrl)</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">CPOL</span><span class="p">,</span><span class="n">CPHA</span><span class="p">,</span><span class="n">ss_ctrl</span><span class="p">,</span><span class="n">word_size</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;mode controls polarity and phase: 0 =&gt; CPOL=0, CPHA=0</span>
+<span class="sd">                                             1 =&gt; CPOL=0, CPHA=1</span>
+<span class="sd">                                             2 =&gt; CPOL=1, CPHA=0</span>
+<span class="sd">                                             3 =&gt; CPOL=1, CPHA=1</span>
+<span class="sd">           ss_ctrl funtion takes boolean argument to control SS/_CS if necessary for hardware.</span>
+<span class="sd">            Select slave if argument evalutes to True.</span>
+<span class="sd">          word size defines SPI master shirt register length. ex 1,8,16 bits. Transactions must be (automatically) padded by modulo word_size. to align correctly.&#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CPOL</span> <span class="o">=</span> <span class="n">CPOL</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CPHA</span> <span class="o">=</span> <span class="n">CPHA</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">CPOL</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">CPHA</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">CPOL</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">CPHA</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">CPOL</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">CPHA</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">CPOL</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">CPHA</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="mi">3</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SPIMasterError</span><span class="p">(</span><span class="s">&#39;Invalid CPOL/CPHA setting&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_ss_ctrl</span><span class="p">(</span><span class="n">ss_ctrl_function</span> <span class="o">=</span> <span class="n">ss_ctrl</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">word_size</span> <span class="o">=</span> <span class="n">word_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_strict_alignment</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">set_strict_alignment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">strict</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;If true, enforce that SPI master and slave hardware lengths match.</span>
+<span class="sd">        If false, enable automatic padding to correct alignment.&#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_strict_alignment</span> <span class="o">=</span> <span class="n">strict</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_warned_once</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">def</span> <span class="nf">set_ss_ctrl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ss_ctrl_function</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;change ss_ctrl function after instantiation.</span>
+<span class="sd">        function should take single boolean argument.</span>
+<span class="sd">        If true, assert slave select. If false, deassert slave select.</span>
+<span class="sd">        There will typically be a logic inversion inside ss_ctrl to achieve active low _cs.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ss_ctrl</span> <span class="o">=</span> <span class="n">ss_ctrl_function</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_shift_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_out</span><span class="p">,</span> <span class="n">clk_count</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Hardware-specific Function that will shift data in/out of the SPI interface.</span>
+<span class="sd">        data_out is transmitted via MOSI</span>
+<span class="sd">        return data received bia MISO</span>
+<span class="sd">        data formats are as in integer, MSB (first clock) to LSB (last clock)</span>
+<span class="sd">        pack and unpack methods may be helpful to break integer data into interface hardware-aligned chunks.</span>
+<span class="sd">        shift_register class may be helpful to pack dut bit field chunks into full shift register width integer</span>
+<span class="sd">        Subclass implementation should raise SPIMasterError exception if unable to send message of length clk_count</span>
+<span class="sd">        (ie hardware limited to byte-aligned messages)&#39;&#39;&#39;</span>
+        <span class="k">raise</span> <span class="n">SPIMasterError</span><span class="p">(</span><span class="s">&#39;Overload required.&#39;</span><span class="p">)</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_check_size</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">bits</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;make sure data fits within word of length  &quot;bits&quot;&#39;&#39;&#39;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Integral</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bits</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Integral</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">data</span> <span class="o">&gt;=</span> <span class="mi">0</span> 
+        <span class="k">assert</span> <span class="n">data</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="o">**</span><span class="n">bits</span>
+        <span class="k">return</span> <span class="bp">True</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">pack</span><span class="p">(</span><span class="n">data_list</span><span class="p">,</span> <span class="n">word_size</span><span class="o">=</span><span class="mi">8</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;pack byte,word aligned pieces (list) from communication hardware into single integer comprising full shift register width.</span>
+<span class="sd">        integer can then be broken up by shift_register object into bit field aligned pieces.&#39;&#39;&#39;</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">data_list</span><span class="p">):</span>
+            <span class="n">res</span> <span class="o">+=</span> <span class="n">i</span> <span class="o">&lt;&lt;</span> <span class="n">offset</span>
+            <span class="n">offset</span> <span class="o">+=</span> <span class="n">word_size</span>
+        <span class="k">return</span> <span class="n">res</span>
+    <span class="k">def</span> <span class="nf">unpack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">bit_count</span><span class="p">,</span> <span class="n">word_size</span><span class="o">=</span><span class="mi">8</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;break full shift register width integer into byte,word aligned pieces. Return list of pieces MS first, LS last.</span>
+<span class="sd">        helper to send byte-aligned pieces to hardware even if bit fields span bytes (or 1-bit, 16-bit 32-bit, etc words for other hardware)&#39;&#39;&#39;</span>
+        <span class="k">assert</span> <span class="n">bit_count</span> <span class="o">%</span> <span class="n">word_size</span> <span class="o">==</span> <span class="mi">0</span> <span class="c">#partially filled blocks create aligment ambiguity</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_size</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">bit_count</span><span class="p">)</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">while</span> <span class="n">bit_count</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">data</span> <span class="o">&amp;</span> <span class="mi">2</span><span class="o">**</span><span class="n">word_size</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span> <span class="o">&gt;&gt;</span> <span class="n">word_size</span>
+            <span class="n">bit_count</span> <span class="o">-=</span> <span class="n">word_size</span>
+        <span class="k">return</span> <span class="n">res</span>
+    <span class="k">def</span> <span class="nf">transceive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">clk_count</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;send data word out MOSI with clk_count clocks.</span>
+<span class="sd">        return word of same size read simultaneously on MISO.</span>
+<span class="sd">        Frame entire transaction with slave select.&#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_size</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">clk_count</span><span class="p">)</span>
+        <span class="n">framing_excess</span> <span class="o">=</span> <span class="n">clk_count</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">word_size</span>
+        <span class="k">if</span> <span class="n">framing_excess</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_strict_alignment</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">SPIMasterError</span><span class="p">(</span><span class="s">&#39;Slave shift register length: {} does not match SPI Master hardware word size: {}. {} bit{} are left over. Call spiInterface.set_strict_alignment(False) to enable automatic data padding.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">clk_count</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">word_size</span><span class="p">,</span> <span class="n">framing_excess</span><span class="p">,</span> <span class="s">&#39;s&#39;</span> <span class="k">if</span> <span class="n">framing_excess</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="s">&#39;&#39;</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">pad_bits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">word_size</span> <span class="o">-</span> <span class="n">framing_excess</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_warned_once</span><span class="p">:</span>
+                    <span class="k">print</span> <span class="s">&quot;WARNING: SPI transaction padded {} bit{} to {} bits to align with {} bit SPI master hardware&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">pad_bits</span><span class="p">,</span> <span class="s">&#39;s&#39;</span> <span class="k">if</span> <span class="n">pad_bits</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">clk_count</span><span class="o">+</span><span class="n">pad_bits</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">word_size</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_warned_once</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pad_bits</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ss_ctrl</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shift_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">clk_count</span><span class="o">+</span><span class="n">pad_bits</span><span class="p">)</span> <span class="c">#MSB first; pad bits are zero, go in first, and should shift out the end of slave hardware.</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ss_ctrl</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span> <span class="c">#don&#39;t leave bus hung</span>
+        <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">result</span> <span class="o">&gt;&gt;</span> <span class="n">pad_bits</span> <span class="c">#MSB first; Slave data comes out first, followed by meaningless data caused by extra pad clocks.</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+<div class="viewcode-block" id="spi_bbone"><a class="viewcode-back" href="../../_autosummary/PyICe.spi_interface.html#PyICe.spi_interface.spi_bbone">[docs]</a><span class="k">class</span> <span class="nc">spi_bbone</span><span class="p">(</span><span class="n">spiInterface</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;The Beaglebone black will use the Adafruit BBIO,</span>
+<span class="sd">    thus we can initialize this package for all purposes</span>
+<span class="sd">    This instrument probably got a broken when the parent class interface was modified to support multiple interface hardware boards and more general SPI communication.</span>
+<span class="sd">    Needs testing/repair.&#39;&#39;&#39;</span>
+    <span class="c"># def __init__(self,baudrate,timeout,device_num, mode=0, ss_ctrl=lambda ss: None):</span>
+        <span class="c"># &#39;&#39;&#39;device num is a tuple eg. (0,0)</span>
+        <span class="c"># &#39;&#39;&#39;</span>
+        <span class="c"># spiInterface.__init__(self,mode,ss_ctrl)</span>
+        <span class="c"># self.baudrate = baudrate</span>
+        <span class="c"># self.timeout = timeout #does this do anything???</span>
+        <span class="c"># if not isinstance(device_num, tuple):</span>
+            <span class="c"># raise TypeError</span>
+        <span class="c"># if SPI_BBIO_missing:</span>
+            <span class="c"># print &quot;The SPI module is missing.  This is expected if you are not using a Beaglebone single board computer.&quot;</span>
+            <span class="c"># raise SPIMasterError(&quot;AdaFruit_BBIO is missing on this computer&quot;)</span>
+        <span class="c"># else:</span>
+            <span class="c"># self.spi = SPI(*device_num)</span>
+            <span class="c"># self.spi.msh=baudrate</span>
+            <span class="c"># self.spi.mode=mode #CPOL/CPHA</span>
+    <span class="c"># def __del__(self):</span>
+        <span class="c"># self.spi.close()</span>
+    <span class="c"># def _shift_data(self, transfer_list):</span>
+        <span class="c"># return self.spi.xfer2(transfer_list)</span>
+    <span class="c"># @staticmethod</span>
+    <span class="c"># def get_byte_list(input_num, format_code=&#39;&gt;B&#39;):</span>
+        <span class="c"># &#39;&#39;&#39;Take number as input and output as a byte list.</span>
+        <span class="c"># The format_code should be of the form &quot;XY&quot;, where </span>
+        <span class="c"># X is &gt; (Big-endian) or &lt; (Little-endian) and</span>
+        <span class="c"># Y is H/L/Q (unsigned short/long/long_long)&#39;&#39;&#39; </span>
+        <span class="c"># # eg. input_int = 0xC0DEDBAD</span>
+        <span class="c"># s = struct.pack(format_code, input_num)</span>
+        <span class="c"># a = array.array(&quot;B&quot;)  # B: Unsigned bytes</span>
+        <span class="c"># a.fromstring(s)</span>
+        <span class="c"># result = a.tolist()</span>
+        <span class="c"># # print &quot;byte list&quot;, result # [192, 222, 219, 173]</span>
+        <span class="c"># return result</span>
+    <span class="c"># @staticmethod</span>
+    <span class="c"># def get_data(input_list, format_code):</span>
+        <span class="c"># &#39;&#39;&#39;Take an input_list, a list of bytes, and pack into an unsigned short/long/long_long.</span>
+        <span class="c"># The format_code should be of the form &quot;XY&quot;, where </span>
+        <span class="c"># X is &gt; (Big-endian) or &lt; (Little-endian) and</span>
+        <span class="c"># Y is H/L/Q (unsigned short/long/long_long)&#39;&#39;&#39;    </span>
+        <span class="c"># a = array.array(&quot;B&quot;)  # B: Unsigned bytes</span>
+        <span class="c"># a.fromlist(input_list)</span>
+        <span class="c"># s = a.tostring()</span>
+        <span class="c"># h = struct.unpack(format_code, s)[0] </span>
+        <span class="c"># return h</span>
+        </div>
+<span class="k">class</span> <span class="nc">spi_cfgpro</span><span class="p">(</span><span class="n">spiInterface</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">visa_interface</span><span class="p">,</span> <span class="n">CPOL</span><span class="p">,</span> <span class="n">CPHA</span><span class="p">,</span> <span class="n">baudrate</span><span class="o">=</span><span class="mf">1e6</span><span class="p">,</span> <span class="n">ss_ctrl</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span> <span class="o">=</span> <span class="n">visa_interface</span>
+        <span class="k">if</span> <span class="n">ss_ctrl</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ss_ctrl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cs</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ss_ctrl</span> <span class="o">=</span> <span class="n">ss_ctrl</span>
+        <span class="n">spiInterface</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">CPOL</span><span class="p">,</span> <span class="n">CPHA</span><span class="p">,</span> <span class="n">ss_ctrl</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ss_ctrl</span><span class="p">,</span> <span class="n">word_size</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;:SPI:ENable 0&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;:SPI:ENable 1&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;:SPI:Dorder 0&#39;</span><span class="p">)</span> <span class="c">#MSB first</span>
+        <span class="k">if</span> <span class="nb">float</span><span class="p">(</span><span class="n">baudrate</span><span class="p">)</span> <span class="o">==</span> <span class="mf">4e6</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;:SPI:CLOCk:RATE 0&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">float</span><span class="p">(</span><span class="n">baudrate</span><span class="p">)</span> <span class="o">==</span> <span class="mf">1e6</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;:SPI:CLOCk:RATE 1&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">float</span><span class="p">(</span><span class="n">baudrate</span><span class="p">)</span> <span class="o">==</span> <span class="mf">250e3</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;:SPI:CLOCk:RATE 2&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">float</span><span class="p">(</span><span class="n">baudrate</span><span class="p">)</span> <span class="o">==</span> <span class="mf">125e3</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;:SPI:CLOCk:RATE 3&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">float</span><span class="p">(</span><span class="n">baudrate</span><span class="p">)</span> <span class="o">==</span> <span class="mf">8e6</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;:SPI:CLOCk:RATE 4&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">float</span><span class="p">(</span><span class="n">baudrate</span><span class="p">)</span> <span class="o">==</span> <span class="mf">2e6</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;:SPI:CLOCk:RATE 5&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">float</span><span class="p">(</span><span class="n">baudrate</span><span class="p">)</span> <span class="o">==</span> <span class="mf">500e3</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;:SPI:CLOCk:RATE 6&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">float</span><span class="p">(</span><span class="n">baudrate</span><span class="p">)</span> <span class="o">==</span> <span class="mf">250e3</span><span class="p">:</span> <span class="c">#yes, it&#39;s really duplicated</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;:SPI:CLOCk:RATE 7&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SPIMasterError</span><span class="p">(</span><span class="s">&#39;Invalid SPI baud rate for Configurator Pro interface: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">baudrate</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="n">CPOL</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;SPI:CLOCk:POLarity 0&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;SPI:CLOCk:POLarity 1&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">CPHA</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;SPI:CLOCk:PHASe 0&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;SPI:CLOCk:PHASe 1&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">cs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">select</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">select</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;SPI:SSELect:ENable&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;SPI:SSELect:DISable&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">_shift_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_out</span><span class="p">,</span> <span class="n">clk_count</span><span class="p">):</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">byte</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="n">data_out</span><span class="p">,</span> <span class="n">clk_count</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">word_size</span><span class="p">):</span>
+            <span class="n">resp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">ask</span><span class="p">(</span><span class="s">&#39;:SPI:TRANsceive? {:02X}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">byte</span><span class="p">)),</span><span class="mi">16</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">resp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">word_size</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">spi_dc590</span><span class="p">(</span><span class="n">spiInterface</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">interface_stream</span><span class="p">,</span> <span class="n">ss_ctrl</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;no control over CPOL/CPHA mode or baudrate...&#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span> <span class="o">=</span> <span class="n">interface_stream</span>
+        <span class="k">if</span> <span class="n">ss_ctrl</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">ss_ctrl</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">ss</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_cs</span><span class="p">(</span><span class="ow">not</span> <span class="n">ss</span><span class="p">)</span> <span class="c">#active low</span>
+        <span class="n">spiInterface</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">CPOL</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">CPHA</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ss_ctrl</span><span class="o">=</span><span class="n">ss_ctrl</span><span class="p">,</span> <span class="n">word_size</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_spi</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">set_cs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;control DC590 CS pin.</span>
+<span class="sd">        If true, pin high. No active low inversion here.&#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">level</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;X&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;x&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">set_gpio</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;control DC590 Pin 14 GPIO pin as output.</span>
+<span class="sd">        If true, pin high.&#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">level</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;COG&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;COg&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">init_spi</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">2.5</span><span class="p">)</span> <span class="c">#Linduino bootloader delay!</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">*</span><span class="mi">10</span><span class="p">)</span> 
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">2.5</span><span class="p">)</span> <span class="c">#Linduino bootloader delay!</span>
+        <span class="k">print</span> <span class="s">&#39;DC590 init response: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">None</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span> <span class="c">#discard any responses</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;O&#39;</span><span class="p">)</span> <span class="c">#Enable isolated power</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">spi_mode</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">SPIMasterError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">print</span> <span class="n">e</span>
+    <span class="k">def</span> <span class="nf">spi_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Switch DC590 I2C/SPI mux to SPI&#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;MS&#39;</span><span class="p">)</span> <span class="c">#Switch to isolated SPI Mode</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+        <span class="nb">buffer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">None</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">buffer</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">SPIMasterError</span><span class="p">(</span><span class="s">&#39;Error switching DC590 to SPI Mode. Unexpected data in buffer:{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">buffer</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">_shift_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_out</span><span class="p">,</span> <span class="n">clk_count</span><span class="p">):</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">byte</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="n">data_out</span><span class="p">,</span> <span class="n">clk_count</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">word_size</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;T{:02X}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">byte</span><span class="p">))</span>
+            <span class="n">stream_resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">stream_resp</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">SPIMasterError</span><span class="p">(</span><span class="s">&#39;Short response to SPI transceive: {}. SPI mode enabled?&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">stream_resp</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="k">elif</span> <span class="n">stream_resp</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">SPIMasterError</span><span class="p">(</span><span class="s">&#39;Long response to SPI transceive: {} then {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">stream_resp</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">elf</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">None</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">resp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">stream_resp</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">16</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">resp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">word_size</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">spi_buspirate</span><span class="p">(</span><span class="n">spiInterface</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">interface_raw_serial</span><span class="p">,</span> <span class="n">CPOL</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">CPHA</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">baudrate</span><span class="o">=</span><span class="mf">1e6</span><span class="p">,</span> <span class="n">ss_ctrl</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ser</span> <span class="o">=</span> <span class="n">interface_raw_serial</span>
+        <span class="k">if</span> <span class="n">ss_ctrl</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ss_ctrl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cs</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ss_ctrl</span> <span class="o">=</span> <span class="n">ss_ctrl</span>
+        <span class="n">spiInterface</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">CPOL</span><span class="p">,</span> <span class="n">CPHA</span><span class="p">,</span> <span class="n">ss_ctrl</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ss_ctrl</span><span class="p">,</span> <span class="n">word_size</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__init_spi</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_baudrate</span><span class="p">(</span><span class="n">baudrate</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_mode</span><span class="p">()</span> <span class="c">#uses self.mode from parent class __init__</span>
+    <span class="k">def</span> <span class="nf">__init_spi</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">*</span><span class="mi">10</span><span class="p">)</span> <span class="c">#exit any menus</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;#&#39;</span><span class="p">)</span> <span class="c">#reset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">inWaiting</span><span class="p">())</span>
+        <span class="c">#get into binary mode</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+        <span class="n">tries</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="p">(</span><span class="n">resp</span> <span class="o">!=</span> <span class="s">&#39;BBIO1&#39;</span><span class="p">):</span>
+            <span class="n">tries</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">tries</span> <span class="o">&gt;</span> <span class="mi">20</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">SPIMasterError</span><span class="p">(</span><span class="s">&#39;Buspirate failed to enter binary mode after 20 attempts&#39;</span><span class="p">)</span>
+            <span class="k">print</span> <span class="s">&#39;Buspirate entering binary mode attempt {}: &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tries</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\x00</span><span class="s">&#39;</span><span class="p">)</span> <span class="c">#enter binary mode</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.05</span><span class="p">)</span>
+            <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">inWaiting</span><span class="p">())</span>
+            <span class="k">print</span> <span class="n">resp</span>
+        <span class="c">#get into i2c mode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\x01</span><span class="s">&#39;</span><span class="p">)</span> <span class="c">#enter binary SPI mode</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.05</span><span class="p">)</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">inWaiting</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">resp</span> <span class="o">!=</span> <span class="s">&#39;SPI1&#39;</span><span class="p">:</span>
+             <span class="k">raise</span> <span class="n">SPIMasterError</span><span class="p">(</span><span class="s">&#39;Buspirate failed to enter SPI mode: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">resp</span><span class="p">))</span>
+        <span class="c">#set voltage levels</span>
+        <span class="c">#self.ser.write(&#39;\x4C&#39;) #power and pullups on</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\x4D</span><span class="s">&#39;</span><span class="p">)</span> <span class="c">#power and pullups on</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">resp</span> <span class="o">!=</span> <span class="s">&#39;</span><span class="se">\x01</span><span class="s">&#39;</span><span class="p">:</span>
+             <span class="k">raise</span> <span class="n">SPIMasterError</span><span class="p">(</span><span class="s">&#39;Buspirate failed to enable supply and pullups: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">resp</span><span class="p">))</span>
+        <span class="c">#vpullup select not yet implemented 7/16/2013.  3.3V shorted to Vpu on board temporarily</span>
+        <span class="c">#self.ser.write(&#39;\x51&#39;) #3.3v pullup</span>
+        <span class="c">#resp = self.ser.read(1)</span>
+        <span class="c">#if resp != &#39;\x01&#39;:</span>
+        <span class="c">#     raise SPIMasterError(&#39;Buspirate failed to set pullup voltage to 3.3v: {}&#39;.format(resp))</span>
+    <span class="k">def</span> <span class="nf">set_baudrate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">baudrate</span><span class="p">):</span>
+        <span class="n">baudrate</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">baudrate</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baudrate</span> <span class="o">=</span> <span class="n">baudrate</span>
+        <span class="k">if</span> <span class="n">baudrate</span> <span class="o">==</span> <span class="mf">30e3</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\x60</span><span class="s">&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">baudrate</span> <span class="o">==</span> <span class="mf">125e3</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\x61</span><span class="s">&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">baudrate</span> <span class="o">==</span> <span class="mf">250e3</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\x62</span><span class="s">&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">baudrate</span> <span class="o">==</span> <span class="mf">1e6</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\x63</span><span class="s">&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">baudrate</span> <span class="o">==</span> <span class="mf">2e6</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\x64</span><span class="s">&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">baudrate</span> <span class="o">==</span> <span class="mf">2.6e6</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\x65</span><span class="s">&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">baudrate</span> <span class="o">==</span> <span class="mf">4e6</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\x66</span><span class="s">&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">baudrate</span> <span class="o">==</span> <span class="mf">8e6</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\x67</span><span class="s">&#39;</span><span class="p">)</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c">#does it really return a byte? Undocumented...</span>
+        <span class="k">if</span> <span class="n">resp</span> <span class="o">!=</span> <span class="s">&#39;</span><span class="se">\x01</span><span class="s">&#39;</span><span class="p">:</span>
+             <span class="k">raise</span> <span class="n">SPIMasterError</span><span class="p">(</span><span class="s">&#39;Buspirate failed to set SPI baudrate to {}: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">baudrate</span><span class="p">,</span><span class="n">resp</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">set_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c">#looks like CKE is reversed from CPHA standard....</span>
+        <span class="c">#bit 8 CKE: SPIx Clock Edge Select bit(1)</span>
+            <span class="c">#1 = Serial output data changes on transition from active clock state to Idle clock state (see bit 6)</span>
+            <span class="c">#0 = Serial output data changes on transition from Idle clock state to active clock state (see bit 6)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\x8A</span><span class="s">&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\x89</span><span class="s">&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\x8E</span><span class="s">&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\x8C</span><span class="s">&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SPIMasterError</span><span class="p">(</span><span class="s">&#39;Something went wrong setting Mode&#39;</span><span class="p">)</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c">#does it really return a byte? Undocumented...</span>
+        <span class="k">if</span> <span class="n">resp</span> <span class="o">!=</span> <span class="s">&#39;</span><span class="se">\x01</span><span class="s">&#39;</span><span class="p">:</span>
+             <span class="k">raise</span> <span class="n">SPIMasterError</span><span class="p">(</span><span class="s">&#39;Buspirate failed to set SPI mode to {}: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">,</span><span class="n">resp</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">cs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">select</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;select is active low&#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">select</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\x02</span><span class="s">&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\x03</span><span class="s">&#39;</span><span class="p">)</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">resp</span> <span class="o">!=</span> <span class="s">&#39;</span><span class="se">\x01</span><span class="s">&#39;</span><span class="p">:</span>
+             <span class="k">raise</span> <span class="n">SPIMasterError</span><span class="p">(</span><span class="s">&#39;Buspirate failed to set SPI _SS: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">ord</span><span class="p">(</span><span class="n">resp</span><span class="p">)))</span>
+    <span class="k">def</span> <span class="nf">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">_shift_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_out</span><span class="p">,</span> <span class="n">clk_count</span><span class="p">):</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="nb">bytes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="n">data_out</span><span class="p">,</span> <span class="n">clk_count</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">word_size</span><span class="p">)</span>
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="nb">bytes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">16</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\x1F</span><span class="s">&#39;</span><span class="p">)</span> <span class="c">#bulk write and read 16 bytes</span>
+            <span class="n">resp_chr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> 
+            <span class="k">if</span> <span class="n">resp_chr</span> <span class="o">!=</span> <span class="s">&#39;</span><span class="se">\x01</span><span class="s">&#39;</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">SPIMasterError</span><span class="p">(</span><span class="s">&#39;Buspirate failed response to SPI bulk read/write: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">ord</span><span class="p">(</span><span class="n">resp_chr</span><span class="p">)))</span>
+            <span class="k">for</span> <span class="n">byte</span> <span class="ow">in</span> <span class="nb">bytes</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">16</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">chr</span><span class="p">(</span><span class="n">byte</span><span class="p">))</span> <span class="c">#send MOSI byte</span>
+                <span class="n">resp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">ord</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">)))</span> <span class="c">#get MISO byte back</span>
+            <span class="nb">bytes</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">[</span><span class="mi">16</span><span class="p">:]</span>
+        <span class="n">remaining_bytes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">bytes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">chr</span><span class="p">(</span><span class="mh">0x10</span> <span class="o">+</span> <span class="n">remaining_bytes</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span> <span class="c">#bulk write and read remaining bytes</span>
+        <span class="n">resp_chr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> 
+        <span class="k">if</span> <span class="n">resp_chr</span> <span class="o">!=</span> <span class="s">&#39;</span><span class="se">\x01</span><span class="s">&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SPIMasterError</span><span class="p">(</span><span class="s">&#39;Buspirate failed response to SPI bulk read/write: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">ord</span><span class="p">(</span><span class="n">resp_chr</span><span class="p">)))</span>
+        <span class="k">for</span> <span class="n">byte</span> <span class="ow">in</span> <span class="nb">bytes</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">chr</span><span class="p">(</span><span class="n">byte</span><span class="p">))</span> <span class="c">#send MOSI byte</span>
+            <span class="n">resp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">ord</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">)))</span> <span class="c">#get MISO byte back</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">resp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">word_size</span><span class="p">)</span>
+        
+<span class="k">class</span> <span class="nc">spi_bitbang</span><span class="p">(</span><span class="n">spiInterface</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">SCK_channel</span><span class="p">,</span> <span class="n">MOSI_channel</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">MISO_channel</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">SS_channel</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">CPOL</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">CPHA</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">SS_POL</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">low_level</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">high_level</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;bit-bangable SPI port made of any writeable channels (power supply, gpio, etc).</span>
+<span class="sd">        SCK_channel, MOSI_channel and SS_channel are writable channel objects.</span>
+<span class="sd">        MISO_channel is a readable channel object.</span>
+<span class="sd">        MOSI_channel or MISO_channel may be set equal to None for unidirectinal communication.</span>
+<span class="sd">        SS_channel may be set equal to None if not required.</span>
+<span class="sd">        CPOL, CPHA set SPI clock polarity and clock phase respectively. CPHA != 0 not currently supported.</span>
+<span class="sd">        SS_POL is the active state of slave/chip select (ie 0 for typical active low).</span>
+<span class="sd">        low_level and high_level will be written to the writable channels to set the logic low and logic high states respectively. The average will set the ADC threshold for the MISO channel.</span>
+<span class="sd">        If a channel is not required, it can be faked with lab_core.master.add_channel_dummy(&#39;fake_MISO_channel&#39;).</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SCK_channel</span> <span class="o">=</span> <span class="n">SCK_channel</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">MOSI_channel</span> <span class="o">=</span> <span class="n">MOSI_channel</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">MISO_channel</span> <span class="o">=</span> <span class="n">MISO_channel</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SS_channel</span> <span class="o">=</span> <span class="n">SS_channel</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SS_POL</span> <span class="o">=</span> <span class="n">SS_POL</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_levels</span><span class="p">(</span><span class="n">low_level</span><span class="p">,</span> <span class="n">high_level</span><span class="p">)</span>
+        <span class="n">spiInterface</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">CPOL</span><span class="p">,</span> <span class="n">CPHA</span><span class="p">,</span> <span class="n">ss_ctrl</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cs</span><span class="p">,</span> <span class="n">word_size</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">CPOL</span><span class="p">:</span>
+            <span class="c">#clock resting state 0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">SCK_channel</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c">#clock resting state 1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">SCK_channel</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">high</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">CPHA</span> <span class="o">==</span> <span class="mi">0</span> <span class="c">#CHPA == 1 not implemented. https://en.wikipedia.org/wiki/Serial_Peripheral_Interface_Bus#Clock_polarity_and_phase</span>
+    <span class="k">def</span> <span class="nf">set_levels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;set values to write to SCK_channel, MOSI_channel and SS_channel.</span>
+<span class="sd">        values are also used to digitize MISO_channel readings.</span>
+<span class="sd">        for example, to use a power supply at 5V logic levels set high=5&#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">low</span> <span class="o">=</span> <span class="n">low</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">high</span> <span class="o">=</span> <span class="n">high</span>
+    <span class="k">def</span> <span class="nf">cs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">select</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;select is active low&#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">SS_channel</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">select</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">SS_POL</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">SS_channel</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="n">select</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">SS_POL</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">SS_channel</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">high</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">select</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">SS_POL</span><span class="p">:</span> <span class="c">#active high SS</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">SS_channel</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">high</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="n">select</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">SS_POL</span><span class="p">:</span> <span class="c">#active high SS</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">SS_channel</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_shift_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_out</span><span class="p">,</span> <span class="n">clk_count</span><span class="p">):</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">bits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="n">data_out</span><span class="p">,</span> <span class="n">clk_count</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">word_size</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">bit</span> <span class="ow">in</span> <span class="n">bits</span><span class="p">:</span>
+            <span class="c">#set up data</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">MOSI_channel</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">MOSI_channel</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">high</span> <span class="k">if</span> <span class="n">bit</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="p">)</span>
+            <span class="c">#clk active</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">SCK_channel</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">high</span> <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">CPOL</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="p">)</span>
+            <span class="c">#receive data</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">MISO_channel</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">raw_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">MISO_channel</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">raw_data</span> <span class="o">&gt;</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">high</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="p">)</span><span class="o">/</span><span class="mf">2.0</span><span class="p">:</span> <span class="c">#ADC</span>
+                    <span class="n">resp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">resp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="c">#clk inactive</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">SCK_channel</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">low</span> <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">CPOL</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">high</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">MISO_channel</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">resp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">word_size</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">spi_dummy</span><span class="p">(</span><span class="n">spiInterface</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">delay</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">word_size</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delay</span> <span class="o">=</span> <span class="n">delay</span>
+        <span class="n">spiInterface</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">CPOL</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">CPHA</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ss_ctrl</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cs</span><span class="p">,</span> <span class="n">word_size</span><span class="o">=</span><span class="n">word_size</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">cs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">select</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">select</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;Writing slave_select ACTIVE.&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;Writing slave_select INACTIVE.&quot;</span>
+    <span class="k">def</span> <span class="nf">_shift_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_out</span><span class="p">,</span> <span class="n">clk_count</span><span class="p">):</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">words</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="n">data_out</span><span class="p">,</span> <span class="n">clk_count</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">word_size</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">words</span><span class="p">:</span>
+            <span class="n">resp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">word_size</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">ret_val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">resp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">word_size</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&quot;{{}} bit dummy SPI transaction. Wrote: 0x{{:0{digits}X}} Read:0x{{:0{digits}X}}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">digits</span><span class="o">=</span><span class="p">(</span><span class="n">clk_count</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">4</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">clk_count</span><span class="p">,</span> <span class="n">data_out</span><span class="p">,</span> <span class="n">ret_val</span><span class="p">)</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delay</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ret_val</span>
+
+<span class="k">class</span> <span class="nc">SPIMasterError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">lab_core</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">lab_core</span><span class="o">.</span><span class="n">master</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">dummy_print</span><span class="p">(</span><span class="n">ch_name</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s">&#39;{}:{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ch_name</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+    <span class="n">clk_ch</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">add_channel_virtual</span><span class="p">(</span><span class="s">&#39;sck&#39;</span><span class="p">,</span> <span class="n">write_function</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">data</span><span class="p">:</span> <span class="n">dummy_print</span><span class="p">(</span><span class="s">&#39;sck&#39;</span><span class="p">,</span><span class="n">data</span><span class="p">))</span>
+    <span class="n">mosi_ch</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">add_channel_virtual</span><span class="p">(</span><span class="s">&#39;mosi&#39;</span><span class="p">,</span> <span class="n">write_function</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">data</span><span class="p">:</span> <span class="n">dummy_print</span><span class="p">(</span><span class="s">&#39;mosi&#39;</span><span class="p">,</span><span class="n">data</span><span class="p">))</span>
+    <span class="n">ss_ch</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">add_channel_virtual</span><span class="p">(</span><span class="s">&#39;_ss&#39;</span><span class="p">,</span> <span class="n">write_function</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">data</span><span class="p">:</span> <span class="n">dummy_print</span><span class="p">(</span><span class="s">&#39;/ss&#39;</span><span class="p">,</span><span class="n">data</span><span class="p">))</span>
+    <span class="n">miso_ch</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">add_channel_virtual</span><span class="p">(</span><span class="s">&#39;miso&#39;</span><span class="p">,</span> <span class="n">read_function</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">dummy_print</span><span class="p">(</span><span class="s">&#39;miso&#39;</span><span class="p">,</span><span class="s">&#39;Read&#39;</span><span class="p">))</span>
+    <span class="n">sr</span> <span class="o">=</span> <span class="n">shift_register</span><span class="p">()</span>
+    <span class="n">sr</span><span class="o">.</span><span class="n">add_bit_field</span><span class="p">(</span><span class="n">bit_field_name</span><span class="o">=</span><span class="s">&#39;top_nibble&#39;</span><span class="p">,</span> <span class="n">bit_field_bit_count</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+    <span class="n">sr</span><span class="o">.</span><span class="n">add_bit_field</span><span class="p">(</span><span class="n">bit_field_name</span><span class="o">=</span><span class="s">&#39;bottom_half_nibble&#39;</span><span class="p">,</span> <span class="n">bit_field_bit_count</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">sr</span><span class="o">.</span><span class="n">add_bit_field</span><span class="p">(</span><span class="n">bit_field_name</span><span class="o">=</span><span class="s">&#39;bit_1&#39;</span><span class="p">,</span> <span class="n">bit_field_bit_count</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">sr</span><span class="o">.</span><span class="n">add_bit_field</span><span class="p">(</span><span class="n">bit_field_name</span><span class="o">=</span><span class="s">&#39;bit_0&#39;</span><span class="p">,</span> <span class="n">bit_field_bit_count</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">print</span> <span class="n">sr</span>
+    <span class="k">for</span> <span class="n">bf</span> <span class="ow">in</span> <span class="n">sr</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&#39;{}:{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">bf</span><span class="p">,</span><span class="n">sr</span><span class="p">[</span><span class="n">bf</span><span class="p">])</span>
+    <span class="c">#sp = spi_bitbang(SCK_channel=clk_ch, MOSI_channel=mosi_ch, MISO_channel=miso_ch, SS_channel=ss_ch)</span>
+    <span class="n">sp</span> <span class="o">=</span> <span class="n">spi_dummy</span><span class="p">()</span>
+    <span class="n">sp</span><span class="o">.</span><span class="n">transceive</span><span class="p">(</span><span class="mh">0x05a</span><span class="p">,</span><span class="mi">9</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">data</span><span class="p">[</span><span class="s">&#39;top_nibble&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mh">0xA</span>
+    <span class="n">data</span><span class="p">[</span><span class="s">&#39;bottom_half_nibble&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">data</span><span class="p">[</span><span class="s">&#39;bit_1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">data</span><span class="p">[</span><span class="s">&#39;bit_0&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">print</span> <span class="n">sr</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="n">sp</span><span class="o">.</span><span class="n">transceive</span><span class="p">(</span><span class="o">*</span><span class="n">sr</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">data</span><span class="p">)))</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../PyICe.html">
+              <img class="logo" src="../../_static/tssop.png" alt="Logo"/>
+            </a></p>
+<h3><a href="../../PyICe.html">Table Of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.lab_instruments.html">PyICe.lab_instruments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.lab_core.html">PyICe.lab_core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.lab_utils.html">PyICe.lab_utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.LTC_plot.html">PyICe.LTC_plot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.lab_gui.html">PyICe.lab_gui</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.lab_interfaces.html">PyICe.lab_interfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.twi_instrument.html">PyICe.twi_instrument</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.twoWireInterface.html">PyICe.twoWireInterface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.spi_instrument.html">PyICe.spi_instrument</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.spi_interface.html">PyICe.spi_interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.visa_wrappers.html">PyICe.visa_wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.xml_registers.html">PyICe.xml_registers</a></li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../PyICe.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Linear Technology Corporation.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

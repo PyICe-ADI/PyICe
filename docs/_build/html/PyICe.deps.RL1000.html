@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PyICe.deps.RL1000 package &mdash; PyICe  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="PyICe.deps.RL1009 package" href="PyICe.deps.RL1009.html" />
+    <link rel="prev" title="PyICe.deps package" href="PyICe.deps.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            PyICe
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">PyICe</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="PyICe.html">PyICe package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="PyICe.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="PyICe.data_utils.html">PyICe.data_utils package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="PyICe.deps.html">PyICe.deps package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="PyICe.instruments.html">PyICe.instruments package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="PyICe.refid_modules.html">PyICe.refid_modules package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="PyICe.xml_registers.html">PyICe.xml_registers package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.LTC_plot">PyICe.LTC_plot module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.TypicalCurveEditor_input">PyICe.TypicalCurveEditor_input module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.generate_docs">PyICe.generate_docs module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.interpolator">PyICe.interpolator module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.ivy_instruments">PyICe.ivy_instruments module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.lab_core">PyICe.lab_core module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.lab_instruments">PyICe.lab_instruments module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.lab_interfaces">PyICe.lab_interfaces module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.lab_utils">PyICe.lab_utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.logo">PyICe.logo module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.plot_tools">PyICe.plot_tools module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.spi_instrument">PyICe.spi_instrument module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.spi_interface">PyICe.spi_interface module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.twi_instrument">PyICe.twi_instrument module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.twoWireInterface">PyICe.twoWireInterface module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.virtual_instruments">PyICe.virtual_instruments module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.visa_wrappers">PyICe.visa_wrappers module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PyICe</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">PyICe</a></li>
+          <li class="breadcrumb-item"><a href="PyICe.html">PyICe package</a></li>
+          <li class="breadcrumb-item"><a href="PyICe.deps.html">PyICe.deps package</a></li>
+      <li class="breadcrumb-item active">PyICe.deps.RL1000 package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/PyICe.deps.RL1000.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pyice-deps-rl1000-package">
+<h1>PyICe.deps.RL1000 package<a class="headerlink" href="#pyice-deps-rl1000-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-PyICe.deps.RL1000.RL1000_CLASS">
+<span id="pyice-deps-rl1000-rl1000-class-module"></span><h2>PyICe.deps.RL1000.RL1000_CLASS module<a class="headerlink" href="#module-PyICe.deps.RL1000.RL1000_CLASS" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.deps.RL1000.RL1000_CLASS.</span></span><span class="sig-name descname"><span class="pre">rl1000</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rlib</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.calculate_current_meter_range">
+<span class="sig-name descname"><span class="pre">calculate_current_meter_range</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.calculate_current_meter_range" title="Permalink to this definition"></a></dt>
+<dd><p>Calcaulte the either current meter range</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.calibrate_current_load">
+<span class="sig-name descname"><span class="pre">calibrate_current_load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cl_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">digit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">code</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.calibrate_current_load" title="Permalink to this definition"></a></dt>
+<dd><p>Calibrate the current load</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.calibrate_current_meter1_fullscale">
+<span class="sig-name descname"><span class="pre">calibrate_current_meter1_fullscale</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cm_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.calibrate_current_meter1_fullscale" title="Permalink to this definition"></a></dt>
+<dd><p>Calibrate the current meter 1 fullscale</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.calibrate_current_meter1_offset">
+<span class="sig-name descname"><span class="pre">calibrate_current_meter1_offset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cm_range</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.calibrate_current_meter1_offset" title="Permalink to this definition"></a></dt>
+<dd><p>Calibrate the current meter 1 offset</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.calibrate_current_meter2_fullscale">
+<span class="sig-name descname"><span class="pre">calibrate_current_meter2_fullscale</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cm_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.calibrate_current_meter2_fullscale" title="Permalink to this definition"></a></dt>
+<dd><p>Calibrate the current meter 2 fullscale</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.calibrate_current_meter2_offset">
+<span class="sig-name descname"><span class="pre">calibrate_current_meter2_offset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cm_range</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.calibrate_current_meter2_offset" title="Permalink to this definition"></a></dt>
+<dd><p>Calibrate the current meter 2 offset</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.calibrate_pwm_voltage">
+<span class="sig-name descname"><span class="pre">calibrate_pwm_voltage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">voltage1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">voltage2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">code1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">code2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.calibrate_pwm_voltage" title="Permalink to this definition"></a></dt>
+<dd><p>Calibrate the pwm voltage</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.calibrate_regulator">
+<span class="sig-name descname"><span class="pre">calibrate_regulator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">voltage1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">voltage2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">code1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">code2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.calibrate_regulator" title="Permalink to this definition"></a></dt>
+<dd><p>Calibrate the regulator voltage</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.calibrate_vm1_fullscale">
+<span class="sig-name descname"><span class="pre">calibrate_vm1_fullscale</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">voltage</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.calibrate_vm1_fullscale" title="Permalink to this definition"></a></dt>
+<dd><p>Calibrate the fullscale voltage for voltmeter V1</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.calibrate_vm1_offset">
+<span class="sig-name descname"><span class="pre">calibrate_vm1_offset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.calibrate_vm1_offset" title="Permalink to this definition"></a></dt>
+<dd><p>Calibrate voltmeter V1 offset</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.calibrate_vm2_fullscale">
+<span class="sig-name descname"><span class="pre">calibrate_vm2_fullscale</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">voltage</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.calibrate_vm2_fullscale" title="Permalink to this definition"></a></dt>
+<dd><p>Calibrate the fullscale voltage for voltmeter V2</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.calibrate_vm2_offset">
+<span class="sig-name descname"><span class="pre">calibrate_vm2_offset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.calibrate_vm2_offset" title="Permalink to this definition"></a></dt>
+<dd><p>Calibrate voltmeter V2 offset.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.calibrate_vout_1">
+<span class="sig-name descname"><span class="pre">calibrate_vout_1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">voltage1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">voltage2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">code1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">code2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.calibrate_vout_1" title="Permalink to this definition"></a></dt>
+<dd><p>Calibrate VOUT1</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.calibrate_vout_2">
+<span class="sig-name descname"><span class="pre">calibrate_vout_2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">voltage1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">voltage2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">code1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">code2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.calibrate_vout_2" title="Permalink to this definition"></a></dt>
+<dd><p>Calibrate VOUT2</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.disable_current_load">
+<span class="sig-name descname"><span class="pre">disable_current_load</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.disable_current_load" title="Permalink to this definition"></a></dt>
+<dd><p>Force I2 into current meter mode by turning the load off</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.disable_current_meter1_autorange">
+<span class="sig-name descname"><span class="pre">disable_current_meter1_autorange</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.disable_current_meter1_autorange" title="Permalink to this definition"></a></dt>
+<dd><p>Turn off current meter #1 autoranging</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.disable_current_meter2_autorange">
+<span class="sig-name descname"><span class="pre">disable_current_meter2_autorange</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.disable_current_meter2_autorange" title="Permalink to this definition"></a></dt>
+<dd><p>Turn off current meter #2 autoranging</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.disable_pwm">
+<span class="sig-name descname"><span class="pre">disable_pwm</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.disable_pwm" title="Permalink to this definition"></a></dt>
+<dd><p>Turn off the PWM/Clock output.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.enable_current_load">
+<span class="sig-name descname"><span class="pre">enable_current_load</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.enable_current_load" title="Permalink to this definition"></a></dt>
+<dd><p>Force I2 into current load mode. (Default at power up)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.enable_current_meter1_autorange">
+<span class="sig-name descname"><span class="pre">enable_current_meter1_autorange</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.enable_current_meter1_autorange" title="Permalink to this definition"></a></dt>
+<dd><p>Turn on current meter #1 autoranging (Default at power up)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.enable_current_meter2_autorange">
+<span class="sig-name descname"><span class="pre">enable_current_meter2_autorange</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.enable_current_meter2_autorange" title="Permalink to this definition"></a></dt>
+<dd><p>Turn on current meter #2 autoranging (Default at power up)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.format_value">
+<span class="sig-name descname"><span class="pre">format_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.format_value" title="Permalink to this definition"></a></dt>
+<dd><p>Format a value for display</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.get_current_load_dac_code">
+<span class="sig-name descname"><span class="pre">get_current_load_dac_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cl_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">digit</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.get_current_load_dac_code" title="Permalink to this definition"></a></dt>
+<dd><p>Get the 16-bit current load DAC code for the given range and digit</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.identify">
+<span class="sig-name descname"><span class="pre">identify</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.identify" title="Permalink to this definition"></a></dt>
+<dd><p>Blink the front panel LED.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.initialize" title="Permalink to this definition"></a></dt>
+<dd><p>Open all meters. Returns the number found.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.measure_all">
+<span class="sig-name descname"><span class="pre">measure_all</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.measure_all" title="Permalink to this definition"></a></dt>
+<dd><p>Measure V1,V2,I1 &amp; I2 simultaneously</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.measure_and_print">
+<span class="sig-name descname"><span class="pre">measure_and_print</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">format_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">print_title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.measure_and_print" title="Permalink to this definition"></a></dt>
+<dd><p>Measure all and print the results</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.measure_load_heatsink_temperature">
+<span class="sig-name descname"><span class="pre">measure_load_heatsink_temperature</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.measure_load_heatsink_temperature" title="Permalink to this definition"></a></dt>
+<dd><p>Measure the temperature of the load heatsink in C</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.measure_pulse">
+<span class="sig-name descname"><span class="pre">measure_pulse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">low_current</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high_current</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delay_ms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rate_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measure_current</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.measure_pulse" title="Permalink to this definition"></a></dt>
+<dd><p>Pulse the load current and measure V1,V2,I1 &amp; I2</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.measure_regulator_heatsink_temperature">
+<span class="sig-name descname"><span class="pre">measure_regulator_heatsink_temperature</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.measure_regulator_heatsink_temperature" title="Permalink to this definition"></a></dt>
+<dd><p>Measure the temperature of the regulator heatsink in C</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.next_log_value">
+<span class="sig-name descname"><span class="pre">next_log_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps_per_decade</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.next_log_value" title="Permalink to this definition"></a></dt>
+<dd><p>calculate the next log scale value</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.ping">
+<span class="sig-name descname"><span class="pre">ping</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.ping" title="Permalink to this definition"></a></dt>
+<dd><p>Check the meter connection.Returns True if OK</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.reset_current_load">
+<span class="sig-name descname"><span class="pre">reset_current_load</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.reset_current_load" title="Permalink to this definition"></a></dt>
+<dd><p>Set the current load to zero</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.save_calibration">
+<span class="sig-name descname"><span class="pre">save_calibration</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.save_calibration" title="Permalink to this definition"></a></dt>
+<dd><p>Save all of the calibration variables to EEPROM</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.serial_number">
+<span class="sig-name descname"><span class="pre">serial_number</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.serial_number" title="Permalink to this definition"></a></dt>
+<dd><p>Get the serial number of the selected meter.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.servo_regulator">
+<span class="sig-name descname"><span class="pre">servo_regulator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">servo_voltage</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regulator_voltage</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_dv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_trys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.servo_regulator" title="Permalink to this definition"></a></dt>
+<dd><p>Servo the Regulator. Returns the new regulator voltage.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_autorange_sample_rate">
+<span class="sig-name descname"><span class="pre">set_autorange_sample_rate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample_rate_index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_autorange_sample_rate" title="Permalink to this definition"></a></dt>
+<dd><p>Set the sample rate background autoranging measurements</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_clock">
+<span class="sig-name descname"><span class="pre">set_clock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amplitude</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_clock" title="Permalink to this definition"></a></dt>
+<dd><p>Turn on the PWM. Amplitude=1.2-5.25V,frequency=1k-50Mhz</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_current_load_dac_code">
+<span class="sig-name descname"><span class="pre">set_current_load_dac_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cl_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">code</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_current_load_dac_code" title="Permalink to this definition"></a></dt>
+<dd><p>Write directly to the 16-bit current load DAC for the given range</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_current_load_digit">
+<span class="sig-name descname"><span class="pre">set_current_load_digit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cl_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">digit</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_current_load_digit" title="Permalink to this definition"></a></dt>
+<dd><p>Set the current load to the given digit in range</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_current_load_variables">
+<span class="sig-name descname"><span class="pre">set_current_load_variables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cl_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">digit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">code</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_current_load_variables" title="Permalink to this definition"></a></dt>
+<dd><p>Set the current load DAC for the given digit and range</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_current_meter1_range">
+<span class="sig-name descname"><span class="pre">set_current_meter1_range</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cm_range</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_current_meter1_range" title="Permalink to this definition"></a></dt>
+<dd><p>Set the current meter1 range</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_current_meter2_range">
+<span class="sig-name descname"><span class="pre">set_current_meter2_range</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cm_range</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_current_meter2_range" title="Permalink to this definition"></a></dt>
+<dd><p>Set the current meter2 range</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_load_current">
+<span class="sig-name descname"><span class="pre">set_load_current</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">load_current</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_load_current" title="Permalink to this definition"></a></dt>
+<dd><p>Set the current load value</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_measurement_sample_rate">
+<span class="sig-name descname"><span class="pre">set_measurement_sample_rate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample_rate_index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_measurement_sample_rate" title="Permalink to this definition"></a></dt>
+<dd><p>Set the sample rate of the V and I measurements</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_meter_number">
+<span class="sig-name descname"><span class="pre">set_meter_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">meter_number</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_meter_number" title="Permalink to this definition"></a></dt>
+<dd><p>Select the meter to communicate with (0 to meter_count-1)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_pwm">
+<span class="sig-name descname"><span class="pre">set_pwm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duty_cycle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amplitude</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_pwm" title="Permalink to this definition"></a></dt>
+<dd><p>Turn on the PWM. Amplitude=1.2-5.25V,duty_cycle=0-1,frequency=50-10khz</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_pwm_voltage_code">
+<span class="sig-name descname"><span class="pre">set_pwm_voltage_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_pwm_voltage_code" title="Permalink to this definition"></a></dt>
+<dd><p>Write directly to the 16-bit pwm voltage DAC</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_regulator_dac_code">
+<span class="sig-name descname"><span class="pre">set_regulator_dac_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_regulator_dac_code" title="Permalink to this definition"></a></dt>
+<dd><p>Write directly to the 16-bit regulator DAC</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_regulator_voltage">
+<span class="sig-name descname"><span class="pre">set_regulator_voltage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">regulator_voltage</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_regulator_voltage" title="Permalink to this definition"></a></dt>
+<dd><p>Set the regulator voltage from 0-4V. (Default=0V at power up)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_timeouts">
+<span class="sig-name descname"><span class="pre">set_timeouts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">read_timeout</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_timeout</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_timeouts" title="Permalink to this definition"></a></dt>
+<dd><p>set the read and write timeouts in ms</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_vout_1">
+<span class="sig-name descname"><span class="pre">set_vout_1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">voltage</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_vout_1" title="Permalink to this definition"></a></dt>
+<dd><p>Set the DAC output voltage #1 on rear of meter to 0-5V</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_vout_2">
+<span class="sig-name descname"><span class="pre">set_vout_2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">voltage</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_vout_2" title="Permalink to this definition"></a></dt>
+<dd><p>Set the DAC output voltage #2 on rear of meter to 0-5V</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_vout_code_1">
+<span class="sig-name descname"><span class="pre">set_vout_code_1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_vout_code_1" title="Permalink to this definition"></a></dt>
+<dd><p>Set the DAC output code #1 on rear of meter</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_vout_code_2">
+<span class="sig-name descname"><span class="pre">set_vout_code_2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.set_vout_code_2" title="Permalink to this definition"></a></dt>
+<dd><p>Set the DAC output code #2 on rear of meter</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="PyICe.deps.RL1000.RL1000_CLASS.rl1000.settling_time">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">settling_time</span></span><a class="headerlink" href="#PyICe.deps.RL1000.RL1000_CLASS.rl1000.settling_time" title="Permalink to this definition"></a></dt>
+<dd><p>settling time before measurement</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="pyice-deps-rl1000-rl1000-class-broken-module">
+<h2>PyICe.deps.RL1000.RL1000_CLASS - broken module<a class="headerlink" href="#pyice-deps-rl1000-rl1000-class-broken-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-PyICe.deps.RL1000.rl1000_test">
+<span id="pyice-deps-rl1000-rl1000-test-module"></span><h2>PyICe.deps.RL1000.rl1000_test module<a class="headerlink" href="#module-PyICe.deps.RL1000.rl1000_test" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-PyICe.deps.RL1000">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-PyICe.deps.RL1000" title="Permalink to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="PyICe.deps.html" class="btn btn-neutral float-left" title="PyICe.deps package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="PyICe.deps.RL1009.html" class="btn btn-neutral float-right" title="PyICe.deps.RL1009 package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Dave Simmons, Steve Martin, Zach Lewko.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

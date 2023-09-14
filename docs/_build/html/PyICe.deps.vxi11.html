@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PyICe.deps.vxi11 package &mdash; PyICe  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="PyICe.instruments package" href="PyICe.instruments.html" />
+    <link rel="prev" title="PyICe.deps.usbtmc package" href="PyICe.deps.usbtmc.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            PyICe
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">PyICe</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="PyICe.html">PyICe package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="PyICe.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="PyICe.data_utils.html">PyICe.data_utils package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="PyICe.deps.html">PyICe.deps package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="PyICe.instruments.html">PyICe.instruments package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="PyICe.refid_modules.html">PyICe.refid_modules package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="PyICe.xml_registers.html">PyICe.xml_registers package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.LTC_plot">PyICe.LTC_plot module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.TypicalCurveEditor_input">PyICe.TypicalCurveEditor_input module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.generate_docs">PyICe.generate_docs module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.interpolator">PyICe.interpolator module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.ivy_instruments">PyICe.ivy_instruments module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.lab_core">PyICe.lab_core module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.lab_instruments">PyICe.lab_instruments module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.lab_interfaces">PyICe.lab_interfaces module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.lab_utils">PyICe.lab_utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.logo">PyICe.logo module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.plot_tools">PyICe.plot_tools module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.spi_instrument">PyICe.spi_instrument module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.spi_interface">PyICe.spi_interface module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.twi_instrument">PyICe.twi_instrument module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.twoWireInterface">PyICe.twoWireInterface module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.virtual_instruments">PyICe.virtual_instruments module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.visa_wrappers">PyICe.visa_wrappers module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PyICe</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">PyICe</a></li>
+          <li class="breadcrumb-item"><a href="PyICe.html">PyICe package</a></li>
+          <li class="breadcrumb-item"><a href="PyICe.deps.html">PyICe.deps package</a></li>
+      <li class="breadcrumb-item active">PyICe.deps.vxi11 package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/PyICe.deps.vxi11.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pyice-deps-vxi11-package">
+<h1>PyICe.deps.vxi11 package<a class="headerlink" href="#pyice-deps-vxi11-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-PyICe.deps.vxi11.rpc">
+<span id="pyice-deps-vxi11-rpc-module"></span><h2>PyICe.deps.vxi11.rpc module<a class="headerlink" href="#module-PyICe.deps.vxi11.rpc" title="Permalink to this heading"></a></h2>
+<p>Sun RPC version 2 – RFC1057</p>
+<p>This file is drawn from Python’s RPC demo, updated for python 3.  There
+doesn’t seem to be an original author or license associated the original
+file.</p>
+<p>XXX There should be separate exceptions for the various reasons why
+XXX an RPC can fail, rather than using RuntimeError for everything</p>
+<p>XXX Need to use class based exceptions rather than string exceptions</p>
+<p>XXX The UDP version of the protocol resends requests when it does
+XXX not receive a timely reply – use only for idempotent calls!</p>
+<p>XXX There is no provision for call timeout on TCP connections</p>
+<p>Original source: <a class="reference external" href="http://svn.python.org/projects/python/trunk/Demo/rpc/rpc.py">http://svn.python.org/projects/python/trunk/Demo/rpc/rpc.py</a></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.BroadcastUDPClient">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.deps.vxi11.rpc.</span></span><span class="sig-name descname"><span class="pre">BroadcastUDPClient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bcastaddr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prog</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vers</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.BroadcastUDPClient" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.deps.vxi11.rpc.Client" title="PyICe.deps.vxi11.rpc.Client"><code class="xref py py-class docutils literal notranslate"><span class="pre">Client</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.BroadcastUDPClient.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.BroadcastUDPClient.close" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.BroadcastUDPClient.make_call">
+<span class="sig-name descname"><span class="pre">make_call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">proc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pack_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unpack_func</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.BroadcastUDPClient.make_call" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.BroadcastUDPClient.my_reply_handler">
+<span class="sig-name descname"><span class="pre">my_reply_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reply</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fromaddr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.BroadcastUDPClient.my_reply_handler" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.BroadcastUDPClient.set_reply_handler">
+<span class="sig-name descname"><span class="pre">set_reply_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reply_handler</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.BroadcastUDPClient.set_reply_handler" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.BroadcastUDPClient.set_timeout">
+<span class="sig-name descname"><span class="pre">set_timeout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.BroadcastUDPClient.set_timeout" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.BroadcastUDPPortMapperClient">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.deps.vxi11.rpc.</span></span><span class="sig-name descname"><span class="pre">BroadcastUDPPortMapperClient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bcastaddr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.BroadcastUDPPortMapperClient" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.deps.vxi11.rpc.PartialPortMapperClient" title="PyICe.deps.vxi11.rpc.PartialPortMapperClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">PartialPortMapperClient</span></code></a>, <a class="reference internal" href="#PyICe.deps.vxi11.rpc.RawBroadcastUDPClient" title="PyICe.deps.vxi11.rpc.RawBroadcastUDPClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">RawBroadcastUDPClient</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.Client">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.deps.vxi11.rpc.</span></span><span class="sig-name descname"><span class="pre">Client</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prog</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.Client" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.Client.call_0">
+<span class="sig-name descname"><span class="pre">call_0</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.Client.call_0" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.Client.do_call">
+<span class="sig-name descname"><span class="pre">do_call</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.Client.do_call" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.Client.make_call">
+<span class="sig-name descname"><span class="pre">make_call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">proc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pack_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unpack_func</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.Client.make_call" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.Client.mkcred">
+<span class="sig-name descname"><span class="pre">mkcred</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.Client.mkcred" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.Client.mkverf">
+<span class="sig-name descname"><span class="pre">mkverf</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.Client.mkverf" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.Client.start_call">
+<span class="sig-name descname"><span class="pre">start_call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">proc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.Client.start_call" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.Packer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.deps.vxi11.rpc.</span></span><span class="sig-name descname"><span class="pre">Packer</span></span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.Packer" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Packer</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.Packer.pack_auth">
+<span class="sig-name descname"><span class="pre">pack_auth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">auth</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.Packer.pack_auth" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.Packer.pack_auth_unix">
+<span class="sig-name descname"><span class="pre">pack_auth_unix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stamp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machinename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gids</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.Packer.pack_auth_unix" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.Packer.pack_callheader">
+<span class="sig-name descname"><span class="pre">pack_callheader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prog</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verf</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.Packer.pack_callheader" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.Packer.pack_replyheader">
+<span class="sig-name descname"><span class="pre">pack_replyheader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verf</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.Packer.pack_replyheader" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.PartialPortMapperClient">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.deps.vxi11.rpc.</span></span><span class="sig-name descname"><span class="pre">PartialPortMapperClient</span></span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.PartialPortMapperClient" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.PartialPortMapperClient.callit">
+<span class="sig-name descname"><span class="pre">callit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ca</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.PartialPortMapperClient.callit" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.PartialPortMapperClient.dump">
+<span class="sig-name descname"><span class="pre">dump</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.PartialPortMapperClient.dump" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.PartialPortMapperClient.get_port">
+<span class="sig-name descname"><span class="pre">get_port</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapping</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.PartialPortMapperClient.get_port" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.PartialPortMapperClient.set">
+<span class="sig-name descname"><span class="pre">set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapping</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.PartialPortMapperClient.set" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.PartialPortMapperClient.unset">
+<span class="sig-name descname"><span class="pre">unset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapping</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.PartialPortMapperClient.unset" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.PortMapperPacker">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.deps.vxi11.rpc.</span></span><span class="sig-name descname"><span class="pre">PortMapperPacker</span></span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.PortMapperPacker" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.deps.vxi11.rpc.Packer" title="PyICe.deps.vxi11.rpc.Packer"><code class="xref py py-class docutils literal notranslate"><span class="pre">Packer</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.PortMapperPacker.pack_call_args">
+<span class="sig-name descname"><span class="pre">pack_call_args</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ca</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.PortMapperPacker.pack_call_args" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.PortMapperPacker.pack_mapping">
+<span class="sig-name descname"><span class="pre">pack_mapping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapping</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.PortMapperPacker.pack_mapping" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.PortMapperPacker.pack_pmaplist">
+<span class="sig-name descname"><span class="pre">pack_pmaplist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.PortMapperPacker.pack_pmaplist" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.PortMapperUnpacker">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.deps.vxi11.rpc.</span></span><span class="sig-name descname"><span class="pre">PortMapperUnpacker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.PortMapperUnpacker" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.deps.vxi11.rpc.Unpacker" title="PyICe.deps.vxi11.rpc.Unpacker"><code class="xref py py-class docutils literal notranslate"><span class="pre">Unpacker</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.PortMapperUnpacker.unpack_call_result">
+<span class="sig-name descname"><span class="pre">unpack_call_result</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.PortMapperUnpacker.unpack_call_result" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.PortMapperUnpacker.unpack_mapping">
+<span class="sig-name descname"><span class="pre">unpack_mapping</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.PortMapperUnpacker.unpack_mapping" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.PortMapperUnpacker.unpack_pmaplist">
+<span class="sig-name descname"><span class="pre">unpack_pmaplist</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.PortMapperUnpacker.unpack_pmaplist" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.RPCBadFormat">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.deps.vxi11.rpc.</span></span><span class="sig-name descname"><span class="pre">RPCBadFormat</span></span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.RPCBadFormat" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.deps.vxi11.rpc.RPCError" title="PyICe.deps.vxi11.rpc.RPCError"><code class="xref py py-class docutils literal notranslate"><span class="pre">RPCError</span></code></a></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.RPCBadVersion">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.deps.vxi11.rpc.</span></span><span class="sig-name descname"><span class="pre">RPCBadVersion</span></span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.RPCBadVersion" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.deps.vxi11.rpc.RPCError" title="PyICe.deps.vxi11.rpc.RPCError"><code class="xref py py-class docutils literal notranslate"><span class="pre">RPCError</span></code></a></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.RPCError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.deps.vxi11.rpc.</span></span><span class="sig-name descname"><span class="pre">RPCError</span></span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.RPCError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.RPCGarbageArgs">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.deps.vxi11.rpc.</span></span><span class="sig-name descname"><span class="pre">RPCGarbageArgs</span></span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.RPCGarbageArgs" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.deps.vxi11.rpc.RPCError" title="PyICe.deps.vxi11.rpc.RPCError"><code class="xref py py-class docutils literal notranslate"><span class="pre">RPCError</span></code></a></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.RPCUnpackError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.deps.vxi11.rpc.</span></span><span class="sig-name descname"><span class="pre">RPCUnpackError</span></span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.RPCUnpackError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.deps.vxi11.rpc.RPCError" title="PyICe.deps.vxi11.rpc.RPCError"><code class="xref py py-class docutils literal notranslate"><span class="pre">RPCError</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.RawBroadcastUDPClient">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.deps.vxi11.rpc.</span></span><span class="sig-name descname"><span class="pre">RawBroadcastUDPClient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bcastaddr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prog</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.RawBroadcastUDPClient" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.deps.vxi11.rpc.RawUDPClient" title="PyICe.deps.vxi11.rpc.RawUDPClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">RawUDPClient</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.RawBroadcastUDPClient.connect">
+<span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.RawBroadcastUDPClient.connect" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.RawBroadcastUDPClient.make_call">
+<span class="sig-name descname"><span class="pre">make_call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">proc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pack_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unpack_func</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.RawBroadcastUDPClient.make_call" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.RawBroadcastUDPClient.set_reply_handler">
+<span class="sig-name descname"><span class="pre">set_reply_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reply_handler</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.RawBroadcastUDPClient.set_reply_handler" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.RawBroadcastUDPClient.set_timeout">
+<span class="sig-name descname"><span class="pre">set_timeout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.RawBroadcastUDPClient.set_timeout" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.RawTCPClient">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.deps.vxi11.rpc.</span></span><span class="sig-name descname"><span class="pre">RawTCPClient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prog</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.RawTCPClient" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.deps.vxi11.rpc.Client" title="PyICe.deps.vxi11.rpc.Client"><code class="xref py py-class docutils literal notranslate"><span class="pre">Client</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.RawTCPClient.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.RawTCPClient.close" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.RawTCPClient.connect">
+<span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.RawTCPClient.connect" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.RawTCPClient.do_call">
+<span class="sig-name descname"><span class="pre">do_call</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.RawTCPClient.do_call" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.RawUDPClient">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.deps.vxi11.rpc.</span></span><span class="sig-name descname"><span class="pre">RawUDPClient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prog</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.RawUDPClient" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.deps.vxi11.rpc.Client" title="PyICe.deps.vxi11.rpc.Client"><code class="xref py py-class docutils literal notranslate"><span class="pre">Client</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.RawUDPClient.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.RawUDPClient.close" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.RawUDPClient.connect">
+<span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.RawUDPClient.connect" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.RawUDPClient.do_call">
+<span class="sig-name descname"><span class="pre">do_call</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.RawUDPClient.do_call" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.Server">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.deps.vxi11.rpc.</span></span><span class="sig-name descname"><span class="pre">Server</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prog</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.Server" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.Server.addpackers">
+<span class="sig-name descname"><span class="pre">addpackers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.Server.addpackers" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.Server.handle">
+<span class="sig-name descname"><span class="pre">handle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">call</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.Server.handle" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.Server.handle_0">
+<span class="sig-name descname"><span class="pre">handle_0</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.Server.handle_0" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.Server.register">
+<span class="sig-name descname"><span class="pre">register</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.Server.register" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.Server.turn_around">
+<span class="sig-name descname"><span class="pre">turn_around</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.Server.turn_around" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.Server.unregister">
+<span class="sig-name descname"><span class="pre">unregister</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.Server.unregister" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.TCPClient">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.deps.vxi11.rpc.</span></span><span class="sig-name descname"><span class="pre">TCPClient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prog</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vers</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.TCPClient" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.deps.vxi11.rpc.RawTCPClient" title="PyICe.deps.vxi11.rpc.RawTCPClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">RawTCPClient</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.TCPPortMapperClient">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.deps.vxi11.rpc.</span></span><span class="sig-name descname"><span class="pre">TCPPortMapperClient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.TCPPortMapperClient" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.deps.vxi11.rpc.PartialPortMapperClient" title="PyICe.deps.vxi11.rpc.PartialPortMapperClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">PartialPortMapperClient</span></code></a>, <a class="reference internal" href="#PyICe.deps.vxi11.rpc.RawTCPClient" title="PyICe.deps.vxi11.rpc.RawTCPClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">RawTCPClient</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.TCPServer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.deps.vxi11.rpc.</span></span><span class="sig-name descname"><span class="pre">TCPServer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prog</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.TCPServer" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.deps.vxi11.rpc.Server" title="PyICe.deps.vxi11.rpc.Server"><code class="xref py py-class docutils literal notranslate"><span class="pre">Server</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.TCPServer.connect">
+<span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.TCPServer.connect" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.TCPServer.forkingloop">
+<span class="sig-name descname"><span class="pre">forkingloop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.TCPServer.forkingloop" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.TCPServer.forksession">
+<span class="sig-name descname"><span class="pre">forksession</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.TCPServer.forksession" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.TCPServer.loop">
+<span class="sig-name descname"><span class="pre">loop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.TCPServer.loop" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.TCPServer.session">
+<span class="sig-name descname"><span class="pre">session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.TCPServer.session" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.UDPClient">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.deps.vxi11.rpc.</span></span><span class="sig-name descname"><span class="pre">UDPClient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prog</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vers</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.UDPClient" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.deps.vxi11.rpc.RawUDPClient" title="PyICe.deps.vxi11.rpc.RawUDPClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">RawUDPClient</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.UDPPortMapperClient">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.deps.vxi11.rpc.</span></span><span class="sig-name descname"><span class="pre">UDPPortMapperClient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.UDPPortMapperClient" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.deps.vxi11.rpc.PartialPortMapperClient" title="PyICe.deps.vxi11.rpc.PartialPortMapperClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">PartialPortMapperClient</span></code></a>, <a class="reference internal" href="#PyICe.deps.vxi11.rpc.RawUDPClient" title="PyICe.deps.vxi11.rpc.RawUDPClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">RawUDPClient</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.UDPServer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.deps.vxi11.rpc.</span></span><span class="sig-name descname"><span class="pre">UDPServer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prog</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.UDPServer" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.deps.vxi11.rpc.Server" title="PyICe.deps.vxi11.rpc.Server"><code class="xref py py-class docutils literal notranslate"><span class="pre">Server</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.UDPServer.connect">
+<span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.UDPServer.connect" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.UDPServer.loop">
+<span class="sig-name descname"><span class="pre">loop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.UDPServer.loop" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.UDPServer.session">
+<span class="sig-name descname"><span class="pre">session</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.UDPServer.session" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.Unpacker">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.deps.vxi11.rpc.</span></span><span class="sig-name descname"><span class="pre">Unpacker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.Unpacker" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Unpacker</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.Unpacker.unpack_auth">
+<span class="sig-name descname"><span class="pre">unpack_auth</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.Unpacker.unpack_auth" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.Unpacker.unpack_callheader">
+<span class="sig-name descname"><span class="pre">unpack_callheader</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.Unpacker.unpack_callheader" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.Unpacker.unpack_replyheader">
+<span class="sig-name descname"><span class="pre">unpack_replyheader</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.Unpacker.unpack_replyheader" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.make_auth_null">
+<span class="sig-prename descclassname"><span class="pre">PyICe.deps.vxi11.rpc.</span></span><span class="sig-name descname"><span class="pre">make_auth_null</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.make_auth_null" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.recvfrag">
+<span class="sig-prename descclassname"><span class="pre">PyICe.deps.vxi11.rpc.</span></span><span class="sig-name descname"><span class="pre">recvfrag</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sock</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.recvfrag" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.recvrecord">
+<span class="sig-prename descclassname"><span class="pre">PyICe.deps.vxi11.rpc.</span></span><span class="sig-name descname"><span class="pre">recvrecord</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sock</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.recvrecord" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.sendfrag">
+<span class="sig-prename descclassname"><span class="pre">PyICe.deps.vxi11.rpc.</span></span><span class="sig-name descname"><span class="pre">sendfrag</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sock</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frag</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.sendfrag" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.sendrecord">
+<span class="sig-prename descclassname"><span class="pre">PyICe.deps.vxi11.rpc.</span></span><span class="sig-name descname"><span class="pre">sendrecord</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sock</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">record</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.sendrecord" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.rpc.test">
+<span class="sig-prename descclassname"><span class="pre">PyICe.deps.vxi11.rpc.</span></span><span class="sig-name descname"><span class="pre">test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.rpc.test" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-PyICe.deps.vxi11.vxi11">
+<span id="pyice-deps-vxi11-vxi11-module"></span><h2>PyICe.deps.vxi11.vxi11 module<a class="headerlink" href="#module-PyICe.deps.vxi11.vxi11" title="Permalink to this heading"></a></h2>
+<p>Python VXI-11 driver</p>
+<p>Copyright (c) 2012 Alex Forencich</p>
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the “Software”), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:</p>
+<p>The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.</p>
+<p>THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.</p>
+<p>This software is based on pyvxi11 by Michael Walle</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.CoreClient">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.deps.vxi11.vxi11.</span></span><span class="sig-name descname"><span class="pre">CoreClient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.CoreClient" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.deps.vxi11.rpc.TCPClient" title="PyICe.deps.vxi11.rpc.TCPClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">TCPClient</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.CoreClient.create_intr_chan">
+<span class="sig-name descname"><span class="pre">create_intr_chan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host_addr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host_port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prog_num</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prog_vers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prog_family</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.CoreClient.create_intr_chan" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.CoreClient.create_link">
+<span class="sig-name descname"><span class="pre">create_link</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lock_device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lock_timeout</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.CoreClient.create_link" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.CoreClient.destroy_intr_chan">
+<span class="sig-name descname"><span class="pre">destroy_intr_chan</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.CoreClient.destroy_intr_chan" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.CoreClient.destroy_link">
+<span class="sig-name descname"><span class="pre">destroy_link</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">link</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.CoreClient.destroy_link" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.CoreClient.device_clear">
+<span class="sig-name descname"><span class="pre">device_clear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">link</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lock_timeout</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">io_timeout</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.CoreClient.device_clear" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.CoreClient.device_docmd">
+<span class="sig-name descname"><span class="pre">device_docmd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">link</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">io_timeout</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lock_timeout</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network_order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datasize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_in</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.CoreClient.device_docmd" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.CoreClient.device_enable_srq">
+<span class="sig-name descname"><span class="pre">device_enable_srq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">link</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">handle</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.CoreClient.device_enable_srq" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.CoreClient.device_local">
+<span class="sig-name descname"><span class="pre">device_local</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">link</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lock_timeout</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">io_timeout</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.CoreClient.device_local" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.CoreClient.device_lock">
+<span class="sig-name descname"><span class="pre">device_lock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">link</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lock_timeout</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.CoreClient.device_lock" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.CoreClient.device_read">
+<span class="sig-name descname"><span class="pre">device_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">link</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">io_timeout</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lock_timeout</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">term_char</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.CoreClient.device_read" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.CoreClient.device_read_stb">
+<span class="sig-name descname"><span class="pre">device_read_stb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">link</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lock_timeout</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">io_timeout</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.CoreClient.device_read_stb" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.CoreClient.device_remote">
+<span class="sig-name descname"><span class="pre">device_remote</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">link</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lock_timeout</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">io_timeout</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.CoreClient.device_remote" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.CoreClient.device_trigger">
+<span class="sig-name descname"><span class="pre">device_trigger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">link</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lock_timeout</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">io_timeout</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.CoreClient.device_trigger" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.CoreClient.device_unlock">
+<span class="sig-name descname"><span class="pre">device_unlock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">link</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.CoreClient.device_unlock" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.CoreClient.device_write">
+<span class="sig-name descname"><span class="pre">device_write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">link</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">io_timeout</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lock_timeout</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.CoreClient.device_write" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.Instrument">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.deps.vxi11.vxi11.</span></span><span class="sig-name descname"><span class="pre">Instrument</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">client_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">term_char</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.Instrument" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>VXI-11 instrument interface client</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.Instrument.ask">
+<span class="sig-name descname"><span class="pre">ask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'utf-8'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.Instrument.ask" title="Permalink to this definition"></a></dt>
+<dd><p>Write then read string</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.Instrument.ask_raw">
+<span class="sig-name descname"><span class="pre">ask_raw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.Instrument.ask_raw" title="Permalink to this definition"></a></dt>
+<dd><p>Write then read binary data</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.Instrument.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.Instrument.clear" title="Permalink to this definition"></a></dt>
+<dd><p>Send clear command</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.Instrument.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.Instrument.close" title="Permalink to this definition"></a></dt>
+<dd><p>Close connection</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.Instrument.local">
+<span class="sig-name descname"><span class="pre">local</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.Instrument.local" title="Permalink to this definition"></a></dt>
+<dd><p>Send local command</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.Instrument.lock">
+<span class="sig-name descname"><span class="pre">lock</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.Instrument.lock" title="Permalink to this definition"></a></dt>
+<dd><p>Send lock command</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.Instrument.open">
+<span class="sig-name descname"><span class="pre">open</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.Instrument.open" title="Permalink to this definition"></a></dt>
+<dd><p>Open connection to VXI-11 instrument</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.Instrument.read">
+<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'utf-8'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.Instrument.read" title="Permalink to this definition"></a></dt>
+<dd><p>Read string from instrument</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.Instrument.read_raw">
+<span class="sig-name descname"><span class="pre">read_raw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.Instrument.read_raw" title="Permalink to this definition"></a></dt>
+<dd><p>Read binary data from instrument</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.Instrument.read_stb">
+<span class="sig-name descname"><span class="pre">read_stb</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.Instrument.read_stb" title="Permalink to this definition"></a></dt>
+<dd><p>Read status byte</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.Instrument.remote">
+<span class="sig-name descname"><span class="pre">remote</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.Instrument.remote" title="Permalink to this definition"></a></dt>
+<dd><p>Send remote command</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.Instrument.trigger">
+<span class="sig-name descname"><span class="pre">trigger</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.Instrument.trigger" title="Permalink to this definition"></a></dt>
+<dd><p>Send trigger command</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.Instrument.unlock">
+<span class="sig-name descname"><span class="pre">unlock</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.Instrument.unlock" title="Permalink to this definition"></a></dt>
+<dd><p>Send unlock command</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.Instrument.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'utf-8'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.Instrument.write" title="Permalink to this definition"></a></dt>
+<dd><p>Write string to instrument</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.Instrument.write_raw">
+<span class="sig-name descname"><span class="pre">write_raw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.Instrument.write_raw" title="Permalink to this definition"></a></dt>
+<dd><p>Write binary data to instrument</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.Packer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.deps.vxi11.vxi11.</span></span><span class="sig-name descname"><span class="pre">Packer</span></span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.Packer" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.deps.vxi11.rpc.Packer" title="PyICe.deps.vxi11.rpc.Packer"><code class="xref py py-class docutils literal notranslate"><span class="pre">Packer</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.Packer.pack_create_link_parms">
+<span class="sig-name descname"><span class="pre">pack_create_link_parms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.Packer.pack_create_link_parms" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.Packer.pack_device_docmd_parms">
+<span class="sig-name descname"><span class="pre">pack_device_docmd_parms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.Packer.pack_device_docmd_parms" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.Packer.pack_device_enable_srq_parms">
+<span class="sig-name descname"><span class="pre">pack_device_enable_srq_parms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.Packer.pack_device_enable_srq_parms" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.Packer.pack_device_generic_parms">
+<span class="sig-name descname"><span class="pre">pack_device_generic_parms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.Packer.pack_device_generic_parms" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.Packer.pack_device_link">
+<span class="sig-name descname"><span class="pre">pack_device_link</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">link</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.Packer.pack_device_link" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.Packer.pack_device_lock_parms">
+<span class="sig-name descname"><span class="pre">pack_device_lock_parms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.Packer.pack_device_lock_parms" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.Packer.pack_device_read_parms">
+<span class="sig-name descname"><span class="pre">pack_device_read_parms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.Packer.pack_device_read_parms" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.Packer.pack_device_remote_func_parms">
+<span class="sig-name descname"><span class="pre">pack_device_remote_func_parms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.Packer.pack_device_remote_func_parms" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.Packer.pack_device_write_parms">
+<span class="sig-name descname"><span class="pre">pack_device_write_parms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.Packer.pack_device_write_parms" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.Unpacker">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.deps.vxi11.vxi11.</span></span><span class="sig-name descname"><span class="pre">Unpacker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.Unpacker" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#PyICe.deps.vxi11.rpc.Unpacker" title="PyICe.deps.vxi11.rpc.Unpacker"><code class="xref py py-class docutils literal notranslate"><span class="pre">Unpacker</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.Unpacker.unpack_create_link_resp">
+<span class="sig-name descname"><span class="pre">unpack_create_link_resp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.Unpacker.unpack_create_link_resp" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.Unpacker.unpack_device_docmd_resp">
+<span class="sig-name descname"><span class="pre">unpack_device_docmd_resp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.Unpacker.unpack_device_docmd_resp" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.Unpacker.unpack_device_error">
+<span class="sig-name descname"><span class="pre">unpack_device_error</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.Unpacker.unpack_device_error" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.Unpacker.unpack_device_link">
+<span class="sig-name descname"><span class="pre">unpack_device_link</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.Unpacker.unpack_device_link" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.Unpacker.unpack_device_read_resp">
+<span class="sig-name descname"><span class="pre">unpack_device_read_resp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.Unpacker.unpack_device_read_resp" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.Unpacker.unpack_device_read_stb_resp">
+<span class="sig-name descname"><span class="pre">unpack_device_read_stb_resp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.Unpacker.unpack_device_read_stb_resp" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.Unpacker.unpack_device_write_resp">
+<span class="sig-name descname"><span class="pre">unpack_device_write_resp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.Unpacker.unpack_device_write_resp" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="PyICe.deps.vxi11.vxi11.Vxi11Error">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.deps.vxi11.vxi11.</span></span><span class="sig-name descname"><span class="pre">Vxi11Error</span></span><a class="headerlink" href="#PyICe.deps.vxi11.vxi11.Vxi11Error" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+</section>
+<section id="module-PyICe.deps.vxi11">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-PyICe.deps.vxi11" title="Permalink to this heading"></a></h2>
+<p>Python VXI-11 driver</p>
+<p>Copyright (c) 2012 Alex Forencich</p>
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the “Software”), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:</p>
+<p>The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.</p>
+<p>THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="PyICe.deps.usbtmc.html" class="btn btn-neutral float-left" title="PyICe.deps.usbtmc package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="PyICe.instruments.html" class="btn btn-neutral float-right" title="PyICe.instruments package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Dave Simmons, Steve Martin, Zach Lewko.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

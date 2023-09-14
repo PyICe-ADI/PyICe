@@ -1,0 +1,789 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>PyICe.lab_interfaces &mdash; PyICe 9000 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '9000',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/tssop.ico"/>
+    <link rel="top" title="PyICe 9000 documentation" href="../../PyICe.html" />
+    <link rel="up" title="Module code" href="../index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for PyICe.lab_interfaces</h1><div class="highlight"><pre>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">Physical Communication Interfaces Hierarchy Manager</span>
+<span class="sd">===================================================</span>
+
+<span class="sd">Required for multithreaded communication.</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">abc</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">visa</span>
+    <span class="n">visaMissing</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="n">visaMissing</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">serial</span>   
+    <span class="n">serialMissing</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="n">serialMissing</span> <span class="o">=</span> <span class="bp">True</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">deps.RL1009</span> <span class="kn">import</span> <span class="n">RL1009_SERIAL_CLASS</span>
+    <span class="n">RL1009SerialMissing</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="n">RL1009SerialMissing</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">deps.RL1009</span> <span class="kn">import</span> <span class="n">RL1009_DLL_INTERFACE</span>
+    <span class="n">RL1009DLLMissing</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="n">RL1009DLLMissing</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">deps.vxi11.vxi11</span> <span class="kn">as</span> <span class="nn">vxi11</span>
+    <span class="n">vxi11Missing</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="n">vxi11Missing</span> <span class="o">=</span> <span class="bp">True</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">telnetlib</span>
+    <span class="n">telnetlibMissing</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="n">telnetlibMissing</span> <span class="o">=</span> <span class="bp">True</span>
+    
+<span class="kn">import</span> <span class="nn">twoWireInterface</span>
+<span class="kn">import</span> <span class="nn">spi_interface</span>
+
+<span class="c">#visa wrappers should probably go away and get merged in here</span>
+<span class="kn">import</span> <span class="nn">visa_wrappers</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">usb.core</span>
+    <span class="n">ubsMissing</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="n">ubsMissing</span> <span class="o">=</span> <span class="bp">True</span>
+
+<div class="viewcode-block" id="communication_node"><a class="viewcode-back" href="../../_autosummary/PyICe.lab_interfaces.html#PyICe.lab_interfaces.communication_node">[docs]</a><span class="k">class</span> <span class="nc">communication_node</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;The purpose of this is to map a network of communication resources to each channel&#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;this should never take arguments since it is silently created many ways&#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_thread_safe</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_children</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">RLock</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">get_com_parent</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span>
+    <span class="k">def</span> <span class="nf">set_com_node_parent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">parent</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="p">:</span>    
+            <span class="k">print</span> <span class="s">&quot;warning: changing a communication_node parent&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span> <span class="o">=</span> <span class="n">parent</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">com_node_register_child</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">set_com_node_thread_safe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">safe</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_thread_safe</span> <span class="o">=</span> <span class="n">safe</span>
+    <span class="k">def</span> <span class="nf">com_node_register_child</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">child</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_children</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">com_node_get_root</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">com_node_get_root</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+    <span class="k">def</span> <span class="nf">com_node_get_children</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_children</span>
+    <span class="k">def</span> <span class="nf">com_node_get_all_descendents</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">descendents</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">com_node_get_children</span><span class="p">():</span>
+            <span class="n">descendents</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+            <span class="n">descendents</span> <span class="o">=</span> <span class="n">descendents</span><span class="o">.</span><span class="n">union</span><span class="p">(</span> <span class="n">child</span><span class="o">.</span><span class="n">com_node_get_all_descendents</span><span class="p">()</span> <span class="p">)</span>
+        <span class="k">return</span> <span class="n">descendents</span>
+    <span class="k">def</span> <span class="nf">group_com_nodes_for_threads</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">sets</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="c">#returns a list of sets of com_nodes, each set must be communicated with in 1 thread</span>
+        <span class="c"># because upstream interfaces are not thread safe</span>
+        <span class="k">if</span> <span class="n">sets</span><span class="o">==</span><span class="bp">None</span><span class="p">:</span>
+            <span class="n">sets</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_thread_safe</span><span class="p">:</span>
+            <span class="n">sets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="nb">set</span><span class="p">([</span><span class="bp">self</span><span class="p">])</span> <span class="p">)</span>
+            <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">com_node_get_children</span><span class="p">():</span>
+                <span class="n">child</span><span class="o">.</span><span class="n">group_com_nodes_for_threads</span><span class="p">(</span><span class="n">sets</span><span class="p">)</span> <span class="c">#will modify sets</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">group</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">com_node_get_all_descendents</span><span class="p">()</span> 
+            <span class="n">group</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="n">sets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">group</span> <span class="p">)</span>
+        <span class="k">return</span> <span class="n">sets</span>
+    <span class="k">def</span> <span class="nf">group_com_nodes_for_threads_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">com_node_list</span><span class="p">):</span>
+        <span class="c">#takes a list of interfaces and returns a list of lists</span>
+        <span class="c"># the returned list are interfaces that cannot be used concurrently</span>
+        <span class="c"># each is an ideal candidate for a thread to handle</span>
+        <span class="c">#make sure all interface&#39;s root resolves back here</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="n">interface</span><span class="o">.</span><span class="n">com_node_get_root</span><span class="p">()</span> <span class="k">for</span> <span class="n">interface</span> <span class="ow">in</span> <span class="n">com_node_list</span><span class="p">]))</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&#39;Something is wrong, either:&#39;</span>
+            <span class="k">print</span> <span class="s">&#39; 1. you did not get all your interfaces from the same master or interface_factory&#39;</span>
+            <span class="k">print</span> <span class="s">&#39; 2. you did not ask for threads from the root node&#39;</span>
+            <span class="k">print</span> <span class="s">&#39; 3. you are working on the interface library and broke something&#39;</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;Something is very wrong... {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">interface</span><span class="p">))</span>
+        <span class="c">#get a list of lists for all interfaces</span>
+        <span class="n">in_sets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">group_com_nodes_for_threads</span><span class="p">()</span>
+        <span class="n">out_sets</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">in_set</span> <span class="ow">in</span> <span class="n">in_sets</span><span class="p">:</span>          
+            <span class="n">out_group</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">in_set</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">com_node_list</span><span class="p">:</span>
+                    <span class="n">out_group</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">out_group</span><span class="p">):</span>
+                <span class="n">out_sets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">out_group</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out_sets</span>
+    <span class="k">def</span> <span class="nf">lock</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">unlock</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+        
+        </div>
+<span class="sd">&#39;&#39;&#39;all communication is through one of these distinct interface classes</span>
+<span class="sd">    interface_visa       (visa like communication regardless of physical interface)</span>
+<span class="sd">    interface_twi        (i2c,smbus)</span>
+<span class="sd">    interface_raw_serial (raw, low level serial)</span>
+<span class="sd">    </span>
+<span class="sd">    this probably covers most anything, new ones should only be added if the communication model doesn&#39;t fit any of these (SPI for example)</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="sd">&#39;&#39;&#39; this group of interface_* classes should not be directly created, create them only with the factory &#39;&#39;&#39;</span>   
+<div class="viewcode-block" id="interface"><a class="viewcode-back" href="../../_autosummary/PyICe.lab_interfaces.html#PyICe.lab_interfaces.interface">[docs]</a><span class="k">class</span> <span class="nc">interface</span><span class="p">(</span><span class="n">communication_node</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;base class all lab instruments should in some way talk to, all have a timeout whether or not it does anything&#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_interface_name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="c">#cannot use hasattr since its sometimes a property</span>
+        <span class="k">if</span> <span class="s">&quot;timeout&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">communication_node</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interface_name</span>
+        </div>
+<span class="k">class</span> <span class="nc">interface_visa</span><span class="p">(</span><span class="n">interface</span><span class="p">):</span>
+    <span class="k">pass</span>
+<span class="k">class</span> <span class="nc">interface_twi</span><span class="p">(</span><span class="n">interface</span><span class="p">):</span>
+    <span class="k">pass</span>
+<span class="k">class</span> <span class="nc">interface_spi</span><span class="p">(</span><span class="n">interface</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<div class="viewcode-block" id="interface_libusb"><a class="viewcode-back" href="../../_autosummary/PyICe.lab_interfaces.html#PyICe.lab_interfaces.interface_libusb">[docs]</a><span class="k">class</span> <span class="nc">interface_libusb</span><span class="p">(</span><span class="n">interface</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Bulk transfer through LibUSB/WinUSB.</span>
+<span class="sd">    Implementation may be overly specific to George B&#39;s Direct590 protocol and may need additional options or subclassing later.</span>
+<span class="sd">    Transfers must be in multiples of this 64 byte payload size or will result in a babble error in the underlying library.</span>
+<span class="sd">    Requires PyUSB: https://github.com/walac/pyusb&#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idVendor</span><span class="p">,</span> <span class="n">idProduct</span><span class="p">,</span> <span class="n">timeout</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;PyUSB requires installation of WinUSB filter driver. Use install-filter-win.exe under PyICe/deps/Direct590.</span>
+<span class="sd">        Untested on linux; filter driver probably not required.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">interface</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;WinUSB Communication Interface&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="mi">1000</span> <span class="o">*</span> <span class="n">timeout</span> <span class="c">#ms</span>
+        <span class="c">#https://github.com/walac/pyusb/blob/master/docs/tutorial.rst</span>
+        <span class="c"># find our device</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dev</span> <span class="o">=</span> <span class="n">usb</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">idVendor</span><span class="o">=</span><span class="n">idVendor</span><span class="p">,</span> <span class="n">idProduct</span><span class="o">=</span><span class="n">idProduct</span><span class="p">)</span>
+        <span class="c"># was it found?</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dev</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;LibUSB Device not found. Is filter driver installed? (see docstring)&#39;</span><span class="p">)</span>
+        <span class="c"># set the active configuration. With no arguments, the first</span>
+        <span class="c"># configuration will be the active one</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dev</span><span class="o">.</span><span class="n">set_configuration</span><span class="p">()</span>
+        <span class="c"># get an endpoint instance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dev</span><span class="o">.</span><span class="n">get_active_configuration</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">intf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ep_out</span> <span class="o">=</span> <span class="n">usb</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">find_descriptor</span><span class="p">(</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">intf</span><span class="p">,</span> <span class="c"># match the first OUT endpoint</span>
+                                      <span class="n">custom_match</span> <span class="o">=</span> \
+                                        <span class="k">lambda</span> <span class="n">e</span><span class="p">:</span> \
+                                            <span class="n">usb</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">endpoint_direction</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">bEndpointAddress</span><span class="p">)</span> <span class="o">==</span> \
+                                            <span class="n">usb</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">ENDPOINT_OUT</span>
+                                      <span class="p">)</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">ep_out</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ep_in</span> <span class="o">=</span> <span class="n">usb</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">find_descriptor</span><span class="p">(</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">intf</span><span class="p">,</span> <span class="c"># match the first OUT endpoint</span>
+                                      <span class="n">custom_match</span> <span class="o">=</span> \
+                                        <span class="k">lambda</span> <span class="n">e</span><span class="p">:</span> \
+                                            <span class="n">usb</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">endpoint_direction</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">bEndpointAddress</span><span class="p">)</span> <span class="o">==</span> \
+                                            <span class="n">usb</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">ENDPOINT_IN</span>
+                                      <span class="p">)</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">ep_in</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span>
+        <span class="c">#self.stream_in = &#39;&#39;</span>
+        <span class="c"># a.dev.configurations()[0].interfaces()[0].endpoints()[0].wMaxPacketSize</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_packet_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ep_out</span><span class="o">.</span><span class="n">wMaxPacketSize</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">read_packet_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ep_in</span><span class="o">.</span><span class="n">wMaxPacketSize</span>
+        <span class="k">print</span> <span class="bp">self</span><span class="o">.</span><span class="n">dev</span>
+    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;&#39;&#39;&#39;</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dev</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ep_in</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_packet_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">resp</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_packet_size</span><span class="p">:</span> <span class="c">#response split across packets</span>
+            <span class="n">resp</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dev</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ep_in</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_packet_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">resp</span><span class="o">.</span><span class="n">tostring</span><span class="p">()</span> <span class="c">#(resp,remain)</span>
+<div class="viewcode-block" id="interface_libusb.write"><a class="viewcode-back" href="../../_autosummary/PyICe.lab_interfaces.html#PyICe.lab_interfaces.interface_libusb.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">byte_list</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Send byte_list across subclass-specific communication interface.&#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dev</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ep_out</span><span class="p">,</span> <span class="n">byte_list</span><span class="p">)</span>
+</div></div>
+<div class="viewcode-block" id="interface_stream"><a class="viewcode-back" href="../../_autosummary/PyICe.lab_interfaces.html#PyICe.lab_interfaces.interface_stream">[docs]</a><span class="k">class</span> <span class="nc">interface_stream</span><span class="p">(</span><span class="n">interface</span><span class="p">):</span> <span class="c">#(lab_interfaces.interface)</span>
+    <span class="sd">&#39;&#39;&#39;Generic parent class of all stream-type interfaces. </span>
+<span class="sd">    Developed for DC590 board variants, but probably has more generic utility if moved into lab_interfaces</span>
+<span class="sd">    Maybe consider change to inherit from https://docs.python.org/2/library/io.html</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span>
+    <span class="nd">@abc.abstractmethod</span>
+<div class="viewcode-block" id="interface_stream.read"><a class="viewcode-back" href="../../_autosummary/PyICe.lab_interfaces.html#PyICe.lab_interfaces.interface_stream.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">byte_count</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Read and return tuple  (byte_count bytes, byte_count remaining_bytes) from subclass-specific communication interface.</span>
+<span class="sd">        If fewer than byte_count bytes are available, return all available.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">pass</span></div>
+    <span class="nd">@abc.abstractmethod</span>
+<div class="viewcode-block" id="interface_stream.write"><a class="viewcode-back" href="../../_autosummary/PyICe.lab_interfaces.html#PyICe.lab_interfaces.interface_stream.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">byte_list</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Send byte_list across subclass-specific communication interface.&#39;&#39;&#39;</span>
+        <span class="k">pass</span></div>
+    <span class="nd">@abc.abstractmethod</span>
+<div class="viewcode-block" id="interface_stream.close"><a class="viewcode-back" href="../../_autosummary/PyICe.lab_interfaces.html#PyICe.lab_interfaces.interface_stream.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;close the underlying interface if necessary&#39;&#39;&#39;</span>
+        <span class="k">pass</span>
+</div></div>
+<div class="viewcode-block" id="interface_stream_serial"><a class="viewcode-back" href="../../_autosummary/PyICe.lab_interfaces.html#PyICe.lab_interfaces.interface_stream_serial">[docs]</a><span class="k">class</span> <span class="nc">interface_stream_serial</span><span class="p">(</span><span class="n">interface_stream</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;PySerial based stream wrapper.&#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">interface_raw_serial</span><span class="p">):</span>
+        <span class="n">interface</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;Serial Stream Communication Interface&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ser</span> <span class="o">=</span> <span class="n">interface_raw_serial</span>
+<div class="viewcode-block" id="interface_stream_serial.read"><a class="viewcode-back" href="../../_autosummary/PyICe.lab_interfaces.html#PyICe.lab_interfaces.interface_stream_serial.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">byte_count</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Read and return tuple  (byte_count bytes, byte_count remaining_bytes) from subclass-specific communication interface.</span>
+<span class="sd">        If fewer than byte_count bytes are available, return all available.</span>
+<span class="sd">        If byte_count is None, return all available.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">byte_count</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">byte_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">inWaiting</span><span class="p">()</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">byte_count</span><span class="p">)</span>
+        <span class="n">remain</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">inWaiting</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">resp</span><span class="p">,</span><span class="n">remain</span><span class="p">)</span></div>
+<div class="viewcode-block" id="interface_stream_serial.write"><a class="viewcode-back" href="../../_autosummary/PyICe.lab_interfaces.html#PyICe.lab_interfaces.interface_stream_serial.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">byte_list</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Send byte_list across subclass-specific communication interface.&#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">byte_list</span><span class="p">)</span></div>
+<div class="viewcode-block" id="interface_stream_serial.close"><a class="viewcode-back" href="../../_autosummary/PyICe.lab_interfaces.html#PyICe.lab_interfaces.interface_stream_serial.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;close the underlying interface&#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</div></div>
+<div class="viewcode-block" id="interface_ftdi_d2xx"><a class="viewcode-back" href="../../_autosummary/PyICe.lab_interfaces.html#PyICe.lab_interfaces.interface_ftdi_d2xx">[docs]</a><span class="k">class</span> <span class="nc">interface_ftdi_d2xx</span><span class="p">(</span><span class="n">interface_stream</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;write this if you want it</span>
+<span class="sd">        https://pypi.python.org/pypi/pylibftdi&#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="c">#need some kind of device descriptor....</span>
+        <span class="n">interface</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;FTDI D2XX Stream Communication Interface&#39;</span><span class="p">)</span>
+</div>
+<span class="k">class</span> <span class="nc">interface_raw_serial</span><span class="p">(</span><span class="n">interface</span><span class="p">,</span><span class="n">serial</span><span class="o">.</span><span class="n">Serial</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">serial_port_name</span><span class="p">,</span><span class="n">baudrate</span><span class="p">,</span><span class="n">timeout</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">serial</span><span class="o">.</span><span class="n">Serial</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">serial_port_name</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">interface</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s">&#39;interface_raw_serial @ {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">serial_port_name</span><span class="p">)</span> <span class="p">)</span>
+        <span class="k">if</span> <span class="n">baudrate</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baudrate</span> <span class="o">=</span> <span class="n">baudrate</span>
+        <span class="k">if</span> <span class="n">timeout</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="n">timeout</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_serial_port_name</span> <span class="o">=</span> <span class="n">serial_port_name</span>
+    <span class="k">def</span> <span class="nf">get_serial_port_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_serial_port_name</span>
+    <span class="k">def</span> <span class="nf">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Close interface (serial) port on exit&#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">interface_raw_serial</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__del__</span><span class="p">()</span>
+        
+        
+<span class="sd">&#39;&#39;&#39;below are specific classes that inherit fro the above general classes&#39;&#39;&#39;</span>
+<span class="k">class</span> <span class="nc">interface_visa_tcp_ip</span><span class="p">(</span><span class="n">interface_visa</span><span class="p">,</span><span class="n">visa_wrappers</span><span class="o">.</span><span class="n">visa_wrapper_tcp</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">host_address</span><span class="p">,</span><span class="n">port</span><span class="p">,</span><span class="n">timeout</span><span class="p">):</span>
+        <span class="n">visa_wrappers</span><span class="o">.</span><span class="n">visa_wrapper_tcp</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">host_address</span><span class="p">,</span><span class="n">port</span><span class="p">,</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="n">interface_visa</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&quot;interface_visa_tcp_ip @ {}:{}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">host_address</span><span class="p">,</span><span class="n">port</span><span class="p">))</span>
+<span class="k">class</span> <span class="nc">interface_visa_telnet</span><span class="p">(</span><span class="n">interface_visa</span><span class="p">,</span><span class="n">visa_wrappers</span><span class="o">.</span><span class="n">visa_wrapper_telnet</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">host_address</span><span class="p">,</span><span class="n">port</span><span class="p">,</span><span class="n">timeout</span><span class="p">):</span>
+        <span class="n">visa_wrappers</span><span class="o">.</span><span class="n">visa_wrapper_telnet</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">host_address</span><span class="p">,</span><span class="n">port</span><span class="p">,</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="n">interface_visa</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&quot;interface_visa_telnet @ {}:{}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">host_address</span><span class="p">,</span><span class="n">port</span><span class="p">))</span>
+<span class="k">class</span> <span class="nc">interface_visa_serial</span><span class="p">(</span><span class="n">interface_visa</span><span class="p">,</span><span class="n">visa_wrappers</span><span class="o">.</span><span class="n">visa_wrapper_serial</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">interface_raw_serial_object</span><span class="p">):</span>
+        <span class="n">visa_wrappers</span><span class="o">.</span><span class="n">visa_wrapper_serial</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">interface_raw_serial_object</span><span class="p">)</span>
+        <span class="n">interface_visa</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s">&#39;interface_visa_serial @ {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">interface_raw_serial_object</span><span class="p">))</span>
+<span class="k">class</span> <span class="nc">interface_visa_vxi11</span><span class="p">(</span><span class="n">interface_visa</span><span class="p">,</span><span class="n">visa_wrappers</span><span class="o">.</span><span class="n">visa_wrapper_vxi11</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">address</span><span class="p">,</span><span class="n">timeout</span><span class="p">):</span>
+        <span class="n">visa_wrappers</span><span class="o">.</span><span class="n">visa_wrapper_vxi11</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
+        <span class="n">interface_visa</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;interface_visa_vxi11 @ {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">address</span><span class="p">)</span> <span class="p">)</span>
+<span class="k">class</span> <span class="nc">interface_visa_direct</span><span class="p">(</span><span class="n">interface_visa</span><span class="p">,</span><span class="n">visa_wrappers</span><span class="o">.</span><span class="n">visa_interface</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">visa_address_string</span><span class="p">,</span> <span class="n">timeout</span><span class="p">):</span>
+        <span class="n">visa_wrappers</span><span class="o">.</span><span class="n">visa_interface</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">visa_address_string</span><span class="p">,</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="n">interface_visa</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s">&#39;interface_visa_direct @ {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">visa_address_string</span><span class="p">)</span> <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">visa_address_string</span> <span class="o">=</span> <span class="n">visa_address_string</span>
+<span class="k">class</span> <span class="nc">interface_visa_rl1009_dll</span><span class="p">(</span><span class="n">interface_visa</span><span class="p">,</span> <span class="n">visa_wrappers</span><span class="o">.</span><span class="n">rl1009_visa_wrapper_dll</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">GPIBAddress</span><span class="p">,</span> <span class="n">timeout</span><span class="p">):</span>
+        <span class="n">visa_wrappers</span><span class="o">.</span><span class="n">rl1009_visa_wrapper_dll</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">GPIBAddress</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
+        <span class="n">interface_visa</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s">&#39;interface_visa_rl1009_dll @ GPIB {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">GPIBAddress</span><span class="p">)</span> <span class="p">)</span>
+<span class="k">class</span> <span class="nc">interface_visa_rl1009_serial</span><span class="p">(</span><span class="n">interface_visa</span><span class="p">,</span><span class="n">visa_wrappers</span><span class="o">.</span><span class="n">rl1009_visa_wrapper_serial</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">GPIBAddress</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">serialPort</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">visa_wrappers</span><span class="o">.</span><span class="n">rl1009_visa_wrapper_serial</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">GPIBAddress</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">serialPort</span><span class="p">)</span>
+        <span class="n">interface_visa</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s">&#39;interface_visa_rl1009_serial @ GPIB {} @ rl1009 @ {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">GPIBAddress</span><span class="p">,</span><span class="n">serialPort</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">__getTimeout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_timeout</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">__setTimeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_timeout</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+    <span class="n">timeout</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">__getTimeout</span><span class="p">,</span><span class="n">__setTimeout</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">interface_visa_keithley_kxci</span><span class="p">(</span><span class="n">interface_visa</span><span class="p">,</span><span class="n">visa_wrappers</span><span class="o">.</span><span class="n">visa_wrapper_keithley_kxci</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">host_address</span><span class="p">,</span><span class="n">port</span><span class="p">):</span>
+        <span class="n">visa_wrappers</span><span class="o">.</span><span class="n">visa_wrapper_keithley_kxci</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">host_address</span><span class="p">,</span><span class="n">port</span><span class="p">)</span>
+        <span class="n">interface_visa</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&quot;interface_visa_keithley_kxci @ {}:{}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">host_address</span><span class="p">,</span><span class="n">port</span><span class="p">))</span>
+<span class="c"># class interface_xbee_serial(interface_visa,visa_wrappers.visa_wrapper_xbee):</span>
+   <span class="c"># def __init__(self,interface_raw_serial_object):</span>
+       <span class="c"># visa_wrappers.visa_wrapper_serial.__init__(self,interface_raw_serial_object)</span>
+       <span class="c"># interface_visa.__init__(self,&#39;interface_visa_xbee @ {}&#39;.format(interface_raw_serial_object) )</span>
+
+    
+<span class="sd">&#39;&#39;&#39;below are the specific cases of the twi interface&#39;&#39;&#39;</span>
+<span class="k">class</span> <span class="nc">interface_twi_dummy</span><span class="p">(</span><span class="n">interface_twi</span><span class="p">,</span> <span class="n">twoWireInterface</span><span class="o">.</span><span class="n">i2c_dummy</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">delay</span><span class="p">):</span>
+        <span class="n">twoWireInterface</span><span class="o">.</span><span class="n">i2c_dummy</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">delay</span><span class="p">)</span>
+        <span class="n">interface_twi</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s">&#39;interface_twi_dummy @ fake&#39;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">interface_twi_scpi</span><span class="p">(</span><span class="n">interface_twi</span><span class="p">,</span> <span class="n">twoWireInterface</span><span class="o">.</span><span class="n">i2c_scpi</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interface_serial</span><span class="p">,</span> <span class="n">timeout</span><span class="p">):</span>
+        <span class="n">twoWireInterface</span><span class="o">.</span><span class="n">i2c_scpi</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interface_serial</span><span class="p">)</span>
+        <span class="n">interface_twi</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s">&#39;interface_twi_scpi @ {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">interface_serial</span><span class="p">))</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="n">timeout</span>
+<span class="k">class</span> <span class="nc">interface_twi_scpi_sp</span><span class="p">(</span><span class="n">interface_twi</span><span class="p">,</span> <span class="n">twoWireInterface</span><span class="o">.</span><span class="n">i2c_scpi_sp</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interface_serial</span><span class="p">,</span> <span class="n">portnum</span><span class="p">,</span> <span class="n">sclpin</span><span class="p">,</span> <span class="n">sdapin</span><span class="p">,</span> <span class="n">pullup_en</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">twoWireInterface</span><span class="o">.</span><span class="n">i2c_scpi_sp</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interface_serial</span><span class="p">,</span> <span class="n">portnum</span><span class="p">,</span> <span class="n">sclpin</span><span class="p">,</span> <span class="n">sdapin</span><span class="p">,</span> <span class="n">pullup_en</span><span class="p">)</span>
+        <span class="n">interface_twi</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s">&#39;interface_twi_scpi @ {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">interface_serial</span><span class="p">))</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="n">timeout</span>
+<span class="k">class</span> <span class="nc">interface_twi_scpi_testhook</span><span class="p">(</span><span class="n">interface_twi</span><span class="p">,</span> <span class="n">twoWireInterface</span><span class="o">.</span><span class="n">i2c_scpi_testhook</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interface_serial</span><span class="p">,</span> <span class="n">timeout</span><span class="p">):</span>
+        <span class="n">twoWireInterface</span><span class="o">.</span><span class="n">i2c_scpi</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interface_serial</span><span class="p">)</span>
+        <span class="n">interface_twi</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s">&#39;interface_twi_scpi @ {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">interface_serial</span><span class="p">))</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="n">timeout</span>
+<span class="k">class</span> <span class="nc">interface_twi_dc590_serial</span><span class="p">(</span><span class="n">interface_twi</span><span class="p">,</span> <span class="n">twoWireInterface</span><span class="o">.</span><span class="n">i2c_dc590</span><span class="p">):</span> <span class="c">#DJS TODO: fix interfaces to reconcile with DC590 cleanup</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interface_serial</span><span class="p">,</span> <span class="n">timeout</span><span class="p">):</span>
+        <span class="n">twoWireInterface</span><span class="o">.</span><span class="n">i2c_dc590</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interface_serial</span><span class="p">)</span> <span class="c">#DJS TODO: fix interfaces to reconcile with DC590 cleanup</span>
+        <span class="n">interface_twi</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s">&#39;interface_twi_dc590_serial @ {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">interface_serial</span><span class="p">))</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="n">timeout</span>
+<span class="k">class</span> <span class="nc">interface_twi_dc590listread_serial</span><span class="p">(</span><span class="n">interface_twi</span><span class="p">,</span> <span class="n">twoWireInterface</span><span class="o">.</span><span class="n">i2c_dc590_list_read</span><span class="p">):</span> <span class="c">#DJS TODO: fix interfaces to reconcile with DC590 cleanup</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interface_serial</span><span class="p">,</span> <span class="n">timeout</span><span class="p">):</span>
+        <span class="n">twoWireInterface</span><span class="o">.</span><span class="n">i2c_dc590_list_read</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interface_serial</span><span class="p">)</span> <span class="c">#DJS TODO: fix interfaces to reconcile with DC590 cleanup</span>
+        <span class="n">interface_twi</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s">&#39;interface_twi_dc590listread_serial @ {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">interface_serial</span><span class="p">))</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="n">timeout</span>
+<span class="k">class</span> <span class="nc">interface_twi_buspirate</span><span class="p">(</span><span class="n">interface_twi</span><span class="p">,</span> <span class="n">twoWireInterface</span><span class="o">.</span><span class="n">i2c_buspirate</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interface_serial</span><span class="p">,</span> <span class="n">timeout</span><span class="p">):</span>
+        <span class="n">twoWireInterface</span><span class="o">.</span><span class="n">i2c_buspirate</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interface_serial</span><span class="p">)</span>
+        <span class="n">interface_twi</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s">&#39;interface_twi_buspirate @ {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">interface_serial</span><span class="p">))</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="n">timeout</span>
+<span class="k">class</span> <span class="nc">interface_twi_kernel</span><span class="p">(</span><span class="n">interface_twi</span><span class="p">,</span> <span class="n">twoWireInterface</span><span class="o">.</span><span class="n">i2c_kernel</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bus_number</span><span class="p">):</span>
+        <span class="n">twoWireInterface</span><span class="o">.</span><span class="n">i2c_kernel</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bus_number</span><span class="p">)</span>
+        <span class="n">interface_twi</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s">&#39;interface_twi_kernel @ {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">bus_number</span><span class="p">))</span>
+
+<span class="sd">&#39;&#39;&#39;SPI interfaces&#39;&#39;&#39;</span>
+<span class="k">class</span> <span class="nc">interface_spi_dummy</span><span class="p">(</span><span class="n">interface_spi</span><span class="p">,</span> <span class="n">spi_interface</span><span class="o">.</span><span class="n">spi_dummy</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">delay</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="n">spi_interface</span><span class="o">.</span><span class="n">spi_dummy</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">delay</span><span class="p">)</span>
+        <span class="n">interface_spi</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;interface_spi_dummy @ fake&#39;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">interface_spi_dc590</span><span class="p">(</span><span class="n">interface_spi</span><span class="p">,</span> <span class="n">spi_interface</span><span class="o">.</span><span class="n">spi_dc590</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interface_stream</span><span class="p">,</span> <span class="n">ss_ctrl</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">spi_interface</span><span class="o">.</span><span class="n">spi_dc590</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interface_stream</span><span class="p">,</span> <span class="n">ss_ctrl</span><span class="p">)</span>
+        <span class="n">interface_spi</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;interface_spi_dc590 @ {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">interface_stream</span><span class="p">))</span>
+<span class="k">class</span> <span class="nc">interface_spi_cfgpro</span><span class="p">(</span><span class="n">interface_spi</span><span class="p">,</span> <span class="n">spi_interface</span><span class="o">.</span><span class="n">spi_cfgpro</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">visa_interface</span><span class="p">,</span> <span class="n">CPOL</span><span class="p">,</span> <span class="n">CPHA</span><span class="p">,</span> <span class="n">baudrate</span><span class="o">=</span><span class="mf">1e6</span><span class="p">,</span> <span class="n">ss_ctrl</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">spi_interface</span><span class="o">.</span><span class="n">spi_cfgpro</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">visa_interface</span><span class="p">,</span> <span class="n">CPOL</span><span class="p">,</span> <span class="n">CPHA</span><span class="p">,</span> <span class="n">baudrate</span><span class="p">,</span> <span class="n">ss_ctrl</span><span class="p">)</span>
+        <span class="n">interface_spi</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;interface_spi_cfgpro @ {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">visa_interface</span><span class="p">))</span>
+<span class="c">#TODO:</span>
+<span class="c">#Missing beaglebone</span>
+<span class="c">#Missing buspirate</span>
+
+<span class="k">class</span> <span class="nc">gpib_adapter</span><span class="p">(</span><span class="n">communication_node</span><span class="p">):</span>
+    <span class="k">pass</span>
+<span class="k">class</span> <span class="nc">gpib_adapter_visa</span><span class="p">(</span><span class="n">gpib_adapter</span><span class="p">):</span>
+    <span class="k">pass</span>
+<span class="k">class</span> <span class="nc">gpib_adapter_rl1009_dll</span><span class="p">(</span><span class="n">gpib_adapter</span><span class="p">):</span>
+    <span class="k">pass</span>
+<span class="k">class</span> <span class="nc">gpib_adapter_rl1009_serial</span><span class="p">(</span><span class="n">gpib_adapter</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">serialPort</span><span class="p">):</span>
+        <span class="n">gpib_adapter</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">serial_port</span> <span class="o">=</span> <span class="n">serialPort</span>
+    <span class="k">def</span> <span class="nf">get_serial_port</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">serial_port</span>
+
+    
+<div class="viewcode-block" id="interface_factory"><a class="viewcode-back" href="../../_autosummary/PyICe.lab_interfaces.html#PyICe.lab_interfaces.interface_factory">[docs]</a><span class="k">class</span> <span class="nc">interface_factory</span><span class="p">(</span><span class="n">communication_node</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;the goal of the interface factory is both to create interfaces</span>
+<span class="sd">    it also creates the instruments with communication_node, that they pass on to channels</span>
+<span class="sd">    </span>
+<span class="sd">    The purpose of this class is to be smart about the interfaces and to simplify their creation.</span>
+<span class="sd">    It&#39;s purpose is also to encourage portable code, and to remove some low level responsibilities </span>
+<span class="sd">    from the instruments.</span>
+<span class="sd">    </span>
+<span class="sd">    This also forces you to talk to gpib instruments in a way that works with both visa library and non-visa</span>
+<span class="sd">    adapters.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">_instantiated</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">communication_node</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_instantiated</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;You should only create one of these&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_instantiated</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_com_node_thread_safe</span><span class="p">()</span>
+        <span class="c">#since there is only one visa</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">visaMissing</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_visa_root</span> <span class="o">=</span> <span class="n">communication_node</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_visa_root</span><span class="o">.</span><span class="n">set_com_node_parent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_visa_root</span><span class="o">.</span><span class="n">set_com_node_thread_safe</span><span class="p">()</span> <span class="c">#visa is thread safe</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gpib_adapters</span> <span class="o">=</span> <span class="p">{}</span> <span class="c"># communication_node indexed by adapter_number</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gpib_interfaces</span> <span class="o">=</span> <span class="p">{}</span> <span class="c">#indexed by adapter number and address</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_raw_serial_interfaces</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_direct_visa_interfaces</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_vxi11_interfaces</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_visa_serial_interfaces</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tcp_ip_interfaces</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_telnet_interfaces</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_keithley_kxci_interfaces</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c">#self._xbee_serial_interfaces = []</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_default_timeout</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="k">def</span> <span class="nf">get_visa_interface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">visa_address_string</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">visaMissing</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;pyVisa or VISA is missing on this computer, install one or both&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">visa_address_string</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;gpib&#39;</span><span class="p">):</span>
+            <span class="k">print</span> <span class="s">&#39;</span><span class="se">\n\n\n\n\n</span><span class="s">Do not add gpib over visa directly for compatability with non visa framwork iterfaces&#39;</span>
+            <span class="k">print</span> <span class="s">&#39; for example replace: &#39;</span>
+            <span class="k">print</span> <span class="s">&#39;       .create_visa_interface(&quot;GBPIB0::5&quot;)&#39;</span>
+            <span class="k">print</span> <span class="s">&#39; with:&#39;</span>
+            <span class="k">print</span> <span class="s">&#39;       .set_gpib_adapter_visa(0) # this can only be done once for 0&#39;</span>
+            <span class="k">print</span> <span class="s">&#39;       .create_visa_gpib_interface(gpib_adapter_number=0,gpib_address_number=5)&#39;</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;User Error - see above text&#39;</span><span class="p">)</span>
+        <span class="n">timeout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_timeout</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="n">new_interface</span> <span class="o">=</span> <span class="n">interface_visa_direct</span><span class="p">(</span><span class="n">visa_address_string</span><span class="p">,</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="n">new_interface</span><span class="o">.</span><span class="n">set_com_node_parent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_visa_root</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_direct_visa_interfaces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_interface</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_interface</span>
+    <span class="k">def</span> <span class="nf">get_visa_gpib_interface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">gpib_adapter_number</span><span class="p">,</span><span class="n">gpib_address_number</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">timeout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_timeout</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">gpib_adapter_number</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gpib_adapters</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">print</span> <span class="s">&#39;</span><span class="se">\n\n\n\n</span><span class="s">Adapter number &quot;{}&quot; not found in adapter list&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gpib_adapter_number</span><span class="p">)</span>
+            <span class="k">print</span> <span class="s">&#39;It must be added first with .set_gpib_adapter_*({},*)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gpib_adapter_number</span><span class="p">)</span>
+            <span class="k">print</span> <span class="s">&#39; for example:&#39;</span>
+            <span class="k">print</span> <span class="s">&#39;       .set_gpib_adapter_visa({})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gpib_adapter_number</span><span class="p">)</span>
+            <span class="k">print</span> <span class="s">&#39; or&#39;</span>
+            <span class="k">print</span> <span class="s">&#39;       .set_gpib_adapter_rl1009({},&quot;COM2&quot;)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gpib_adapter_number</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Using undefined gpib adapter&#39;</span><span class="p">)</span>
+        <span class="c">#search for an existing gpib_interface</span>
+        <span class="k">if</span> <span class="n">gpib_adapter_number</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gpib_interfaces</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">gpib_address_number</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gpib_interfaces</span><span class="p">[</span><span class="n">gpib_adapter_number</span><span class="p">]:</span>
+                <span class="n">interface</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gpib_interfaces</span><span class="p">[</span><span class="n">gpib_adapter_number</span><span class="p">][</span><span class="n">gpib_address_number</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">timeout</span> <span class="o">&gt;</span> <span class="n">interface</span><span class="o">.</span><span class="n">timeout</span><span class="p">:</span>
+                    <span class="n">interface</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="n">timeout</span>
+                <span class="k">return</span> <span class="n">interface</span>
+        <span class="c">#determine the type of gpib adapter</span>
+        <span class="n">this_gpib_adapter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gpib_adapters</span><span class="p">[</span><span class="n">gpib_adapter_number</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">this_gpib_adapter</span><span class="p">,</span> <span class="n">gpib_adapter</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">this_gpib_adapter</span><span class="p">,</span><span class="n">gpib_adapter_rl1009_dll</span><span class="p">):</span>
+            <span class="n">new_interface</span> <span class="o">=</span> <span class="n">interface_visa_rl1009_dll</span><span class="p">(</span><span class="n">gpib_address_number</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">this_gpib_adapter</span><span class="p">,</span><span class="n">gpib_adapter_rl1009_serial</span><span class="p">):</span>
+            <span class="n">new_interface</span> <span class="o">=</span> <span class="n">interface_visa_rl1009_serial</span><span class="p">(</span><span class="n">gpib_address_number</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">serialPort</span><span class="o">=</span><span class="n">this_gpib_adapter</span><span class="o">.</span><span class="n">get_serial_port</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">this_gpib_adapter</span><span class="p">,</span><span class="n">gpib_adapter_visa</span><span class="p">):</span>
+            <span class="n">visa_address_string</span> <span class="o">=</span> <span class="s">&quot;GPIB{}::{}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gpib_adapter_number</span><span class="p">,</span><span class="n">gpib_address_number</span><span class="p">)</span>
+            <span class="n">new_interface</span> <span class="o">=</span> <span class="n">interface_visa_direct</span><span class="p">(</span><span class="n">visa_address_string</span><span class="p">,</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;There is something very wrong...&quot;</span><span class="p">)</span>
+        <span class="n">new_interface</span><span class="o">.</span><span class="n">set_com_node_parent</span><span class="p">(</span><span class="n">this_gpib_adapter</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gpib_interfaces</span><span class="p">[</span><span class="n">gpib_adapter_number</span><span class="p">][</span><span class="n">gpib_address_number</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_interface</span>
+        <span class="k">return</span> <span class="n">new_interface</span>
+    <span class="k">def</span> <span class="nf">get_visa_tcp_ip_interface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">host_address</span><span class="p">,</span><span class="n">port</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">new_interface</span> <span class="o">=</span> <span class="n">interface_visa_tcp_ip</span><span class="p">(</span><span class="n">host_address</span><span class="p">,</span><span class="n">port</span><span class="p">,</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="n">new_interface</span><span class="o">.</span><span class="n">set_com_node_parent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tcp_ip_interfaces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_interface</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_interface</span>
+    <span class="k">def</span> <span class="nf">get_visa_telnet_interface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">host_address</span><span class="p">,</span><span class="n">port</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">telnetlibMissing</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;telnetlib is missing on this computer&quot;</span><span class="p">)</span>
+        <span class="n">new_interface</span> <span class="o">=</span> <span class="n">interface_visa_telnet</span><span class="p">(</span><span class="n">host_address</span><span class="p">,</span><span class="n">port</span><span class="p">,</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="n">new_interface</span><span class="o">.</span><span class="n">set_com_node_parent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_telnet_interfaces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_interface</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_interface</span>
+    <span class="k">def</span> <span class="nf">get_visa_vxi11_interface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">address</span><span class="p">,</span><span class="n">timeout</span><span class="p">):</span>
+        <span class="n">timeout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_timeout</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="n">new_interface</span> <span class="o">=</span> <span class="n">interface_visa_vxi11</span><span class="p">(</span><span class="n">address</span><span class="p">,</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="n">new_interface</span><span class="o">.</span><span class="n">set_com_node_parent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_vxi11_interfaces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_interface</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_interface</span>
+    <span class="k">def</span> <span class="nf">get_visa_serial_interface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">serial_port_name</span><span class="p">,</span><span class="n">baudrate</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">timeout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_timeout</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="n">serial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_raw_serial_interface</span><span class="p">(</span><span class="n">serial_port_name</span><span class="p">,</span><span class="n">baudrate</span><span class="p">,</span><span class="n">timeout</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">new_interface</span> <span class="o">=</span> <span class="n">interface_visa_serial</span><span class="p">(</span><span class="n">serial</span><span class="p">)</span>
+        <span class="n">new_interface</span><span class="o">.</span><span class="n">set_com_node_parent</span><span class="p">(</span><span class="n">serial</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_visa_serial_interfaces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_interface</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_interface</span>
+    <span class="k">def</span> <span class="nf">get_visa_keithley_kxci_interface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">host_address</span><span class="p">,</span><span class="n">port</span><span class="p">):</span>
+        <span class="n">new_interface</span> <span class="o">=</span> <span class="n">interface_visa_keithley_kxci</span><span class="p">(</span><span class="n">host_address</span><span class="p">,</span><span class="n">port</span><span class="p">)</span>
+        <span class="n">new_interface</span><span class="o">.</span><span class="n">set_com_node_parent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_keithley_kxci_interfaces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_interface</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_interface</span>
+    <span class="c"># def get_xbee_local_interface(self,serial_port_name,baudrate=None,timeout=None,**kwargs):</span>
+        <span class="c"># timeout = self._set_timeout(timeout)</span>
+        <span class="c"># serial = self.get_raw_serial_interface(serial_port_name,baudrate,timeout,**kwargs)</span>
+        <span class="c"># new_interface = interface_xbee_serial(serial)</span>
+        <span class="c"># new_interface.set_com_node_parent(serial)</span>
+        <span class="c"># self._xbee_serial_interfaces.append(new_interface)</span>
+        <span class="c"># return new_interface</span>
+    <span class="k">def</span> <span class="nf">get_raw_serial_interface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">serial_port_name</span><span class="p">,</span><span class="n">baudrate</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">serialMissing</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;pySerial is missing on this computer&quot;</span><span class="p">)</span>
+        <span class="n">timeout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_timeout</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">interface</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw_serial_interfaces</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">interface</span><span class="o">.</span><span class="n">get_serial_port_name</span><span class="p">()</span> <span class="o">==</span> <span class="n">serial_port_name</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">baudrate</span> <span class="o">!=</span> <span class="n">interface</span><span class="o">.</span><span class="n">baudrate</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">baudrate</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;Tried to create a second connection to serial port {} with different baudrate&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">serial_port_name</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">timeout</span> <span class="o">&gt;</span> <span class="n">interface</span><span class="o">.</span><span class="n">timeout</span><span class="p">:</span>
+                    <span class="n">interface</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="n">timeout</span> <span class="c">#auto extend time outs</span>
+                <span class="k">return</span> <span class="n">interface</span>
+        <span class="n">new_interface</span> <span class="o">=</span> <span class="n">interface_raw_serial</span><span class="p">(</span><span class="n">serial_port_name</span><span class="p">,</span><span class="n">baudrate</span><span class="p">,</span><span class="n">timeout</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">new_interface</span><span class="o">.</span><span class="n">set_com_node_parent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="c">#serial ports as we use them are not thread safe and never will be</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_raw_serial_interfaces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_interface</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_interface</span>
+    <span class="k">def</span> <span class="nf">get_interface_libusb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idVendor</span><span class="o">=</span><span class="mh">0x1272</span><span class="p">,</span> <span class="n">idProduct</span><span class="o">=</span><span class="mh">0x8004</span><span class="p">,</span> <span class="n">timeout</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">new_interface</span> <span class="o">=</span> <span class="n">interface_libusb</span><span class="p">(</span><span class="n">idVendor</span><span class="o">=</span><span class="mh">0x1272</span><span class="p">,</span> <span class="n">idProduct</span><span class="o">=</span><span class="mh">0x8004</span><span class="p">,</span> <span class="n">timeout</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">new_interface</span><span class="o">.</span><span class="n">set_com_node_parent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_interface</span>
+    <span class="k">def</span> <span class="nf">get_interface_stream_serial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interface_raw_serial</span><span class="p">):</span>
+        <span class="n">new_interface</span> <span class="o">=</span> <span class="n">interface_stream_serial</span><span class="p">(</span><span class="n">interface_raw_serial</span><span class="p">)</span>
+        <span class="n">new_interface</span><span class="o">.</span><span class="n">set_com_node_parent</span><span class="p">(</span><span class="n">interface_raw_serial</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_interface</span>
+    <span class="k">def</span> <span class="nf">get_interface_ftdi_d2xx</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">new_interface</span> <span class="o">=</span> <span class="n">interface_ftdi_d2xx</span><span class="p">()</span> <span class="c">#need some kind of device descriptor....</span>
+        <span class="n">new_interface</span><span class="o">.</span><span class="n">set_com_node_parent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_interface</span>
+    <span class="k">def</span> <span class="nf">get_twi_dummy_interface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">delay</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">new_interface</span> <span class="o">=</span> <span class="n">interface_twi_dummy</span><span class="p">(</span><span class="n">delay</span><span class="p">)</span>
+        <span class="n">new_interface</span><span class="o">.</span><span class="n">set_com_node_parent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_interface</span>
+    <span class="k">def</span> <span class="nf">get_twi_scpi_interface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">serial_port_name</span><span class="p">,</span><span class="n">baudrate</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">serial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_visa_serial_interface</span><span class="p">(</span><span class="n">serial_port_name</span><span class="p">,</span><span class="n">baudrate</span><span class="p">,</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="n">new_interface</span> <span class="o">=</span> <span class="n">interface_twi_scpi</span><span class="p">(</span><span class="n">serial</span><span class="p">,</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="n">new_interface</span><span class="o">.</span><span class="n">set_com_node_parent</span><span class="p">(</span><span class="n">serial</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_interface</span>
+    <span class="k">def</span> <span class="nf">get_twi_scpi_sp_interface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">serial_port_name</span><span class="p">,</span><span class="n">portnum</span><span class="p">,</span><span class="n">sclpin</span><span class="p">,</span><span class="n">sdapin</span><span class="p">,</span><span class="n">pullup</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span><span class="n">baudrate</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">serial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_visa_serial_interface</span><span class="p">(</span><span class="n">serial_port_name</span><span class="p">,</span><span class="n">baudrate</span><span class="p">,</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="n">new_interface</span> <span class="o">=</span> <span class="n">interface_twi_scpi_sp</span><span class="p">(</span><span class="n">interface_serial</span><span class="o">=</span><span class="n">serial</span><span class="p">,</span><span class="n">portnum</span><span class="o">=</span><span class="n">portnum</span><span class="p">,</span><span class="n">sclpin</span><span class="o">=</span><span class="n">sclpin</span><span class="p">,</span><span class="n">sdapin</span><span class="o">=</span><span class="n">sdapin</span><span class="p">,</span><span class="n">pullup_en</span><span class="o">=</span><span class="n">pullup</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="n">new_interface</span><span class="o">.</span><span class="n">set_com_node_parent</span><span class="p">(</span><span class="n">serial</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_interface</span>
+    <span class="k">def</span> <span class="nf">get_twi_scpi_testhook_interface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">serial_port_name</span><span class="p">,</span><span class="n">baudrate</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">serial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_visa_serial_interface</span><span class="p">(</span><span class="n">serial_port_name</span><span class="p">,</span><span class="n">baudrate</span><span class="p">,</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="n">new_interface</span> <span class="o">=</span> <span class="n">interface_twi_scpi_testhook</span><span class="p">(</span><span class="n">serial</span><span class="p">,</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="n">new_interface</span><span class="o">.</span><span class="n">set_com_node_parent</span><span class="p">(</span><span class="n">serial</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_interface</span> 
+    <span class="k">def</span> <span class="nf">get_twi_dc590_serial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">serial_port_name</span><span class="p">,</span><span class="n">baudrate</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">baudrate</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">baudrate</span> <span class="o">=</span> <span class="mi">115200</span> <span class="c">#DC590/Linduino default</span>
+        <span class="n">serial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_raw_serial_interface</span><span class="p">(</span><span class="n">serial_port_name</span><span class="p">,</span><span class="n">baudrate</span><span class="p">,</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="n">stream</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_interface_stream_serial</span><span class="p">(</span><span class="n">serial</span><span class="p">)</span>
+        <span class="n">new_interface</span> <span class="o">=</span> <span class="n">interface_twi_dc590_serial</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="n">new_interface</span><span class="o">.</span><span class="n">set_com_node_parent</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_interface</span>
+    <span class="k">def</span> <span class="nf">get_twi_dc590listread_serial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">serial_port_name</span><span class="p">,</span><span class="n">baudrate</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">baudrate</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">baudrate</span> <span class="o">=</span> <span class="mi">115200</span> <span class="c">#DC590/Linduino default</span>
+        <span class="n">serial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_raw_serial_interface</span><span class="p">(</span><span class="n">serial_port_name</span><span class="p">,</span><span class="n">baudrate</span><span class="p">,</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="n">stream</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_interface_stream_serial</span><span class="p">(</span><span class="n">serial</span><span class="p">)</span>
+        <span class="n">new_interface</span> <span class="o">=</span> <span class="n">interface_twi_dc590listread_serial</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="n">new_interface</span><span class="o">.</span><span class="n">set_com_node_parent</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_interface</span>
+    <span class="k">def</span> <span class="nf">get_twi_buspirate_interface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">serial_port_name</span><span class="p">,</span><span class="n">baudrate</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">serial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_raw_serial_interface</span><span class="p">(</span><span class="n">serial_port_name</span><span class="p">,</span><span class="n">baudrate</span><span class="p">,</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="n">new_interface</span> <span class="o">=</span> <span class="n">interface_twi_buspirate</span><span class="p">(</span><span class="n">serial</span><span class="p">,</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="n">new_interface</span><span class="o">.</span><span class="n">set_com_node_parent</span><span class="p">(</span><span class="n">serial</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_interface</span>
+    <span class="k">def</span> <span class="nf">get_twi_kernel_interface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">bus_number</span><span class="p">):</span>
+        <span class="n">new_interface</span> <span class="o">=</span> <span class="n">interface_twi_kernel</span><span class="p">(</span><span class="n">bus_number</span><span class="p">)</span>
+        <span class="n">new_interface</span><span class="o">.</span><span class="n">set_com_node_parent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_interface</span>
+    <span class="c">#SPI Interfaces</span>
+    <span class="k">def</span> <span class="nf">get_spi_dummy_interface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">delay</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="n">iface_spi</span> <span class="o">=</span> <span class="n">interface_spi_dummy</span><span class="p">(</span><span class="n">delay</span><span class="p">)</span>
+        <span class="n">iface_spi</span><span class="o">.</span><span class="n">set_com_node_parent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">iface_spi</span>
+    <span class="k">def</span> <span class="nf">get_spi_dc590_interface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">serial_port_name</span><span class="p">,</span> <span class="n">uart_baudrate</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">uart_timeout</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ss_ctrl</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">uart_baudrate</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">uart_baudrate</span> <span class="o">=</span> <span class="mi">115200</span> <span class="c">#DC590/Linduino default</span>
+        <span class="n">iface_serial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_raw_serial_interface</span><span class="p">(</span><span class="n">serial_port_name</span><span class="p">,</span><span class="n">baudrate</span><span class="o">=</span><span class="n">uart_baudrate</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="n">uart_timeout</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">iface_stream</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_interface_stream_serial</span><span class="p">(</span><span class="n">iface_serial</span><span class="p">)</span>
+        <span class="n">iface_spi</span> <span class="o">=</span> <span class="n">interface_spi_dc590</span><span class="p">(</span><span class="n">iface_stream</span><span class="p">,</span> <span class="n">ss_ctrl</span><span class="p">)</span>
+        <span class="n">iface_spi</span><span class="o">.</span><span class="n">set_com_node_parent</span><span class="p">(</span><span class="n">iface_serial</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">iface_spi</span>
+    <span class="k">def</span> <span class="nf">get_spi_cfgpro_interface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">serial_port_name</span><span class="p">,</span> <span class="n">uart_timeout</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">CPOL</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">CPHA</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">spi_baudrate</span><span class="o">=</span><span class="mf">1e6</span><span class="p">,</span> <span class="n">ss_ctrl</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">iface_visa_serial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_visa_serial_interface</span><span class="p">(</span><span class="n">serial_port_name</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="n">uart_timeout</span><span class="p">)</span>
+        <span class="n">iface_spi</span> <span class="o">=</span> <span class="n">interface_spi_cfgpro</span><span class="p">(</span><span class="n">iface_visa_serial</span><span class="p">,</span> <span class="n">CPOL</span><span class="p">,</span> <span class="n">CPHA</span><span class="p">,</span> <span class="n">spi_baudrate</span><span class="p">,</span> <span class="n">ss_ctrl</span><span class="p">)</span>
+        <span class="n">iface_spi</span><span class="o">.</span><span class="n">set_com_node_parent</span><span class="p">(</span><span class="n">iface_visa_serial</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">iface_spi</span>
+    <span class="c">#Missing spi_bbone</span>
+    <span class="c">#Missing spi_buspirate</span>
+
+    <span class="k">def</span> <span class="nf">get_dummy_interface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">parent</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;dummy interface&#39;</span><span class="p">):</span>
+        <span class="c">#used only for testing the core lab functions</span>
+        <span class="n">new_interface</span> <span class="o">=</span> <span class="n">interface</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">parent</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">new_interface</span><span class="o">.</span><span class="n">set_com_node_parent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new_interface</span><span class="o">.</span><span class="n">set_com_node_parent</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_interface</span>
+    <span class="k">def</span> <span class="nf">set_gpib_adapter_visa</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">adapter_number</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">visaMissing</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;pyVisa or VISA is missing on this computer, install one or both. Cannot use visa for GPIB adapter&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">adapter_number</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gpib_adapters</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+           <span class="k">if</span>  <span class="bp">self</span><span class="o">.</span><span class="n">_gpib_adapters</span><span class="p">[</span><span class="n">adapter_number</span><span class="p">]</span><span class="o">.</span><span class="n">_parent</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_visa_root</span><span class="p">:</span>
+               <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;Attempting to re-define gpib adapter: {}, the same way a second time.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">adapter_number</span><span class="p">)</span> <span class="p">)</span>
+           <span class="k">else</span><span class="p">:</span>
+               <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;GPIB adapter_number {} was already defined as something other than visa.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">adapter_number</span><span class="p">)</span> <span class="p">)</span> 
+        <span class="n">gpib_adapter</span> <span class="o">=</span> <span class="n">gpib_adapter_visa</span><span class="p">()</span>
+        <span class="n">gpib_adapter</span><span class="o">.</span><span class="n">set_com_node_thread_safe</span><span class="p">()</span>
+        <span class="n">gpib_adapter</span><span class="o">.</span><span class="n">set_com_node_parent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_visa_root</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gpib_adapters</span><span class="p">[</span><span class="n">adapter_number</span><span class="p">]</span> <span class="o">=</span> <span class="n">gpib_adapter</span>
+        <span class="k">if</span> <span class="n">adapter_number</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gpib_interfaces</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_gpib_interfaces</span><span class="p">[</span><span class="n">adapter_number</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">def</span> <span class="nf">set_gpib_adapter_rl1009</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">adapter_number</span><span class="p">,</span><span class="n">serial_port_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">baudrate</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">adapter_number</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gpib_adapters</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;GPIB adapter_number {} was already defined.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">adapter_number</span><span class="p">)</span> <span class="p">)</span> 
+        <span class="k">if</span> <span class="n">serial_port_name</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">gpib_adapter</span> <span class="o">=</span> <span class="n">gpib_adapter_rl1009_dll</span><span class="p">()</span>
+            <span class="n">gpib_adapter</span><span class="o">.</span><span class="n">set_com_node_parent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="c">#who knows if this is thread safe, doubt it, maybe try it someday</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">baudrate</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">baudrate</span> <span class="o">=</span> <span class="mi">115200</span>
+            <span class="k">if</span> <span class="n">timeout</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">timeout</span> <span class="o">=</span> <span class="mi">5</span>
+            <span class="n">serial_port</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_raw_serial_interface</span><span class="p">(</span><span class="n">serial_port_name</span><span class="p">,</span><span class="n">baudrate</span><span class="p">,</span><span class="n">timeout</span><span class="p">)</span>
+            <span class="n">gpib_adapter</span> <span class="o">=</span> <span class="n">gpib_adapter_rl1009_serial</span><span class="p">(</span><span class="n">serialPort</span><span class="o">=</span><span class="n">serial_port</span><span class="p">)</span>
+            <span class="n">gpib_adapter</span><span class="o">.</span><span class="n">set_com_node_parent</span><span class="p">(</span><span class="n">serial_port</span><span class="p">)</span>
+            <span class="c">#certainly not thread safe</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gpib_adapters</span><span class="p">[</span><span class="n">adapter_number</span><span class="p">]</span> <span class="o">=</span> <span class="n">gpib_adapter</span>
+        <span class="k">if</span> <span class="n">adapter_number</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gpib_interfaces</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_gpib_interfaces</span><span class="p">[</span><span class="n">adapter_number</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">def</span> <span class="nf">_set_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">timeout</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">timeout</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_timeout</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">timeout</span>
+
+            
+            </div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">c_root</span> <span class="o">=</span> <span class="n">communication_node</span><span class="p">()</span>
+    <span class="n">c_root</span><span class="o">.</span><span class="n">set_com_node_thread_safe</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">c_a</span> <span class="o">=</span> <span class="n">communication_node</span><span class="p">()</span>
+    <span class="n">c_a</span><span class="o">.</span><span class="n">set_com_node_thread_safe</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">c_a</span><span class="o">.</span><span class="n">set_com_node_parent</span><span class="p">(</span><span class="n">c_root</span><span class="p">)</span>
+    <span class="n">c_b</span> <span class="o">=</span> <span class="n">communication_node</span><span class="p">()</span>
+    <span class="n">c_b</span><span class="o">.</span><span class="n">set_com_node_thread_safe</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">c_b</span><span class="o">.</span><span class="n">set_com_node_parent</span><span class="p">(</span><span class="n">c_root</span><span class="p">)</span>
+    <span class="n">c_c</span> <span class="o">=</span> <span class="n">communication_node</span><span class="p">()</span>
+    <span class="n">c_c</span><span class="o">.</span><span class="n">set_com_node_thread_safe</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">c_c</span><span class="o">.</span><span class="n">set_com_node_parent</span><span class="p">(</span><span class="n">c_root</span><span class="p">)</span>
+    <span class="n">c_ca</span> <span class="o">=</span> <span class="n">communication_node</span><span class="p">()</span>
+    <span class="n">c_ca</span><span class="o">.</span><span class="n">set_com_node_thread_safe</span><span class="p">()</span>
+    <span class="n">c_ca</span><span class="o">.</span><span class="n">set_com_node_parent</span><span class="p">(</span><span class="n">c_c</span><span class="p">)</span>
+    <span class="n">c_cb</span> <span class="o">=</span> <span class="n">communication_node</span><span class="p">()</span>
+    <span class="n">c_cb</span><span class="o">.</span><span class="n">set_com_node_thread_safe</span><span class="p">()</span>
+    <span class="n">c_cb</span><span class="o">.</span><span class="n">set_com_node_parent</span><span class="p">(</span><span class="n">c_c</span><span class="p">)</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    print c_root.com_node_get_all_descendents()</span>
+<span class="sd">    print &#39;thread groups&#39;</span>
+<span class="sd">    for i in  c_root.group_com_nodes_for_threads():</span>
+<span class="sd">        print &#39;--------------------&#39;</span>
+<span class="sd">        print i</span>
+<span class="sd">    &#39;&#39;&#39;</span>    
+    <span class="k">print</span> <span class="s">&#39;filtered&#39;</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span>  <span class="n">c_root</span><span class="o">.</span><span class="n">group_com_nodes_for_threads_filter</span><span class="p">([</span><span class="n">c_b</span><span class="p">,</span><span class="n">c_a</span><span class="p">,</span><span class="n">c_ca</span><span class="p">,</span><span class="n">c_cb</span><span class="p">]):</span>
+        <span class="k">print</span> <span class="s">&#39;--------------------&#39;</span>
+        <span class="k">print</span> <span class="n">i</span>
+        
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../PyICe.html">
+              <img class="logo" src="../../_static/tssop.png" alt="Logo"/>
+            </a></p>
+<h3><a href="../../PyICe.html">Table Of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.lab_instruments.html">PyICe.lab_instruments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.lab_core.html">PyICe.lab_core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.lab_utils.html">PyICe.lab_utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.LTC_plot.html">PyICe.LTC_plot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.lab_gui.html">PyICe.lab_gui</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.lab_interfaces.html">PyICe.lab_interfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.twi_instrument.html">PyICe.twi_instrument</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.twoWireInterface.html">PyICe.twoWireInterface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.spi_instrument.html">PyICe.spi_instrument</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.spi_interface.html">PyICe.spi_interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.visa_wrappers.html">PyICe.visa_wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/PyICe.xml_registers.html">PyICe.xml_registers</a></li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../PyICe.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Linear Technology Corporation.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

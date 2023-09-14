@@ -1,0 +1,84 @@
+[build-system]
+#requires = ["setuptools>=61.0"]
+#build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+
+[project]
+name='PyICe-adi'
+#packages=find_packages(include=['src'])
+requires-python = ">=3.7"
+authors=[
+    {name='Dave Simmons', email='david.simmons@analog.com'},
+]
+description='A python package to aid in evaluating integrated circuits'
+classifiers=[
+    'Development Status :: 3 - Alpha',
+    'Intended Audience :: Developers',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.7',
+]
+dynamic = ["version"]
+
+dependencies=[
+	"cairosvg",
+    "PySide2",
+    "bokeh",
+    "deprecated==1.2.12",
+    "graphviz",
+    "jsonc-parser",
+    "labcomm==0.0.2",
+    "matplotlib>=3.6.0",
+    "minimalmodbus",
+    "nifgen",
+    "openpyxl",
+    "pandas",
+    "pybind11",
+    "pycairo",
+    "pyserial==3.4",
+    "pysocks",
+#    "pystdf @ git+https://github.com/cmars/pystdf.git@master",
+    "python-usbtmc",
+    "python-vxi11",
+    "pyusb",
+    "pyvisa",
+    "pywin32 ; platform_system == \"Windows\"",
+    "requests==2.22.0",
+    "scikit_rf==0.26.0",
+    "scipy>=1.7 ",
+    "statsmodels",
+    "windows-curses==2.3.1 ; platform_system == \"Windows\"",
+    "xlrd",
+    "xlsxwriter==1.2.9",
+]
+
+#dynamic = ["version"]
+[tool.hatch.version]
+path = "PyICe/__init__.py"
+
+[tool.hatch.build]
+include = [
+    "/PyICe",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-mock", "pytest-cov", "sphinx", "sphinx_rtd_theme"]
+#[tool.hatch.envs.default]
+#dependencies = ["pytest", "pytest-mock"]
+[tool.hatch.build.targets.sdist]
+exclude = [
+    "exe/",
+    "/PyICe/Docs/",
+    "/PyICe/examples/",
+#    "/PyICe/deps/"
+]
+
+[tool.hatch.build.targets.wheel]
+exclude = [
+    "exe/",
+    "/PyICe/Docs/",
+    "/PyICe/examples/",
+#    "/PyICe/deps/"
+]
+

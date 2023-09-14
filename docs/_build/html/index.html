@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome to PyICe’s documentation! &mdash; PyICe  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="PyICe" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            PyICe
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">PyICe</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">PyICe</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Welcome to PyICe’s documentation!</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="welcome-to-pyice-s-documentation">
+<h1>Welcome to PyICe’s documentation!<a class="headerlink" href="#welcome-to-pyice-s-documentation" title="Permalink to this heading"></a></h1>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">PyICe</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="PyICe.html">PyICe package</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<section id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading"></a></h2>
+<p>PyICe is intended to improve productivity through planning and automation when evaluating integrated circuits with laboratory test equipment. Specifically, it contains a tool suite that abstracts all items of interest on a lab bench, including the target integrated circuit, into a single flat namespace. Once all bench items have been identified, and their set and get methods have been registered, interacting with these items becomes much more intuitive and human productivity is advanced tremendously. Combined with a clear evaluation plan and a centralized version control system, PyICe greatly fosters the collaboration of multi-person teams.</p>
+<p>Some of the services offered by PyICe are:</p>
+<ul class="simple">
+<li><p>Flexible, human meaningful, object names for clear code intent</p></li>
+<li><p>A simple scripting library for reading and writing to bench objects</p></li>
+<li><p>Automatic parsing and re-assembly of bit- packed registers (i.e. bit-fields)</p></li>
+<li><p>A Matplotlib wrapper for making consistent, publishable graphs in .svg or .pdf</p></li>
+<li><p>A Code Free GUI™ for quick debug and experimentation</p></li>
+<li><p>A substantial library of equipment drivers for abstracting laboratory instruments</p></li>
+<li><p>A SQLite datalogger object for storing, retrieving and filtering large volumes of data</p></li>
+<li><p>No more Excel sheet, column manipulation .csv files, schema-less file formats…</p></li>
+<li><p>A fast binary protocol for interacting with peripherals such as demonstration boards</p></li>
+<li><p>Tools for registering, testing and reporting against product specifications</p></li>
+<li><p>Tools for comparing production test data against laboratory bench results</p></li>
+<li><p>Automated results notifications by text and email</p></li>
+<li><p>Powerful problem-solving tools for instrument manipulation such as binary search algorithms, slow rampers, fixed time delays, etc.</p></li>
+<li><p>Other tools for data analysis such as waveform analyzers, data filters, data scalers, interpolators, various device models, etc.</p></li>
+<li><p>A method of declaring, logging, and documenting the physical configuration of the lab bench (electronically and pictorially).</p></li>
+<li><p>Automated bench evaluation report generation (coming soon).</p></li>
+</ul>
+</section>
+<section id="the-channel-concept">
+<h2>The Channel Concept<a class="headerlink" href="#the-channel-concept" title="Permalink to this heading"></a></h2>
+<p>PyICe introduces the notion of a channel. A channel is a Python object referenced
+by a simple character string, chosen by the user, which generally accesses
+a scalar object, but can be a vector, that the user wishes to interact with.
+A channel can belong to an integrated circuit such a serial port register or can
+represent a fragment of a register such as a bit-filed for bit-packed registers.
+A channel can also represent a control signal to an integrated circuit such as an
+ENABLE input pin from a micro-controller or a PGOOD output pin from the IC. A channel can represent
+any facet of a lab instrument that is electronically accessible such as a
+power supply’s voltage or current limit or a signal generator’s frequency or
+amplitude. Each channel is given a user specific name at creation time,
+thereby making the later interaction with the system much more human readable.
+The totality of all identified channels is aggregated by PyICe into a
+single Python object.</p>
+<p>Once all channels of interest have been identified by the user, and a path
+has been established for accessing each channel, the user may begin the
+important work of interacting with integrated circuit and lab bench system
+without the burden of parsing, converting or keeping track of the individual
+idiosyncrasies of each individual item on the bench. In fact, Python itself was
+initially designed by Guido van Rossum in 1991 and developed by Python Software
+Foundation mainly for emphasis on code readability. Its syntax allows programmers
+to express concepts in fewer lines of code.</p>
+<p>Because the object abstraction layer of PyICe is as high(low?) as it can be,
+it is possible to remap the objects to a system in the virtual world (
+AKA simulation) just as easily as the physical world. In concept,
+it is possible to reuse code written pre-silicon on actual silicon and
+bench instruments.</p>
+</section>
+<section id="recommended-workflow">
+<h2>Recommended Workflow<a class="headerlink" href="#recommended-workflow" title="Permalink to this heading"></a></h2>
+<p>The steps below are a suggested workflow for developing a defensible,
+accountable and transparent verification plan for an integrated circuit or
+any complex target system using adhoc bench test equipment.</p>
+<section id="evaluation-plan">
+<h3>Evaluation Plan<a class="headerlink" href="#evaluation-plan" title="Permalink to this heading"></a></h3>
+<p>The importance of an evaluation plan cannot be understated. Often, when a
+new integrated circuit or PCB system arrives, there is an expectation that an
+evaluation will be performed quickly. This is true if each requirement of the
+system needs only a cursory look, but if a more accountability is needed, for
+example with automotive products, medical products or high-volume consumer
+products, a thorough, yet realistic plan should be formulated.</p>
+<p>A good plan should start with the product requirements. Certainly, a product’s
+datasheet is a good place to start. The plan should have one line item for each
+requirement (if so declared), claim in the datasheet body text and line of the
+datasheet electrical table.</p>
+<p>It is a good idea to give each item (row in the plan) a unique identifier or
+key. A human-meaningful string is preferential for human comprehension and can
+be parsed by a computer as well. Other evaluation plan keys are possible of course.</p>
+<p>Each row can result in a parameter being tested over a wide range of adverse
+conditions such as temperature, frequency, voltage, variant, version, etc. In
+many cases the parameter of interest is meant to be somewhat immune to these
+conditions and therefore a single set of limits should apply over all of them.
+An automated test should be envisioned wherein the parameter of interest is
+tested over all conditions and characterization graphs can be produced.
+Some of these can be formatted for publication with no intervening human
+interaction at all. The rows of an evaluation plan, aside from having a
+unique identifier key, may look much like a datasheet entry with fields
+(columns) such as MIN, TYP, MAX, UNITS, DESCRIPTION, etc.</p>
+</section>
+<section id="hardware-plan">
+<h3>Hardware Plan<a class="headerlink" href="#hardware-plan" title="Permalink to this heading"></a></h3>
+<p>The hardware plan comes from the Evaluation plan. Once all parameters of
+interest are identified, the hardware plan, including circuit boards,
+environmental chambers, equipment list, necessary purchases, etc. can be
+created. The hardware  plan should include mechanisms to interact with
+(set and measure) all hardware pins on an integrated for example.</p>
+<p>Making and breaking manual connections from the equipment to the target
+system interferes with automation and should be avoided. If possible, the use
+of multi-channel voltmeters, power distribution multiplexers, RF multiplexers,
+etc. should be used to enable as many tests to be run with human interaction
+as possible.</p>
+<p>A plan to immerse the target device in an environmental chamber from the start
+is imperative and should not be attempted adhoc after the hardware plan is
+executed.</p>
+</section>
+<section id="software-plan">
+<h3>Software Plan<a class="headerlink" href="#software-plan" title="Permalink to this heading"></a></h3>
+<p>PyIce uses a single flat namespace for easy human interaction. As each resource
+or attribute of the target device is identified, it should be given a unique
+name. Once named, A Python object for each object of interest is created and
+referred to as a channel. Channels maybe addressed directly by their Python
+object reference or added to a channel master. The channel master is simply an
+aggregator of PyICe channels. Once all channels have been added to a master
+object, communication with them is conducted through the master as a proxy
+rather than with the channel itself (although this is not prohibited).
+The master (usually one) has read and write methods for every channel
+added to it.</p>
+<p>Once a channel master is created, and all channels registered with (added to)
+it, a datalogger object can be created. The datalogger object learns the
+various paths from the registered channels to their respective representation
+in the real world from the master. That is the data logger knows how to get
+and set (read and write) the values of every channel, as does the master.</p>
+<p>The datalogger has a method of capturing every channel from the system in a
+single simple call. The normal flow of a particular test is to setup the
+instruments and device to the desired excitation conditions and call the
+logger’s <code class="docutils literal notranslate"><span class="pre">log()</span></code> method for each case of interest. A pseudo-code example is
+shown below:</p>
+<img alt="_images/code_example.png" class="align-center" src="_images/code_example.png" />
+</section>
+<section id="centralized-data-storage">
+<h3>Centralized Data Storage<a class="headerlink" href="#centralized-data-storage" title="Permalink to this heading"></a></h3>
+<p>Automation works well when the system under test is functioning well. When the
+target system or IC is not performing well, there is much more experimentation
+and debugging than formalized evidence collection. For a comprehensive evidence
+collection system, a centralized and well-organized data storage location
+should be utilized. In a well-documented evidence collection plan, it is
+possible to keep all runs of all versions of a given test in storage for
+future reference.</p>
+<p>Centralized storage is also a must for evaluation IP such as infrastructure
+scripts and actual testing scripts when working on multi-person teams.
+Having each team member create their own infrastructure and private work product
+runs counter to accountability and quality.</p>
+</section>
+<section id="version-control">
+<h3>Version Control<a class="headerlink" href="#version-control" title="Permalink to this heading"></a></h3>
+<p>Version control of not only the evaluation IP (infrastructure and scripts)
+but also of the collected data, pass/fail results, plots, etc. is the best
+way to maintain an effective verification system. As IP is altered to fix bugs
+or increase functionality, reverting or reviewing previous version can become
+invaluable even within a single user.</p>
+</section>
+<section id="verification-accounting">
+<h3>Verification Accounting<a class="headerlink" href="#verification-accounting" title="Permalink to this heading"></a></h3>
+<p>Once evaluation, hardware and software plans are implemented, it’s time to
+begin the verification activities. Connecting the evaluation results back to
+the evaluation plan is the best way to track the performance of the target
+system (IC for example) against requirements. When using PyICe to its fullest
+potential, there is a module, or plugin, that can be used to make this
+connection. Use of this feature requires an upfront commitment on the part
+of the evaluation project leader to include the requisite Python methods to
+make the connection back to the plan. If this commitment is made, PyICe will
+compare the results and generate compliance reports in the form of local .json
+files. It can also include, in the report, all instrument tracking information
+such as equipment serial numbers as well as serial numbers of boards and d.u.t.s
+if such information is declared as part of the bench system.</p>
+</section>
+<section id="correlation-plan">
+<h3>Correlation Plan<a class="headerlink" href="#correlation-plan" title="Permalink to this heading"></a></h3>
+<p>In the semiconductor industry it is traditional to correlate production tester
+readings of critical parameters back to bench readings of the same parameter.
+Heretofore, this procedure has been ad hoc, very labor intensive and not very
+transparent. If there is a commitment to parameter keys from the beginning of
+the project, and the device under is uniquely identifiable (i.e. has a serial
+number of sorts), PyICe can perform automated bench to ATE correlation against
+well documented limits and provide a detailed discrepancy report.</p>
+</section>
+<section id="automated-report-generation">
+<h3>Automated Report Generation<a class="headerlink" href="#automated-report-generation" title="Permalink to this heading"></a></h3>
+<p>Coming soon (time.now()=July ‘23) PyICe has the ability to
+generate automated evaluation reports. Following a simple markdown file for
+content, PyICe will hunt through the local directory structure for official
+results declaration cookies. Cookies must be placed by hand or some other
+automation means to declare that the .json results file is to be rolled into
+the report being generated. The characterization report includes all relevant
+information about each test including characterization plots, bench
+connections, pass/fail results, serial numbers, etc. Many such different
+reports can be generated factoring in or out relevant portions of the system
+being evaluated.</p>
+</section>
+</section>
+</section>
+<section id="getting-started">
+<h1>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this heading"></a></h1>
+<p>To get started using PyICe, there is a recommended folder structure. The
+structure is shown below but PyICe also has a project creator wizard. The
+wizard will conduct a simple interview and generate the directory structure
+needed to support the requested PyICe plugins. To get started, run the file
+<strong>ProjectCreatorWizard.py</strong> from the main PyICe directory.</p>
+<p>An example of the recommended directory structure is shown below.</p>
+<blockquote>
+<div><div class="line-block">
+<div class="line">projname</div>
+<div class="line-block">
+<div class="line">├── eval_plan (highly recommended)</div>
+<div class="line">│     └ evalplan.xls</div>
+<div class="line">├── hardware_info</div>
+<div class="line">│     ├ board_serialization</div>
+<div class="line">│     │    ├ target_board_1.jsonc</div>
+<div class="line">│     │    ├ target_board_2.jsonc</div>
+<div class="line">│     │    ├ aux_board_1.jsonc</div>
+<div class="line">│     │    └ aux_board_1.jsonc</div>
+<div class="line">│     └ component_purpose</div>
+<div class="line">│          ├ targetboard_component_purpose.jsonc</div>
+<div class="line">│          └ auxboard_component_purpose.jsonc</div>
+<div class="line">├── quickstart_gui</div>
+<div class="line">│     └ EZ_projname_GUI.py</div>
+<div class="line">├── tests</div>
+<div class="line">│     ├ ipmodule_1</div>
+<div class="line">│     │    ├ ip_1_test1.py</div>
+<div class="line">│     │    └ ip_1_test2.py</div>
+<div class="line">│     └ ipmodule_2</div>
+<div class="line">│          ├ ip_2_test1.py</div>
+<div class="line">│          └ ip_2_test2.py</div>
+<div class="line">├── projname_base</div>
+<div class="line">│     ├ benches</div>
+<div class="line">│     │    ├ member1_bench.py</div>
+<div class="line">│     │    ├ member2_bench.py</div>
+<div class="line">│     │    └ …</div>
+<div class="line">│     ├ hardware_drivers</div>
+<div class="line">│     │    ├ mini_driver1.py</div>
+<div class="line">│     │    ├ mini_driver1.py</div>
+<div class="line">│     │    └ …</div>
+<div class="line">│     └ modules</div>
+<div class="line">│          ├ bench_base.py</div>
+<div class="line">│          ├ test_module.py</div>
+<div class="line">│          └ projname_plugins</div>
+<div class="line">│               ├ pyice_plugin1.py</div>
+<div class="line">│               ├ pyice_plugin2.py</div>
+<div class="line">│               └ …</div>
+</div>
+</div>
+</div></blockquote>
+<p>The evaluation project work product (scripts and resultant data) as well as
+infrastructure live under a single folder <strong>projname</strong>. By using centralize data
+management and version control, this folder should look the same on all team
+member’s computers. PyICe should not be in under this folder.</p>
+<p>The <strong>eval_plan</strong> folder is highly recommended. There may be better online options,
+but lieu of a more centralized system, it is strongly recommended to capture
+the intent and scope of the verification system somewhere.</p>
+<p>The <strong>hardware_info</strong> folder can be used to track both the configuration of
+numerous serialized boards as well as a purpose file for each board which
+contain information about what each component’s responsibility is on the PC
+board. These files can be as detailed or sparse as needed to capture the
+relevant information about the boards were configured at the time data was
+taken. The state of these files will be captured and logged with each test
+run. The supported file format is <em>json</em> which is readily human and machine
+readable. There can be files to track other system states, PyICe is agnostic
+to the data stored in these files.</p>
+<p>The <strong>quickstart_gui</strong> folder may contain a quick and dirty script to get the bench
+equipment configured and get the device under test powered up. While not a
+recommended way to perform the entire evaluation, this script can be invaluable
+for experimenting with the system or target device, debugging or demonstrating
+some simple feature or capability. Once debugging and experimenting is
+complete, serious data collection should preferentially be captured by a
+collection script in the <strong>tests</strong> section.</p>
+<p>Benches = Abstraction of individual equipment locations by team member</p>
+</section>
+<section id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this heading"></a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="modules.html" class="btn btn-neutral float-right" title="PyICe" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Dave Simmons, Steve Martin, Zach Lewko.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

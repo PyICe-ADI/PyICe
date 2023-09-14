@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PyICe.data_utils package &mdash; PyICe  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="PyICe.deps package" href="PyICe.deps.html" />
+    <link rel="prev" title="PyICe package" href="PyICe.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            PyICe
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">PyICe</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="PyICe.html">PyICe package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="PyICe.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">PyICe.data_utils package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="PyICe.deps.html">PyICe.deps package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="PyICe.instruments.html">PyICe.instruments package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="PyICe.refid_modules.html">PyICe.refid_modules package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="PyICe.xml_registers.html">PyICe.xml_registers package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.LTC_plot">PyICe.LTC_plot module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.TypicalCurveEditor_input">PyICe.TypicalCurveEditor_input module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.generate_docs">PyICe.generate_docs module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.interpolator">PyICe.interpolator module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.ivy_instruments">PyICe.ivy_instruments module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.lab_core">PyICe.lab_core module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.lab_instruments">PyICe.lab_instruments module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.lab_interfaces">PyICe.lab_interfaces module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.lab_utils">PyICe.lab_utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.logo">PyICe.logo module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.plot_tools">PyICe.plot_tools module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.spi_instrument">PyICe.spi_instrument module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.spi_interface">PyICe.spi_interface module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.twi_instrument">PyICe.twi_instrument module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.twoWireInterface">PyICe.twoWireInterface module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.virtual_instruments">PyICe.virtual_instruments module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.visa_wrappers">PyICe.visa_wrappers module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PyICe</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">PyICe</a></li>
+          <li class="breadcrumb-item"><a href="PyICe.html">PyICe package</a></li>
+      <li class="breadcrumb-item active">PyICe.data_utils package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/PyICe.data_utils.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pyice-data-utils-package">
+<h1>PyICe.data_utils package<a class="headerlink" href="#pyice-data-utils-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-PyICe.data_utils.EMI_char_levels">
+<span id="pyice-data-utils-emi-char-levels-module"></span><h2>PyICe.data_utils.EMI_char_levels module<a class="headerlink" href="#module-PyICe.data_utils.EMI_char_levels" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="PyICe.data_utils.EMI_char_levels.IEC61967_2_digit">
+<span class="sig-prename descclassname"><span class="pre">PyICe.data_utils.EMI_char_levels.</span></span><span class="sig-name descname"><span class="pre">IEC61967_2_digit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">digit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.EMI_char_levels.IEC61967_2_digit" title="Permalink to this definition"></a></dt>
+<dd><p>This is the -20dB/decade set of numbered curves in the IEC Emission Characterization Levels
+“digit” is the digit number of the curve we want to trace out
+“frequency” is the frequency of interest.
+the value returned is the dBV value of the emission result</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyICe.data_utils.EMI_char_levels.IEC61967_2_lowercase">
+<span class="sig-prename descclassname"><span class="pre">PyICe.data_utils.EMI_char_levels.</span></span><span class="sig-name descname"><span class="pre">IEC61967_2_lowercase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lowercase</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.EMI_char_levels.IEC61967_2_lowercase" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyICe.data_utils.EMI_char_levels.IEC61967_2_uppercase">
+<span class="sig-prename descclassname"><span class="pre">PyICe.data_utils.EMI_char_levels.</span></span><span class="sig-name descname"><span class="pre">IEC61967_2_uppercase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uppercase</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.EMI_char_levels.IEC61967_2_uppercase" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-PyICe.data_utils.create_user_files">
+<span id="pyice-data-utils-create-user-files-module"></span><h2>PyICe.data_utils.create_user_files module<a class="headerlink" href="#module-PyICe.data_utils.create_user_files" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="PyICe.data_utils.create_user_files.create_my_scopefile">
+<span class="sig-prename descclassname"><span class="pre">PyICe.data_utils.create_user_files.</span></span><span class="sig-name descname"><span class="pre">create_my_scopefile</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.create_user_files.create_my_scopefile" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-PyICe.data_utils.oscilloscope_waveform_dump">
+<span id="pyice-data-utils-oscilloscope-waveform-dump-module"></span><h2>PyICe.data_utils.oscilloscope_waveform_dump module<a class="headerlink" href="#module-PyICe.data_utils.oscilloscope_waveform_dump" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.data_utils.oscilloscope_waveform_dump.dict_print">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.data_utils.oscilloscope_waveform_dump.</span></span><span class="sig-name descname"><span class="pre">dict_print</span></span><a class="headerlink" href="#PyICe.data_utils.oscilloscope_waveform_dump.dict_print" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.data_utils.oscilloscope_waveform_dump.oscilloscope_waveform_dump">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.data_utils.oscilloscope_waveform_dump.</span></span><span class="sig-name descname"><span class="pre">oscilloscope_waveform_dump</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interface_visa</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.oscilloscope_waveform_dump.oscilloscope_waveform_dump" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="PyICe.instruments.html#PyICe.instruments.oscilloscope.oscilloscope" title="PyICe.instruments.oscilloscope.oscilloscope"><code class="xref py py-class docutils literal notranslate"><span class="pre">oscilloscope</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.oscilloscope_waveform_dump.oscilloscope_waveform_dump.data_to_sqlite">
+<span class="sig-name descname"><span class="pre">data_to_sqlite</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db_filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'scope_data.sqlite'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.oscilloscope_waveform_dump.oscilloscope_waveform_dump.data_to_sqlite" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.oscilloscope_waveform_dump.oscilloscope_waveform_dump.fetch_active_scope_channels">
+<span class="sig-name descname"><span class="pre">fetch_active_scope_channels</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.oscilloscope_waveform_dump.oscilloscope_waveform_dump.fetch_active_scope_channels" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.oscilloscope_waveform_dump.oscilloscope_waveform_dump.user_query_waveform_name">
+<span class="sig-name descname"><span class="pre">user_query_waveform_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channel_number</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.oscilloscope_waveform_dump.oscilloscope_waveform_dump.user_query_waveform_name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyICe.data_utils.oscilloscope_waveform_dump.plot_dumped_waveform">
+<span class="sig-prename descclassname"><span class="pre">PyICe.data_utils.oscilloscope_waveform_dump.</span></span><span class="sig-name descname"><span class="pre">plot_dumped_waveform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db_tablename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db_filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'scope_data.sqlite'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.oscilloscope_waveform_dump.plot_dumped_waveform" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-PyICe.data_utils.pds_utils">
+<span id="pyice-data-utils-pds-utils-module"></span><h2>PyICe.data_utils.pds_utils module<a class="headerlink" href="#module-PyICe.data_utils.pds_utils" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.data_utils.pds_utils.pds_reader">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.data_utils.pds_utils.</span></span><span class="sig-name descname"><span class="pre">pds_reader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.pds_utils.pds_reader" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Reads and parses an Eagle Test System’s .pds “Datasheet” file into a reasoanble datastructure.
+It may have errors, the Eagle schema is a complete C/F of made up nonesene making it difficult to interpret.
+Files structure is as follows:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>Result is a dictionary of test groups keyed by the group name.</dt><dd><dl class="simple">
+<dt>Each dictioary of test groups is a dictionary of tests keys by the test NUMBER.SUBTESTNUMBER.</dt><dd><p>Each test is a dictionary of parameters keyed by Eagle columns as described by the file section “Datasheet Variable Map”.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</div></blockquote>
+<p>Method get_test(test_number, subtest_number) may be used to tease out a specific test record.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.pds_utils.pds_reader.build_record">
+<span class="sig-name descname"><span class="pre">build_record</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.pds_utils.pds_reader.build_record" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.pds_utils.pds_reader.find_test_groups">
+<span class="sig-name descname"><span class="pre">find_test_groups</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.pds_utils.pds_reader.find_test_groups" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.pds_utils.pds_reader.generate_excel_report">
+<span class="sig-name descname"><span class="pre">generate_excel_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.pds_utils.pds_reader.generate_excel_report" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.pds_utils.pds_reader.get_column_map">
+<span class="sig-name descname"><span class="pre">get_column_map</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.pds_utils.pds_reader.get_column_map" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.pds_utils.pds_reader.get_test">
+<span class="sig-name descname"><span class="pre">get_test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subtest_number</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.pds_utils.pds_reader.get_test" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-PyICe.data_utils.stdf_structure_tracer">
+<span id="pyice-data-utils-stdf-structure-tracer-module"></span><h2>PyICe.data_utils.stdf_structure_tracer module<a class="headerlink" href="#module-PyICe.data_utils.stdf_structure_tracer" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="PyICe.data_utils.stdf_structure_tracer.process_dir">
+<span class="sig-prename descclassname"><span class="pre">PyICe.data_utils.stdf_structure_tracer.</span></span><span class="sig-name descname"><span class="pre">process_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">top_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.stdf_structure_tracer.process_dir" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="PyICe.data_utils.stdf_structure_tracer.process_file">
+<span class="sig-prename descclassname"><span class="pre">PyICe.data_utils.stdf_structure_tracer.</span></span><span class="sig-name descname"><span class="pre">process_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.stdf_structure_tracer.process_file" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.data_utils.stdf_structure_tracer.record_order_parser">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.data_utils.stdf_structure_tracer.</span></span><span class="sig-name descname"><span class="pre">record_order_parser</span></span><a class="headerlink" href="#PyICe.data_utils.stdf_structure_tracer.record_order_parser" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.stdf_structure_tracer.record_order_parser.after_begin">
+<span class="sig-name descname"><span class="pre">after_begin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataSrc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.stdf_structure_tracer.record_order_parser.after_begin" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.stdf_structure_tracer.record_order_parser.after_complete">
+<span class="sig-name descname"><span class="pre">after_complete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataSrc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.stdf_structure_tracer.record_order_parser.after_complete" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.stdf_structure_tracer.record_order_parser.after_send">
+<span class="sig-name descname"><span class="pre">after_send</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataSrc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.stdf_structure_tracer.record_order_parser.after_send" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.stdf_structure_tracer.record_order_parser.map_data">
+<span class="sig-name descname"><span class="pre">map_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.stdf_structure_tracer.record_order_parser.map_data" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="pyice-data-utils-stdf-utils-module">
+<h2>PyICe.data_utils.stdf_utils module<a class="headerlink" href="#pyice-data-utils-stdf-utils-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="pyice-data-utils-touchstone-utils-module">
+<h2>PyICe.data_utils.touchstone_utils module<a class="headerlink" href="#pyice-data-utils-touchstone-utils-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-PyICe.data_utils.units_parser">
+<span id="pyice-data-utils-units-parser-module"></span><h2>PyICe.data_utils.units_parser module<a class="headerlink" href="#module-PyICe.data_utils.units_parser" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="PyICe.data_utils.units_parser.parser">
+<span class="sig-prename descclassname"><span class="pre">PyICe.data_utils.units_parser.</span></span><span class="sig-name descname"><span class="pre">parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">units</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.units_parser.parser" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-PyICe.data_utils.wave_analysis">
+<span id="pyice-data-utils-wave-analysis-module"></span><h2>PyICe.data_utils.wave_analysis module<a class="headerlink" href="#module-PyICe.data_utils.wave_analysis" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="PyICe.data_utils.wave_analysis.waveform">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.data_utils.wave_analysis.</span></span><span class="sig-name descname"><span class="pre">waveform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trigger_sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trigger_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leader_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.099</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stationarity_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.wave_analysis.waveform" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.wave_analysis.waveform.amplitude">
+<span class="sig-name descname"><span class="pre">amplitude</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.wave_analysis.waveform.amplitude" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.wave_analysis.waveform.average_in">
+<span class="sig-name descname"><span class="pre">average_in</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.wave_analysis.waveform.average_in" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.wave_analysis.waveform.average_out">
+<span class="sig-name descname"><span class="pre">average_out</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.wave_analysis.waveform.average_out" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.wave_analysis.waveform.dump_data">
+<span class="sig-name descname"><span class="pre">dump_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'waveform_analyzer_debug_data.pkl'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.wave_analysis.waveform.dump_data" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.wave_analysis.waveform.fall_time">
+<span class="sig-name descname"><span class="pre">fall_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">low_percentage</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high_percentage</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.wave_analysis.waveform.fall_time" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.wave_analysis.waveform.find_first_falling_edge">
+<span class="sig-name descname"><span class="pre">find_first_falling_edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vhigh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vlow</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lvl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.wave_analysis.waveform.find_first_falling_edge" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.wave_analysis.waveform.find_first_rising_edge">
+<span class="sig-name descname"><span class="pre">find_first_rising_edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vhigh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vlow</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lvl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.wave_analysis.waveform.find_first_rising_edge" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.wave_analysis.waveform.find_grt_than_or_equal_to">
+<span class="sig-name descname"><span class="pre">find_grt_than_or_equal_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">increment</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.wave_analysis.waveform.find_grt_than_or_equal_to" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.wave_analysis.waveform.find_less_than_or_equal_to">
+<span class="sig-name descname"><span class="pre">find_less_than_or_equal_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">increment</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.wave_analysis.waveform.find_less_than_or_equal_to" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.wave_analysis.waveform.overshoot">
+<span class="sig-name descname"><span class="pre">overshoot</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.wave_analysis.waveform.overshoot" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.wave_analysis.waveform.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.wave_analysis.waveform.plot" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.wave_analysis.waveform.read_xdata">
+<span class="sig-name descname"><span class="pre">read_xdata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.wave_analysis.waveform.read_xdata" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.wave_analysis.waveform.read_ydata">
+<span class="sig-name descname"><span class="pre">read_ydata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.wave_analysis.waveform.read_ydata" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.wave_analysis.waveform.rise_time">
+<span class="sig-name descname"><span class="pre">rise_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">low_percentage</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high_percentage</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.wave_analysis.waveform.rise_time" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.wave_analysis.waveform.settling_time">
+<span class="sig-name descname"><span class="pre">settling_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">low_limit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high_limit</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.wave_analysis.waveform.settling_time" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.wave_analysis.waveform.settling_time_from_max_deviation">
+<span class="sig-name descname"><span class="pre">settling_time_from_max_deviation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">limit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deviation</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.wave_analysis.waveform.settling_time_from_max_deviation" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.wave_analysis.waveform.settling_time_outside_limit">
+<span class="sig-name descname"><span class="pre">settling_time_outside_limit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">limit</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.wave_analysis.waveform.settling_time_outside_limit" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.wave_analysis.waveform.slew_rate">
+<span class="sig-name descname"><span class="pre">slew_rate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.wave_analysis.waveform.slew_rate" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.wave_analysis.waveform.sw_fall_time">
+<span class="sig-name descname"><span class="pre">sw_fall_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lo_lvl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hi_lvl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vhigh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vlow</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.wave_analysis.waveform.sw_fall_time" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.wave_analysis.waveform.sw_nol_fall">
+<span class="sig-name descname"><span class="pre">sw_nol_fall</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vhigh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vlow</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.wave_analysis.waveform.sw_nol_fall" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.wave_analysis.waveform.sw_nol_rise">
+<span class="sig-name descname"><span class="pre">sw_nol_rise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vhigh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vlow</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.wave_analysis.waveform.sw_nol_rise" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.wave_analysis.waveform.sw_rise_time">
+<span class="sig-name descname"><span class="pre">sw_rise_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lo_lvl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hi_lvl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vhigh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vlow</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.wave_analysis.waveform.sw_rise_time" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.wave_analysis.waveform.trigger">
+<span class="sig-name descname"><span class="pre">trigger</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.wave_analysis.waveform.trigger" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.wave_analysis.waveform.trigger_10_90">
+<span class="sig-name descname"><span class="pre">trigger_10_90</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.wave_analysis.waveform.trigger_10_90" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.wave_analysis.waveform.trigger_index">
+<span class="sig-name descname"><span class="pre">trigger_index</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.wave_analysis.waveform.trigger_index" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.wave_analysis.waveform.trigger_level">
+<span class="sig-name descname"><span class="pre">trigger_level</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.wave_analysis.waveform.trigger_level" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.wave_analysis.waveform.trigger_polarity">
+<span class="sig-name descname"><span class="pre">trigger_polarity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.wave_analysis.waveform.trigger_polarity" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.wave_analysis.waveform.trigger_sigma">
+<span class="sig-name descname"><span class="pre">trigger_sigma</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.wave_analysis.waveform.trigger_sigma" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.wave_analysis.waveform.trigger_value">
+<span class="sig-name descname"><span class="pre">trigger_value</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.wave_analysis.waveform.trigger_value" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="PyICe.data_utils.wave_analysis.waveform.undershoot">
+<span class="sig-name descname"><span class="pre">undershoot</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.wave_analysis.waveform.undershoot" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-PyICe.data_utils">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-PyICe.data_utils" title="Permalink to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="PyICe.html" class="btn btn-neutral float-left" title="PyICe package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="PyICe.deps.html" class="btn btn-neutral float-right" title="PyICe.deps package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Dave Simmons, Steve Martin, Zach Lewko.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

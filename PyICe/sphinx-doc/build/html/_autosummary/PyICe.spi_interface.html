@@ -1,0 +1,286 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>PyICe.spi_interface &mdash; PyICe 9000 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '9000',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/tssop.ico"/>
+    <link rel="top" title="PyICe 9000 documentation" href="../PyICe.html" />
+    <link rel="next" title="PyICe.visa_wrappers" href="PyICe.visa_wrappers.html" />
+    <link rel="prev" title="PyICe.spi_instrument" href="PyICe.spi_instrument.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-PyICe.spi_interface">
+<span id="pyice-spi-interface"></span><h1>PyICe.spi_interface<a class="headerlink" href="#module-PyICe.spi_interface" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="spi-interface-hardware-drivers">
+<h2>SPI Interface Hardware Drivers<a class="headerlink" href="#spi-interface-hardware-drivers" title="Permalink to this headline">¶</a></h2>
+<p>Created on Feb 23, 2015
+Heavily modified August 2016 to be more generic.</p>
+<p>&#64;author: JKapasi
+&#64;author: DSimmons</p>
+<p>The SPI interface is composed of two separate classes:</p>
+<ol class="arabic">
+<li><dl class="first docutils">
+<dt>shift_register</dt>
+<dd><p class="first last">abstracts individual bit-fields into integer representing contents of full-length shift register</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>spiInterface: Defines the hardware interface including baudrate, mode (CPOL/CPHA), CS operation.</dt>
+<dd><p class="first last">Specific hardware implementations should overload this class and implement _shift_data method.</p>
+</dd>
+</dl>
+</li>
+</ol>
+<p class="rubric">Functions</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+</tbody>
+</table>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#PyICe.spi_interface.shift_register" title="PyICe.spi_interface.shift_register"><code class="xref py py-obj docutils literal"><span class="pre">shift_register</span></code></a>([bit_field_name,&nbsp;...])</td>
+<td>helper class to assemble multiple bit-fields together into a single larger integer and to disassemble received data into individual bit-fields.</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">spiInterface</span></code>(CPOL,&nbsp;CPHA,&nbsp;ss_ctrl,&nbsp;word_size)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#PyICe.spi_interface.spi_bbone" title="PyICe.spi_interface.spi_bbone"><code class="xref py py-obj docutils literal"><span class="pre">spi_bbone</span></code></a>(CPOL,&nbsp;CPHA,&nbsp;ss_ctrl,&nbsp;word_size)</td>
+<td>The Beaglebone black will use the Adafruit BBIO, thus we can initialize this package for all purposes This instrument probably got a broken when the parent class interface was modified to support multiple interface hardware boards and more general SPI communication.</td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">spi_bitbang</span></code>(SCK_channel[,&nbsp;MOSI_channel,&nbsp;...])</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">spi_buspirate</span></code>(interface_raw_serial[,&nbsp;CPOL,&nbsp;...])</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">spi_cfgpro</span></code>(visa_interface,&nbsp;CPOL,&nbsp;CPHA[,&nbsp;...])</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">spi_dc590</span></code>(interface_stream[,&nbsp;ss_ctrl])</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">spi_dummy</span></code>([delay,&nbsp;word_size])</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Exceptions</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">SPIMasterError</span></code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="PyICe.spi_interface.shift_register">
+<em class="property">class </em><code class="descclassname">PyICe.spi_interface.</code><code class="descname">shift_register</code><span class="sig-paren">(</span><em>bit_field_name=None</em>, <em>bit_field_bit_count=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/spi_interface.html#shift_register"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.spi_interface.shift_register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>helper class to assemble multiple bit-fields together into a single larger integer and to disassemble received data into individual bit-fields.</p>
+<dl class="method">
+<dt id="PyICe.spi_interface.shift_register.add_bit_field">
+<code class="descname">add_bit_field</code><span class="sig-paren">(</span><em>bit_field_name</em>, <em>bit_field_bit_count</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/spi_interface.html#shift_register.add_bit_field"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.spi_interface.shift_register.add_bit_field" title="Permalink to this definition">¶</a></dt>
+<dd><p>build SPI shift register data protocol sequentially MSB-&gt;LSB with repeated calls to add_bit_field</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.spi_interface.shift_register.display">
+<code class="descname">display</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/spi_interface.html#shift_register.display"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.spi_interface.shift_register.display" title="Permalink to this definition">¶</a></dt>
+<dd><p>print ascii register structure graphic</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.spi_interface.shift_register.keys">
+<code class="descname">keys</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/spi_interface.html#shift_register.keys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.spi_interface.shift_register.keys" title="Permalink to this definition">¶</a></dt>
+<dd><p>return list of bit-field names registered with instance</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.spi_interface.shift_register.pack">
+<code class="descname">pack</code><span class="sig-paren">(</span><em>bit_field_data_dict</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/spi_interface.html#shift_register.pack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.spi_interface.shift_register.pack" title="Permalink to this definition">¶</a></dt>
+<dd><p>pack bit fields into single larger integer. also return accumulated clk_count.
+Suitable for passing directly to spiInterface.transceive(<a href="#id1"><span class="problematic" id="id2">*</span></a>shift_register.pack(bit_field_data_dict))
+bit_field_data_dict should contain one key-value pair for each defined bit_field</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.spi_interface.shift_register.unpack">
+<code class="descname">unpack</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/spi_interface.html#shift_register.unpack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.spi_interface.shift_register.unpack" title="Permalink to this definition">¶</a></dt>
+<dd><p>unpack single integer representing full-width shift register data into individual bit field values according to instance-defined boundaries.
+return dictionary with key-value pairs for each defined bit_field_name and bit_field data.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="PyICe.spi_interface.spi_bbone">
+<em class="property">class </em><code class="descclassname">PyICe.spi_interface.</code><code class="descname">spi_bbone</code><span class="sig-paren">(</span><em>CPOL</em>, <em>CPHA</em>, <em>ss_ctrl</em>, <em>word_size</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/PyICe/spi_interface.html#spi_bbone"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyICe.spi_interface.spi_bbone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">PyICe.spi_interface.spiInterface</span></code></p>
+<p>The Beaglebone black will use the Adafruit BBIO,
+thus we can initialize this package for all purposes
+This instrument probably got a broken when the parent class interface was modified to support multiple interface hardware boards and more general SPI communication.
+Needs testing/repair.</p>
+<dl class="method">
+<dt id="PyICe.spi_interface.spi_bbone.pack">
+<code class="descname">pack</code><span class="sig-paren">(</span><em>data_list</em>, <em>word_size=8</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.spi_interface.spi_bbone.pack" title="Permalink to this definition">¶</a></dt>
+<dd><p>pack byte,word aligned pieces (list) from communication hardware into single integer comprising full shift register width.
+integer can then be broken up by shift_register object into bit field aligned pieces.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.spi_interface.spi_bbone.set_ss_ctrl">
+<code class="descname">set_ss_ctrl</code><span class="sig-paren">(</span><em>ss_ctrl_function</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.spi_interface.spi_bbone.set_ss_ctrl" title="Permalink to this definition">¶</a></dt>
+<dd><p>change ss_ctrl function after instantiation.
+function should take single boolean argument.
+If true, assert slave select. If false, deassert slave select.
+There will typically be a logic inversion inside ss_ctrl to achieve active low _cs.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.spi_interface.spi_bbone.set_strict_alignment">
+<code class="descname">set_strict_alignment</code><span class="sig-paren">(</span><em>strict</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.spi_interface.spi_bbone.set_strict_alignment" title="Permalink to this definition">¶</a></dt>
+<dd><p>If true, enforce that SPI master and slave hardware lengths match.
+If false, enable automatic padding to correct alignment.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.spi_interface.spi_bbone.transceive">
+<code class="descname">transceive</code><span class="sig-paren">(</span><em>data</em>, <em>clk_count</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.spi_interface.spi_bbone.transceive" title="Permalink to this definition">¶</a></dt>
+<dd><p>send data word out MOSI with clk_count clocks.
+return word of same size read simultaneously on MISO.
+Frame entire transaction with slave select.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyICe.spi_interface.spi_bbone.unpack">
+<code class="descname">unpack</code><span class="sig-paren">(</span><em>data</em>, <em>bit_count</em>, <em>word_size=8</em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.spi_interface.spi_bbone.unpack" title="Permalink to this definition">¶</a></dt>
+<dd><p>break full shift register width integer into byte,word aligned pieces. Return list of pieces MS first, LS last.
+helper to send byte-aligned pieces to hardware even if bit fields span bytes (or 1-bit, 16-bit 32-bit, etc words for other hardware)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../PyICe.html">
+              <img class="logo" src="../_static/tssop.png" alt="Logo"/>
+            </a></p>
+<h3><a href="../PyICe.html">Table Of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="PyICe.lab_instruments.html">PyICe.lab_instruments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.lab_core.html">PyICe.lab_core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.lab_utils.html">PyICe.lab_utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.LTC_plot.html">PyICe.LTC_plot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.lab_gui.html">PyICe.lab_gui</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.lab_interfaces.html">PyICe.lab_interfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.twi_instrument.html">PyICe.twi_instrument</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.twoWireInterface.html">PyICe.twoWireInterface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.spi_instrument.html">PyICe.spi_instrument</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">PyICe.spi_interface</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#spi-interface-hardware-drivers">SPI Interface Hardware Drivers</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.visa_wrappers.html">PyICe.visa_wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyICe.xml_registers.html">PyICe.xml_registers</a></li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../PyICe.html">Documentation overview</a><ul>
+      <li>Previous: <a href="PyICe.spi_instrument.html" title="previous chapter">PyICe.spi_instrument</a></li>
+      <li>Next: <a href="PyICe.visa_wrappers.html" title="next chapter">PyICe.visa_wrappers</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/_autosummary/PyICe.spi_interface.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Linear Technology Corporation.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="../_sources/_autosummary/PyICe.spi_interface.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
