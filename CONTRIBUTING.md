@@ -10,14 +10,14 @@ drivers, updated test infrastructure or anything else.
 Once you have cloned the PyICe git repository, you will need to create a 
 virtual environment:
 ```commandline
-python -m venv env 
+python -m venv pyice-env 
 ```
-This will create a directory `env/` with the Python binaries which will allow
+This will create a directory `pyiceenv/` with the Python binaries which will allow
 you to install packages for that isolated environment. 
 ### Activate your virtual environment 
 You can activate your virtual environment in a Windows Powershell:
 ```commandline
-.\env\Scripts\activate
+.\pyice-env\Scripts\activate
 ```
 or in Linux:
 ```commandline
@@ -30,7 +30,7 @@ this includes pytest
 ### Install the development packages
 
 ```commandline
-python -m pip install -r requirements/dev-requirements.txt
+python -m pip install -r PyICe/requirements/dev-requirements.txt
 ```
 You are now all set up to start developing PyICe on your machine! 
 
