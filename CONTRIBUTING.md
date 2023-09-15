@@ -12,7 +12,7 @@ virtual environment:
 ```commandline
 python -m venv pyice-env 
 ```
-This will create a directory `pyiceenv/` with the Python binaries which will allow
+This will create a directory `pyice-env/` with the Python binaries which will allow
 you to install packages for that isolated environment. 
 ### Activate your virtual environment 
 You can activate your virtual environment in a Windows Powershell:
