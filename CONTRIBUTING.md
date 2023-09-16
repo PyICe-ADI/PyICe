@@ -36,13 +36,12 @@ You are now all set up to start developing PyICe on your machine!
 
 ## Get an editable copy of PyICe on your machine
 If you would like to work on an editable copy of PyICe on your machine in 
-a different environment (for, 
-lets say working on a project such as stowe_eval), you can.  Go to your cloned 
-copy of PyICe, and in your shell (**please make sure to complete the previous step**):
+a different environment, you can. Go to your cloned copy of PyICe, and in your shell
+(**please make sure to complete the previous step**):
 ```commandline
 python -m pip install --editable .[dev]
 ```
-Note: if pip gives you a warning to upgrade, please do.  You may need to upgrade 
+Note: if pip gives you a warning to upgrade, please do so. You may need to upgrade 
 pip to install an editable version of PyICe from the pyproject.toml file.
 Adding `[dev]` will include the optional development packages in your local 
 editable install. 
