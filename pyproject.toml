@@ -9,6 +9,7 @@ build-backend = "hatchling.build"
 name='PyICe-ADI'
 #packages=find_packages(include=['src'])
 requires-python = ">=3.7"
+readme='README.md'
 authors=[
     {name='Dave Simmons', email='david.simmons@analog.com'},
 ]
