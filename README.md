@@ -19,31 +19,3 @@ For more detailed documentation, please go [here](https://xenomorphxx121.github.
 
 # [PyICe contributors, please go here for install instructions](CONTRIBUTING.md)
 
-## Table of Contents
-
-- [Installation](#installation)
-- [Usage](#usage)
-
-
-## Installation
-
-PyICe is a python package. To install, you will need to first log into
-[ADI Artifactory](https://artifactory.analog.com/ui/packages)  to set up your
-Artifactory credentials. Click on the dropdown that says "Welcome < username>",
-and then "Set me up".
-
-* Select "Package Type" as PyPI, and repository as "power-fusa-pypi"
-* Enter in your password, select "Resolve"
-* Copy just the link itself, and paste it along with code below into ~/.pip/pip.conf (~/pip/pip.ini for Windows)
-  ```bash
-  [global]
-  extra-index-url = <paste the link here>
-  ```
-* Finally, install the PyICe package to your local conda environment with the following command
-```commandline
-pip install PyICe-adi
-```
-
-### Other softwares
-Other softwares can be installed to improve PyICe's capabilites.
-* Graphviz https://pypi.org/project/graphviz/
