@@ -251,10 +251,11 @@ class hameg_4040(scpi_instrument):
                 time.sleep(self.hameg_suck_time)
                 return data
             except Exception as e:
+                this_error = e
                 print(e)
                 print(f"Resync {self.get_name()}: {self.get_interface().resync()}")
                 retry += 1
-        raise e
+        raise this_error
     def _read_current_readback(self,num):
         '''returns the voltage setting as known by the instrument'''
         retry = 0
@@ -268,10 +269,11 @@ class hameg_4040(scpi_instrument):
                 time.sleep(self.hameg_suck_time)
                 return data
             except Exception as e:
+                this_error = e
                 print(e)
                 print(f"Resync {self.get_name()}: {self.get_interface().resync()}")
                 retry += 1
-        raise e
+        raise this_error
     def _read_measured_voltage(self,num):
         '''returns the voltage setting as known by the instrument'''
         retry = 0
@@ -285,10 +287,11 @@ class hameg_4040(scpi_instrument):
                 time.sleep(self.hameg_suck_time)
                 return data
             except Exception as e:
+                this_error = e
                 print(e)
                 print(f"Resync {self.get_name()}: {self.get_interface().resync()}")
                 retry += 1
-        raise e
+        raise this_error
     def _read_measured_current(self,num):
         '''returns the voltage setting as known by the instrument'''
         retry = 0
@@ -302,10 +305,11 @@ class hameg_4040(scpi_instrument):
                 time.sleep(self.hameg_suck_time)
                 return data
             except Exception as e:
+                this_error = e
                 print(e)
                 print(f"Resync {self.get_name()}: {self.get_interface().resync()}")
                 retry += 1
-        raise e
+        raise this_error
     def _read_vsense(self,num):
         '''returns the voltage measured by the instrument'''
         retry = 0
@@ -319,10 +323,11 @@ class hameg_4040(scpi_instrument):
                 time.sleep(self.hameg_suck_time)
                 return data
             except Exception as e:
+                this_error = e
                 print(e)
                 print(f"Resync {self.get_name()}: {self.get_interface().resync()}")
                 retry += 1
-        raise e
+        raise this_error
     def _read_isense(self,num):
         '''returns the current measured by the instrument'''
         retry = 0
@@ -336,10 +341,11 @@ class hameg_4040(scpi_instrument):
                 time.sleep(self.hameg_suck_time) #needed for hw serial on fast linux
                 return data
             except Exception as e:
+                this_error = e
                 print(e)
                 print(f"Resync {self.get_name()}: {self.get_interface().resync()}")
                 retry += 1
-        raise e
+        raise this_error
     def _write_ovp(self, num, voltage):
         '''Set a channel OVP level'''
         self.get_interface().write(f"INST:NSEL {num}")
@@ -361,10 +367,11 @@ class hameg_4040(scpi_instrument):
                 time.sleep(self.hameg_suck_time)
                 return data
             except Exception as e:
+                this_error = e
                 print(e)
                 print(f"Resync {self.get_name()}: {self.get_interface().resync()}")
                 retry += 1
-        raise e
+        raise this_error
     def _read_ovp_status(self, num):
         '''Read channel OVP level'''
         self.get_interface().write(f"INST:NSEL {num}")
