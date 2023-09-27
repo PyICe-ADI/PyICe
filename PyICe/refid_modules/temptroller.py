@@ -1,5 +1,7 @@
-from PyICe.refid_modules                    import bench_identifier, test_archive
-from PyICe import virtual_instruments, lab_utils
+from PyICe.refid_modules import bench_identifier, test_archive
+from PyICe import virtual_instruments
+from PyICe.lab_utils.banners import print_banner
+from PyICe.lab_utils.sqlite_data import sqlite_data
 import abc
 import collections
 import datetime
@@ -204,7 +206,7 @@ class temptroller():
                 # def delete_soon_to_be_rewritten_data(test,temp):
                     # table_name = test.get_db_table_name()
                     # db_file = test._db_file
-                    # db = lab_utils.sqlite_data(database_file=db_file, table_name=table_name)
+                    # db = sqlite_data(database_file=db_file, table_name=table_name)
                     # cur=db.conn.cursor()
                     # cur.execute(f'DELETE FROM {table_name} WHERE tdegc is {temp}')
                     # cur.close()
@@ -213,7 +215,7 @@ class temptroller():
                 for (test_idx, test) in enumerate(self):
                     if (not test.in_range(temperature)) or (temperature in test.excluded_temperatures):
                         temp_message=f"Skipping {test.get_name()}. " + (f"Temp out of range." if (not test.in_range(temperature)) else f"Excluded temp.")
-                        lab_utils.print_banner(temp_message)
+                        print_banner(temp_message)
                         summary_msg += f'\t* {test.get_name()} skipped due to temperature. 0 minutes at {temperature}°C"'
                         try:
                             summary_msg += f', {script_time[test]:3.1f} minutes total. *\n'
@@ -241,7 +243,7 @@ class temptroller():
                                     # delete_soon_to_be_rewritten_data
                                     table_name = test.get_db_table_name()
                                     db_file = test._db_file
-                                    db = lab_utils.sqlite_data(database_file=db_file, table_name=table_name)
+                                    db = sqlite_data(database_file=db_file, table_name=table_name)
                                     cur = db.conn.cursor()
                                     cur.execute(f'DELETE FROM {table_name} WHERE tdegc is {temperature}')
                                     cur.close()
@@ -438,7 +440,7 @@ class temptroller():
                              arch_plot_scripts.append(arch_plot_script)
                     if len(arch_plot_scripts) and (not interactive or input('Generate archive plot(s)? [[y]/n]: ').lower() not in ['n', 'no']):
                         for (test, db_table, db_file) in archived_tables:
-                            db = lab_utils.sqlite_data(database_file=db_file, table_name=db_table)
+                            db = sqlite_data(database_file=db_file, table_name=db_table)
                             plot_filepath = os.path.join(os.path.dirname(db_file), db_table)
                             try:
                                 test.plot(database=db, table_name=test._archive_table_name, plot_filepath=plot_filepath, skip_output=False)

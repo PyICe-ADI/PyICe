@@ -1,7 +1,8 @@
 '''Graphical Interface to Channel Objects'''
 
 from . import lab_core
-from .lab_utils import column_formatter, clean_unicode
+from PyICe.lab_utils.column_formatter import column_formatter
+from PyICe.lab_utils.clean_unicode import clean_unicode
 import xml.etree.ElementTree as ET
 from xml.sax.saxutils import escape as escape
 import sys

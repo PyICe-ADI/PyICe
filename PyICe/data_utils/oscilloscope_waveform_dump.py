@@ -1,6 +1,6 @@
 from PyICe.instruments.oscilloscope import oscilloscope
 from PyICe import lab_core
-from PyICe import lab_utils
+from PyICe.lab_utils.sqlite_data import sqlite_data
 try:
     from bokeh.models import Label, Toggle
     from bokeh import colors
@@ -81,7 +81,7 @@ class oscilloscope_waveform_dump(oscilloscope):
         return db_tablename
 
 def plot_dumped_waveform(db_tablename, db_filename = 'scope_data.sqlite'):
-    db = lab_utils.sqlite_data(table_name=db_tablename, database_file=db_filename, timezone=None)
+    db = sqlite_data(table_name=db_tablename, database_file=db_filename, timezone=None)
     output_file(filename=f'{db_tablename}.html', title = db_tablename)
     curdoc().theme = 'dark_minimal'
     plot = figure(title=db_tablename, plot_width=1000, plot_height=800)

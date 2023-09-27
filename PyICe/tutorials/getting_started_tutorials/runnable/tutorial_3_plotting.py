@@ -3,7 +3,7 @@
 # ========================
 
 from PyICe import LTC_plot
-from PyICe import lab_utils
+from PyICe.lab_utils.sqlite_data import sqlite_data
 
 GX = LTC_plot.plot( plot_title  = "Demonstration of Meter Readings\nVs Iteration Number",
                    plot_name    = "Tutorial 3",
@@ -20,7 +20,7 @@ GX = LTC_plot.plot( plot_title  = "Demonstration of Meter Readings\nVs Iteration
 
 my_query = 'SELECT rowid, vmeas*1e6 FROM tutorial_2_table ORDER BY rowid'
 
-database = lab_utils.sqlite_data(table_name="tutorial_2_table", database_file="data_log.sqlite")            
+database = sqlite_data(table_name="tutorial_2_table", database_file="data_log.sqlite")            
 database.query(my_query)
 
 

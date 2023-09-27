@@ -1,5 +1,5 @@
 from ..lab_core import *
-from PyICe import lab_utils
+from PyICe.lab_utils.banners import print_banner
 
 class BR24H64(instrument):
     '''Rhom 64kb (8kbyte) EEPROM
@@ -78,7 +78,7 @@ class BR24H64(instrument):
     def read_dictionary(self, verbose=False):
         file = b''
         if verbose:
-            lab_utils.print_banner(f"Reading BR24H64 EEPROM media from device at ADDR7:{hex(self.addr7)}.", "Please Wait..")
+            print_banner(f"Reading BR24H64 EEPROM media from device at ADDR7:{hex(self.addr7)}.", "Please Wait..")
         for location in range(8193):
             if location > 8191:
                 raise Exception(f"\n*** Warning: BR24H64 EEPROM at ADDR7:{hex(self.addr7)} reached end of available media with no end of record found.\nReturning empty dictionary.")
@@ -108,7 +108,7 @@ class BR24H64(instrument):
                 if state == "VALUE":
                     value += character.decode("ASCII")
         if verbose:
-            lab_utils.print_banner(f"BR24H64 EEPROM at ADDR7:{hex(self.addr7)} reading complete.")
+            print_banner(f"BR24H64 EEPROM at ADDR7:{hex(self.addr7)} reading complete.")
         return data
         
     def write_dictionary(self, data_dict, verbose=False):
@@ -124,7 +124,7 @@ class BR24H64(instrument):
                 raise Exception(f"\n*** BR24H64 EEPROM at ADDR7:{hex(self.addr7)} write transaction aborted before starting.\n*** Record contains at least one value outside the range [0..255].\n")
                 return
         if verbose:
-            lab_utils.print_banner(f"Writing BR24H64 EEPROM media at ADDR7:{hex(self.addr7)}.","Please Wait...")
+            print_banner(f"Writing BR24H64 EEPROM media at ADDR7:{hex(self.addr7)}.","Please Wait...")
         location = 0
         for byte in file:
             self.write_location(location, byte)

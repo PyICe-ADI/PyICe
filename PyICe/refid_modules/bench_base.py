@@ -2,7 +2,8 @@ import abc
 import atexit
 import inspect
 import os
-from PyICe import lab_core, lab_utils
+from PyICe import lab_core
+from PyICe.lab_utils.banners import print_banner
 
 class bench_base(abc.ABC):
     def __init__(self, **kwargs):
@@ -167,7 +168,7 @@ class bench_base(abc.ABC):
         self.cleanup()
         self.cleanup_oven()
         self.close_ports()
-        lab_utils.print_banner('All cleaned up, Outa Here!')
+        print_banner('All cleaned up, Outa Here!')
         return False
         
         

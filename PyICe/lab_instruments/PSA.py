@@ -1,5 +1,5 @@
 from ..lab_core import *
-from ..lab_utils import floatRangeInc
+from PyICe.lab_utils.banners import print_banner
 import math, numpy, os, socket
 
 def bit_is_set(value, bit):
@@ -1150,7 +1150,7 @@ input level to within 200 mV of 0 Vdc. In AC or DC coupling, limit the input RF 
         def get_status():
             error = bit_is_set(int(self.get_interface().ask(scpi)), decode_bit)
             if error:
-                lab_utils.print_banner(message1, message2, message3)
+                print_banner(message1, message2, message3)
             return error
         new_channel = channel(channel_name, read_function=lambda : get_status())
         new_channel.set_attribute('channel_type', 'status')
@@ -1168,7 +1168,7 @@ input level to within 200 mV of 0 Vdc. In AC or DC coupling, limit the input RF 
         def get_status():
             error = bit_is_set(int(self.get_interface().ask(scpi)), decode_bit)
             if error:
-                lab_utils.print_banner(message1, message2, message3)
+                print_banner(message1, message2, message3)
             return error
         new_channel = channel(channel_name, read_function=lambda : get_status())
         new_channel.set_attribute('channel_type', 'status')
@@ -1186,7 +1186,7 @@ input level to within 200 mV of 0 Vdc. In AC or DC coupling, limit the input RF 
         def get_status():
             error = bit_is_set(int(self.get_interface().ask(scpi)), decode_bit)
             if error:
-                lab_utils.print_banner(message1, message2, message3)
+                print_banner(message1, message2, message3)
             return error
         new_channel = channel(channel_name, read_function=lambda : get_status())
         new_channel.set_attribute('channel_type', 'status')
@@ -1204,7 +1204,7 @@ input level to within 200 mV of 0 Vdc. In AC or DC coupling, limit the input RF 
         def get_status():
             error = bit_is_set(int(self.get_interface().ask(scpi)), decode_bit)
             if error:
-                lab_utils.print_banner(message1, message2, message3)
+                print_banner(message1, message2, message3)
             return error
         new_channel = channel(channel_name, read_function=lambda : get_status())
         new_channel.set_attribute('channel_type', 'status')
@@ -1222,7 +1222,7 @@ input level to within 200 mV of 0 Vdc. In AC or DC coupling, limit the input RF 
         def get_status():
             error = int(self.get_interface().ask(scpi))
             if error:
-                lab_utils.print_banner(message1, message2, message3)
+                print_banner(message1, message2, message3)
             return error
         
         new_channel = channel(channel_name, read_function=lambda : get_status())

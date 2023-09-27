@@ -1,4 +1,6 @@
 from ..lab_core import *
+from PyICe.lab_utils.swap_endian import swap_endian
+from PyICe.lab_utils.twosComplementToSigned import twosComplementToSigned
 
 class TMP117(instrument):
     '''Analog Devices Silicon Temperature Sensor
@@ -40,8 +42,8 @@ class TMP117(instrument):
         '''Return free-running temperature conversion result.
         Temperature is the signed result at 7.8125m°C/lsb'''
         data = self.twi.read_register(addr7=self.addr7, commandCode=self.registers['Temp_Result'], data_size=16, use_pec=False)
-        data = lab_utils.swap_endian(data, elementCount = 2)                    # MSB comes out first, not SMBus compatible!
-        return lab_utils.twosComplementToSigned(data, bitCount=16) / 128.0      # LSB size adjustment
+        data = swap_endian(data, elementCount = 2)                    # MSB comes out first, not SMBus compatible!
+        return twosComplementToSigned(data, bitCount=16) / 128.0      # LSB size adjustment
     def read_id(self):
         '''Return REV ID and Device ID'''
         data = self.twi.read_register(addr7=self.addr7, commandCode=self.registers['Device_ID'], data_size=16, use_pec=False)

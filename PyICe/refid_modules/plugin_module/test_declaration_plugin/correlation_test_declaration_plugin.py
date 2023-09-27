@@ -1,4 +1,4 @@
-from PyICe import lab_utils
+from PyICe.lab_utils.sqlite_data import sqlite_data
 from PyICe.refid_modules import stdf_utils
 from PyICe.refid_modules.plugin_module.plugin   import plugin
 from PyICe.refid_modules.test_results           import correlation_results
@@ -201,7 +201,7 @@ class correlation_test_declaration(plugin):
             correlation_db_filename = os.path.join(os.path.dirname(__file__), f'../../../../../{self.correlation_data_location}')
 
             try:
-                db = lab_utils.sqlite_data(database_file=correlation_db_filename)
+                db = sqlite_data(database_file=correlation_db_filename)
                 db.query(query_str)
                 rows = db.to_list()
                 if not len(rows):
@@ -256,7 +256,7 @@ class correlation_test_declaration(plugin):
             #Magic number alert:
             correlation_db_filename = os.path.join(os.path.dirname(__file__), '../../correlation/stdf_data.sqlite')
             try:
-                db = lab_utils.sqlite_data(database_file=correlation_db_filename)
+                db = sqlite_data(database_file=correlation_db_filename)
                 db.query(query_str)
                 return [{k: r[k] for k in r.keys()} for r in db.to_list()]
             except sqlite3.OperationalError as e:

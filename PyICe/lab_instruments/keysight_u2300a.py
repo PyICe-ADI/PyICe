@@ -1,4 +1,5 @@
 from ..lab_core import *
+from PyICe.lab_utils.eng_string import eng_string
 import struct
 import time
 import datetime
@@ -770,7 +771,7 @@ class u2300a_DVM(scpi_instrument,delegator):
         # self._set_sigtype(new_ch, sig_mode='SING') #Return to AI_GND
         self._set_sigtype(new_ch, sig_mode='NRS') #Return to AI_SENSE
         new_ch.set_attribute('scale_fn', self._scale_fn(new_ch))
-        new_ch.set_display_format_function(function = lambda float_data: lab_utils.eng_string(float_data, fmt=':3.6g',si=True) + 'V')
+        new_ch.set_display_format_function(function = lambda float_data: eng_string(float_data, fmt=':3.6g',si=True) + 'V')
         new_ch.set_delegator(self)
         new_ch.set_description(self.get_name() + ': ' + self.add_channel_ain_single_ended_bipolar.__doc__)
         return self._add_channel(new_ch)
@@ -787,7 +788,7 @@ class u2300a_DVM(scpi_instrument,delegator):
         new_ch.set_attribute('u2300a_type','ain_diff_bipolar')
         self._set_range(new_ch, sig_range=sig_range, polarity='BIPolar')
         self._set_sigtype(new_ch, sig_mode='DIFF')
-        new_ch.set_display_format_function(function = lambda float_data: lab_utils.eng_string(float_data, fmt=':3.6g',si=True) + 'V')
+        new_ch.set_display_format_function(function = lambda float_data: eng_string(float_data, fmt=':3.6g',si=True) + 'V')
         new_ch.set_delegator(self)
         new_ch.set_description(self.get_name() + ': ' + self.add_channel_ain_diff_bipolar.__doc__)
         return self._add_channel(new_ch)
@@ -805,7 +806,7 @@ class u2300a_DVM(scpi_instrument,delegator):
         self._set_range(new_ch, sig_range=sig_range, polarity='UNIPolar')
         # self._set_sigtype(new_ch, sig_mode='SING') #Return to AI_GND
         self._set_sigtype(new_ch, sig_mode='NRS') #Return to AI_SENSE
-        new_ch.set_display_format_function(function = lambda float_data: lab_utils.eng_string(float_data, fmt=':3.6g',si=True) + 'V')
+        new_ch.set_display_format_function(function = lambda float_data: eng_string(float_data, fmt=':3.6g',si=True) + 'V')
         new_ch.set_delegator(self)
         new_ch.set_description(self.get_name() + ': ' + self.add_channel_ain_single_ended_unipolar.__doc__)
         return self._add_channel(new_ch)
@@ -822,7 +823,7 @@ class u2300a_DVM(scpi_instrument,delegator):
         new_ch.set_attribute('u2300a_type','ain_diff_unipolar')
         self._set_range(new_ch, sig_range=sig_range, polarity='UNIPolar')
         self._set_sigtype(new_ch, sig_mode='DIFF')
-        new_ch.set_display_format_function(function = lambda float_data: lab_utils.eng_string(float_data, fmt=':3.6g',si=True) + 'V')
+        new_ch.set_display_format_function(function = lambda float_data: eng_string(float_data, fmt=':3.6g',si=True) + 'V')
         new_ch.set_delegator(self)
         new_ch.set_description(self.get_name() + ': ' + self.add_channel_ain_diff_unipolar.__doc__)
         return self._add_channel(new_ch)
@@ -840,7 +841,7 @@ class u2300a_DVM(scpi_instrument,delegator):
         channel.set_attribute("gain", gain) #Picked up in delegated read
         #self._config_channel_scaling(channel,gain,0,"A")
         channel.set_description(self.get_name() + ': ' + self.add_channel_current_sense.__doc__)
-        channel.set_display_format_function(function = lambda float_data: lab_utils.eng_string(float_data, fmt=':3.6g',si=True) + 'A')
+        channel.set_display_format_function(function = lambda float_data: eng_string(float_data, fmt=':3.6g',si=True) + 'A')
         return channel
     def dummy_read(self):
         raise Exception('Delegation failure. Contact PyICe-developers@analog.com for more information.')

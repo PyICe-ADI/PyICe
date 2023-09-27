@@ -37,8 +37,8 @@ For example, it's possible to interrogate the SQLite database values with the fo
 
 .. code-block:: python
 
-   from PyICe import lab_utils
-   database = lab_utils.sqlite_data(table_name="diode_data_table", database_file="data_log.sqlite")
+   from PyICe.lab_utils.sqlite_data import sqlite_data
+   database = sqlite_data(table_name="diode_data_table", database_file="data_log.sqlite")
    breakpoint()
 
 This will result in the Python command line prompt:

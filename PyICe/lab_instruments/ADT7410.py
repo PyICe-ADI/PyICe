@@ -1,4 +1,6 @@
 from ..lab_core import *
+from PyICe.lab_utils.swap_endian import swap_endian
+from PyICe.lab_utils.twosComplementToSigned import twosComplementToSigned
 
 class ADT7410(instrument):
     '''Analog Devices Silicon Temperature Sensor
@@ -42,8 +44,8 @@ class ADT7410(instrument):
         16-bit conversion result scaled to signed degrees Celsius'''
         # data = self.twi.read_word(self.addr7, self.registers['t_msb']) #command code counter autoincrements
         data = self.twi.read_register(addr7=self.addr7, commandCode=self.registers['t_msb'], data_size=16, use_pec=False)
-        data = lab_utils.swap_endian(data, elementCount = 2)  #msb comes out first, not SMBus compatible!
-        data = lab_utils.twosComplementToSigned(data, bitCount=16)
+        data = swap_endian(data, elementCount = 2)  #msb comes out first, not SMBus compatible!
+        data = twosComplementToSigned(data, bitCount=16)
         return data / 128.0 #lsb size adjustment
     def read_id(self):
         '''Return Manufacturer ID and chip revision ID'''

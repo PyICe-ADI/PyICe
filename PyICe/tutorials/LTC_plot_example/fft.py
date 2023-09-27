@@ -1,6 +1,9 @@
 print("\n\nComputing, Please wait...")
 import numpy as np
-from PyICe import lab_utils, LTC_plot
+from PyICe import LTC_plot
+from PyICe.lab_utils.ordered_pair import ordered_pair
+from PyICe.lab_utils.ranges import floatRangeInc
+from PyICe.lab_utils.eng_string import eng_string
 import random
 
 def dBV(data):
@@ -11,7 +14,7 @@ def frequencies(BW, N, xscale):
     return np.linspace(0, 2*BW, N)[:N // 2] / xscale
 
 def times(T, time_step):
-    return lab_utils.floatRangeInc(0, T, time_step)
+    return floatRangeInc(0, T, time_step)
 
 dt          = 5e-9                  # Fsample is reciprocal this
 xscale      = 1e6                   # Work in MHz
@@ -35,12 +38,10 @@ fft_both    = np.fft.fft(noisysignal)
 fft_noise   = np.fft.fft(noise)
 freqs       = frequencies(BW, N, xscale=xscale)
 
-
-
 G0 = LTC_plot.plot( plot_title      = "",
                     plot_name       = "",
                     xaxis_label     = "FREQUENCY (MHz)",
-                    yaxis_label     = r"FFT $(dBV_{RMS})$" + f" / √{lab_utils.eng_string(RBW,units='Hz')}",
+                    yaxis_label     = r"FFT $(dBV_{RMS})$" + f" / √{eng_string(RBW,units='Hz')}",
                     xlims           = (10e3/xscale, BW/xscale),
                     ylims           = (-120, 20),
                     xminor          = 1,
@@ -58,7 +59,7 @@ G0.add_trace(   axis            = 1,
                 linestyle       = "-",
                 legend          = "")
                 
-noise_filtered = lab_utils.ordered_pair(zip(freqs, dBV(fft_noise)))
+noise_filtered = ordered_pair(zip(freqs, dBV(fft_noise)))
 noise_filtered.smooth_y(window = 11, extrapolation_window = None, iterations = 10)
 
 G0.add_trace(   axis            = 1,
@@ -69,15 +70,15 @@ G0.add_trace(   axis            = 1,
                 linestyle       = "--",
                 legend          = "")
  
-note =         f"Sin Cyles: {lab_utils.eng_string(T*fsin)}"
-note += "\n" + f"N Samples: {lab_utils.eng_string(N)}"
-note += "\n" + f"Sigal RMS: {lab_utils.eng_string(np.sqrt(np.mean(signal**2)), fmt=':.3f', units='Vrms')}"
-note += "\n" + f"Sine Peak: {lab_utils.eng_string(np.sqrt(np.mean(signal**2))*2**0.5, fmt=':.3f', units='Vpk')}"
-note += "\n" + f"Noise RMS: {lab_utils.eng_string(np.sqrt(np.mean(noise**2)), fmt=':.3f', units='Vrms')}"
-note += "\n" + f"Noise NSD: {lab_utils.eng_string(np.sqrt(np.mean(noise**2))/BW**0.5, fmt=':.3f', units='Vrms/√Hz')}"
-note += "\n" + f"Bandwidth: {lab_utils.eng_string(BW, units='Hz')}"
-note += "\n" + f"Res Bandw: {lab_utils.eng_string(RBW, units='Hz')}"
-note += "\n" + f"F Sample : {lab_utils.eng_string(Fs, units='S/s')}"
+note =         f"Sin Cyles: {eng_string(T*fsin)}"
+note += "\n" + f"N Samples: {eng_string(N)}"
+note += "\n" + f"Sigal RMS: {eng_string(np.sqrt(np.mean(signal**2)), fmt=':.3f', units='Vrms')}"
+note += "\n" + f"Sine Peak: {eng_string(np.sqrt(np.mean(signal**2))*2**0.5, fmt=':.3f', units='Vpk')}"
+note += "\n" + f"Noise RMS: {eng_string(np.sqrt(np.mean(noise**2)), fmt=':.3f', units='Vrms')}"
+note += "\n" + f"Noise NSD: {eng_string(np.sqrt(np.mean(noise**2))/BW**0.5, fmt=':.3f', units='Vrms/√Hz')}"
+note += "\n" + f"Bandwidth: {eng_string(BW, units='Hz')}"
+note += "\n" + f"Res Bandw: {eng_string(RBW, units='Hz')}"
+note += "\n" + f"F Sample : {eng_string(Fs, units='S/s')}"
 xpos, ypos = 0.02, 0.98
 G0.add_note(note=note, location=[xpos, ypos], use_axes_scale=False, fontsize=10, axis=1, horizontalalignment="left", verticalalignment="top")
 

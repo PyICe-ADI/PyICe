@@ -1,5 +1,6 @@
 from PyICe.refid_modules import bench_identifier
-from PyICe import lab_core, lab_utils, virtual_instruments
+from PyICe import lab_core, virtual_instruments
+from PyICe.lab_utils.sqlite_data import sqlite_data
 try:
     from PyICe.data_utils import stdf_utils
 except ImportError as e:
@@ -293,7 +294,7 @@ class die_traceability(abc.ABC):
             traceability_hash_table = given_trace_hash
         query_str = f'''SELECT START_T, STDF_file, SETUP_ID as config_file, ROM_COD as config_change, ENG_ID as config_date, SPEC_NAM as variant_datasheet, PART_TYP as variant_shell FROM population_data WHERE TRACEABILITY_HASH == '{traceability_hash_table}' AND CAST(TST_TEMP AS NUMERIC) == 25'''
         try:
-            db = lab_utils.sqlite_data(database_file=cls.correlation_db_filename)
+            db = sqlite_data(database_file=cls.correlation_db_filename)
             row = db.query(query_str).fetchone()
             if row is None:
                 print(f'WARNING: ATE data not found for DUT {traceability_hash_table}.')
@@ -358,7 +359,7 @@ if __name__ == '__main__':
         path, file_name = os.path.split(db_filename)
         file_base, file_ext = os.path.splitext(file_name)
         if file_ext == ".sqlite":
-            db = lab_utils.sqlite_data(database_file=db_filename)
+            db = sqlite_data(database_file=db_filename)
             table_names = db.get_table_names()
             print(table_names)
             sys.exit(0)

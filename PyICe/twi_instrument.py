@@ -7,7 +7,8 @@ Can automatically populate channels/reisters from XML description
 from . import lab_core
 from . import twi_interface
 import xml.etree.ElementTree as ET
-from . import lab_utils
+from PyICe.lab_utils.str2num import str2num
+from PyICe.lab_utils.interpolator import interpolator
 import json
 
 try:
@@ -254,10 +255,10 @@ class twi_instrument(lab_core.instrument,lab_core.delegator):
     '''
         xml_reg_map = ET.parse(xml_file).getroot()
         chip = xml_reg_map.find("./chip")
-        addr7 = lab_utils.str2num(chip.find("./address").attrib["address_7bit"])
+        addr7 = str2num(chip.find("./address").attrib["address_7bit"])
         chip_name = chip.attrib["name"]
         self.set_name(chip_name)
-        word_size = lab_utils.str2num(chip.attrib["word_size"])
+        word_size = str2num(chip.attrib["word_size"])
         # extract all the xml formats into self._xml_formats
         self._xml_formats = {}
         for fmt_def in xml_reg_map.findall('.//format_definition'):
@@ -288,7 +289,7 @@ class twi_instrument(lab_core.instrument,lab_core.delegator):
                 self.categories.append(category.text)
         #now extract the bit fields
         for physical_register in chip.findall("./command_code"):
-            command_code = lab_utils.str2num(physical_register.attrib['value'])
+            command_code = str2num(physical_register.attrib['value'])
             is_readable = False
             is_writable = False
             for access in physical_register.findall("./access"):
@@ -304,11 +305,11 @@ class twi_instrument(lab_core.instrument,lab_core.delegator):
                 #tag attributes
                 name = channel_prefix + bit_field.attrib['name'] + channel_suffix
                 category = bit_field.attrib['category']
-                size = lab_utils.str2num(bit_field.attrib['size'])
-                offset = lab_utils.str2num(bit_field.attrib['offset'])
+                size = str2num(bit_field.attrib['size'])
+                offset = str2num(bit_field.attrib['offset'])
                 default = bit_field.find('./default')
                 if default is not None:
-                    default = lab_utils.str2num(default.text)
+                    default = str2num(default.text)
                 if self.categories is not None and category not in self.categories:
                     continue #filter out unauthorized categories for this use_case
                 register = self.add_register(name,addr7,command_code,size,offset,word_size,is_readable, is_writable)
@@ -320,7 +321,7 @@ class twi_instrument(lab_core.instrument,lab_core.delegator):
                         preset_desc = preset.find('./description').text
                     else:
                         preset_desc = None
-                    register.add_preset(preset.attrib['name'], lab_utils.str2num(preset.attrib['value']), preset_desc)
+                    register.add_preset(preset.attrib['name'], str2num(preset.attrib['value']), preset_desc)
                 #add additional user formats
                 for format in bit_field.findall('./format'):
                     format_name = format.attrib['name']
@@ -423,11 +424,11 @@ class twi_instrument(lab_core.instrument,lab_core.delegator):
             else:
                 raise Exception("'transform_from_points()' requires one of either: 'format' or 'unformat'")
         else:
-            # revert to Python lab_utils.interpolator
+            # revert to PyICe.lab_utils.interpolator
             if direction == "format":
-                return lambda x: None if x is None else float(lab_utils.interpolator(xyevalpoints)(x))
+                return lambda x: None if x is None else float(interpolator(xyevalpoints)(x))
             elif direction == "unformat":
-                return lambda y: int(round(lab_utils.interpolator(xyevalpoints).get_x_val(float(y))))
+                return lambda y: int(round(interpolator(xyevalpoints).get_x_val(float(y))))
             else:
                 raise Exception("'transform_from_points()' requires one of either: 'format' or 'unformat'")
     def _evaluated_points(self, xypoints):

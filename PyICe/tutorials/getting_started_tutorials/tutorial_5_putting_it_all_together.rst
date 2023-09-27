@@ -61,7 +61,8 @@ We will also need *LTC_plot* to generate data visualization plots after data col
 
 .. code-block:: python
 
-   from PyICe import lab_utils
+   from PyICe.lab_utils.ranges import floatRangeInc
+   from PyICe.lab_utils.sqlite_data import sqlite_data
    from PyICe import LTC_plot
 
 Finally, we will need to create a *lab_core* **logger** object to collect our data rows and columns on each sweep step. We might as well lower the power supply's current limit to 500mA while we're at it.
@@ -76,7 +77,7 @@ We've completed the setup steps needed to begin collecting data. The small code 
 
 .. code-block:: python
 
-   for vsweep in lab_utils.floatRangeInc(0, 6, 0.025):
+   for vsweep in floatRangeInc(0, 6, 0.025):
        print(f"Setting voltage to {vsweep}V")
        bench.write('vsweep', vsweep)
        logger.log()
@@ -99,7 +100,7 @@ Let's first retrieve the data from the SQLite database created during the collec
 
 .. code-block:: python
 
-   database = lab_utils.sqlite_data(table_name="diode_data_table", database_file="data_log.sqlite")            
+   database = sqlite_data(table_name="diode_data_table", database_file="data_log.sqlite")            
 
 Now let's create the laser assembly's I-V plot and add the desired trace. In this plot we'll also dig out the data needed to compute the resistor value and annotate the plot with it.
 

@@ -1,8 +1,8 @@
-#!/usr/bin/env python
-
-from PyICe                                                                  import lab_core, lab_utils, lab_instruments, virtual_instruments, LTC_plot
+from PyICe                                                                  import lab_core, lab_instruments, virtual_instruments, LTC_plot
 from PyICe.refid_modules.temptroller                                        import temptroller
 from PyICe.bench_configuration_management.bench_configuration_management    import bench_configuration_error
+from PyICe.lab_utils.banners                                                import print_banner
+from PyICe.lab_utils.sqlite_data                                            import sqlite_data
 
 import abc
 import datetime
@@ -133,7 +133,7 @@ class test_module(abc.ABC):
     @classmethod
     # @abc.abstractmethod #Make abstract eventually
     def configure_bench(cls, components):
-        # lab_utils.print_banner(f'{cls.__name__}: No bench configuration declared.','The AI neural net will attempt to discern all adhoc bench connections and', 'make the declarations on your behalf.')
+        # print_banner(f'{cls.__name__}: No bench configuration declared.','The AI neural net will attempt to discern all adhoc bench connections and', 'make the declarations on your behalf.')
         raise bench_configuration_error(f'Test {cls.get_name()} failed to implement configure_bench(components). This is required for inclusion into the regression system.')
     def get_import_str(self):
         abspath = os.path.abspath(inspect.getsourcefile(type(self)))
@@ -226,7 +226,7 @@ class test_module(abc.ABC):
                 self._temperature_timer.reset_timer()
                 self._cumulative_timer.resume_timer()
                 self._reconfigure()
-                lab_utils.print_banner(f"Running Test: {self.get_name()}")
+                print_banner(f"Running Test: {self.get_name()}")
                 self.collect(channels=self.get_logger(), debug=self._debug)
                 self._temperature_timer.pause_timer()
                 self._cumulative_timer.pause_timer()
@@ -286,9 +286,9 @@ class test_module(abc.ABC):
             tn_base = tn
             if db_file is None:
                 # db = self.get_db()
-                db = lab_utils.sqlite_data(database_file=self._db_file, table_name=tn)
+                db = sqlite_data(database_file=self._db_file, table_name=tn)
             else:
-                db = lab_utils.sqlite_data(database_file=db_file, table_name=tn) 
+                db = sqlite_data(database_file=db_file, table_name=tn) 
                 (db_root, db_filename) = os.path.split(os.path.abspath(db_file))
                 if table_name is None:
                     plot_filepath = db_root
@@ -389,7 +389,7 @@ class test_module(abc.ABC):
         return self._logger
     #@typing.final
     def get_db(self):
-        return lab_utils.sqlite_data(database_file=self._db_file, table_name=self.get_name())
+        return sqlite_data(database_file=self._db_file, table_name=self.get_name())
     def get_db_table_name(self):
         return self.get_name()
     def get_lab_bench(self):
@@ -444,7 +444,7 @@ class test_module(abc.ABC):
             self.__add_db_indices(column_list=column_list, table_name=table_name, db_file=db_file)
     def __add_db_indices(self, column_list, table_name, db_file):
         '''recursively callable on db errors'''
-        db = lab_utils.sqlite_data(database_file=db_file, table_name=table_name)
+        db = sqlite_data(database_file=db_file, table_name=table_name)
         columns_str = f'({",".join(column_list)})'
         idx_name = f'{table_name}_{"_".join(column_list)}_idx'
         try:
@@ -478,7 +478,7 @@ class test_module(abc.ABC):
     @classmethod
     def plot_from_table(cls, table_name=None, db_file=None, debug=False):
         self = cls(debug=debug)
-        with lab_utils.sqlite_data(database_file=db_file, table_name=table_name) as db:
+        with sqlite_data(database_file=db_file, table_name=table_name) as db:
             my_bench = db.query(f'SELECT bench FROM {table_name}').fetchone()['bench']
         self.bench_name=my_bench[my_bench.find('benches')+8:my_bench.find("' from")]
         self.hook_functions('tm_plot_from_table', table_name, db_file)

@@ -2,8 +2,9 @@ data=[+5.27331675043E+002,+0.00000000000E+000,+4.87220552428E+002,+0.00000000000
 
 impedances = data[::2]
 
-from PyICe import LTC_plot, lab_utils
-frequencies = lab_utils.logRangeInc(10/1e6, 30e6/1e6, 30.8)
+from PyICe import LTC_plot
+from PyICe.lab_utils.ranges import logRangeInc
+frequencies = logRangeInc(10/1e6, 30e6/1e6, 30.8)
 
 print("Record Length", len(frequencies))
 

@@ -12,7 +12,12 @@ sys.path.append('..')
 from PyICe import logo
 logo.display()
 from PyICe import lab_interfaces
-from PyICe import lab_utils
+from PyICe.lab_utils.egg_timer import egg_timer
+from PyICe.lab_utils.twosComplementToSigned import twosComplementToSigned
+from PyICe.lab_utils.signedToTwosComplement import signedToTwosComplement
+from PyICe.lab_utils.eng_string import eng_string
+from PyICe.lab_utils.clean_sql import clean_sql
+from PyICe.lab_utils.sqlite_data import sqlite_data
 import sqlite3
 import queue
 import re
@@ -316,7 +321,7 @@ class channel(delegator):
     def delay(self, dly_time):
         '''delay method. Broken out of write method so that it can be sub-classed if necessary.'''
         if dly_time > 5:
-            lab_utils.egg_timer(dly_time)
+            egg_timer(dly_time)
         else:
             time.sleep(dly_time)
     def write_unformatted(self, value):
@@ -854,10 +859,10 @@ class integer_channel(channel):
         return self.unformat(value,self._format,self._use_presets_write)
     def twosComplementToSigned(self,binary):
         '''transform two's complement formatted binary number to signed integer.  Requires register's size attribute to be set in __init__'''
-        return lab_utils.twosComplementToSigned(binary,self._size)
+        return twosComplementToSigned(binary,self._size)
     def signedToTwosComplement(self,signed):
         '''transform signed integer to two's complement formatted binary number.  Requires register's size attribute to be set in __init__'''
-        return lab_utils.signedToTwosComplement(signed,self._size)
+        return signedToTwosComplement(signed,self._size)
     def write(self,value):
         '''write intercept to apply formats/presets before channel write. Coerce to integer and warn about rounding error. Also accepts None'''
         if self._size == 1:
@@ -1763,7 +1768,7 @@ class channel_master(channel_group,delegator):
         new_channel = channel(channel_name, read_function=timer(reciprocal))
         new_channel.set_description(self.get_name() + ': ' + self.add_channel_delta_timer.__doc__)
         new_channel.set_category('Virtual')
-        new_channel.set_display_format_function(function = lambda time: lab_utils.eng_string(time, fmt=':3.6g',si=True) + 's')
+        new_channel.set_display_format_function(function = lambda time: eng_string(time, fmt=':3.6g',si=True) + 's')
         return self._add_channel(new_channel)
     def add_channel_total_timer(self,channel_name):
         '''Add a named timer channel. Returns the time elapsed since first channel read.'''
@@ -1777,7 +1782,7 @@ class channel_master(channel_group,delegator):
         new_channel = channel(channel_name, read_function=timer())
         new_channel.set_description(self.get_name() + ': ' + self.add_channel_total_timer.__doc__)
         new_channel.set_category('Virtual')
-        new_channel.set_display_format_function(function = lambda time: lab_utils.eng_string(time, fmt=':3.6g',si=True) + 's')
+        new_channel.set_display_format_function(function = lambda time: eng_string(time, fmt=':3.6g',si=True) + 's')
         return self._add_channel(new_channel)
     def add_channel_counter(self,channel_name, **kwargs):
         '''Add a named counter channel. Returns zero the first time channel is read and increments by one each time thereafter.'''
@@ -2005,7 +2010,7 @@ class logger(master):
             for channel_format in channel_formats:
                 sql_format = channel.sql_format(channel_format, use_presets)
                 if sql_format is not None:
-                    sql_formats.append((sql_format,lab_utils.clean_sql(channel.get_units(channel_format)),channel_format))
+                    sql_formats.append((sql_format, clean_sql(channel.get_units(channel_format)),channel_format))
             if len(sql_formats) == 0:
                 #make one more attempt to get presets if all formats were non-XML
                 sql_format = channel.sql_format(None, use_presets)
@@ -2166,7 +2171,7 @@ class logger(master):
     def get_master(self):
         return self.master
     def get_data(self):
-        return lab_utils.sqlite_data(table_name=self.get_table_name(), database_file=self.get_database())
+        return sqlite_data(table_name=self.get_table_name(), database_file=self.get_database())
     def query(self, sql_query, *params):
         return self.get_data().query(sql_query, *params)
     def flush(self):

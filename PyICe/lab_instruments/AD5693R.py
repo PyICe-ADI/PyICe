@@ -1,4 +1,5 @@
 from ..lab_core import *
+from PyICe.lab_utils.swap_endian import swap_endian
 
 class AD5693R(instrument):
     '''Analog Devices 16 bit DAC
@@ -24,12 +25,12 @@ class AD5693R(instrument):
         self._update_controlreg()           # Clear the whole thing out.
         self._set_voltage(0)                # In lieu of using the reset bit which nukes the I2C port.
     def _update_controlreg(self):
-        # self.twi.write_word(self.addr7, self.control_reg, lab_utils.swap_endian(self.impedance | self.refenable | self.gain_code, elementCount = 2))
-        self.twi.write_register(addr7=self.addr7, commandCode=self.control_reg, data=lab_utils.swap_endian(self.impedance | self.refenable | self.gain_code, elementCount = 2), data_size=16, use_pec=False)
+        # self.twi.write_word(self.addr7, self.control_reg, swap_endian(self.impedance | self.refenable | self.gain_code, elementCount = 2))
+        self.twi.write_register(addr7=self.addr7, commandCode=self.control_reg, data=swap_endian(self.impedance | self.refenable | self.gain_code, elementCount = 2), data_size=16, use_pec=False)
     def _set_code(self, code):
         '''Set the code of the AD5693R'''
-        # self.twi.write_word(self.addr7, self.dac_reg, lab_utils.swap_endian(code, elementCount = 2))
-        self.twi.write_register(addr7=self.addr7, commandCode=self.dac_reg, data=lab_utils.swap_endian(code, elementCount = 2), data_size=16, use_pec=False)
+        # self.twi.write_word(self.addr7, self.dac_reg, swap_endian(code, elementCount = 2))
+        self.twi.write_register(addr7=self.addr7, commandCode=self.dac_reg, data=swap_endian(code, elementCount = 2), data_size=16, use_pec=False)
     def _set_gain(self, gain):
         if gain == 2:
             self.gain_code = 0x0800
