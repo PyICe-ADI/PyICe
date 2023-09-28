@@ -1,6 +1,6 @@
 from ..lab_core import *
-from PtICe.lab_utils.banners import print_banner
-from PtICe.lab_utils.eng_string import eng_string
+from PyICe.lab_utils.banners import print_banner
+from PyICe.lab_utils.eng_string import eng_string
 import math
 
 class a3497xa_instrument(scpi_instrument,delegator):
