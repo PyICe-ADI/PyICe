@@ -6,7 +6,9 @@ Welcome to PyICe's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   tutorials
    modules
+
 
 Introduction
 -----------------------------
