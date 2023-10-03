@@ -1,4 +1,5 @@
-from PyICe                                      import lab_utils
+from PyICe.lab_utils.sqlite_data                import sqlite_data
+from PyICe.lab_utils.banners                    import build_banner
 from PyICe.refid_modules                        import stdf_utils
 from PyICe.refid_modules.test_results           import test_results
 from PyICe.refid_modules.plugin_module.plugin   import plugin
@@ -370,9 +371,9 @@ class limit_test_declaration(plugin):
                 table_name = self.tm.get_db_table_name()
             if db_file is None:
                 # db = self.tm.get_db()
-                db = lab_utils.sqlite_data(database_file=self.tm._db_file, table_name=table_name)
+                db = sqlite_data(database_file=self.tm._db_file, table_name=table_name)
             else:
-                db = lab_utils.sqlite_data(database_file=db_file, table_name=table_name)
+                db = sqlite_data(database_file=db_file, table_name=table_name)
             if f'{table_name}_all' in db.get_table_names():
                 table_name = f"{table_name}_all" #Redirect to presets-joined table
                 db.set_table(table_name)
@@ -492,7 +493,7 @@ class limit_test_declaration(plugin):
         banner_str = [f'Summary: {"PASS" if self.tm.get_pass_fail() else "FAIL"}']
         if table_name is not None:
             banner_str.append(f'    {table_name}{" " * (38-len(table_name))}')
-        res_str += lab_utils.build_banner(*banner_str)
+        res_str += build_banner(*banner_str)
         if self._single_results_print:
             print(res_str)
             self._single_results_print = False

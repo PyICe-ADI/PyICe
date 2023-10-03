@@ -1,5 +1,5 @@
 from PyICe.refid_modules.plugin_module.plugin       import plugin
-from PyICe import lab_utils
+from PyICe.lab_utils.banners import print_banner
 from types import MappingProxyType
 import inspect
 import collections
@@ -83,7 +83,7 @@ class p4_traceability_plugin(plugin):
         module_file = inspect.getsourcefile(type(self.tm))
         fileinfo = self.get_fstat(module_file)
         if fileinfo['depotFile'] is None:
-            lab_utils.print_banner(f"{self.tm.get_name()} is not checked in.")
+            print_banner(f"{self.tm.get_name()} is not checked in.")
         for property in fileinfo:
             logger.add_channel_dummy(f'test_{property}').write(fileinfo[property])
             logger[f'test_{property}'].set_category(ch_cat)
@@ -92,14 +92,14 @@ class p4_traceability_plugin(plugin):
             # Don't nag. Asked and answered.
             pass
         elif not self.tm._debug and fileinfo['depotFile'] is None:
-            lab_utils.print_banner(f"Test module unversioned: {self.tm.get_name()}")
+            print_banner(f"Test module unversioned: {self.tm.get_name()}")
             resp = input('You will not be able to archive results. Press "y" to continue: ')
             if resp.lower() != 'y':
                 raise Exception('Unversioned test module.')
             else:
                 type(self.tm)._archive_enabled = False # Added strangely late?! 2020/09/01 DJS.
         elif not self.tm._debug and fileinfo['action'] is not None:
-            lab_utils.print_banner("*** WARNING ***", f"Test module uncommitted changes: {self.tm.get_name()}")
+            print_banner("*** WARNING ***", f"Test module uncommitted changes: {self.tm.get_name()}")
             resp = input('You will not be able to archive results. Press "y" to continue: ')
             if resp.lower() != 'y':
                 raise Exception('Uncommitted test module working copy.')
@@ -110,7 +110,7 @@ class p4_traceability_plugin(plugin):
                 multitest_module_file = inspect.getsourcefile(type(child_module))
                 fileinfo = self.get_fstat(multitest_module_file)
                 if fileinfo['depotFile'] is None:
-                    lab_utils.print_banner(f"{child_module.get_name()} is not checked in.")
+                    print_banner(f"{child_module.get_name()} is not checked in.")
                 # print(fileinfo)
                 # Todo: Actual checks and datalogging????
         except AttributeError as e:
@@ -133,12 +133,12 @@ class p4_traceability_plugin(plugin):
             logger[f'bench_{property}'].set_category(ch_cat)
             logger[f'bench_{property}'].set_write_access(False)
         if fileinfo['depotFile'] is None:
-            lab_utils.print_banner(f"Lab bench {module_name} unversioned.")
+            print_banner(f"Lab bench {module_name} unversioned.")
             resp = input('Press "y" to continue: ')
             if resp.lower() != 'y':
                 raise Exception('Unversioned bench module.')
         elif fileinfo['action'] is not None and self.tm.tt._once_is_enough:
-            lab_utils.print_banner(f"WARNING: Lab bench {module_name} has uncommitted changes.")
+            print_banner(f"WARNING: Lab bench {module_name} has uncommitted changes.")
             resp = input('Press "y" to continue: ')
             if resp.lower() != 'y':
                 raise Exception('Uncommitted bench module working copy.')

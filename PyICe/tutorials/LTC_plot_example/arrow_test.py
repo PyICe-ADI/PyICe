@@ -1,8 +1,9 @@
-from PyICe import LTC_plot, lab_utils
+from PyICe import LTC_plot
+from PyICe.lab_utils.ranges import floatRangeInc
 from numpy import pi, sin, cos
 
 points = []
-for t in lab_utils.floatRangeInc(0, 2*pi, 0.01):
+for t in floatRangeInc(0, 2*pi, 0.01):
     x = 16*(sin(t))**3
     y = 13*cos(t)-5*cos(2*t)-2*cos(3*t)-cos(4*t)
     points.append([x,y])

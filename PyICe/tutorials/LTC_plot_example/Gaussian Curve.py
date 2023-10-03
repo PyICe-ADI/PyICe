@@ -1,10 +1,11 @@
-from PyICe import LTC_plot, lab_utils
+from PyICe import LTC_plot
+from PyICe.lab_utils.ranges import floatRangeInc
 from numpy import e, pi
 
 u = 0
 s = 1
 pdf = []
-xvalues = lab_utils.floatRangeInc(-6, 6, 0.001)
+xvalues = floatRangeInc(-6, 6, 0.001)
 
 for x in xvalues:
     # pdf.append(1/s/(2*pi)**0.5 * e**(-0.5*((x-u)/s)**2))

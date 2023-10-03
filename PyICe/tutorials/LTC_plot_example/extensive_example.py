@@ -1,4 +1,5 @@
-﻿from PyICe import LTC_plot, lab_utils
+﻿from PyICe import LTC_plot
+from PyICe.lab_utils.sqlite_data import sqlite_data
 import numpy as np
 ###################################################################
 #   Example creating a data sheet ready SVG file.                 #
@@ -261,8 +262,8 @@ for group in groups:
                         logy            = False)
                             
     daves_plots.append(GX)
-    database_charging = lab_utils.sqlite_data(table_name = f'{group[0]}', database_file="./data/battery_data.sqlite")
-    database_discharging = lab_utils.sqlite_data(table_name = f'{group[1]}', database_file="./data/battery_data.sqlite")
+    database_charging = sqlite_data(table_name = f'{group[0]}', database_file="./data/battery_data.sqlite")
+    database_discharging = sqlite_data(table_name = f'{group[1]}', database_file="./data/battery_data.sqlite")
     query_charging = f'''SELECT  bat1_voltage,
                         integratedWH
                         FROM {group[0]}'''

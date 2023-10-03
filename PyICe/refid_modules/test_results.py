@@ -1,4 +1,5 @@
-from PyICe import lab_utils, LTC_plot
+from PyICe import LTC_plot
+from PyICe.lab_utils.sqlite_data import sqlite_data
 from PyICe.refid_modules import test_module
 import collections
 import datetime
@@ -561,7 +562,7 @@ class test_results(generic_results):
         #############################################################
         # TODO deal with functional test pass/fail non-numeric data #
         #############################################################
-        if type(iter_data) == lab_utils.sqlite_data:
+        if type(iter_data) == sqlite_data:
             assert query is None
             query = (iter_data.sql_query, iter_data.params)
             if iter_data.get_column_names() is None:
@@ -883,9 +884,9 @@ class correlation_results(generic_results):
     def _register_correlation_result(self, refid_name, iter_data, conditions, query=None): # TODO conditions
         if refid_name not in self._correlation_declarations:
             raise Exception(f'Undeclared correlation results: {refid_name}')
-        if type(iter_data) == lab_utils.sqlite_data:
+        if type(iter_data) == sqlite_data:
             query = (iter_data.sql_query, iter_data.params)
-        if type(iter_data) == lab_utils.sqlite_data and iter_data.get_column_names() is not None and len(iter_data.get_column_names()) > 2:
+        if type(iter_data) == sqlite_data and iter_data.get_column_names() is not None and len(iter_data.get_column_names()) > 2:
             conditions_columns = iter_data.get_column_names()[2:]
             nt_type = collections.namedtuple('distincts',conditions_columns)
             #distincts = iter_data.get_distinct(conditions_columns, force_tuple=True)

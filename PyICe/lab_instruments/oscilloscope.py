@@ -673,7 +673,7 @@ class oscilloscope(scpi_instrument, delegator):
     # def set_points(self, points):
         # '''set the number of points returned by read_channel() or read_channels() points must be in range [100,250,500] or [1000,2000,5000]*10^[0-4] or [8000000]'''
         # allowed_points = [100,250,500]
-        # allowed_points.extend(lab_utils.decadeListRange([1000,2000,5000],4))
+        # allowed_points.extend(decadeListRange([1000,2000,5000],4))  TODO from PyICe.lab_utils.ranges import decadeListRange
         # allowed_points.extend(8000000,)
         # if points not in allowed_points:
             # raise ValueError(f"\n\n{self.get_name()}: set_points: points argument muse be in: {allowed_points}")

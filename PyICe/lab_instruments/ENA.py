@@ -1,5 +1,4 @@
 from ..lab_core import *
-from ..lab_utils import floatRangeInc
 import abc
 
 screen_configs = '''

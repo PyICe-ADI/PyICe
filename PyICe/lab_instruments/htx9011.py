@@ -1,4 +1,6 @@
 from ..lab_core import *
+from PyICe.lab_utils.banners import print_banner
+from PyICe.lab_utils.eng_string import eng_string
 import datetime
 
 class htx9011(scpi_instrument):
@@ -38,10 +40,10 @@ class htx9011(scpi_instrument):
         self._write_gpio(list(self.gpio_pins.keys()),len(self.gpio_pins)*'Z') #HiZ all GPIO Pins
         if not self.valid_serialnum() and not serializing:
             if datetime.datetime.now() > datetime.datetime(2021,1,31):
-                lab_utils.print_banner("ERROR: ConfiguratorXT is not serialized!", "Please serialize it to continue.")
+                print_banner("ERROR: ConfiguratorXT is not serialized!", "Please serialize it to continue.")
                 exit()
             else:
-                lab_utils.print_banner("WARNING: ConfiguratorXT is not serialized!", "Please serialize it before January 31, 2021.")
+                print_banner("WARNING: ConfiguratorXT is not serialized!", "Please serialize it before January 31, 2021.")
         #self.check_calibration_valid(calibrating)
         # self.add(self.gpiox)
     def _disable_i2c(self):
@@ -144,7 +146,7 @@ class htx9011(scpi_instrument):
         readback_channel.set_attribute('vmeter_low_range_channel', vmeter_low_range_channel)
         readback_channel.set_description(self.get_name() + ': ' + self.add_channel_isense_remapper.__doc__)
         readback_channel.set_category(vmeter_high_range_channel.get_category())
-        readback_channel.set_display_format_function(function = lambda float_data: f"{lab_utils.eng_string(float_data, fmt=':3.6g',si=True)}A")
+        readback_channel.set_display_format_function(function = lambda float_data: f"{eng_string(float_data, fmt=':3.6g',si=True)}A")
         return meter_ch_group._add_channel(readback_channel) #Move channel to 3497x thread
     def _read_range_v(self, readback_channel):
         if readback_channel.get_attribute('range_channel').read().upper() == "OPEN":

@@ -1,5 +1,6 @@
 from ..lab_core import *
-from ..lab_utils import print_banner
+from PyICe.lab_utils.banners import print_banner
+from PyICe.lab_utils.eng_string import eng_string
 import math
 
 class a3497xa_instrument(scpi_instrument,delegator):
@@ -178,7 +179,7 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
         #TODO: add_extended_channels argument to add nplc, delay, etc all at once???
         channel = self.add_channel(channel_name, channel_num)
         channel.set_attribute('34970_type','volts_dc')
-        channel.set_display_format_function(function = lambda float_data: lab_utils.eng_string(float_data, fmt=fmt,si=True) + 'V')
+        channel.set_display_format_function(function = lambda float_data: eng_string(float_data, fmt=fmt,si=True) + 'V')
         if Rsource is not None:
             if delay is not None:
                 print(f"WARNING: Rsource({Rsource:.3g} ohms) and Delay({delay:.3g} s) "
@@ -196,7 +197,7 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
         '''Shortcut method to add thermistor measurement channel and configure in one step.'''
         new_channel = self.add_channel(channel_name,channel_num)
         new_channel.set_attribute('34970_type', 'thermocouple')
-        new_channel.set_display_format_function(function = lambda float_data: lab_utils.eng_string(float_data, fmt=':3.6g',si=True) + '°C')
+        new_channel.set_display_format_function(function = lambda float_data: eng_string(float_data, fmt=':3.6g',si=True) + '°C')
         internal_address = new_channel.get_attribute('internal_address')
         self._config_thermocouple(internal_address,tcouple_type)
         self._configure_channel_nplc(new_channel,NPLC)
@@ -258,7 +259,7 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
         if unit is not None:
             self.get_interface().write(f'CALCulate:SCALe:UNIT "{unit}", (@{internal_address})')
             channel.set_attribute('unit', unit)
-            channel.set_display_format_function(function = lambda float_data: lab_utils.eng_string(float_data, fmt=':3.6g',si=True) + unit)
+            channel.set_display_format_function(function = lambda float_data: eng_string(float_data, fmt=':3.6g',si=True) + unit)
         self.get_interface().write(f"CALCulate:SCALe:STATe ON ,(@{internal_address})")
     def _configure_channel_nplc(self,channel,nplc):
         try:
@@ -363,7 +364,7 @@ class agilent_3497xa_20ch(agilent_3497xa_20ch_40ch):
             raise Exception('Invalid channel number, channel cannot be used for current')
         channel = self.add_channel(channel_name, channel_num)
         channel.set_attribute('34970_type','current_dc')
-        channel.set_display_format_function(function = lambda float_data: lab_utils.eng_string(float_data, fmt=':3.6g',si=True) + 'A')
+        channel.set_display_format_function(function = lambda float_data: eng_string(float_data, fmt=':3.6g',si=True) + 'A')
         self._config_dc_current(channel,range)
         self._configure_channel_nplc(channel,NPLC)
         self._configure_channel_autozero(channel,disable_autozero)
@@ -416,7 +417,7 @@ class agilent_3497xa_20ch(agilent_3497xa_20ch_40ch):
         if delay is not None:
             self._config_channel_delay(channel,delay)
         channel.set_description(self.get_name() + ': ' + self.add_channel_current_sense.__doc__)
-        channel.set_display_format_function(function = lambda float_data: lab_utils.eng_string(float_data, fmt=':3.6g',si=True) + 'A')
+        channel.set_display_format_function(function = lambda float_data: eng_string(float_data, fmt=':3.6g',si=True) + 'A')
         return channel
 
 class agilent_34970a_20ch(agilent_3497xa_20ch):

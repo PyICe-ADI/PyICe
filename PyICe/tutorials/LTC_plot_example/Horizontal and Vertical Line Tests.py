@@ -1,4 +1,5 @@
-from PyICe import LTC_plot, lab_utils
+from PyICe import LTC_plot
+from PyICe.lab_utils.sqlite_data import sqlite_data
 
 group1 = ["charge_bat1_2015_04_15_13_01_54", "discharge_bat1_2015_04_14_20_30_40", "IBAT = 200mA"]
 GX = LTC_plot.plot( plot_title      = "Energy Delivered/Received vs\nBattery Voltage",
@@ -22,7 +23,7 @@ query2 = '''SELECT  bat1_voltage,
                     integratedWH + 11.788
                     FROM discharge_bat1_2015_04_14_20_30_40'''
                                     
-database = lab_utils.sqlite_data(table_name = f'{group1[0]}', database_file = "./data/battery_data.sqlite")
+database = sqlite_data(table_name = f'{group1[0]}', database_file = "./data/battery_data.sqlite")
                                     
 database.query(query1)
 GX.add_trace(           axis            = 1,
@@ -30,7 +31,7 @@ GX.add_trace(           axis            = 1,
                         color           = LTC_plot.LT_RED_1,
                         legend          = "Charging")
 
-database = lab_utils.sqlite_data(table_name = f'{group1[1]}', database_file = "./data/battery_data.sqlite")
+database = sqlite_data(table_name = f'{group1[1]}', database_file = "./data/battery_data.sqlite")
                                     
 database.query(query2)
 
@@ -48,5 +49,3 @@ GX.add_vertical_line(value=3.8, yrange=GX.ylims, note="YNote")
 Page1 = LTC_plot.Page(rows_x_cols = (1, 1), page_size = None)
 Page1.add_plot(GX, position = 1)
 Page1.create_svg("LINES_TESTER")
-
-

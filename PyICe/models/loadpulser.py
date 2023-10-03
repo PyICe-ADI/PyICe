@@ -21,10 +21,11 @@ def loadpulser():
     return scipy.interpolate.UnivariateSpline(x=xpoints, y=ypoints, s=rss)
 
 if __name__=='__main__':
-    from PyICe import lab_utils, LTC_plot
+    from PyICe import LTC_plot
+    from PyICe.lab_utils.ranges import floatRangeInc
     pulser = loadpulser()
     data = []
-    for x in lab_utils.floatRangeInc(0,3, 0.005):
+    for x in floatRangeInc(0,3, 0.005):
         data.append([x, pulser(x)])
     
     G0 = LTC_plot.plot( plot_title ="DC Transfer Function of\nLoad Pulser",

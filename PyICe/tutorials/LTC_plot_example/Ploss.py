@@ -1,4 +1,5 @@
-from PyICe import LTC_plot, lab_utils
+from PyICe import LTC_plot
+from PyICe.lab_utils.ranges import floatRangeInc 
 
 Pdie = []
 Pres = []
@@ -14,7 +15,7 @@ traces = {  "Pdie"  :{"DATA": Pdie,     "LABEL": r"P$_{DIE}$",    "COLOR": LTC_p
             "Peth"  :{"DATA": Peth,     "LABEL": r"P$_{ETH}$", "COLOR": LTC_plot.LT_BLACK},
          }
 
-currents = lab_utils.floatRangeInc(start=0, stop=0.5, step=0.01)
+currents = floatRangeInc(start=0, stop=0.5, step=0.01)
 
 for current in currents:
     vres = current * R

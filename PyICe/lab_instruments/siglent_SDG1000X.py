@@ -1,5 +1,5 @@
 from ..lab_core import *
-from PyICe import lab_utils
+from PyICe.lab_utils.banners import print_banner
 from collections import OrderedDict # Not needed in Python 3 but signals to us that order matters.
 from pyvisa.errors import VisaIOError
 import time
@@ -32,12 +32,12 @@ class siglent_SDG1000X(scpi_instrument):
             self.instrument.write(command+argument)
             self.operation_complete()
         except VisaIOError as e:
-            lab_utils.print_banner("Siglent SDG1000X Crashed!!!","Attempting to Recover Siglent....", f"Last attempted command was: {command}")
+            print_banner("Siglent SDG1000X Crashed!!!","Attempting to Recover Siglent....", f"Last attempted command was: {command}")
             # input("\n\nThis Shouldn't be here!!! Used only for manual USB removal debugging method. See Steve. Hit Enter to Continue... ")
             try:
                 self.instrument.read() # Super cheezy buffer flush? Siglent seems to like this.
             except:
-                lab_utils.print_banner("Siglent extra read failed to clear stuck instrument.","Trying again...")
+                print_banner("Siglent extra read failed to clear stuck instrument.","Trying again...")
             # self.flush(buffer="READ")          # Doesn't seem to help here
             # self.flush(buffer="WRITE")         # Doesn't seem to help here
             # self.reset()
@@ -46,7 +46,7 @@ class siglent_SDG1000X(scpi_instrument):
             # for entry in self.activity_log:
                 # self._try_command(self.activity_log[entry])
             # raise SiglentIOError(lab_utils.build_banner('Siglent successfully reset and values restored after IO error.')) from e # REMOVE THIS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            lab_utils.print_banner("Siglent SDG1000X Recovered!!!")
+            print_banner("Siglent SDG1000X Recovered!!!")
 
     def add_channel_burst(self, channel_name, channel_number):
         enable_channel = self.add_generic_channels(channel_name, channel_number)

@@ -1,5 +1,8 @@
 from .lab_core import *
-from . import lab_utils
+from PyICe.lab_utils.str2num import str2num
+from PyICe.lab_utils.delay_loop import delay_loop
+from PyICe.lab_utils.eng_string import eng_string
+from PyICe.lab_utils.threaded_writer import threaded_writer
 import random
 import types
 import math
@@ -14,7 +17,7 @@ instrument_humanoid
 expect
   Virtual instrument to check that reading is specified tolerance of expected result
 delay_loop
-  Instrument wrapper for lab_utils.delay_loop enables logging of delay diagnostic vairables.
+  Instrument wrapper for lab_utils delay_loop enables logging of delay diagnostic vairables.
 clipboard
   Store and retrieve data to/from windows/linux/osx clipboard.
 accumulator
@@ -156,7 +159,8 @@ class instrument_humanoid(instrument, delegator):
     def __init__(self, notification_function=None):
         '''Notification will be sent to notification_function when a write occurs to any channel in this instrument.  The function should take a single string argument and deliver it to the user as appropriate (sms, email, etc).
         Hint: Use a lambda function to include a subject line in the email:
-        myemail = lab_utils.email(destination='myemail@linear.com')
+        from PyICe.lab_utils.communications import email
+        myemail = email(destination='myemail@mycompany.com')
         notification_function=lambda msg: myemail.send(msg,subject="LTC lab requires attention!")
         If notification_function is None, messages will only be sent to the terminal.'''
         self._base_name = 'Humanoid Virtual Instrument'
@@ -172,7 +176,8 @@ class instrument_humanoid(instrument, delegator):
         '''Add additional notification function to instrument.  Ex email and SMS.
         Notification will be sent to notification_function when a write occurs to any channel in this instrument.  The function should take a single string argument and deliver it to the user as appropriate (sms, email, etc).
         Hint: Use a lambda function to include a subject line in the email:
-        myemail = lab_utils.email(destination='myemail@linear.com')
+        from PyICe.lab_utils.communications import email
+        myemail = email(destination='myemail@mycompany.com')
         notification_function=lambda msg: myemail.send(msg,subject="LTC lab requires attention!")'''
         self.notification_functions.append(notification_function)
     def add_channel_notification_enable(self, channel_name):
@@ -244,7 +249,7 @@ class instrument_humanoid(instrument, delegator):
             value = channel.format_write(value)
         except AttributeError:
             #non-integer channel has no formats nor presets
-            value = lab_utils.str2num(value, except_on_error=False)
+            value = str2num(value, except_on_error=False)
         return value
     def read_delegated_channel_list(self,channels):
         '''private'''
@@ -478,7 +483,7 @@ class ExpectUnderException(ExpectException):
     '''expect instrument comparison failures for measured < expect'''
     pass
 
-class delay_loop(lab_utils.delay_loop, instrument):
+class delay_loop(delay_loop, instrument):
     '''instrument wrapper for lab_utils.delay_loop enables logging of delay diagnostic variables'''
     def __init__(self, strict=False, begin=True, no_drift=True):
         '''Set strict to True to raise an Exception if loop time is longer than requested delay.
@@ -490,7 +495,7 @@ class delay_loop(lab_utils.delay_loop, instrument):
           Set no_drift=False to ignore time over-runs when computing next delay time.
         '''
         instrument.__init__(self, "delay_loop instrument wrapper")
-        lab_utils.delay_loop.__init__(self, strict, begin, no_drift)
+        delay_loop.__init__(self, strict, begin, no_drift)
         self._base_name = 'Precision Delay Loop Virtual Instrument Wrapper'
     def add_channel_count(self, channel_name):
         '''total number of times delay() method called'''
@@ -624,7 +629,7 @@ class timer(instrument, delegator):
         new_channel.set_attribute('type','total_timer')
         new_channel.set_delegator(self)
         new_channel.set_description(self.get_name() + ': ' + self.add_channel_total_seconds.__doc__)
-        new_channel.set_display_format_function(function = lambda time: lab_utils.eng_string(time, fmt=':3.6g',si=True) + 's')
+        new_channel.set_display_format_function(function = lambda time: eng_string(time, fmt=':3.6g',si=True) + 's')
         return self._add_channel(new_channel)
     def add_channel_total_minutes(self,channel_name):
         '''Channel read reports elapsed time since first read with units of minutes.'''
@@ -665,7 +670,7 @@ class timer(instrument, delegator):
         new_channel.set_attribute('type','delta_timer')
         new_channel.set_delegator(self)
         new_channel.set_description(self.get_name() + ': ' + self.add_channel_delta_seconds.__doc__)
-        new_channel.set_display_format_function(function = lambda time: lab_utils.eng_string(time, fmt=':3.6g',si=True) + 's')
+        new_channel.set_display_format_function(function = lambda time: eng_string(time, fmt=':3.6g',si=True) + 's')
         return self._add_channel(new_channel)
     def add_channel_delta_minutes(self,channel_name):
         '''Channel read reports elapsed time since last read with units of minutes.'''
@@ -706,7 +711,7 @@ class timer(instrument, delegator):
         new_channel.set_attribute('type','frequency')
         new_channel.set_delegator(self)
         new_channel.set_description(self.get_name() + ': ' + self.add_channel_frequency_hz.__doc__)
-        new_channel.set_display_format_function(function = lambda rate: lab_utils.eng_string(rate, fmt=':3.6g',si=True) + 'Hz')
+        new_channel.set_display_format_function(function = lambda rate: eng_string(rate, fmt=':3.6g',si=True) + 'Hz')
         return self._add_channel(new_channel)
     def add_channel_frequency_scale(self,channel_name,time_div):
         '''Channel read reports read frequency with user supplied time units. time_div is seconds per user-unit, eg 60 for RPM.'''
@@ -2465,7 +2470,7 @@ class smart_battery_emulator(instrument):
         self._base_name = 'SB_emulator'
         instrument.__init__(self,"Smart Battery Emulator")
         self.verbose = verbose
-        self.writer = lab_utils.threaded_writer(verbose = self.verbose)
+        self.writer = threaded_writer(verbose = self.verbose)
         self.voltage_thread = self.writer.connect_channel(channel_name = voltage_channel_name, time_interval = voltage_interval)
         self.current_thread = self.writer.connect_channel(channel_name = current_channel_name, time_interval = current_interval)
         self.initial_voltage_interval = voltage_interval

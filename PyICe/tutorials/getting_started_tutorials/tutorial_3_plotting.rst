@@ -34,7 +34,7 @@ The module *lab_utils* contains helper functions that can extract data from the 
 
 .. code-block:: python
 
-   from PyICe import lab_utils
+   from PyICe.lab_utils.sqlite_data import sqlite_data
 
 LTC_plot defines *plots* and *pages*.
 
@@ -77,7 +77,7 @@ One such benefit of using SQLite querys is that columnwise calculations are esse
        
 .. code-block:: python
        
-   database = lab_utils.sqlite_data(table_name="tutorial_2_table", database_file="data_log.sqlite")            
+   database = sqlite_data(table_name="tutorial_2_table", database_file="data_log.sqlite")            
    database.query(my_query)
 
 The **database** object is stateful and retains a record of the most recent query made against it.

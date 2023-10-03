@@ -1,4 +1,4 @@
-from PyICe import lab_utils
+from PyICe.lab_utils.banners import print_banner, build_banner
 import abc
 
 ARROW_STRING = "◄――――――――►"
@@ -126,9 +126,9 @@ class connection_collection():
                 continue
             connection_diagram += (35-len(f"{connextion.terminals[0].get_owner()}:{connextion.terminals[0].get_type()}"))*" "+f"{connextion.terminals[0].get_owner()}:{connextion.terminals[0].get_type()}" + " " + ARROW_STRING + " " + f"{connextion.terminals[1].get_owner()}:{connextion.terminals[1].get_type()}\n"
         if exclude is not None:
-            lab_utils.print_banner("Begin Bench Configuration Connections")
+            print_banner("Begin Bench Configuration Connections")
             print(connection_diagram)
-            lab_utils.print_banner("End Bench Configuration Connections")
+            print_banner("End Bench Configuration Connections")
         return connection_diagram
     @classmethod
     def distill(cls, connection_collections):
@@ -173,7 +173,7 @@ class connection_collection():
 
     def check_consistency(self, connection_source):
         def raise_error(terminal1,terminal2a,terminal2b, script1, script2):
-            banner_a = lab_utils.build_banner("*** CONNECTION ERROR ***", f'"{terminal1.get_owner()}:{terminal1.get_type()}" is assigned differently in {script1}({terminal2a.get_owner()}:{terminal2a.get_type()}) and {script2}({terminal2b.get_owner()}:{terminal2b.get_type()}).')
+            banner_a = build_banner("*** CONNECTION ERROR ***", f'"{terminal1.get_owner()}:{terminal1.get_type()}" is assigned differently in {script1}({terminal2a.get_owner()}:{terminal2a.get_type()}) and {script2}({terminal2b.get_owner()}:{terminal2b.get_type()}).')
             raise bench_configuration_error(banner_a)
         delete_connections = []
         for connextion1 in self.connections:
@@ -231,7 +231,7 @@ class connection_collection():
             for terminal in connextion.get_terminals():
                 if terminal in self.blocked_terminals:
                     terminals = [f"{terminal.get_owner()}:{terminal.get_type()}" for terminal in connextion.get_terminals()]
-                    banner_b=lab_utils.build_banner("*** CONNECTION ERROR *** A Connection blocker blocks a requested connection.", f'"{terminal.get_owner()}:{terminal.get_type()}" blocks connection:', f'{terminals}')
+                    banner_b=build_banner("*** CONNECTION ERROR *** A Connection blocker blocks a requested connection.", f'"{terminal.get_owner()}:{terminal.get_type()}" blocks connection:', f'{terminals}')
                     raise bench_configuration_error(banner_b)
 
 class configuration_parser():
@@ -304,37 +304,3 @@ if __name__ == "__main__":
     #
     #
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

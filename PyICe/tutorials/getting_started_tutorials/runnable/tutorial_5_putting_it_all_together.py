@@ -25,20 +25,21 @@ bench = lab_core.channel_master()
 bench.add(meter)
 bench.add(hameg)
 
-from PyICe import lab_utils
+from PyICe.lab_utils.ranges import floatRangeInc
+from PyICe.lab_utils.sqlite_data import sqlite_data
 from PyICe import LTC_plot
 
 logger = lab_core.logger(bench)
 logger.new_table(table_name='diode_data_table', replace_table=True)
 bench.write('current_limit', 0.5)
 
-for vsweep in lab_utils.floatRangeInc(0, 6, 0.025):
+for vsweep in floatRangeInc(0, 6, 0.025):
    print(f"Setting voltage to {vsweep}V")
    bench.write('vsweep', vsweep)
    logger.log()
 bench.write('vsweep', 0)
 
-database = lab_utils.sqlite_data(table_name="diode_data_table", database_file="data_log.sqlite")            
+database = sqlite_data(table_name="diode_data_table", database_file="data_log.sqlite")            
 
 #########################################################################
 #                                                                       #
