@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TUTORIAL 2 Logging Data to a SQLite File &mdash; PyICe  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="TUTORIAL 3 Plotting Data" href="tutorial_3_plotting.html" />
+    <link rel="prev" title="TUTORIAL 1 Adding a Single Channel Voltmeter" href="tutorial_1_meter.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            PyICe
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorials.html">How To Guides</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="tutorial_0_setup.html">TUTORIAL 0 Setting up a Python Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_1_meter.html">TUTORIAL 1 Adding a Single Channel Voltmeter</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">TUTORIAL 2 Logging Data to a SQLite File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_3_plotting.html">TUTORIAL 3 Plotting Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_4_supply.html">TUTORIAL 4 Adding a Power Supply</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_5_putting_it_all_together.html">TUTORIAL 5 Putting it all Together</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_6_code_free_gui.html">TUTORIAL 6 The Code-Free GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_7_tips_and_tricks.html">TUTORIAL 7 Tips &amp; Tricks</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">PyICe</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PyICe</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../tutorials.html">How To Guides</a></li>
+      <li class="breadcrumb-item active">TUTORIAL 2 Logging Data to a SQLite File</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/tutorials/tutorial_2_logging.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="tutorial-2-logging-data-to-a-sqlite-file">
+<h1>TUTORIAL 2 Logging Data to a SQLite File<a class="headerlink" href="#tutorial-2-logging-data-to-a-sqlite-file" title="Permalink to this heading"></a></h1>
+<p>Automated logging and managing of measurement data is one of the most powerful features of PyICe.
+This tutorial shows how to create a PyICe logger and begin the process of structured data collection to a SQLite table.</p>
+<p>SQLite is a powerful data storage, retrieval and manipulation tool.</p>
+<p>Rather than working in Excel making calculations column by column, SQLite offers a plain English, easy to learn, scripting method to make such calculations within a single line of code.</p>
+<p>Using this method also, at no additional cost, documents the calculations made as does all work generally performed in Python.</p>
+<p>Each channel registered with the <em>channel_master</em> results in a SQLite table <em>column</em>.</p>
+<p>New rows are generated by calling the logger’s method log() for each iteration of the test sweep or script.</p>
+<p>Building on TUTORIAL 1 we have the following infrastructure:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PyICe</span> <span class="kn">import</span> <span class="n">lab_core</span>
+<span class="kn">from</span> <span class="nn">PyICe</span> <span class="kn">import</span> <span class="n">lab_interfaces</span>
+<span class="kn">from</span> <span class="nn">PyICe</span> <span class="kn">import</span> <span class="n">lab_instruments</span>
+
+<span class="n">interface_factory</span> <span class="o">=</span> <span class="n">lab_interfaces</span><span class="o">.</span><span class="n">interface_factory</span><span class="p">()</span>
+<span class="n">my_a34401_interface</span> <span class="o">=</span> <span class="n">interface_factory</span><span class="o">.</span><span class="n">get_visa_serial_interface</span><span class="p">(</span><span class="s2">&quot;COM10&quot;</span><span class="p">,</span> <span class="n">baudrate</span><span class="o">=</span><span class="mi">9600</span><span class="p">,</span> <span class="n">dsrdtr</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">my_a34401</span> <span class="o">=</span> <span class="n">lab_instruments</span><span class="o">.</span><span class="n">agilent_34401a</span><span class="p">(</span><span class="n">my_a34401_interface</span><span class="p">)</span>
+
+<span class="n">my_a34401</span><span class="o">.</span><span class="n">add_channel</span><span class="p">(</span><span class="s2">&quot;vmeas&quot;</span><span class="p">)</span>
+<span class="n">my_a34401</span><span class="o">.</span><span class="n">config_dc_voltage</span><span class="p">()</span>
+
+<span class="n">channel_master</span> <span class="o">=</span> <span class="n">lab_core</span><span class="o">.</span><span class="n">channel_master</span><span class="p">()</span>
+<span class="n">channel_master</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">my_a34401</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To create an instance of a logger object, simply request one from <strong>lab_core</strong>.
+The only required argument is a <em>channel_master</em> instance.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">logger</span> <span class="o">=</span> <span class="n">lab_core</span><span class="o">.</span><span class="n">logger</span><span class="p">(</span><span class="n">channel_master</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The logger must then create (or append to) a table.</p>
+<p>SQLite files can have many tables.</p>
+<p>Normally, <em>replace_table</em> would be set to <strong>False</strong> to avoid accidentally overwriting data.</p>
+<p>If replace_table is not set to True and the table already exists, then the script will stop.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">logger</span><span class="o">.</span><span class="n">new_table</span><span class="p">(</span><span class="n">table_name</span><span class="o">=</span><span class="s1">&#39;tutorial_2_table&#39;</span><span class="p">,</span> <span class="n">replace_table</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To take 10 voltage readings, we can loop 10 times, and record everything the channel_master knows about each time.
+Once the circuit is configured to take the desired data, simply call the logger’s log() method.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Logging all channels...&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">measurement</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Logging measurement number: </span><span class="si">{</span><span class="n">measurement</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Consider opening data_log.sqlite with DB Browser https://sqlitebrowser.org/ and opening the [Browse Data] tab.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>There is no explicit need to insert any delays between invocations of an instrument action such as taking a measurement.</p>
+<p>If an instrument requires a settling time before its reading is taken, the driver for that instrument will have that information and PyICe will automatically insert the delay.</p>
+<p>The logger will create a file in the working directory called <em>data_log.sqlite</em>.</p>
+<p>Within this file, there will be a table called <em>tutorial_2_table</em>.</p>
+<p>To view the file, the simplest way is to get “DB Browser for SQLite”.</p>
+<p>DB Browser is an interactive database program that will display the data and allow queries to be run.</p>
+<p>It can usually be found here: <a class="reference external" href="https://sqlitebrowser.org/">https://sqlitebrowser.org/</a></p>
+<p>Notes: when the logger is created it will know about all the channels that exist in the channel_master at creation time.</p>
+<p>Channels added to the channel_master after the creation of the logger will not be known to the logger.</p>
+<p>Channels may be removed from the logger by using the logger.remove_channel(channel_object) or logger.remove_channel_by_name(“channel_name”) methods.</p>
+<p>If only a few channels are to be logged, use the logger.remove_all_channels_and_sub_groups() method to empty the logger.</p>
+<p>channels/instruments can then be added using the logger.add() method.</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tutorial_1_meter.html" class="btn btn-neutral float-left" title="TUTORIAL 1 Adding a Single Channel Voltmeter" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="tutorial_3_plotting.html" class="btn btn-neutral float-right" title="TUTORIAL 3 Plotting Data" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Dave Simmons, Steve Martin, Zach Lewko.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,6 @@
+PyICe.refid\_modules
+====================
+
+.. currentmodule:: PyICe
+
+.. automodule:: refid_modules

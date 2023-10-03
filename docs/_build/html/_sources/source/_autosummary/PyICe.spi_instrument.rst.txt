@@ -1,0 +1,6 @@
+PyICe.spi\_instrument
+=====================
+
+.. currentmodule:: PyICe
+
+.. automodule:: spi_instrument

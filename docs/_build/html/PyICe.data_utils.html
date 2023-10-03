@@ -45,6 +45,7 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">How To Guides</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">PyICe</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="PyICe.html">PyICe package</a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="PyICe.html#subpackages">Subpackages</a><ul class="current">
@@ -57,20 +58,20 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="PyICe.html#submodules">Submodules</a></li>
 <li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.LTC_plot">PyICe.LTC_plot module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.TypicalCurveEditor_input">PyICe.TypicalCurveEditor_input module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.generate_docs">PyICe.generate_docs module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.interpolator">PyICe.interpolator module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.ivy_instruments">PyICe.ivy_instruments module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#pyice-typicalcurveeditor-input-module">PyICe.TypicalCurveEditor_input module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#pyice-generate-docs-module">PyICe.generate_docs module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#pyice-interpolator-module">PyICe.interpolator module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#pyice-ivy-instruments-module">PyICe.ivy_instruments module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.lab_core">PyICe.lab_core module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.lab_instruments">PyICe.lab_instruments module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.lab_interfaces">PyICe.lab_interfaces module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.lab_utils">PyICe.lab_utils module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.logo">PyICe.logo module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.plot_tools">PyICe.plot_tools module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#pyice-plot-tools-module">PyICe.plot_tools module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.spi_instrument">PyICe.spi_instrument module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.spi_interface">PyICe.spi_interface module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.twi_instrument">PyICe.twi_instrument module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.twoWireInterface">PyICe.twoWireInterface module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyICe.html#pyice-twowireinterface-module">PyICe.twoWireInterface module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.virtual_instruments">PyICe.virtual_instruments module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe.visa_wrappers">PyICe.visa_wrappers module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="PyICe.html#module-PyICe">Module contents</a></li>
@@ -125,12 +126,20 @@ the value returned is the dBV value of the emission result</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="PyICe.data_utils.EMI_char_levels.IEC61967_2_lowercase">
 <span class="sig-prename descclassname"><span class="pre">PyICe.data_utils.EMI_char_levels.</span></span><span class="sig-name descname"><span class="pre">IEC61967_2_lowercase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lowercase</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.EMI_char_levels.IEC61967_2_lowercase" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>This is the -40dB/decade set of curves in the IEC Emission Characterization Levels
+“lowercase” is the lowercase index of the curve we want to trace out
+“frequency” is the frequency of interest.
+the value returned is the dBV value of the emission result</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="PyICe.data_utils.EMI_char_levels.IEC61967_2_uppercase">
 <span class="sig-prename descclassname"><span class="pre">PyICe.data_utils.EMI_char_levels.</span></span><span class="sig-name descname"><span class="pre">IEC61967_2_uppercase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uppercase</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.EMI_char_levels.IEC61967_2_uppercase" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>This is the 0dB top horizontal set of lines in the IEC Emission Characterization Levels
+“uppercase” is the uppercase index of the top line we want to trace out
+“frequency” is the frequency of interest.
+the value returned is the dBV value of the emission result</p>
+</dd></dl>
 
 </section>
 <section id="module-PyICe.data_utils.create_user_files">
@@ -141,40 +150,8 @@ the value returned is the dBV value of the emission result</p>
 <dd></dd></dl>
 
 </section>
-<section id="module-PyICe.data_utils.oscilloscope_waveform_dump">
-<span id="pyice-data-utils-oscilloscope-waveform-dump-module"></span><h2>PyICe.data_utils.oscilloscope_waveform_dump module<a class="headerlink" href="#module-PyICe.data_utils.oscilloscope_waveform_dump" title="Permalink to this heading"></a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="PyICe.data_utils.oscilloscope_waveform_dump.dict_print">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.data_utils.oscilloscope_waveform_dump.</span></span><span class="sig-name descname"><span class="pre">dict_print</span></span><a class="headerlink" href="#PyICe.data_utils.oscilloscope_waveform_dump.dict_print" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></p>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="PyICe.data_utils.oscilloscope_waveform_dump.oscilloscope_waveform_dump">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.data_utils.oscilloscope_waveform_dump.</span></span><span class="sig-name descname"><span class="pre">oscilloscope_waveform_dump</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interface_visa</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.oscilloscope_waveform_dump.oscilloscope_waveform_dump" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="PyICe.instruments.html#PyICe.instruments.oscilloscope.oscilloscope" title="PyICe.instruments.oscilloscope.oscilloscope"><code class="xref py py-class docutils literal notranslate"><span class="pre">oscilloscope</span></code></a></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="PyICe.data_utils.oscilloscope_waveform_dump.oscilloscope_waveform_dump.data_to_sqlite">
-<span class="sig-name descname"><span class="pre">data_to_sqlite</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db_filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'scope_data.sqlite'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.oscilloscope_waveform_dump.oscilloscope_waveform_dump.data_to_sqlite" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="PyICe.data_utils.oscilloscope_waveform_dump.oscilloscope_waveform_dump.fetch_active_scope_channels">
-<span class="sig-name descname"><span class="pre">fetch_active_scope_channels</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.oscilloscope_waveform_dump.oscilloscope_waveform_dump.fetch_active_scope_channels" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="PyICe.data_utils.oscilloscope_waveform_dump.oscilloscope_waveform_dump.user_query_waveform_name">
-<span class="sig-name descname"><span class="pre">user_query_waveform_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channel_number</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.oscilloscope_waveform_dump.oscilloscope_waveform_dump.user_query_waveform_name" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="PyICe.data_utils.oscilloscope_waveform_dump.plot_dumped_waveform">
-<span class="sig-prename descclassname"><span class="pre">PyICe.data_utils.oscilloscope_waveform_dump.</span></span><span class="sig-name descname"><span class="pre">plot_dumped_waveform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db_tablename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db_filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'scope_data.sqlite'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.oscilloscope_waveform_dump.plot_dumped_waveform" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
+<section id="pyice-data-utils-oscilloscope-waveform-dump-module">
+<h2>PyICe.data_utils.oscilloscope_waveform_dump module<a class="headerlink" href="#pyice-data-utils-oscilloscope-waveform-dump-module" title="Permalink to this heading"></a></h2>
 </section>
 <section id="module-PyICe.data_utils.pds_utils">
 <span id="pyice-data-utils-pds-utils-module"></span><h2>PyICe.data_utils.pds_utils module<a class="headerlink" href="#module-PyICe.data_utils.pds_utils" title="Permalink to this heading"></a></h2>
@@ -182,13 +159,13 @@ the value returned is the dBV value of the emission result</p>
 <dt class="sig sig-object py" id="PyICe.data_utils.pds_utils.pds_reader">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">PyICe.data_utils.pds_utils.</span></span><span class="sig-name descname"><span class="pre">pds_reader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#PyICe.data_utils.pds_utils.pds_reader" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Reads and parses an Eagle Test System’s .pds “Datasheet” file into a reasoanble datastructure.
+<p>Reads and parses an Eagle Test System’s .pds “Datasheet” file into a reasonable datastructure.
 It may have errors, the Eagle schema is a complete C/F of made up nonesene making it difficult to interpret.
 Files structure is as follows:</p>
 <blockquote>
 <div><dl class="simple">
 <dt>Result is a dictionary of test groups keyed by the group name.</dt><dd><dl class="simple">
-<dt>Each dictioary of test groups is a dictionary of tests keys by the test NUMBER.SUBTESTNUMBER.</dt><dd><p>Each test is a dictionary of parameters keyed by Eagle columns as described by the file section “Datasheet Variable Map”.</p>
+<dt>Each dictionary of test groups is a dictionary of tests keys by the test NUMBER.SUBTESTNUMBER.</dt><dd><p>Each test is a dictionary of parameters keyed by Eagle columns as described by the file section “Datasheet Variable Map”.</p>
 </dd>
 </dl>
 </dd>

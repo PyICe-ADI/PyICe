@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TUTORIAL 1 Adding a Single Channel Voltmeter &mdash; PyICe  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="TUTORIAL 2 Logging Data to a SQLite File" href="tutorial_2_logging.html" />
+    <link rel="prev" title="TUTORIAL 0 Setting up a Python Environment" href="tutorial_0_setup.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            PyICe
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorials.html">How To Guides</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="tutorial_0_setup.html">TUTORIAL 0 Setting up a Python Environment</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">TUTORIAL 1 Adding a Single Channel Voltmeter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_2_logging.html">TUTORIAL 2 Logging Data to a SQLite File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_3_plotting.html">TUTORIAL 3 Plotting Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_4_supply.html">TUTORIAL 4 Adding a Power Supply</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_5_putting_it_all_together.html">TUTORIAL 5 Putting it all Together</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_6_code_free_gui.html">TUTORIAL 6 The Code-Free GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_7_tips_and_tricks.html">TUTORIAL 7 Tips &amp; Tricks</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">PyICe</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PyICe</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../tutorials.html">How To Guides</a></li>
+      <li class="breadcrumb-item active">TUTORIAL 1 Adding a Single Channel Voltmeter</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/tutorials/tutorial_1_meter.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="tutorial-1-adding-a-single-channel-voltmeter">
+<h1>TUTORIAL 1 Adding a Single Channel Voltmeter<a class="headerlink" href="#tutorial-1-adding-a-single-channel-voltmeter" title="Permalink to this heading"></a></h1>
+<p>This tutorial explains the steps required to connect to a meter and take a measurement.
+The ubiquitous Agilent/Keysight 34401A single channel meter will be used.</p>
+<p>If you have completed TUTORIAL 0, you should have an IDE (perhaps Notepad++), Python, PyICe and, preferably, a Python environment.
+You should also have a folder in which to work and the file <strong>pyice_example.py</strong> in the folder in which to work.</p>
+<p>To communicate with our instrument, we will need an interface object or “handle” to it.
+We can get the handle from the interface_factory in lab_interfaces.py.</p>
+<p>Open <strong>pyice_example.py</strong> in Notepad++ and import <em>lab_interfaces</em> from PyICe.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PyICe</span> <span class="kn">import</span> <span class="n">lab_interfaces</span>
+</pre></div>
+</div>
+<p>To retrieve an interface, we can create an interface_factory object and call the appropriate <em>getter</em> method for our interface type.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">interface_factory</span> <span class="o">=</span> <span class="n">lab_interfaces</span><span class="o">.</span><span class="n">interface_factory</span><span class="p">()</span>
+<span class="n">my_a34401_interface</span> <span class="o">=</span> <span class="n">interface_factory</span><span class="o">.</span><span class="n">get_visa_serial_interface</span><span class="p">(</span><span class="s2">&quot;COM10&quot;</span><span class="p">,</span> <span class="n">baudrate</span><span class="o">=</span><span class="mi">9600</span><span class="p">,</span> <span class="n">dsrdtr</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Next we will import lab_core which contains the base <em>channel</em> framework of PyICe, a PyICe <strong>channel_master</strong>.</p>
+<p>PyICe introduces the concept of a <em>channel</em>, a Python object most often a scalar value but sometimes a vector, that represents a single object that we would like to access on the bench.
+It could be the reading of a volt meter, the voltage or current limit setting of a power supply, the amplitude of a waveform or even the X or Y record of an oscilloscope trace.
+We will create many channels as we build up our PyICe workspace.
+The key benefit of PyICe is that, once we teach it how to access these resources, it will aggregate these channels into a single, large, flat namespace.
+Each PyICe channel will be named, by you, with a simple, unique text string.
+The channel name (string) can be as long and verbose as you like, the purpose of which is to make interacting with the bench resources as human friendly as possible.</p>
+<p>Channels generally have only a <em>read</em> method <strong>or</strong> a <em>write</em> method but not both.
+If a channel was defined with a write method, PyICe will generally return a buffered version of the value written when asked to read from the channel.
+If the channel has yet to be written to, the Python value <strong>None</strong> will be returned.
+If the channel was defined with a read method, and an attempt to write it occurs, PyICe will throw up a warning in its console and take no further action.
+There are exceptions to this rule, for example with serial port reads and writes.
+These are automatically considered volatile and the read method actively reads live data from the device.</p>
+<p>In order to aggregate all of our channels, and with them, their interfaces into a single access point, we must first create a PyICe <em>channel_master</em>.
+Generally our project will have only one instance of a PyICe channel_master which we will create by requesting from lab_core.py.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PyICe</span> <span class="kn">import</span> <span class="n">lab_core</span>
+<span class="n">channel_master</span> <span class="o">=</span> <span class="n">lab_core</span><span class="o">.</span><span class="n">channel_master</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>In this tutorial, the meter is connected via a USB to quad-RS232 expander with the FTDI chip set.
+The first RS232 connector landed on port COM10.
+When using RS232 equipment, be sure to determine if it needs a null modem adapter or not as not all RS232 ports have been assigned the correct hierarchical stature (DCE vs DTE).
+The 33401A meter is one such example and does require a combination null modem adapter and gender changer.</p>
+<p>Next we need to get a driver for our instrument.</p>
+<p>The lab_instruments module contains drivers to translate from each instrument’s native language (e.g. SCPI, binary, freds_binary_scpi) to PyICe channels.
+In essence, the PyICe channel concept realizes the abstraction layer that SCPI (Hardware HPIB, GPIB and IEEE-488) attempted to achieve so many years ago.
+It creates a unified standard for interacting with bench instruments by inserting a new, truly consistent, interposing abstraction layer.</p>
+<p>There is a large, and growing, library of instrument driver definitions in lab_instruments.
+If you need a driver for an instrument not present, there is usually a similar one that serves as a good example from which to start.
+An instrument driver can usually be written in 1 to 6 hours depending on instrument complexity and features to be supported.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PyICe</span> <span class="kn">import</span> <span class="n">lab_instruments</span>
+</pre></div>
+</div>
+<p>We create the <em>instrument object</em> by passing it the previously acquired interface <em>my_a34401_interface</em>.
+Each instrument constructor takes an interface as its argument.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_a34401</span> <span class="o">=</span> <span class="n">lab_instruments</span><span class="o">.</span><span class="n">agilent_34401a</span><span class="p">(</span><span class="n">my_a34401_interface</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now my_a34401 is an agilent_34401a instrument object.
+We can talk to the a33401 meter through this interface but doing so would thwart the benefits of adding the instrument and its channels to the channel_master.
+That said, the channel_master doesn’t know about this instrument yet, so we must add it to the channel_master.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">channel_master</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">my_a34401</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The meter object <strong>my_a34401</strong> doesn’t have any <em>channels</em> yet.
+Channels are named objects (using simple, meaningful strings) that represent physical parameters such as the 34401a measurement results.
+The following lines create a channel called “vmeas”, and then sets up the meter to read dc voltage into this channel (rather than current which the meter also supports).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_a34401</span><span class="o">.</span><span class="n">add_channel</span><span class="p">(</span><span class="s2">&quot;vmeas&quot;</span><span class="p">)</span>
+<span class="n">my_a34401</span><span class="o">.</span><span class="n">config_dc_voltage</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>These configuration commands can be completed before <strong>or</strong> after adding the meter object to the channel_master.
+The channel_master will inherit the attributes either way.</p>
+<p>There are three ways to read the “vmeas” channel.
+The first, and most common, way is to ask the <em>channel_master</em> to read it for you.
+This is also the most convenient since the channel_master knows about all the channels and you don’t have to remember to which instrument a given channel belongs.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reading</span> <span class="o">=</span> <span class="n">channel_master</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;vmeas&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Measuring &#39;vmeas&#39; using channel_master, reading = </span><span class="si">{</span><span class="n">reading</span><span class="si">}</span><span class="s2">V.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Most of the time the above method is sufficient and is considered the most <em>PyCIeonic</em>.
+The following two methods are included for completeness.</p>
+<p>Another way is to <em>go around</em> the channel_master and ask the instrument itself to read the channel.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reading</span> <span class="o">=</span> <span class="n">my_a34401</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;vmeas&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Measuring &#39;vmeas&#39; using by circumventing the channel_master and using my_a34401 (not recommended), reading = </span><span class="si">{</span><span class="n">reading</span><span class="si">}</span><span class="s2">V.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>As we will see later, this method subverts the powerful logging feature of PyICe and, therefore, is generally discouraged.
+It also sacrifices the benefit of the channel aggregation feature of PyICe, requiring the programmer to manually track the origin of each channel.
+In this small tutorial that may seem inconsequential but for realistic projects you should expect to have hundreds of PyICe channels.</p>
+<p>A slightly more terse method is to retrieve the value from the channel_master by the channel_master like a dictionary-like object.
+Channel objects can be retrieved from any <em>channel_group</em> (channel_master or instrument) containing them.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">vmeas_channel_object</span> <span class="o">=</span> <span class="n">channel_master</span><span class="p">[</span><span class="s1">&#39;vmeas&#39;</span><span class="p">]</span>  <span class="c1"># This gets the channel object. It could also be obtained from my_a34401</span>
+<span class="n">reading</span> <span class="o">=</span> <span class="n">vmeas_channel_object</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Measuring &#39;vmeas&#39; by retreiving the actual channel first and asking it to read. Reading = </span><span class="si">{</span><span class="n">reading</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This method could be condensed down to:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reading</span> <span class="o">=</span> <span class="n">channel_master</span><span class="p">[</span><span class="s1">&#39;vmeas&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Measuring &#39;vmeas&#39; using the condensed version of rereiving the channel. Reading = </span><span class="si">{</span><span class="n">reading</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The channel_master.read() method or dictionary-like read method should be selected at the start of the project and remain consistent throughout.
+Both methods of accessing the channel via the channel_master are acceptable but this tutorial writer prefers the channel_master.read(‘channel_name’) method for clarity and readability.</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tutorial_0_setup.html" class="btn btn-neutral float-left" title="TUTORIAL 0 Setting up a Python Environment" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="tutorial_2_logging.html" class="btn btn-neutral float-right" title="TUTORIAL 2 Logging Data to a SQLite File" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Dave Simmons, Steve Martin, Zach Lewko.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

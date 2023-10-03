@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TUTORIAL 4 Adding a Power Supply &mdash; PyICe  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="TUTORIAL 5 Putting it all Together" href="tutorial_5_putting_it_all_together.html" />
+    <link rel="prev" title="TUTORIAL 3 Plotting Data" href="tutorial_3_plotting.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            PyICe
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorials.html">How To Guides</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="tutorial_0_setup.html">TUTORIAL 0 Setting up a Python Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_1_meter.html">TUTORIAL 1 Adding a Single Channel Voltmeter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_2_logging.html">TUTORIAL 2 Logging Data to a SQLite File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_3_plotting.html">TUTORIAL 3 Plotting Data</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">TUTORIAL 4 Adding a Power Supply</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_5_putting_it_all_together.html">TUTORIAL 5 Putting it all Together</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_6_code_free_gui.html">TUTORIAL 6 The Code-Free GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_7_tips_and_tricks.html">TUTORIAL 7 Tips &amp; Tricks</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">PyICe</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PyICe</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../tutorials.html">How To Guides</a></li>
+      <li class="breadcrumb-item active">TUTORIAL 4 Adding a Power Supply</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/tutorials/tutorial_4_supply.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="tutorial-4-adding-a-power-supply">
+<h1>TUTORIAL 4 Adding a Power Supply<a class="headerlink" href="#tutorial-4-adding-a-power-supply" title="Permalink to this heading"></a></h1>
+<p>This script introduces writable channels, specifically within a power supply.
+It will use a Rhode and Schwartz (formerly Hameg) HMP4040 power supply.</p>
+<p>Note that the HMP4040 is connected via a standard USB (A to B) cable but appears as a virtual COM port in the device manager.
+Connecting each instrument to the software comes with its own challenges but this is generally a one time struggle and worth the additional effort.</p>
+<p>The HMP4040 is a 4 channel power supply but we will only be using its physical channel #3.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PyICe</span> <span class="kn">import</span> <span class="n">lab_core</span>
+<span class="kn">from</span> <span class="nn">PyICe</span> <span class="kn">import</span> <span class="n">lab_interfaces</span>
+<span class="kn">from</span> <span class="nn">PyICe</span> <span class="kn">import</span> <span class="n">lab_instruments</span>
+
+<span class="n">interface_factory</span> <span class="o">=</span> <span class="n">lab_interfaces</span><span class="o">.</span><span class="n">interface_factory</span><span class="p">()</span>
+<span class="n">supply_interface</span> <span class="o">=</span> <span class="n">interface_factory</span><span class="o">.</span><span class="n">get_visa_serial_interface</span><span class="p">(</span><span class="s2">&quot;COM16&quot;</span><span class="p">,</span> <span class="n">baudrate</span><span class="o">=</span><span class="mi">115200</span><span class="p">,</span> <span class="n">rtscts</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="n">hameg</span> <span class="o">=</span> <span class="n">lab_instruments</span><span class="o">.</span><span class="n">hameg_4040</span><span class="p">(</span><span class="n">supply_interface</span><span class="p">)</span>
+<span class="n">hameg</span><span class="o">.</span><span class="n">add_channel</span><span class="p">(</span><span class="n">channel_name</span><span class="o">=</span><span class="s2">&quot;force_voltage&quot;</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">ilim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">delay</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
+
+<span class="n">channel_master</span> <span class="o">=</span> <span class="n">lab_core</span><span class="o">.</span><span class="n">channel_master</span><span class="p">()</span>
+<span class="n">channel_master</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">hameg</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The HMP4040 power supply has current and voltage measurement readback capability built in.</p>
+<p>In this tutorial, the <em>lab_instruments</em> driver for the <em>hameg_4040</em> was written to automatically generate PyICe channels for these commonly used measurement readback channels.
+This can be a powerful tool for debugging when physical issues crop up on the bench.</p>
+<p>Optionally we can add the other related PyICe channels for this power supply such as a current limit control (assuming the driver was written to support it).
+If you find that an instrument driver is devoid of a feature that the instrument physically supports, please consider amending the driver and performing a pull request or contact <a class="reference external" href="mailto:pyice-developers&#37;&#52;&#48;analog&#46;com">pyice-developers<span>&#64;</span>analog<span>&#46;</span>com</a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">hameg</span><span class="o">.</span><span class="n">add_channel_current</span><span class="p">(</span><span class="n">channel_name</span><span class="o">=</span><span class="s2">&quot;current_limit&quot;</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now we can write the voltage to 5V and set a 500mA current limit.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">channel_master</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">channel_name</span><span class="o">=</span><span class="s1">&#39;force_voltage&#39;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">channel_master</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">channel_name</span><span class="o">=</span><span class="s1">&#39;current_limit&#39;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Using the channel_master we can now read all the channels at once.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Reading ALL channels&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">channel_master</span><span class="o">.</span><span class="n">read_all_channels</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>This command produces the output:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Reading ALL channels
+current_limit:        0.5
+force_voltage:        5
+force_voltage_enable: True
+force_voltage_ilim:   1
+force_voltage_isense: 0.0297
+force_voltage_vsense: 4.999
+</pre></div>
+</div>
+<p>Notice that the auxiliary channels created are prepended with your custom channel name of <strong>force_voltage_</strong>.</p>
+<p>We can also read a subset of channels (now that the we know they exist).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Reading the &#39;&lt;your_name&gt;_vsense&#39; and &#39;&lt;your_name&gt;_isense&#39; auxilliary channels&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">channel_master</span><span class="o">.</span><span class="n">read_channels</span><span class="p">(</span><span class="n">item_list</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;force_voltage_vsense&#39;</span><span class="p">,</span> <span class="s1">&#39;force_voltage_isense&#39;</span><span class="p">]))</span>
+</pre></div>
+</div>
+<p>And this produces:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Reading the &#39;&lt;your_name&gt;_vsense&#39; and &#39;&lt;your_name&gt;_isense&#39; auxiliary channels
+force_voltage_isense: 0.0302
+force_voltage_vsense: 5.0
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tutorial_3_plotting.html" class="btn btn-neutral float-left" title="TUTORIAL 3 Plotting Data" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="tutorial_5_putting_it_all_together.html" class="btn btn-neutral float-right" title="TUTORIAL 5 Putting it all Together" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Dave Simmons, Steve Martin, Zach Lewko.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

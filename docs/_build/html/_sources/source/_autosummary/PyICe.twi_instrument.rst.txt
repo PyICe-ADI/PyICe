@@ -1,0 +1,6 @@
+PyICe.twi\_instrument
+=====================
+
+.. currentmodule:: PyICe
+
+.. automodule:: twi_instrument

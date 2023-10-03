@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TUTORIAL 7 Tips &amp; Tricks &mdash; PyICe  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="PyICe" href="../modules.html" />
+    <link rel="prev" title="TUTORIAL 6 The Code-Free GUI" href="tutorial_6_code_free_gui.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            PyICe
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorials.html">How To Guides</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="tutorial_0_setup.html">TUTORIAL 0 Setting up a Python Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_1_meter.html">TUTORIAL 1 Adding a Single Channel Voltmeter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_2_logging.html">TUTORIAL 2 Logging Data to a SQLite File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_3_plotting.html">TUTORIAL 3 Plotting Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_4_supply.html">TUTORIAL 4 Adding a Power Supply</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_5_putting_it_all_together.html">TUTORIAL 5 Putting it all Together</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_6_code_free_gui.html">TUTORIAL 6 The Code-Free GUI</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">TUTORIAL 7 Tips &amp; Tricks</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">PyICe</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PyICe</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../tutorials.html">How To Guides</a></li>
+      <li class="breadcrumb-item active">TUTORIAL 7 Tips &amp; Tricks</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/tutorials/tutorial_7_tips_and_tricks.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="tutorial-7-tips-tricks">
+<h1>TUTORIAL 7 Tips &amp; Tricks<a class="headerlink" href="#tutorial-7-tips-tricks" title="Permalink to this heading"></a></h1>
+<p>Storing data in a SQLite database can be intimidating for first time users. It’s always tempting to go to what we know such as CSV, etc.
+This is also true of Python in general.
+The reader is encouraged to give both a try and embrace the possibility, although there will be growing pains, that the advancement in productivity and organization will follow from this investment.</p>
+<p>One way to learn about the database and practice using SQL queries is in the DB Browser. The browser has simple tabs across the top called:</p>
+<p><strong>[Database Structure]</strong> <strong>[Browse Data]</strong> <strong>[Edit Pragmas]</strong> <strong>[Execute SQL]</strong></p>
+<p>We will focus on the first, second and fourth.</p>
+<p>In <strong>Database Structure</strong> notice that our two tables are listed, <em>diode_data_table</em> and <em>tutorial_2_table</em>.
+These can be unfolder to show the columns (PyICe channels) in each table.</p>
+<p>By going to the <strong>Browse Data</strong> tab we can choose which of the two tables to view from the dropdown in the upper left.
+Notice that it now gives a complete world view of the columns and rows of data taken. There is a column for each PyICe channel and row for each call of the logger (logger.log()) that was in the <strong>for</strong> loop.</p>
+<p>Finally, if we go to the <strong>Execute SQL</strong> tab we can try our hand at some SQL queries. This tab is not table specific as SQL queries generally need to be disambiguated from within the query itself.</p>
+<p>For example, we can borrow a query from Tutorial 6 and simply paste it in the query input box.</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>SELECT rowid, vmeas*1e6 FROM tutorial_2_table ORDER BY rowid
+</pre></div>
+</div>
+<p>Now by hitting the <em>play</em> button [▶] we can see the data listed in the browser pane below and the status of the query result in the lowest browser pane.</p>
+<p>DB Broswer can also make quick and dirty charts in the lower right pane to sanity check the results before committing to an LTC_plot script. This can also be helpful to find the extents of the data.</p>
+<p>Another way to interrogate data values and determine Python data types while learning these techniques is to simply stop the program midstream and poke around.
+To that end, the Python command <strong>breakpoint()</strong> can be very powerful. From within a breakpoint, the programmer can interact with object data simply by typing its name at the <strong>(pdb)</strong> prompt.</p>
+<p>For example, it’s possible to interrogate the SQLite database values with the following code:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PyICe.lab_utils.sqlite_data</span> <span class="kn">import</span> <span class="n">sqlite_data</span>
+<span class="n">database</span> <span class="o">=</span> <span class="n">sqlite_data</span><span class="p">(</span><span class="n">table_name</span><span class="o">=</span><span class="s2">&quot;diode_data_table&quot;</span><span class="p">,</span> <span class="n">database_file</span><span class="o">=</span><span class="s2">&quot;data_log.sqlite&quot;</span><span class="p">)</span>
+<span class="nb">breakpoint</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This will result in the Python command line prompt:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>--Return--
+&gt; d:\users\smartin2\projects\pyice-adi\pyice\tutorials\getting_started_tutorials\results\ex_7_tips_and_tricks.py(5)&lt;module&gt;()-&gt;None
+-&gt; breakpoint()
+(Pdb) _
+</pre></div>
+</div>
+<p>From this prompt we can examine any local variables in real time with Python functions like <strong>type()</strong>.</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>--Return--
+&gt; d:\users\smartin2\projects\pyice-adi\pyice\tutorials\getting_started_tutorials\results\ex_7_tips_and_tricks.py(5)&lt;module&gt;()-&gt;None
+-&gt; breakpoint()
+(Pdb) type(database)
+&lt;class &#39;PyICe.lab_utils.sqlite_data.sqlite_data&#39;&gt;
+(Pdb) _
+</pre></div>
+</div>
+<p>We can also ask objects what methods they support by using the <strong>dir()</strong> function.</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>--Return--
+&gt; d:\users\smartin2\projects\pyice-adi\pyice\tutorials\getting_started_tutorials\results\ex_7_tips_and_tricks.py(5)&lt;module&gt;()-&gt;None
+-&gt; breakpoint()
+(Pdb) type(database)
+&lt;class &#39;PyICe.lab_utils.sqlite_data.sqlite_data&#39;&gt;
+(Pdb) dir(database)
+[&#39;__abstractmethods__&#39;, &#39;__class__&#39;, &#39;__class_getitem__&#39;, &#39;__contains__&#39;, &#39;__delattr__&#39;, &#39;__dict__&#39;, &#39;__dir__&#39;, &#39;__doc__&#39;, &#39;__enter__&#39;, &#39;__eq__&#39;, &#39;__exit__&#39;, &#39;__format__&#39;, &#39;__ge__&#39;, &#39;__getattribute__&#39;, &#39;__getitem__&#39;, &#39;__gt__&#39;, &#39;__hash__&#39;, &#39;__init__&#39;, &#39;__init_subclass__&#39;, &#39;__iter__&#39;, &#39;__le__&#39;, &#39;__len__&#39;, &#39;__lt__&#39;, &#39;__module__&#39;, &#39;__ne__&#39;, &#39;__new__&#39;, &#39;__reduce__&#39;, &#39;__reduce_ex__&#39;, &#39;__repr__&#39;, &#39;__reversed__&#39;, &#39;__setattr__&#39;, &#39;__sizeof__&#39;, &#39;__slots__&#39;, &#39;__str__&#39;, &#39;__subclasshook__&#39;, &#39;__weakref__&#39;, &#39;_abc_impl&#39;, &#39;column_query&#39;, &#39;conn&#39;, &#39;convert_ndarray&#39;, &#39;convert_timestring&#39;, &#39;convert_vector&#39;, &#39;count&#39;, &#39;csv&#39;, &#39;expand_vector_data&#39;, &#39;filter_change&#39;, &#39;get_column_names&#39;, &#39;get_column_types&#39;, &#39;get_distinct&#39;, &#39;get_table_names&#39;, &#39;index&#39;, &#39;numpy_recarray&#39;, &#39;optimize&#39;, &#39;pandas_dataframe&#39;, &#39;params&#39;, &#39;query&#39;, &#39;set_table&#39;, &#39;sql_query&#39;, &#39;table_name&#39;, &#39;time_delta_query&#39;, &#39;timezone&#39;, &#39;to_list&#39;, &#39;xlsx&#39;, &#39;zip&#39;]
+(Pdb) _
+</pre></div>
+</div>
+<p>Finally, we can try our hand at some SQL queries and see if we get back a data structure.</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>--Return--
+&gt; d:\users\smartin2\projects\pyice-adi\pyice\tutorials\getting_started_tutorials\results\ex_7_tips_and_tricks.py(5)&lt;module&gt;()-&gt;None
+-&gt; breakpoint()
+(Pdb) type(database)
+&lt;class &#39;PyICe.lab_utils.sqlite_data.sqlite_data&#39;&gt;
+(Pdb) dir(database)
+[&#39;__abstractmethods__&#39;, &#39;__class__&#39;, &#39;__class_getitem__&#39;, &#39;__contains__&#39;, &#39;__delattr__&#39;, &#39;__dict__&#39;, &#39;__dir__&#39;, &#39;__doc__&#39;, &#39;__enter__&#39;, &#39;__eq__&#39;, &#39;__exit__&#39;, &#39;__format__&#39;, &#39;__ge__&#39;, &#39;__getattribute__&#39;, &#39;__getitem__&#39;, &#39;__gt__&#39;, &#39;__hash__&#39;, &#39;__init__&#39;, &#39;__init_subclass__&#39;, &#39;__iter__&#39;, &#39;__le__&#39;, &#39;__len__&#39;, &#39;__lt__&#39;, &#39;__module__&#39;, &#39;__ne__&#39;, &#39;__new__&#39;, &#39;__reduce__&#39;, &#39;__reduce_ex__&#39;, &#39;__repr__&#39;, &#39;__reversed__&#39;, &#39;__setattr__&#39;, &#39;__sizeof__&#39;, &#39;__slots__&#39;, &#39;__str__&#39;, &#39;__subclasshook__&#39;, &#39;__weakref__&#39;, &#39;_abc_impl&#39;, &#39;column_query&#39;, &#39;conn&#39;, &#39;convert_ndarray&#39;, &#39;convert_timestring&#39;, &#39;convert_vector&#39;, &#39;count&#39;, &#39;csv&#39;, &#39;expand_vector_data&#39;, &#39;filter_change&#39;, &#39;get_column_names&#39;, &#39;get_column_types&#39;, &#39;get_distinct&#39;, &#39;get_table_names&#39;, &#39;index&#39;, &#39;numpy_recarray&#39;, &#39;optimize&#39;, &#39;pandas_dataframe&#39;, &#39;params&#39;, &#39;query&#39;, &#39;set_table&#39;, &#39;sql_query&#39;, &#39;table_name&#39;, &#39;time_delta_query&#39;, &#39;timezone&#39;, &#39;to_list&#39;, &#39;xlsx&#39;, &#39;zip&#39;]
+(Pdb) database.query(&quot;SELECT rowid, vmeas*1e6 FROM tutorial_2_table ORDER BY rowid&quot;)
+&lt;sqlite3.Cursor object at 0x0000017B30D3E340&gt;
+(Pdb)
+</pre></div>
+</div>
+<p>The database object itself now represents the results of the query. While  the object is a <strong>&lt;sqlite3.Cursor&gt;</strong> object, it will respond to list of list-like inquires.
+Specifically, the first index will represent the row of the query result and the second index will represent the column.
+To determine how many rows were returned the Python function <strong>len()</strong> can be used.</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>(Pdb) len(database)
+10
+(Pdb)
+</pre></div>
+</div>
+<p>The sixth row, second column would be retrieved by:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>(Pdb) database[5][1]
+-0.637
+(Pdb)
+</pre></div>
+</div>
+<p>Notice that if we try to access a nonexistent column we get an error:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>database[5][2]
+*** IndexError: tuple index out of range
+(Pdb)
+</pre></div>
+</div>
+<p>Hopefully with these tools, and with the abundance of material online, we can inspire enough confidence to get going using Python and SQLite for more advanced and organized laboratory evaluation. <strong>Enjoy!</strong></p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tutorial_6_code_free_gui.html" class="btn btn-neutral float-left" title="TUTORIAL 6 The Code-Free GUI" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../modules.html" class="btn btn-neutral float-right" title="PyICe" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Dave Simmons, Steve Martin, Zach Lewko.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
