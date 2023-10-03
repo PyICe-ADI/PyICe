@@ -15,7 +15,7 @@ generate both publicly distributable libraries and documentation, and private
 IC synthesis and test files, all from a single common XML-based register map
 description.
 
-For more detailed documentation, please go [here](https://xenomorphxx121.github.io/PyICe/)
+For more detailed documentation, please go [here](https://pyice-adi.github.io/PyICe/)
 
 # [PyICe contributors, please go here for install instructions](CONTRIBUTING.md)
 
