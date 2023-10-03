@@ -1,0 +1,6 @@
+PyICe.logo
+==========
+
+.. currentmodule:: PyICe
+
+.. automodule:: logo

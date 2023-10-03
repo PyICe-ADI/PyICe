@@ -1,0 +1,6 @@
+PyICe.test\_lab\_core
+=====================
+
+.. currentmodule:: PyICe
+
+.. automodule:: test_lab_core

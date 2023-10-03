@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TUTORIAL 5 Putting it all Together &mdash; PyICe  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="TUTORIAL 6 The Code-Free GUI" href="tutorial_6_code_free_gui.html" />
+    <link rel="prev" title="TUTORIAL 4 Adding a Power Supply" href="tutorial_4_supply.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            PyICe
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorials.html">How To Guides</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="tutorial_0_setup.html">TUTORIAL 0 Setting up a Python Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_1_meter.html">TUTORIAL 1 Adding a Single Channel Voltmeter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_2_logging.html">TUTORIAL 2 Logging Data to a SQLite File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_3_plotting.html">TUTORIAL 3 Plotting Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_4_supply.html">TUTORIAL 4 Adding a Power Supply</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">TUTORIAL 5 Putting it all Together</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_6_code_free_gui.html">TUTORIAL 6 The Code-Free GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_7_tips_and_tricks.html">TUTORIAL 7 Tips &amp; Tricks</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">PyICe</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PyICe</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../tutorials.html">How To Guides</a></li>
+      <li class="breadcrumb-item active">TUTORIAL 5 Putting it all Together</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/tutorials/tutorial_5_putting_it_all_together.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="tutorial-5-putting-it-all-together">
+<h1>TUTORIAL 5 Putting it all Together<a class="headerlink" href="#tutorial-5-putting-it-all-together" title="Permalink to this heading"></a></h1>
+<p>This script brings all of the previous concepts together by measuring a laser diode assembly purchased from Amazon. Both the HMP4040 supply and 34401A meter from the previous tutorials are used.</p>
+<p>The laser assembly comes with a laser diode (LED) embedded in a brass housing with a lens and a current limiting resistor. The current limiting resistor is visibly exposed.</p>
+<p>It is known that 5V can be applied directly across the laser assembly but the raw LED characteristics are unknown as is the current limiting resistor value.</p>
+<p>The assembly is wired such that the positive input lead (RED) is connected to the anode of the LED, the LED is connected in series with the resistor and the negative input lead (BLUE) is connected to the “bottom” of the current limiting resistor. The BLUE wire will be considered ground. A third (GREEN) wire was tack soldered to the intermediate node between the LED and resistor. The voltmeter was connected across the resistor (i.e. METER(-) to BLUE (GND) and METER(+) to the intermediate Diode-Resistor node). See the photo in the results folder.</p>
+<p>To replicate this experiment with an LED and resistor:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Connect the cathode of a red LED to a 220Ω resistor.</p></li>
+<li><p>Connect the positive lead of the power supply to the LED anode.</p></li>
+<li><p>Connect the negative lead of the power supply to the loose resistor end.</p></li>
+<li><p>Place the 34401A meter across the resistor (positive on the intermediate node, negative with the supply negative).</p></li>
+</ul>
+</div></blockquote>
+<p>Let’s get a <em>lab_interfaces</em> <strong>interface_factory</strong>, a 34401a interface and an HMP4040 interface.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PyICe</span> <span class="kn">import</span> <span class="n">lab_interfaces</span>
+
+<span class="n">interface_factory</span> <span class="o">=</span> <span class="n">lab_interfaces</span><span class="o">.</span><span class="n">interface_factory</span><span class="p">()</span>
+
+<span class="n">a34401_interface</span> <span class="o">=</span> <span class="n">interface_factory</span><span class="o">.</span><span class="n">get_visa_serial_interface</span><span class="p">(</span><span class="s2">&quot;COM10&quot;</span><span class="p">,</span> <span class="n">baudrate</span><span class="o">=</span><span class="mi">9600</span><span class="p">,</span> <span class="n">dsrdtr</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">supply_interface</span> <span class="o">=</span> <span class="n">interface_factory</span><span class="o">.</span><span class="n">get_visa_serial_interface</span><span class="p">(</span><span class="s2">&quot;COM16&quot;</span><span class="p">,</span> <span class="n">baudrate</span><span class="o">=</span><span class="mi">115200</span><span class="p">,</span> <span class="n">rtscts</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Let’s get the PyICe drivers for the two instruments from <em>lab_instruments</em> and get the instruments configured.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PyICe</span> <span class="kn">import</span> <span class="n">lab_instruments</span>
+
+<span class="n">meter</span> <span class="o">=</span> <span class="n">lab_instruments</span><span class="o">.</span><span class="n">agilent_34401a</span><span class="p">(</span><span class="n">a34401_interface</span><span class="p">)</span>
+<span class="n">meter</span><span class="o">.</span><span class="n">add_channel</span><span class="p">(</span><span class="s2">&quot;vresistor_vsense&quot;</span><span class="p">)</span>
+<span class="n">meter</span><span class="o">.</span><span class="n">config_dc_voltage</span><span class="p">()</span>
+
+<span class="n">hameg</span> <span class="o">=</span> <span class="n">lab_instruments</span><span class="o">.</span><span class="n">hameg_4040</span><span class="p">(</span><span class="n">supply_interface</span><span class="p">)</span>
+<span class="n">hameg</span><span class="o">.</span><span class="n">add_channel</span><span class="p">(</span><span class="n">channel_name</span><span class="o">=</span><span class="s2">&quot;vsweep&quot;</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">ilim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">delay</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
+<span class="n">hameg</span><span class="o">.</span><span class="n">add_channel_current</span><span class="p">(</span><span class="n">channel_name</span><span class="o">=</span><span class="s2">&quot;current_limit&quot;</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now let’s create a <strong>PyICe</strong> <em>channel_master</em> from lab_core.py and get our instruments added to it.
+This time we’ll call our channel_master <em>bench</em> to better match its real-world counterpart.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PyICe</span> <span class="kn">import</span> <span class="n">lab_core</span>
+
+<span class="n">bench</span> <span class="o">=</span> <span class="n">lab_core</span><span class="o">.</span><span class="n">channel_master</span><span class="p">()</span>
+<span class="n">bench</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">meter</span><span class="p">)</span>
+<span class="n">bench</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">hameg</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The order of these steps is not important as long as no step references an object that has yet to be created.</p>
+<p>We will need <em>lab_utils</em> to generate a floating point voltage sweep range rather than just integer voltages. We will also need it to help us extract data from the SQLite database.</p>
+<p>We will also need <em>LTC_plot</em> to generate data visualization plots after data collection.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PyICe.lab_utils.ranges</span> <span class="kn">import</span> <span class="n">floatRangeInc</span>
+<span class="kn">from</span> <span class="nn">PyICe.lab_utils.sqlite_data</span> <span class="kn">import</span> <span class="n">sqlite_data</span>
+<span class="kn">from</span> <span class="nn">PyICe</span> <span class="kn">import</span> <span class="n">LTC_plot</span>
+</pre></div>
+</div>
+<p>Finally, we will need to create a <em>lab_core</em> <strong>logger</strong> object to collect our data rows and columns on each sweep step. We might as well lower the power supply’s current limit to 500mA while we’re at it.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">logger</span> <span class="o">=</span> <span class="n">lab_core</span><span class="o">.</span><span class="n">logger</span><span class="p">(</span><span class="n">bench</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">new_table</span><span class="p">(</span><span class="n">table_name</span><span class="o">=</span><span class="s1">&#39;diode_data_table&#39;</span><span class="p">,</span> <span class="n">replace_table</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">bench</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;current_limit&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We’ve completed the setup steps needed to begin collecting data. The small code block below shows all that is needed to run a powerful (potentially nested) measurement sweep. Let’s not forget to “clean up” our bench by setting the power supply voltage back to 0V on the way out (the laser was trying to burn a hole through the HAMEG 😊 ).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">vsweep</span> <span class="ow">in</span> <span class="n">floatRangeInc</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mf">0.025</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Setting voltage to </span><span class="si">{</span><span class="n">vsweep</span><span class="si">}</span><span class="s2">V&quot;</span><span class="p">)</span>
+    <span class="n">bench</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;vsweep&#39;</span><span class="p">,</span> <span class="n">vsweep</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">()</span>
+<span class="n">bench</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;vsweep&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now that the data is collected, we will make an <strong>LTC_plot</strong> <em>Multipage</em> plot this time.</p>
+<p>The plots will go into separated pages within a single file rather than individual files.</p>
+<p>The curves will be:</p>
+<ol class="arabic simple">
+<li><p>Plot the assembly current* vs the applied voltage</p></li>
+<li><p>Plot the assembly current* vs the raw laser diode voltage on a logarithmic axis</p></li>
+<li><p>Plot the power of the raw laser diode and the entire assembly vs applied voltage</p></li>
+<li><p>Plot the power of the raw laser diode vs the assembly current*</p></li>
+</ol>
+<p>*Note that the assembly current is the same as both the resistor and LED currents as they are in series.</p>
+<p>Let’s first retrieve the data from the SQLite database created during the collection phase.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">database</span> <span class="o">=</span> <span class="n">sqlite_data</span><span class="p">(</span><span class="n">table_name</span><span class="o">=</span><span class="s2">&quot;diode_data_table&quot;</span><span class="p">,</span> <span class="n">database_file</span><span class="o">=</span><span class="s2">&quot;data_log.sqlite&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now let’s create the laser assembly’s I-V plot and add the desired trace. In this plot we’ll also dig out the data needed to compute the resistor value and annotate the plot with it.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#########################################################################</span>
+<span class="c1">#                                                                       #</span>
+<span class="c1"># Laser Diode Assembly Current vs Voltage</span>
+<span class="c1">#                                                                       #</span>
+<span class="c1">#########################################################################</span>
+<span class="n">G1</span> <span class="o">=</span> <span class="n">LTC_plot</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plot_title</span>   <span class="o">=</span> <span class="s2">&quot;Laser Diode Assembly Current vs</span><span class="se">\n</span><span class="s2">Applied Voltage&quot;</span><span class="p">,</span>
+                   <span class="n">plot_name</span>    <span class="o">=</span> <span class="s2">&quot;G1&quot;</span><span class="p">,</span>
+                   <span class="n">xaxis_label</span>  <span class="o">=</span> <span class="s2">&quot;ASSEMBLY VOLTAGE (V)&quot;</span><span class="p">,</span>
+                   <span class="n">yaxis_label</span>  <span class="o">=</span> <span class="s2">&quot;ASSEMBLY CURRENT (mA)&quot;</span><span class="p">,</span>
+                   <span class="n">xlims</span>        <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span>
+                   <span class="n">ylims</span>        <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">40</span><span class="p">),</span>
+                   <span class="n">xminor</span>       <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                   <span class="n">xdivs</span>        <span class="o">=</span> <span class="mi">6</span><span class="p">,</span>
+                   <span class="n">yminor</span>       <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+                   <span class="n">ydivs</span>        <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+                   <span class="n">logx</span>         <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                   <span class="n">logy</span>         <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+<span class="n">database</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;SELECT vsweep_vsense, vsweep_isense * 1e3 FROM diode_data_table ORDER BY vsweep_vsense&#39;</span><span class="p">)</span>
+<span class="n">G1</span><span class="o">.</span><span class="n">add_trace</span><span class="p">(</span>   <span class="n">axis</span>    <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="n">data</span>    <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">to_list</span><span class="p">(),</span>
+                <span class="n">color</span>   <span class="o">=</span> <span class="n">LTC_plot</span><span class="o">.</span><span class="n">LT_RED_1</span><span class="p">,</span>
+                <span class="n">legend</span>  <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+<span class="n">database</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;SELECT vresistor_vsense, vsweep_isense FROM diode_data_table WHERE vsweep==6&#39;</span><span class="p">)</span>
+<span class="n">V_6V</span><span class="p">,</span> <span class="n">I_6V</span> <span class="o">=</span> <span class="n">database</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">database</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;SELECT vresistor_vsense, vsweep_isense FROM diode_data_table WHERE vsweep==3&#39;</span><span class="p">)</span>
+<span class="n">V_3V</span><span class="p">,</span> <span class="n">I_3V</span> <span class="o">=</span> <span class="n">database</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">rmeasured</span> <span class="o">=</span> <span class="p">(</span><span class="n">V_6V</span> <span class="o">-</span> <span class="n">V_3V</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">I_6V</span> <span class="o">-</span> <span class="n">I_3V</span><span class="p">)</span>
+<span class="n">G1</span><span class="o">.</span><span class="n">add_note</span><span class="p">(</span><span class="n">note</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$R_</span><span class="si">{SERIES}</span><span class="s2">=$&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">rmeasured</span><span class="si">:</span><span class="s2">0.2f</span><span class="si">}</span><span class="s2">Ω&quot;</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">36</span><span class="p">],</span> <span class="n">use_axes_scale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">horizontalalignment</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="n">verticalalignment</span><span class="o">=</span><span class="s2">&quot;bottom&quot;</span><span class="p">)</span>
+<span class="c1">#########################################################################</span>
+<span class="c1">#                                                                       #</span>
+<span class="c1">#########################################################################</span>
+</pre></div>
+</div>
+<p>Note, in this tutorial that LaTeX string formatting is supported by matplotlib (and therefore LTC_plot). An example of subscripting is shown in the <strong>add_note()</strong> method above. LaTeX string formatting requires the text string to be declared a <em>raw</em> string by preceding the quotes with an <strong>r</strong>. More information on LaTeX string formatting syntax may be found here: <a class="reference external" href="https://matplotlib.org/stable/gallery/text_labels_and_annotations/tex_demo.html">https://matplotlib.org/stable/gallery/text_labels_and_annotations/tex_demo.html</a></p>
+<p>Also recall that the <strong>PyICe</strong> driver for the power supply created helper channels for the power supply current and voltage readback that you did not create explicitly. These helper channels are the ones seen in the SQLite query.</p>
+<p>If you use an instrument driver that doesn’t automatically add channels that you need, you will need to peruse your instrument’s driver file in <em>lab_instruments</em> to find the add() method for the channel(s) you need.</p>
+<p>In the next plot we’ll extract just the LED voltage and plot the LED (aka assembly) current against it on a log scale.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#########################################################################</span>
+<span class="c1">#                                                                       #</span>
+<span class="c1"># Laser Diode Assembly Current vs Raw Laser Diode Voltage</span>
+<span class="c1">#                                                                       #</span>
+<span class="c1">#########################################################################</span>
+<span class="n">G2</span> <span class="o">=</span> <span class="n">LTC_plot</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plot_title</span>   <span class="o">=</span> <span class="s2">&quot;Laser Diode Current vs</span><span class="se">\n</span><span class="s2">Raw Diode Voltage&quot;</span><span class="p">,</span>
+                   <span class="n">plot_name</span>    <span class="o">=</span> <span class="s2">&quot;G2&quot;</span><span class="p">,</span>
+                   <span class="n">xaxis_label</span>  <span class="o">=</span> <span class="s2">&quot;DIODE VOLTAGE (V)&quot;</span><span class="p">,</span>
+                   <span class="n">yaxis_label</span>  <span class="o">=</span> <span class="s2">&quot;DIODE CURRENT (mA)&quot;</span><span class="p">,</span>
+                   <span class="n">xlims</span>        <span class="o">=</span> <span class="p">(</span><span class="mf">1.6</span><span class="p">,</span> <span class="mf">2.4</span><span class="p">),</span>
+                   <span class="n">ylims</span>        <span class="o">=</span> <span class="p">(</span><span class="mf">0.3</span><span class="p">,</span> <span class="mi">40</span><span class="p">),</span>
+                   <span class="n">xminor</span>       <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+                   <span class="n">xdivs</span>        <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+                   <span class="n">yminor</span>       <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                   <span class="n">ydivs</span>        <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+                   <span class="n">logx</span>         <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                   <span class="n">logy</span>         <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="c1"># &lt;---- Note Log scale</span>
+<span class="n">database</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;SELECT vsweep_vsense - vresistor_vsense, vsweep_isense * 1e3 FROM diode_data_table ORDER BY vsweep_vsense - vresistor_vsense&#39;</span><span class="p">)</span>
+<span class="n">G2</span><span class="o">.</span><span class="n">add_trace</span><span class="p">(</span>   <span class="n">axis</span>    <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="n">data</span>    <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">to_list</span><span class="p">(),</span>
+                <span class="n">color</span>   <span class="o">=</span> <span class="n">LTC_plot</span><span class="o">.</span><span class="n">LT_RED_1</span><span class="p">,</span>
+                <span class="n">legend</span>  <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+<span class="c1">#########################################################################</span>
+<span class="c1">#                                                                       #</span>
+<span class="c1">#########################################################################</span>
+</pre></div>
+</div>
+<p>Now we’ll create the plot that shows the raw LED power and the assembly power levels plotted against the applied voltage.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#########################################################################</span>
+<span class="c1">#                                                                       #</span>
+<span class="c1"># Laser Diode Assembly Total Power and Diode Power vs Applied Voltage</span>
+<span class="c1">#                                                                       #</span>
+<span class="c1">#########################################################################</span>
+<span class="n">G3</span> <span class="o">=</span> <span class="n">LTC_plot</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span> <span class="n">plot_title</span>  <span class="o">=</span> <span class="s2">&quot;Power of the Laser Diode Assembly</span><span class="se">\n</span><span class="s2">and Raw Laser Diode&quot;</span><span class="p">,</span>
+                   <span class="n">plot_name</span>    <span class="o">=</span> <span class="s2">&quot;G3&quot;</span><span class="p">,</span>
+                   <span class="n">xaxis_label</span>  <span class="o">=</span> <span class="s2">&quot;VOLTAGE (V)&quot;</span><span class="p">,</span>
+                   <span class="n">yaxis_label</span>  <span class="o">=</span> <span class="s2">&quot;POWER (mW)&quot;</span><span class="p">,</span>
+                   <span class="n">xlims</span>        <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span>
+                   <span class="n">ylims</span>        <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">240</span><span class="p">),</span>
+                   <span class="n">xminor</span>       <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                   <span class="n">xdivs</span>        <span class="o">=</span> <span class="mi">6</span><span class="p">,</span>
+                   <span class="n">yminor</span>       <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                   <span class="n">ydivs</span>        <span class="o">=</span> <span class="mi">6</span><span class="p">,</span>
+                   <span class="n">logx</span>         <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                   <span class="n">logy</span>         <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+<span class="n">database</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;SELECT vsweep_vsense, vsweep_vsense * vsweep_isense * 1e3 FROM diode_data_table ORDER BY vsweep_vsense&#39;</span><span class="p">)</span>
+<span class="n">G3</span><span class="o">.</span><span class="n">add_trace</span><span class="p">(</span>   <span class="n">axis</span>    <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="n">data</span>    <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">to_list</span><span class="p">(),</span>
+                <span class="n">color</span>   <span class="o">=</span> <span class="n">LTC_plot</span><span class="o">.</span><span class="n">LT_RED_1</span><span class="p">,</span>
+                <span class="n">legend</span>  <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;$P_</span><span class="si">{ASSY}</span><span class="s2">$&quot;</span><span class="p">)</span>
+<span class="n">database</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;SELECT vsweep_vsense, (vsweep_vsense - vresistor_vsense) * vsweep_isense * 1e3 FROM diode_data_table ORDER BY vsweep_vsense&#39;</span><span class="p">)</span>
+<span class="n">G3</span><span class="o">.</span><span class="n">add_trace</span><span class="p">(</span>   <span class="n">axis</span>    <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="n">data</span>    <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">to_list</span><span class="p">(),</span>
+                <span class="n">color</span>   <span class="o">=</span> <span class="n">LTC_plot</span><span class="o">.</span><span class="n">LT_BLUE_1</span><span class="p">,</span>
+                <span class="n">legend</span>  <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;$P_</span><span class="si">{DIODE}</span><span class="s2">$&quot;</span><span class="p">)</span>
+<span class="n">G3</span><span class="o">.</span><span class="n">add_legend</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">justification</span><span class="o">=</span><span class="s1">&#39;lower left&#39;</span><span class="p">,</span> <span class="n">use_axes_scale</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+<span class="c1">#########################################################################</span>
+<span class="c1">#                                                                       #</span>
+<span class="c1">#########################################################################</span>
+</pre></div>
+</div>
+<p>Note the use of LaTeX string formatting in the trace legend above.</p>
+<p>Finally, we’ll plot the raw LED power as a function of the LED (aka assembly) current.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#########################################################################</span>
+<span class="c1">#                                                                       #</span>
+<span class="c1"># Raw Laser Diode Power vs Diode Current</span>
+<span class="c1">#                                                                       #</span>
+<span class="c1">#########################################################################</span>
+<span class="n">G4</span> <span class="o">=</span> <span class="n">LTC_plot</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span> <span class="n">plot_title</span>  <span class="o">=</span> <span class="s2">&quot;Power of the Raw Laser Diode</span><span class="se">\n</span><span class="s2">vs Diode Current&quot;</span> <span class="o">+</span> <span class="sa">r</span><span class="s2">&quot;$^{*}$&quot;</span><span class="p">,</span>
+                   <span class="n">plot_name</span>    <span class="o">=</span> <span class="s2">&quot;G4&quot;</span><span class="p">,</span>
+                   <span class="n">xaxis_label</span>  <span class="o">=</span> <span class="s2">&quot;CURRENT (mA)&quot;</span><span class="p">,</span>
+                   <span class="n">yaxis_label</span>  <span class="o">=</span> <span class="s2">&quot;POWER (mW)&quot;</span><span class="p">,</span>
+                   <span class="n">xlims</span>        <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">40</span><span class="p">),</span>
+                   <span class="n">ylims</span>        <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
+                   <span class="n">xminor</span>       <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                   <span class="n">xdivs</span>        <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+                   <span class="n">yminor</span>       <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                   <span class="n">ydivs</span>        <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+                   <span class="n">logx</span>         <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                   <span class="n">logy</span>         <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+<span class="n">database</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;SELECT vsweep_isense * 1e3, (vsweep_vsense - vresistor_vsense) * vsweep_isense * 1e3 FROM diode_data_table ORDER BY vsweep_isense&#39;</span><span class="p">)</span>
+<span class="n">G4</span><span class="o">.</span><span class="n">add_trace</span><span class="p">(</span>   <span class="n">axis</span>    <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="n">data</span>    <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">to_list</span><span class="p">(),</span>
+                <span class="n">color</span>   <span class="o">=</span> <span class="n">LTC_plot</span><span class="o">.</span><span class="n">LT_RED_1</span><span class="p">,</span>
+                <span class="n">legend</span>  <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+<span class="n">G4</span><span class="o">.</span><span class="n">add_note</span><span class="p">(</span><span class="n">note</span><span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;$^{*}$&quot;</span> <span class="o">+</span> <span class="s2">&quot;Diode current is the same</span><span class="se">\n</span><span class="s2"> as the assembly current&quot;</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="p">[</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">],</span> <span class="n">use_axes_scale</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">horizontalalignment</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="n">verticalalignment</span><span class="o">=</span><span class="s2">&quot;top&quot;</span><span class="p">)</span>
+<span class="c1">#########################################################################</span>
+<span class="c1">#                                                                       #</span>
+<span class="c1">#########################################################################</span>
+</pre></div>
+</div>
+<p>Again, note the use of LaTeX string formatting in the <strong>add_note()</strong> method and the plot title.</p>
+<p>The only thing left to do is add the plots to some pages, add the pages to a multipage PDF file and generate the output file.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#########################################################################</span>
+<span class="c1">#                                                                       #</span>
+<span class="c1"># Assembling and Generating the Pages</span>
+<span class="c1">#                                                                       #</span>
+<span class="c1">#########################################################################</span>
+
+<span class="n">Page1</span> <span class="o">=</span> <span class="n">LTC_plot</span><span class="o">.</span><span class="n">Page</span><span class="p">(</span><span class="n">rows_x_cols</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">page_size</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">Page1</span><span class="o">.</span><span class="n">add_plot</span><span class="p">(</span><span class="n">G1</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">Page1</span><span class="o">.</span><span class="n">add_plot</span><span class="p">(</span><span class="n">G2</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="n">Page2</span> <span class="o">=</span> <span class="n">LTC_plot</span><span class="o">.</span><span class="n">Page</span><span class="p">(</span><span class="n">rows_x_cols</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">page_size</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">Page2</span><span class="o">.</span><span class="n">add_plot</span><span class="p">(</span><span class="n">G3</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">Page2</span><span class="o">.</span><span class="n">add_plot</span><span class="p">(</span><span class="n">G4</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="n">Multipage</span> <span class="o">=</span> <span class="n">LTC_plot</span><span class="o">.</span><span class="n">Multipage_pdf</span><span class="p">()</span>
+<span class="n">Multipage</span><span class="o">.</span><span class="n">add_page</span><span class="p">(</span><span class="n">Page1</span><span class="p">)</span>
+<span class="n">Multipage</span><span class="o">.</span><span class="n">add_page</span><span class="p">(</span><span class="n">Page2</span><span class="p">)</span>
+
+<span class="n">Multipage</span><span class="o">.</span><span class="n">create_pdf</span><span class="p">(</span><span class="s2">&quot;Laser Diode Test&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The results of these tutorials and the SQLite file are stored in the <strong>…\results\</strong> folder for reference.</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tutorial_4_supply.html" class="btn btn-neutral float-left" title="TUTORIAL 4 Adding a Power Supply" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="tutorial_6_code_free_gui.html" class="btn btn-neutral float-right" title="TUTORIAL 6 The Code-Free GUI" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Dave Simmons, Steve Martin, Zach Lewko.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

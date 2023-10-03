@@ -1,0 +1,6 @@
+PyICe.data\_utils
+=================
+
+.. currentmodule:: PyICe
+
+.. automodule:: data_utils

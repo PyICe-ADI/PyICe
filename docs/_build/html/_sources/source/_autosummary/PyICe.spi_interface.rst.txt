@@ -1,0 +1,6 @@
+PyICe.spi\_interface
+====================
+
+.. currentmodule:: PyICe
+
+.. automodule:: spi_interface

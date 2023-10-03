@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TUTORIAL 3 Plotting Data &mdash; PyICe  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="TUTORIAL 4 Adding a Power Supply" href="tutorial_4_supply.html" />
+    <link rel="prev" title="TUTORIAL 2 Logging Data to a SQLite File" href="tutorial_2_logging.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            PyICe
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorials.html">How To Guides</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="tutorial_0_setup.html">TUTORIAL 0 Setting up a Python Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_1_meter.html">TUTORIAL 1 Adding a Single Channel Voltmeter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_2_logging.html">TUTORIAL 2 Logging Data to a SQLite File</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">TUTORIAL 3 Plotting Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_4_supply.html">TUTORIAL 4 Adding a Power Supply</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_5_putting_it_all_together.html">TUTORIAL 5 Putting it all Together</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_6_code_free_gui.html">TUTORIAL 6 The Code-Free GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_7_tips_and_tricks.html">TUTORIAL 7 Tips &amp; Tricks</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">PyICe</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PyICe</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../tutorials.html">How To Guides</a></li>
+      <li class="breadcrumb-item active">TUTORIAL 3 Plotting Data</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/tutorials/tutorial_3_plotting.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="tutorial-3-plotting-data">
+<h1>TUTORIAL 3 Plotting Data<a class="headerlink" href="#tutorial-3-plotting-data" title="Permalink to this heading"></a></h1>
+<p>The plotting utility, <em>LTC_plot</em>, of <strong>PyICe</strong> can generate datasheet-ready plots in either Scalable Vector Graphics (.svg) or PDF format.</p>
+<p>It is a wrapper of Matplotlib which is an extensive Matlab-like plotting library for Python.</p>
+<p>It was configured to make datasheet plots that are 100% compliant with the datasheet standards of the now defunct semiconductor company Linear Technology (<a class="reference external" href="https://en.wikipedia.org/wiki/Linear_Technology">https://en.wikipedia.org/wiki/Linear_Technology</a>).</p>
+<p>We use only a very small subset of it.</p>
+<p>A major advantage of using LTC_plot is documentation and reproducibility of <em>what</em> exactly was plotted.</p>
+<p>What’s more, collecting data and plotting it should not be presumed to be a one-time event.</p>
+<p>As hardware IP progresses for a given project (e.g. IC, system or PCB), it is likely that measurements will need to be made, remade and remade again.</p>
+<p>Adopting a scripting methodology for collecting, logging and <em>plotting</em> data is the best path to developing a product defensibly free of regression.</p>
+<p>First we’ll import LTC_plot.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PyICe</span> <span class="kn">import</span> <span class="n">LTC_plot</span>
+</pre></div>
+</div>
+<p>The next part of this script operates on the data collected in ex_2_logging without re-collecting.</p>
+<p>An important tenet of PyICe is that data can be collected <em>now</em> and processed independently <em>later</em>.</p>
+<p>This will prove to be a very power methodology for more complex evaluation efforts.</p>
+<p>The module <em>lab_utils</em> contains helper functions that can extract data from the SQLite file and format it for plotting.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PyICe.lab_utils.sqlite_data</span> <span class="kn">import</span> <span class="n">sqlite_data</span>
+</pre></div>
+</div>
+<p>LTC_plot defines <em>plots</em> and <em>pages</em>.</p>
+<p>Data can be plotted on plots and plots can be added to pages.</p>
+<p>Pages can be generated as .svg or .pdf files.</p>
+<p>First we’ll create an <strong>LTC_plot.plot()</strong>.</p>
+<p>As an easy reminder of formatting parameters, the plot object was defined with the most commonly known settings clearly enumerated in its creator method.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">GX</span> <span class="o">=</span> <span class="n">LTC_plot</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span> <span class="n">plot_title</span>   <span class="o">=</span> <span class="s2">&quot;Demonstration of Meter Readings</span><span class="se">\n</span><span class="s2">Vs Iteration Number&quot;</span><span class="p">,</span>
+                    <span class="n">plot_name</span>    <span class="o">=</span> <span class="s2">&quot;TUTORIAL 3&quot;</span><span class="p">,</span>
+                    <span class="n">xaxis_label</span>  <span class="o">=</span> <span class="s2">&quot;ITERATION ()&quot;</span><span class="p">,</span>
+                    <span class="n">yaxis_label</span>  <span class="o">=</span> <span class="s2">&quot;VOLTAGE (µV)&quot;</span><span class="p">,</span>
+                    <span class="n">xlims</span>        <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">9</span><span class="p">),</span>
+                    <span class="n">ylims</span>        <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+                    <span class="n">xminor</span>       <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                    <span class="n">xdivs</span>        <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
+                    <span class="n">yminor</span>       <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                    <span class="n">ydivs</span>        <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+                    <span class="n">logx</span>         <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                    <span class="n">logy</span>         <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Next we will need a SQLite query to extract the data from the SQLite file.</p>
+<p>The data expected by LTC_plot is of the form: ((x1,y1), (x2,y2), (x3,y3)) so always select the <em>x</em> column first and then the <em>y</em> column.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_query</span> <span class="o">=</span> <span class="s1">&#39;SELECT rowid, vmeas*1e6 FROM tutorial_2_table ORDER BY rowid&#39;</span>
+</pre></div>
+</div>
+<p>Using SQLite requires some knowledge of the SQLite query language.</p>
+<p>There are many examples of this online, it is not overly burdensome to learn, and the benefits will become abundantly obvious with practice.</p>
+<p>One such benefit of using SQLite querys is that columnwise calculations are essentially free and the query clearly documents <em>what</em> was plotted.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">database</span> <span class="o">=</span> <span class="n">sqlite_data</span><span class="p">(</span><span class="n">table_name</span><span class="o">=</span><span class="s2">&quot;tutorial_2_table&quot;</span><span class="p">,</span> <span class="n">database_file</span><span class="o">=</span><span class="s2">&quot;data_log.sqlite&quot;</span><span class="p">)</span>
+<span class="n">database</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">my_query</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <strong>database</strong> object is stateful and retains a record of the most recent query made against it.</p>
+<p>Next we will add a trace to the LTC_plot.plot() created above using the data from the query.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">GX</span><span class="o">.</span><span class="n">add_trace</span><span class="p">(</span><span class="n">axis</span>   <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+             <span class="n">data</span>   <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">to_list</span><span class="p">(),</span>
+             <span class="n">color</span>  <span class="o">=</span> <span class="n">LTC_plot</span><span class="o">.</span><span class="n">LT_RED_1</span><span class="p">,</span>
+             <span class="n">legend</span> <span class="o">=</span> <span class="s2">&quot;Only</span><span class="se">\n</span><span class="s2">Trace&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For multiple traces, it is likely desirable to add a meaningful legend to the plot.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">GX</span><span class="o">.</span><span class="n">add_legend</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="p">(</span><span class="mf">1.02</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">use_axes_scale</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Most features of LTC_plot support using the data axes (axes values against which the data is plotted) or absolute axes (values from 0 to 1 representing 0 to 100% of the graph size).</p>
+<p>Loose notes can also be added to the plot.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">GX</span><span class="o">.</span><span class="n">add_note</span><span class="p">(</span><span class="n">note</span><span class="o">=</span><span class="s2">&quot;Add Your Note Here&quot;</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="p">(</span><span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">),</span> <span class="n">use_axes_scale</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Finally, an LTC_plot <em>Page</em> can be created, plots added to it, and output files generated.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Page1</span> <span class="o">=</span> <span class="n">LTC_plot</span><span class="o">.</span><span class="n">Page</span><span class="p">(</span><span class="n">rows_x_cols</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">page_size</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">Page1</span><span class="o">.</span><span class="n">add_plot</span><span class="p">(</span><span class="n">plot</span><span class="o">=</span><span class="n">GX</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">Page1</span><span class="o">.</span><span class="n">create_svg</span><span class="p">(</span><span class="n">file_basename</span><span class="o">=</span><span class="s2">&quot;TUTORIAL 3&quot;</span><span class="p">)</span>
+<span class="n">Page1</span><span class="o">.</span><span class="n">create_pdf</span><span class="p">(</span><span class="n">file_basename</span><span class="o">=</span><span class="s2">&quot;TUTORIAL 3&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Look in the </span><span class="se">\\</span><span class="s2">results</span><span class="se">\\</span><span class="s2">plots folder for the Tutorial 3 files.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Other features such as arrows can be added and histograms can be plotted, etc.</p>
+<p>See the <strong>PyICe</strong> folder <strong>PyICe\tutorials\LTC_plot_example</strong> for more plotting examples.</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tutorial_2_logging.html" class="btn btn-neutral float-left" title="TUTORIAL 2 Logging Data to a SQLite File" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="tutorial_4_supply.html" class="btn btn-neutral float-right" title="TUTORIAL 4 Adding a Power Supply" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Dave Simmons, Steve Martin, Zach Lewko.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

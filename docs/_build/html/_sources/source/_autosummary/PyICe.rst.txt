@@ -1,0 +1,47 @@
+﻿PyICe
+=====
+
+.. automodule:: PyICe
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :template: custom-module-template.rst                 <-- add this line
+   :recursive:
+
+   PyICe.LTC_plot
+   PyICe.data_utils
+   PyICe.lab_core
+   PyICe.lab_gui
+   PyICe.lab_instruments
+   PyICe.lab_interfaces
+   PyICe.lab_utils
+   PyICe.logo
+   PyICe.refid_modules
+   PyICe.spi_instrument
+   PyICe.spi_interface
+   PyICe.test_lab_core
+   PyICe.twi_instrument
+   PyICe.twi_interface
+   PyICe.virtual_instruments
+   PyICe.visa_wrappers
+

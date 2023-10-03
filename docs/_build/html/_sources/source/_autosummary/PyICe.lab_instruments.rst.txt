@@ -1,0 +1,6 @@
+PyICe.lab\_instruments
+======================
+
+.. currentmodule:: PyICe
+
+.. automodule:: lab_instruments
