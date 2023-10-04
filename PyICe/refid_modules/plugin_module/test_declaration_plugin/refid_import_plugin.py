@@ -77,10 +77,14 @@ class refid_import_plugin(limit_test_declaration):
 
     def register_test_abs(self, name):
         '''Pull test limits directly from REFID document automagically.'''
+        if not hasattr(self.tm, 'REFIDs'):
+            self.import_refids()
         self._set_reg_inputs(name)
         self._register_test(**self.get_reg_inputs(name))
     def register_correlation_test(self, name):
         """With any luck, this should be redundant sometime soon, and we will just be able to 'register_test_ab' for everything imported."""
+        if not hasattr(self.tm, 'REFIDs'):
+            self.import_refids()
         self._set_reg_inputs(name)
         self.tm._correlation_results._register_correlation_test(**self.get_reg_inputs(name))
 
