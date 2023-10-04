@@ -89,7 +89,7 @@ class refid_import_plugin(limit_test_declaration):
         self.tm._correlation_results._register_correlation_test(**self.get_reg_inputs(name))
 
     def get_correlation_declarations(self):
-        return self._correlation_results.get_correlation_declarations()
+        return self.tm._correlation_results.get_correlation_declarations()
     
     def register_correlation_result(self, name, data_temp_pairs, conditions=None):
         '''register correlation results against corr REFIDs. Each data point must also contain a temperature setpoint for matching to ATE data.'''
