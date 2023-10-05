@@ -51,10 +51,8 @@ class refid_import_plugin(limit_test_declaration):
         self.tm.interplugs['register_test_set_tm'].extend([self.register_test_set_tm])
         self.tm.interplugs['register_test__test_from_table'].extend([self.set_table_name, self.set_db_filepath])
         self.tm.interplugs['register_test__test_from_table_2'].extend([self.display_correlation_results,self.register_test__test_from_table_2])
-        try:
-            self.tm.interplugs['die_traceability_set_traceability'].extend([self.set_corr_traceability])
-        except Exception:
-            pass # This feature requires the die_traceability_plugin to be imported in the test_module.')
+        self.tm.interplugs['register_test__test_from_table'].extend([self.set_corr_traceability])
+
 
     def _set_refids_once(self, *args):
         self.tm.tt._need_to_get_refids=True
@@ -112,8 +110,8 @@ class refid_import_plugin(limit_test_declaration):
             for ate_record in c_d:
                 self.tm._test_results._register_ate_result(name=test, result=ate_record['ate_data'], temperature=ate_record['tdegc'])
 
-    def set_corr_traceability(self,test=None):
-        self.tm._correlation_results._set_traceability_info(**self.tm._get_traceability_info(table_name=None, db_file=None))
+    def set_corr_traceability(self,table_name, db_file):
+        self.tm._correlation_results._set_traceability_info(**self.tm.read_traceability_sqlite(self.tm._test_results.db_filepath, table_name))
 
     def register_test_get_test_limits(self, test_name):
         return self.tm._correlation_results._correlation_declarations[test_name]
