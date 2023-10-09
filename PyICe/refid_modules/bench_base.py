@@ -28,7 +28,6 @@ class bench_base(abc.ABC):
             self._master['tdegc_sense'].write(None) #Doesn't pretend to read temperatures. Just to facilitate plotting.
             self._master['tdegc_sense'].set_description('''Dummy Oven Temp Readback. Will only ever read 'None'. Suggest SQL query like: """SELECT ifnull(tdegc_sense, 27) AS tdegc_sense, foo FROM {table_name}"""''')
             self._master['tdegc_sense'].set_write_access(False)
-        self.add_traceability_channels()
         self._master.write_html(file_name='project.html', verbose=True, sort_categories=True)   # Don't like the general name "project"
         #####################################################
         # HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK #
@@ -41,50 +40,6 @@ class bench_base(abc.ABC):
     @abc.abstractmethod
     def init(master, virtual_oven):
         ''''make this gun work'''
-    def add_traceability_channels(self):
-        ch_cat = 'eval_traceability'
-        self._master.add_channel_dummy('bench').write(str(inspect.getmodule(type(self))))
-        self._master['bench'].set_category(ch_cat)
-        self._master['bench'].set_write_access(False)
-        self._master.add_channel_dummy('bench_operator').write(os.getlogin())
-        self._master['bench_operator'].set_category(ch_cat)
-        self._master['bench_operator'].set_write_access(False)
-        # module_file = inspect.getsourcefile(type(self))                   ### Part of p4_traceability_plugin now.
-        # fileinfo = p4_traceability.get_fstat(module_file)
-        # for property in fileinfo:
-            # self._master.add_channel_dummy(f'bench_{property}').write(fileinfo[property])
-            # self._master[f'bench_{property}'].set_category(ch_cat)
-            # self._master[f'bench_{property}'].set_write_access(False)
-        # if fileinfo['depotFile'] is None:
-            # print("********* WARNING *********")
-            # print("* Lab bench unversioned.  *")
-            # print(f"* {self._master['bench'].read()}")
-            # print("***************************")
-            # resp = input('Press "y" to continue: ')
-            # if resp.lower() != 'y':
-                # raise Exception('Unversioned bench module.')
-        # elif fileinfo['action'] is not None:
-            # print("************* WARNING *************")
-            # print("* Lab bench uncommitted changes.  *")
-            # print(f"* {self._master['bench'].read()}")
-            # print("***********************************")
-            # resp = input('Press "y" to continue: ')
-            # if resp.lower() != 'y':
-                # raise Exception('Uncommitted bench module working copy.')
-        def get_ch_group_info(ch_group, ident_level=0):
-            ret_str = ''
-            tabs = '\t' * ident_level
-            try:
-                idn = ch_group.identify()
-            except AttributeError:
-                idn = "No Information Available."
-            ret_str = f'{tabs}{ch_group.get_name()}:  {idn}\n'
-            for ch_subgrp in ch_group.get_channel_groups():
-                ret_str += get_ch_group_info(ch_subgrp, ident_level+1)
-            return ret_str
-        self._master.add_channel_dummy('bench_instruments').write(get_ch_group_info(self._master))
-        self._master['bench_instruments'].set_category(ch_cat)
-        self._master['bench_instruments'].set_write_access(False)
     def get_master(self):
         return self._master
     def add_notification(self, fn):
@@ -170,19 +125,3 @@ class bench_base(abc.ABC):
         self.close_ports()
         print_banner('All cleaned up, Outa Here!')
         return False
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
