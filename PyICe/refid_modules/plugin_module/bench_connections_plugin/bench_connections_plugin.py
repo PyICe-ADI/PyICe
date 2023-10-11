@@ -109,3 +109,11 @@ class bench_connections(plugin):
         logger['bench_configuration'].set_category('eval_traceability')
         logger.write('bench_configuration', self.tm.tt.connection_diagram)
         logger['bench_configuration'].set_write_access(False)
+
+    def get_traceability_channels(self):
+        '''
+        In the event that other traceability plugins are imported by the test module, 
+        the bench configuration will be included in the traceability section of the generated 
+        json report.
+        '''
+        return ['bench_configuration']
