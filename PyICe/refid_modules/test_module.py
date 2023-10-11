@@ -35,7 +35,7 @@ class test_module(abc.ABC):
 
     _is_test_module = True
     _is_multitest_module = False
-    _archive_enabled = None #class variable to prevent repeatability nagging
+    _archive_enabled = True #class variable to prevent repeatability nagging
     #@typing.final
     def __init__(self, debug=False): #, lab_bench):
         '''TODO'''
@@ -49,7 +49,7 @@ class test_module(abc.ABC):
         self._db_file = os.path.join(self._module_path, db_filename)
         self._channel_reconfiguration_settings = []
         self._debug = debug
-        type(self)._archive_enabled = not self._debug #Class variable
+        # type(self)._archive_enabled = not self._debug #Class variable
 
         self.test_timer = virtual_instruments.timer()
         self.test_timer.add_channel_total_minutes('test_time_min')
@@ -121,6 +121,13 @@ class test_module(abc.ABC):
         self.plugins[key]['instance']      = plugin
         self.plugins[key]['description']   = str(plugin)
         self.plugins[key]['data']          = {}
+    def get_all_traceability_channels(self):
+        traceability_channels=[]
+        if hasattr(self,'plugins'):
+            for plugin in self.plugins.keys():
+                if hasattr(self.plugins[plugin]['instance'],'get_traceability_channels'):
+                    traceability_channels.extend(self.plugins[plugin]['instance'].get_traceability_channels())
+        return traceability_channels
     def hook_functions(self, hook_key, *args):
         for (k,v) in self.plugin_hooks.items():
             if k is hook_key:
@@ -137,8 +144,8 @@ class test_module(abc.ABC):
         raise bench_configuration_error(f'Test {cls.get_name()} failed to implement configure_bench(components). This is required for inclusion into the regression system.')
     def get_import_str(self):
         abspath = os.path.abspath(inspect.getsourcefile(type(self)))
-        root_path = os.path.join(inspect.getsourcefile(test_module), '../../../..')
-        relpath = os.path.relpath(abspath, start=root_path)
+        # root_path = os.path.join(inspect.getsourcefile(test_module), '../../../..')
+        relpath = abspath[abspath.index(self.project_folder_name):]
         modpath, ext = os.path.splitext(relpath)
         dirs = []
         while True:
@@ -173,8 +180,8 @@ class test_module(abc.ABC):
             assert self._logger is None
             self._lab_bench = lab_bench #TODO should this be stored? Should it get set to None in __init__?
             self._logger = lab_core.logger(database=self._db_file, use_threads=not self._debug) #TODO Threading!!
-            self.hook_functions('tm_logger_setup', self.get_logger())
             self._logger.merge_in_channel_group(lab_bench.get_master().get_flat_channel_group())
+            self.hook_functions('tm_logger_setup', self.get_logger())
             (self._cumulative_timer, self._temperature_timer) = self._add_timer_channels(self.get_logger())
             ret = self.setup(self.get_logger())
             # Make sure traceability channels not removed
@@ -197,14 +204,11 @@ class test_module(abc.ABC):
         '''cleanup required (module, not per-collect)'''
         ret = self.teardown()
         if self._crashed is None:
-            if not self._debug:
-                table_name = self.copy_table() #TODO better timestamp? beginning of test?
-                print(f"Copied test results table to {table_name}")
-                if not self._archive_enabled:
-                    # Copy table to timestamp version, but don't allow copy to new database. Perhaps test module unversioned.
-                    self._archive_table_name = None # Un-do work done by self.copy_table()
-            else:
-                print(f'Skipping data archive for debug test {self.get_name()}.')
+            table_name = self.copy_table() #TODO better timestamp? beginning of test?
+            print(f"Copied test results table to {table_name}")
+            if not self._archive_enabled:
+                # Copy table to timestamp version, but don't allow copy to new database. Perhaps test module unversioned.
+                self._archive_table_name = None # Un-do work done by self.copy_table()
         else:
             print(f'Archiving crashed test results {self.get_name()} to disposable table.')
             self.get_logger().execute(f'DROP TABLE IF EXISTS {self.get_name()}_crash') #Copy will fail if destination exists.
