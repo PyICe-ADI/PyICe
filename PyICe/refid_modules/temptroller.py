@@ -203,15 +203,6 @@ class temptroller():
                     loop_time=0
                 test_time_remaining=0
                 script_time={}
-                # def delete_soon_to_be_rewritten_data(test,temp):
-                    # table_name = test.get_db_table_name()
-                    # db_file = test._db_file
-                    # db = sqlite_data(database_file=db_file, table_name=table_name)
-                    # cur=db.conn.cursor()
-                    # cur.execute(f'DELETE FROM {table_name} WHERE tdegc is {temp}')
-                    # cur.close()
-                    # db.conn.commit()
-                    # test._crashed=None
                 for (test_idx, test) in enumerate(self):
                     if (not test.in_range(temperature)) or (temperature in test.excluded_temperatures):
                         temp_message=f"Skipping {test.get_name()}. " + (f"Temp out of range." if (not test.in_range(temperature)) else f"Excluded temp.")
@@ -270,7 +261,6 @@ class temptroller():
                         test_time_remaining+=sum(map(lambda x: test.temp_is_included(x),self._temperatures[temp_idx+1:])) * timer_data["loop_time_min"]
                 frac_complete = 1.*(temp_idx+1)/len(self._temperatures)
                 frac_incomplete = 1-frac_complete
-                # etr = datetime.timedelta(minutes=cumulative_tests_time * frac_incomplete / frac_complete)
                 etr = datetime.timedelta(minutes=test_time_remaining + 10*len(self._temperatures[temp_idx+1:]))
                 summary_msg += f'{temp_idx+1} of {len(self._temperatures)} temperatures complete in {cumulative_tests_time:.1f} minutes.\n'
                 if temp_idx+1 < len(self._temperatures):
@@ -369,125 +359,114 @@ class temptroller():
     def _archive(self, interactive=True):
         # This method depends on some state collected by successfully completing the collect() method.
         if functools.reduce(lambda a,b: a or b, [True if test._archive_table_name is not None else False for test in self]):
-            if interactive:
-                archive = input('Manage collected data? [[y]/n]: ').lower() not in ["n", "no"]
-            else:
-                archive = True
-            if archive:
-                self.folder_suggestion = datetime.datetime.utcnow().strftime("%Y_%m_%d_%H_%M")
-                self.hook_functions('begin_archive')
-                for test in self:
-                    if test._archive_table_name is None:
-                        continue
-                    if test._plot_crashed is not None:
-                        # Going to solicit input no matter what the interactive setting is. There's not obviously right answer when things have gone this unexpectedly wrong.
-                        print(test._plot_crashed)
-                        while True:
-                            arch_resp = input('Archive data with crashed plotting? [y/[n]]: ').lower()
-                            if len(arch_resp):
-                                break
-                        if arch_resp not in  ['y', 'yes']:
-                            continue
+            self.folder_suggestion = datetime.datetime.utcnow().strftime("%Y_%m_%d_%H_%M")
+            self.hook_functions('begin_archive')
+            folder_suggestion_addon = ''
+            for test in self:
+                if test._archive_table_name is None:
+                    continue
+                if self._debug:
+                    folder_suggestion_addon += '__DEBUG'
+                if test._plot_crashed is not None:
+                    print(test._plot_crashed)
+                    folder_suggestion_addon += '__CRASHED'
+                
+                
+                # self.hook_functions('archive_folder_hook')        ## I'm thinking if you want flair for your own project? Stowe added in the die_traceability. . .
+                
+                try:
+                    tdegc_conn = sqlite3.connect(test._db_file, detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
+                    tdegc_conn.row_factory = sqlite3.Row #index row data tuple by column name
+                    row = tdegc_conn.execute(f"SELECT tdegc FROM {test._archive_table_name}").fetchone()
+                    assert row is not None #Empty table!
+                    if row['tdegc'] is None:
+                        self.folder_suggestion = f'{self.folder_suggestion}' + folder_suggestion_addon + '__AMBIENT'
+                    else:
+                        self.folder_suggestion = f'{self.folder_suggestion}' + folder_suggestion_addon + '__TEMPERATURE'
+                    break
+                except sqlite3.OperationalError as e:
+                    print(f'tdegc information not available from {test.get_name()} results database.')
+                    continue
+                except Exception as e:
+                    print(test.get_name())
+                    print(type(e))
+                    print(e)
+                    traceback.print_exc()
+                    print('This is unexpected. Please contact PyICe Support at PyICe-developers@analog.com with this stack trace.')
+                    # For whatever reason, this data doesn't seem to be suitable for collecting traceability info. To be revisited later.
+                    continue
+            archive_folder = self.folder_suggestion
+            print(f'Destination archive folder: {archive_folder}')
+            archived_tables = []
+            for test in self:
+                if test._archive_table_name is not None:
+                    # Test completed
+                    archiver = test_archive.database_archive(db_source_file=test._db_file)
+                    db_dest_file = archiver.compute_db_destination(archive_folder)
+                    # if interactive:
+                        # resp = archiver.disposition_table(table_name=test._archive_table_name, db_dest_file=db_dest_file, db_indices=test._column_indices)
+                        # if resp is not None:
+                            # archived_tables.append((test, resp[0], resp[1])) #return ((db_dest_table, db_dest_file))
+                            # test._add_db_indices(table_name=resp[0], db_file=resp[1])
+                    # else:
+                    archiver.copy_table(db_source_table=test._archive_table_name, db_dest_table=test._archive_table_name, db_dest_file=db_dest_file, db_indices=test._column_indices)
+                    archived_tables.append((test, test._archive_table_name, db_dest_file))
+                    test._add_db_indices(table_name=test._archive_table_name, db_file=db_dest_file)
+            if len(archived_tables):
+                arch_plot_scripts = []
+                for (test, db_table, db_file) in archived_tables:
+                    arch_plot_script = test_archive.database_archive.write_plot_script(test_module=test.get_import_str(), test_class=test.get_name(), db_table=db_table, db_file=db_file)
+                    arch_plot_scripts.append(arch_plot_script)
+                if len(arch_plot_scripts):
+                    for (test, db_table, db_file) in archived_tables:
+                        db = sqlite_data(database_file=db_file, table_name=db_table)
+                        plot_filepath = os.path.join(os.path.dirname(db_file), db_table)
+                        try:
+                            test.plot(database=db, table_name=test._archive_table_name, plot_filepath=plot_filepath, skip_output=False)
+                        except TypeError:
+                            test.plot(database=db, table_name=test._archive_table_name, plot_filepath=plot_filepath)
+                if len(arch_plot_scripts) > 1:
+                    os.mkdir(self.folder_suggestion)
+                    dest_abs_filepath = os.path.join(self.folder_suggestion,"replot_data.py")
+                    summary_str = f"from PyICe.refid_modules.temptroller import replotter\n"
+                    for (test, db_table, db_file) in archived_tables:
+                        x=inspect.getfile(type(test))
+                        x=x.replace("\\" , '.')
+                        x=x.replace('.py',"")
+                        x= x[x.find(test.project_folder_name):]
+                        summary_str += f"from {x} import {test.get_name()}\n"
+                    summary_str += f"\nif __name__ == '__main__':\n"
+                    summary_str += f'\n    rplt = replotter()\n'
+                    for (test, db_table, db_file) in archived_tables:
+                        rel_db_file=os.path.relpath(db_file, start =test.project_folder_name)
+                        rel_db_file=rel_db_file.replace('\\', '/')
+                        summary_str += f'    rplt.add_test_run(test_class={test.get_name()},table_name=r"{db_table}",db_file="{rel_db_file}")\n'
+                    summary_str += f'\n    rplt.write_html("summary_plots.html")'
                     try:
-                        tdegc_conn = sqlite3.connect(test._db_file, detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
-                        tdegc_conn.row_factory = sqlite3.Row #index row data tuple by column name
-                        row = tdegc_conn.execute(f"SELECT tdegc FROM {test._archive_table_name}").fetchone()
-                        assert row is not None #Empty table!
-                        if row['tdegc'] is None:
-                            self.folder_suggestion = f'{self.folder_suggestion}__AMBIENT'
-                        else:
-                            self.folder_suggestion = f'{self.folder_suggestion}__TEMPERATURE'
-                        break
-                    except sqlite3.OperationalError as e:
-                        print(f'tdegc information not available from {test.get_name()} results database.')
-                        continue
+                        with open(dest_abs_filepath, 'w') as f: #overwrites existing
+                            f.write(summary_str)
+                            f.close()
                     except Exception as e:
-                        print(test.get_name())
                         print(type(e))
                         print(e)
                         traceback.print_exc()
-                        print('This is unexpected. Please contact PyICe Support at PyICe-developers@analog.com with this stack trace.')
-                        # For whatever reason, this data doesn't seem to be suitable for collecting traceability info. To be revisited later.
-                        continue
-                if interactive:
-                    archive_folder = test_archive.database_archive.ask_archive_folder(suggestion=self.folder_suggestion)
-                else:
-                    archive_folder = self.folder_suggestion
-                archived_tables = []
-                for test in self:
-                    if test._archive_table_name is not None:
-                        # Test completed
-                        archiver = test_archive.database_archive(db_source_file=test._db_file)
-                        db_dest_file = archiver.compute_db_destination(archive_folder)
-                        if interactive:
-                            resp = archiver.disposition_table(table_name=test._archive_table_name, db_dest_file=db_dest_file, db_indices=test._column_indices)
-                            if resp is not None:
-                                archived_tables.append((test, resp[0], resp[1])) #return ((db_dest_table, db_dest_file))
-                                test._add_db_indices(table_name=resp[0], db_file=resp[1])
-                        else:
-                            archiver.copy_table(db_source_table=test._archive_table_name, db_dest_table=test._archive_table_name, db_dest_file=db_dest_file, db_indices=test._column_indices)
-                            archived_tables.append((test, test._archive_table_name, db_dest_file))
-                            test._add_db_indices(table_name=test._archive_table_name, db_file=db_dest_file)
-                if len(archived_tables):
-                    arch_plot_scripts = []
-                    if interactive:
-                        waps = input('Write archive plot script(s)? [[y]/n]: ').lower() not in ["n", "no"]
-                    else:
-                        waps = True
-                    if waps:
-                        for (test, db_table, db_file) in archived_tables:
-                             arch_plot_script = test_archive.database_archive.write_plot_script(test_module=test.get_import_str(), test_class=test.get_name(), db_table=db_table, db_file=db_file)
-                             arch_plot_scripts.append(arch_plot_script)
-                    if len(arch_plot_scripts) and (not interactive or input('Generate archive plot(s)? [[y]/n]: ').lower() not in ['n', 'no']):
-                        for (test, db_table, db_file) in archived_tables:
-                            db = sqlite_data(database_file=db_file, table_name=db_table)
-                            plot_filepath = os.path.join(os.path.dirname(db_file), db_table)
-                            try:
-                                test.plot(database=db, table_name=test._archive_table_name, plot_filepath=plot_filepath, skip_output=False)
-                            except TypeError:
-                                test.plot(database=db, table_name=test._archive_table_name, plot_filepath=plot_filepath)
-                    if len(arch_plot_scripts) > 1 and (not interactive or input('Write summary plots script? [[y]/n]: ').lower() not in ['n', 'no']):
-                        os.mkdir(self.folder_suggestion)
-                        dest_abs_filepath = os.path.join(self.folder_suggestion,"replot_data.py")
-                        summary_str = f"from PyICe.refid_modules.temptroller import replotter\n"
-                        for (test, db_table, db_file) in archived_tables:
-                            x=inspect.getfile(type(test))
-                            x=x.replace("\\" , '.')
-                            x=x.replace('.py',"")
-                            x= x[x.find(test.project_folder_name):]
-                            summary_str += f"from {x} import {test.get_name()}\n"
-                        summary_str += f"\nif __name__ == '__main__':\n"
-                        summary_str += f'\n    rplt = replotter()\n'
-                        for (test, db_table, db_file) in archived_tables:
-                            rel_db_file=os.path.relpath(db_file, start =test.project_folder_name)
-                            rel_db_file=rel_db_file.replace('\\', '/')
-                            summary_str += f'    rplt.add_test_run(test_class={test.get_name()},table_name=r"{db_table}",db_file="{rel_db_file}")\n'
-                        summary_str += f'\n    rplt.write_html("summary_plots.html")'
-                        try:
-                            with open(dest_abs_filepath, 'w') as f: #overwrites existing
-                                f.write(summary_str)
-                                f.close()
-                        except Exception as e:
-                            print(type(e))
-                            print(e)
-                            traceback.print_exc()
-                            breakpoint()
-                            pass
-                    if len(arch_plot_scripts) > 1 and (not interactive or input('Generate summary plots? [[y]/n]: ').lower() not in ['n', 'no']):
-                        #Write out summary plot, or write out summary plot maker?!?! TODO!
-                        html_plotter = replotter()
-                        for (test, db_table, db_file) in archived_tables:
-                            html_plotter.add_test_run(test_class=type(test), table_name=db_table, db_file=db_file)
-                        try:
-                            html_plotter.write_html('regression_summary.html')
-                        except PermissionError as e:
-                            if input(f'{e.filename} is not writeable. Attempt p4 checkout? [y/[n]]: ').lower() in ['y', 'yes']:
-                                if p4_traceability.p4_edit(e.filename):
-                                    html_plotter.write_html('regression_summary.html')
-                                else:
-                                    raise e
+                        breakpoint()
+                        pass
+                if len(arch_plot_scripts) > 1:
+                    #Write out summary plot, or write out summary plot maker?!?! TODO!
+                    html_plotter = replotter()
+                    for (test, db_table, db_file) in archived_tables:
+                        html_plotter.add_test_run(test_class=type(test), table_name=db_table, db_file=db_file)
+                    try:
+                        html_plotter.write_html('regression_summary.html')
+                    except PermissionError as e:
+                        if input(f'{e.filename} is not writeable. Attempt p4 checkout? [y/[n]]: ').lower() in ['y', 'yes']:
+                            if p4_traceability.p4_edit(e.filename):
+                                html_plotter.write_html('regression_summary.html')
                             else:
                                 raise e
+                        else:
+                            raise e
     def manual_archive(self):
         archive_folder = test_archive.database_archive.ask_archive_folder()
         for test in self:
@@ -519,8 +498,10 @@ class replotter:
         test_inst = test_class()
         if not hasattr(test_inst, '_test_result'):
             test_inst.register_refids()
-        test_inst._test_results._set_traceability_info(**test_inst._get_traceability_info(table_name=table_name, db_file=db_file))
-        test_inst._correlation_results._set_traceability_info(**test_inst._get_traceability_info(table_name=table_name, db_file=db_file))
+        # test_inst._test_results._set_traceability_info(**test_inst._get_traceability_info(table_name=table_name, db_file=db_file))
+        # test_inst._test_results._set_traceability_info(**test_inst._get_traceability_info(table_name=table_name, db_file=db_file))
+        test_inst._correlation_results._set_traceability_info(**test_inst.read_traceability_sqlite(db_file, table_name))
+        test_inst._correlation_results._set_traceability_info(**test_inst.read_traceability_sqlite(db_file, table_name))
         try:
             # breakpoint()            ## Delete the results_str and instead look into test_inst.test_results and look into [test][ch2_vout or whatever]. Ask in a pythonic way for the results.
             results_str = test_inst._test_from_table(table_name=table_name, db_file=db_file)
@@ -594,10 +575,9 @@ class replotter:
                 ret_str += f'&nbsp;&nbsp;RESULTS<br/>'
                 for data in test_result.corr_results_array._correlation_results[refid]:
                     ret_str += f'&nbsp;&nbsp;&nbsp;&nbsp;{data.conditions}&nbsp;&nbsp;ATE DATA:{data.ate_data}&nbsp;&nbsp;ERROR:{data.error}&nbsp;&nbsp;VERDICT:'+(f'PASSES<br/>' if data.passes == True else f'FAILS<br/>')
-                    ret_str += f'&nbsp;&nbsp;&nbsp;&nbsp;{data.conditions}&nbsp;&nbsp;ATE DATA:{data.ate_data}&nbsp;&nbsp;ERROR:{data.error}&nbsp;&nbsp;VERDICT:'+(f'PASSES<br/>' if data.passes == True else f'FAILS<br/>')
                     if data.failure_reason != '':
                         ret_str += f'&nbsp;&nbsp;&nbsp;&nbsp;FORCED_FAIL: {data.failure_reason}<br/>'
-                    elif len(data) > 1:
+                    elif hasattr(data.bench_data, '__iter__') and len(data.bench_data) > 1:
                         this_min = self._min(data.bench_data)
                         ret_str += f'&nbsp;&nbsp;&nbsp;&nbsp;ATE DATA:{data.ate_data}&nbsp;&nbsp;MIN:{f"{this_min:g}" if type(this_min) is int else f"{this_min}" if this_min is not None else "None"}<br/>' if not data.passes else ''
                         this_max = self._max(data.bench_data)
