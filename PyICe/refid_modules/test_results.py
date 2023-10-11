@@ -125,7 +125,7 @@ class generic_results():
                   "bench_operator",
                   "bench_instruments",
                   "comment",
-                  "test_swarmlink",
+                  "test_swarmLink",
                   "test_cumulative_time",
                   "bench_configuration",
                   "revid",
@@ -152,10 +152,11 @@ class generic_results():
             try:
                 assert k in self._traceability_info, f'ERROR: {k} key missing from {self.get_name()} traceability information.'
             except AssertionError as e:
-                if input (f'{e} Continue anyway? ').lower() not in ("y", "yes"):
-                    raise e
-                else:
-                    self._traceability_info[k] = None
+                # if input (f'{e} Continue anyway? ').lower() not in ("y", "yes"):
+                    # raise e
+                # else:
+                    # self._traceability_info[k] = None
+                self._traceability_info[k] = None
         try:
             self._traceability_info['ATE_date'] = datetime.datetime.utcfromtimestamp(self._traceability_info['START_T']).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
         except TypeError as e:
@@ -167,8 +168,6 @@ class generic_results():
             #         "targetboard_component_purpose",
             #         "targetboard_data",
             # "skew" expected Schema 1.1 onward.
-        
-
 
     def _json_report(self, declarations, results, ate_results=[]):
     # def _json_report(self, declarations, results, ate_results=[], *args):
