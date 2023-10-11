@@ -411,6 +411,9 @@ class limit_test_declaration(plugin):
         # self.execute_interplugs('register_test_get_pass_fail')
         return not self.tm.is_crashed() and bool(self.tm._test_results)
 
+    def set_test_traceability(self, table_name):
+        self.tm._test_results._set_traceability_info(**self.tm.read_traceability_sqlite(self.tm._test_results.db_filepath, table_name))
+
     def run_repeatability_results(self):
         results = collections.OrderedDict() #De-tangle runs
         for test_run in self.tm.tt:
@@ -480,6 +483,7 @@ class limit_test_declaration(plugin):
             self.execute_interplugs('register_test_set_tm', self.tm)
         self.tm._test_results.set_table_name(table_name)
         self.tm._test_results.set_db_filepath(os.path.abspath(db_file))
+        self.set_test_traceability(table_name)
         self.execute_interplugs('register_test__test_from_table', table_name=table_name, db_file=db_file)
         self._compile_test_results(table_name, db_file)
         if self.tm._compile_crashed is not None:
