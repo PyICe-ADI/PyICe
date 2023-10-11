@@ -1015,15 +1015,18 @@ mixing.'''
 
     def add_channel_y_disp(self, channel_name):
         '''The settings of Y Axis Units and Scale Type, affect how the data is read over the 
-remote interface. When using the remote interface no units are returned, so you must 
-know what the Y-Axis units are to interpret the results
+            remote interface. When using the remote interface no units are returned, so you must 
+            know what the Y-Axis units are to interpret the results
         
         When Scale Type (Log) is selected, the vertical graticule divisions are scaled in logarithmic units. The 
-top line of the graticule is the Reference Level and uses the scaling per division, Scale/Div to assign 
-values to the other locations on the graticule. 
-When Scale Type (Lin) is selected, the vertical graticule divisions are linearly scaled with the reference 
-level value at the top of the display and zero volts at the bottom. Each vertical division of the graticule 
-represents one-tenth of the Reference Level
+        top line of the graticule is the Reference Level and uses the scaling per division, Scale/Div to assign 
+        values to the other locations on the graticule. 
+        When Scale Type (Lin) is selected, the vertical graticule divisions are linearly scaled with the reference 
+        level value at the top of the display and zero volts at the bottom. Each vertical division of the graticule 
+        represents one-tenth of the Reference Level.
+
+        When the _units is set to "V" that is RMS not amplitude, A, as in A•sin(ωt)
+        It will give 0.707•A.
 '''
         reference_level_channel = channel(f'{channel_name}_reference_level',write_function=lambda ampl: self.get_interface().write(f':DISPlay:WINDow1:TRACe:Y:SCALe:RLEVel {ampl}'))
         reference_level_channel.set_attribute('channel_type', 'y_disp')
