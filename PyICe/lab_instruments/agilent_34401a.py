@@ -75,7 +75,3 @@ class agilent_34401a(scpi_instrument):
 class agilent_34461A(agilent_34401a):
     '''LXI, histogram, Truevolt 34401 modernized replacement 6.5 digit DMM'''
     pass
-
-class agilent_34461a(agilent_34401a):
-    '''LXI, histogram, Truevolt 34401 modernized replacement 6.5 digit DMM'''
-    pass
