@@ -9,8 +9,8 @@ my_a34401_interface = interface_factory.get_visa_serial_interface("COM10", baudr
 from PyICe import lab_core
 channel_master = lab_core.channel_master()
 
-from PyICe import lab_instruments
-my_a34401 = lab_instruments.agilent_34401a(my_a34401_interface)
+from PyICe.lab_instruments.agilent_34401a import agilent_34401a
+my_a34401 = agilent_34401a(my_a34401_interface)
 channel_master.add(my_a34401)
 
 my_a34401.add_channel("vmeas")

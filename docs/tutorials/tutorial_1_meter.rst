@@ -65,14 +65,14 @@ An instrument driver can usually be written in 1 to 6 hours depending on instrum
 
 .. code-block:: python
 
-   from PyICe import lab_instruments
+   from PyICe.lab_instruments.agilent_34401a import agilent_34401a
 
 We create the *instrument object* by passing it the previously acquired interface *my_a34401_interface*. 
 Each instrument constructor takes an interface as its argument.
 
 .. code-block:: python
 
-   my_a34401 = lab_instruments.agilent_34401a(my_a34401_interface)
+   my_a34401 = agilent_34401a(my_a34401_interface)
 
 Now my_a34401 is an agilent_34401a instrument object.
 We can talk to the a33401 meter through this interface but doing so would thwart the benefits of adding the instrument and its channels to the channel_master.

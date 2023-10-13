@@ -4,12 +4,12 @@
 
 from PyICe import lab_core
 from PyICe import lab_interfaces
-from PyICe import lab_instruments
+from PyICe.lab_instruments.hameg_4040 import hameg_4040
 
 interface_factory = lab_interfaces.interface_factory()
 supply_interface = interface_factory.get_visa_serial_interface("COM16", baudrate=115200, rtscts=True, timeout=10)
 
-hameg = lab_instruments.hameg_4040(supply_interface)
+hameg = hameg_4040(supply_interface)
 hameg.add_channel(channel_name="force_voltage", num=3, ilim=1, delay=0.25)
 
 channel_master = lab_core.channel_master()
