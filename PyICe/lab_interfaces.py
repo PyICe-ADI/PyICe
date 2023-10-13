@@ -938,6 +938,7 @@ class interface_factory(communication_node):
             new_interface = interface_visa_direct(visa_address_string,timeout)
         else:
             raise Exception(f"{self._get_gpib_interface} received unexpected/unimplemented gpib_adapter argument of type {type(gpib_adapter)}.")
+        return new_interface
     def get_visa_tcp_ip_interface(self,host_address,port,timeout=None,**kwargs):
         new_interface = interface_visa_tcp_ip(host_address,port,timeout,**kwargs)
         new_interface.set_com_node_parent(self)
