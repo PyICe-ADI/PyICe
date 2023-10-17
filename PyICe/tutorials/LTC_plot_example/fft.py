@@ -14,7 +14,7 @@ T           = 0.01                  # Record duration (seconds)
 N           = round(T/dt)           # Number of samples
 Fs          = 1/dt                  # Sampling Frequency
 BW          = Fs/2                  # Bandwidth
-sin_ampl    = 1                     # 1V Peak
+sin_ampl    = 2**0.5                # 1.414V Peak, 1V RMS
 fsin        = 1e6                   # 1MHz - why not?
 nsd         = 1e-6                  # Vrms/√Hz
 sigma       = nsd * BW**0.5         # Sigma of sampled random is RMS of continuous
@@ -29,6 +29,7 @@ noisysignal = signal + noise
 sa = spectrum_analyzer()
 freqs_both, fft_both = sa.compute_fft(zip(times, noisysignal))
 RBW_both = sa.get_RBW()
+
 freqs_noise, fft_noise = sa.compute_fft(zip(times, noise))
 RBW_noise = sa.get_RBW()
 
