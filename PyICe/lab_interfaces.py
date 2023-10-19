@@ -154,8 +154,8 @@ class communication_node(object):
         elif parent_com_node is None:
             return
         else:
-            raise TypeError("While locking, found communication node parent with unexpected type '{}'.\n"
-                            "Expected 'communication_node' or 'None'".format(type(parent_com_node)))
+            raise TypeError(f"While locking, found communication node parent with unexpected type '{type(parent_com_node)}'.\n"
+                            "Expected 'communication_node' or 'None'")
     def unlock(self):
         '''Release all parent locks starting with this node's oldest ancestor. Finish by unlocking this com node.'''
         parent_com_node = self.get_com_parent()
@@ -164,8 +164,8 @@ class communication_node(object):
         elif parent_com_node is None:
             pass
         else:
-            raise TypeError("While locking, found communication node parent with unexpected type '{}'.\n"
-                            "Expected 'communication_node' or 'None'".format(type(parent_com_node)))
+            raise TypeError(f"While locking, found communication node parent with unexpected type '{type(parent_com_node)}'.\n"
+                            "Expected 'communication_node' or 'None'")
         self._lock.release()
 '''all communication is through one of these distinct interface classes
     interface_visa       (visa like communication regardless of physical interface)
@@ -353,22 +353,22 @@ class interface_raw_serial(interface, serial_from_name_or_url):
             if self._has_PyICe_debug_capability:
                 serial_port_name = maybe_parsed_url.netloc
             else:
-                raise TypeError("spy:// URL passed to interface_raw_serial() "
+                raise TypeError(f"spy:// URL passed to interface_raw_serial() "
                                 "constructor where port name expected instead:\n"
-                                "    {}\n"
+                                f"    {port_name_or_url}\n"
                                 "Turn on serial_debug in boston_benches to use spy:// URLs"
-                                "".format(port_name_or_url))
+                                "")
         elif isinstance(port_name_or_url, str) and len(port_name_or_url):
             # A string that isn't a valid URL, so assume we were passed a port name.
             serial_port_name = port_name_or_url
             if self._has_PyICe_debug_capability:
                 # self is subclass of SpySerial, so reformat superclass init arg to "spy://" URL.
-                port_name_or_url = "spy://{port}?file=log{port}.txt".format(port=serial_port_name)
+                port_name_or_url = f"spy://{port}?file=log{serial_port_name}.txt"
         elif isinstance(port_name_or_url, None) or (isinstance(port_name_or_url, str) and not len(port_name_or_url)):
             serial_port_name = ""
         else:
-            raise ValueError("interface_raw_serial.__init__() passed a {}{} when either a port name "
-                             "or spy:// URL was expected".format(type(port_name_or_url), port_name_or_url))
+            raise ValueError(f"interface_raw_serial.__init__() passed a {type(port_name_or_url)}{port_name_or_url} when either a port name "
+                             "or spy:// URL was expected")
         # interface.__init__(self,'interface_raw_serial @ {}'.format(port_name_or_url))
         if serial_port_name:
             self.port = port_name_or_url
@@ -402,7 +402,7 @@ class interface_raw_serial(interface, serial_from_name_or_url):
         else:
             debug_logging.error("*** lab_interfaces.interface_raw_serial.write() called with first argument that was "
                                 "neither str, bytes, nor bytearray:\n"
-                                "***   {}{}".format(repr(msg), type(msg)))
+                                f"***   {repr(msg)}{type(msg)}")
             raise Exception(repr(msg), type(msg))
         return self.write_raw(msgbytes, *args, **kw)
     def read(self, size, *args, **kw):
@@ -428,7 +428,7 @@ class interface_tcp_serial(interface):
     For example read(), write(), and timeouts are supported,
     but it is meaningless to set things like baudrate or parity bits.'''
     def __init__(self, dest_ip_address, dest_tcp_portnum):
-        self.ser = serial.serial_for_url("socket://{}:{}".format(dest_ip_address, dest_tcp_portnum))
+        self.ser = serial.serial_for_url(f"socket://{dest_ip_address}:{dest_tcp_portnum}")
         super(interface_tcp_serial, self).__init__(self.ser.port)
     def get_serial_port_name(self):
         return self.ser.port
@@ -572,7 +572,7 @@ class interface_test_harness_serial(interface, SerialTestHarness):
     def __init__(self,serial_port_name, bytestream, max_bytes_returned_per_read=4096):
         SerialTestHarness.__init__(self, bytestream,
                                    max_bytes_returned_per_read=max_bytes_returned_per_read)
-        interface.__init__(self,'interface_raw_serial @ {}'.format(serial_port_name) )
+        interface.__init__(self,f'interface_raw_serial @ {serial_port_name}')
         self._serial_port_name = serial_port_name
     def get_serial_port_name(self):
         return self._serial_port_name
@@ -580,11 +580,11 @@ class interface_test_harness_serial(interface, SerialTestHarness):
 class interface_visa_tcp_ip(interface_visa,visa_wrappers.visa_wrapper_tcp):
     def __init__(self,host_address,port,timeout,**kwargs):
         visa_wrappers.visa_wrapper_tcp.__init__(self,host_address,port,timeout,**kwargs)
-        interface_visa.__init__(self, "interface_visa_tcp_ip @ {}:{}".format(host_address,port))
+        interface_visa.__init__(self, f"interface_visa_tcp_ip @ {host_address}:{port}")
 class interface_visa_telnet(interface_visa,visa_wrappers.visa_wrapper_telnet):
     def __init__(self,host_address,port,timeout):
         visa_wrappers.visa_wrapper_telnet.__init__(self,host_address,port,timeout)
-        interface_visa.__init__(self, "interface_visa_telnet @ {}:{}".format(host_address,port))
+        interface_visa.__init__(self, f"interface_visa_telnet @ {host_address}:{port}")
 class interface_visa_serial(visa_wrappers.visa_wrapper_serial, interface_visa):
     def __init__(self,interface_raw_serial_object):
         super().__init__(interface_raw_serial_object)
@@ -593,11 +593,11 @@ class interface_visa_serial(visa_wrappers.visa_wrapper_serial, interface_visa):
 class interface_visa_vxi11(interface_visa,visa_wrappers.visa_wrapper_vxi11):
     def __init__(self,address,timeout):
         visa_wrappers.visa_wrapper_vxi11.__init__(self, address, timeout)
-        interface_visa.__init__(self, 'interface_visa_vxi11 @ {}'.format(address) )
+        interface_visa.__init__(self, f'interface_visa_vxi11 @ {address}')
 class interface_visa_usbtmc(interface_visa,visa_wrappers.visa_wrapper_usbtmc):
     def __init__(self,address,timeout):
         visa_wrappers.visa_wrapper_usbtmc.__init__(self, address, timeout)
-        interface_visa.__init__(self, 'interface_visa_usbtmc @ {}'.format(address) )
+        interface_visa.__init__(self, f'interface_visa_usbtmc @ {address}')
 class interface_visa_direct(interface_visa, visa_wrappers.visa_interface):
     def __init__(self, visa_address_string, timeout):
         super().__init__(visa_address_string, address=visa_address_string, timeout=timeout)
@@ -614,8 +614,7 @@ class interface_bobbytalk_raw_serial(interface_bobbytalk):
         '''
         # Can't be interface_stream_serial because we need to be
         # able to change timeouts on every recv_packet() call.
-        super(interface_bobbytalk_raw_serial, self).__init__(name=("bobbytalk Packet interface over {}"
-                                                                 ).format(raw_serial_interface.get_serial_port_name()))
+        super(interface_bobbytalk_raw_serial, self).__init__(name=(f"bobbytalk Packet interface over {raw_serial_interface.get_serial_port_name()}"))
         assert isinstance(fifo_size, int) and fifo_size > 0
         assert hasattr(junk_bytes_dump, "__call__") or junk_bytes_dump is None
         assert isinstance(debug, bool)
@@ -663,7 +662,7 @@ class interface_bobbytalk_raw_serial(interface_bobbytalk):
         # self.ser.flush()
         if self.debug:
             bufstr = " ".join([hex(byte) for byte in bytearray(buffer)])
-            print(">>>>> send(buffer = {}) returned {}".format(bufstr, result))
+            print(f">>>>> send(buffer = {bufstr}) returned {result}")
         return result
     def recv_packet(self, dest_id, timeout, src_id=None, receive_tries=8):
         '''Blocks for up to timeout waiting for packet matching dest_id
@@ -728,9 +727,9 @@ class interface_bobbytalk_raw_serial(interface_bobbytalk):
             if dest_id != psbl_dest or (src_id != None and src_id != psbl_src):
                 print("*" * 78)
                 print("TODO: Implement dispatch table for non-matching packets.")
-                print("      Want dest_id {:04x}, got {:04x}".format(dest_id, psbl_dest))
-                srcstr = "{:04x}".format(src_id) if src_id is not None else "ANY"
-                print("      Want src_id {}, got {:04x}".format(srcstr, psbl_src))
+                print(f"      Want dest_id {dest_id:04x}, got {psbl_dest:04x}")
+                srcstr = f"{src_id:04x}" if src_id is not None else "ANY"
+                print(f"      Want src_id {srcstr}, got {psbl_src:04x}")
                 print("*" * 78)
             break  # for trynum in range(receive_tries)  # Return packet as result.
         else:  # for trynum in range(receive_tries)
@@ -785,23 +784,23 @@ class interface_twi_scpi_sp(twi_interface.i2c_scpi_sp, interface_twi):
 class interface_twi_scpi_testhook(twi_interface.i2c_scpi_testhook, interface_twi):
     def __init__(self, interface_serial, timeout):
         twi_interface.i2c_scpi.__init__(self, interface_serial)
-        interface_twi.__init__(self,'interface_twi_scpi @ {}'.format(interface_serial)) 
+        interface_twi.__init__(self,f'interface_twi_scpi @ {interface_serial}') 
         self.timeout = timeout
 class interface_twi_dc590_serial(twi_interface.i2c_dc590, interface_twi): #DJS TODO: fix interfaces to reconcile with DC590 cleanup
     def __init__(self, interface_serial, timeout):
         twi_interface.i2c_dc590.__init__(self, interface_serial) #DJS TODO: fix interfaces to reconcile with DC590 cleanup
-        interface_twi.__init__(self,'interface_twi_dc590_serial @ {}'.format(interface_serial)) 
+        interface_twi.__init__(self,f'interface_twi_dc590_serial @ {interface_serial}') 
         self.timeout = timeout
 class interface_twi_buspirate(twi_interface.i2c_buspirate, interface_twi):
     def __init__(self, interface_serial, timeout):
         twi_interface.i2c_buspirate.__init__(self, interface_serial)
-        interface_twi.__init__(self,'interface_twi_buspirate @ {}'.format(interface_serial)) 
+        interface_twi.__init__(self,f'interface_twi_buspirate @ {interface_serial}') 
         self.timeout = timeout
 class interface_twi_firmata(twi_interface.i2c_firmata, interface_twi):
     # Old. Consider Telemetrix instead.
     def __init__(self, firmata_instance):
         twi_interface.i2c_firmata.__init__(self, firmata_instance)
-        interface_twi.__init__(self,'interface_twi_firmata @ {}'.format(firmata_instance))
+        interface_twi.__init__(self,f'interface_twi_firmata @ {firmata_instance}')
 class interface_twi_bobbytalk(twi_interface.i2c_bobbytalk, interface_twi):
     def __init__(self, bobbytalk_interface, src_id, **kwargs):
         twi_interface.i2c_bobbytalk.__init__(self, bobbytalk_interface, src_id, **kwargs)
@@ -844,11 +843,11 @@ class interface_spi_dummy(interface_spi, spi_interface.spi_dummy):
 class interface_spi_dc590(interface_spi, spi_interface.spi_dc590):
     def __init__(self, interface_stream, ss_ctrl=None):
         spi_interface.spi_dc590.__init__(self, interface_stream, ss_ctrl)
-        interface_spi.__init__(self, 'interface_spi_dc590 @ {}'.format(interface_stream))
+        interface_spi.__init__(self, f'interface_spi_dc590 @ {interface_stream}')
 class interface_spi_cfgpro(interface_spi, spi_interface.spi_cfgpro):
     def __init__(self, visa_interface, CPOL, CPHA, baudrate=1e6, ss_ctrl=None):
         spi_interface.spi_cfgpro.__init__(self, visa_interface, CPOL, CPHA, baudrate, ss_ctrl)
-        interface_spi.__init__(self, 'interface_spi_cfgpro @ {}'.format(visa_interface))
+        interface_spi.__init__(self, f'interface_spi_cfgpro @ {visa_interface}')
 class gpib_adapter(communication_node):
     pass
 class gpib_adapter_visa(gpib_adapter):
@@ -914,12 +913,10 @@ class interface_factory(communication_node):
     def get_visa_gpib_interface(self,gpib_adapter_number,gpib_address_number,timeout=None):
         timeout = self._set_timeout(timeout)
         if gpib_adapter_number not in list(self._gpib_adapters.keys()):
-            print('\n\n\n\nAdapter number "{}" not found in adapter list'.format(gpib_adapter_number))
-            print('It must be added first with .set_gpib_adapter_*({},*)'.format(gpib_adapter_number))
-            print(' for example:')
-            print('       .set_gpib_adapter_visa({})'.format(gpib_adapter_number))
-            print(' or')
-            print('       .set_gpib_adapter_rl1009({},"COM2")'.format(gpib_adapter_number))
+            print(f'\n\n\n\nAdapter number "{gpib_adapter_number}" not found in adapter list')
+            print(f'It must be added first with .set_gpib_adapter_visa*({gpib_adapter_number},*)')
+            print(f' for example:')
+            print(f'       .set_gpib_adapter_visa({gpib_adapter_number})')
             raise Exception('Using undefined gpib adapter')
         #search for an existing gpib_interface
         if gpib_adapter_number in self._gpib_interfaces:
@@ -931,16 +928,17 @@ class interface_factory(communication_node):
         #determine the type of gpib adapter
         this_gpib_adapter = self._gpib_adapters[gpib_adapter_number]
         assert isinstance(this_gpib_adapter, gpib_adapter)
-        new_interface = self._get_gpib_interface(gpib_adapter=this_gpib_adapter, gpib_address_number=gpib_address_number, timeout=timeout)
+        new_interface = self._get_gpib_interface(gpib_adapter=this_gpib_adapter, gpib_adapter_number=gpib_adapter_number, gpib_address_number=gpib_address_number, timeout=timeout)
         new_interface.set_com_node_parent(this_gpib_adapter)
         self._gpib_interfaces[gpib_adapter_number][gpib_address_number] = new_interface
         return new_interface
-    def _get_gpib_interface(self, gpib_adapter, gpib_address_number, timeout):        
-        if isinstance(gpib_adapter,gpib_adapter_visa):
-            visa_address_string = "GPIB{}::{}".format(gpib_adapter_number,gpib_address_number)
+    def _get_gpib_interface(self, gpib_adapter, gpib_adapter_number, gpib_address_number, timeout):        
+        if isinstance(gpib_adapter, gpib_adapter_visa):
+            visa_address_string = f"GPIB{gpib_adapter_number}::{gpib_address_number}"
             new_interface = interface_visa_direct(visa_address_string,timeout)
         else:
             raise Exception(f"{self._get_gpib_interface} received unexpected/unimplemented gpib_adapter argument of type {type(gpib_adapter)}.")
+        return new_interface
     def get_visa_tcp_ip_interface(self,host_address,port,timeout=None,**kwargs):
         new_interface = interface_visa_tcp_ip(host_address,port,timeout,**kwargs)
         new_interface.set_com_node_parent(self)
@@ -982,7 +980,7 @@ class interface_factory(communication_node):
         for interface in self._raw_serial_interfaces:
             if interface.get_serial_port_name() == serial_port_name:
                 if (baudrate != interface.baudrate) and (baudrate is not None):
-                    raise Exception("Tried to create a second connection to serial port {} with different baudrate".format(serial_port_name))
+                    raise Exception(f"Tried to create a second connection to serial port {serial_port_name} with different baudrate")
                 if timeout > interface.timeout:
                     interface.timeout = timeout #auto extend time outs
                 return interface
@@ -1007,7 +1005,7 @@ class interface_factory(communication_node):
         new_interface = interface_test_harness_serial(serial_port_name,bytestream,max_bytes_returned_per_read)
         new_interface.set_com_node_parent(self)
         return new_interface
-    def get_interface_libusb(self, idVendor=0x1272, idProduct=0x8004, timeout = 1):
+    def get_interface_libusb(self, idVendor=0x1272, idProduct=0x8004, timeout=1):
         new_interface = interface_libusb(idVendor=0x1272, idProduct=0x8004, timeout = 1)
         new_interface.set_com_node_parent(self)
         return new_interface
@@ -1085,10 +1083,9 @@ class interface_factory(communication_node):
             # testhook: allows interface_test_harness_serial
             raw_serial_intf = serial_port_name
         else:
-            raise ValueError("lab_interfaces.get_twi_bobbytalk_raw_serial() called with "
-                             "first argument {}{},\nwhich is neither "
-                             "a (Unicode string) name of a serial port, nor an interface object"
-                             ".".format(repr(serial_port_name), type(serial_port_name)))
+            raise ValueError(f"lab_interfaces.get_twi_bobbytalk_raw_serial() called with "
+                             f"first argument {repr(serial_port_name)}{type(serial_port_name)},\nwhich is neither "
+                             "a (Unicode string) name of a serial port, nor an interface object")
         lc_intf = interface_bobbytalk_raw_serial(raw_serial_intf, fifo_size=fifo_size, debug=debug)
         lc_intf.set_com_node_parent(raw_serial_intf)
         twi_intf = interface_twi_bobbytalk(lc_intf, src_id, debug=debug, **kwargs)
@@ -1161,9 +1158,9 @@ class interface_factory(communication_node):
             raise Exception("pyVisa or VISA is missing on this computer, install one or both. Cannot use visa for GPIB adapter")
         if adapter_number in list(self._gpib_adapters.keys()):
            if  self._gpib_adapters[adapter_number]._parent == self._visa_root:
-               raise Exception("Attempting to re-define gpib adapter: {}, the same way a second time.".format(adapter_number) )
+               raise Exception(f"Attempting to re-define gpib adapter: {adapter_number}, the same way a second time.")
            else:
-               raise Exception("GPIB adapter_number {} was already defined as something other than visa.".format(adapter_number) ) 
+               raise Exception(f"GPIB adapter_number {adapter_number} was already defined as something other than visa.") 
         gpib_adapter = gpib_adapter_visa()
         gpib_adapter.set_com_node_thread_safe()
         gpib_adapter.set_com_node_parent(self._visa_root)

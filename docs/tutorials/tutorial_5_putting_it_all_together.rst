@@ -32,13 +32,14 @@ Let's get the PyICe drivers for the two instruments from *lab_instruments* and g
 
 .. code-block:: python
 
-   from PyICe import lab_instruments
+   from PyICe.lab_instruments.agilent_34401a import agilent_34401a
+   from PyICe.lab_instruments.hameg_4040 import hameg_4040
    
-   meter = lab_instruments.agilent_34401a(a34401_interface)
+   meter = agilent_34401a(a34401_interface)
    meter.add_channel("vresistor_vsense")
    meter.config_dc_voltage()
    
-   hameg = lab_instruments.hameg_4040(supply_interface)
+   hameg = hameg_4040(supply_interface)
    hameg.add_channel(channel_name="vsweep", num=3, ilim=1, delay=0.25)
    hameg.add_channel_current(channel_name="current_limit", num=3)
 
