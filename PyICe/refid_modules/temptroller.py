@@ -489,19 +489,12 @@ class temptroller():
         
 class replotter:
     def __init__(self):
-        # self.test_run =  collections.namedtuple('test_run', ['test_class', 'table_name', 'db_file'])
         self.test_result =  collections.namedtuple('test_result', ['test_class', 'table_name', 'db_file', 'test_name', 'plots', 'results_array', 'corr_results_array', 'bench_setup_image', 'bench_setup_list', 'bench_instruments', 'refid'])
-        # self._test_runs = []
         self._test_results = []
     def add_test_run(self, test_class, table_name, db_file, bench_setup_image=None, bench_setup_list= None, bench_instruments=None, refid=None, skip_plots=False):
-        # self._test_runs.append(self.test_run(test_class=test_class, table_name=table_name, db_file=db_file))
         test_inst = test_class()
         if not hasattr(test_inst, '_test_result'):
             test_inst.register_refids()
-        # test_inst._test_results._set_traceability_info(**test_inst._get_traceability_info(table_name=table_name, db_file=db_file))
-        # test_inst._test_results._set_traceability_info(**test_inst._get_traceability_info(table_name=table_name, db_file=db_file))
-        test_inst._correlation_results._set_traceability_info(**test_inst.read_traceability_sqlite(db_file, table_name))
-        test_inst._correlation_results._set_traceability_info(**test_inst.read_traceability_sqlite(db_file, table_name))
         try:
             # breakpoint()            ## Delete the results_str and instead look into test_inst.test_results and look into [test][ch2_vout or whatever]. Ask in a pythonic way for the results.
             results_str = test_inst._test_from_table(table_name=table_name, db_file=db_file)
