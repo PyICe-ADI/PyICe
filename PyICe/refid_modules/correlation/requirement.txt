@@ -4,6 +4,10 @@ bench test data, to a particular STDF test name. Assume that the STDF going into
 this code is the ATE test data of just a singular DUT. Data will also have to be
 filtered by temperature.
 
+Functions under 10 lines
+classes under 200
+
+
 Classes:
     STDFParser
         this class will take in an STDF and organize by temperature and testname
@@ -12,3 +16,8 @@ Classes:
         ATE test data of the same test.
         No database - just a singular measurement.
         Correlation percent limit
+
+
+Questions:
+    1) Does the DUT ID come from a specific test in the STDF? I think so
+

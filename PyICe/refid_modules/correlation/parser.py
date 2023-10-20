@@ -13,6 +13,7 @@ class FileReader:
     def flush(self):
         pass
 
+
 class STDFParser:
     def __init__(self, filename):
         self._test_name_dict = {}
