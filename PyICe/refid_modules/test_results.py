@@ -90,19 +90,6 @@ class generic_results():
     def _init(self, name, module):
         self._name = name
         self._traceability_info = collections.OrderedDict()
-                                  #{'TRACEABILITY_HASH': None,
-                                  # 'REVID': None,
-                                  # 'BENCH_CONFIGURATION': None,
-                                  # 'EQUIPMENT_INFO': None,
-                                  # 'OPERATOR': None,
-                                  # 'AUTHOR': None,
-                                  # 'OWNER': None,
-                                  # 'VARIANT': None,
-                                  # 'VARIANT_REVISION': None,
-                                  # 'STDF_FILE': None,
-                                  # # SWARM LINKS?
-                                  #}
-                                  # datetime
         self._module = module
         self.table_name=None
         self.db_filepath=None
@@ -116,62 +103,16 @@ class generic_results():
         self.db_filepath=db_filepath
     def _set_traceability_info(self, **kwargs):
         for k,v in kwargs.items():
-            if True: #k in self._traceability_info.keys():
-                self._traceability_info[k] = v
-            else:
-                raise Exception(f'Received unexpected traceability field {k} with value {v}. Contact pyice-developers@analog.com. Or file a bug report at jira.analog.com/pyice.')
-        for k in ["datetime",
-                  "TRACEABILITY_HASH",
-                  "bench_operator",
-                  "bench_instruments",
-                  "comment",
-                  "test_swarmLink",
-                  "test_cumulative_time",
-                  "bench_configuration",
-                  "revid",
-                  "f_die_fab_2_0_",
-                  "f_die_fab_4_3_",
-                  "f_die_parent_child_9_8_",
-                  "f_die_loc_y",
-                  "f_die_loc_x",
-                  "f_die_running_7_0_",
-                  "f_die_parent_child_7_0_",
-                  "f_die_fab_6_5_",
-                  "f_die_wafer_number",
-                  "f_die_running_9_8_",
-                  "f_die_week",
-                  "f_die_year",
-                  "START_T",
-                  "STDF_file",
-                  "config_file",
-                  "config_change",
-                  "config_date",
-                  "variant_datasheet",
-                  "variant_shell",
-                  ]:
-            try:
-                assert k in self._traceability_info, f'ERROR: {k} key missing from {self.get_name()} traceability information.'
-            except AssertionError as e:
-                # if input (f'{e} Continue anyway? ').lower() not in ("y", "yes"):
-                    # raise e
-                # else:
-                    # self._traceability_info[k] = None
-                self._traceability_info[k] = None
+            self._traceability_info[k] = v
         try:
             self._traceability_info['ATE_date'] = datetime.datetime.utcfromtimestamp(self._traceability_info['START_T']).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
         except TypeError as e:
             self._traceability_info['ATE_date'] = None            # "app_configuration" expected with EEPROM hardware (Schema 1.0), but not required (Schema 0.2)
-            #         "cap_mb_isolator_serialnum",
-            #         "cap_mb_isolatorboard_component_purpose",
-            #         "cap_mb_isolatorboard_data",
-            #         "targetboard_serialnum",
-            #         "targetboard_component_purpose",
-            #         "targetboard_data",
             # "skew" expected Schema 1.1 onward.
+        except KeyError as e:
+            pass
 
     def _json_report(self, declarations, results, ate_results=[]):
-    # def _json_report(self, declarations, results, ate_results=[], *args):
-        # if not len(declarations.keys()):
         if not len(self):
             # No tests (or no correlations) in this module
             # Omit whole report, since there's nothing to report.
@@ -201,14 +142,23 @@ class generic_results():
         # res_dict['schema_version'] = 1.0 # Traceable eval hardware via eeprom
         # res_dict['schema_version'] = 1.1 # Add skew map (will provide workaround for legacy format) and 5% (of window) autocorrelation hint (output only - remade from raw data).
         # res_dict['schema_version'] = 1.2 # Add a human readable version of the ATE test datetime to traceability.
-        res_dict['schema_version'] = 1.3 # Add table_name and dirpath for easy eval_report generation.
+        # res_dict['schema_version'] = 1.3 # Add table_name and dirpath for easy eval_report generation.
+        res_dict['schema_version'] = 1.4 # Traceability channels are determined by plugins used. 
         res_dict['test_module'] = self.get_name()
         res_dict['report_date'] = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
         trace_data = self.get_traceability_info()
-        res_dict['collection_date'] = trace_data['datetime']
+        try:
+            res_dict['collection_date'] = trace_data['datetime']
+        except KeyError:
+            pass
         res_dict['table_name'] = self.table_name
         res_dict['filepath'] = self.db_filepath
         res_dict['traceability'] = {k:v for k,v in trace_data.items() if k not in ['datetime']}
+        
+        
+        # for category in self._module.plugin_data_repo:
+            # res_dict[category] = {k:v for k,v in self._module.plugin_data_repo[category].items()}
+        
         # for f in *args:
             # f(res_dict)
         res_dict['tests'] = {}
@@ -636,7 +586,8 @@ class ResultsSchemaMismatchException(Exception):
 
 class test_results_reload(test_results):
     def __init__(self, results_json='test_results.json'):
-        self._schema_version = 1.3
+        breakpoint()
+        self._schema_version = 1.4
         self._test_declarations = collections.OrderedDict()
         self._test_results = collections.OrderedDict()
         self._ate_results = collections.OrderedDict()
@@ -644,7 +595,7 @@ class test_results_reload(test_results):
             self.__results = json.load(f)
             f.close()
         # if self.__results['schema_version'] != self._schema_version:
-        if self.__results['schema_version'] not in (0.2, 1.0, 1.1, 1.2, 1.3):
+        if self.__results['schema_version'] not in (0.2, 1.0, 1.1, 1.2, 1.3, 1.4):
             raise ResultsSchemaMismatchException(f'Results file {results_json} written with schema version {self.__results["schema_version"]}, but reader expecting {self._schema_version}.')
         self._init(name=self.__results['test_module'], module=None)
         # print(f'INFO Loading test {self.get_name()} record produced on {self.__results["report_date"]} from data collected on {self.__results["collection_date"]}.\n\t({results_json})')  #TODO too loud for logs?
@@ -994,14 +945,14 @@ class correlation_results(generic_results):
 
 class correlation_results_reload(correlation_results):
     def __init__(self, results_json='correlation_results.json'):
-        self._schema_version = 1.3
+        self._schema_version = 1.4
         self._correlation_declarations = collections.OrderedDict()
         self._correlation_results = collections.OrderedDict()
         with open(results_json, mode='r', encoding='utf-8') as f:
             self.__results = json.load(f)
             f.close()
         # if self.__results['schema_version'] != self._schema_version:
-        if self.__results['schema_version'] not in (0.2, 1.0, 1.1, 1.2, 1.3):
+        if self.__results['schema_version'] not in (0.2, 1.0, 1.1, 1.2, 1.3, 1.4):
             raise ResultsSchemaMismatchException(f'Results file {results_json} written with schema version {self.__results["schema_version"]}, but reader expecting {self._schema_version}.')
         self._init(name=self.__results['test_module'], module=None)
         # print(f'INFO Loading correlation {self.get_name()} record produced on {self.__results["report_date"]} from data collected on {self.__results["collection_date"]}.\n\t({results_json})') #TODO too loud for logs?
