@@ -20,14 +20,12 @@ class template_checker(plugin):
     def get_hooks(self):
         plugin_dict={
                     'tm_set':[self._temche_set_variables],
+                    'tm_logger_setup':[self.tem_check_itself],
                     }
         return plugin_dict
 
     def set_interplugs(self):
-        try:
-            self.tm.interplugs['die_traceability_begin_collect'].extend([self.tem_check_itself])
-        except KeyError:
-            print('\nTemplate_check_plugin requires die_traceability_plugin to be able to function.\n')
+        pass
 
     def execute_interplugs(self, hook_key, *args, **kwargs):
         for (k,v) in self.tm.interplugs.items():
@@ -38,12 +36,17 @@ class template_checker(plugin):
     def _temche_set_variables(self, *args, **kwargs):
         self.tm.tt._need_to_temche = True
 
-    def tem_check_itself(self):
+    def tem_check_itself(self, *args, **kwargs):
         if self.tm.tt._need_to_temche:
-            prob_msg = self.template_check.template_check(self.tm.tb_data, self.tm.variant)
+            tb_data = getattr(self.tm.plugin_data_repo, 'targetboard_data', None)
+            variant = getattr(self.tm.plugin_data_repo, 'variant_datasheet', None)
+            if tb_data and variant:
+                prob_msg = self.template_check.template_check(tb_data, variant)
+            else:
+                print("Missing targetboard_data and/or variant for template check. Moving on.")
+                self.tm.tt._need_to_temche = False
+                return
             if len(prob_msg[0]):
                 print(f'\nBOM discrepancies between target board and variant template')
                 [print(f'  {msg.expandtabs(prob_msg[1]+5)}') for msg in prob_msg[0]]
-                if input('Continue? [y/n] ').upper() not in ['Y', 'YES']: 
-                    raise Exception('Too many BOM discrepancies')
             self.tm.tt._need_to_temche = False
