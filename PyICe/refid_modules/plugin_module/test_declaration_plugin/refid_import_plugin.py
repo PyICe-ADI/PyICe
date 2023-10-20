@@ -12,8 +12,6 @@ class refid_import_plugin(limit_test_declaration):
     def __init__(self, test_mod):
         super().__init__(test_mod)
         self.reg_inputs={}
-        self.tm.interplugs['register_correlation_test__test_from_table']=[]
-        self.tm.interplugs['register_correlation_test_get_correlation_data']=[]
         self._one_result_print = True
 
     def get_atts(self):
@@ -27,10 +25,7 @@ class refid_import_plugin(limit_test_declaration):
                    'get_correlation_data':self.get_correlation_data,
                    'reg_ate_result':self.reg_ate_result,
                    'display_correlation_results':self.display_correlation_results,
-                   'register_test_get_pass_fail':self.register_test_get_pass_fail,
-                   'register_test_run_repeatability_results':self.register_test_run_repeatability_results,
-                   'register_test_set_tm':self.register_test_set_tm,
-                   'register_test__test_from_table_2':self.register_test__test_from_table_2,
+                   'get_corr_pass_fail':self.get_corr_pass_fail,
                    'set_corr_traceability':self.set_corr_traceability,
                     }
         att_dict.update(super().get_atts())
@@ -44,31 +39,35 @@ class refid_import_plugin(limit_test_declaration):
         return plugin_dict
 
     def set_interplugs(self):
-        self.tm.interplugs['register_test__compile_test_results'].extend([self.reg_ate_result])
-        self.tm.interplugs['register_test_tt_compile_test_results_2'].extend([self.display_correlation_results])
-        self.tm.interplugs['register_test_get_pass_fail'].extend([self.register_test_get_pass_fail])
-        self.tm.interplugs['register_test_run_repeatability_results'].extend([self.register_test_run_repeatability_results])
-        self.tm.interplugs['register_test_set_tm'].extend([self.register_test_set_tm])
-        self.tm.interplugs['register_test__test_from_table'].extend([self.set_table_name, self.set_db_filepath])
-        self.tm.interplugs['register_test__test_from_table_2'].extend([self.display_correlation_results,self.register_test__test_from_table_2])
-        self.tm.interplugs['register_test__test_from_table'].extend([self.set_corr_traceability])
+        pass
+        # self.tm.interplugs['register_test__compile_test_results'].extend([self.reg_ate_result])
+        # self.tm.interplugs['register_test__test_from_table'].extend([self.set_table_name, self.set_db_filepath])
+        # self.tm.interplugs['register_test__test_from_table'].extend([self.set_corr_traceability])
 
 
     def _set_refids_once(self, *args):
         self.tm.tt._need_to_get_refids=True
 
     def get_refids(self):
-        '''Return a panda database containing the names and details of the project's refids.'''
-        pass
+        '''Return a dictionary containing details of the project's refids with the names being the keys.'''
+        raise AttributeError("This method needs to be overwritten in the project specific child class of this plugin and return a dictionary containing details of the project's refids with the names being the keys.")
 
     def import_refids(self, *args):
         if not self.tm.tt:
-            self.tm.REFIDs = self.get_refids()
+            self.REFIDs = self.get_refids()
             return
         elif self.tm.tt._need_to_get_refids:
             self.tm.tt.refids = self.get_refids()
             self.tm.tt._need_to_get_refids = False
-        self.tm.REFIDs = self.tm.tt.refids
+        self.REFIDs = self.tm.tt.refids
+
+    def _set_reg_inputs(self, name):
+        if name not in self.REFIDs.keys():
+            raise Exception(f'ERROR: Test {name} registered from {test_module.get_name()} not found in REFID master spec.')
+        if not all([att in self.REFIDs[name].keys() for att in ['name','upper_limit','lower_limit']]):
+            raise Exception(f'The refid {name} needs at least a name, an upper limit, and a lower limit assigned to them in the dataFrame returned by the refid_import_plugin.')
+        self.reg_inputs[name]={x:self.REFIDs[name][x] for x in self.REFIDs[name].keys()}
+        self.reg_inputs[name]['name']=name
 
     def get_reg_inputs(self, name):
         return self.reg_inputs[name]
@@ -98,7 +97,10 @@ class refid_import_plugin(limit_test_declaration):
         self.tm._correlation_results._register_correlation_failure(name, reason, temperature, conditions)
 
     def get_correlation_data(self, REFID, *args, **kwargs):
-        self.execute_interplugs('register_correlation_test_get_correlation_data', REFID, *args, **kwargs)
+        '''
+        The collection of correlation data is very project specific, but not absolutely needed in every project, so abstract method seems overly demanding.
+        '''
+        # self.execute_interplugs('register_correlation_test_get_correlation_data', REFID, *args, **kwargs)
         return self.get_correlation_data(REFID, *args, **kwargs)
 
     def get_correlation_data_scalar(self, REFID, *args, **kwargs):
@@ -110,36 +112,60 @@ class refid_import_plugin(limit_test_declaration):
             for ate_record in c_d:
                 self.tm._test_results._register_ate_result(name=test, result=ate_record['ate_data'], temperature=ate_record['tdegc'])
 
-    def set_corr_traceability(self,table_name, db_file):
-        self.tm._correlation_results._set_traceability_info(**self.tm.read_traceability_sqlite(self.tm._test_results.db_filepath, table_name))
+    def set_corr_traceability(self,*args, **kwargs):
+        self.tm._correlation_results._set_traceability_info(**getattr(self.tm.plugin_data_repo,'traceability_results', {}))
 
     def register_test_get_test_limits(self, test_name):
         return self.tm._correlation_results._correlation_declarations[test_name]
 
-    def register_test_get_pass_fail(self):
+    def get_corr_pass_fail(self):
         return bool(self.tm._correlation_results)
 
-    def register_test_run_repeatability_results(self, test_run):
-        for corr_name in test_run._correlation_results:
+    def run_repeatability_results(self):
+        super().run_repeatability_results()
+        results = collections.OrderedDict() #De-tangle runs
+        for test_run in self.tm.tt:
+            for corr_name in test_run._correlation_results:
+                try:
+                    # TODO shared results dict???
+                    results[corr_name].append(test_run._correlation_results[corr_name])
+                except KeyError as e:
+                    results[corr_name] = []
+                    results[corr_name].append(test_run._correlation_results[corr_name])
+                # TODO THEN WHAT with CORR??
+
+    def generate_json(self, db_file=None):
+        if len(self.tm._correlation_results):
+            if self._one_result_print:
+                res_str = f'{self.tm._correlation_results}'
+                passes = self.tm._correlation_results
+                res_str += f'*** Module {self.tm.get_name()} Correlation Summary {"PASS" if passes else "FAIL"}. ***\n\n'
+                print(res_str)
+                self._one_result_print = False
+            if db_file==None:
+                db_file=self._db_file
+            c_r = self.tm._correlation_results.json_report()
+            dest_abs_filepath = os.path.join(os.path.dirname(db_file),f"correlation_results.json")
             try:
-                # TODO shared results dict???
-                results[corr_name].append(test_run._correlation_results[corr_name])
-            except KeyError as e:
-                results[corr_name] = []
-                results[corr_name].append(test_run._correlation_results[corr_name])
-            # TODO THEN WHAT with CORR??
-    def register_test__test_from_table_2(self, table_name, db_file):
-        if db_file==None:
-            db_file=self._db_file
-        c_r = self.tm._correlation_results.json_report()
-        dest_abs_filepath = os.path.join(os.path.dirname(db_file),f"correlation_results.json")
-        try:
-            if c_r is not None:
-                with open(dest_abs_filepath, 'wb') as f:
-                    f.write(c_r.encode('utf-8'))
-                    f.close()
-        except PermissionError as e:
-            print(f'ERROR: Unable to write {dest_abs_filepath}')
+                if c_r is not None:
+                    with open(dest_abs_filepath, 'wb') as f:
+                        f.write(c_r.encode('utf-8'))
+                        f.close()
+            except PermissionError as e:
+                print(f'ERROR: Unable to write {dest_abs_filepath}')
+        super().generate_json(db_file=db_file)
+    def tt_compile_test_results(self):
+        res_str = super().tt_compile_test_results()
+        if len(self.tm._correlation_results):
+            if self._one_result_print:
+                res_str_corr = f'{self.tm._correlation_results}'
+                passes = self.tm._correlation_results
+                res_str_corr += f'*** Module {self.tm.get_name()} Correlation Summary {"PASS" if passes else "FAIL"}. ***\n\n'
+                self._one_result_print = False
+                print(res_str_corr)
+                res_str += res_str_corr
+        return res_str
+
     def display_correlation_results(self, table_name, db_file=None):
         if len(self.tm._correlation_results):
             if self._one_result_print:
@@ -148,9 +174,13 @@ class refid_import_plugin(limit_test_declaration):
                 res_str += f'*** Module {self.tm.get_name()} Correlation Summary {"PASS" if passes else "FAIL"}. ***\n\n'
                 print(res_str)
                 self._one_result_print = False
-    def register_test_set_tm(self,test_module, *args, **kwargs):
-        self.tm._correlation_results = correlation_results(self.tm.get_name(), module=self.tm)
-    def set_table_name(self, table_name, *args,**kwargs):
+    def _test_from_table(self, table_name=None, db_file=None, *args, **kwargs):
+        if not hasattr(self.tm, '_correlation_results'):
+            self.tm._correlation_results = correlation_results(self.tm.get_name(), module=self.tm)
         self.tm._correlation_results.set_table_name(table_name)
-    def set_db_filepath(self, db_file, *args, **kwargs):
         self.tm._correlation_results.set_db_filepath(os.path.abspath(db_file))
+        self.set_corr_traceability()
+        super()._test_from_table(table_name=table_name, db_file=db_file,*args,**kwargs)
+    def register_refids(self, *args):
+        self.tm._correlation_results = correlation_results(self.tm.get_name(), module=self.tm)
+        super().register_refids(*args)

@@ -26,15 +26,6 @@ class limit_test_declaration(plugin):
     def __init__(self, test_mod):
         super().__init__(test_mod)
         self.registered_tests = set()
-        self.tm.interplugs['register_test__test_from_table']=[]
-        self.tm.interplugs['register_test__test_from_table_2']=[]
-        self.tm.interplugs['register_test__compile_test_results']=[]
-        self.tm.interplugs['register_test_tt_compile_test_results']=[]
-        self.tm.interplugs['register_test_tt_compile_test_results_2']=[]
-        self.tm.interplugs['register_test_get_test_results']=[]
-        self.tm.interplugs['register_test_get_pass_fail']=[]
-        self.tm.interplugs['register_test_run_repeatability_results']=[]
-        self.tm.interplugs['register_test_set_tm']=[]
         self.tm._test_results = test_results(self.tm.get_name(), module=self.tm)
         self._single_results_print = True
 
@@ -94,7 +85,6 @@ class limit_test_declaration(plugin):
             *args - completely ignored. Only included to make it easy for whatever is calling this method. 
         """
         self.tm._compile_crashed = None
-        self.execute_interplugs('register_test_set_tm', self.tm)
         if self.tm._is_multitest_module:
             for multitest_unit in self.tm._multitest_units:
                 multitest_unit.register_tests()
@@ -142,8 +132,6 @@ class limit_test_declaration(plugin):
         res_str = ''
         all_pass = True
         try:
-            if self.tm._crashed is None:
-                self.execute_interplugs('register_test_tt_compile_test_results', self)
             self._compile_test_results()
             if self.tm._compile_crashed is not None:
                 (typ, value, trace_bk) = self.tm._compile_crashed
@@ -152,13 +140,11 @@ class limit_test_declaration(plugin):
                 self.tm.tt.notify(f'{self.tm.tt.get_bench_identity()["user"]} on {self.tm.tt.get_bench_identity()["host"]}\n'+notify_message)
             res_str = f'{res_str}\n{self.get_test_results()}'
             all_pass &= self.get_pass_fail()
-
             res_str += '***********************\n'
             res_str += f'*   Summary: {"PASS" if all_pass else "FAIL"}     *\n'
             res_str += '***********************\n'
             self.tm.tt.notify(res_str, subject='Test Results')
             self._single_results_print = False
-            self.execute_interplugs('register_test_tt_compile_test_results_2', self)
         except AttributeError as e:
             print(e)
         return res_str
@@ -383,7 +369,7 @@ class limit_test_declaration(plugin):
                 self.tm.bench_name=my_bench[my_bench.find('benches')+8:my_bench.find("' from")]
             try:
                 self.tm.compile_test_results(database=db, table_name=table_name)
-                self.execute_interplugs('register_test__compile_test_results')
+                # self.execute_interplugs('register_test__compile_test_results')
                 self.tm._test_results._plot()
             except Exception as e:
                 # Something else, NOS, has gone wrong with REFID result plotting. Let's try to muddle through it to avoid interrupting the other plots and still give a chance of archiving.
@@ -405,14 +391,12 @@ class limit_test_declaration(plugin):
         res_str += f'{self.tm._test_results}{self.tm.crash_info()}'
         passes = self.tm._test_results
         res_str += f'*** Module {self.tm.get_name()} Summary {"PASS" if passes else "FAIL"}. ***\n\n'
-        self.execute_interplugs('register_test_get_test_results', res_str)
         return res_str
     def get_pass_fail(self):
-        # self.execute_interplugs('register_test_get_pass_fail')
         return not self.tm.is_crashed() and bool(self.tm._test_results)
 
     def set_test_traceability(self, table_name):
-        self.tm._test_results._set_traceability_info(**self.tm.read_traceability_sqlite(self.tm._test_results.db_filepath, table_name))
+        self.tm._test_results._set_traceability_info(**getattr(self.tm.plugin_data_repo,'traceability_results', {}))
 
     def run_repeatability_results(self):
         results = collections.OrderedDict() #De-tangle runs
@@ -423,7 +407,6 @@ class limit_test_declaration(plugin):
                 except KeyError as e:
                     results[test_name] = []
                     results[test_name].append(test_run._test_results[test_name])
-            self.execute_interplugs('register_test_run_repeatability_results', test_run)
         for test_name in results:
             print('TODO FIXME to factor trials')
 
@@ -480,11 +463,9 @@ class limit_test_declaration(plugin):
         """
         if not hasattr(self.tm, '_test_results'):
             self.tm._test_results = test_results(self.tm.get_name(), module=self.tm)
-            self.execute_interplugs('register_test_set_tm', self.tm)
         self.tm._test_results.set_table_name(table_name)
         self.tm._test_results.set_db_filepath(os.path.abspath(db_file))
         self.set_test_traceability(table_name)
-        self.execute_interplugs('register_test__test_from_table', table_name=table_name, db_file=db_file)
         self._compile_test_results(table_name, db_file)
         if self.tm._compile_crashed is not None:
             (typ, value, trace_bk) = self.tm._compile_crashed
@@ -501,7 +482,10 @@ class limit_test_declaration(plugin):
         if self._single_results_print:
             print(res_str)
             self._single_results_print = False
-        self.execute_interplugs('register_test__test_from_table_2', table_name, db_file)
+        self.generate_json(db_file=db_file)
+        return res_str
+
+    def generate_json(self, db_file=None):
         # JSON OUTPUT WIP
         if db_file==None:
             db_file=self.tm._db_file
@@ -515,7 +499,6 @@ class limit_test_declaration(plugin):
         except PermissionError as e:
             print(f'ERROR: Unable to write {dest_abs_filepath}')
         # ######################
-        return res_str
 
 
 ### From here on in, it's the test_result.py stuff.
