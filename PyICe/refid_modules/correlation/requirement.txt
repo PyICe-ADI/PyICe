@@ -1,0 +1,14 @@
+Comparing ATE data, to bench recorded data.  This code will need to parse STDF
+files, retrieve ATE tests by test name. This code will also need to compare
+bench test data, to a particular STDF test name. Assume that the STDF going into
+this code is the ATE test data of just a singular DUT. Data will also have to be
+filtered by temperature.
+
+Classes:
+    STDFParser
+        this class will take in an STDF and organize by temperature and testname
+    Compare
+        This will take in Bench data (of a single test) and compare it against
+        ATE test data of the same test.
+        No database - just a singular measurement.
+        Correlation percent limit
