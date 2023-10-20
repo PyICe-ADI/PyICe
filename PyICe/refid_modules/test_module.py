@@ -72,7 +72,7 @@ class test_module(abc.ABC):
                         self.plugin_hooks[k].extend(v)
                     except KeyError:
                         self.plugin_hooks[k]=v
-        [ploog.set_interplugs() for ploog in self.plug_instances]
+            [ploog.set_interplugs() for ploog in self.plug_instances]
     @classmethod
     def __subclasshook__(cls, C):
         if cls is test_module:
@@ -129,10 +129,11 @@ class test_module(abc.ABC):
                     traceability_channels.extend(self.plugins[plugin]['instance'].get_traceability_channels())
         return traceability_channels
     def hook_functions(self, hook_key, *args):
-        for (k,v) in self.plugin_hooks.items():
-            if k is hook_key:
-                for f in v:
-                    f(*args)
+        if hasattr(self, 'plugin_hooks'):
+            for (k,v) in self.plugin_hooks.items():
+                if k is hook_key:
+                    for f in v:
+                        f(*args)
     def _add_attr(self,key,value):
         setattr(self,key,value)
     def _execute_plugin_fns(self, func):
