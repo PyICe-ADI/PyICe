@@ -20,4 +20,12 @@ Classes:
 
 Questions:
     1) Does the DUT ID come from a specific test in the STDF? I think so
+        a) Its not a PTR, its a PIR (or something like that or PRR)
+Comment: 
+    1) Die traceability is not a set in stone thing - should be done on a per part basis 
+    2) temperature is in the dlog - this data should be in the dlog (part of MIR)
+    3) if there is no test name - look for last defined at that test number  (ususally at DUT 0)  
+    4) Lets try to use units_parse (from pypi) 
+
+
 
