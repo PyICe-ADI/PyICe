@@ -1,6 +1,6 @@
 from pystdf.IO import Parser
 import pystdf.V4
-from PyICe.data_utils import stdf_utils
+import csv
 
 RECORDTYPE = 0
 
@@ -49,8 +49,8 @@ class STDFParser:
 
         # assert num_devices == 1, "Correlation STDF must have only one DUT record"
 
-import csv
-class ATE_index_utils:                          ##Not really a part of this parser module, but will be part of the correlation enterprise as a whole.
+
+class ATE_index_utils:  # Not really a part of this parser module, but will be part of the correlation enterprise.
     def __init__(self):
         self.index_file = "file/location.csv"
 
@@ -68,46 +68,45 @@ class ATE_index_utils:                          ##Not really a part of this pars
             csvwriter = csv.writer(index_file)
             csvwriter.writerow([dut_id, stdf_file_location])
 
+
 class do_i_pass_corr:
     def __init__(self, dut_id, testname, bench_data, upper_diff=None, lower_diff=None, percent=None):
-        stdf_file   = ATE_indexer(dut_id)
-        ate_data    = STDF_Parser(stdf_file)[testname]['result']
-        errors      = self.compare(ate_data, bench_data)
-        return self.verdict(errors, upper_diff, lower_diff, percent*.01)
-
-    def compare(ate_data, bench_data):
-        error = []
-        if hasattr(bench_data, '__iter__'):
-            for datapoint in data:
-                error.append(datapoint - self.corr_data)
-        else:
-            error.append(data - self.corr_data)
-        return error
-
-    def verdict(self, errors, upper_diff, lower_diff, percent):
+        ATE_utils = ATE_index_utils()
+        stdf_file = ATE_utils.get_stdf_location(dut_id)
+        ate_data = STDFParser(stdf_file)[testname]['result']
+        errors = self.compare(ate_data, bench_data)
         if percent:
             assert upper_diff is None and lower_diff is None
-            upper_diff = self.ate_test_data * percent
+            upper_diff = ate_data * percent*0.01
             lower_diff = -1 * upper_diff
         elif upper_diff is None and lower_diff is None:
             raise 'hey, we have a problem. what are the limits? I have no clue.'
-        pass_above = True if ((upper_diff is None) or len([err for err in error if err>upper_diff])==0) else False
-        pass_below = True if ((lower_diff is None) or len([err for err in error if err<lower_diff])==0) else False
+        self.verdict(errors, upper_diff, lower_diff)
+
+    @staticmethod
+    def compare(ate_data, bench_data):
+        error = []
+        if hasattr(bench_data, '__iter__'):
+            for datapoint in bench_data:
+                error.append(datapoint - ate_data)
+        else:
+            error.append(bench_data - ate_data)
+        return error
+
+    @staticmethod
+    def verdict(errors, upper_diff, lower_diff):
+        pass_above = True if ((upper_diff is None) or len([err for err in errors if err > upper_diff]) == 0) else False
+        pass_below = True if ((lower_diff is None) or len([err for err in errors if err < lower_diff]) == 0) else False
         if pass_above and pass_below:
-            ## Print victory message.
+            # Print victory message.
             return True
         else:
-            ## Print failure message along with most egregious error.
+            # Print failure message along with most egregious error.
             return False
 
 
 if __name__ == '__main__':
     STDFParser(filename='example_stdf/lot2.stdf')
 
-### e.g.
+# e.g.
 # corr = do_i_pass_corr('DUT1', 'ch1_vout', [1.6,1.66,1.6], percent=2)
-
-
-
-
-
