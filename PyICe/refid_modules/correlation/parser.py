@@ -1,4 +1,5 @@
 from pystdf.IO import Parser
+from unit_parse import parser as uparser
 import pystdf.V4
 import csv
 
@@ -73,14 +74,13 @@ class do_i_pass_corr:
     def __init__(self, dut_id, testname, bench_data, upper_diff=None, lower_diff=None, percent=None):
         ATE_utils = ATE_index_utils()
         stdf_file = ATE_utils.get_stdf_location(dut_id)
-        ate_data = STDFParser(stdf_file)[testname]['result']
+        ate_data = uparser(STDFParser(stdf_file)[testname]['result']+STDFParser(stdf_file)[testname]['units'])
         errors = self.compare(ate_data, bench_data)
         if percent:
             assert upper_diff is None and lower_diff is None
             upper_diff = ate_data * percent*0.01
             lower_diff = -1 * upper_diff
-        elif upper_diff is None and lower_diff is None:
-            raise 'hey, we have a problem. what are the limits? I have no clue.'
+        assert (upper_diff is not None) and (lower_diff is not None), f'Limits are not defined for {self}'
         self.verdict(errors, upper_diff, lower_diff)
 
     @staticmethod
@@ -106,7 +106,8 @@ class do_i_pass_corr:
 
 
 if __name__ == '__main__':
-    STDFParser(filename='example_stdf/lot2.stdf')
+    # STDFParser(filename='example_stdf/lot2.stdf')
+    STDFParser(filename='../../../../../projects/stowe_eval/correlation/REVID7/2022-01-05/5627908_LT3390_25C_CLASS_PRI_FT_TRIM_LT3390_BOS-EAGLE1_20220105_102154.std_1')
 
 # e.g.
 # corr = do_i_pass_corr('DUT1', 'ch1_vout', [1.6,1.66,1.6], percent=2)
