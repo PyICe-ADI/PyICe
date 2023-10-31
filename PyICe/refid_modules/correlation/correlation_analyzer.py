@@ -37,7 +37,7 @@ class CorrelationAnalyzer:
         Returns:
         A list of absolute differences between the bench data and the ATE data.
         """
-        self.ate_data = uparser(self.all_ate_data[testname]['result'] + self.all_ate_data[testname]['units'])
+        self.ate_data = self._parsed_data(testname)
         assert self.ate_data, f'{self.__class__} failed to locate ATE data associated with {testname}.'
         error = []
         if hasattr(bench_data, '__iter__'):
@@ -48,9 +48,8 @@ class CorrelationAnalyzer:
                     datapoint = str(datapoint) + units
                 if pct:
                     datap = uparser(datapoint)
-                    diff = 1 - (datap.to_base_units() / self.ate_data.to_base_units())
-                    assert diff.dimensionless
-                    error.append(diff.m)
+                    diff = 1 - (datap.to_base_units() / self.ate_data.to_base_units()).m
+                    error.append(diff)
                 else:
                     datap = uparser(datapoint)
                     diff = datap.to_base_units() - self.ate_data.to_base_units()
@@ -63,15 +62,45 @@ class CorrelationAnalyzer:
                 bench_data = str(bench_data) + units
             if pct:
                 datap = uparser(bench_data)
-                diff = 1 - (datap.to_base_units() / self.ate_data.to_base_units())
-                assert diff.dimensionless
-                error.append(diff.m)
+                assert datap.to_base_units() / self.ate_data.to_base_units().u is 'dimensionless'
+                diff = 1 - (datap.to_base_units() / self.ate_data.to_base_units()).m
+                error.append(diff)
             else:
                 datap = uparser(bench_data)
                 diff = datap.to_base_units() - self.ate_data.to_base_units()
                 assert diff.to_base_units().u == datap.to_base_units().u
                 error.append(diff.m)
         return error
+
+    def _parsed_data(self, testname):
+        """
+        This finds ate data of the given test name transforms it into a parsed object
+        Args:
+            testname: Str. Name of the test found in the ate data's stdf file.
+
+        Returns:
+            A parse object with an associated magnitude and unit.
+        """
+        if isinstance(self.all_ate_data[testname]['result'], str):
+            ate_data = self.all_ate_data[testname]['result'] + self.all_ate_data[testname]['units']
+        else:
+            ate_data = str(self.all_ate_data[testname]['result']) + self.all_ate_data[testname]['units']
+        parsed = uparser(ate_data)
+        if parsed is None:
+            parsed = uparser(ate_data.upper())      # Last ditch effort to make this work.
+            assert parsed is not None, f'{self.__class__} failed to locate ATE data associated with {testname}.'
+        return parsed
+
+    def _set_limits(self, upper_diff=None, lower_diff=None, percent=None):
+        if percent:
+            assert upper_diff is None and lower_diff is None
+            upper_diff = self.ate_data.m * percent * 0.01
+            lower_diff = -1 * upper_diff
+        elif self.upper_diff is not None or self.lower_diff is not None:
+            upper_diff = self.upper_diff
+            lower_diff = self.lower_diff
+        assert (upper_diff is not None) and (lower_diff is not None), f'Limits are not defined for {self}'
+        return upper_diff,lower_diff
 
     def verdict(self, testname, bench_data, units, upper_diff=None, lower_diff=None, percent=None):
         """
@@ -90,14 +119,7 @@ class CorrelationAnalyzer:
         limits.
         """
         errors = self._compare(testname, bench_data, units, pct=percent)
-        if percent:
-            assert upper_diff is None and lower_diff is None
-            upper_diff = self.ate_data * percent * 0.01
-            lower_diff = -1 * upper_diff
-        elif self.upper_diff is not None or self.lower_diff is not None:
-            upper_diff = self.upper_diff
-            lower_diff = self.lower_diff
-        assert (upper_diff is not None) and (lower_diff is not None), f'Limits are not defined for {self}'
+        upper_diff, lower_diff = self._set_limits(upper_diff, lower_diff, percent) # Include units, assume same as data?
         pass_above = True if ((upper_diff is None) or len([err for err in errors if err > upper_diff]) == 0) else False
         pass_below = True if ((lower_diff is None) or len([err for err in errors if err < lower_diff]) == 0) else False
         if pass_above and pass_below:
