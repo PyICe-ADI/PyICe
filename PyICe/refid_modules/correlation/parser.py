@@ -8,22 +8,22 @@ class FileReader:
     def __init__(self):
         self.data = []
         self.count=0
-        self._multitest = False
+        self._multidut = False
         self.valid_ptr=0
 
     def after_send(self, dataSource, data):
         self.data.append(data)
         rectype, fields = data
-        if rectype is pystdf.V4.Pir:
+        if rectype.__class__ is pystdf.V4.Pir:
             self.valid_ptr = 0
-        if rectype is pystdf.V4.Ptr and fields['TEST_FLG'] is 0:
+        if rectype.__class__ is pystdf.V4.Ptr and fields[rectype.fieldNames.index('TEST_FLG')] == 0:
             self.valid_ptr +=1
-        if rectype is pystdf.V4.Prr and self.valid_ptr:
+        if rectype.__class__ is pystdf.V4.Prr and self.valid_ptr:
             self.count +=1
 
     def after_complete(self, dataSrc):
         if self.count >1:
-            self._multitest =True
+            self._multidut =True
 
     def write(self, line):
         self.data.append(line)
@@ -39,7 +39,6 @@ def map_data(record_type, data):
 class STDFParser:
     def __init__(self, filenames):      ## We might need to expand on this. Like, [(filename, dut #),(filename, dut #)]
         self._test_name_dict = {}       ## And how would we do this without the indexer?
-        self._multidut = False
         # if number of valid Prrs in stdf >1, self._multidut=True
         for f in filenames:
             with open(f, 'rb') as file:
@@ -47,40 +46,80 @@ class STDFParser:
                 reader = FileReader()
                 p.addSink(reader)
                 p.parse()
-                self.parts = {}
-                self.metadata = {}
-                test_num_dict = {}
-                for line in reader.data:
-                    master_info = map_data(*line)
-                    record_type = type(line[RECORDTYPE])
-                    if record_type is pystdf.V4.Mir:
-                        if master_info["TST_TEMP"] is None:
-                            test_temp = '_25'
-                        else:
-                            test_temp = '_' + master_info["TST_TEMP"]
-                    if record_type is pystdf.V4.Pir:
-                        valid_ptr = 0
-                    if record_type is pystdf.V4.Ptr:  # Parametric Test Record - This is a test within this part.
-                        if master_info["TEST_TXT"] != '':
-                            test_num_dict[master_info['TEST_NUM']] = {
-                                'testname': master_info["TEST_TXT"],
-                                'lo_limit': master_info["LO_LIMIT"],
-                                'hi_limit': master_info["HI_LIMIT"],
-                                'units': master_info['UNITS'],
-                            }
-                            self._test_name_dict[master_info["TEST_TXT"] + test_temp] = {           ## Be careful about str vs number equivalence.
-                                'result': master_info['RESULT'],
-                                'lo_limit': master_info["LO_LIMIT"],
-                                'hi_limit': master_info["HI_LIMIT"],
-                                'units': test_num_dict[master_info['TEST_NUM']]['units'],
-                            }
-                        else:
-                            self._test_name_dict[test_num_dict[master_info['TEST_NUM']]['testname'] + test_temp] = {
-                                'result': master_info['RESULT'],
-                                'lo_limit':  test_num_dict[master_info['TEST_NUM']]['lo_limit'],
-                                'hi_limit':  test_num_dict[master_info['TEST_NUM']]['hi_limit'],
-                                'units': test_num_dict[master_info['TEST_NUM']]['units'],
-                            }
+                if reader._multidut:
+                    self._multidut_parse(reader)
+                else:
+                    self._monodut_parse(reader)
+    def _monodut_parse(self, reader):
+            test_num_dict = {}
+            for line in reader.data:
+                master_info = map_data(*line)
+                record_type = type(line[RECORDTYPE])
+                if record_type is pystdf.V4.Mir:
+                    if master_info["TST_TEMP"] is None:
+                        test_temp = '_25'
+                    else:
+                        test_temp = '_' + master_info["TST_TEMP"]
+                if record_type is pystdf.V4.Ptr:  # Parametric Test Record - This is a test within this part.
+                    if master_info["TEST_TXT"] != '':
+                        test_num_dict[master_info['TEST_NUM']] = {
+                            'testname': master_info["TEST_TXT"],
+                            'lo_limit': master_info["LO_LIMIT"],
+                            'hi_limit': master_info["HI_LIMIT"],
+                            'units': master_info['UNITS'],
+                        }
+                        self._test_name_dict[master_info["TEST_TXT"] + test_temp] = {           ## Be careful about str vs number equivalence.
+                            'result': master_info['RESULT'],
+                            'lo_limit': master_info["LO_LIMIT"],
+                            'hi_limit': master_info["HI_LIMIT"],
+                            'units': test_num_dict[master_info['TEST_NUM']]['units'],
+                        }
+                    else:
+                        self._test_name_dict[test_num_dict[master_info['TEST_NUM']]['testname'] + test_temp] = {
+                            'result': master_info['RESULT'],
+                            'lo_limit':  test_num_dict[master_info['TEST_NUM']]['lo_limit'],
+                            'hi_limit':  test_num_dict[master_info['TEST_NUM']]['hi_limit'],
+                            'units': test_num_dict[master_info['TEST_NUM']]['units'],
+                        }
+    def _multidut_parse(self, reader):
+            test_num_dict = {}
+            for line in reader.data:
+                master_info = map_data(*line)
+                record_type = type(line[RECORDTYPE])
+                if record_type is pystdf.V4.Mir:
+                    if master_info["TST_TEMP"] is None:
+                        test_temp = '_25'
+                    else:
+                        test_temp = '_' + master_info["TST_TEMP"]
+                if record_type is pystdf.V4.Pir:
+                    self.to_be_added = {}
+                if record_type is pystdf.V4.Ptr:  # Parametric Test Record - This is a test within this part.
+                    if master_info["TEST_TXT"] != '':
+                        test_num_dict[master_info['TEST_NUM']] = {
+                            'testname': master_info["TEST_TXT"],
+                            'lo_limit': master_info["LO_LIMIT"],
+                            'hi_limit': master_info["HI_LIMIT"],
+                            'units': master_info['UNITS'],
+                        }
+                        if master_info["TEST_TXT"] not in self._test_name_dict.keys():
+                            self._test_name_dict[master_info["TEST_TXT"]+ test_temp] = {}
+                        self.to_be_added[master_info["TEST_TXT"]+ test_temp] = {
+                            'result': master_info['RESULT'],
+                            'lo_limit': master_info["LO_LIMIT"],
+                            'hi_limit': master_info["HI_LIMIT"],
+                            'units': test_num_dict[master_info['TEST_NUM']]['units'],
+                        }
+                    else:
+                        self.to_be_added[test_num_dict[master_info['TEST_NUM']]['testname'] + test_temp] = {
+                            'result': master_info['RESULT'],
+                            'lo_limit':  test_num_dict[master_info['TEST_NUM']]['lo_limit'],
+                            'hi_limit':  test_num_dict[master_info['TEST_NUM']]['hi_limit'],
+                            'units': test_num_dict[master_info['TEST_NUM']]['units'],
+                        }
+                if record_type is pystdf.V4.Prr:
+                    for testname, data in self.to_be_added.items():
+                        self._test_name_dict[testname][master_info['PART_ID']] = data
+
 
     def __getitem__(self, item):
         return self._test_name_dict[item]
