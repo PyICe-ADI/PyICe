@@ -2,6 +2,16 @@ from PyICe.refid_modules.correlation.parser import STDFParser
 from unit_parse import parser as uparser
 
 
+class DataLog:
+    def meets_condition(self):
+        pass
+
+    def parse_data(self):
+        pass
+
+class StdfLog(DataLog):
+
+# Comparison of 1 medium of data collection to another
 class CorrelationAnalyzer:
     def __init__(self, stdf_file, upper_diff=None, lower_diff=None):
         self.all_ate_data = STDFParser(stdf_file)
@@ -24,52 +34,35 @@ class CorrelationAnalyzer:
     def lower_diff(self, value):
         self._lower_diff = value
 
-    def _compare(self, testname, bench_data, units, pct):
+    def _compare(self, testname, bench_data, units, temperature, pct):
         """
         Creates a list of offsets between the given bench data and the ATE data of a given test.
         Args:
             testname: Name of the test which
             bench_data: Data collected from which the ATE data will be subtracted.
             units: Units bench_data uses.
+            temperature: Str. Temperature in Celsius at which data was collected.
             pct: If boolean True, the generated list will be percent difference between ATE and bench.
                 Otherwise, absolute.
 
         Returns:
         A list of absolute differences between the bench data and the ATE data.
         """
-        self.ate_data = self._parsed_data(testname)
-        assert self.ate_data, f'{self.__class__} failed to locate ATE data associated with {testname}.'
+        self.ate_data = self._parsed_data(testname+'_25') if temperature is None else self._parsed_data(testname+'_'+temperature)
         error = []
-        if hasattr(bench_data, '__iter__'):
-            for datapoint in bench_data:
-                if isinstance(datapoint, str):
-                    datapoint = datapoint + units
-                else:
-                    datapoint = str(datapoint) + units
-                if pct:
-                    datap = uparser(datapoint)
-                    diff = 1 - (datap.to_base_units() / self.ate_data.to_base_units()).m
-                    error.append(diff)
-                else:
-                    datap = uparser(datapoint)
-                    diff = datap.to_base_units() - self.ate_data.to_base_units()
-                    assert diff.to_base_units().u == datap.to_base_units().u
-                    error.append(diff.m)
-        else:
-            if isinstance(bench_data, str):
-                bench_data = bench_data + units
+        if not isinstance(bench_data, list) or not isinstance(bench_data, set):
+            bench_data = [bench_data]
+        for datapoint in bench_data:
+            if isinstance(datapoint, str):
+                datapoint = datapoint + units
             else:
-                bench_data = str(bench_data) + units
+                datapoint = str(datapoint) + units
+            datap = uparser(datapoint)
             if pct:
-                datap = uparser(bench_data)
-                assert datap.to_base_units() / self.ate_data.to_base_units().u is 'dimensionless'
-                diff = 1 - (datap.to_base_units() / self.ate_data.to_base_units()).m
-                error.append(diff)
+                diff = (datap.to_base_units() / self.ate_data.to_base_units()).m - 1
             else:
-                datap = uparser(bench_data)
-                diff = datap.to_base_units() - self.ate_data.to_base_units()
-                assert diff.to_base_units().u == datap.to_base_units().u
-                error.append(diff.m)
+                diff = (datap.to_base_units() - self.ate_data.to_base_units()).m
+            error.append(diff)
         return error
 
     def _parsed_data(self, testname):
@@ -92,6 +85,17 @@ class CorrelationAnalyzer:
         return parsed
 
     def _set_limits(self, upper_diff=None, lower_diff=None, percent=None):
+        """
+        Calculates limits if percent, assigns limits if presented at initialization, and passes through values
+        if presented now.
+        Args:
+            upper_diff: Upper limit from expected value that will still pass.
+            lower_diff :Lower limit from expected value that will still pass.
+            percent: Percent away from expected value that will still pass.
+
+        Returns:
+        Two values or a value and a None
+        """
         if percent:
             assert upper_diff is None and lower_diff is None
             upper_diff = self.ate_data.m * percent * 0.01
@@ -99,32 +103,64 @@ class CorrelationAnalyzer:
         elif self.upper_diff is not None or self.lower_diff is not None:
             upper_diff = self.upper_diff
             lower_diff = self.lower_diff
-        assert (upper_diff is not None) and (lower_diff is not None), f'Limits are not defined for {self}'
-        return upper_diff,lower_diff
+        assert (upper_diff is not None) or (lower_diff is not None), f'Limits are not defined for {self}'
+        return upper_diff, lower_diff
 
-    def verdict(self, testname, bench_data, units, upper_diff=None, lower_diff=None, percent=None):
+    def verdict(self, testname, bench_data, units, temperature=None, upper_diff=None, lower_diff=None, percent=None):
         """
         Determines if the difference between bench data and the ATE data of given data for a given test stays within
         the given limits.
         Args:
             testname:Name of the ATE test being compared. e.g. 'CH1 VOUT'
-            bench_data: Either a string or an iterable object of strings. e.g. '5V' or ['1A','2A']
+            bench_data: Data to compare to ATE records. Can be either a value or a string, as an individual point or as a list.
+                e.g. 5 or '5' or [1,2] or ['1','2']
             units: A string that represents the units the bench data is presented with.
-            upper_diff:Maximum absolute difference that will pass above the ATE value. Leave as None if using 'percent.'
-            lower_diff:Minimum absolute difference that will pass below the ATE value. Leave as None if using 'percent.'
-            percent:Percent of ATE value all bench data must be within to pass. Leave as None if using absolute limits.
+                e.g. 'A' or 'ohms'
+            temperature: Str. Temperature in Celsius at which data was collected.
+            upper_diff:Maximum absolute difference in base units that will pass above the ATE value.
+                Leave as None if using 'percent.'
+            lower_diff:Minimum absolute difference in base units that will pass below the ATE value.
+                Leave as None if using 'percent.'
+            percent:Percent of ATE value all bench data must be within to pass.
+                Leave as None if using absolute limits.
 
         Returns:
         A boolean based on whether the difference between the bench data and the ATE data remained within the given
         limits.
         """
-        errors = self._compare(testname, bench_data, units, pct=percent)
-        upper_diff, lower_diff = self._set_limits(upper_diff, lower_diff, percent) # Include units, assume same as data?
-        pass_above = True if ((upper_diff is None) or len([err for err in errors if err > upper_diff]) == 0) else False
-        pass_below = True if ((lower_diff is None) or len([err for err in errors if err < lower_diff]) == 0) else False
+        errors = self._compare(testname, bench_data, units, temperature, percent)
+        upper_diff, lower_diff = self._set_limits(upper_diff, lower_diff, percent)
+        upper_errors = [] if upper_diff is None else [err for err in errors if err > upper_diff]
+        lower_errors = [] if lower_diff is None else [err for err in errors if err < lower_diff]
+        pass_above = True if ((upper_diff is None) or len(upper_errors) == 0) else False
+        pass_below = True if ((lower_diff is None) or len(lower_errors) == 0) else False
         if pass_above and pass_below:
-            # Print victory message.
+            rslt_str = ''
+            rslt_str += f'{testname} passed'
+            rslt_str += f' at {temperature}.\n' if temperature else ' at room temperature.\n'
+            print(rslt_str)
             return True
         else:
-            # Print failure message along with most egregious error.
+            rslt_str = ''
+            rslt_str += f'{testname} failed'
+            rslt_str += f' at {temperature}.\n' if temperature else ' at room temperature.\n'
+            if upper_errors:
+                rslt_str += f'Upper Limit = +{upper_diff}\tMax Diff = {max(upper_errors)}\n'
+            if lower_errors:
+                rslt_str += f'Lower Limit = {lower_diff}\tMax Diff = {min(lower_errors)}'
+            print(rslt_str)
             return False
+
+    def conjure_a_json(self, *args, **kwargs):
+        """
+        Throw in some basic traceability (test name, date, and dut id, I guess?) and follow up with the verdict of all
+        the tests involved in the script.
+
+        Args:
+            *args: Don't think this'll be too useful, but kwargs looked so lonely.
+            **kwargs: Extra info you want to include in the results. It's up to you!
+
+        Returns:
+        You better believe there'll be a json at the end of all this.
+        """
+        pass
