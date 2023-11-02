@@ -1,20 +1,19 @@
+import abc
+
 from PyICe.refid_modules.correlation.parser import STDFParser
 from unit_parse import parser as uparser
 
 
-class DataLog:
-    def meets_condition(self):
-        pass
 
-    def parse_data(self):
-        pass
-
-class StdfLog(DataLog):
 
 # Comparison of 1 medium of data collection to another
 class CorrelationAnalyzer:
-    def __init__(self, stdf_file, upper_diff=None, lower_diff=None):
-        self.all_ate_data = STDFParser(stdf_file)
+    def __init__(self, target_data_dict=None, upper_diff=None, lower_diff=None):
+    #def __init__(self, stdf_file, upper_diff=None, lower_diff=None):
+        if target_data_dict is None:
+            self.all_target_data = input("Make your dictionary here")
+        else:
+            self.all_target_data = target_data_dict
         self.upper_diff = upper_diff
         self.lower_diff = lower_diff
 
@@ -34,7 +33,8 @@ class CorrelationAnalyzer:
     def lower_diff(self, value):
         self._lower_diff = value
 
-    def _compare(self, testname, bench_data, units, temperature, pct):
+    # def _compare(self, testname, bench_data, units, temperature, pct):
+    def _compare(self, target_data, bench_data, units, pct):
         """
         Creates a list of offsets between the given bench data and the ATE data of a given test.
         Args:
@@ -48,7 +48,6 @@ class CorrelationAnalyzer:
         Returns:
         A list of absolute differences between the bench data and the ATE data.
         """
-        self.ate_data = self._parsed_data(testname+'_25') if temperature is None else self._parsed_data(testname+'_'+temperature)
         error = []
         if not isinstance(bench_data, list) or not isinstance(bench_data, set):
             bench_data = [bench_data]
@@ -59,9 +58,9 @@ class CorrelationAnalyzer:
                 datapoint = str(datapoint) + units
             datap = uparser(datapoint)
             if pct:
-                diff = (datap.to_base_units() / self.ate_data.to_base_units()).m - 1
+                diff = (datap.to_base_units() / target_data.to_base_units()).m - 1
             else:
-                diff = (datap.to_base_units() - self.ate_data.to_base_units()).m
+                diff = (datap.to_base_units() - target_data.to_base_units()).m
             error.append(diff)
         return error
 
@@ -74,21 +73,22 @@ class CorrelationAnalyzer:
         Returns:
             A parse object with an associated magnitude and unit.
         """
-        if isinstance(self.all_ate_data[testname]['result'], str):
-            ate_data = self.all_ate_data[testname]['result'] + self.all_ate_data[testname]['units']
+        if isinstance(self.all_target_data[testname]['result'], str):
+            ate_data = self.all_target_data[testname]['result'] + self.all_target_data[testname]['units']
         else:
-            ate_data = str(self.all_ate_data[testname]['result']) + self.all_ate_data[testname]['units']
+            ate_data = str(self.all_target_data[testname]['result']) + self.all_target_data[testname]['units']
         parsed = uparser(ate_data)
         if parsed is None:
             parsed = uparser(ate_data.upper())      # Last ditch effort to make this work.
             assert parsed is not None, f'{self.__class__} failed to locate ATE data associated with {testname}.'
         return parsed
 
-    def _set_limits(self, upper_diff=None, lower_diff=None, percent=None):
+    def _set_limits(self, target_data=None, upper_diff=None, lower_diff=None, percent=None):
         """
         Calculates limits if percent, assigns limits if presented at initialization, and passes through values
         if presented now.
         Args:
+            target_data:
             upper_diff: Upper limit from expected value that will still pass.
             lower_diff :Lower limit from expected value that will still pass.
             percent: Percent away from expected value that will still pass.
@@ -98,7 +98,7 @@ class CorrelationAnalyzer:
         """
         if percent:
             assert upper_diff is None and lower_diff is None
-            upper_diff = self.ate_data.m * percent * 0.01
+            upper_diff = target_data * percent * 0.01
             lower_diff = -1 * upper_diff
         elif self.upper_diff is not None or self.lower_diff is not None:
             upper_diff = self.upper_diff
@@ -128,8 +128,9 @@ class CorrelationAnalyzer:
         A boolean based on whether the difference between the bench data and the ATE data remained within the given
         limits.
         """
-        errors = self._compare(testname, bench_data, units, temperature, percent)
-        upper_diff, lower_diff = self._set_limits(upper_diff, lower_diff, percent)
+        target_data = self._parsed_data(testname + '_25') if temperature is None else self._parsed_data(testname + '_' + temperature)
+        errors = self._compare(target_data, bench_data, units, percent)
+        upper_diff, lower_diff = self._set_limits(target_data.m, upper_diff, lower_diff, percent)
         upper_errors = [] if upper_diff is None else [err for err in errors if err > upper_diff]
         lower_errors = [] if lower_diff is None else [err for err in errors if err < lower_diff]
         pass_above = True if ((upper_diff is None) or len(upper_errors) == 0) else False
