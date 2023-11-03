@@ -1,15 +1,10 @@
-import abc
-
-from PyICe.refid_modules.correlation.parser import STDFParser
 from unit_parse import parser as uparser
-
-
 
 
 # Comparison of 1 medium of data collection to another
 class CorrelationAnalyzer:
     def __init__(self, target_data_dict=None, upper_diff=None, lower_diff=None):
-    #def __init__(self, stdf_file, upper_diff=None, lower_diff=None):
+        # def __init__(self, stdf_file, upper_diff=None, lower_diff=None):
         if target_data_dict is None:
             self.all_target_data = input("Make your dictionary here")
         else:
@@ -33,15 +28,13 @@ class CorrelationAnalyzer:
     def lower_diff(self, value):
         self._lower_diff = value
 
-    # def _compare(self, testname, bench_data, units, temperature, pct):
     def _compare(self, target_data, bench_data, units, pct):
         """
         Creates a list of offsets between the given bench data and the ATE data of a given test.
         Args:
-            testname: Name of the test which
+            target_data:
             bench_data: Data collected from which the ATE data will be subtracted.
             units: Units bench_data uses.
-            temperature: Str. Temperature in Celsius at which data was collected.
             pct: If boolean True, the generated list will be percent difference between ATE and bench.
                 Otherwise, absolute.
 
@@ -79,16 +72,17 @@ class CorrelationAnalyzer:
             ate_data = str(self.all_target_data[testname]['result']) + self.all_target_data[testname]['units']
         parsed = uparser(ate_data)
         if parsed is None:
-            parsed = uparser(ate_data.upper())      # Last ditch effort to make this work.
+            parsed = uparser(ate_data.upper())  # Last ditch effort to make this work.
             assert parsed is not None, f'{self.__class__} failed to locate ATE data associated with {testname}.'
         return parsed
 
-    def _set_limits(self, target_data=None, upper_diff=None, lower_diff=None, percent=None):
+    def _set_limits(self, target_data=None, units=None, upper_diff=None, lower_diff=None, percent=None):
         """
         Calculates limits if percent, assigns limits if presented at initialization, and passes through values
         if presented now.
         Args:
             target_data:
+            units:
             upper_diff: Upper limit from expected value that will still pass.
             lower_diff :Lower limit from expected value that will still pass.
             percent: Percent away from expected value that will still pass.
@@ -96,15 +90,20 @@ class CorrelationAnalyzer:
         Returns:
         Two values or a value and a None
         """
+        u_diff = l_diff = None
         if percent:
             assert upper_diff is None and lower_diff is None
-            upper_diff = target_data * percent * 0.01
-            lower_diff = -1 * upper_diff
+            u_diff = target_data * percent * 0.01
+            l_diff = -1 * u_diff
         elif self.upper_diff is not None or self.lower_diff is not None:
-            upper_diff = self.upper_diff
-            lower_diff = self.lower_diff
-        assert (upper_diff is not None) or (lower_diff is not None), f'Limits are not defined for {self}'
-        return upper_diff, lower_diff
+            u_diff = self.upper_diff
+            l_diff = self.lower_diff
+        if upper_diff is not None:
+            u_diff = uparser(str(upper_diff) + units).m
+        if lower_diff is not None:
+            l_diff = uparser(str(lower_diff) + units).m
+        assert (u_diff is not None) or (l_diff is not None), f'Limits are not defined for {self}'
+        return u_diff, l_diff
 
     def verdict(self, testname, bench_data, units, temperature=None, upper_diff=None, lower_diff=None, percent=None):
         """
@@ -112,7 +111,8 @@ class CorrelationAnalyzer:
         the given limits.
         Args:
             testname:Name of the ATE test being compared. e.g. 'CH1 VOUT'
-            bench_data: Data to compare to ATE records. Can be either a value or a string, as an individual point or as a list.
+            bench_data: Data to compare to ATE records. Can be either a value or a string, as an individual point
+            or as a list.
                 e.g. 5 or '5' or [1,2] or ['1','2']
             units: A string that represents the units the bench data is presented with.
                 e.g. 'A' or 'ohms'
@@ -128,9 +128,10 @@ class CorrelationAnalyzer:
         A boolean based on whether the difference between the bench data and the ATE data remained within the given
         limits.
         """
-        target_data = self._parsed_data(testname + '_25') if temperature is None else self._parsed_data(testname + '_' + str(temperature))
+        target_data = self._parsed_data(testname + '_25') if temperature is None else self._parsed_data(
+            testname + '_' + str(temperature))
         errors = self._compare(target_data, bench_data, units, percent)
-        upper_diff, lower_diff = self._set_limits(target_data.m, upper_diff, lower_diff, percent)
+        upper_diff, lower_diff = self._set_limits(target_data.m, units, upper_diff, lower_diff, percent)
         upper_errors = [] if upper_diff is None else [err for err in errors if err > upper_diff]
         lower_errors = [] if lower_diff is None else [err for err in errors if err < lower_diff]
         pass_above = True if ((upper_diff is None) or len(upper_errors) == 0) else False
