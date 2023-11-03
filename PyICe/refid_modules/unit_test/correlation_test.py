@@ -23,9 +23,9 @@ def test_parsed_data(filename, part_id, testname):
 
 
 @pytest.mark.parametrize('filename, part_id, testname, kwargs',
-                         [(corr_ex, ['2'], 'Src out I       <> EA_SRC', {'upper_diff': 1, 'lower_diff': -1}),
-                          (stwe_ex, ['1'], 'VOUT CH1', {'upper_diff': 0.1, 'lower_diff': -0.1}),
-                          (stwe_ex, ['1'], 'VOUT CH1', {'upper_diff': 0.1, 'lower_diff': None}),
+                         [(corr_ex, ['2'], 'Src out I       <> EA_SRC', {'units':'A', 'upper_diff': 1, 'lower_diff': -1}),
+                          (stwe_ex, ['1'], 'VOUT CH1', {'units':'V', 'upper_diff': 0.1, 'lower_diff': -0.1}),
+                          (stwe_ex, ['1'], 'VOUT CH1', {'units':'V', 'upper_diff': 0.1, 'lower_diff': None}),
                           (stwe_ex, ['1'], 'VOUT CH1', {'target_data':1, 'percent': 10}),
                           ]
                          )
