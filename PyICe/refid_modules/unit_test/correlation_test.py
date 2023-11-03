@@ -2,9 +2,9 @@ import pytest
 from PyICe.refid_modules.correlation.correlation_analyzer import CorrelationAnalyzer
 from PyICe.refid_modules.correlation.parser import STDFParser
 
-corr_ex = ['correlation/example_stdf/lot2.stdf']
-# stwe_ex = ['../../../../../projects/stowe_eval/correlation/REVID7/2022-01-05/5627908_LT3390_25C_CLASS_PRI_FT_TRIM_LT3390_BOS-EAGLE1_20220105_102154.std_1']
-stwe_ex = ['correlation/example_stdf/5627908_LT3390_25C_CLASS_PRI_FT_TRIM_LT3390_BOS-EAGLE1_20220105_102154.std_1']
+corr_ex = ['../correlation/example_stdf/lot2.stdf']
+#stwe_ex = ['../../../../../projects/stowe_eval/correlation/REVID7/2022-01-05/5627908_LT3390_25C_CLASS_PRI_FT_TRIM_LT3390_BOS-EAGLE1_20220105_102154.std_1']
+stwe_ex = ['../correlation/example_stdf/5627908_LT3390_25C_CLASS_PRI_FT_TRIM_LT3390_BOS-EAGLE1_20220105_102154.std_1']
 
 
 @pytest.mark.parametrize('filename, part_id', [(corr_ex, ['2']), (stwe_ex, ['1'])])
