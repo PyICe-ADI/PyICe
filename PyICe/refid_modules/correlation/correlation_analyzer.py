@@ -116,7 +116,7 @@ class CorrelationAnalyzer:
                 e.g. 5 or '5' or [1,2] or ['1','2']
             units: A string that represents the units the bench data is presented with.
                 e.g. 'A' or 'ohms'
-            temperature: Str. Temperature in Celsius at which data was collected.
+            temperature: Str or Num. Temperature in Celsius at which data was collected.
             upper_diff:Maximum absolute difference in base units that will pass above the ATE value.
                 Leave as None if using 'percent.'
             lower_diff:Minimum absolute difference in base units that will pass below the ATE value.
@@ -128,7 +128,7 @@ class CorrelationAnalyzer:
         A boolean based on whether the difference between the bench data and the ATE data remained within the given
         limits.
         """
-        target_data = self._parsed_data(testname + '_25') if temperature is None else self._parsed_data(testname + '_' + temperature)
+        target_data = self._parsed_data(testname + '_25') if temperature is None else self._parsed_data(testname + '_' + str(temperature))
         errors = self._compare(target_data, bench_data, units, percent)
         upper_diff, lower_diff = self._set_limits(target_data.m, upper_diff, lower_diff, percent)
         upper_errors = [] if upper_diff is None else [err for err in errors if err > upper_diff]
