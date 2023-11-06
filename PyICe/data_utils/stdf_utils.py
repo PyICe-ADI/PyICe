@@ -1,22 +1,19 @@
 from pystdf.IO import Parser
 import pystdf.V4, time, math
 from .. import lab_utils
-# ENUMS for fields by position within STDF record to make this code more readable.
+
 # See: http://www.kanwoda.com/wp-content/uploads/2015/05/std-spec.pdf
 # Return value is always in the form of the tuple: [RECORDTYPE, DATAOBJECT]
-RECORDTYPE=0; DATAOBJECT=1
-# Record?:
-PARTNUM=9; SETUPTIME=0; STARTTIME=1; DEVICENAME=9; XLOC=6; YLOC=7
-HEAD_NUM=0; SITE_NUM=1; SBIN_NUM=2; SBIN_CNT=3; SBIN_PF=4; SBIN_NAM=5                                                                           # SBR - Software Bin Record
-HEAD_NUM=0; SITE_NUM=1; PART_FLG=2; NUM_TEST=3; HARD_BIN=4; SOFT_BIN=5; X_COORD=6; Y_COORD=7; TEST_T=8; PART_ID=9; PART_TXT=10; PART_FIX=11     # PRR - Part Results Record
-# PRR Datatypes
-# PART_FLG - All bits want to be 0 for a good part
+
 PRR_PART_FLG_INCOMPLETE_BIT=2**2; PRR_PART_FLG_FAILED_BIT=2**3; PRR_PART_FLG_INVALID_BIT=2**4
 # PTR Fields by position
 PTR_TEST_NUM=0; PTR_HEAD_NUM=1; PTR_SITE_NUM=2; PTR_TEST_FLG=3; PTR_PARM_FLG=4; PTR_RESULT=5; PTR_TEST_TXT=6; PTR_ALARM_ID=7
 # PTR Datatypes
 # TEST_FLG - All bits want to be 0 for a good test
 PTR_TEST_FLG_ALARM=2**0; PTR_TEST_FLG_RESULT_INVALID=2**1; PTR_TEST_FLG_RESULT_RELIABLE=2**2; PTR_TEST_FLG_TIMEOUT=2**3; PTR_TEST_FLG_NOT_EXECUTED=2**4; PTR_TEST_FLG_TEST_ABORTED=2**5; PTR_TEST_FLG_FLAG_INVALID=2**6; PTR_TEST_FLG_TEST_FAILED=2**7;
+
+def map_data(record_type, data):
+    return {k: v for (k, v) in zip(record_type.fieldNames, data)}
 
 class FileReader:
     def __init__(self):
@@ -47,10 +44,12 @@ class stdf_reader():
             p.addSink(reader)
             p.parse()
             self.parts = {}
+            test_num_index = {} 
             self.metadata = {}
             state = None
             for line in reader.data:
-                record_type = type(line[RECORDTYPE])
+                master_info = map_data(*line)
+                record_type = type(line[0])
                 if record_type is pystdf.V4.Sbr:
                     pass
                     # self.metadata["BINCOUNT"][line[DATAOBJECT][SBIN_NUM]] = line[DATAOBJECT][SBIN_CNT] # Anyone care about this record, seems redundant?
@@ -59,8 +58,9 @@ class stdf_reader():
                         lab_utils.print_banner(f'Corrupted STDF File: {filename}!', f'Got an MIR but not as the first Field. Last record type is "{state}".', length=160)
                         if self.exit_if_malformed:
                             raise Exception("\n\nSet exit_if_malformed to False if you want to push on.")
-                    self.metadata["SETUPTIME"] = {"UNIX": line[DATAOBJECT][SETUPTIME], "HUMAN": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(line[DATAOBJECT][SETUPTIME]))}
-                    self.metadata["STARTTIME"] = {"UNIX": line[DATAOBJECT][STARTTIME], "HUMAN": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(line[DATAOBJECT][STARTTIME]))}
+                    self.metadata["SETUPTIME"] = {"UNIX": master_info['SETUP_T'], "HUMAN": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(master_info.pop('SETUP_T')))}
+                    self.metadata["STARTTIME"] = {"UNIX": master_info['START_T'], "HUMAN": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(master_info.pop('START_T')))}
+                    self.metadata.update(master_info)
                     state = "MIR"
                 if record_type is pystdf.V4.Pir:                        # Product Information record - New Part Found!
                     if state not in ["MIR", "PRR"]:
@@ -68,28 +68,34 @@ class stdf_reader():
                         if self.exit_if_malformed:
                             raise Exception("\n\nSet exit_if_malformed to False if you want to push on.")
                     this_part = {}                                      # Each unit gets a fresh dictionary.
-                    this_part["HEADER"] = line[DATAOBJECT]              # Grab the header.
-                    this_part["TESTS"] = []                             # Start a new list of tests.
+                    this_part["HEADER"] = master_info                   # Grab the header.
+                    this_part["TESTS"] = {}                             # Start a new dict of tests.
                     state = "PIR"
                 if record_type is pystdf.V4.Ptr:                        # Parametric Test Record - This is a test within this part.
                     if state not in ["PIR", "PTR"]:
                         lab_utils.print_banner(f'Corrupted STDF File: {filename}', f'Got a PTR but not at after a PIR or another PTR. Last record type is "{state}".', length=160)
                         if self.exit_if_malformed:
                             raise Exception("\n\nSet exit_if_malformed to False if you want to push on.")
-                    this_part["TESTS"].append(line[DATAOBJECT])         # Grab the test data.
+                    if master_info["TEST_TXT"] != '':
+                        test_num_index[master_info['TEST_NUM']] = master_info
+                        this_part["TESTS"][master_info['TEST_TXT']] = master_info
+                    else:
+                        this_part["TESTS"][test_num_index[master_info['TEST_NUM']]['TEST_TXT']] = {}
+                        for x, y in master_info.items():
+                            this_part["TESTS"][test_num_index[master_info['TEST_NUM']]['TEST_TXT']][x]=test_num_index[master_info['TEST_NUM']][x] if y in [None,''] else y
                     state = "PTR"
                 if record_type is pystdf.V4.Prr:                        # Product Results record - End of this part.
                     if state not in ["PIR", "PTR"]:
                         lab_utils.print_banner(f'Corrupted STDF File: {filename}', f'Got a PRR but not at after a PIR or a PTR. Last record type is "{state}".', length=160)
                         if self.exit_if_malformed:
                             raise Exception("\n\nSet exit_if_malformed to False if you want to push on.")
-                    this_part["XLOC"] = line[DATAOBJECT][XLOC]
-                    this_part["YLOC"] = line[DATAOBJECT][YLOC]
-                    this_part["SOFTBIN"] = line[DATAOBJECT][SOFT_BIN]
-                    this_part["HARDBIN"] = line[DATAOBJECT][HARD_BIN]
-                    flag = line[DATAOBJECT][PART_FLG]
+                    this_part["XLOC"] = master_info['X_COORD']
+                    this_part["YLOC"] = master_info['Y_COORD']
+                    this_part["SOFTBIN"] = master_info['SOFT_BIN']
+                    this_part["HARDBIN"] = master_info['HARD_BIN']
+                    flag = master_info['PART_FLG']
                     this_part["PASSING"] = (flag & PRR_PART_FLG_FAILED_BIT != PRR_PART_FLG_FAILED_BIT) and (flag & PRR_PART_FLG_INVALID_BIT != PRR_PART_FLG_INVALID_BIT) and (flag & PRR_PART_FLG_INCOMPLETE_BIT != PRR_PART_FLG_INCOMPLETE_BIT)
-                    self.parts[line[DATAOBJECT][PARTNUM]] = this_part   # Set the key to the device number and attach the data.
+                    self.parts[master_info['PART_ID']] = this_part   # Set the key to the device number and attach the data.
                     state = "PRR"
                 if record_type is pystdf.V4.Mrr:                        # Master information record
                     if state not in ["PRR"]:
@@ -100,8 +106,8 @@ class stdf_reader():
             file.close()
     def test_passed(self, device, testnum):
         for test in self.parts[str(device)]["TESTS"]:
-            if test[PTR_TEST_NUM] == testnum:
-                return test[PTR_TEST_FLG] == 0 # All bits must be 0 to pass
+            if self.parts[str(device)]["TESTS"][test]["TEST_NUM"] == testnum:
+                return self.parts[str(device)]["TESTS"][test]["TEST_FLG"] == 0 # All bits must be 0 to pass
     def part_passed(self, device):
         '''
         Takes a part number <int> or <string>.
@@ -164,19 +170,31 @@ class stdf_reader():
         results = {}
         for part in self.parts:
             for test in self.parts[part]["TESTS"]:
-                if test[PTR_TEST_NUM] == testnum:
-                    results[part] = test[PTR_RESULT]
+                if self.parts[part]["TESTS"][test]["TEST_NUM"] == testnum:
+                    results[part] = self.parts[part]["TESTS"][test]["RESULT"]
         return results
-    def get_value(self, devnum, testnum):
+    def get_all_of_testname(self, testname):
         '''
-        Takes arguments devnum and testnum.
+        The only argument is testname which is a string assigned to a test number in the stdf file.
+        Returns a python dictionary with the device number (a string as returned by pystdf) and the value (usually float?) as the tester reading for that device.'''
+        results = {}
+        for part in self.parts:
+            for test in self.parts[part]["TESTS"]:
+                if test == testname:
+                    results[part] = self.parts[part]["TESTS"][test]["RESULT"]
+        return results
+    def get_value(self, devnum, testnum=None, testname=None):
+        '''
+        Takes arguments devnum and testnum xor testname.
         Returns a single scalar result.
         devnum accepts integers or strings.
         testnum is in the stdf 9 digit format.
+        testname is a string assigned to a test number.
         '''
+        assert (testnum is None)^(testname is None), 'The method "get_value" requires either the test number or the test name to find a value, not both.'
         for test in self.parts[str(devnum)]["TESTS"]:
-            if test[PTR_TEST_NUM] == testnum:
-                return test[PTR_RESULT]
+            if self.parts[str(devnum)]["TESTS"][test]['TEST_NUM'] == testnum or test == testname:
+                return self.parts[str(devnum)]["TESTS"][test]['RESULT']
     def get_setup_time(self):
         '''
         Returns the tester's setup time as a dictionary keyed by "UNIX" and "STRING".
@@ -195,6 +213,11 @@ class stdf_reader():
         The string version is converted to human readable as '%Y-%m-%d %H:%M:%S'.
         '''
         return self.metadata["STARTTIME"]
+    def get_test_temp(self):
+        '''
+        Returns the test run's recorded temperature as a string.
+        '''
+        return self.metadata["TST_TEMP"]
     def get_xlocation(self, devnum):
         '''
         Takes the argument devnum and returns the x location on the wafer as an integer.
