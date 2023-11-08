@@ -152,7 +152,7 @@ class generic_results():
         except KeyError:
             pass
         res_dict['table_name'] = self.table_name
-        res_dict['filepath'] = self.db_filepath
+        res_dict['filepath'] = self.db_filepath[self.db_filepath.index(self._module.project_folder_name):]
         res_dict['traceability'] = {k:v for k,v in trace_data.items() if k not in ['datetime']}
         
         
