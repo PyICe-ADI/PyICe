@@ -40,10 +40,6 @@ class refid_import_plugin(limit_test_declaration):
 
     def set_interplugs(self):
         pass
-        # self.tm.interplugs['register_test__compile_test_results'].extend([self.reg_ate_result])
-        # self.tm.interplugs['register_test__test_from_table'].extend([self.set_table_name, self.set_db_filepath])
-        # self.tm.interplugs['register_test__test_from_table'].extend([self.set_corr_traceability])
-
 
     def _set_refids_once(self, *args):
         self.tm.tt._need_to_get_refids=True
