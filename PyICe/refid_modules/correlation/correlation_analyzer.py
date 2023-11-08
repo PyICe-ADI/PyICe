@@ -4,7 +4,6 @@ from unit_parse import parser as uparser
 # Comparison of 1 medium of data collection to another
 class CorrelationAnalyzer:
     def __init__(self, target_data_dict=None, upper_diff=None, lower_diff=None):
-        # def __init__(self, stdf_file, upper_diff=None, lower_diff=None):
         if target_data_dict is None:
             self.all_target_data = input("Make your dictionary here")
         else:
@@ -66,10 +65,10 @@ class CorrelationAnalyzer:
         Returns:
             A parse object with an associated magnitude and unit.
         """
-        if isinstance(self.all_target_data[testname]['result'], str):
-            ate_data = self.all_target_data[testname]['result'] + self.all_target_data[testname]['units']
+        if isinstance(self.all_target_data[testname]['RESULT'], str):
+            ate_data = self.all_target_data[testname]['RESULT'] + self.all_target_data[testname]['UNITS']
         else:
-            ate_data = str(self.all_target_data[testname]['result']) + self.all_target_data[testname]['units']
+            ate_data = str(self.all_target_data[testname]['RESULT']) + self.all_target_data[testname]['UNITS']
         parsed = uparser(ate_data)
         if parsed is None:
             parsed = uparser(ate_data.upper())  # Last ditch effort to make this work.
@@ -105,7 +104,7 @@ class CorrelationAnalyzer:
         assert (u_diff is not None) or (l_diff is not None), f'Limits are not defined for {self}'
         return u_diff, l_diff
 
-    def verdict(self, testname, bench_data, units, temperature=None, upper_diff=None, lower_diff=None, percent=None):
+    def verdict(self, testname, bench_data, units, upper_diff=None, lower_diff=None, percent=None):
         """
         Determines if the difference between bench data and the ATE data of given data for a given test stays within
         the given limits.
@@ -116,7 +115,6 @@ class CorrelationAnalyzer:
                 e.g. 5 or '5' or [1,2] or ['1','2']
             units: A string that represents the units the bench data is presented with.
                 e.g. 'A' or 'ohms'
-            temperature: Str or Num. Temperature in Celsius at which data was collected.
             upper_diff:Maximum absolute difference in base units that will pass above the ATE value.
                 Leave as None if using 'percent.'
             lower_diff:Minimum absolute difference in base units that will pass below the ATE value.
@@ -128,8 +126,7 @@ class CorrelationAnalyzer:
         A boolean based on whether the difference between the bench data and the ATE data remained within the given
         limits.
         """
-        target_data = self._parsed_data(testname + '_25') if temperature is None else self._parsed_data(
-            testname + '_' + str(temperature))
+        target_data = self._parsed_data(testname)
         errors = self._compare(target_data, bench_data, units, percent)
         upper_diff, lower_diff = self._set_limits(target_data.m, units, upper_diff, lower_diff, percent)
         upper_errors = [] if upper_diff is None else [err for err in errors if err > upper_diff]
@@ -139,13 +136,11 @@ class CorrelationAnalyzer:
         if pass_above and pass_below:
             rslt_str = ''
             rslt_str += f'{testname} passed'
-            rslt_str += f' at {temperature}.\n' if temperature else ' at room temperature.\n'
             print(rslt_str)
             return True
         else:
             rslt_str = ''
             rslt_str += f'{testname} failed'
-            rslt_str += f' at {temperature}.\n' if temperature else ' at room temperature.\n'
             if upper_errors:
                 rslt_str += f'Upper Limit = +{upper_diff}\tMax Diff = {max(upper_errors)}\n'
             if lower_errors:
