@@ -3,14 +3,8 @@ import pystdf.V4, time, math
 from .. import lab_utils
 
 # See: http://www.kanwoda.com/wp-content/uploads/2015/05/std-spec.pdf
-# Return value is always in the form of the tuple: [RECORDTYPE, DATAOBJECT]
 
 PRR_PART_FLG_INCOMPLETE_BIT=2**2; PRR_PART_FLG_FAILED_BIT=2**3; PRR_PART_FLG_INVALID_BIT=2**4
-# PTR Fields by position
-PTR_TEST_NUM=0; PTR_HEAD_NUM=1; PTR_SITE_NUM=2; PTR_TEST_FLG=3; PTR_PARM_FLG=4; PTR_RESULT=5; PTR_TEST_TXT=6; PTR_ALARM_ID=7
-# PTR Datatypes
-# TEST_FLG - All bits want to be 0 for a good test
-PTR_TEST_FLG_ALARM=2**0; PTR_TEST_FLG_RESULT_INVALID=2**1; PTR_TEST_FLG_RESULT_RELIABLE=2**2; PTR_TEST_FLG_TIMEOUT=2**3; PTR_TEST_FLG_NOT_EXECUTED=2**4; PTR_TEST_FLG_TEST_ABORTED=2**5; PTR_TEST_FLG_FLAG_INVALID=2**6; PTR_TEST_FLG_TEST_FAILED=2**7;
 
 def map_data(record_type, data):
     return {k: v for (k, v) in zip(record_type.fieldNames, data)}
@@ -50,9 +44,6 @@ class stdf_reader():
             for line in reader.data:
                 master_info = map_data(*line)
                 record_type = type(line[0])
-                if record_type is pystdf.V4.Sbr:
-                    pass
-                    # self.metadata["BINCOUNT"][line[DATAOBJECT][SBIN_NUM]] = line[DATAOBJECT][SBIN_CNT] # Anyone care about this record, seems redundant?
                 if record_type is pystdf.V4.Mir:                        # Master information record
                     if state not in [None]:
                         lab_utils.print_banner(f'Corrupted STDF File: {filename}!', f'Got an MIR but not as the first Field. Last record type is "{state}".', length=160)
