@@ -1,4 +1,5 @@
 from PyICe.refid_modules.plugin_module.traceability_plugins.traceability_plugin  import traceability_plugin
+from PyICe.refid_modules.bench_identifier  import get_bench_module
 from PyICe.lab_utils import banners
 from PyICe.lab_core import instrument, channel
 from types import MappingProxyType
@@ -111,7 +112,7 @@ class p4_traceability_plugin(traceability_plugin):
         Adds the perforce information about the bench file to an instrument to be added to the logger by traceability plugin.
         """
         ch_cat = 'eval_traceability'
-        module_file = inspect.getsourcefile(self.tm.get_lab_bench().get_bench_file())
+        module_file = inspect.getsourcefile(get_bench_module(self.tm.project_folder_name))
         fileinfo = self.get_fstat(module_file)
         module_name=module_file[-1*module_file[::-1].index('\\'):]
         for property in fileinfo:
@@ -210,8 +211,10 @@ class p4_traceability_plugin(traceability_plugin):
         swarm_fpath = fstat_fields['depotFile'][2:] #remove '//'
         swarm_revision = f"?v={fstat_fields['haveRev']}" if fstat_fields['haveRev'] is not None else ''
         fstat_fields['swarmLink'] = f'{swarm_prefix}{swarm_fpath}{swarm_revision}'
-        # if fstat_fields['action'] == 'edit':
-            # fstat_fields['diff'] = p4.run('diff', local_file)[0]
+        try:
+            fstat_fields['diff'] = p4.run('diff', local_file)[0]
+        except P4Exception:
+            pass
         p4.disconnect()
 
         return fstat_fields
