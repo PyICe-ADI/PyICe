@@ -1,4 +1,5 @@
 from PyICe.refid_modules.plugin_module.traceability_plugins.traceability_plugin              import traceability_plugin
+from PyICe.refid_modules.bench_identifier              import get_bench_module
 from PyICe.lab_core import instrument, channel
 import inspect
 import os
@@ -26,7 +27,7 @@ class bench_traceability_plugin(traceability_plugin):
         self.instrument = instrument(name='bench_info')
         ch_cat = 'traceability_info'
         if self.include_bench_file:
-            self.instrument._add_channel(channel('bench')).write(self.tm.get_lab_bench().get_bench_file().__name__)
+            self.instrument._add_channel(channel('bench')).write(get_bench_module(self.tm.project_folder_name).__name__)
             self.instrument['bench'].set_category(ch_cat)
             self.instrument['bench'].set_write_access(False)
         if self.include_operator:
