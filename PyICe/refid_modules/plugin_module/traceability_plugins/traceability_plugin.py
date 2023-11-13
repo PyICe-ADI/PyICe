@@ -1,4 +1,5 @@
 from PyICe.refid_modules.plugin_module.plugin import plugin
+from PyICe.refid_modules.plugin_module.plugin_data_repo import plugin_data_repo as pdr
 from types import MappingProxyType
 import abc, sqlite3,collections
 
@@ -18,6 +19,8 @@ class traceability_plugin(plugin):
     desc = "Adds traceability channels to the bench master and keeps the channel names on hand."
     def __init__(self, test_mod):
         super().__init__(test_mod)
+        if not hasattr(self.tm, 'plugin_data_repo'):
+            self.tm.plugin_data_repo = pdr()
         self.tm._need_to_add_to_repo = True
 
     def __str__(self):
