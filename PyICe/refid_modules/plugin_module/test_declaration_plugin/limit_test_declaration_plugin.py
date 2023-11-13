@@ -89,7 +89,10 @@ class limit_test_declaration(plugin):
             for multitest_unit in self.tm._multitest_units:
                 multitest_unit.register_tests()
         else:
-            self.tm.register_tests()
+            try:
+                self.tm.register_tests()
+            except AttributeError as e:
+                pass
 
     def set_table_name(self, table_name, *args, **kwargs):
         """
