@@ -3,6 +3,7 @@ from PyICe.refid_modules.bench_identifier              import get_bench_module
 from PyICe.lab_core import instrument, channel
 import inspect
 import os
+import sqlite3
 
 class bench_traceability_plugin(traceability_plugin):
     def __init__(self, test_mod, include_bench_file=True, include_operator=True, include_instruments=True):
@@ -21,6 +22,8 @@ class bench_traceability_plugin(traceability_plugin):
     def get_hooks(self):
         plugin_dict = super().get_hooks()
         plugin_dict['tm_logger_setup'].insert(0,self._set_bench_info_instrument)
+        plugin_dict['tm_plot_from_table'].insert(0, self._report_bench_used)
+        plugin_dict['post_collect']=[self._report_bench_used]
         return plugin_dict
 
     def _set_bench_info_instrument(self, logger, *args, **kwargs):
@@ -50,6 +53,15 @@ class bench_traceability_plugin(traceability_plugin):
         for ch_subgrp in ch_group.get_channel_groups():
             ret_str += self.get_ch_group_info(ch_subgrp, ident_level+1)
         return ret_str
+
+    def _report_bench_used(self, db_table=None, db_file=None, *args, **kwargs):
+        if db_table is None:
+            db_table = self.tm.get_db_table_name()
+        if db_file is None:
+            db_file=self.tm._db_file
+        conn = sqlite3.connect(db_file)
+        bench = conn.execute(f"SELECT bench FROM {db_table}").fetchone()[0]
+        print(f'\nTested on {bench[bench.index("benches")+8:]}\n')
 
     def get_traceability_channels(self):
         traceability_channel_names=[]

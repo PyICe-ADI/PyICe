@@ -366,10 +366,6 @@ class limit_test_declaration(plugin):
             if f'{table_name}_all' in db.get_table_names():
                 table_name = f"{table_name}_all" #Redirect to presets-joined table
                 db.set_table(table_name)
-            # print(table_name)
-            if self.tm.bench_name == None:
-                my_bench=db.query(f'SELECT bench FROM {table_name}').fetchone()['bench']
-                self.tm.bench_name=my_bench[my_bench.find('benches')+8:my_bench.find("' from")]
             try:
                 self.tm.compile_test_results(database=db, table_name=table_name)
                 # self.execute_interplugs('register_test__compile_test_results')
