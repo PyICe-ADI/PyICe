@@ -1,9 +1,10 @@
 import csv
+from PyICe.data_utils import stdf_utils
 
 
 class CorrelationUtils:
-    def __init__(self):
-        self.index_file = "file/location.csv"
+    def __init__(self, index_file):
+        self.index_file = index_file
 
     def get_stdf_info(self, dut_id):
         """
@@ -20,9 +21,10 @@ class CorrelationUtils:
             for row in csvreader:
                 if row[0] is dut_id:
                     stdf_file = row[1]
-                    part_ids = row[2] # or hash or something.
+                    part_id = row[2] # or hash or something.
                     break
-        target_data_dict = STDFParser(stdf_file, part_ids)
+        # target_data_dict = STDFParser(stdf_file, part_ids)
+        target_data_dict = stdf_utils.stdf_reader(stdf_file).parts[part_id]
         return target_data_dict
 
     def append_stdf_index(self, dut_id, stdf_file_location, part_id):
