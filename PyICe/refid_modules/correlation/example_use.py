@@ -12,7 +12,9 @@ if __name__ == '__main__':
     analyzer = CorrelationAnalyzer(all_part_data["TESTS"])
 
     # Normally one would collect data in a test and supply it here. For this example, we have a test selected at random, and we're generating a value that is 4% from it's target. This test uses ohms for units.
-    sample_bench_data = all_part_data['TESTS'][test_names[58]]['RESULT'] * 0.96              
+    sample_bench_data = all_part_data['TESTS'][test_names[58]]['RESULT'] * 0.96
+    
+    # Call verdict with the testname of the stdf file you'll be correlating, and set limits for passing values. Will print the results and return a boolean.
     passes1 = analyzer.verdict(testname = test_names[58], bench_data = sample_bench_data, units = 'ohm', percent=5)                                 # Set limit to +-5%
     passes2 = analyzer.verdict(testname = test_names[58], bench_data = sample_bench_data, units = 'ohm', percent=3)                                 # Set limit to +-3%
     passes3 = analyzer.verdict(testname = test_names[58], bench_data = sample_bench_data, units = 'ohm', upper_diff=0.5, lower_diff=-0.5)           # Set limits
