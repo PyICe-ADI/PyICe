@@ -19,7 +19,7 @@ class CorrelationUtils:
         with open(self.index_file, 'r') as index_file:
             csvreader = csv.reader(index_file)
             for row in csvreader:
-                if row[0] is dut_id:
+                if row[0] == dut_id:
                     stdf_file = row[1]
                     part_id = row[2] # or hash or something.
                     break
