@@ -49,10 +49,7 @@ class CorrelationAnalyzer:
             else:
                 datapoint = str(datapoint) + units
             datap = uparser(datapoint)
-            if pct:
-                diff = (datap.to_base_units() / target_data.to_base_units()).m - 1
-            else:
-                diff = (datap.to_base_units() - target_data.to_base_units()).m
+            diff = (datap.to_base_units() - target_data.to_base_units()).m
             error.append(diff)
         return error
 
@@ -140,7 +137,7 @@ class CorrelationAnalyzer:
             return True
         else:
             rslt_str = ''
-            rslt_str += f'{testname} failed'
+            rslt_str += f'{testname} failed\n\t'
             if upper_errors:
                 rslt_str += f'Upper Limit = +{upper_diff}\tMax Diff = {max(upper_errors)}\n'
             if lower_errors:
