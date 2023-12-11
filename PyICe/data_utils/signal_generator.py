@@ -57,3 +57,32 @@ class signal_generator():
                 time_now += self.timestep
                 cycles = time_now / this_period
         return zip(times, values)
+        
+class lfsr_period_generator():
+    ''' ┌────┬────┬────┬────┬────┬────┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┐
+        │ 15 │ 14 │ 13 │ 12 │ 11 │ 10 │ 9 │ 8 │ 7 │ 6 │ 5 │ 4 │ 3 │ 2 │ 1 │ 0 │<──┐
+        └──┬─┴──┬─┴────┴──┬─┴────┴────┴───┴───┴───┴───┴───┴───┴─┬─┴───┴───┴───┘   │
+           │    │         │                                     │               ┌─O─┐XNOR
+           │    │         │                                     └──────────────>│   │
+           │    │         └────────────────────────────────────────────────────>│(+)│
+           │    └──────────────────────────────────────────────────────────────>│   │
+           └───────────────────────────────────────────────────────────────────>└───┘
+    '''
+    # https://en.wikipedia.org/wiki/Linear-feedback_shift_register
+    # taps: 16 15 13 4; feedback polynomial: x^16 + x^15 + x^13 + x^4 + 1
+    def __init__(self, nbits, freq_center, freq_range_percent):
+        self.nbits = nbits
+        self.poly = [value-1 for value in [16,15,13,4]] # Subtract one from each to start register at 0 (vs Wikipedia starting at 1)
+        self.lfsr = 0 # Seed value
+        self.max_freq = freq_center * (1 + freq_range_percent)
+        self.min_freq = freq_center * (1 - freq_range_percent)
+    def get_next_period(self):
+        bit =   self.lfsr >> self.poly[0] & 1 ^ \
+                self.lfsr >> self.poly[1] & 1 ^ \
+                self.lfsr >> self.poly[2] & 1 ^ \
+                self.lfsr >> self.poly[3] & 1
+        bit = 1 if not bit else 0 # Invert for XNOR, allows all 0's on reset
+        self.lfsr = (self.lfsr << 1) & 0xFFFF | bit
+        code = self.lfsr & (2**self.nbits-1) # Just grab nbits
+        freq = self.min_freq + (self.max_freq - self.min_freq) * code / 2**self.nbits
+        return 1/freq
