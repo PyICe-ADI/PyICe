@@ -41,7 +41,7 @@ class signal_generator():
                 cycles = time_now / this_period
         return zip(times, values)
     def sine_wave(self):
-        '''Generates a sine wave. Frequency, sample rate, peak and trough values are prescribed by signal generator iniallizer.
+        '''Generates a sine wave. Frequency, sample rate, peak and trough values are prescribed by signal generator initializer.
            Phase is currently direspected.'''
         times = []
         values = []
@@ -86,3 +86,7 @@ class lfsr_period_generator():
         code = self.lfsr & (2**self.nbits-1) # Just grab nbits
         freq = self.min_freq + (self.max_freq - self.min_freq) * code / 2**self.nbits
         return 1/freq
+    def set_polynomial(self, ploynomial):
+        '''Takes a list ordered higest order term to the left, lowest to the right.
+           The rightmost term starts from 0 not 1 whereas most math references start from index 1.'''
+        self.poly = ploynomial
