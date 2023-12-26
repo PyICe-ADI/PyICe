@@ -7,10 +7,14 @@ drivers, updated test infrastructure or anything else.
 ## Installation and Setup
 
 ### Create a virtual Environment
-Once you have cloned the PyICe git repository, you will need to create a 
-virtual environment:
+Once you have cloned the PyICe git repository, you will need to create a virtual environment:
 ```commandline
-python -m venv pyice-env 
+python -m venv pyice-env
+```
+If you already have an older or newer version of Python installed, you can peg the PyICe virtual environment to Python 3.10 as shown below.
+Be sure you have added Python 3.10 to the system environment variable _Path_.
+```commandline
+py -3.10 -m venv pyice-env
 ```
 This will create a directory `pyice-env/` with the Python binaries which will allow
 you to install packages for that isolated environment. 
