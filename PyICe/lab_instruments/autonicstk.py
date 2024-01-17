@@ -40,7 +40,7 @@ class autonicstk(instrument):
         new_register.set_description(self.add_channel_measured.__doc__)
         return self._add_channel(new_register)
     def _read_temperature_sense(self):
-        return self.modbus_pid.read_register(1000,numberOfDecimals=self.get_decimal(),functioncode=4,signed=True)
+        return self.modbus_pid.read_register(1000,number_of_decimals=self.get_decimal(),functioncode=4,signed=True)
     def add_channel_units(self, channel_name):
         '''Select Celsius or Farenheit. CAUTION: Units also change PID gains.'''
         new_register = register(f'{channel_name}_Units',
@@ -57,7 +57,7 @@ class autonicstk(instrument):
     def add_channel_setpoint(self, channel_name):
         '''Target Temperature Setpoint (SV)'''
         new_register = modbus_register(channel_name,
-                                read_function=lambda: self.retry(lambda: self.modbus_pid.read_register(0,numberOfDecimals=self.get_decimal(),functioncode=3,signed=True), retry_count=1),
+                                read_function=lambda: self.retry(lambda: self.modbus_pid.read_register(0,number_of_decimals=self.get_decimal(),functioncode=3,signed=True), retry_count=1),
                                 write_function=self._write_temperature)
         new_register.set_category('Set')
         new_register.set_description(self.add_channel_setpoint.__doc__)
@@ -65,20 +65,20 @@ class autonicstk(instrument):
         new_register.set_max_write_limit(165)
         return self._add_channel(new_register)
     def _write_temperature(self, value):
-        self.modbus_pid.write_register(0,float(value),numberOfDecimals=self.get_decimal(),functioncode=6,signed=True)
+        self.modbus_pid.write_register(0,float(value),number_of_decimals=self.get_decimal(),functioncode=6,signed=True)
     def add_channel_heat_mv(self, channel_name):
         '''Heater percent power manipulated variable (MV). Can be written directly in manual mode.'''
         new_register = modbus_register(f'{channel_name}_MV_Heat',
-                                read_function=lambda: self.modbus_pid.read_register(1,numberOfDecimals=1,functioncode=3,signed=False),
-                                write_function=lambda data: self.modbus_pid.write_register(1,float(data),numberOfDecimals=1,functioncode=6,signed=False))
+                                read_function=lambda: self.modbus_pid.read_register(1,number_of_decimals=1,functioncode=3,signed=False),
+                                write_function=lambda data: self.modbus_pid.write_register(1,float(data),number_of_decimals=1,functioncode=6,signed=False))
         new_register.set_category('Heat')
         new_register.set_description(self.add_channel_heat_mv.__doc__)
         return self._add_channel(new_register)
     def add_channel_cool_mv(self, channel_name):
         '''Cooler percent power manipulated variable (MV). Can be written directly in manual mode.'''
         new_register = modbus_register(f'{channel_name}_MV_Cool',
-                                read_function=lambda: self.modbus_pid.read_register(2,numberOfDecimals=1,functioncode=3,signed=False),
-                                write_function=lambda data: self.modbus_pid.write_register(2,float(data),numberOfDecimals=1,functioncode=6,signed=False))
+                                read_function=lambda: self.modbus_pid.read_register(2,number_of_decimals=1,functioncode=3,signed=False),
+                                write_function=lambda data: self.modbus_pid.write_register(2,float(data),number_of_decimals=1,functioncode=6,signed=False))
         new_register.set_category('Cool')
         new_register.set_description(self.add_channel_cool_mv.__doc__)
         return self._add_channel(new_register)
@@ -180,15 +180,15 @@ class autonicstk(instrument):
         '''PID control gain settings. See: https://en.wikipedia.org/wiki/PID_controller#Alternative_nomenclature_and_PID_forms'''
         new_channels = []
         new_register = modbus_register(f'{channel_name}_Heat_Proportional',
-                                read_function=lambda: self.modbus_pid.read_register(101,numberOfDecimals=1,functioncode=3),
-                                write_function=lambda data: self.modbus_pid.write_register(101,float(data),numberOfDecimals=1,functioncode=6))
+                                read_function=lambda: self.modbus_pid.read_register(101,number_of_decimals=1,functioncode=3),
+                                write_function=lambda data: self.modbus_pid.write_register(101,float(data),number_of_decimals=1,functioncode=6))
         new_register.set_category('PID_tuning')
         new_register.set_description('Reciprocal heat proportional gain. Number of degrees over which the heat output transistion from 0%-100% output due to proportional error alone.')
         self._add_channel(new_register)
         new_channels.append(new_register)
         new_register = modbus_register(f'{channel_name}_Cool_Proportional',
-                                read_function=lambda: self.modbus_pid.read_register(102,numberOfDecimals=1,functioncode=3),
-                                write_function=lambda data: self.modbus_pid.write_register(102,float(data),numberOfDecimals=1,functioncode=6))
+                                read_function=lambda: self.modbus_pid.read_register(102,number_of_decimals=1,functioncode=3),
+                                write_function=lambda data: self.modbus_pid.write_register(102,float(data),number_of_decimals=1,functioncode=6))
         new_register.set_category('PID_tuning')
         new_register.set_description('Reciprocal cool proportional gain. Number of degrees over which the heat output transistion from 100%-0% output due to proportional error alone.')
         self._add_channel(new_register)
@@ -222,22 +222,22 @@ class autonicstk(instrument):
         self._add_channel(new_register)
         new_channels.append(new_register)
         new_register = modbus_register(f'{channel_name}_Heat_Hysteresis',
-                                         read_function=lambda: self.modbus_pid.read_register(109,numberOfDecimals=self.get_decimal(),functioncode=3),
-                                         write_function=lambda data: self.modbus_pid.write_register(109,float(data),numberOfDecimals=self.get_decimal(),functioncode=6))
+                                         read_function=lambda: self.modbus_pid.read_register(109,number_of_decimals=self.get_decimal(),functioncode=3),
+                                         write_function=lambda data: self.modbus_pid.write_register(109,float(data),number_of_decimals=self.get_decimal(),functioncode=6))
         new_register.set_category('PID_tuning')
         new_register.set_description('Heat hysteresis. Dead band for heat loop only. Not used with PID proportional output mode.')
         self._add_channel(new_register)
         new_channels.append(new_register)
         new_register = modbus_register(f'{channel_name}_Cool_Hysteresis',
-                                         read_function=lambda: self.modbus_pid.read_register(111,numberOfDecimals=self.get_decimal(),functioncode=3),
-                                         write_function=lambda data: self.modbus_pid.write_register(111,float(data),numberOfDecimals=self.get_decimal(),functioncode=6))
+                                         read_function=lambda: self.modbus_pid.read_register(111,number_of_decimals=self.get_decimal(),functioncode=3),
+                                         write_function=lambda data: self.modbus_pid.write_register(111,float(data),number_of_decimals=self.get_decimal(),functioncode=6))
         new_register.set_category('PID_tuning')
         new_register.set_description('Cool hysteresis. Dead band for cool loop only. Not used with PID proportional output mode.')
         self._add_channel(new_register)
         new_channels.append(new_register)
         new_register = modbus_register(f'{channel_name}_Deadband',
-                                         read_function=lambda: self.modbus_pid.read_register(107,numberOfDecimals=self.get_decimal(),functioncode=3,signed=True),
-                                         write_function=lambda data: self.modbus_pid.write_register(107,float(data),numberOfDecimals=self.get_decimal(),functioncode=6,signed=True))
+                                         read_function=lambda: self.modbus_pid.read_register(107,number_of_decimals=self.get_decimal(),functioncode=3,signed=True),
+                                         write_function=lambda data: self.modbus_pid.write_register(107,float(data),number_of_decimals=self.get_decimal(),functioncode=6,signed=True))
         new_register.set_category('PID_tuning')
         new_register.set_min_write_limit(-199)
         new_register.set_max_write_limit(150)
@@ -258,15 +258,15 @@ class autonicstk(instrument):
         self._add_channel(new_register)
         new_channels.append(new_register)
         new_register = modbus_register(f'{channel_name}_Heating_Control_Time',
-                                         read_function=lambda: self.modbus_pid.read_register(170,numberOfDecimals=1,functioncode=3),
-                                         write_function=lambda data: self.modbus_pid.write_register(170,float(data),numberOfDecimals=1,functioncode=6))
+                                         read_function=lambda: self.modbus_pid.read_register(170,number_of_decimals=1,functioncode=3),
+                                         write_function=lambda data: self.modbus_pid.write_register(170,float(data),number_of_decimals=1,functioncode=6))
         new_register.set_category('PID_tuning')
         new_register.set_description("Heat control PWM period when in 'Standard' SSR1_Mode.")
         self._add_channel(new_register)
         new_channels.append(new_register)
         new_register = modbus_register(f'{channel_name}_Cooling_Control_Time',
-                                read_function=lambda: self.modbus_pid.read_register(171,numberOfDecimals=1,functioncode=3),
-                                write_function=lambda data: self.modbus_pid.write_register(171,float(data),numberOfDecimals=1,functioncode=6))
+                                read_function=lambda: self.modbus_pid.read_register(171,number_of_decimals=1,functioncode=3),
+                                write_function=lambda data: self.modbus_pid.write_register(171,float(data),number_of_decimals=1,functioncode=6))
         new_register.set_category('PID_tuning')
         new_register.set_description("Cool control PWM period.")
         self._add_channel(new_register)
@@ -289,27 +289,27 @@ class autonicstk(instrument):
         new_register.set_description('Temperature sensor type selection.')
         self._add_channel(new_register)
     def _write_alarm1_high(self, data):
-        self.modbus_pid.write_register(54,float(data),numberOfDecimals=self.get_decimal(),functioncode=6,signed=True)
+        self.modbus_pid.write_register(54,float(data),number_of_decimals=self.get_decimal(),functioncode=6,signed=True)
     def _write_alarm2_high(self, data):
-        self.modbus_pid.write_register(56,float(data),numberOfDecimals=self.get_decimal(),functioncode=6,signed=True)
+        self.modbus_pid.write_register(56,float(data),number_of_decimals=self.get_decimal(),functioncode=6,signed=True)
     def add_channels_alarm_config(self, channel_name):
         new_register = modbus_register(f'{channel_name}_Alarm1_low_limit',
-                                read_function=lambda: self.modbus_pid.read_register(53,numberOfDecimals=self.get_decimal(),functioncode=3,signed=True),
-                                write_function=lambda data: self.modbus_pid.write_register(53,float(data),numberOfDecimals=self.get_decimal(),functioncode=6,signed=True))
+                                read_function=lambda: self.modbus_pid.read_register(53,number_of_decimals=self.get_decimal(),functioncode=3,signed=True),
+                                write_function=lambda data: self.modbus_pid.write_register(53,float(data),number_of_decimals=self.get_decimal(),functioncode=6,signed=True))
         new_register.set_category('Alarm_config')
         new_register.set_min_write_limit(-199)
         new_register.set_max_write_limit(500)
         self._add_channel(new_register)
         new_register = modbus_register(f'{channel_name}_Alarm1_high_limit',
-                                read_function=lambda: self.modbus_pid.read_register(54,numberOfDecimals=self.get_decimal(),functioncode=3,signed=True),
+                                read_function=lambda: self.modbus_pid.read_register(54,number_of_decimals=self.get_decimal(),functioncode=3,signed=True),
                                 write_function=self._write_alarm1_high)
         new_register.set_category('Alarm_config')
         new_register.set_min_write_limit(-199)
         new_register.set_max_write_limit(500)
         self._add_channel(new_register)
         new_register = modbus_register(f'{channel_name}_Alarm1_hysteresis',
-                                read_function=lambda: self.modbus_pid.read_register(202,numberOfDecimals=self.get_decimal(),functioncode=3),
-                                write_function=lambda data: self.modbus_pid.write_register(202,float(data),numberOfDecimals=self.get_decimal(),functioncode=6))
+                                read_function=lambda: self.modbus_pid.read_register(202,number_of_decimals=self.get_decimal(),functioncode=3),
+                                write_function=lambda data: self.modbus_pid.write_register(202,float(data),number_of_decimals=self.get_decimal(),functioncode=6))
         new_register.set_category('Alarm_config')
         self._add_channel(new_register)
         new_register = register(f'{channel_name}_Alarm1_Relay',
@@ -353,22 +353,22 @@ class autonicstk(instrument):
         new_register.set_category('Alarm_config')
         self._add_channel(new_register)
         new_register = modbus_register(f'{channel_name}_Alarm2_low_limit',
-                                read_function=lambda: self.modbus_pid.read_register(55,numberOfDecimals=self.get_decimal(),functioncode=3,signed=True),
-                                write_function=lambda data: self.modbus_pid.write_register(55,float(data),numberOfDecimals=self.get_decimal(),functioncode=6,signed=True))
+                                read_function=lambda: self.modbus_pid.read_register(55,number_of_decimals=self.get_decimal(),functioncode=3,signed=True),
+                                write_function=lambda data: self.modbus_pid.write_register(55,float(data),number_of_decimals=self.get_decimal(),functioncode=6,signed=True))
         new_register.set_category('Alarm_config')
         new_register.set_min_write_limit(-199)
         new_register.set_max_write_limit(500)
         self._add_channel(new_register)
         new_register = modbus_register(f'{channel_name}_Alarm2_high_limit',
-                                read_function=lambda: self.modbus_pid.read_register(56,numberOfDecimals=self.get_decimal(),functioncode=3,signed=True),
+                                read_function=lambda: self.modbus_pid.read_register(56,number_of_decimals=self.get_decimal(),functioncode=3,signed=True),
                                 write_function=self._write_alarm2_high)
         new_register.set_category('Alarm_config')
         new_register.set_min_write_limit(-199)
         new_register.set_max_write_limit(500)
         self._add_channel(new_register)
         new_register = modbus_register(f'{channel_name}_Alarm2_hysteresis',
-                                read_function=lambda: self.modbus_pid.read_register(208,numberOfDecimals=self.get_decimal(),functioncode=3),
-                                write_function=lambda data: self.modbus_pid.write_register(208,float(data),numberOfDecimals=self.get_decimal(),functioncode=6))
+                                read_function=lambda: self.modbus_pid.read_register(208,number_of_decimals=self.get_decimal(),functioncode=3),
+                                write_function=lambda data: self.modbus_pid.write_register(208,float(data),number_of_decimals=self.get_decimal(),functioncode=6))
         new_register.set_category('Alarm_config')
         self._add_channel(new_register)
         new_register = register(f'{channel_name}_Alarm2_Relay',
