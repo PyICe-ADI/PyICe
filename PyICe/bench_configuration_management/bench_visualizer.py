@@ -1,3 +1,4 @@
+from PyICe.lab_utils.banners import print_banner
 try:
     import graphviz
 except ImportError as e:
@@ -16,7 +17,7 @@ class visualizer():
         if file_format.upper() not in ['SVG','PNG']:
             raise Exception(f"\nBench Visualizer: Sorry don't know how to output file format {file_format}. Try 'svg' or 'png'.\n")
         if graphviz_missing:
-            print("Graphviz Python Package not found. Use PyICe environment as documented on GitHub.")
+            print_banner("Graphviz Python Package not found. Suggest you use a proper PyICe environment as documented on https://github.com/PyICe-ADI/PyICe.")
             return
         f = graphviz.Graph(name='Bench Image', filename=file_base_name, format='svg', engine=engine, graph_attr=[('bgcolor','transparent')])
         # f.attr(size='8.5,11') # rankdir='LR',
@@ -76,7 +77,9 @@ class visualizer():
                 else:
                     subprocess.run(["dot", "-Kneato", "-n2", "-Tpng", "-o", f"{file_base_name}.png"], input=f.source, check=True, encoding='UTF-8')
             except Exception as e:
-                print("Graphviz dot.exe not found. Check that you have a path to graphviz/docs/dot.exe in your environment. Try installing from graphviz.org.")
+                print()
+                print_banner("*** WARNING ***", "Graphviz dot.exe not found. Have you installed Graphviz from graphviz.org?", "Ensure that you have a path to graphviz/bin/dot.exe in your environment.")
+                print()
                 print(e)
             # os.remove(file_base_name)   # Dump the Dot file after the rendered format file is generated.
             benchimage = open(f"{file_base_name}.svg", 'r')
