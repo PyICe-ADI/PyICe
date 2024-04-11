@@ -16,9 +16,9 @@ class visualizer():
         if file_format.upper() not in ['SVG','PNG']:
             raise Exception(f"\nBench Visualizer: Sorry don't know how to output file format {file_format}. Try 'svg' or 'png'.\n")
         if graphviz_missing:
-            print("Graphviz doesn't seem to be installed. This is expected in Linux, for the short term. Contact PyICe-developers@analog.com for more information.")
+            print("Graphviz Python Package not found. Use PyICe environment as documented on GitHub.")
             return
-        f = graphviz.Graph(name='StoweEval', filename=file_base_name, format='svg', engine=engine, graph_attr=[('bgcolor','transparent')])
+        f = graphviz.Graph(name='Bench Image', filename=file_base_name, format='svg', engine=engine, graph_attr=[('bgcolor','transparent')])
         # f.attr(size='8.5,11') # rankdir='LR',
         f.attr(splines="ortho")#, imagescale="false")
         #################################################
@@ -70,10 +70,14 @@ class visualizer():
        # f.render()
         # os.remove(file_base_name + ".svg") # This one is junk, incorrect settings. Use a real call to dot.exe.
         try:
-            if file_format.upper() == 'SVG':
-                subprocess.run(["dot", "-Kneato", "-n2", "-Tsvg", "-o", f"{file_base_name}.svg"], input=f.source, check=True, encoding='UTF-8')
-            else:
-                subprocess.run(["dot", "-Kneato", "-n2", "-Tpng", "-o", f"{file_base_name}.png"], input=f.source, check=True, encoding='UTF-8')
+            try:
+                if file_format.upper() == 'SVG':
+                    subprocess.run(["dot", "-Kneato", "-n2", "-Tsvg", "-o", f"{file_base_name}.svg"], input=f.source, check=True, encoding='UTF-8')
+                else:
+                    subprocess.run(["dot", "-Kneato", "-n2", "-Tpng", "-o", f"{file_base_name}.png"], input=f.source, check=True, encoding='UTF-8')
+            except Exception as e:
+                print("Graphviz dot.exe not found. Check that you have a path to graphviz/docs/dot.exe in your environment. Try installing from graphviz.org.")
+                print(e)
             # os.remove(file_base_name)   # Dump the Dot file after the rendered format file is generated.
             benchimage = open(f"{file_base_name}.svg", 'r')
             bench_string = benchimage.read()
