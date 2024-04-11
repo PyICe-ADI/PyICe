@@ -81,6 +81,7 @@ class visualizer():
                 print_banner("*** WARNING ***", "Graphviz dot.exe not found. Have you installed Graphviz from graphviz.org?", "Ensure that you have a path to graphviz/bin/dot.exe in your environment.")
                 print()
                 print(e)
+                return f
             # os.remove(file_base_name)   # Dump the Dot file after the rendered format file is generated.
             benchimage = open(f"{file_base_name}.svg", 'r')
             bench_string = benchimage.read()
