@@ -1,6 +1,6 @@
 from pystdf.IO import Parser
 import pystdf.V4, time, math
-from .. import lab_utils
+from ..lab_utils.banners import print_banner
 # ENUMS for fields by position within STDF record to make this code more readable.
 # See: http://www.kanwoda.com/wp-content/uploads/2015/05/std-spec.pdf
 # Return value is always in the form of the tuple: [RECORDTYPE, DATAOBJECT]
@@ -56,7 +56,7 @@ class stdf_reader():
                     # self.metadata["BINCOUNT"][line[DATAOBJECT][SBIN_NUM]] = line[DATAOBJECT][SBIN_CNT] # Anyone care about this record, seems redundant?
                 if record_type is pystdf.V4.Mir:                        # Master information record
                     if state not in [None]:
-                        lab_utils.print_banner(f'Corrupted STDF File: {filename}!', f'Got an MIR but not as the first Field. Last record type is "{state}".', length=160)
+                        print_banner(f'Corrupted STDF File: {filename}!', f'Got an MIR but not as the first Field. Last record type is "{state}".', length=160)
                         if self.exit_if_malformed:
                             raise Exception("\n\nSet exit_if_malformed to False if you want to push on.")
                     self.metadata["SETUPTIME"] = {"UNIX": line[DATAOBJECT][SETUPTIME], "HUMAN": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(line[DATAOBJECT][SETUPTIME]))}
@@ -64,7 +64,7 @@ class stdf_reader():
                     state = "MIR"
                 if record_type is pystdf.V4.Pir:                        # Product Information record - New Part Found!
                     if state not in ["MIR", "PRR"]:
-                        lab_utils.print_banner(f'Corrupted STDF File: {filename}', f'Got a PIR but not after an MIR or after a PRR. Last record type is "{state}".', length=160)
+                        print_banner(f'Corrupted STDF File: {filename}', f'Got a PIR but not after an MIR or after a PRR. Last record type is "{state}".', length=160)
                         if self.exit_if_malformed:
                             raise Exception("\n\nSet exit_if_malformed to False if you want to push on.")
                     this_part = {}                                      # Each unit gets a fresh dictionary.
@@ -73,14 +73,14 @@ class stdf_reader():
                     state = "PIR"
                 if record_type is pystdf.V4.Ptr:                        # Parametric Test Record - This is a test within this part.
                     if state not in ["PIR", "PTR"]:
-                        lab_utils.print_banner(f'Corrupted STDF File: {filename}', f'Got a PTR but not at after a PIR or another PTR. Last record type is "{state}".', length=160)
+                        print_banner(f'Corrupted STDF File: {filename}', f'Got a PTR but not at after a PIR or another PTR. Last record type is "{state}".', length=160)
                         if self.exit_if_malformed:
                             raise Exception("\n\nSet exit_if_malformed to False if you want to push on.")
                     this_part["TESTS"].append(line[DATAOBJECT])         # Grab the test data.
                     state = "PTR"
                 if record_type is pystdf.V4.Prr:                        # Product Results record - End of this part.
                     if state not in ["PIR", "PTR"]:
-                        lab_utils.print_banner(f'Corrupted STDF File: {filename}', f'Got a PRR but not at after a PIR or a PTR. Last record type is "{state}".', length=160)
+                        print_banner(f'Corrupted STDF File: {filename}', f'Got a PRR but not at after a PIR or a PTR. Last record type is "{state}".', length=160)
                         if self.exit_if_malformed:
                             raise Exception("\n\nSet exit_if_malformed to False if you want to push on.")
                     this_part["XLOC"] = line[DATAOBJECT][XLOC]
@@ -93,7 +93,7 @@ class stdf_reader():
                     state = "PRR"
                 if record_type is pystdf.V4.Mrr:                        # Master information record
                     if state not in ["PRR"]:
-                        lab_utils.print_banner(f'Corrupted STDF File: {filename}', f'Got an MRR but not after a PRR. Last record type is "{state}".', length=160)
+                        print_banner(f'Corrupted STDF File: {filename}', f'Got an MRR but not after a PRR. Last record type is "{state}".', length=160)
                         if self.exit_if_malformed:
                             raise Exception("\n\nSet exit_if_malformed to False if you want to push on.")
                     state = "MRR"
