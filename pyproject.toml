@@ -23,7 +23,7 @@ classifiers=[
 dynamic = ["version"]
 
 dependencies=[
-	"cairosvg",
+    "cairosvg",
     "PySide2",
     "bokeh",
     "deprecated==1.2.12",
@@ -39,7 +39,7 @@ dependencies=[
     "pycairo",
     "pyserial==3.4",
     "pysocks",
-#    "pystdf @ git+https://github.com/cmars/pystdf.git@master",
+    "pystdf",
     "python-usbtmc",
     "python-vxi11",
     "pyusb",
