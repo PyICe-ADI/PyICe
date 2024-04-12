@@ -60,11 +60,12 @@ Please follow PEP8 as best you can.
 ## Contact info
 General: PyICe inquires:
     Developers: pyice-developers@analog.com
+    Zachary Lewko: zachary.lewko@analog.com
     Dave Simmons: david.simmons@analog.com
-    Steve Martin: steve.martin@analog.com 
+    Steve Martin: steve.martin@analog.com
 
 Environment questions or concerns:
-    Tim Laracy: tim.laracy@analog.com
+    Tim Laracy: Tlaracy@marvell.com
 
 User group:
 	pyice-users@analog.com
@@ -83,4 +84,17 @@ git checkout master
 git branch new_feature_name
 ```
 Make your commits small - that makes it much easier for other contributors to
-see your workflow. 
+see your workflow.
+
+## PyICe Maintainers Tips and Tricks!
+
+To rebuild requirements.txt after editing pyproject.toml
+```commandline
+python -m pip install pip-tools
+pip-compile --output-file=./requirements/requirements.txt pyproject.toml
+```
+
+To upgrade an environment with a new requirements.txt file
+```commandline
+pip install -r requirements.txt --upgrade
+```
