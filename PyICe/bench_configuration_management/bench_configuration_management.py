@@ -166,7 +166,6 @@ class connection_collection():
             separate_by_colon= [x.split(':') for  x in goodbye_arrow]
             ## So now we have [[[A,B],[C,D]],[[E,F],[G,H]], ...[[W,X],[Y,Z]]]
             connection_list_of_lists.append(separate_by_colon)
-        # components = stowe_default_bench_configuration.stowe_component_collection().get_components()
         for x in connection_list_of_lists:
             logged_connections.add_connection(components[x[0][0]][x[0][1]],             components[x[1][0]][x[1][1]])
         return logged_connections
@@ -249,58 +248,3 @@ class configuration_parser():
             connection["comp1"],connection["term1"] = conn.split(ARROW_STRING)[0].strip().split(":")
             connections.append(connection)
         return connections
-
-##############################################################################################
-#                                                                                            #
-# Test Code                                                                                  #
-#                                                                                            #
-##############################################################################################
-if __name__ == "__main__":
-    
-    
-    
-    
-    # ~~~~~~~~~~~~~~~~~~~ Mock User #1 File ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    #
-    #
-    def configure_bench1(components, connections):
-        connections.add_connection(components["BASE_BOARD"]["MEZZ_TOP"], components["LT3390_BOARD"]["MEZZ_BOT"])
-        connections.block_connection(components["LT3390_BOARD"]["SW0"])
-        pass
-    #
-    #
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-
-    # ~~~~~~~~~~~~~~~~~~~ Mock User #2 File ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    #
-    #
-    def configure_bench2(components, connections):
-        connections.add_connection(components["BASE_BOARD"]["MEZZ_TOP"], components["TARGET_BOARD"]["MEZZ_BOT"])
-        connections.add_connection(components["TARGET_BOARD"]["SW0"], components["OSCILLOSCOPE"]["CH1"])
-        # connections.add_connection(components["LT3390_BOARD"]["SW0"], components["OSCILLOSCOPE"]["CH2"])
-        pass
-    #
-    #
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-
-    # ~~~~~~~~~~~~~~~~~~~ Mock Stowe Infrastructure Setup File ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    #
-    #
-    from stowe_eval.stowe_eval_base.modules import stowe_default_bench_configuration
-    from PyICe.bench_configuration_management import bench_configuration_management
-    bench_components = stowe_default_bench_configuration.stowe_component_collection()
-    components_dict = bench_components.get_components()
-    all_connections = {}
-    for configure_bench in [configure_bench1, configure_bench2]:
-        connection_collection = stowe_default_bench_configuration.stowe_default_connections(components_dict, name=type(configure_bench).__name__)
-        configure_bench(components_dict, connection_collection)
-        all_connections[configure_bench] = connection_collection
-    connections = bench_configuration_management.connection_collection.distill(all_connections.values())
-    diagram = connections.print_connections()
-    #
-    #
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
