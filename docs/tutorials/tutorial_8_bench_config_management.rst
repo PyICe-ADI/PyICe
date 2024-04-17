@@ -106,6 +106,6 @@ Then, all that has to be done is to make an instance of the visualizer with the 
 
 This will produce an svg file for easy presentation, such as:
 
-*Figure out how to add a link to an image on the GitHub repot.
+https://github.com/PyICe-ADI/PyICe/tree/main/PyICe/tutorials/bench_config_management_tutorial/bench_image_exampl/Bench_Config.svg
 
 Note that while the wiring is not physically accurate terminal to terminal, hoving over a wire will reveal what connection it represents in regards to both components and terminals.
