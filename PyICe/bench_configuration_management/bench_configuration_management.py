@@ -4,6 +4,7 @@ import abc
 ARROW_STRING = "◄――――――――►"
 
 class terminal():
+    '''A terminal object represents a potential port of a component to which a single connection can be made. A component will typically have one or more terminals. Terminals will likely be paired with connections once the bench wiring is defined. A terminal can only have a single connection. Any more will cause an error. A terminal represents a single port, regardless of pin count.'''
     def __init__(self, type, owner, instrument):
         self.type = type
         self.owner = owner
@@ -22,7 +23,8 @@ class generic_instrument_class():
     '''Generic Instrument, has no peers'''
 
 class bench_config_component():
-    '''Parent of all components'''
+    '''Parent of all components
+    A component represents a physical instrument on the bench that can have connections, like a piece of test equipment, circuit board with connectors, or probes.'''
     def __init__(self, name):
         self.type = type(self)
         self.name = name
@@ -50,6 +52,7 @@ class bench_config_component():
         return self._terminals.keys()
 
 class component_collection():
+    '''A dictionary of all declared components on the bench. Keys are the assigned names provided at creation, and values are the component instances.'''
     def __init__(self):
         self.components = {}
     def add_component(self, component):
@@ -71,6 +74,7 @@ class component_collection():
         return text
 
 class connection():
+    '''A connection represents the physical linking of two different terminals between bench components. The two terminals can be from the same component or between terminals of different components, but only one connection can be assigned to any given terminal. Once a connection is made to a terminal, that terminal is considered "blocked".'''
     def __init__(self, *terminals, owner=None):
         self.terminals = terminals[0] # Why is the indexing needed to prevent list of lists?
         self.owner = owner
@@ -84,6 +88,7 @@ class connection():
         return terminal in self.terminals
 
 class connection_collection():
+    '''An unindexed list of all connections made on a test bench. Has the ability to check consistency of all declared connections. If multiple connections are made to a single terminal or a connection is made to a terminal that has been declared "blocked", an error is raised.'''
     def __init__(self, name):
         self.connections = []
         self.blocked_terminals = []
