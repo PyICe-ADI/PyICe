@@ -2,7 +2,7 @@
 TUTORIAL 8 Bench Configuration Management
 ========================
 
-Data presented without an exact understanding of how it was collected is data that can't be trusted. That is why keeping a record of exactly how a bench is set up when a test is run is crucial for repeatability testing and for building confidence that a test was run correctly. PyICe offers a method of reporting the connections amongst bench components alongside the test. Additionally, when running multiple tests as part of a suite that store their connections this way, the final report will be of the test's combined connections, and will even show the proposed test suite has compatible connections.
+Data presented without an exact understanding of how it was collected is data that can't be trusted. That is why keeping a record of exactly how a bench is set up when a test is run is crucial for repeatability testing and for building confidence that a test was run correctly. PyICe offers a method of reporting the connections amongst bench components alongside the test. Additionally, when running multiple tests as part of a suite of tests that store their connections this way, the final report will be of the test's combined connections, and will even show the proposed test suite has compatible connections.
 
 
 The main features of a bench are a set of components, terminals, and connections. Each component has a set of terminals and each terminal can make a single connection to the terminal of another component. Of note, a terminal is always singular, even if it is a multipin connector. Think of a single plug and single socket serving as one connection between two terminals.
@@ -106,6 +106,6 @@ Then, all that has to be done is to make an instance of the visualizer with the 
 
 This will produce an svg file for easy presentation, such as:
 
-https://github.com/PyICe-ADI/PyICe/tree/main/PyICe/tutorials/bench_config_management_tutorial/bench_image_exampl/Bench_Config.svg
+https://github.com/PyICe-ADI/PyICe/tree/main/PyICe/tutorials/bench_config_management_tutorial/bench_image_example/Bench_Config.svg
 
 Note that while the wiring is not physically accurate terminal to terminal, hoving over a wire will reveal what connection it represents in regards to both components and terminals.
