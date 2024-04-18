@@ -92,6 +92,7 @@ class connection_collection():
     def __init__(self, name):
         self.connections = []
         self.blocked_terminals = []
+        self.readable_list=[]
         self.name = name
         self._invalid_config = False
     def set_invalid(self):
@@ -118,6 +119,11 @@ class connection_collection():
             self.connections.remove(connextion)
     def get_connections(self):
         return self.connections
+    def get_readable_connections(self):
+        if not self.readable_list:
+            for connection in self.get_connections():
+                self.readable_list.append(([connection.get_terminals()[0].owner,connection.get_terminals()[0].type],[connection.get_terminals()[1].owner,connection.get_terminals()[1].type]))
+        return self.readable_list
     def print_connections(self, exclude=None):       
         connection_diagram = ""
         for connextion in self.connections:
