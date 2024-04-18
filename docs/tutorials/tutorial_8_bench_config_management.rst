@@ -11,12 +11,12 @@ There are two main files a test will have to import in order to use these servic
 
 Bench_configuration_management has the following classes:
 
-*bench_config_component
-    *This is the base class for all components added to your bench, whether imported from lab_components or created for a project. For example, the lab_components includes a *one_channel_power_supply*. This component has a single terminal called "VOUT1". Using lab_components as an example, each project will likely make custom components to include in their bench as part of their infrastructure. Alternatively, a PyICe contributor can add a new instrument to lab_components and submit a pull request on GitHub to expand the list of available components for future projects.
-*component_collection
-    *This creates a dictionary to which the instruments are added by the add_component() method.
-*connection_collection
-    *This creates a list of connections between terminals of all instruments for a test. Connections are added by calling the add_connection method and listing the two terminals that will be conneced, e.g. add_connection(test_components.get_components["AGILENT_3497x"]["BAY1"], test_components.get_components["AGILENT_34908A"]["BAY"]). To prevent influence on sensitive ports, terminals can also be declared "blocked". A test with a connection made to a terminal cannot be run alongside another test with that terminal "blocked". It is also in this class that connection lists from multiple tests can be merged into a set of connections using the distill method.
+* bench_config_component
+    * This is the base class for all components added to your bench, whether imported from lab_components or created for a project. For example, the lab_components includes a *one_channel_power_supply*. This component has a single terminal called "VOUT1". Using lab_components as an example, each project will likely make custom components to include in their bench as part of their infrastructure. Alternatively, a PyICe contributor can add a new instrument to lab_components and submit a pull request on GitHub to expand the list of available components for future projects.
+* component_collection
+    * This creates a dictionary to which the instruments are added by the add_component() method.
+* connection_collection
+    * This creates a list of connections between terminals of all instruments for a test. Connections are added by calling the add_connection method and listing the two terminals that will be conneced, e.g. add_connection(test_components.get_components["AGILENT_3497x"]["BAY1"], test_components.get_components["AGILENT_34908A"]["BAY"]). To prevent influence on sensitive ports, terminals can also be declared "blocked". A test with a connection made to a terminal cannot be run alongside another test with that terminal "blocked". It is also in this class that connection lists from multiple tests can be merged into a set of connections using the distill method.
 
 To get started, import the two files and create objects to store the components and connections utilized by the test:
 
