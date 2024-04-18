@@ -10,8 +10,9 @@ The main features of a bench are a set of components, terminals, and connections
 There are two main files a test will have to import in order to use these services: bench_configuration_management, and lab_components. The bench_configuration_management file defines what a bench component is and allows for assigning connections. The lab_components is an ever growing list of available components anyone can use.
 
 Bench_configuration_management has the following classes:
+
 *bench_config_component
-	This is the base class for all components added to your bench, whether imported from lab_components or created for a project. For example, the lab_components includes a *one_channel_power_supply*. This component has a single terminal called "VOUT1". Using lab_components as an example, each project will likely make custom components to include in their bench as part of their infrastructure. Alternately, a PyICe contributor can add a new instrument to lab_components and submit a pull request on GitHub to expand the list of available components for future projects.
+	This is the base class for all components added to your bench, whether imported from lab_components or created for a project. For example, the lab_components includes a *one_channel_power_supply*. This component has a single terminal called "VOUT1". Using lab_components as an example, each project will likely make custom components to include in their bench as part of their infrastructure. Alternatively, a PyICe contributor can add a new instrument to lab_components and submit a pull request on GitHub to expand the list of available components for future projects.
 *component_collection
 	This creates a dictionary to which the instruments are added by the add_component() method.
 *connection_collection
