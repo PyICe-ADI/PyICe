@@ -61,12 +61,14 @@ This is just our first connection. There will likely be dozens of declared conne
 
 
 .. code-block:: python
+
 	logger.add_channel_dummy("bench_connections")
 	logger.write("bench_connections", test_connections.get_connections())
 
 They can also be displayed in your output terminal like so:
 
 .. code-block:: python
+
 	print(test_connections.print_connections())
 
 Additionally, PyICe offers a method of making a virtual representation of your test bench as an svg file.
