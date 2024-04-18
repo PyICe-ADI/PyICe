@@ -63,7 +63,7 @@ This is just our first connection. There will likely be dozens of declared conne
 .. code-block:: python
 
 	logger.add_channel_dummy("bench_connections")
-	logger.write("bench_connections", test_connections.get_connections())
+	logger.write("bench_connections", test_connections.get_readable_connections())
 
 They can also be displayed in your output terminal like so:
 
