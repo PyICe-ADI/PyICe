@@ -98,7 +98,8 @@ class connection_collection():
     def set_invalid(self):
         self._invalid_config = True
     def block_connection(self, terminal):
-        self.blocked_terminals.append(terminal)
+        if terminal not in self.blocked_terminals:
+            self.blocked_terminals.append(terminal)
     def unblock_connection(self, terminal):
         if terminal in self.blocked_terminals:
             self.blocked_terminals.remove(terminal)
@@ -111,20 +112,24 @@ class connection_collection():
         if not connected_already:
             self.connections.append(connection(terminals, owner=self.name))
     def remove_connection(self, *terminals):
+        '''If a connection exists between the given terminal objects, that connection is removed from the list of connections.'''
         for connextion in self.connections:
             if connextion.has_terminals([terminals[0], terminals[1]]):
                 self.connections.remove(connextion)
-    def delete_connection(self, connextion):
-        if connextion in self.connections:
-            self.connections.remove(connextion)
+                return
+        else:
+            print(f'No connection exists between {terminals}.')
     def get_connections(self):
+        '''Returns a list of connection objects, which consist of terminal objects.'''
         return self.connections
     def get_readable_connections(self):
+        '''Returns a parsable list of instrument terminal connections that is also human readable.'''
         if not self.readable_list:
             for connection in self.get_connections():
                 self.readable_list.append(([connection.get_terminals()[0].owner,connection.get_terminals()[0].type],[connection.get_terminals()[1].owner,connection.get_terminals()[1].type]))
         return self.readable_list
-    def print_connections(self, exclude=None):       
+    def print_connections(self, exclude=None):
+        ''''Returns a presentable diagram centrally aligned. Becomes difficult to read if not enough window width is provided.'''
         connection_diagram = ""
         for connextion in self.connections:
             ok=True
