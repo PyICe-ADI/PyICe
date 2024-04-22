@@ -8,17 +8,17 @@ To do this, after creating the standard logger, create a second instance of the 
 
 .. code-block:: python
 
-   from PyICe import lab_core
-   
-   channel_master1 = lab_core.channel_master()
-   logger = lab_core.logger(channel_master1)
-   logger.new_table(table_name='tutorial_9_table', replace_table=True)
-   
-   channel_master2 = lab_core.channel_master()
-   	metadata_channels = {'bench_instruments':['HAMEG', 'CONFIG_XT'],
+	from PyICe import lab_core
+
+	channel_master1 = lab_core.channel_master()
+	logger = lab_core.logger(channel_master1)
+	logger.new_table(table_name='tutorial_9_table', replace_table=True)
+
+	channel_master2 = lab_core.channel_master()
+	metadata_channels = {'bench_instruments':['HAMEG', 'CONFIG_XT'],
 						 'DUT_ID': 7,
 						 'test_runner': 'Joe Schmoe',
-						 }
+						}
 	for channel_name in metadata_channels:
 		channel_master2.add_channel_dummy(channel_name)
 
@@ -27,9 +27,9 @@ Then make a second logger tied to the newly created channel master, make a table
 
 .. code-block:: python
 
-   meta_logger = lab_core.logger(channel_master2)
-   meta_logger.new_table(table_name='tutorial_9_table_metadata', replace_table=True)
-   for channel in metadata_channels:
+	meta_logger = lab_core.logger(channel_master2)
+	meta_logger.new_table(table_name='tutorial_9_table_metadata', replace_table=True)
+	for channel in metadata_channels:
 		channel_master2.write(channel_name, metadata_channels[channel_name])
 	meta_master.log()
 
