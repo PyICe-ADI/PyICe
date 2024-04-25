@@ -4,6 +4,7 @@ import abc
 ARROW_STRING = "◄――――――――►"
 
 class terminal():
+    '''A terminal object represents a potential port of a component to which a single connection can be made. A component will typically have one or more terminals. Terminals will likely be paired with connections once the bench wiring is defined. A terminal can only have a single connection. Any more will cause an error. A terminal represents a single port, regardless of pin count.'''
     def __init__(self, type, owner, instrument):
         self.type = type
         self.owner = owner
@@ -22,7 +23,8 @@ class generic_instrument_class():
     '''Generic Instrument, has no peers'''
 
 class bench_config_component():
-    '''Parent of all components'''
+    '''Parent of all components
+    A component represents a physical instrument on the bench that can have connections, like a piece of test equipment, circuit board with connectors, or probes.'''
     def __init__(self, name):
         self.type = type(self)
         self.name = name
@@ -50,6 +52,7 @@ class bench_config_component():
         return self._terminals.keys()
 
 class component_collection():
+    '''A dictionary of all declared components on the bench. Keys are the assigned names provided at creation, and values are the component instances.'''
     def __init__(self):
         self.components = {}
     def add_component(self, component):
@@ -71,6 +74,7 @@ class component_collection():
         return text
 
 class connection():
+    '''A connection represents the physical linking of two different terminals between bench components. The two terminals can be from the same component or between terminals of different components, but only one connection can be assigned to any given terminal. Once a connection is made to a terminal, that terminal is considered "blocked".'''
     def __init__(self, *terminals, owner=None):
         self.terminals = terminals[0] # Why is the indexing needed to prevent list of lists?
         self.owner = owner
@@ -84,15 +88,18 @@ class connection():
         return terminal in self.terminals
 
 class connection_collection():
+    '''An unindexed list of all connections made on a test bench. It has the ability to check consistency of all declared connections. If multiple connections are made to a single terminal or a connection is made to a terminal that has been declared "blocked", an error is raised.'''
     def __init__(self, name):
         self.connections = []
         self.blocked_terminals = []
+        self.readable_list=[]
         self.name = name
         self._invalid_config = False
     def set_invalid(self):
         self._invalid_config = True
     def block_connection(self, terminal):
-        self.blocked_terminals.append(terminal)
+        if terminal not in self.blocked_terminals:
+            self.blocked_terminals.append(terminal)
     def unblock_connection(self, terminal):
         if terminal in self.blocked_terminals:
             self.blocked_terminals.remove(terminal)
@@ -104,16 +111,31 @@ class connection_collection():
             connected_already = (terminals[0] in connextion.terminals and terminals[1] in connextion.terminals) or connected_already
         if not connected_already:
             self.connections.append(connection(terminals, owner=self.name))
-    def remove_connection(self, *terminals):
+    def remove_connection_by_terminals(self, *terminals):
+        '''If a connection exists between the given terminal objects, that connection is removed from the list of connections.'''
         for connextion in self.connections:
             if connextion.has_terminals([terminals[0], terminals[1]]):
                 self.connections.remove(connextion)
-    def delete_connection(self, connextion):
+                return
+        else:
+            print(f'\n\n***\n* WARNING\n***\nPYICE BENCH CONFIG MANAGEMENT: Attempt to remove connection between terminals ({terminals[0].owner},{terminals[0].type}) and ({terminals[1].owner},{terminals[1].type}) failed. Such a connection does not exist in the list of connections.\n\n')
+    def remove_connection(self, connextion):
+        '''If the provided connections object exists in the connection list, it shall be removed.'''
         if connextion in self.connections:
             self.connections.remove(connextion)
+        else:
+            print(f'\n\n***\n* WARNING\n***\nPYICE BENCH CONFIG MANAGEMENT: Attempt to remove connection between terminals ({connextion.get_terminals()[0].owner},{connextion.get_terminals()[0].type}) and ({connextion.get_terminals()[1].owner},{connextion.get_terminals()[1].type}) failed. Such a connection does not exist in the list of connections.\n\n')
     def get_connections(self):
+        '''Returns a list of connection object.'''
         return self.connections
-    def print_connections(self, exclude=None):       
+    def get_readable_connections(self):
+        '''Returns a parsable list of instrument terminal connections that is also human readable.'''
+        if not self.readable_list:
+            for connection in self.get_connections():
+                self.readable_list.append(([connection.get_terminals()[0].owner,connection.get_terminals()[0].type],[connection.get_terminals()[1].owner,connection.get_terminals()[1].type]))
+        return self.readable_list
+    def print_connections(self, exclude=None):
+        ''''Returns a presentable diagram centrally aligned. Becomes difficult to read if not enough window width is provided.'''
         connection_diagram = ""
         for connextion in self.connections:
             ok=True
@@ -166,7 +188,6 @@ class connection_collection():
             separate_by_colon= [x.split(':') for  x in goodbye_arrow]
             ## So now we have [[[A,B],[C,D]],[[E,F],[G,H]], ...[[W,X],[Y,Z]]]
             connection_list_of_lists.append(separate_by_colon)
-        # components = stowe_default_bench_configuration.stowe_component_collection().get_components()
         for x in connection_list_of_lists:
             logged_connections.add_connection(components[x[0][0]][x[0][1]],             components[x[1][0]][x[1][1]])
         return logged_connections
@@ -225,7 +246,7 @@ class connection_collection():
                             raise_error(connextion2.terminals[1],connextion1.terminals[0],connextion2.terminals[0], connection_source[connection_poi_1], connection_source[connection_poi_2])
                         else:
                             delete_connections.append(connextion2 if connextion2.terminals[0].instrument.is_a_kind_of is generic_instrument_class else connextion1)
-        [self.delete_connection(connextion) for connextion in delete_connections]                    
+        [self.remove_connection(connextion) for connextion in delete_connections]                    
         # Check for blocked terminals
         for connextion in self.connections:
             for terminal in connextion.get_terminals():
@@ -249,58 +270,3 @@ class configuration_parser():
             connection["comp1"],connection["term1"] = conn.split(ARROW_STRING)[0].strip().split(":")
             connections.append(connection)
         return connections
-
-##############################################################################################
-#                                                                                            #
-# Test Code                                                                                  #
-#                                                                                            #
-##############################################################################################
-if __name__ == "__main__":
-    
-    
-    
-    
-    # ~~~~~~~~~~~~~~~~~~~ Mock User #1 File ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    #
-    #
-    def configure_bench1(components, connections):
-        connections.add_connection(components["BASE_BOARD"]["MEZZ_TOP"], components["LT3390_BOARD"]["MEZZ_BOT"])
-        connections.block_connection(components["LT3390_BOARD"]["SW0"])
-        pass
-    #
-    #
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-
-    # ~~~~~~~~~~~~~~~~~~~ Mock User #2 File ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    #
-    #
-    def configure_bench2(components, connections):
-        connections.add_connection(components["BASE_BOARD"]["MEZZ_TOP"], components["TARGET_BOARD"]["MEZZ_BOT"])
-        connections.add_connection(components["TARGET_BOARD"]["SW0"], components["OSCILLOSCOPE"]["CH1"])
-        # connections.add_connection(components["LT3390_BOARD"]["SW0"], components["OSCILLOSCOPE"]["CH2"])
-        pass
-    #
-    #
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-
-    # ~~~~~~~~~~~~~~~~~~~ Mock Stowe Infrastructure Setup File ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    #
-    #
-    from stowe_eval.stowe_eval_base.modules import stowe_default_bench_configuration
-    from PyICe.bench_configuration_management import bench_configuration_management
-    bench_components = stowe_default_bench_configuration.stowe_component_collection()
-    components_dict = bench_components.get_components()
-    all_connections = {}
-    for configure_bench in [configure_bench1, configure_bench2]:
-        connection_collection = stowe_default_bench_configuration.stowe_default_connections(components_dict, name=type(configure_bench).__name__)
-        configure_bench(components_dict, connection_collection)
-        all_connections[configure_bench] = connection_collection
-    connections = bench_configuration_management.connection_collection.distill(all_connections.values())
-    diagram = connections.print_connections()
-    #
-    #
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

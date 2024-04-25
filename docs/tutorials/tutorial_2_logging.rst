@@ -52,7 +52,7 @@ If replace_table is not set to True and the table already exists, then the scrip
 
    logger.new_table(table_name='tutorial_2_table', replace_table=True)
 
-To take 10 voltage readings, we can loop 10 times, and record everything the channel_master knows about each time.
+To take 10 voltage readings, we can loop 10 times, and record everything that the channel_master knows about each time through the loop.
 Once the circuit is configured to take the desired data, simply call the logger's log() method.
 
 .. code-block:: python
@@ -77,12 +77,17 @@ DB Browser is an interactive database program that will display the data and all
 
 It can usually be found here: https://sqlitebrowser.org/
 
-Notes: when the logger is created it will know about all the channels that exist in the channel_master at creation time.
+Notes: when the logger is created it will know about all the channels that exist in the channel_master at the logger's creation time.
 
 Channels added to the channel_master after the creation of the logger will not be known to the logger.
+Likewise, channels added to a logger will not be known to the original channel_master.
 
 Channels may be removed from the logger by using the logger.remove_channel(channel_object) or logger.remove_channel_by_name("channel_name") methods.
 
 If only a few channels are to be logged, use the logger.remove_all_channels_and_sub_groups() method to empty the logger.
 
-channels/instruments can then be added using the logger.add() method.
+Individual channels/instruments can then be added back to the logger using the logger's add_channel() method, which was inherited by the channel_master.
+
+Example scenario
+Suppose a master object is created and channel A is added to it. A logger is then created and the master is added to the logger. Another channel, B, is added to the master, and a third channel, C, is added to the logger.
+In this scenario, both the master and the logger can see and interact with channel A. The master can interact with B but not C, and the logger can interact with C but not B.
