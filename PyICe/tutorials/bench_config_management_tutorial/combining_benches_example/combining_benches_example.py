@@ -19,6 +19,7 @@ if __name__ == "__main__":
     #
     #
     def configure_bench2(components, connections):
+        connections.add_connection(components["AGILENT_3497x"]["BAY1"],             components["AGILENT_34908A"]["BAY"])
         connections.add_connection(components["AGILENT_3497x"]["BAY3"],             components["AGILENT_34901A_3"]["BAY"])
 
     #
