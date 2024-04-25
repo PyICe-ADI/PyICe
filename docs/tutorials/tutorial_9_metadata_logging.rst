@@ -2,9 +2,9 @@
 TUTORIAL 9 Logging MetaData to a SQLite File
 ========================================
 
-Beyond collecting data for a test, it is prudent to collect data regarding how the data is collected, which is also known as a type of metadata. For example, the serial numbers of the instruments used, the connections between the instruments in setup, the ID of the DUT, the name of person executing the test, etc. This metadata is unchanging throughout the test run, and so it would be redundant to write it to the same table as the test data every time the test data is logged. Therefore, making a separate table in the same SQLite file purely for the metadata and logging that once can help keep data organized and avoid redundancies.
+Beyond collecting data for a test, it is prudent to collect data regarding _how_ the data is collected, which is also known as a type of metadata. For example, the serial numbers of the instruments used, the connections between the instruments in the setup, the ID of the DUT, the name of person executing the test, etc. This metadata is unchanging throughout the test run, and so it would be redundant to write it to the same table as the test data every time the test data is logged. Therefore, making a separate table in the same SQLite file purely for the metadata and logging that once can help keep data organized and avoid redundancies.
 
-To do this, after creating the standard logger, create a second instance of a channel master and add the metadata channels to it.
+To do this, after creating the standard logger, create a second channel master and add the meta channels to it.
 
 .. code-block:: python
 
@@ -23,7 +23,7 @@ To do this, after creating the standard logger, create a second instance of a ch
 		meta_master.add_channel_dummy(channel_name)
 
 
-Then make a second logger tied to the newly created channel master, make a table with an appropriate name, and write the metadata values to the channels. Log the metadata logger once.
+Then make a second logger tied to the newly created channel master, make a table with an appropriate name, and write the metadata values to the channels. Log the metadata logger *once*.
 
 .. code-block:: python
 
@@ -43,4 +43,4 @@ The data collected when the logger logs will have no impact on the meta_logger, 
        logger.log()
    print("\n\nConsider opening data_log.sqlite with DB Browser https://sqlitebrowser.org/ and opening the [Browse Data] tab.")
    
-Going forward, be sure to keep these tables together.
+If SQLite table manipulation is anticipated, be sure to keep these tables together.
