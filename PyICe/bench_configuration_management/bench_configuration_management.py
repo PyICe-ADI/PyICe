@@ -118,7 +118,7 @@ class connection_collection():
                 self.connections.remove(connextion)
                 return
         else:
-            print(f'No connection exists between {terminals}.')
+            print(f'\n\n***\n* WARNING\n***\nPYICE BENCH CONFIG MANAGEMENT: Attempt to remove connection between terminals ({terminals[0].owner},{terminals[0].type}) and ({terminals[1].owner},{terminals[1].type}) failed. Such a connection does not exist in the list of connections.\n\n')
     def remove_connection(self, connextion):
         '''If the provided connections object exists in the connection list, it shall be removed.'''
         if connextion in self.connections:
