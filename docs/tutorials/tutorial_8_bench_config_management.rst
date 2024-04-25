@@ -7,7 +7,7 @@ Data presented without an exact understanding of how it was collected is data th
 
 The main features of a bench are a set of components, terminals, and connections. Each component has a set of terminals and each terminal can make a single connection to the terminal of another component. Of note, a terminal is always singular, even if it is a multipin connector. Think of a single plug and single socket serving as one connection between two terminals.
 
-There are two main files a test will have to import in order to use these services: bench_configuration_management, and lab_components. The bench_configuration_management file defines what a bench component is and allows for assigning connections. The lab_components is an ever growing list of available components anyone can use.
+There are two main files to import in order to use these services: bench_configuration_management, and optionally lab_components. The bench_configuration_management file defines what a bench component is and allows for assigning connections. The lab_components is an ever growing list of available components anyone can use. One can also augment the list of lab components with their own created components.
 
 Bench_configuration_management has the following classes:
 
@@ -16,7 +16,7 @@ Bench_configuration_management has the following classes:
 * component_collection
     * This creates a dictionary to which the instruments are added by the add_component() method.
 * connection_collection
-    * This creates a list of connections between terminals of all instruments for a test. Connections are added by calling the add_connection method and listing the two terminals that will be conneced, e.g. add_connection(test_components.get_components["AGILENT_3497x"]["BAY1"], test_components.get_components["AGILENT_34908A"]["BAY"]). To prevent influence on sensitive ports, terminals can also be declared "blocked". A test with a connection made to a terminal cannot be run alongside another test with that terminal "blocked". It is also in this class that connection lists from multiple tests can be merged into a set of connections using the distill method.
+    * This creates a list of connections between terminals of all instruments for a test. Connections are added by calling the add_connection method and listing the *two* terminals that will be connected, e.g. add_connection(test_components.get_components["AGILENT_3497x"]["BAY1"], test_components.get_components["AGILENT_34908A"]["BAY"]). To prevent influence on sensitive ports, terminals can also be declared "blocked". A test with a connection made to a terminal cannot be run in regression with another test with that terminal "blocked". It is also in this class that connection lists from multiple tests can be merged into a set of connections using the distill method.
 
 To get started, import the two files and create objects to store the components and connections utilized by the test:
 
@@ -57,7 +57,7 @@ Add the components to the component_collection object, and the proposed connecti
     test_components.add_component(lab_components.Agilent_34908A("AGILENT_34908A"))
     test_connections.add_connection(test_components.get_components()["AGILENT_3497x"]["BAY1"], test_components.get_components()["AGILENT_34908A"]["BAY"])
 
-This is just our first connection. There will likely be dozens of declared connections for a given test. Once all components and their connections are declared, the connections can be stored in a PyICe logger for storage in a SQLite database. For details on how to make a logger, see tutorial_2_logging.
+This is just our first connection. There will likely be dozens of declared connections for a given test. Once all components and their connections are declared, the connections can be stored in a PyICe logger for storage in a SQLite database. For details on how to make a logger, see tutorial_2_logging. To reduce redundant information in the database, it is recommended to add the connections to a metadata table. For more info on that, see tutorial_9_metadata_logging.
 
 
 .. code-block:: python
@@ -101,8 +101,7 @@ To do this, graphviz will have to be installed, as well as a collection of image
 			"AGILENT_34901A_3"                  : {"position" : {"xpos":-100, "ypos":425}    , "image" : f"{path}Agilent34901A.PNG", "use_label" : False},
 			}
 
-Each component's position will have to be carefully arranged to not interfere with each other and to allow for space for the automated wiring to be computed by graphviz.
-with the images saved in the "visualizer_images" folder mentioned in the code.
+Each component's position will have to be carefully arranged to not interfere with each other and to allow for space for the automated wiring to be computed by graphviz with the images saved in the "visualizer_images" folder mentioned in the code.
 
 Then, all that has to be done is to make an instance of the visualizer with the connections of the bench and generate the image:
 
@@ -117,4 +116,4 @@ This will produce an svg file for easy presentation, such as:
 
 https://github.com/PyICe-ADI/PyICe/tree/main/PyICe/tutorials/bench_config_management_tutorial/bench_image_example/Bench_Config.svg
 
-Note that while the wiring is not physically accurate terminal to terminal, hoving over a wire will reveal what connection it represents in regards to both components and terminals.
+Note that while the wiring is not physically accurate terminal to terminal, hovering over a wire will reveal what connection it represents in regards to both components and terminals.
