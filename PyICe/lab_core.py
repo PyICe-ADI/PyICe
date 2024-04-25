@@ -1934,8 +1934,8 @@ class logger(master):
         '''channel_group is a lab_bench object containing all instruments of interest for logging.
         database is the filename in which the sqlite database will be stored.
         Channels or channel groups added to the channel master after the master is added to the logger will not be registered for logging.
-        Notice, however, that the logger inherits from the master class, which means that channels can still be added to the LOGGER after the master has been added.
-        Suppose a master object is created and channel A is added to it. A logger is than created and the master is added to the logger. Another channel, B, is added to the master, and a third channel, C, is added to the logger.
+        Notice, however, that the logger inherits from the 'master' class, which means that channels can now be added to the LOGGER after the master has been added as if the logger is a master.
+        Suppose a master object is created and channel A is added to it. A logger is then created and the master is added to the logger. Another channel, B, is added to the master, and a third channel, C, is added to the logger.
         In this scenario, both the master and the logger can see and interact with channel A. The master can interact with B but not C, and the logger can interact with C but not B.'''
         master.__init__(self, name='logger')
         if channel_master_or_group is not None:
