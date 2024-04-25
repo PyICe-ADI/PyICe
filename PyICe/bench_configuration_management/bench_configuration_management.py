@@ -88,7 +88,7 @@ class connection():
         return terminal in self.terminals
 
 class connection_collection():
-    '''An unindexed list of all connections made on a test bench. Has the ability to check consistency of all declared connections. If multiple connections are made to a single terminal or a connection is made to a terminal that has been declared "blocked", an error is raised.'''
+    '''An unindexed list of all connections made on a test bench. It has the ability to check consistency of all declared connections. If multiple connections are made to a single terminal or a connection is made to a terminal that has been declared "blocked", an error is raised.'''
     def __init__(self, name):
         self.connections = []
         self.blocked_terminals = []
@@ -111,7 +111,7 @@ class connection_collection():
             connected_already = (terminals[0] in connextion.terminals and terminals[1] in connextion.terminals) or connected_already
         if not connected_already:
             self.connections.append(connection(terminals, owner=self.name))
-    def remove_connection(self, *terminals):
+    def remove_connection_by_terminals(self, *terminals):
         '''If a connection exists between the given terminal objects, that connection is removed from the list of connections.'''
         for connextion in self.connections:
             if connextion.has_terminals([terminals[0], terminals[1]]):
@@ -119,8 +119,14 @@ class connection_collection():
                 return
         else:
             print(f'No connection exists between {terminals}.')
+    def remove_connection(self, connextion):
+        '''If the provided connections object exists in the connection list, it shall be removed.'''
+        if connextion in self.connections:
+            self.connections.remove(connextion)
+        else:
+            print(f'\n\n***\n* WARNING\n***\nPYICE BENCH CONFIG MANAGEMENT: Attempt to remove connection between terminals ({connextion.get_terminals()[0].owner},{connextion.get_terminals()[0].type}) and ({connextion.get_terminals()[1].owner},{connextion.get_terminals()[1].type}) failed. Such a connection does not exist in the list of connections.\n\n')
     def get_connections(self):
-        '''Returns a list of connection objects, which consist of terminal objects.'''
+        '''Returns a list of connection object.'''
         return self.connections
     def get_readable_connections(self):
         '''Returns a parsable list of instrument terminal connections that is also human readable.'''
@@ -240,7 +246,7 @@ class connection_collection():
                             raise_error(connextion2.terminals[1],connextion1.terminals[0],connextion2.terminals[0], connection_source[connection_poi_1], connection_source[connection_poi_2])
                         else:
                             delete_connections.append(connextion2 if connextion2.terminals[0].instrument.is_a_kind_of is generic_instrument_class else connextion1)
-        [self.delete_connection(connextion) for connextion in delete_connections]                    
+        [self.remove_connection(connextion) for connextion in delete_connections]                    
         # Check for blocked terminals
         for connextion in self.connections:
             for terminal in connextion.get_terminals():
