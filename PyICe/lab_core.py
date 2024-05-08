@@ -915,6 +915,7 @@ class register(integer_channel):
         #channel doesn't allow both read and write so just do one, then force in the other
         integer_channel.__init__(self, name=name, size=size, read_function=read_function)
         self.set_attribute('read_caching', False)
+        self.set_attribute('special_access', None)
         if write_function:
             self._write = write_function
             self.set_write_access()
@@ -927,6 +928,94 @@ class register(integer_channel):
         self._read = None
         self.set_read_access(True)
         self.set_attribute('read_caching', True)
+    def set_special_access(self, acess):
+        '''
+        following uvm_reg_field convention
+        https://verificationacademy.com/verification-methodology-reference/uvm/docs_1.1a/html/files/reg/uvm_reg_field-svh.html
+        access:
+	”RO”	W: no effect	R: no effect
+	”RW”	W: as-is	R: no effect
+	”RC”	W: no effect	R: clears all bits
+	”RS”	W: no effect	R: sets all bits
+	”WRC”	W: as-is	R: clears all bits
+	”WRS”	W: as-is	R: sets all bits
+	”WC”	W: clears all bits	R: no effect
+	”WS”	W: sets all bits	R: no effect
+	”WSRC”	W: sets all bits	R: clears all bits
+	”WCRS”	W: clears all bits	R: sets all bits
+	”W1C”	W: 1/0 clears/no effect on matching bit	R: no effect
+	”W1S”	W: 1/0 sets/no effect on matching bit	R: no effect
+	”W1T”	W: 1/0 toggles/no effect on matching bit	R: no effect
+	”W0C”	W: 1/0 no effect on/clears matching bit	R: no effect
+	”W0S”	W: 1/0 no effect on/sets matching bit	R: no effect
+	”W0T”	W: 1/0 no effect on/toggles matching bit	R: no effect
+	”W1SRC”	W: 1/0 sets/no effect on matching bit	R: clears all bits
+	”W1CRS”	W: 1/0 clears/no effect on matching bit	R: sets all bits
+	”W0SRC”	W: 1/0 no effect on/sets matching bit	R: clears all bits
+	”W0CRS”	W: 1/0 no effect on/clears matching bit	R: sets all bits
+	”WO”	W: as-is	R: error
+	”WOC”	W: clears all bits	R: error
+	”WOS”	W: sets all bits	R: error
+	”W1”	W: first one after HARD reset is as-is, other W have no effects	R: no effect
+	”WO1”	W: first one after HARD reset is as-is, other W have no effects	R: error
+        '''
+        # no side effect
+        if access.upper() == "RO":
+            self.set_attribute('special_access', None)
+            self.set_read_access(True)
+            self.set_write_access(False)
+        elif access.upper() == "RW":
+            self.set_attribute('special_access', None)
+            self.set_read_access(True)
+            self.set_write_access(True)
+        elif access.upper() == "WO":
+            self.set_attribute('special_access', None)
+            self.set_read_access(False)
+            self.set_write_access(True)
+
+        # special read behavior    
+        elif access.upper() in ("RC", "RS", "WRC", "WRS"):
+            raise Exception('Read side effect special register access unimplemented. Please contact PyICe developers.')
+        
+        # special write behavior
+        elif access.upper() in ("WC", "WS", "W1T", "W0T", "WOC", "WOS", "W1", "WO1"):
+            raise Exception('Limited write side effect special register access implemented. Please contact PyICe developers.')
+        elif access.upper() == "W1C":
+            self.set_attribute('special_access', 'W1C')
+            self.set_read_access(True)
+            self.set_write_access(True)
+            self.add_preset("clear", 2**self.get_size()-1, "Write 1 to clear")
+        elif access.upper() == "W0C":
+            self.set_attribute('special_access', 'W0C')
+            self.set_read_access(True)
+            self.set_write_access(True)
+            self.add_preset("clear", 0, "Write 0 to clear")
+        elif access.upper() == "W1S":
+            self.set_attribute('special_access', 'W1S')
+            self.set_read_access(True)
+            self.set_write_access(True)
+            self.add_preset("set", 2**self.get_size()-1, "Write 1 to set")
+        elif access.upper() == "W0S":
+            self.set_attribute('special_access', 'W0S')
+            self.set_read_access(True)
+            self.set_write_access(True)
+            self.add_preset("set", 0, "Write 0 to set")
+
+        # special read and write behavior
+        elif access.upper in ("WSRC", "WCRS", "W1SRC", "W1CRS", "W0SRC", "W0CRS"):
+            raise Exception('Read/write side effect special register access unimplemented. Please contact PyICe developers.')
+        # likely typo
+        else:
+            raise Exception('Unknown register side effect special access.. Please contact PyICe developers.')
+    def compute_rmw_writeback_data(self, data):
+        if self.get_attribute('special_access') is None:
+            return data
+        elif self.get_attribute('special_access') in ('W1C','W1S'):
+            return 0
+        elif self.get_attribute('special_access') in ('W0C','W0S'):
+            return 2**self.get_size()-1
+        else:
+            raise Exception(f'Resister special access {self.get_attribute("special_access")} improperly implemented. Contact PyICe developers.')
 
 class channel_group(object):
     def __init__(self, name='Unnamed Channel Group'):
