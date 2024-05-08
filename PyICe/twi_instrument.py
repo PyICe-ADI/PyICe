@@ -361,8 +361,6 @@ class twi_instrument(lab_core.instrument,lab_core.delegator):
                     register.set_description(description.text)
     
     def populate_from_yoda_json_bridge(self,filename,i2c_addr7,extended_addressing=False):
-        # print("Experimental Feature for Kirkwood, json bridge file format is in development")
-	# extended_addressing causes 
         with open(filename, 'r') as fp:
             registers = json.load(fp)
         for reg in registers:
@@ -383,6 +381,29 @@ class twi_instrument(lab_core.instrument,lab_core.delegator):
                 is_readable = "R" in bf['access']
                 is_writable = "W" in bf['access']
                 register = self.add_register(name,slave_addr,command_code,size,offset,word_size,is_readable,is_writable,overwrite_others)
+                
+                if bf['write_side_effect'] == 'None':
+                    pass
+                elif bf['write_side_effect'] == 'OneToClear':
+                    assert is_readable, f'Unexpected W1C register without read access: {name}. Contact PyICe developers.'
+                    assert is_writable, f'Unexpected W1C register without write access: {name}. Contact PyICe developers.'
+                    register.set_special_access('W1C')
+                elif bf['write_side_effect'] == 'OneToSet':
+                    assert is_readable, f'Unexpected W1S register without read access: {name}. Contact PyICe developers.'
+                    assert is_writable, f'Unexpected W1S register without write access: {name}. Contact PyICe developers.'
+                    register.set_special_access('W1S')
+                elif bf['write_side_effect'] == 'ZeroToClear':
+                    assert is_readable, f'Unexpected W0C register without read access: {name}. Contact PyICe developers.'
+                    assert is_writable, f'Unexpected W0C register without write access: {name}. Contact PyICe developers.'
+                    register.set_special_access('W0C')
+                elif bf['write_side_effect'] == 'ZeroToSet':
+                    assert is_readable, f'Unexpected W0S register without read access: {name}. Contact PyICe developers.'
+                    assert is_writable, f'Unexpected W0S register without write access: {name}. Contact PyICe developers.'
+                    register.set_special_access('W0S')
+                elif bf['write_side_effect'] in ('OneToToggle', 'ZeroToToggle', 'Clear', 'Set'):
+                    raise Exception(f'Register side effect {bf["write_side_effect"]} not implemented. Contact PyICe developers.')
+                else:
+                    raise Exception(f'Register side effect {bf["write_side_effect"]} unknown. Contact PyICe developers.')
                 try:
                     register.add_write_callback(self._interface.ivy_session._textwave)
                 except AttributeError as e:

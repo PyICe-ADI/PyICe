@@ -928,7 +928,7 @@ class register(integer_channel):
         self._read = None
         self.set_read_access(True)
         self.set_attribute('read_caching', True)
-    def set_special_access(self, acess):
+    def set_special_access(self, access):
         '''
         following uvm_reg_field convention
         https://verificationacademy.com/verification-methodology-reference/uvm/docs_1.1a/html/files/reg/uvm_reg_field-svh.html
