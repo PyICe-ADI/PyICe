@@ -1,10 +1,28 @@
 import time, datetime
 
+
 class polling_delay(object):
-    '''poll for test condition iteratively before unblocking'''
+    '''poll for test condition iteratively before unblocking.
+
+    Supports exact and range tests
+    Supports abstracted notion of time and delay, or defaults to time.sleep()
+    Optionally terminates search if exit criteria are not satisfied within a timeout interval.
+    Optionally raises TimeoutErrror if timeout is exceeded.
+    '''
     def __init__(self, dly_fn=None, time_readback_fn=None, except_on_timeout=True, timeout_str_prefix='*Error* '):
-        '''
-        '''
+        """        
+        Parameters
+        ----------
+        dly_fn : function, optional
+            One argument function to advance time. Default time.sleep()
+        time_readback_fn : function, optional
+            Zero argument function to return current time. Default time.time()
+        except_on_timeout : boolean, optional
+            Raise TimeoutError if timeout exceeded. Default True
+        timeout_str_prefix: str, optional
+            Set begining of timeout printed or raised message to aid in log parsing. Default "*Error*"
+        """
+
         if dly_fn is None:
             self.dly_function = lambda dly: time.sleep(dly)
         else:
@@ -50,11 +68,36 @@ class polling_delay(object):
             err_str = f'{self.timeout_str_prefix} polling delay timeout at time {self.time_readback_fn()} after {timeout} timout.'
             self._end(success=False)
             if self.except_on_timeout:
-                raise Exception(err_str) #todo specific exception class?
+                raise TimeoutError(err_str) #todo specific exception class?
             else:
                 print(err_str)
         return self._success
     def wait_for_exact(self, poll_fn, poll_interval, expect, timeout=None, test_initial=True):
+        """Waits repeatedly until return of poll_fn() is equal to expect or timeout is exceeded.
+        
+        Parameters
+        ----------
+        poll_fn : function
+            Zero argument function returns exit condition value
+        poll_interval : float
+            Length of time to wait before testing for exit condition again
+        expect : same type as returned by poll_fn()
+            poll_fn must return a value == expect to satisfy exit criteria.
+        timeout: float, optional
+            If used, print error message or optionally raise Exception if exit criteria is not satisfied within time limit
+        test_initial: boolean, optional
+            Optionally wait first poll_interval before testing exit criteria
+        
+        Returns
+        -------
+        bool
+            Exit criteria satisfied. False indicates timout.
+
+        Raises
+        -------
+        TimeoutError
+            Acuumulated delay exceeds timout before exit criteria satisfied, if self.except_on_timeout.
+        """
         self._continue_condition = expect
         def _test(expect=expect, poll_fn=poll_fn):
             # closure
@@ -67,6 +110,33 @@ class polling_delay(object):
             return test_pass
         return self._wait_for(poll_interval=poll_interval, timeout=timeout, test_initial=test_initial, test_fn=_test)
     def wait_for_limit(self, poll_fn, poll_interval, min=None, max=None, timeout=None, test_initial=True):
+        """Waits repeatedly until return of poll_fn() is between min and max, inclusive or timeout is exceeded.
+        
+        Parameters
+        ----------
+        poll_fn : function
+            Zero argument function returns exit condition value
+        poll_interval : float
+            Length of time to wait before testing for exit condition again
+        min : float, optional
+            If used, poll_fn must return a value greater than or equal to min to satisfy exit criteria.
+        max : float, optional
+            If used, poll_fn must return a value less than or equal to max to satisfy exit criteria.
+        timeout: float, optional
+            If used, print error message or optionally raise Exception if exit criteria is not satisfied within time limit
+        test_initial: boolean, optional
+            Optionally wait first poll_interval before testing exit criteria
+        
+        Returns
+        -------
+        bool
+            Exit criteria satisfied. False indicates timout.
+
+        Raises
+        -------
+        TimeoutError
+            Acuumulated delay exceeds timout before exit criteria satisfied, if self.except_on_timeout.
+        """
         self._continue_condition = (min, max)
         def _test(min=min, max=max, poll_fn=poll_fn):
             # closure
@@ -81,6 +151,17 @@ class polling_delay(object):
             return test_pass
         return self._wait_for(poll_interval=poll_interval, timeout=timeout, test_initial=test_initial, test_fn=_test)
     def get_previous_outcome(self):
+        """Gets detailed results of last wait_for_limit or wait_for_exact method call
+
+        Parameters
+        ----------
+        none
+
+        Returns
+        -------
+        dict
+            keys: ['accumulated_delay':<float>, 'iterations':<int>, 'initial_time':<numeric>, 'final_time':<numeric>, 'last_value', 'continue_condition', 'success':<bool>]
+        """
         return {'accumulated_delay': self._accumulated_dly,
                 'iterations': self._iterations,
                 'initial_time': self._initial_time,
@@ -92,6 +173,7 @@ class polling_delay(object):
 
 
 def test():
+    #TODO: move to more formalized test framework / unit test
     import random
     from PyICe.lab_utils.polling_delay import polling_delay
     
