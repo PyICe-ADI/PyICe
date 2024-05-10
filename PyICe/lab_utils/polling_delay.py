@@ -1,4 +1,4 @@
-import time, datetime
+import time
 
 
 class polling_delay(object):
