@@ -975,11 +975,11 @@ class register(integer_channel):
 
         # special read behavior    
         elif access.upper() in ("RC", "RS", "WRC", "WRS"):
-            raise Exception('Read side effect special register access unimplemented. Please contact PyICe developers.')
+            raise Exception(f'Read side effect {access.upper()} special register access unimplemented. Please contact PyICe developers.')
         
         # special write behavior
         elif access.upper() in ("WC", "WS", "W1T", "W0T", "WOC", "WOS", "W1", "WO1"):
-            raise Exception('Limited write side effect special register access implemented. Please contact PyICe developers.')
+            raise Exception(f'Limited write side effect special register access implemented. {access.upper()} not yet implemented. Please contact PyICe developers.')
         elif access.upper() == "W1C":
             self.set_attribute('special_access', 'W1C')
             self.set_read_access(True)
@@ -1008,6 +1008,23 @@ class register(integer_channel):
         else:
             raise Exception('Unknown register side effect special access.. Please contact PyICe developers.')
     def compute_rmw_writeback_data(self, data):
+        '''Bitfield level callback to modify writeback data for read-modify-write sub-atomic register access. This is useful primarily for bitfields with write side effects implemented.
+           
+        Parameters
+        ----------
+        data : int
+            Bitfield readback data, masked and shifted to LSB position.
+        
+        Returns
+        -------
+        int
+            Bitfield writeback data. Usually the same as readback data.
+
+        Raises
+        -------
+        Exception
+            Unknown value contained in "special_access" channel attribute.
+        '''
         if self.get_attribute('special_access') is None:
             return data
         elif self.get_attribute('special_access') in ('W1C','W1S'):
@@ -1015,7 +1032,7 @@ class register(integer_channel):
         elif self.get_attribute('special_access') in ('W0C','W0S'):
             return 2**self.get_size()-1
         else:
-            raise Exception(f'Resister special access {self.get_attribute("special_access")} improperly implemented. Contact PyICe developers.')
+            raise Exception(f'Register special access {self.get_attribute("special_access")} improperly implemented. Contact PyICe developers.')
 
 class channel_group(object):
     def __init__(self, name='Unnamed Channel Group'):

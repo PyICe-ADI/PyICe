@@ -173,6 +173,39 @@ class twi_instrument(lab_core.instrument,lab_core.delegator):
     def get_bitfield_writeback_data(self, addr7, data, command_code, size, offset, word_size):
         raise Exception('Code cleanup 2024/05/08. Switch to new method name compute_rmw_writeback_data() with new calling and return signature.')
     def compute_rmw_writeback_data(self, data, addr7, command_code, size, offset, word_size, is_readable=True, overwrite_others=False):
+        '''Read whole (atmoic) register. 
+        Replace any slices unrelated to the write slice based on each constituent bitfield's RWM value preference
+        Replace slice related to the write with the new data.
+
+        Parameters
+        ----------
+        data : int
+            Bitfield write data, right aligned.
+        addr7 : int
+            Chip address in 7-bit (no R/W bit) format.
+        command_code : int
+            Memory address of register/bitfield
+        size : int
+            Slice width of bitfield within register
+        offset : int
+            LSB position of bitfield slice within register
+        word_size : int
+            Register width
+        is_readable : bool
+            Does register have read access?
+        overwrite_others : bool
+            Skip readback. Instead assume register content is 0 before replacing slices.
+
+        Returns
+        -------
+        (int, int)
+            Register writeback data and command code tuple.
+
+        Raises
+        -------
+        Exception
+            Various consistency errors. Abnormal.
+        '''
         # Step 1: get existing data across whole register width
         if data is None and word_size == 0:
             #send_byte
