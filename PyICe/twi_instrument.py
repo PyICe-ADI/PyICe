@@ -143,46 +143,76 @@ class twi_instrument(lab_core.instrument,lab_core.delegator):
             return data
         mask = (2**size-1) << offset
         return (data & mask)>> offset
+    def _replace(self, bf_data, bf_size, bf_offset, reg_data, reg_size):
+        # Step 1: Safety checks
+        assert reg_size >= bf_offset + bf_size
+
+        # Step 2: Compute mask        
+        mask = (2**bf_size-1) << bf_offset
+        mask_inv = (2**reg_size-1) ^ mask
+
+        # Step 3: Clear out space
+        reg_data = reg_data & mask_inv
+
+        # Step 4: Align
+        if bf_data > 2**bf_size-1:
+            oversize_data = bf_data
+            bf_data = 2**bf_size-1
+            print(f"Data {oversize_data} doesn't fit into register of size {bf_size}! Clipping at {bf_data}")
+        elif bf_data < 0:
+            undersize_data = bf_data
+            bf_data = 0
+            print(f"Negative data {undersize_data} not valid for register! Clipping at {bf_data}")
+        bf_data = (bf_data << bf_offset) & mask
+
+        # Step 5: Insert
+        reg_data = reg_data | bf_data
+        reg_data &= 2**reg_size-1 #necessary with offset/size assert?
+        return reg_data    
+
     def get_bitfield_writeback_data(self, addr7, data, command_code, size, offset, word_size):
+        raise Exception('Code cleanup 2024/05/08. Switch to new method name compute_rmw_writeback_data() with new calling and return signature.')
+    def compute_rmw_writeback_data(self, data, addr7, command_code, size, offset, word_size, is_readable=True, overwrite_others=False):
+        '''Read whole (atmoic) register. 
+        Replace any slices unrelated to the write slice based on each constituent bitfield's RWM value preference
+        Replace slice related to the write with the new data.
+
+        Parameters
+        ----------
+        data : int
+            Bitfield write data, right aligned.
+        addr7 : int
+            Chip address in 7-bit (no R/W bit) format.
+        command_code : int
+            Memory address of register/bitfield
+        size : int
+            Slice width of bitfield within register
+        offset : int
+            LSB position of bitfield slice within register
+        word_size : int
+            Register width
+        is_readable : bool
+            Does register have read access?
+        overwrite_others : bool
+            Skip readback. Instead assume register content is 0 before replacing slices.
+
+        Returns
+        -------
+        (int, int)
+            Register writeback data and command code tuple.
+
+        Raises
+        -------
+        Exception
+            Various consistency errors. Abnormal.
+        '''
+        # Step 1: get existing data across whole register width
         if data is None and word_size == 0:
             #send_byte
             pass
         elif data is None and word_size == -1:
             raise Exception('quick_cmd not yet fully implemented.')
         else:
-            data = int(data)
-            function = lambda: self._interface.read_register(addr7, command_code, word_size, self._PEC)
-            if size == word_size:
-                old_data = 0
-            else:
-                old_data = self._twi_try_function(function)
-                if old_data == None:
-                    print("i2c_write pre-read failed, not writing")
-                    return
-            assert word_size >= offset+size
-            mask = (2**size-1) << offset
-            mask_inv = (2**word_size-1) ^ mask
-            old_data = old_data & mask_inv
-            if data > 2**size-1:
-                oversize_data = data
-                data = 2**size-1
-                print("Data {} doesn't fit into register of size {}! Clipping at {}".format(oversize_data, size, data))
-            elif data < 0:
-                oversize_data = data
-                data = 0
-                print("Negative data {} not valid for register! Clipping at {}".format(oversize_data, data))
-            data = (data << offset) & mask
-            data = data | old_data
-            data &= 2**word_size-1 #necessary with offset/size assert?
-        return command_code, data
-    def _read_merge_write(self,data,addr7,command_code,size,offset,word_size,is_readable,overwrite_others):
-        if data is None and word_size == 0:
-            #send_byte
-            pass
-        elif data is None and word_size == -1:
-            raise Exception('quick_cmd not yet fully implemented.')
-        else:
-            data = int(data)
             function = lambda: self._interface.read_register(addr7, command_code, word_size, self._PEC)
             #read the data
             if size == word_size:
@@ -194,25 +224,50 @@ class twi_instrument(lab_core.instrument,lab_core.delegator):
             else:
                 old_data = self._twi_try_function(function)
                 if old_data == None:
-                    print("i2c_write pre-read failed, not writing")
-                    return
-            assert word_size >= offset+size
-            mask = (2**size-1) << offset
-            mask_inv = (2**word_size-1) ^ mask
-            old_data = old_data & mask_inv
-            if data > 2**size-1:
-                oversize_data = data
-                data = 2**size-1
-                print("Data {} doesn't fit into register of size {}! Clipping at {}".format(oversize_data, size, data))
-            elif data < 0:
-                oversize_data = data
-                data = 0
-                print("Negative data {} not valid for register! Clipping at {}".format(oversize_data, data))
-            data = (data << offset) & mask
-            data = data | old_data
-            data &= 2**word_size-1 #necessary with offset/size assert?
-        #write the data
-        self._twi_try_function(lambda: self._interface.write_register(addr7, command_code, data, word_size, self._PEC))
+                    # print("i2c_write pre-read failed, not writing")
+                    # return
+                    raise Exception("i2c_write pre-read failed, not writing") #todo specific exception?
+
+
+            # Step 2: modify old data according to register special access rules
+            bitfields = [bf for bf in self.get_all_channels_list() if bf.get_attribute('command_code') == command_code]
+            for bf in bitfields:
+                rmw_data = bf.compute_rmw_writeback_data(self._extract(data   = old_data,
+                                                                       size   = bf.get_attribute('size'),
+                                                                       offset = bf.get_attribute('offset')
+                                                                      )
+                                                        )
+                old_data = self._replace(bf_data   = rmw_data,
+                                         bf_size   = bf.get_attribute('size'),
+                                         bf_offset = bf.get_attribute('offset'),
+                                         reg_data  = old_data,
+                                         reg_size  = word_size
+                                         )
+            # Step 3: modify old data according to write value
+            data = int(data)
+            data =  self._replace(bf_data   = data,
+                                      bf_size   = size,
+                                      bf_offset = offset,
+                                      reg_data  = old_data,
+                                      reg_size  = word_size
+                                      )
+
+        return (data, command_code)
+    def _read_merge_write(self,data,addr7,command_code,size,offset,word_size,is_readable,overwrite_others):
+        new_data = self.compute_rmw_writeback_data(data = data,
+                                                  addr7 = addr7,
+                                                  command_code = command_code,
+                                                  size = size,
+                                                  offset = offset,
+                                                  word_size = word_size,
+                                                  is_readable=is_readable,
+                                                  overwrite_others=overwrite_others
+                                                 )
+        self._twi_try_function(lambda: self._interface.write_register(addr7 = addr7,
+                                                                      commandCode = new_data[1],
+                                                                      data = new_data[0],
+                                                                      data_size = word_size,
+                                                                      use_pec = self._PEC))
     def enable_cached_read(self, include_readable_registers=False):
         '''disable remote read of writable register and instead return cached previous write.
         only affects write-only register by default. include_readable_registers argument also includes read-write registers.'''
@@ -339,8 +394,6 @@ class twi_instrument(lab_core.instrument,lab_core.delegator):
                     register.set_description(description.text)
     
     def populate_from_yoda_json_bridge(self,filename,i2c_addr7,extended_addressing=False):
-        # print("Experimental Feature for Kirkwood, json bridge file format is in development")
-	# extended_addressing causes 
         with open(filename, 'r') as fp:
             registers = json.load(fp)
         for reg in registers:
@@ -361,6 +414,36 @@ class twi_instrument(lab_core.instrument,lab_core.delegator):
                 is_readable = "R" in bf['access']
                 is_writable = "W" in bf['access']
                 register = self.add_register(name,slave_addr,command_code,size,offset,word_size,is_readable,is_writable,overwrite_others)
+
+                
+                try:
+                    bf['writey_side_effect']
+                except KeyError as e:
+                    # Old schema
+                    pass
+                else:
+                    if bf['write_side_effect'] == 'None':
+                        pass
+                    elif bf['write_side_effect'] == 'OneToClear':
+                        assert is_readable, f'Unexpected W1C register without read access: {name}. Contact PyICe developers.'
+                        assert is_writable, f'Unexpected W1C register without write access: {name}. Contact PyICe developers.'
+                        register.set_special_access('W1C')
+                    elif bf['write_side_effect'] == 'OneToSet':
+                        assert is_readable, f'Unexpected W1S register without read access: {name}. Contact PyICe developers.'
+                        assert is_writable, f'Unexpected W1S register without write access: {name}. Contact PyICe developers.'
+                        register.set_special_access('W1S')
+                    elif bf['write_side_effect'] == 'ZeroToClear':
+                        assert is_readable, f'Unexpected W0C register without read access: {name}. Contact PyICe developers.'
+                        assert is_writable, f'Unexpected W0C register without write access: {name}. Contact PyICe developers.'
+                        register.set_special_access('W0C')
+                    elif bf['write_side_effect'] == 'ZeroToSet':
+                        assert is_readable, f'Unexpected W0S register without read access: {name}. Contact PyICe developers.'
+                        assert is_writable, f'Unexpected W0S register without write access: {name}. Contact PyICe developers.'
+                        register.set_special_access('W0S')
+                    elif bf['write_side_effect'] in ('OneToToggle', 'ZeroToToggle', 'Clear', 'Set'):
+                        raise Exception(f'Register side effect {bf["write_side_effect"]} not implemented. Contact PyICe developers.')
+                    else:
+                        raise Exception(f'Register side effect {bf["write_side_effect"]} unknown. Contact PyICe developers.')
                 try:
                     register.add_write_callback(self._interface.ivy_session._textwave)
                 except AttributeError as e:
@@ -438,19 +521,21 @@ class twi_instrument(lab_core.instrument,lab_core.delegator):
         return [(eval(point[0], eval_constants),eval(point[1], eval_constants)) for point in xypoints]
 
 class twi_register(lab_core.register):
-    def calculate_cc_merge_bf(self, bf_data):
-        addr = self.get_attribute('chip_address7')
-        cc = self.get_attribute('command_code')
-        offset = self.get_attribute('offset')
-        size = self.get_attribute('size')
-        word_size = self.get_attribute('word_size')
-        iface = next(iter(self.get_interfaces()))
-        old_data = iface.read_register(addr7=addr, commandCode=cc, data_size=word_size, use_pec=self.get_delegator()._PEC)
-        if bf_data > 2**size-1:
-            raise Exception(f"Bitfield data too large for bitfield of size = {size}")
-        new_data = old_data & ~((2**size-1)<<offset)
-        new_data = new_data | (bf_data<<offset)
-        return (new_data, cc)
+    pass
+    # 2024/05/07 DJS: This code appears unused. Prove me wrong.
+    # def calculate_cc_merge_bf(self, bf_data):
+    #     addr = self.get_attribute('chip_address7')
+    #     cc = self.get_attribute('command_code')
+    #     offset = self.get_attribute('offset')
+    #     size = self.get_attribute('size')
+    #     word_size = self.get_attribute('word_size')
+    #     iface = next(iter(self.get_interfaces()))
+    #     old_data = iface.read_register(addr7=addr, commandCode=cc, data_size=word_size, use_pec=self.get_delegator()._PEC)
+    #     if bf_data > 2**size-1:
+    #         raise Exception(f"Bitfield data too large for bitfield of size = {size}")
+    #     new_data = old_data & ~((2**size-1)<<offset)
+    #     new_data = new_data | (bf_data<<offset)
+    #     return (new_data, cc)
 
 class pmbus_instrument(twi_instrument):
     def __init__(self,interface_twi,except_on_i2cInitError=True,except_on_i2cCommError=False,retry_count=5,PEC=False):
