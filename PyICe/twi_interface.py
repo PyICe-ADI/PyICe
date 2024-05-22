@@ -2947,8 +2947,8 @@ class i2c_labcomm(twi_interface):
         payload += int.to_bytes(commandCode,                length=1, byteorder="big")
         payload += int.to_bytes(use_pec,                    length=1, byteorder="big")
         payload += int.to_bytes(data_size,                  length=1, byteorder="big") # Will be 8 or 16
-        payload += int.to_bytes(data>>8,                    length=1, byteorder="big") # Hi Byte
         payload += int.to_bytes(data&0xFF,                  length=1, byteorder="big") # Lo Byte
+        payload += int.to_bytes(data>>8,                    length=1, byteorder="big") # Hi Byte assuming WORD mode
         self.interface.write_raw(self.talker.assemble(source=self.src_id, destination=self.dest_id, payload=payload.decode(encoding=STR_ENCODING)))
     def read_register(self, addr7, commandCode, data_size, use_pec):
         payload  = int.to_bytes(self.SMBUS_READ_REGISTER,   length=1, byteorder="big") # Transaction hint for client
@@ -2958,7 +2958,7 @@ class i2c_labcomm(twi_interface):
         payload += int.to_bytes(data_size,                  length=1, byteorder="big") # Will be 8 or 16
         self.interface.write_raw(self.talker.assemble(source=self.src_id, destination=self.dest_id, payload=payload.decode(encoding=STR_ENCODING)))
         packet = self.parser.read_message()
-        return packet["payload"][1] * 256 + packet["payload"][0]
+        return packet["payload"][1] * 256 if data_size==16 else 0 + packet["payload"][0]
     def receive_byte(self, addr7, use_pec=False):  #TODO PyICe is broken here, needs to support receive_byte with Pec
         payload  = int.to_bytes(self.SMBUS_RECEIVE_BYTE,    length=1, byteorder="big") # Transaction hint for client
         payload += int.to_bytes(addr7,                      length=1, byteorder="big")
