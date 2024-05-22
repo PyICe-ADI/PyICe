@@ -228,9 +228,16 @@ class twi_instrument(lab_core.instrument,lab_core.delegator):
                     # return
                     raise Exception("i2c_write pre-read failed, not writing") #todo specific exception?
 
-
             # Step 2: modify old data according to register special access rules
-            bitfields = [bf for bf in self.get_all_channels_list() if bf.get_attribute('command_code') == command_code]
+
+            bitfields = []
+            for each_channel in self.get_all_channels_list():
+                try:
+                    if each_channel.get_attribute('command_code') == command_code:
+                        bitfields.append(each_channel)
+                except lab_core.ChannelAttributeException as e:
+                    # Not a real bitfield
+                    pass
             for bf in bitfields:
                 rmw_data = bf.compute_rmw_writeback_data(self._extract(data   = old_data,
                                                                        size   = bf.get_attribute('size'),
