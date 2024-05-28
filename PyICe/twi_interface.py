@@ -2938,9 +2938,9 @@ class i2c_labcomm(twi_interface):
             payload += int.to_bytes(value,                      length=1, byteorder="big")
         self.interface.write_raw(self.talker.assemble(source=self.src_id, destination=self.dest_id, payload=payload.decode(encoding=STR_ENCODING)))
         packet = self.parser.read_message()
-        # sorted_cc_list = sorted(list(set(command_codes)))
-        # results_dict = {cc: ChannelReadException('listread unknown err') for cc in sorted_cc_list } # Start with results dictionary filled with ChannelReadException(s).
-        return dict(list(zip(command_codes, [byte for byte in packet["payload"]]))) # TODO - WON'T Work with Words!!!!
+        status = packet["payload"][0]
+        registers = packet["payload"][1:] # Remaining bytes after status byte
+        return dict(list(zip(command_codes, [byte for byte in registers]))) # TODO - WON'T Work with Words!!!!
     def write_register(self, addr7, commandCode, data, data_size, use_pec):
         payload  = int.to_bytes(self.SMBUS_WRITE_REGISTER,  length=1, byteorder="big") # Transaction hint for client
         payload += int.to_bytes(addr7,                      length=1, byteorder="big")
@@ -2950,6 +2950,8 @@ class i2c_labcomm(twi_interface):
         payload += int.to_bytes(data&0xFF,                  length=1, byteorder="big") # Lo Byte
         payload += int.to_bytes(data>>8,                    length=1, byteorder="big") # Hi Byte assuming WORD mode
         self.interface.write_raw(self.talker.assemble(source=self.src_id, destination=self.dest_id, payload=payload.decode(encoding=STR_ENCODING)))
+        packet = self.parser.read_message()
+        status = packet["payload"][0]
     def read_register(self, addr7, commandCode, data_size, use_pec):
         payload  = int.to_bytes(self.SMBUS_READ_REGISTER,   length=1, byteorder="big") # Transaction hint for client
         payload += int.to_bytes(addr7,                      length=1, byteorder="big")
@@ -2958,7 +2960,8 @@ class i2c_labcomm(twi_interface):
         payload += int.to_bytes(data_size,                  length=1, byteorder="big") # Will be 8 or 16
         self.interface.write_raw(self.talker.assemble(source=self.src_id, destination=self.dest_id, payload=payload.decode(encoding=STR_ENCODING)))
         packet = self.parser.read_message()
-        return (packet["payload"][1] * 256 if data_size==16 else 0) + packet["payload"][0]
+        status = packet["payload"][0]
+        return (packet["payload"][2] * 256 if data_size==16 else 0) + packet["payload"][1]
     def receive_byte(self, addr7, use_pec=False):  #TODO PyICe is broken here, needs to support receive_byte with Pec
         payload  = int.to_bytes(self.SMBUS_RECEIVE_BYTE,    length=1, byteorder="big") # Transaction hint for client
         payload += int.to_bytes(addr7,                      length=1, byteorder="big")
@@ -2967,7 +2970,8 @@ class i2c_labcomm(twi_interface):
         payload += int.to_bytes(8,                          length=1, byteorder="big") # One byte is 8 bits
         self.interface.write_raw(self.talker.assemble(source=self.src_id, destination=self.dest_id, payload=payload.decode(encoding=STR_ENCODING)))
         packet = self.parser.read_message()
-        return packet["payload"][0]
+        status = packet["payload"][0]
+        return packet["payload"][1]
     def read_word_pec(self, addr7, commandCode):
         print("read_word_pec in twi_interface unimplemented.")
         # return data16
