@@ -2917,36 +2917,28 @@ class i2c_labcomm(twi_interface):
         # ---------------------------------------------------------------
         # Payload Byte Positions
         # [TRANSACTION TYPE or COMMAND][ADDR7][COMMAND CODE][USE PEC][DATA SIZE(Bits)][REG 1][REG 2][REG 3]...
-        self.TRANSACTION_TYPE           = 0 # See table above
-        self.ADDR7                      = 1 # Target 7-bit address
-        self.COMMAND_CODE               = 2 # Command code
-        self.USE_PEC                    = 3 # Expect 1 or 0
-        self.DATA_SIZE                  = 4 # Should be 8 or 16
-        self.START_OF_DATA_IN           = 5 # Data goes from here to remainder of the payload
+        self.TRANSACTION_TYPE   = 0 # See table above
+        self.ADDR7              = 1 # Target 7-bit address
+        self.COMMAND_CODE       = 2 # Command code
+        self.USE_PEC            = 3 # Expect 1 or 0
+        self.DATA_SIZE          = 4 # Should be 8 or 16
+        self.START_OF_DATA_IN   = 5 # Data goes from here to remainder of the payload
         # ---------------------------------------------------------------
-        self.ERROR_CODE_SMBUS_SUCCESS                   = 0   # Transaction Successful!!!
-        self.ERROR_CODE_SMBUS_UNIMPLEMENTED             = 1   # Requested Transaction Unimplemented
-        self.ERROR_CODE_SMBUS_START_STOP_ERROR          = 2   # Failure During a Start or Stop (Stuck Bus?)
-        self.ERROR_CODE_SMBUS_WRITE_ADDRESS_ACK_ERROR   = 3   # Acknowledge Error On Write Address
-        self.ERROR_CODE_SMBUS_READ_ADDRESS_ACK_ERROR    = 4   # Acknowledge Error On Read Address
-        self.ERROR_CODE_SMBUS_COMMAND_CODE_ACK_ERROR    = 5   # Acknowledge Error On Command Code
-        self.ERROR_CODE_SMBUS_DATA_LOW_ACK_ERROR        = 6   # Acknowledge Error On Data Low
-        self.ERROR_CODE_SMBUS_DATA_HIGH_ACK_ERROR       = 7   # Acknowledge Error On Data High
-        self.ERROR_CODE_SMBUS_PEC_VALUE_ERROR           = 8   # Wrong PEC value Error
-        self.ERROR_CODE_SMBUS_PEC_ACK_ERROR             = 9   # Wrong PEC value Error
-        self.ERROR_CODE_SMBUS_UNKNOWN_ERROR             = 10  # Unknown Error (Too onerous to specify)
+        self.ERROR_CODE_SMBUS_SUCCESS           = 0
+        self.ERROR_CODE_SMBUS_NACK_ON_ADDRESS   = 1
+        self.ERROR_CODE_SMBUS_NACK_ON_DATA      = 2
+        self.ERROR_CODE_SMBUS_PEC_VALUE_ERROR   = 4
+        self.ERROR_CODE_SMBUS_SMBUS_TIMEOUT     = 8
+        self.ERROR_CODE_SMBUS_BUFFER_OVERFLOW   = 16
+        self.ERROR_CODE_SMBUS_UNKNOWN_ERROR     = 32 # Catch all, includes timeout.
     def raise_twi_error(self, code, command_code):
-        if code==self.ERROR_CODE_SMBUS_SUCCESS:                  pass
-        if code==self.ERROR_CODE_SMBUS_UNIMPLEMENTED:            raise i2cUnimplementedError(f"Labcomm tried to perform something unimplemented at command cocde: {command_code}.")
-        if code==self.ERROR_CODE_SMBUS_START_STOP_ERROR:         raise i2cStartStopError(f"Labcomm had a START or STOP error at command code: {command_code}.")
-        if code==self.ERROR_CODE_SMBUS_WRITE_ADDRESS_ACK_ERROR:  raise i2cWriteAddressAcknowledgeError(f"Labcomm had a Write ACK error at command code: {command_code}.")
-        if code==self.ERROR_CODE_SMBUS_READ_ADDRESS_ACK_ERROR:   raise i2cReadAddressAcknowledgeError(f"Labcomm had a Read ACK error at command code: {command_code}.")
-        if code==self.ERROR_CODE_SMBUS_COMMAND_CODE_ACK_ERROR:   raise i2cCommandCodeAcknowledgeError(f"Labcomm had a Command Code ACK error at command code: {command_code}.")
-        if code==self.ERROR_CODE_SMBUS_DATA_LOW_ACK_ERROR:       raise i2cDataLowAcknowledgeError(f"Labcomm had a Data Low ACK error at command code: {command_code}.")
-        if code==self.ERROR_CODE_SMBUS_DATA_HIGH_ACK_ERROR:      raise i2cDataHighAcknowledgeError(f"Labcomm had a Data High ACK error at command code: {command_code}.")
-        if code==self.ERROR_CODE_SMBUS_PEC_VALUE_ERROR:          raise i2cPECError(f"Labcomm had a PEC Value error at command code: {command_code}.")
-        if code==self.ERROR_CODE_SMBUS_PEC_ACK_ERROR:            raise i2cDataPECAcknowledgeError(f"Labcomm had a PEC ACK error at command code: {command_code}.")
-        if code==self.ERROR_CODE_SMBUS_UNKNOWN_ERROR:            raise i2cIOError(f"Labcomm had an unknown error at command code: {command_code}.")
+        if code==self.ERROR_CODE_SMBUS_SUCCESS:             pass
+        if code & self.ERROR_CODE_SMBUS_NACK_ON_ADDRESS:    raise i2cWriteAddressAcknowledgeError(f"Labcomm had a NACK on address error at command code: {command_code}.")
+        if code & self.ERROR_CODE_SMBUS_NACK_ON_DATA:       raise i2cDataLowAcknowledgeError(f"Labcomm had a NACK on Data error at command code: {command_code}.")
+        if code & self.ERROR_CODE_SMBUS_PEC_VALUE_ERROR:    raise i2cPECError(f"Labcomm had a PEC Value error at command code: {command_code}.")
+        if code & self.ERROR_CODE_SMBUS_SMBUS_TIMEOUT:      raise i2cIOError(f"Labcomm had an a timeout error command code: {command_code}.")
+        if code & self.ERROR_CODE_SMBUS_BUFFER_OVERFLOW:    raise i2cIOError(f"Labcomm had an firmware buffer overflow error at command code: {command_code}.")
+        if code & self.ERROR_CODE_SMBUS_UNKNOWN_ERROR:      raise i2cIOError(f"Labcomm had an unknown error at command code: {command_code}.")
     def set_source_id(self, src_id):
         self.src_id = src_id
     def set_destination_id(self, dest_id):
@@ -2961,8 +2953,8 @@ class i2c_labcomm(twi_interface):
             payload += int.to_bytes(value,                      length=1, byteorder="big")
         self.interface.write_raw(self.talker.assemble(source=self.src_id, destination=self.dest_id, payload=payload.decode(encoding=STR_ENCODING)))
         packet = self.parser.read_message()
-        self.raise_twi_error(code=packet["payload"][0], command_code=command_codes[0]) # Just grab the first in the list?
-        registers = packet["payload"][1:] # Remaining bytes after status byte
+        self.raise_twi_error(code=packet["payload"][0], command_code=command_codes[-1:]) # Just report the last in the list?
+        registers = packet["payload"][1:] # Keep all remaining bytes after the status byte
         return dict(list(zip(command_codes, [byte for byte in registers]))) # TODO - WON'T Work with Words!!!!
     def write_register(self, addr7, commandCode, data, data_size, use_pec):
         payload  = int.to_bytes(self.SMBUS_WRITE_REGISTER,  length=1, byteorder="big") # Transaction hint for client
