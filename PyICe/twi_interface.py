@@ -2917,13 +2917,28 @@ class i2c_labcomm(twi_interface):
         # ---------------------------------------------------------------
         # Payload Byte Positions
         # [TRANSACTION TYPE or COMMAND][ADDR7][COMMAND CODE][USE PEC][DATA SIZE(Bits)][REG 1][REG 2][REG 3]...
-        self.TRANSACTION_TYPE           = 0 # See table above
-        self.ADDR7                      = 1 # Target 7-bit address
-        self.COMMAND_CODE               = 2 # Command code
-        self.USE_PEC                    = 3 # Expect 1 or 0
-        self.DATA_SIZE                  = 4 # Should be 8 or 16
-        self.START_OF_DATA_IN           = 5 # Data goes from here to remainder of the payload
+        self.TRANSACTION_TYPE   = 0 # See table above
+        self.ADDR7              = 1 # Target 7-bit address
+        self.COMMAND_CODE       = 2 # Command code
+        self.USE_PEC            = 3 # Expect 1 or 0
+        self.DATA_SIZE          = 4 # Should be 8 or 16
+        self.START_OF_DATA_IN   = 5 # Data goes from here to remainder of the payload
         # ---------------------------------------------------------------
+        self.ERROR_CODE_SMBUS_SUCCESS           = 0
+        self.ERROR_CODE_SMBUS_NACK_ON_ADDRESS   = 1
+        self.ERROR_CODE_SMBUS_NACK_ON_DATA      = 2
+        self.ERROR_CODE_SMBUS_PEC_VALUE_ERROR   = 4
+        self.ERROR_CODE_SMBUS_SMBUS_TIMEOUT     = 8
+        self.ERROR_CODE_SMBUS_BUFFER_OVERFLOW   = 16
+        self.ERROR_CODE_SMBUS_UNKNOWN_ERROR     = 32 # Catch all, includes timeout.
+    def raise_twi_error(self, code, command_code):
+        if code==self.ERROR_CODE_SMBUS_SUCCESS:             pass
+        if code & self.ERROR_CODE_SMBUS_NACK_ON_ADDRESS:    raise i2cWriteAddressAcknowledgeError(f"Labcomm had a NACK on address error at command code: {command_code}.")
+        if code & self.ERROR_CODE_SMBUS_NACK_ON_DATA:       raise i2cDataLowAcknowledgeError(f"Labcomm had a NACK on Data error at command code: {command_code}.")
+        if code & self.ERROR_CODE_SMBUS_PEC_VALUE_ERROR:    raise i2cPECError(f"Labcomm had a PEC Value error at command code: {command_code}.")
+        if code & self.ERROR_CODE_SMBUS_SMBUS_TIMEOUT:      raise i2cIOError(f"Labcomm had an a timeout error command code: {command_code}.")
+        if code & self.ERROR_CODE_SMBUS_BUFFER_OVERFLOW:    raise i2cIOError(f"Labcomm had an firmware buffer overflow error at command code: {command_code}.")
+        if code & self.ERROR_CODE_SMBUS_UNKNOWN_ERROR:      raise i2cIOError(f"Labcomm had an unknown error at command code: {command_code}.")
     def set_source_id(self, src_id):
         self.src_id = src_id
     def set_destination_id(self, dest_id):
@@ -2938,9 +2953,9 @@ class i2c_labcomm(twi_interface):
             payload += int.to_bytes(value,                      length=1, byteorder="big")
         self.interface.write_raw(self.talker.assemble(source=self.src_id, destination=self.dest_id, payload=payload.decode(encoding=STR_ENCODING)))
         packet = self.parser.read_message()
-        # sorted_cc_list = sorted(list(set(command_codes)))
-        # results_dict = {cc: ChannelReadException('listread unknown err') for cc in sorted_cc_list } # Start with results dictionary filled with ChannelReadException(s).
-        return dict(list(zip(command_codes, [byte for byte in packet["payload"]]))) # TODO - WON'T Work with Words!!!!
+        self.raise_twi_error(code=packet["payload"][0], command_code=command_codes[-1:]) # Just report the last in the list?
+        registers = packet["payload"][1:] # Keep all remaining bytes after the status byte
+        return dict(list(zip(command_codes, [byte for byte in registers]))) # TODO - WON'T Work with Words!!!!
     def write_register(self, addr7, commandCode, data, data_size, use_pec):
         payload  = int.to_bytes(self.SMBUS_WRITE_REGISTER,  length=1, byteorder="big") # Transaction hint for client
         payload += int.to_bytes(addr7,                      length=1, byteorder="big")
@@ -2950,6 +2965,8 @@ class i2c_labcomm(twi_interface):
         payload += int.to_bytes(data&0xFF,                  length=1, byteorder="big") # Lo Byte
         payload += int.to_bytes(data>>8,                    length=1, byteorder="big") # Hi Byte assuming WORD mode
         self.interface.write_raw(self.talker.assemble(source=self.src_id, destination=self.dest_id, payload=payload.decode(encoding=STR_ENCODING)))
+        packet = self.parser.read_message()
+        self.raise_twi_error(code=packet["payload"][0], command_code=commandCode)
     def read_register(self, addr7, commandCode, data_size, use_pec):
         payload  = int.to_bytes(self.SMBUS_READ_REGISTER,   length=1, byteorder="big") # Transaction hint for client
         payload += int.to_bytes(addr7,                      length=1, byteorder="big")
@@ -2958,7 +2975,8 @@ class i2c_labcomm(twi_interface):
         payload += int.to_bytes(data_size,                  length=1, byteorder="big") # Will be 8 or 16
         self.interface.write_raw(self.talker.assemble(source=self.src_id, destination=self.dest_id, payload=payload.decode(encoding=STR_ENCODING)))
         packet = self.parser.read_message()
-        return (packet["payload"][1] * 256 if data_size==16 else 0) + packet["payload"][0]
+        self.raise_twi_error(code=packet["payload"][0], command_code=commandCode)
+        return (packet["payload"][2] * 256 if data_size==16 else 0) + packet["payload"][1]
     def receive_byte(self, addr7, use_pec=False):  #TODO PyICe is broken here, needs to support receive_byte with Pec
         payload  = int.to_bytes(self.SMBUS_RECEIVE_BYTE,    length=1, byteorder="big") # Transaction hint for client
         payload += int.to_bytes(addr7,                      length=1, byteorder="big")
@@ -2967,7 +2985,8 @@ class i2c_labcomm(twi_interface):
         payload += int.to_bytes(8,                          length=1, byteorder="big") # One byte is 8 bits
         self.interface.write_raw(self.talker.assemble(source=self.src_id, destination=self.dest_id, payload=payload.decode(encoding=STR_ENCODING)))
         packet = self.parser.read_message()
-        return packet["payload"][0]
+        self.raise_twi_error(code=packet["payload"][0], command_code=None)
+        return packet["payload"][1]
     def read_word_pec(self, addr7, commandCode):
         print("read_word_pec in twi_interface unimplemented.")
         # return data16
