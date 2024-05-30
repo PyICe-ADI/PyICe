@@ -2,7 +2,7 @@
 SMBus Interface Hardware Drivers
 ================================
 '''
-import time, random, abc
+import time, random, abc, itertools
 from PyICe import visa_wrappers
 try:
     import serial
@@ -2943,6 +2943,13 @@ class i2c_labcomm(twi_interface):
         self.src_id = src_id
     def set_destination_id(self, dest_id):
         self.dest_id = dest_id
+    def bytes_grouper(self, iterable, size):
+        '''will return either:
+                                [command_code, [status, Lo-byte]]
+                                [command_code, [status, Lo-byte, Hi-byte]]
+        '''
+        args = [iter(iterable)] * size
+        return list(itertools.zip_longest(fillvalue=None, *args))
     def read_register_list(self, addr7, command_codes, data_size, use_pec):
         payload  = int.to_bytes(self.SET_REG_LIST_AND_READ_LIST,length=1, byteorder="big")  # Transaction hint for client
         payload += int.to_bytes(addr7,                          length=1, byteorder="big")
@@ -2950,12 +2957,22 @@ class i2c_labcomm(twi_interface):
         payload += int.to_bytes(use_pec,                        length=1, byteorder="big")
         payload += int.to_bytes(data_size,                      length=1, byteorder="big")  # Will be 8 or 16
         for value in command_codes:                                                         # Use the extensible data field for the list
-            payload += int.to_bytes(value,                      length=1, byteorder="big")
+            payload += int.to_bytes(value&0xFF,                 length=1, byteorder="big")  # Lo Byte
+            if data_size==16:
+                payload += int.to_bytes(value>>8,               length=1, byteorder="big")  # Hi Byte assuming WORD mode
         self.interface.write_raw(self.talker.assemble(source=self.src_id, destination=self.dest_id, payload=payload.decode(encoding=STR_ENCODING)))
         packet = self.parser.read_message()
-        self.raise_twi_error(code=packet["payload"][0], command_code=command_codes[-1:]) # Just report the last in the list?
-        registers = packet["payload"][1:] # Keep all remaining bytes after the status byte
-        return dict(list(zip(command_codes, [byte for byte in registers]))) # TODO - WON'T Work with Words!!!!
+        #┌────────┬──────────┬───────────┬┬────────┬──────────┬───────────┬┬─────┐
+        #│ STATUS │ DATA LOW │[DATA HIGH]││ STATUS │ DATA LOW │[DATA HIGH]││ ... │
+        #└────────┴──────────┴───────────┴┴────────┴──────────┴───────────┴┴─────┘
+        values = []
+        for group in zip(command_codes, self.bytes_grouper(packet["payload"], size=2 if data_size==8 else 3)):
+            data = group[1][1]                  # Grab the Lo-byte
+            if data_size==16:
+                data += group[1][2] * 256       # Grab the Hi-byte for Words
+            values.append(data)
+            self.raise_twi_error(code=group[1][0], command_code=group[0])
+        return dict(list(zip(command_codes, values)))
     def write_register(self, addr7, commandCode, data, data_size, use_pec):
         payload  = int.to_bytes(self.SMBUS_WRITE_REGISTER,  length=1, byteorder="big") # Transaction hint for client
         payload += int.to_bytes(addr7,                      length=1, byteorder="big")
@@ -2963,7 +2980,8 @@ class i2c_labcomm(twi_interface):
         payload += int.to_bytes(use_pec,                    length=1, byteorder="big")
         payload += int.to_bytes(data_size,                  length=1, byteorder="big") # Will be 8 or 16
         payload += int.to_bytes(data&0xFF,                  length=1, byteorder="big") # Lo Byte
-        payload += int.to_bytes(data>>8,                    length=1, byteorder="big") # Hi Byte assuming WORD mode
+        if data_size==16:
+            payload += int.to_bytes(data>>8,                length=1, byteorder="big") # Hi Byte assuming WORD mode
         self.interface.write_raw(self.talker.assemble(source=self.src_id, destination=self.dest_id, payload=payload.decode(encoding=STR_ENCODING)))
         packet = self.parser.read_message()
         self.raise_twi_error(code=packet["payload"][0], command_code=commandCode)
