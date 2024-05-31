@@ -2028,9 +2028,7 @@ class background_worker(QtCore.QThread):
             if self.run_loop_has_quit:
                 return
         debug_logging.info("\nlab_gui.background_worker.close() timed out waiting for \n"
-                           "PyICe GUI's background worker thread to quit. This is\n"
-                           "normal if you're using Adice/Ivy and you closed the PyICe GUI\n"
-                           "while the PyICe GUI is waiting to read from the Ivy socket.")
+                           "PyICe GUI's background worker thread to quit.\n")
 
 class ltc_lab_gui_main_window(QtWidgets.QMainWindow):
     SI_request_background_call = QtCore.Signal(object)
