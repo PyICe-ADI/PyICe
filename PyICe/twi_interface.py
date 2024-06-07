@@ -2956,10 +2956,8 @@ class i2c_labcomm(twi_interface):
         payload += int.to_bytes(0,                              length=1, byteorder="big")  # Placeholder COMMAND_CODE not used on list read
         payload += int.to_bytes(use_pec,                        length=1, byteorder="big")
         payload += int.to_bytes(data_size,                      length=1, byteorder="big")  # Will be 8 or 16
-        for value in command_codes:                                                         # Use the extensible data field for the list
-            payload += int.to_bytes(value&0xFF,                 length=1, byteorder="big")  # Lo Byte
-            if data_size==16:
-                payload += int.to_bytes(value>>8,               length=1, byteorder="big")  # Hi Byte assuming WORD mode
+        for command_code in command_codes:                                                  # Use the extensible data field for the list
+            payload += int.to_bytes(command_code,               length=1, byteorder="big")
         self.interface.write_raw(self.talker.assemble(source=self.src_id, destination=self.dest_id, payload=payload.decode(encoding=STR_ENCODING)))
         packet = self.parser.read_message()
         #┌────────┬──────────┬───────────┬┬────────┬──────────┬───────────┬┬─────┐
