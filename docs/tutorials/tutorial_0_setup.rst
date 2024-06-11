@@ -41,7 +41,7 @@ You will need to complete the following steps:
     * Create a working folder, perhaps in C:/users/<*yourname*>/projects/
     * Using a cmd window, navigate to this new folder and type **python -m venv pyice-env**
 
-#. Git clone PyICe from https://github.com/Xenomorphxx121/PyICe into a folder, perhaps into C:/users/<*yourname*>/projects/
+#. Git clone PyICe from https://github.com/PyICe-ADI/PyICe into a folder, perhaps into C:/users/<*yourname*>/projects/
     * This will create a folder called *pyice-adi* there
     
 #. Now we need to activate this environment. We can use the current cmd shell by typing: **.\\pyice-env\\Scripts\\activate**
