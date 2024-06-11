@@ -141,7 +141,7 @@ class Master_test_template():
         raise("Test scripts requires a correlate_results method.")
     def correlate_test_result(self, name, data, key_conditions):
         self._test_results.test_info[name]=self.get_correlation_test_info(name)
-        self._test_results._register_correlation_result(name, data, key_conditions): # TODO conditions
+        self._test_results._register_correlation_result(name, data, key_conditions)
     def get_correlation_data_scalar(self, REFID, data, key_conditions):
         '''Must return a value from an outside data source associated with the REFID named and matching key_conditions in the data provided.'''
         raise Exception("MASTER TEST TEMPLATE ERROR: This project indicated a use of the CORRELATION plugin but no project specific 'get_correlation_data_scalar' method was provided.")
