@@ -21,7 +21,7 @@ class Default_channel_checks():
             self._count+=1
 
     def abort(self, channel_name, readings, test):
-    '''A standard action that will crash the running test if the reading of the assigned channel fails the condition defined at initiation.'''
+        '''A standard action that will crash the running test if the reading of the assigned channel fails the condition defined at initiation.'''
         if self.condition(readings[channel_name]):
             pass
         else:
