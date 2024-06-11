@@ -30,33 +30,34 @@ class Bench_maker():
             except ImportError as e:
                 print(e)
                 raise Exception(f"Can't find bench file {thismachine}. Note that dashes must be replaced with underscores.")
-        instruments = module.get_instruments()
+        interfaces = module.get_interfaces()
         for (dirpath, dirnames, filenames) in os.walk(self.path):
             if 'hardware_drivers' not in dirpath: continue
             driverpath = dirpath.replace('\\', '.')
             driverpath = driverpath[driverpath.index(self.path.split('\\')[-1]):]
             for driver in filenames:
                 driver_mod = importlib.import_module(name=driverpath+'.'+driver[:-3], package=None)
-                instrument_dict = driver_mod.populate(instruments)
-                if instrument_dict['instrument'] is not None:
-                    self.master.add(instrument_dict['instrument'])
+                instrument_dict = driver_mod.populate(interfaces)
+                if instrument_dict['instruments'] is not None:
+                    for instrument in instrument_dict['instruments']:
+                        self.master.add(instrument)
                     if 'cleanup_list' in instrument_dict:
                         for fn in instrument_dict['cleanup_list']:
                             self.cleanup_fns.append(fn)
                     if 'temp_control_channel' in instrument_dict:
                         if self.temperature_channel == None:
                             self.temperature_channel = instrument_dict['temp_control_channel']
-                            temp_instrument = instrument_dict['instrument']
+                            temp_instrument = instrument_dict['instruments']
                         else:
-                            raise Exception(f'BENCH MAKER: Multiple channels have been declared the temperature control! One from {temp_instrument} and one from {instrument_dict["instrument"]}.')
+                            raise Exception(f'BENCH MAKER: Multiple channels have been declared the temperature control! One from {temp_instrument} and one from {instrument_dict["instruments"]}.')
                     if 'special_channel_action' in instrument_dict:
                         overwrite_check = [i.get_name() for i in instrument_dict['special_channel_action'] if i in self.special_channel_actions]
                         if overwrite_check:
                             raise Exception(f'BENCH MAKER: Multiple actions have been declared for channel(s) {overwrite_check}.')
                         self.special_channel_actions.update(instrument_dict['special_channel_action'])
-                    
             break
         
-        self.temperature_channel = self.master.add_channel_dummy('dummy_temp')
+        self.temperature_channel = self.master.add_channel_dummy('tdegc')
+        self.temperature_channel.write(25)
             
     
