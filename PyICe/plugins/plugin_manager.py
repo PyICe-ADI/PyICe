@@ -81,7 +81,8 @@ class plugin_manager():
                         test._reconfigure()
                         test.collect()
                         test._restore()
-                    except Exception:
+                    except Exception as e:
+                        print(e)
                         test._is_crashed = True
         else:
             assert self.this_bench.temperature_channel != None
