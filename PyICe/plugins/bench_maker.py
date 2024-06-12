@@ -59,5 +59,3 @@ class Bench_maker():
         
         self.temperature_channel = self.master.add_channel_dummy('tdegc')
         self.temperature_channel.write(25)
-            
-    
