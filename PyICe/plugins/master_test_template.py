@@ -155,25 +155,18 @@ class Master_test_template():
     # METHODS CALLED BY USER TO INTITIATE ACTIONS
     ###
     @classmethod
-    def run(cls, temperatures=[]):
+    def run(cls, temperatures=[], debug=False):
         '''A class method so the user can start a test at the test level without first having to instantiate it. This will make a logger, collect a full set of data, and execute any plugins added to the project.'''
         temperatures = [] if temperatures == None else temperatures 
         cls.pm = plugin_manager()
         cls.pm.add_test(cls)
-        cls.pm.run(temperatures, debug=False)
-    @classmethod
-    def debug(cls, temperatures=[]):
-        '''A class method so the user can start a test at the test level without first having to instantiate it. This will make a logger, collect an abridged set of data determined by the test itself, and execute any plugins added to the project.'''
-        temperatures = [] if temperatures == None else temperatures 
-        cls.pm = plugin_manager()
-        cls.pm.add_test(cls)
-        cls.pm.run(temperatures, debug=True)
+        cls.pm.run(temperatures, debug=debug)
     @classmethod
     def collect_only(cls, temperatures=[]):
         '''A class method so the user can start a test at the test level without first having to instantiate it. This will make a logger and collect a full set of data, but will skip any plugins added that typically run after collect.'''
         cls.pm = plugin_manager()
         cls.pm.add_test(cls)
-        cls.pm.collect(temperatures, debug)    
+        cls.pm.collect(temperatures)
     @classmethod
     def plot_only(cls, database=None, table_name=None):
         '''A class method so the user can start a test at the test level without first having to instantiate it. This will make a plot based on the last set of data collected in the database adjacent to the test script.'''
