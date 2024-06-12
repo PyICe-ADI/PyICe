@@ -63,6 +63,8 @@ class Master_test_template():
         self._logger.merge_in_channel_group(master.get_flat_channel_group())
         self.customize()
         self._logger.new_table(table_name=self.name, replace_table=True)
+    def get_channels(self):
+        return self._logger
     def _reconfigure(self):
         '''save channel setting before writing to value'''
         for (ch, old, new) in self._channel_reconfiguration_settings:
