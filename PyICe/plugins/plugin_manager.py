@@ -1,31 +1,26 @@
-from PyICe.plugins.bench_maker import Bench_maker
-from PyICe.lab_utils.sqlite_data import sqlite_data
-from PyICe.lab_utils.banners    import print_banner
-from PyICe import virtual_instruments, lab_utils
 from PyICe.bench_configuration_management.bench_configuration_management import component_collection, connection_collection
+from PyICe.lab_utils.sqlite_data import sqlite_data
+from PyICe.plugins.bench_maker import Bench_maker
+from PyICe import virtual_instruments, lab_utils
+from PyICe.lab_utils.banners import print_banner
 from PyICe.plugins import test_archive
-import os
-import importlib
-import datetime
+import os, importlib, datetime
 
 class plugin_manager():
     def __init__(self):
         self.tests = []
-        self.used_plugins=[]
 
     def find_plugins(self, a_test):
         '''This is called the first time a test is added to the plugin manager. An instance of a test is needed to locate the project path. This facilitates users starting from an individual test and getting all the chosen plugins.'''
         for (dirpath, dirnames, filenames) in os.walk(a_test._project_path):
-            if 'plugins_registry.py' not in filenames: 
-                continue
-            pluginpath = dirpath.replace('\\', '.')
-            pluginpath = pluginpath[pluginpath.index(a_test._project_path.split('\\')[-1]):]
-            module = importlib.import_module(name=pluginpath+'.plugins_registry', package=None)
-            self.used_plugins = module.get_plugins()
-            if self.verbose:
-                for plugin in self.used_plugins:
-                    print_banner(f'PYICE PLUGIN_MANAGER: Plugin found {plugin}')
-            break
+            if 'plugins_registry.py' in filenames: 
+                pluginpath = dirpath.replace('\\', '.')
+                pluginpath = pluginpath[pluginpath.index(a_test._project_path.split('\\')[-1]):]
+                module = importlib.import_module(name=pluginpath+'.plugins_registry', package=None)
+                self.used_plugins = module.get_plugins()
+                if self.verbose:
+                    for plugin in self.used_plugins:
+                        print_banner(f'PYICE PLUGIN_MANAGER Plugin found: "{plugin}".')
 
     def add_test(self, test):
         '''Adds a script to the list that will be operated on. If this is the first time a test is added to this instance of plugin manager, plugin manager also takes this opportunity to acquire global data from the project.'''
@@ -40,28 +35,30 @@ class plugin_manager():
             self.find_plugins(a_test)
         a_test._is_crashed = False
 
-
     def run(self, temperatures, debug):
         '''This method goes through the complete data collection process the project set out. Scripts will be run once per temperature or just once if no temperature is given. Debug will be passed on to the script to be used at the script's discretion.'''
         self.collect(temperatures, debug)
-        if 'plotting' in self.used_plugins:
-            self.plot()
-        if 'evaluate_tests' in self.used_plugins:
-            self.evaluate()
-        if 'archive' in self.used_plugins:
-            self._archive()
-            
-            
+        if hasattr(self, "used_plugins"):
+            if 'plotting' in self.used_plugins:
+                self.plot()
+            if 'evaluate_tests' in self.used_plugins:
+                self.evaluate()
+            if 'archive' in self.used_plugins:
+                self._archive()
+        else:
+            print_banner("No plugins registered, we're done here...")
+
+
             ## THERE WILL BE MORE POST-COLLECT PLUGINS
-            
-            
+
+
     def collect(self, temperatures, debug):
         '''This method aggregates the channels that will be logged and calls the collect method in every test added via self.add_test over every temperature indicated via argument. If debug is set to True, this will be passed on to the script. This variable can be used in scripts to trigger shorter loops or fewer conditions under which to gather data to verify script completeness.'''
         self.this_bench = Bench_maker(self._project_path)
         self.this_bench.make_bench()
         for test in self.tests:
             test._create_logger(self.this_bench.master, self.this_bench.special_channel_actions)
-            if 'bench_config_management' in self.used_plugins:
+            if 'bench_config_management' in self.used_plugins: # TODO will bomb if no used_plugins list
                 test_components =component_collection()
                 test_connections = connection_collection(name="test_connections")
                 test._declare_bench_connections(test_components, test_connections)
