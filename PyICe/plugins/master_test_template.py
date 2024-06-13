@@ -82,7 +82,7 @@ class Master_test_template():
         _master = lab_core.master()
         self._metalogger = lab_core.logger(database=self._db_file)
         self._metalogger.add(_master)
-        self.traceability_items = self._get_metadata_gathering_fns().get_traceability_items()
+        self.traceability_items = self._get_metadata_gathering_fns().get_traceability_items(test=self)
         self.traceability_items.populate_traceability_data()
         self.traceability_items.add_data_to_metalogger(self._metalogger)
     def _get_metadata_gathering_fns(self):
