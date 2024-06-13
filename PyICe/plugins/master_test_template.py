@@ -122,6 +122,14 @@ class Master_test_template():
         #Handle True/False here for functional tests, or pass through?
         self._test_results.test_info[name]=self.get_test_info(name)
         self._test_results._register_test_result(name=name, iter_data=data, conditions=conditions)
+    def evaluate_test_query(self, name, value_column, grouping_columns=[], where_clause=''):
+        grouping_str = ''
+        for condition in grouping_columns:
+            grouping_str += ','
+            grouping_str += condition
+        query_str = f'SELECT {value_column}{grouping_str} FROM {self.table_name} ' + ('WHERE' + where_clause if where_clause else '')
+        self.db.query(query_str)
+        self.evaluate_test_result(name, self.db)
     def get_test_results(self):
         res_str = ''
         all_pass = True
