@@ -1,10 +1,11 @@
 from PyICe.bench_configuration_management.bench_configuration_management import component_collection, connection_collection
 from PyICe.lab_utils.sqlite_data import sqlite_data
-from PyICe.plugins.bench_maker import Bench_maker
 from PyICe import virtual_instruments, lab_utils
 from PyICe.lab_utils.banners import print_banner
 from PyICe.plugins import test_archive
-import os, importlib, datetime
+from PyICe import lab_core
+import os, importlib, datetime, socket
+# import types
 
 class plugin_manager():
     def __init__(self):
@@ -48,16 +49,73 @@ class plugin_manager():
         else:
             print_banner("No plugins registered, we're done here...")
 
+    def add_instrument_channels(self):
+        '''In this method, a master is populated by instruments and their channels.
+        A file in the "benches" folder found anywhere under the head project folder should have the name of the computer associated with the current bench, and contains the get_instruments function.
+        The name of the file should have underscores where the computer name may use dashes.
+        Then, all the minidrivers are imported and the master is populated using the instruments from the bench file.
+        The minidrivers (found in a "hardware_drivers" folder) define which instrument is expected and what channels names will be added for those instruments.
+        The drivers also return "cleanup functions" that put the instruments in safe states once the test is complete.
+        The cleanup functions are run in the order in which the instruments appear in the bench file.
+        The special channel actions are functions that are run on each logging of data '''
 
-            ## THERE WILL BE MORE POST-COLLECT PLUGINS
+        self.cleanup_fns = []
+        self.temperature_channel = None
+        self.special_channel_actions = {}
+        thismachine = socket.gethostname().replace("-","_")
+        for (dirpath1, dirnames, filenames) in os.walk(self._project_path):
+            if 'benches' not in dirpath1 or self._project_path not in dirpath1: continue
+            try:
+                benchpath = dirpath1.replace('\\', '.')
+                benchpath = benchpath[benchpath.index(self._project_path.split('\\')[-1]):]
+                module = importlib.import_module(name=benchpath+'.'+thismachine, package=None)
+                break
+            except ImportError as e:
+                print(e)
+                raise Exception(f"Can't find bench file {thismachine}. Note that dashes must be replaced with underscores.")
+        self.interfaces = module.get_interfaces()
+        for (dirpath, dirnames, filenames) in os.walk(self._project_path):
+            if 'hardware_drivers' not in dirpath: continue
+            driverpath = dirpath.replace('\\', '.')
+            driverpath = driverpath[driverpath.index(self._project_path.split('\\')[-1]):]
+            for driver in filenames:
+                driver_mod = importlib.import_module(name=driverpath+'.'+driver[:-3], package=None)
+                
+                # setattr(self, f'populate_{driver[:-3]}', types.MethodType(driver_mod.populate,self))
+                # instrument_dict = getattr(self, f'populate_{driver[:-3]}')()
 
+                instrument_dict = driver_mod.populate(self)
+                
+                if instrument_dict['instruments'] is not None:
+                    for instrument in instrument_dict['instruments']:
+                        self.master.add(instrument)
+                    if 'cleanup_list' in instrument_dict:
+                        for fn in instrument_dict['cleanup_list']:
+                            self.cleanup_fns.append(fn)
+                    if 'temp_control_channel' in instrument_dict:
+                        if self.temperature_channel == None:
+                            self.temperature_channel = instrument_dict['temp_control_channel']
+                            temp_instrument = instrument_dict['instruments']
+                        else:
+                            raise Exception(f'BENCH MAKER: Multiple channels have been declared the temperature control! One from {temp_instrument} and one from {instrument_dict["instruments"]}.')
+                    if 'special_channel_action' in instrument_dict:
+                        overwrite_check = [i.get_name() for i in instrument_dict['special_channel_action'] if i in self.special_channel_actions]
+                        if overwrite_check:
+                            raise Exception(f'BENCH MAKER: Multiple actions have been declared for channel(s) {overwrite_check}.')
+                        self.special_channel_actions.update(instrument_dict['special_channel_action'])
+            break
+        
+        self.temperature_channel = self.master.add_channel_dummy('tdegc')
+        self.temperature_channel.write(25)
 
     def collect(self, temperatures, debug):
         '''This method aggregates the channels that will be logged and calls the collect method in every test added via self.add_test over every temperature indicated via argument. If debug is set to True, this will be passed on to the script. This variable can be used in scripts to trigger shorter loops or fewer conditions under which to gather data to verify script completeness.'''
-        self.this_bench = Bench_maker(self._project_path)
-        self.this_bench.make_bench()
+        # self.this_bench = Bench_maker(self._project_path)
+        # self.this_bench.make_bench()
+        self.master = lab_core.master()
+        self.add_instrument_channels()
         for test in self.tests:
-            test._create_logger(self.this_bench.master, self.this_bench.special_channel_actions)
+            test._create_logger(self.master, self.special_channel_actions)
             if 'bench_config_management' in self.used_plugins: # TODO will bomb if no used_plugins list
                 test_components =component_collection()
                 test_connections = connection_collection(name="test_connections")
@@ -82,10 +140,10 @@ class plugin_manager():
                         print(e)
                         test._is_crashed = True
         else:
-            assert self.this_bench.temperature_channel != None
+            assert self.temperature_channel != None
             for temp in temperatures:
                 print_banner(f'Setting temperature to {temp}')
-                self.this_bench.temperature_channel.write(temp)
+                self.temperature_channel.write(temp)
                 for test in self.tests:
                     if not test._is_crashed:
                         try:
@@ -104,9 +162,9 @@ class plugin_manager():
 
     def cleanup(self):
         """Release the instruments from bench control."""
-        for func in self.this_bench.cleanup_fns:
+        for func in self.cleanup_fns:
             func()
-        delegator_list = [ch.resolve_delegator() for ch in self.this_bench.master]
+        delegator_list = [ch.resolve_delegator() for ch in self.master]
         delegator_list = list(set(delegator_list))
         interfaces = []
         for delegator in delegator_list:
