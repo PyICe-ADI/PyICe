@@ -151,6 +151,7 @@ class plugin_manager():
         """Release the instruments from bench control."""
         for func in self.cleanup_fns:
             func()
+    def close_ports(self):
         delegator_list = [ch.resolve_delegator() for ch in self.master]
         delegator_list = list(set(delegator_list))
         interfaces = []
@@ -297,6 +298,7 @@ class plugin_manager():
                     except Exception as e:
                         print(e)
                         test._is_crashed = True
+                    self.cleanup()
         else:
             assert self.temperature_channel != None
             for temp in temperatures:
@@ -313,10 +315,11 @@ class plugin_manager():
                         except Exception as e:
                             print(e)
                             test._is_crashed = True
+                        self.cleanup()
                 if all([x._is_crashed for x in self.tests]):
                     print_banner('All tests have crashed. Skipping remaining temperatures.')
                     break
-        self.cleanup()
+        self.close_ports()
     def plot(self, database=None, table_name=None, plot_filepath=None):
         '''Run the plot method of each test in self.tests.'''
         print_banner('Plotting. . .')
