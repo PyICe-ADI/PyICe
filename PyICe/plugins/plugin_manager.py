@@ -185,30 +185,31 @@ class plugin_manager():
     # NOTIFICATION METHODS
     ###
     def notify(self, msg, subject=None, attachment_filenames=[], attachment_MIMEParts=[]):
-        if not self._debug:
-            try:
-                if not len(attachment_filenames) and not len(attachment_MIMEParts):
-                    #Just a plain message
-                    print(msg)
-                for fn in self._notification_functions:
-                    try:
-                        fn(msg, subject=subject, attachment_filenames=attachment_filenames, attachment_MIMEParts=attachment_MIMEParts)
-                    except TypeError:
-                        # Function probably doesn't accept subject or attachments
+        if 'notifications' in self.used_plugins:
+            if not self._debug:
+                try:
+                    if not len(attachment_filenames) and not len(attachment_MIMEParts):
+                        #Just a plain message
+                        print(msg)
+                    for fn in self._notification_functions:
                         try:
-                            fn(msg)
+                            fn(msg, subject=subject, attachment_filenames=attachment_filenames, attachment_MIMEParts=attachment_MIMEParts)
+                        except TypeError:
+                            # Function probably doesn't accept subject or attachments
+                            try:
+                                fn(msg)
+                            except Exception as e:
+                                # Don't let a notiffication crash a more-important cleanup/shutdown.
+                                print(e)
                         except Exception as e:
                             # Don't let a notiffication crash a more-important cleanup/shutdown.
                             print(e)
-                    except Exception as e:
-                        # Don't let a notiffication crash a more-important cleanup/shutdown.
-                        print(e)
-            except AttributeError as e:
+                except AttributeError as e:
+                    if not len(attachment_filenames) and not len(attachment_MIMEParts):
+                        print(msg)
+            else:
                 if not len(attachment_filenames) and not len(attachment_MIMEParts):
                     print(msg)
-        else:
-            if not len(attachment_filenames) and not len(attachment_MIMEParts):
-                print(msg)
     def _find_notifications(self, project_path):
         self._notification_functions = []
         for (dirpath, dirnames, filenames) in os.walk(project_path):
@@ -434,7 +435,7 @@ class plugin_manager():
                 plts = [self._convert_svg(plt) for plt in plts]
             self._plots.extend(plts)
             print_banner(f'Plotting for {test.name} complete.')
-        if 'notifications' in self.used_plugins and len(self._plots): #Don't send empty emails
+        if len(self._plots): #Don't send empty emails
             self.email_plots(self._plots)
     def evaluate(self, database=None, table_name=None):
         '''Run the evaluate method of each test in self.tests.'''
@@ -452,8 +453,7 @@ class plugin_manager():
             # test.evaluate_results(db, table_name)
             test.evaluate_results()
             print(self.get_test_results(test))
-            if 'notifications' in self.used_plugins:
-                self.notify(self.get_test_results(test), subject='Test Results')
+            self.notify(self.get_test_results(test), subject='Test Results')
             t_r = test._test_results.json_report()
             dest_abs_filepath = os.path.join(os.path.dirname(database),f"test_results.json")
             if t_r is not None:
