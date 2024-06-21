@@ -4,9 +4,16 @@ from PyICe import virtual_instruments, lab_utils
 from PyICe.lab_utils.banners import print_banner
 from PyICe.plugins import test_archive
 from PyICe.lab_core import logger
-from PyICe import lab_core
+from PyICe import lab_core, LTC_plot
 import os, inspect, importlib, datetime, socket
-# import types
+from email.mime.image import MIMEImage
+try:
+    import cairosvg
+    cairo_ok = True
+except Exception as e:
+    print(e)
+    cairo_ok = False
+
 class Callback_logger(logger):
     '''Wrapper for the standard logger. Used to perform special actions for specific channels on a per-log basis.'''
     def __init__(self, database, special_channel_actions, test):
@@ -23,6 +30,8 @@ class Callback_logger(logger):
 class plugin_manager():
     def __init__(self):
         self.tests = []
+        self.operator = os.getlogin().lower()
+        self.thismachine = socket.gethostname().replace("-","_")
 
     def find_plugins(self, a_test):
         '''This is called the first time a test is added to the plugin manager. An instance of a test is needed to locate the project path. This facilitates users starting from an individual test and getting all the chosen plugins.'''
@@ -57,10 +66,13 @@ class plugin_manager():
             except Exception:
                 self.verbose = True
             self.find_plugins(a_test)
+            if 'notifications' in self.used_plugins:
+                self._find_notifications(a_test._project_path)
         a_test._is_crashed = False
 
     def run(self, temperatures=[], debug=False):
         '''This method goes through the complete data collection process the project set out. Scripts will be run once per temperature or just once if no temperature is given. Debug will be passed on to the script to be used at the script's discretion.'''
+        self._debug = debug
         self.collect(temperatures, debug)
         if hasattr(self, "used_plugins"):
             if 'plotting' in self.used_plugins:
@@ -85,17 +97,17 @@ class plugin_manager():
         self.cleanup_fns = []
         self.temperature_channel = None
         self.special_channel_actions = {}
-        thismachine = socket.gethostname().replace("-","_")
+        
         for (dirpath1, dirnames, filenames) in os.walk(self._project_path):
             if 'benches' not in dirpath1 or self._project_path not in dirpath1: continue
             try:
                 benchpath = dirpath1.replace('\\', '.')
                 benchpath = benchpath[benchpath.index(self._project_path.split('\\')[-1]):]
-                module = importlib.import_module(name=benchpath+'.'+thismachine, package=None)
+                module = importlib.import_module(name=benchpath+'.'+self.thismachine, package=None)
                 break
             except ImportError as e:
                 print(e)
-                raise Exception(f"Can't find bench file {thismachine}. Note that dashes must be replaced with underscores.")
+                raise Exception(f"Can't find bench file {self.thismachine}. Note that dashes must be replaced with underscores.")
         self.interfaces = module.get_interfaces()
         for (dirpath, dirnames, filenames) in os.walk(self._project_path):
             if 'hardware_drivers' not in dirpath: continue
@@ -168,6 +180,76 @@ class plugin_manager():
                 print(e)
         else:
             print_banner('Bench cleaned!')
+
+    ###
+    # NOTIFICATION METHODS
+    ###
+    def notify(self, msg, subject=None, attachment_filenames=[], attachment_MIMEParts=[]):
+        if not self._debug:
+            try:
+                if not len(attachment_filenames) and not len(attachment_MIMEParts):
+                    #Just a plain message
+                    print(msg)
+                for fn in self._notification_functions:
+                    try:
+                        fn(msg, subject=subject, attachment_filenames=attachment_filenames, attachment_MIMEParts=attachment_MIMEParts)
+                    except TypeError:
+                        # Function probably doesn't accept subject or attachments
+                        try:
+                            fn(msg)
+                        except Exception as e:
+                            # Don't let a notiffication crash a more-important cleanup/shutdown.
+                            print(e)
+                    except Exception as e:
+                        # Don't let a notiffication crash a more-important cleanup/shutdown.
+                        print(e)
+            except AttributeError as e:
+                if not len(attachment_filenames) and not len(attachment_MIMEParts):
+                    print(msg)
+        else:
+            if not len(attachment_filenames) and not len(attachment_MIMEParts):
+                print(msg)
+    def _find_notifications(self, project_path):
+        self._notification_functions = []
+        for (dirpath, dirnames, filenames) in os.walk(project_path):
+            if self.operator+'.py' in filenames: 
+                usernotificationpath = dirpath.replace('\\', '.')
+                usernotificationpath = usernotificationpath[usernotificationpath.index(project_path.split('\\')[-1]):]
+                module = importlib.import_module(name=usernotificationpath+f'.{self.operator}', package=None)
+                module.init(test_manager=self)
+    def add_notification(self, fn):
+        self._notification_functions.append(fn)
+    def _convert_svg(self, plot):
+        if isinstance(plot, LTC_plot.plot):
+            page = LTC_plot.Page(rows_x_cols = None, page_size = None, plot_count = 1)
+            page.add_plot(plot=plot)
+            return page.create_svg(file_basename=None, filepath=None)
+        elif isinstance(plot, LTC_plot.Page):
+            return plot.create_svg(file_basename=None, filepath=None)
+        elif isinstance(plot, (str,bytes)):
+            # Assume this is already SVG source.
+            # TODO: further type checking?
+            return plot
+        else:
+            raise Exception(f'Not sure what this plot is:\n{type(plot)}\n{plot}')
+    def email_plots(self, plot_svg_source):
+        # msg_body = '<html><body>' #Now done inside emailer itself. Old send() method renamed to send_raw()
+        msg_body = ''
+        attachment_MIMEParts=[]
+        for (i,plot_src) in enumerate(plot_svg_source):
+            if cairo_ok:
+                plot_png = cairosvg.svg2png(bytestring=plot_src)
+                plot_mime = MIMEImage(plot_png, 'image/png')
+                plot_mime.add_header('Content-Disposition', 'inline')
+                plot_mime.add_header('Content-ID', f'<plot_{i}>')
+                msg_body += f'<img src="cid:plot_{i}"/>'
+            else:
+                plot_mime = MIMEImage(plot_src, 'image/svg+xml')
+                plot_mime.add_header('Content-Disposition', 'attachment', filename=f'G{i:03d}.svg')
+                plot_mime.add_header('Content-ID', f'<plot_{i}>')
+            attachment_MIMEParts.append(plot_mime)
+        # msg_body += '</body></html>'
+        self.notify(msg_body, subject='Plot Results', attachment_MIMEParts=attachment_MIMEParts)
 
     ###
     # TRACEABILITY METHODS
@@ -286,9 +368,11 @@ class plugin_manager():
                     test._metalogger.add_channel_dummy('bench_connections')
                     test._metalogger.write('bench_connections', test_connections.get_readable_connections())
                 self._metalog(test)
+        summary_msg = f'{self.operator} on {self.thismachine}\n'
         if not len(temperatures):
             for test in self.tests:
                 test.debug=debug
+                summary_msg += f'\t* {test.name}*\n'
                 if not test._is_crashed:
                     try:
                         # test.test_timer.resume_timer()
@@ -315,6 +399,7 @@ class plugin_manager():
                         except Exception as e:
                             print(e)
                             test._is_crashed = True
+                            self.notify(e, subject='CRASHED!!!')
                         self.cleanup()
                 if all([x._is_crashed for x in self.tests]):
                     print_banner('All tests have crashed. Skipping remaining temperatures.')
@@ -323,6 +408,7 @@ class plugin_manager():
     def plot(self, database=None, table_name=None, plot_filepath=None):
         '''Run the plot method of each test in self.tests.'''
         print_banner('Plotting. . .')
+        self._plots=[]
         for test in self.tests:
             if database is None:
                 database = test._db_file
@@ -335,8 +421,21 @@ class plugin_manager():
             else:
                 test.plot_filepath = plot_filepath
             test.db = sqlite_data(database_file=database, table_name=test.table_name)
-            test.plot()
+            plts = test.plot()
+            if plts is None:
+                print(f'WARNING: {self.get_name()} failed to return plots.')
+                plts = []
+            elif isinstance(plts, (LTC_plot.plot, LTC_plot.Page)):
+                plts = [self._convert_svg(plts)]
+            elif isinstance(plts, (str,bytes)):
+                plts = [plts]
+            else:
+                assert isinstance(plts, list)
+                plts = [self._convert_svg(plt) for plt in plts]
+            self._plots.extend(plts)
             print_banner(f'Plotting for {test.name} complete.')
+        if 'notifications' in self.used_plugins and len(self._plots): #Don't send empty emails
+            self.email_plots(self._plots)
     def evaluate(self, database=None, table_name=None):
         '''Run the evaluate method of each test in self.tests.'''
         from PyICe.plugins.test_results import test_results
@@ -353,6 +452,8 @@ class plugin_manager():
             # test.evaluate_results(db, table_name)
             test.evaluate_results()
             print(self.get_test_results(test))
+            if 'notifications' in self.used_plugins:
+                self.notify(self.get_test_results(test), subject='Test Results')
             t_r = test._test_results.json_report()
             dest_abs_filepath = os.path.join(os.path.dirname(database),f"test_results.json")
             if t_r is not None:
