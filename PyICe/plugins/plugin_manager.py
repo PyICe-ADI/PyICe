@@ -5,14 +5,9 @@ from PyICe.lab_utils.banners import print_banner
 from PyICe.plugins import test_archive
 from PyICe.lab_core import logger
 from PyICe import lab_core, LTC_plot
-import os, inspect, importlib, datetime, socket
+import os, inspect, importlib, datetime, socket, traceback, sys, cairosvg
 from email.mime.image import MIMEImage
-try:
-    import cairosvg
-    cairo_ok = True
-except Exception as e:
-    print(e)
-    cairo_ok = False
+
 
 class Callback_logger(logger):
     '''Wrapper for the standard logger. Used to perform special actions for specific channels on a per-log basis.'''
@@ -28,7 +23,8 @@ class Callback_logger(logger):
         return readings
 
 class plugin_manager():
-    def __init__(self):
+    def __init__(self, debug=False):
+        self._debug = debug
         self.tests = []
         self.operator = os.getlogin().lower()
         self.thismachine = socket.gethostname().replace("-","_")
@@ -70,10 +66,9 @@ class plugin_manager():
                 self._find_notifications(a_test._project_path)
         a_test._is_crashed = False
 
-    def run(self, temperatures=[], debug=False):
+    def run(self, temperatures=[]):
         '''This method goes through the complete data collection process the project set out. Scripts will be run once per temperature or just once if no temperature is given. Debug will be passed on to the script to be used at the script's discretion.'''
-        self._debug = debug
-        self.collect(temperatures, debug)
+        self.collect(temperatures, self._debug)
         if hasattr(self, "used_plugins"):
             if 'plotting' in self.used_plugins:
                 self.plot()
@@ -234,23 +229,25 @@ class plugin_manager():
         else:
             raise Exception(f'Not sure what this plot is:\n{type(plot)}\n{plot}')
     def email_plots(self, plot_svg_source):
-        # msg_body = '<html><body>' #Now done inside emailer itself. Old send() method renamed to send_raw()
         msg_body = ''
         attachment_MIMEParts=[]
         for (i,plot_src) in enumerate(plot_svg_source):
-            if cairo_ok:
-                plot_png = cairosvg.svg2png(bytestring=plot_src)
-                plot_mime = MIMEImage(plot_png, 'image/png')
-                plot_mime.add_header('Content-Disposition', 'inline')
-                plot_mime.add_header('Content-ID', f'<plot_{i}>')
-                msg_body += f'<img src="cid:plot_{i}"/>'
-            else:
-                plot_mime = MIMEImage(plot_src, 'image/svg+xml')
-                plot_mime.add_header('Content-Disposition', 'attachment', filename=f'G{i:03d}.svg')
-                plot_mime.add_header('Content-ID', f'<plot_{i}>')
+            plot_png = cairosvg.svg2png(bytestring=plot_src)
+            plot_mime = MIMEImage(plot_png, 'image/png')
+            plot_mime.add_header('Content-Disposition', 'inline')
+            plot_mime.add_header('Content-ID', f'<plot_{i}>')
+            msg_body += f'<img src="cid:plot_{i}"/>'
             attachment_MIMEParts.append(plot_mime)
-        # msg_body += '</body></html>'
         self.notify(msg_body, subject='Plot Results', attachment_MIMEParts=attachment_MIMEParts)
+    def crash_info(self, test):
+        (typ, value, trace_bk) = test._crash_info
+        crash_str = f'Test: {test.name} crashed: {typ},{value}\n'
+        crash_sep = '==================================================\n'
+        crash_str += crash_sep
+        # crash_str += f'{traceback.print_tb(trace_bk)}\n'
+        crash_str += f'{"".join(traceback.format_exception(typ, value, trace_bk))}\n'
+        crash_str += crash_sep
+        return crash_str
 
     ###
     # TRACEABILITY METHODS
@@ -304,7 +301,11 @@ class plugin_manager():
         archived_tables = []
         for test in self.tests:
             archiver = test_archive.database_archive(db_source_file=test._db_file)
-            db_dest_file = archiver.compute_db_destination(archive_folder)
+            if test._is_crashed:
+                this_archive_folder = archive_folder + '_CRASHED'
+            else:
+                this_archive_folder = archive_folder
+            db_dest_file = archiver.compute_db_destination(this_archive_folder)
             archiver.copy_table(db_source_table=test.name, db_dest_table=test.name, db_dest_file=db_dest_file)
             archiver.copy_table(db_source_table=test.name+'_metadata', db_dest_table=test.name+'_metadata', db_dest_file=db_dest_file)
             test._logger.copy_table(old_table=test.name, new_table=test.name+'_'+folder_suggestion)
@@ -317,8 +318,11 @@ class plugin_manager():
                 dest_file = os.path.join(os.path.dirname(db_file), f"replot_data.py")
                 import_str = test._module_path[test._module_path.index(test.project_folder_name):].replace('\\','.')
                 plot_script_src = "if __name__ == '__main__':\n"
+                plot_script_src += f"    from PyICe.plugins.plugin_manager import plugin_manager\n"
                 plot_script_src += f"    from {import_str}.test import test\n"
-                plot_script_src += f"    test.plot_only(database='data_log.sqlite', table_name='{test.name}')\n"
+                plot_script_src += f"    pm = plugin_manager()\n"
+                plot_script_src += f"    pm.add_test(test)\n"
+                plot_script_src += f"    pm.plot(database='data_log.sqlite', table_name='{test.name}')\n"
                 try:
                     with open(dest_file, 'a') as f: #exists, overwrite, append?
                         f.write(plot_script_src)
@@ -330,8 +334,11 @@ class plugin_manager():
                 dest_file = os.path.join(os.path.dirname(db_file), f"reeval_data.py")
                 import_str = test._module_path[test._module_path.index(test.project_folder_name):].replace('\\','.')
                 plot_script_src = "if __name__ == '__main__':\n"
+                plot_script_src += f"    from PyICe.plugins.plugin_manager import plugin_manager\n"
                 plot_script_src += f"    from {import_str}.test import test\n"
-                plot_script_src += f"    test.evaluate_only(database='data_log.sqlite', table_name='{test.name}')\n"
+                plot_script_src += f"    pm = plugin_manager()\n"
+                plot_script_src += f"    pm.add_test(test)\n"
+                plot_script_src += f"    pm.evaluate(database='data_log.sqlite', table_name='{test.name}')\n"
                 try:
                     with open(dest_file, 'a') as f: #exists, overwrite, append?
                         f.write(plot_script_src)
@@ -381,8 +388,10 @@ class plugin_manager():
                         test.collect()
                         self._restore(test)
                     except Exception as e:
-                        print(e)
+                        traceback.print_exc()
                         test._is_crashed = True
+                        test._crash_info = sys.exc_info()
+                        self.notify(self.crash_info(test), subject='CRASHED!!!')
                     self.cleanup()
         else:
             assert self.temperature_channel != None
@@ -392,15 +401,16 @@ class plugin_manager():
                 for test in self.tests:
                     if not test._is_crashed:
                         try:
-                            print_banner(f'Starting {test.name}')
+                            print_banner(f'Starting {test.name} at {temp}C')
                             # test.test_timer.resume_timer()
                             self._reconfigure(test)
                             test.collect(test._logger, debug)
                             self._restore(test)
                         except Exception as e:
-                            print(e)
+                            traceback.print_exc()
                             test._is_crashed = True
-                            self.notify(e, subject='CRASHED!!!')
+                            test._crash_info = sys.exc_info()
+                            self.notify(test._crash_info, subject='CRASHED!!!')
                         self.cleanup()
                 if all([x._is_crashed for x in self.tests]):
                     print_banner('All tests have crashed. Skipping remaining temperatures.')
