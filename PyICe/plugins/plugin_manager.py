@@ -1,4 +1,5 @@
 from PyICe.bench_configuration_management.bench_configuration_management import component_collection, connection_collection
+from PyICe.bench_configuration_management import bench_visualizer
 from PyICe.lab_utils.sqlite_data import sqlite_data
 from PyICe import virtual_instruments, lab_utils
 from PyICe.lab_utils.banners import print_banner
@@ -69,13 +70,14 @@ class plugin_manager():
     def run(self, temperatures=[]):
         '''This method goes through the complete data collection process the project set out. Scripts will be run once per temperature or just once if no temperature is given. Debug will be passed on to the script to be used at the script's discretion.'''
         self.collect(temperatures, self._debug)
-        if hasattr(self, "used_plugins"):
-            if 'plotting' in self.used_plugins:
-                self.plot()
-            if 'evaluate_tests' in self.used_plugins:
-                self.evaluate()
-            if 'archive' in self.used_plugins:
-                self._archive()
+        if 'plotting' in self.used_plugins:
+            self.plot()
+        if 'evaluate_tests' in self.used_plugins:
+            self.evaluate()
+        if 'correlate_tests' in self.used_plugins:
+            self.correlate()
+        if 'archive' in self.used_plugins:
+            self._archive()
         else:
             print_banner("No plugins registered, we're done here...")
 
@@ -183,9 +185,6 @@ class plugin_manager():
         if 'notifications' in self.used_plugins:
             if not self._debug:
                 try:
-                    if not len(attachment_filenames) and not len(attachment_MIMEParts):
-                        #Just a plain message
-                        print(msg)
                     for fn in self._notification_functions:
                         try:
                             fn(msg, subject=subject, attachment_filenames=attachment_filenames, attachment_MIMEParts=attachment_MIMEParts)
@@ -291,6 +290,13 @@ class plugin_manager():
         return res_str
 
     ###
+    # CORRELATION METHODS
+    ###
+    def correlate_test_result(self, test, name, data, conditions=None):
+        pass
+    def get_corr_results(self, test):
+        pass
+    ###
     # ARCHIVE METHODS
     ###
     def _archive(self):
@@ -301,6 +307,9 @@ class plugin_manager():
         archived_tables = []
         for test in self.tests:
             archiver = test_archive.database_archive(db_source_file=test._db_file)
+            if not archiver.has_data(tablename=test.name):
+                print(f'No data logged for {test.name}. Skipping archive.')
+                return
             if test._is_crashed:
                 this_archive_folder = archive_folder + '_CRASHED'
             else:
@@ -355,14 +364,12 @@ class plugin_manager():
     ###
     def collect(self, temperatures, debug):
         '''This method aggregates the channels that will be logged and calls the collect method in every test added via self.add_test over every temperature indicated via argument. If debug is set to True, this will be passed on to the script. This variable can be used in scripts to trigger shorter loops or fewer conditions under which to gather data to verify script completeness.'''
-        # self.this_bench = Bench_maker(self._project_path)
-        # self.this_bench.make_bench()
         self.master = lab_core.master()
         self.add_instrument_channels()
         for test in self.tests:
             test._channel_reconfiguration_settings=[]
             self._create_logger(test)
-            if 'bench_config_management' in self.used_plugins: # TODO will bomb if no used_plugins list
+            if 'bench_config_management' in self.used_plugins:
                 test_components =component_collection()
                 test_connections = connection_collection(name="test_connections")
                 try:
@@ -376,6 +383,11 @@ class plugin_manager():
                     test._metalogger.add_channel_dummy('bench_connections')
                     test._metalogger.write('bench_connections', test_connections.get_readable_connections())
                 self._metalog(test)
+        if 'bench_config_management' in self.used_plugins and self.verbose:
+            print(test_connections.print_connections())
+        if 'bench_image_creation' in self.used_plugins:
+            visualizer = bench_visualizer.visualizer(connections=test_connections.connections, locations=test.get_bench_image_locations())
+            visualizer.generate(file_base_name="Bench_Config", prune=True, file_format='svg', engine='neato')
         summary_msg = f'{self.operator} on {self.thismachine}\n'
         if not len(temperatures):
             for test in self.tests:
@@ -387,7 +399,7 @@ class plugin_manager():
                         self._reconfigure(test)
                         test.collect()
                         self._restore(test)
-                    except Exception as e:
+                    except (Exception, BaseException) as e:
                         traceback.print_exc()
                         test._is_crashed = True
                         test._crash_info = sys.exc_info()
@@ -406,7 +418,7 @@ class plugin_manager():
                             self._reconfigure(test)
                             test.collect(test._logger, debug)
                             self._restore(test)
-                        except Exception as e:
+                        except (Exception, BaseException) as e:
                             traceback.print_exc()
                             test._is_crashed = True
                             test._crash_info = sys.exc_info()
@@ -460,10 +472,12 @@ class plugin_manager():
                 test.table_name = table_name
             test._test_results = test_results(test.name, module=test)
             test.db = sqlite_data(database_file=database, table_name=test.table_name)
-            # test.evaluate_results(db, table_name)
             test.evaluate_results()
-            print(self.get_test_results(test))
-            self.notify(self.get_test_results(test), subject='Test Results')
+            if test._test_results._test_results:
+                print(self.get_test_results(test))
+                self.notify(self.get_test_results(test), subject='Test Results')
+            elif self.verbose:
+                print(f'No results submitted for {test.name}.')
             t_r = test._test_results.json_report()
             dest_abs_filepath = os.path.join(os.path.dirname(database),f"test_results.json")
             if t_r is not None:
@@ -483,7 +497,6 @@ class plugin_manager():
                 test.table_name = table_name
             test._corr_results = test_results(test.name, module=test)
             test.db = sqlite_data(database_file=database, table_name=test.table_name)
-            # test.evaluate_results(db, table_name)
             test.correlate_results()
             print(test.get_test_results())
             t_r = test._corr_results.json_report()

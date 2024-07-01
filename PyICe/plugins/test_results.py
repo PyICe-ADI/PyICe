@@ -470,32 +470,13 @@ class correlation_results(generic_results):
         def __bool__(self):
             return bool(self.passes) #numpy _bool infiltration
         def __str__(self):
-            
-            # summary_str = ''
-            # summary_str += f'{self.conditions}\tTRIALS:{len(self)}\tVERDICT:{"PASS" if self else "FAIL"}\n'.expandtabs()
-            # summary_str += f'\tMIN:{self._min():g}\n' if not self else ''
-            # summary_str += f'\tMAX:{self._max():g}\n' if not self else ''
-            
             summary_str = ''
             summary_str += f'\tERROR: {self.error:g}' if self.error is not None else ''
             summary_str += f'\t{self.failure_reason}' if self.failure_reason != '' else ''
             #TODO bench/ate ?
             summary_str += f'\tVERDICT:{"PASS" if self else "FAIL"}\n'
             return summary_str
-        # def __add__(self, other):
-            # assert isinstance(other, type(self))
-            # assert self.refid_name == other.refid_name
-            # assert self.temperature == other.temperature
-            # assert self.conditions == other.conditions
-            # return type(self)(refid_name=self.refid_name,
-                              # temperature=self.temperature,
-                              # conditions=self.conditions,
-                              # bench_data=???,
-                              # ate_data=???,
-                              # error=???,
-                              # passes=self.passes and other.passes,
-                              # failure_reason=f'{self.failure_reason}{other.failure_reason}', #TODO cleanup format
-                             # )
+
     class _correlation_results_list(list):
         '''helper methods'''
         def __init__(self, declaration):
