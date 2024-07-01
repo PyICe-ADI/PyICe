@@ -70,8 +70,7 @@ class plugin_manager():
     def run(self, temperatures=[]):
         '''This method goes through the complete data collection process the project set out. Scripts will be run once per temperature or just once if no temperature is given. Debug will be passed on to the script to be used at the script's discretion.'''
         self.collect(temperatures, self._debug)
-        if 'plotting' in self.used_plugins:
-            self.plot()
+        self.plot()
         if 'evaluate_tests' in self.used_plugins:
             self.evaluate()
         if 'correlate_tests' in self.used_plugins:
@@ -142,7 +141,8 @@ class plugin_manager():
     def _create_logger(self, test):
         test._logger = Callback_logger(database=test._db_file, special_channel_actions=self.special_channel_actions, test=test)
         test._logger.merge_in_channel_group(self.master.get_flat_channel_group())
-        test.customize()
+        if hasattr(test, 'customize'):
+            test.customize()
         test._logger.new_table(table_name=test.name, replace_table=True)
 
     def reconfigure(self,test, channel, value):
@@ -370,23 +370,23 @@ class plugin_manager():
             test._channel_reconfiguration_settings=[]
             self._create_logger(test)
             if 'bench_config_management' in self.used_plugins:
-                test_components =component_collection()
-                test_connections = connection_collection(name="test_connections")
+                self.test_components =component_collection()
+                self.test_connections = connection_collection(name="test_connections")
                 try:
-                    test._declare_bench_connections(test_components, test_connections)
+                    test._declare_bench_connections()
                 except Exception as e:
                     raise("TEST_MANAGER ERROR: This project indicated bench configuration data would be stored. Test template requires a _declare_bench_connections method that gathers the data.")
             if 'traceability' in self.used_plugins:
                 self._create_metalogger(test)
                 if 'bench_config_management' in self.used_plugins:
-                    test.traceability_items.get_traceability_data()['bench_connections'] = test_connections.get_readable_connections()
+                    test.traceability_items.get_traceability_data()['bench_connections'] = self.test_connections.get_readable_connections()
                     test._metalogger.add_channel_dummy('bench_connections')
-                    test._metalogger.write('bench_connections', test_connections.get_readable_connections())
+                    test._metalogger.write('bench_connections', self.test_connections.get_readable_connections())
                 self._metalog(test)
         if 'bench_config_management' in self.used_plugins and self.verbose:
-            print(test_connections.print_connections())
+            print(self.test_connections.print_connections())
         if 'bench_image_creation' in self.used_plugins:
-            visualizer = bench_visualizer.visualizer(connections=test_connections.connections, locations=test.get_bench_image_locations())
+            visualizer = bench_visualizer.visualizer(connections=self.test_connections.connections, locations=test.get_bench_image_locations())
             visualizer.generate(file_base_name="Bench_Config", prune=True, file_format='svg', engine='neato')
         summary_msg = f'{self.operator} on {self.thismachine}\n'
         if not len(temperatures):
@@ -430,9 +430,11 @@ class plugin_manager():
         self.close_ports()
     def plot(self, database=None, table_name=None, plot_filepath=None):
         '''Run the plot method of each test in self.tests.'''
-        print_banner('Plotting. . .')
         self._plots=[]
         for test in self.tests:
+            if not hasattr(test, 'plot'):
+                continue
+            print_banner(f'{test} Plotting. . .')
             if database is None:
                 database = test._db_file
             if table_name is None:
