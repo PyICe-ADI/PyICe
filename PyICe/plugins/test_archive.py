@@ -5,11 +5,21 @@ import sqlite3
 import re
 
 class database_archive():
-    def __init__(self, db_source_file): #, db_dest_file=None, db_source_table=None, db_dest_table=None):
+    def __init__(self, db_source_file):
         self.db_source_file = os.path.abspath(db_source_file)
         (self.db_source_abspath, self.db_source_filename) = os.path.split(self.db_source_file)
         self.db_source_folder = os.path.basename(self.db_source_abspath)
         self.source_conn = sqlite3.connect(self.db_source_file)
+
+    def has_data(self, tablename):
+        cur = self.source_conn.cursor()
+        res = cur.execute(f'SELECT * FROM {tablename}').fetchall()
+        cur.close()
+        if len(res):
+            return True
+        else:
+            return False
+        
     def copy_table(self, db_source_table, db_dest_table, db_dest_file, db_indices=[]):
         # attach_schema = '__dest_db__'
         
@@ -88,10 +98,6 @@ class database_archive():
         ###########
         conn.commit()
         conn.execute(f'DETACH DATABASE {attach_schema}')
-        # print('copy')
-        # print(db_source_table)
-        # print(db_dest_table)
-        # print(db_dest_file)
         return True #Probably ok, if we made it this far
     def delete_table(self, db_source_table, commit=True):
         self.source_conn.execute(f'DROP TABLE {db_source_table}')
@@ -99,7 +105,6 @@ class database_archive():
         self.source_conn.execute(f'DROP VIEW IF EXISTS {db_source_table}_all')
         if commit:
             self.source_conn.commit()
-    # print("delete", db_source_table)
     def get_table_names(self):
         table_query = "SELECT name FROM sqlite_master WHERE type ='table'"
         return [row[0] for row in self.source_conn.execute(table_query)]
