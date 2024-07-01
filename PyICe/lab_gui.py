@@ -2407,7 +2407,7 @@ class ltc_lab_gui_app(QObject):
     def passive_data(self,data_dict):
         try:
             self.passive_queue.put_nowait(data_dict)
-            QApp.SI_passive_observer_data.emit(self.passive_queue)
+            self.SI_passive_observer_data.emit(self.passive_queue)
             self.q_is_full = False
         except queue.Full:
             if not self.q_is_full:
@@ -2423,12 +2423,7 @@ if __name__ == '__main__':
     from . import lab_instruments
     from . import lab_core
     from . import twi_instrument
-
     master = lab_core.master("Demonstration GUI")
-
-
-
-
     master.add_channel_delta_timer('time_d')
     timer = lab_instruments.timer()
     timer.add_channel_total_seconds('seconds')
