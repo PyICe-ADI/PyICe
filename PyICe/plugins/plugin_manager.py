@@ -23,7 +23,7 @@ class Callback_logger(logger):
             action(channel, readings, self.test)
         return readings
 
-class plugin_manager():
+class Test_Manager():
     def __init__(self, debug=False):
         self._debug = debug
         self.tests = []
@@ -86,9 +86,10 @@ class plugin_manager():
         The name of the file should have underscores where the computer name may use dashes.
         Then, all the minidrivers are imported and the master is populated using the instruments from the bench file.
         The minidrivers (found in a "hardware_drivers" folder) define which instrument is expected and what channels names will be added for those instruments.
-        The drivers also return "cleanup functions" that put the instruments in safe states once the test is complete.
+        Drivers should return a dictionary with needed key 'instruments', which returns a list of channels and channel objects to be added to the master, and optional keys 'cleanup functions', 'temp_control_channel' ,and 'special_channel_action'.
+        The value for "cleanup functions" is a list of functions that put the instruments in safe states once the test is complete.
         The cleanup functions are run in the order in which the instruments appear in the bench file.
-        The special channel actions are functions that are run on each logging of data '''
+        The special channel actions are functions that are run on each logging of data and the value is a dicionary with a channel object or the string name of a channel as key, and the value the function to be run. The function requires the arguments channel_name, readings, and test.'''
 
         self.cleanup_fns = []
         self.temperature_channel = None
@@ -144,6 +145,7 @@ class plugin_manager():
         if hasattr(test, 'customize'):
             test.customize()
         test._logger.new_table(table_name=test.name, replace_table=True)
+        test._logger.write_html(file_name=test.project_folder_name)
 
     def reconfigure(self,test, channel, value):
         '''Optional method used during customize() if changes are made to the DUT on a particular test in a suite. Unwound after test's collect at each temperature.'''
@@ -302,8 +304,10 @@ class plugin_manager():
     def _archive(self):
         '''Makes a copy of the data just collected and puts it and the associated metatable (if there is one) in an archive folder. Also adds a copy of the table (and metatable) to the database with the time of collection to the test's generic database, so it will not be overwritten when the test is next run.'''
         print_banner('Archiving. . .')
-        folder_suggestion = datetime.datetime.utcnow().strftime("%Y_%m_%d_%H_%M")   ### Maybe have a method for users to provide a name?
-        archive_folder = folder_suggestion
+        try:
+            archive_folder = self.tests[0].get_archive_folder_name()
+        except AttributeError:
+            archive_folder = datetime.datetime.utcnow().strftime("%Y_%m_%d_%H_%M")
         archived_tables = []
         for test in self.tests:
             archiver = test_archive.database_archive(db_source_file=test._db_file)
