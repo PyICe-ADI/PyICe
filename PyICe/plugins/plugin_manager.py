@@ -321,8 +321,8 @@ class Plugin_Manager():
             db_dest_file = archiver.compute_db_destination(this_archive_folder)
             archiver.copy_table(db_source_table=test.name, db_dest_table=test.name, db_dest_file=db_dest_file)
             archiver.copy_table(db_source_table=test.name+'_metadata', db_dest_table=test.name+'_metadata', db_dest_file=db_dest_file)
-            test._logger.copy_table(old_table=test.name, new_table=test.name+'_'+folder_suggestion)
-            test._logger.copy_table(old_table=test.name+'_metadata', new_table=test.name+'_'+folder_suggestion+'_metadata')
+            test._logger.copy_table(old_table=test.name, new_table=test.name+'_'+archive_folder)
+            test._logger.copy_table(old_table=test.name+'_metadata', new_table=test.name+'_'+archive_folder+'_metadata')
             archived_tables.append((test, test.name, db_dest_file))
             # test._add_db_indices(table_name=test.name, db_file=db_dest_file)
         if len(archived_tables):
@@ -370,12 +370,13 @@ class Plugin_Manager():
         '''This method aggregates the channels that will be logged and calls the collect method in every test added via self.add_test over every temperature indicated via argument. If debug is set to True, this will be passed on to the script. This variable can be used in scripts to trigger shorter loops or fewer conditions under which to gather data to verify script completeness.'''
         self.master = lab_core.master()
         self.add_instrument_channels()
+        if 'bench_config_management' in self.used_plugins:
+            self.test_components =component_collection()
+            self.test_connections = connection_collection(name="test_connections")
         for test in self.tests:
             test._channel_reconfiguration_settings=[]
             self._create_logger(test)
             if 'bench_config_management' in self.used_plugins:
-                self.test_components =component_collection()
-                self.test_connections = connection_collection(name="test_connections")
                 try:
                     test._declare_bench_connections()
                 except Exception as e:
