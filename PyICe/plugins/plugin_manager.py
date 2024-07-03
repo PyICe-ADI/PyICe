@@ -23,7 +23,7 @@ class Callback_logger(logger):
             action(channel, readings, self.test)
         return readings
 
-class Test_Manager():
+class Plugin_Manager():
     def __init__(self, debug=False):
         self._debug = debug
         self.tests = []
