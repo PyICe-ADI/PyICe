@@ -145,7 +145,7 @@ class Plugin_Manager():
         if hasattr(test, 'customize'):
             test.customize()
         test._logger.new_table(table_name=test.name, replace_table=True)
-        test._logger.write_html(file_name=test.project_folder_name)
+        test._logger.write_html(file_name=test.project_folder_name+'.html')
 
     def reconfigure(self,test, channel, value):
         '''Optional method used during customize() if changes are made to the DUT on a particular test in a suite. Unwound after test's collect at each temperature.'''
