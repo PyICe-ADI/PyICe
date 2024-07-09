@@ -320,45 +320,47 @@ class Plugin_Manager():
                 this_archive_folder = archive_folder
             db_dest_file = archiver.compute_db_destination(this_archive_folder)
             archiver.copy_table(db_source_table=test.name, db_dest_table=test.name, db_dest_file=db_dest_file)
-            archiver.copy_table(db_source_table=test.name+'_metadata', db_dest_table=test.name+'_metadata', db_dest_file=db_dest_file)
             test._logger.copy_table(old_table=test.name, new_table=test.name+'_'+archive_folder)
-            test._logger.copy_table(old_table=test.name+'_metadata', new_table=test.name+'_'+archive_folder+'_metadata')
+            if 'traceability' in self.used_plugins:
+                archiver.copy_table(db_source_table=test.name+'_metadata', db_dest_table=test.name+'_metadata', db_dest_file=db_dest_file)
+                test._logger.copy_table(old_table=test.name+'_metadata', new_table=test.name+'_'+archive_folder+'_metadata')
             archived_tables.append((test, test.name, db_dest_file))
             # test._add_db_indices(table_name=test.name, db_file=db_dest_file)
         if len(archived_tables):
             arch_plot_scripts = []
             for (test, db_table, db_file) in archived_tables:
-                dest_file = os.path.join(os.path.dirname(db_file), f"replot_data.py")
-                import_str = test._module_path[test._module_path.index(test.project_folder_name):].replace('\\','.')
-                plot_script_src = "if __name__ == '__main__':\n"
-                plot_script_src += f"    from PyICe.plugins.plugin_manager import plugin_manager\n"
-                plot_script_src += f"    from {import_str}.test import test\n"
-                plot_script_src += f"    pm = plugin_manager()\n"
-                plot_script_src += f"    pm.add_test(test)\n"
-                plot_script_src += f"    pm.plot(database='data_log.sqlite', table_name='{test.name}')\n"
-                try:
-                    with open(dest_file, 'a') as f: #exists, overwrite, append?
-                        f.write(plot_script_src)
-                except Exception as e:
-                    #write locked? exists?
-                    print(type(e))
-                    print(e)
-                
-                dest_file = os.path.join(os.path.dirname(db_file), f"reeval_data.py")
-                import_str = test._module_path[test._module_path.index(test.project_folder_name):].replace('\\','.')
-                plot_script_src = "if __name__ == '__main__':\n"
-                plot_script_src += f"    from PyICe.plugins.plugin_manager import plugin_manager\n"
-                plot_script_src += f"    from {import_str}.test import test\n"
-                plot_script_src += f"    pm = plugin_manager()\n"
-                plot_script_src += f"    pm.add_test(test)\n"
-                plot_script_src += f"    pm.evaluate(database='data_log.sqlite', table_name='{test.name}')\n"
-                try:
-                    with open(dest_file, 'a') as f: #exists, overwrite, append?
-                        f.write(plot_script_src)
-                except Exception as e:
-                    #write locked? exists?
-                    print(type(e))
-                    print(e)
+                if hasattr(test, 'plot'):
+                    dest_file = os.path.join(os.path.dirname(db_file), f"replot_data.py")
+                    import_str = test._module_path[test._module_path.index(test.project_folder_name):].replace('\\','.')
+                    plot_script_src = "if __name__ == '__main__':\n"
+                    plot_script_src += f"    from PyICe.plugins.plugin_manager import plugin_manager\n"
+                    plot_script_src += f"    from {import_str}.test import test\n"
+                    plot_script_src += f"    pm = plugin_manager()\n"
+                    plot_script_src += f"    pm.add_test(test)\n"
+                    plot_script_src += f"    pm.plot(database='data_log.sqlite', table_name='{test.name}')\n"
+                    try:
+                        with open(dest_file, 'a') as f: #exists, overwrite, append?
+                            f.write(plot_script_src)
+                    except Exception as e:
+                        #write locked? exists?
+                        print(type(e))
+                        print(e)
+                if 'evaluate_tests' in self.used_plugins:
+                    dest_file = os.path.join(os.path.dirname(db_file), f"reeval_data.py")
+                    import_str = test._module_path[test._module_path.index(test.project_folder_name):].replace('\\','.')
+                    plot_script_src = "if __name__ == '__main__':\n"
+                    plot_script_src += f"    from PyICe.plugins.plugin_manager import plugin_manager\n"
+                    plot_script_src += f"    from {import_str}.test import test\n"
+                    plot_script_src += f"    pm = plugin_manager()\n"
+                    plot_script_src += f"    pm.add_test(test)\n"
+                    plot_script_src += f"    pm.evaluate(database='data_log.sqlite', table_name='{test.name}')\n"
+                    try:
+                        with open(dest_file, 'a') as f: #exists, overwrite, append?
+                            f.write(plot_script_src)
+                    except Exception as e:
+                        #write locked? exists?
+                        print(type(e))
+                        print(e)
 
                 arch_plot_scripts.append(dest_file)
                 print_banner(f'Archiving for {test.name} complete.')
