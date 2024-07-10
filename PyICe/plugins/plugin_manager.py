@@ -4,8 +4,8 @@ from PyICe.lab_utils.sqlite_data import sqlite_data
 from PyICe import virtual_instruments, lab_utils
 from PyICe.lab_utils.banners import print_banner
 from PyICe.plugins import test_archive
-from PyICe.lab_core import logger
-from PyICe import lab_core, LTC_plot
+from PyICe.lab_core import logger, master
+from PyICe import LTC_plot
 import os, inspect, importlib, datetime, socket, traceback, sys, cairosvg
 from email.mime.image import MIMEImage
 
@@ -25,6 +25,7 @@ class Callback_logger(logger):
 
 class Plugin_Manager():
     def __init__(self, debug=False):
+        '''args: debug - Boolean. This will be passed into all run tests to be used for abbreviating data collection loops. Default value is False.'''
         self._debug = debug
         self.tests = []
         self.operator = os.getlogin().lower()
@@ -43,7 +44,8 @@ class Plugin_Manager():
                         print_banner(f'PYICE PLUGIN_MANAGER Plugin found: "{plugin}".')
 
     def add_test(self, test):
-        '''Adds a script to the list that will be operated on. If this is the first time a test is added to this instance of plugin manager, plugin manager also takes this opportunity to acquire global data from the project.'''
+        '''Adds a script to the list that will be operated on. If this is the first time a test is added to this instance of plugin manager, plugin manager also takes this opportunity to acquire the list of plugins used for the project.
+        args: test - class object. A test that contains the methods necessary for data collection and processing in the project.'''
         a_test = test() 
         self.tests.append(a_test)
         a_test.pm=self
@@ -68,7 +70,8 @@ class Plugin_Manager():
         a_test._is_crashed = False
 
     def run(self, temperatures=[]):
-        '''This method goes through the complete data collection process the project set out. Scripts will be run once per temperature or just once if no temperature is given. Debug will be passed on to the script to be used at the script's discretion.'''
+        '''This method goes through the complete data collection process the project set out. Scripts will be run once per temperature or just once if no temperature is given. Debug will be passed on to the script to be used at the script's discretion.
+        args: temperatures- list. The list consists of values that will be set to the 'temp_control_channel' assigned by the instrument drivers. Default value is an empty list.'''
         self.collect(temperatures, self._debug)
         self.plot()
         if 'evaluate_tests' in self.used_plugins:
@@ -89,6 +92,7 @@ class Plugin_Manager():
         Drivers should return a dictionary with needed key 'instruments', which returns a list of channels and channel objects to be added to the master, and optional keys 'cleanup functions', 'temp_control_channel' ,and 'special_channel_action'.
         The value for "cleanup functions" is a list of functions that put the instruments in safe states once the test is complete.
         The cleanup functions are run in the order in which the instruments appear in the bench file.
+        The 'temp_control_channel' is a channel object. The values provided in the temperature list will be written to it.
         The special channel actions are functions that are run on each logging of data and the value is a dicionary with a channel object or the string name of a channel as key, and the value the function to be run. The function requires the arguments channel_name, readings, and test.'''
 
         self.cleanup_fns = []
@@ -140,6 +144,7 @@ class Plugin_Manager():
         self.temperature_channel = self.master.add_channel_dummy('tdegc')
         self.temperature_channel.write(25)
     def _create_logger(self, test):
+        '''Each test add to the plugin manager will have its own logger with which it shall store the data collected by their collect method. The channels will be determined by the drivers added to the driver, and a sqlite database and table will be automatically created and linked to the tests.'''
         test._logger = Callback_logger(database=test._db_file, special_channel_actions=self.special_channel_actions, test=test)
         test._logger.merge_in_channel_group(self.master.get_flat_channel_group())
         if hasattr(test, 'customize'):
@@ -147,22 +152,26 @@ class Plugin_Manager():
         test._logger.new_table(table_name=test.name, replace_table=True)
         test._logger.write_html(file_name=test.project_folder_name+'.html')
 
-    def reconfigure(self,test, channel, value):
-        '''Optional method used during customize() if changes are made to the DUT on a particular test in a suite. Unwound after test's collect at each temperature.'''
-        test._channel_reconfiguration_settings.append((channel, channel.read(), value))
-    def _reconfigure(self, test):
-        '''save channel setting before writing to value'''
-        for (ch, old, new) in test._channel_reconfiguration_settings:
-            ch.write(new)
-    def _restore(self, test):
-        '''undo any changes made by reconfigure'''
-        for (ch, old, new) in test._channel_reconfiguration_settings:
-            ch.write(old)
+    # def reconfigure(self,test, channel, value):
+        # '''Optional method used during customize() if changes are made to the DUT on a particular test in a suite. Unwound after test's collect at each temperature.
+        # args:   test - test.test object. The test that is making the change.
+                # channel - channel object. The channel that is changed.
+                # value - The channel specified will be set to this value for the duration of the test, unless otherwise changed during the test.'''
+        # test._channel_reconfiguration_settings.append((channel, channel.read(), value))
+    # def _reconfigure(self, test):
+        # '''save channel setting before writing to value'''
+        # for (ch, old, new) in test._channel_reconfiguration_settings:
+            # ch.write(new)
+    # def _restore(self, test):
+        # '''undo any changes made by reconfigure'''
+        # for (ch, old, new) in test._channel_reconfiguration_settings:
+            # ch.write(old)
     def cleanup(self):
-        """Release the instruments from bench control."""
+        """Runs the functions found in cleanup_fns. Resets the intstruments to predetermined "safe" settings as given by the drivers."""
         for func in self.cleanup_fns:
             func()
     def close_ports(self):
+        """Release the instruments from bench control."""
         delegator_list = [ch.resolve_delegator() for ch in self.master]
         delegator_list = list(set(delegator_list))
         interfaces = []
@@ -255,8 +264,8 @@ class Plugin_Manager():
     ###
     def _create_metalogger(self, test):
         '''Called from the plugin_master if the 'traceability' plugin was included in the plugin_registry, this creates a master and logger separate from the test data logger, and populates them using user provided metadata gathering functions. '''
-        _master = lab_core.master()
-        test._metalogger = lab_core.logger(database=test._db_file)
+        _master = master()
+        test._metalogger = logger(database=test._db_file)
         test._metalogger.add(_master)
         test.traceability_items = test._get_metadata_gathering_fns().get_traceability_items(test=test)
         test.traceability_items.populate_traceability_data()
@@ -266,30 +275,40 @@ class Plugin_Manager():
         test._metalogger.new_table(table_name=test.name+"_metadata", replace_table=True)
         test._metalogger.log()
 
-    ###
-    # EVALUATION METHODS
-    ###
-    def evaluate_test_result(self, test, name, data, conditions=None):
-        '''TODO'''
-        #data should be True/False or iterable.
-        #Handle True/False here for functional tests, or pass through?
-        test._test_results.test_info[name]=test.get_test_info(name)
-        test._test_results._register_test_result(name=name, iter_data=data, conditions=conditions)
-    def evaluate_test_query(self, test, name, value_column, grouping_columns=[], where_clause=''):
-        grouping_str = ''
-        for condition in grouping_columns:
-            grouping_str += ','
-            grouping_str += condition
-        query_str = f'SELECT {value_column}{grouping_str} FROM {test.table_name} ' + ('WHERE' + where_clause if where_clause else '')
-        test.db.query(query_str)
-        self.evaluate_test_result(test, name, test.db)
-    def get_test_results(self,test):
-        res_str = ''
-        all_pass = True
-        res_str += f'*** Module {test.name} ***\n'
-        res_str += f'{test._test_results}'
-        res_str += f'*** Module {test.name} Summary {"PASS" if test._test_results else "FAIL"}. ***\n\n'
-        return res_str
+    # ###
+    # # EVALUATION METHODS
+    # ###
+    # def evaluate_test_result(self, test, name, data, conditions=None):
+        # '''This will compare submitted data to limits for the named test.
+        # args:
+            # test - test.test object. The test script calling this method.
+            # name - string. The name of the test whose limits will be used.
+            # data - Boolean or iterable object. Each value will be compared to the limits (or boolean value) of the name argument. If the data is a SQLite database, the first column will be compared and the rest will be used for grouping.
+            # conditions - None or dictionary. A dictionary with channel names as keys and channel values as values. Used to report under what circumstances the data was taken. Not to be used if submitting a SQLite database as data. Default is None.'''
+        # test._test_results.test_info[name]=test.get_test_info(name)
+        # test._test_results._register_test_result(name=name, iter_data=data, conditions=conditions)
+    # def evaluate_test_query(self, test, name, value_column, grouping_columns=[], where_clause=''):
+        # '''This compares submitted data from a SQLite database to a named test.
+        # args:
+            # test - test.test object. The test script being run.
+            # name - string. The name of the test with limits to be used.
+            # value_column - string. The name of the channel that will be evaluated.
+            # grouping_columns - list. The values of the value_column will be grouped and evaluated by the permutations of the channels that are named in this list of strings.'''
+        # grouping_str = ''
+        # for condition in grouping_columns:
+            # grouping_str += ','
+            # grouping_str += condition
+        # query_str = f'SELECT {value_column}{grouping_str} FROM {test.table_name} ' + ('WHERE' + where_clause if where_clause else '')
+        # test.db.query(query_str)
+        # self.evaluate_test_result(test, name, test.db)
+    # def get_test_results(self, test):
+        # '''Returns a string that reports the Pass/Fail status for all the tests evaluated in the script and the test script as a whole.'''
+        # res_str = ''
+        # all_pass = True
+        # res_str += f'*** Module {test.name} ***\n'
+        # res_str += f'{test._test_results}'
+        # res_str += f'*** Module {test.name} Summary {"PASS" if test._test_results else "FAIL"}. ***\n\n'
+        # return res_str
 
     ###
     # CORRELATION METHODS
@@ -298,11 +317,12 @@ class Plugin_Manager():
         pass
     def get_corr_results(self, test):
         pass
+
     ###
     # ARCHIVE METHODS
     ###
     def _archive(self):
-        '''Makes a copy of the data just collected and puts it and the associated metatable (if there is one) in an archive folder. Also adds a copy of the table (and metatable) to the database with the time of collection to the test's generic database, so it will not be overwritten when the test is next run.'''
+        '''Makes a copy of the data just collected and puts it and the associated metatable (if there is one) in an archive folder. Also adds a copy of the table (and metatable) to the database with the time of collection to the test's generic database, so it will not be overwritten when the test is next run. Will also generate scripts to rerun plotting (if the script has a plot method) and evaluation (if the evaluation feature is used).'''
         print_banner('Archiving. . .')
         try:
             archive_folder = self.tests[0].get_archive_folder_name()
@@ -313,7 +333,7 @@ class Plugin_Manager():
             archiver = test_archive.database_archive(db_source_file=test._db_file)
             if not archiver.has_data(tablename=test.name):
                 print(f'No data logged for {test.name}. Skipping archive.')
-                return
+                continue
             if test._is_crashed:
                 this_archive_folder = archive_folder + '_CRASHED'
             else:
@@ -369,11 +389,14 @@ class Plugin_Manager():
     # SCRIPT METHODS
     ###
     def collect(self, temperatures, debug):
-        '''This method aggregates the channels that will be logged and calls the collect method in every test added via self.add_test over every temperature indicated via argument. If debug is set to True, this will be passed on to the script. This variable can be used in scripts to trigger shorter loops or fewer conditions under which to gather data to verify script completeness.'''
-        self.master = lab_core.master()
+        '''This method aggregates the channels that will be logged and calls the collect method in every test added via self.add_test.
+        args:
+            temperatures (list): What values will be written to the temp_control_channel.
+            debug (Boolean): This will be passed on to the script and can be used to trigger shorter loops or fewer conditions under which to gather data to verify script completeness.'''
+        self.master = master()
         self.add_instrument_channels()
         if 'bench_config_management' in self.used_plugins:
-            self.test_components =component_collection()
+            self.test_components = component_collection()
             self.test_connections = connection_collection(name="test_connections")
         for test in self.tests:
             test._channel_reconfiguration_settings=[]
@@ -403,9 +426,9 @@ class Plugin_Manager():
                 if not test._is_crashed:
                     try:
                         # test.test_timer.resume_timer()
-                        self._reconfigure(test)
+                        test._reconfigure()
                         test.collect()
-                        self._restore(test)
+                        test._restore()
                     except (Exception, BaseException) as e:
                         traceback.print_exc()
                         test._is_crashed = True
@@ -422,9 +445,9 @@ class Plugin_Manager():
                         try:
                             print_banner(f'Starting {test.name} at {temp}C')
                             # test.test_timer.resume_timer()
-                            self._reconfigure(test)
+                            test._reconfigure()
                             test.collect(test._logger, debug)
-                            self._restore(test)
+                            test._restore()
                         except (Exception, BaseException) as e:
                             traceback.print_exc()
                             test._is_crashed = True
@@ -436,12 +459,16 @@ class Plugin_Manager():
                     break
         self.close_ports()
     def plot(self, database=None, table_name=None, plot_filepath=None):
-        '''Run the plot method of each test in self.tests.'''
+        '''Run the plot method of each test in self.tests. Any plots returned by a test script's plot method will be emailed if the notifications plugin is used.
+        args:
+            database - string. The location of the database with the data to plot If left blank, the plot will continue with the database in the same directory as the test script.
+            table_name - string. The name of the table in the database with the data to plot. If left blank, the plot will continue with the table named after the test script.
+            plot_filepath - string. This is where the plots will be placed upon creation. If left blank, a directory name plots will be created in the directory with the plot script and and the plots will be placed in there.'''
         self._plots=[]
         for test in self.tests:
             if not hasattr(test, 'plot'):
                 continue
-            print_banner(f'{test} Plotting. . .')
+            print_banner(f'{test.name} Plotting. . .')
             if database is None:
                 database = test._db_file
             if table_name is None:
@@ -466,10 +493,13 @@ class Plugin_Manager():
                 plts = [self._convert_svg(plt) for plt in plts]
             self._plots.extend(plts)
             print_banner(f'Plotting for {test.name} complete.')
-        if len(self._plots): #Don't send empty emails
+        if len(self._plots) and 'notifications' in self.used_plugins: #Don't send empty emails
             self.email_plots(self._plots)
     def evaluate(self, database=None, table_name=None):
-        '''Run the evaluate method of each test in self.tests.'''
+        '''Run the evaluate method of each test in self.tests.
+        args:   
+            database - string. The location of the database with the data to evaluate If left blank, the evaluation will continue with the database in the same directory as the test script.
+            table_name - string. The name of the table in the database with the relevant data. If left blank, the evaluation will continue with the table named after the test script.'''
         from PyICe.plugins.test_results import test_results
         print_banner('Evaluating. . .')
         for test in self.tests:
@@ -483,8 +513,8 @@ class Plugin_Manager():
             test.db = sqlite_data(database_file=database, table_name=test.table_name)
             test.evaluate_results()
             if test._test_results._test_results:
-                print(self.get_test_results(test))
-                self.notify(self.get_test_results(test), subject='Test Results')
+                print(test.get_test_results())
+                self.notify(test.get_test_results(), subject='Test Results')
             elif self.verbose:
                 print(f'No results submitted for {test.name}.')
             t_r = test._test_results.json_report()
@@ -494,7 +524,10 @@ class Plugin_Manager():
                     f.write(t_r.encode('utf-8'))
                     f.close()
     def correlate(self, database=None, table_name=None):
-        '''Run the correlate method of each test in self.tests.'''
+        '''Run the correlate method of each test in self.tests.
+        args:   
+            database - string. The location of the database with the data to evaluate If left blank, the evaluation will continue with the database in the same directory as the test script.
+            table_name - string. The name of the table in the database with the relevant data. If left blank, the evaluation will continue with the table named after the test script.'''
         from PyICe.plugins.test_results import test_results
         print_banner('Correlating. . .')
         for test in self.tests:
