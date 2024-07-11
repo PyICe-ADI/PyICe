@@ -6,7 +6,7 @@ from PyICe.lab_utils.banners import print_banner
 from PyICe.plugins import test_archive
 from PyICe.lab_core import logger, master
 from PyICe import LTC_plot
-import os, inspect, importlib, datetime, socket, traceback, sys, cairosvg
+import os, inspect, importlib, datetime, socket, traceback, sys, cairosvg, json
 from email.mime.image import MIMEImage
 
 
@@ -31,14 +31,26 @@ class Plugin_Manager():
         self.operator = os.getlogin().lower()
         self.thismachine = socket.gethostname().replace("-","_")
 
+    # def find_plugins(self, a_test):
+        # '''This is called the first time a test is added to the plugin manager. An instance of a test is needed to locate the project path. This facilitates users starting from an individual test and getting all the chosen plugins.'''
+        # for (dirpath, dirnames, filenames) in os.walk(a_test._project_path):
+            # if 'plugins_registry.py' in filenames: 
+                # pluginpath = dirpath.replace('\\', '.')
+                # pluginpath = pluginpath[pluginpath.index(a_test._project_path.split('\\')[-1]):]
+                # module = importlib.import_module(name=pluginpath+'.plugins_registry', package=None)
+                # self.used_plugins = module.get_plugins()
+                # if self.verbose:
+                    # for plugin in self.used_plugins:
+                        # print_banner(f'PYICE PLUGIN_MANAGER Plugin found: "{plugin}".')
+
     def find_plugins(self, a_test):
         '''This is called the first time a test is added to the plugin manager. An instance of a test is needed to locate the project path. This facilitates users starting from an individual test and getting all the chosen plugins.'''
         for (dirpath, dirnames, filenames) in os.walk(a_test._project_path):
-            if 'plugins_registry.py' in filenames: 
+            if 'plugins.json' in filenames: 
                 pluginpath = dirpath.replace('\\', '.')
                 pluginpath = pluginpath[pluginpath.index(a_test._project_path.split('\\')[-1]):]
-                module = importlib.import_module(name=pluginpath+'.plugins_registry', package=None)
-                self.used_plugins = module.get_plugins()
+                with open(dirpath+'\\plugins.json') as f:
+                    self.used_plugins = json.load(f)
                 if self.verbose:
                     for plugin in self.used_plugins:
                         print_banner(f'PYICE PLUGIN_MANAGER Plugin found: "{plugin}".')
@@ -267,7 +279,7 @@ class Plugin_Manager():
         _master = master()
         test._metalogger = logger(database=test._db_file)
         test._metalogger.add(_master)
-        test.traceability_items = test._get_metadata_gathering_fns().get_traceability_items(test=test)
+        test.traceability_items = test._get_traceability_items()(test)
         test.traceability_items.populate_traceability_data()
         test.traceability_items.add_data_to_metalogger(test._metalogger)
     def _metalog(self, test):
