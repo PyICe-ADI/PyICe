@@ -31,11 +31,6 @@ class Master_Test_Template():
             return self.bench_image_locations
         else:
             raise Exception('Oi! You said you wanted a visual representation of your lab bench! You need to define bench_image_locations in your Test_Template!')
-    def _get_traceability_items(self):
-        if hasattr(self, 'get_traceability_items'):
-            return self.get_traceability_items
-        else:
-            raise Exception('Oi! You said you wanted to log metadata! You need to define metadata_gathering_fns in your Test_Template!')
 
     ###
     # EVALUATION METHODS

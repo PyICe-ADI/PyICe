@@ -279,7 +279,6 @@ class Plugin_Manager():
         _master = master()
         test._metalogger = logger(database=test._db_file)
         test._metalogger.add(_master)
-        test.traceability_items = test._get_traceability_items()(test)
         test.traceability_items.populate_traceability_data()
         test.traceability_items.add_data_to_metalogger(test._metalogger)
     def _metalog(self, test):
