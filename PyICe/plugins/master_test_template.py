@@ -13,9 +13,18 @@ class Master_Test_Template():
         '''undo any changes made by reconfigure'''
         for (ch, old, new) in self._channel_reconfiguration_settings:
             ch.write(old)
-    def collect(self, channels, debug):
+    def customize(self):
+        '''Optional method to alter the logger before the test begins.'''
+        if self.verbose:
+            print("This test script does not have a collect method.")
+    def declare_bench_connections(self):
+        '''Optional method to log the setup needed to run the test. Plugin required.'''
+        if self.verbose:
+            print("This test script does not have a declare_bench_connections method, and is assumed to use the default setup")
+    def collect(self):
         ''' Mandatory method to operate the bench and collect the data.'''
-        raise Exception("Test scripts require a collect method.")
+        if self.verbose:
+            print("This test script does not have a collect method.")
     def plot(self):
         ''' Optional method to retrieve the data collected and create plots. Can be run over and over once a collect has run. User must return a list or tuple of plots and/or pages, or an individual LTC_plot.Page, or a single LTC_plot.plot.'''
         print("No plots were made with this script.")
@@ -39,23 +48,31 @@ class Master_Test_Template():
         '''This will compare submitted data to limits for the named test.
         args:
             name - string. The name of the test whose limits will be used.
-            data - Boolean or iterable object. Each value will be compared to the limits (or boolean value) of the name argument. If the data is a SQLite database, the first column will be compared and the rest will be used for grouping.
-            conditions - None or dictionary. A dictionary with channel names as keys and channel values as values. Used to report under what circumstances the data was taken. Not to be used if submitting a SQLite database as data. Default is None.'''
+            data - Boolean or iterable object. Each value will be compared to the limits (or boolean value) of the name argument.
+            conditions - None or dictionary. A dictionary with channel names as keys and channel values as values. Used to report under what circumstances the data was taken. Default is None.'''
         self._test_results.test_info[name]=self.get_test_info(name)
         self._test_results._register_test_result(name=name, iter_data=data, conditions=conditions)
-    def evaluate_test_query(self, name, value_column, grouping_columns=[], where_clause=''):
-        '''This compares submitted data from a SQLite database to a named test.
+    def evaluate_test_query(self, name, query):
+        '''This will compare submitted data to limits for the named test.
+        args:
+            name - string. The name of the test whose limits will be used.
+            database - SQLite database object. The first column will be compared to the limits of the named spec and the rest will be used for grouping.'''
+        self._test_results.test_info[name]=self.get_test_info(name)
+        self.db.query(query)
+        self._test_results._evaluate_database(name=name, database=self.db)
+    def evaluate(self, name, values, conditions=[], where_clause=''):
+        '''This compares submitted data from a SQLite database to a named test in a more outlined fashion.
         args:
             name - string. The name of the test with limits to be used.
             value_column - string. The name of the channel that will be evaluated.
             grouping_columns - list. The values of the value_column will be grouped and evaluated by the permutations of the channels that are named in this list of strings.'''
         grouping_str = ''
-        for condition in grouping_columns:
+        for condition in conditions:
             grouping_str += ','
             grouping_str += condition
-        query_str = f'SELECT {value_column}{grouping_str} FROM {self.table_name} ' + ('WHERE' + where_clause if where_clause else '')
-        self.db.query(query_str)
-        self.evaluate_test_result(name, self.db)
+        query_str = f'SELECT {values}{grouping_str} FROM {self.table_name} ' + ('WHERE ' + where_clause if where_clause else '')
+        self.evaluate_test_query(name, query=query_str)
+    # def evaluate_database_value_column(self, name, value_channel, where_clause=''):
     def get_test_results(self):
         '''Returns a string that reports the Pass/Fail status for all the tests evaluated in the script and the test script as a whole.'''
         res_str = ''

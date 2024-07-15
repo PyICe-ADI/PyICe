@@ -375,41 +375,42 @@ class test_results(generic_results):
                                           )
         self._test_results[name].append(failure_result)
         return failure_result
-    def _register_test_result(self, name, iter_data, conditions, query=None):
+    def _evaluate(self, name, database):
+        query = (database.sql_query, database.params)
+        if database.get_column_names() is None:
+            print(f'\nWARNING! The sql query returned nothing. Please double check the query parameters.')
+            return self._register_test_failure(name=name, reason="No submitted data.", conditions=None, query=query)
+        conditions_columns = database.get_column_names()[1:]
+        nt_type = collections.namedtuple('distincts',conditions_columns)
+        # distincts = iter_data.get_distinct(conditions_columns, force_tuple=True)
+        database = database.to_list()
+        distincts = {nt_type._make(freeze(row[1:])) for row in database}
+        try:
+          distincts = sorted(distincts)
+        except TypeError:
+          pass
+        rowcount = len(database)
+        match_count = 0
+        for condition in distincts:
+            data = [row[0] for row in database if freeze(row[1:]) == condition]
+            self._register_test_result(name=name, iter_data=data, conditions=condition._asdict(), query=query) #todo, consider reimplementing __str__ instead of dict conversion.
+            match_count += len(data)
+        assert match_count == rowcount
+    def _evaluate_database(self, name, database):
+        query = (database.sql_query, database.params)
+        if database.get_column_names() is None:
+            print(f'\nWARNING! The sql query returned nothing. Please double check the query parameters.')
+            return self._register_test_failure(name=name, reason="No submitted data.", conditions=None, query=query)
+        iter_data = [row[0] for row in database]
+        self._evaluate_list(name=name, iter_data=iter_data, conditions=None, query=query)
+    def _evaluate_list(self, name, iter_data, conditions, query=None):
         if name not in self._test_declarations:
             self._test_declarations.append(name)
             self._test_results[name] = self._test_results_list(name=name, upper_limit=self.test_info[name]['upper_limit'], lower_limit=self.test_info[name]['lower_limit'])
         #############################################################
         # TODO deal with functional test pass/fail non-numeric data #
         #############################################################
-        if type(iter_data) == sqlite_data:
-            assert query is None
-            query = (iter_data.sql_query, iter_data.params)
-            if iter_data.get_column_names() is None:
-                print(f'\nWARNING! The sql query returned nothing. Please double check the query parameters.')
-                return self._register_test_failure(name=name, reason="No submitted data.", conditions=conditions, query=query)
-            if len(iter_data.get_column_names()) > 1:
-                conditions_columns = iter_data.get_column_names()[1:]
-                nt_type = collections.namedtuple('distincts',conditions_columns)
-                # distincts = iter_data.get_distinct(conditions_columns, force_tuple=True)
-                iter_data = iter_data.to_list()
-                distincts = {nt_type._make(freeze(row[1:])) for row in iter_data}
-                try:
-                  distincts = sorted(distincts)
-                except TypeError:
-                  pass
-                rowcount = len(iter_data)
-                match_count = 0
-                assert conditions is None, "TODO: This isn't a permanent error, but it hasn't been impllemented yet. What to do about explicit conditions???? Append???"
-                for condition in distincts:
-                    data = [row[0] for row in iter_data if freeze(row[1:]) == condition]
-                    self._register_test_result(name=name, iter_data=data, conditions=condition._asdict(), query=query) #todo, consider reimplementing __str__ instead of dict conversion.
-                    match_count += len(data)
-                assert match_count == rowcount
-                return
-            else:
-                iter_data = [row[0] for row in iter_data]
-        elif isinstance(iter_data, numbers.Number):
+        if isinstance(iter_data, numbers.Number):
             iter_data = [iter_data]
         elif isinstance(iter_data, (list, tuple)):
             # Steve passing in an ordered list for sequence order. Needs to be double-listed to avoid iterating the sequence itself!
