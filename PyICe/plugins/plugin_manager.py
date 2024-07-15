@@ -31,18 +31,6 @@ class Plugin_Manager():
         self.operator = os.getlogin().lower()
         self.thismachine = socket.gethostname().replace("-","_")
 
-    # def find_plugins(self, a_test):
-        # '''This is called the first time a test is added to the plugin manager. An instance of a test is needed to locate the project path. This facilitates users starting from an individual test and getting all the chosen plugins.'''
-        # for (dirpath, dirnames, filenames) in os.walk(a_test._project_path):
-            # if 'plugins_registry.py' in filenames: 
-                # pluginpath = dirpath.replace('\\', '.')
-                # pluginpath = pluginpath[pluginpath.index(a_test._project_path.split('\\')[-1]):]
-                # module = importlib.import_module(name=pluginpath+'.plugins_registry', package=None)
-                # self.used_plugins = module.get_plugins()
-                # if self.verbose:
-                    # for plugin in self.used_plugins:
-                        # print_banner(f'PYICE PLUGIN_MANAGER Plugin found: "{plugin}".')
-
     def find_plugins(self, a_test):
         '''This is called the first time a test is added to the plugin manager. An instance of a test is needed to locate the project path. This facilitates users starting from an individual test and getting all the chosen plugins.'''
         for (dirpath, dirnames, filenames) in os.walk(a_test._project_path):
@@ -164,20 +152,6 @@ class Plugin_Manager():
         test._logger.new_table(table_name=test.name, replace_table=True)
         test._logger.write_html(file_name=test.project_folder_name+'.html')
 
-    # def reconfigure(self,test, channel, value):
-        # '''Optional method used during customize() if changes are made to the DUT on a particular test in a suite. Unwound after test's collect at each temperature.
-        # args:   test - test.test object. The test that is making the change.
-                # channel - channel object. The channel that is changed.
-                # value - The channel specified will be set to this value for the duration of the test, unless otherwise changed during the test.'''
-        # test._channel_reconfiguration_settings.append((channel, channel.read(), value))
-    # def _reconfigure(self, test):
-        # '''save channel setting before writing to value'''
-        # for (ch, old, new) in test._channel_reconfiguration_settings:
-            # ch.write(new)
-    # def _restore(self, test):
-        # '''undo any changes made by reconfigure'''
-        # for (ch, old, new) in test._channel_reconfiguration_settings:
-            # ch.write(old)
     def cleanup(self):
         """Runs the functions found in cleanup_fns. Resets the intstruments to predetermined "safe" settings as given by the drivers."""
         for func in self.cleanup_fns:
@@ -285,41 +259,6 @@ class Plugin_Manager():
         '''This is separate from the _create_metalogger method in order to give other plugins the opportunity to add to the metalogger before the channel list is commited to a table.'''
         test._metalogger.new_table(table_name=test.name+"_metadata", replace_table=True)
         test._metalogger.log()
-
-    # ###
-    # # EVALUATION METHODS
-    # ###
-    # def evaluate_test_result(self, test, name, data, conditions=None):
-        # '''This will compare submitted data to limits for the named test.
-        # args:
-            # test - test.test object. The test script calling this method.
-            # name - string. The name of the test whose limits will be used.
-            # data - Boolean or iterable object. Each value will be compared to the limits (or boolean value) of the name argument. If the data is a SQLite database, the first column will be compared and the rest will be used for grouping.
-            # conditions - None or dictionary. A dictionary with channel names as keys and channel values as values. Used to report under what circumstances the data was taken. Not to be used if submitting a SQLite database as data. Default is None.'''
-        # test._test_results.test_info[name]=test.get_test_info(name)
-        # test._test_results._register_test_result(name=name, iter_data=data, conditions=conditions)
-    # def evaluate_test_query(self, test, name, value_column, grouping_columns=[], where_clause=''):
-        # '''This compares submitted data from a SQLite database to a named test.
-        # args:
-            # test - test.test object. The test script being run.
-            # name - string. The name of the test with limits to be used.
-            # value_column - string. The name of the channel that will be evaluated.
-            # grouping_columns - list. The values of the value_column will be grouped and evaluated by the permutations of the channels that are named in this list of strings.'''
-        # grouping_str = ''
-        # for condition in grouping_columns:
-            # grouping_str += ','
-            # grouping_str += condition
-        # query_str = f'SELECT {value_column}{grouping_str} FROM {test.table_name} ' + ('WHERE' + where_clause if where_clause else '')
-        # test.db.query(query_str)
-        # self.evaluate_test_result(test, name, test.db)
-    # def get_test_results(self, test):
-        # '''Returns a string that reports the Pass/Fail status for all the tests evaluated in the script and the test script as a whole.'''
-        # res_str = ''
-        # all_pass = True
-        # res_str += f'*** Module {test.name} ***\n'
-        # res_str += f'{test._test_results}'
-        # res_str += f'*** Module {test.name} Summary {"PASS" if test._test_results else "FAIL"}. ***\n\n'
-        # return res_str
 
     ###
     # CORRELATION METHODS
@@ -479,6 +418,7 @@ class Plugin_Manager():
         for test in self.tests:
             if not hasattr(test, 'plot'):
                 continue
+            test.plot_list=[]
             print_banner(f'{test.name} Plotting. . .')
             if database is None:
                 database = test._db_file
@@ -491,18 +431,13 @@ class Plugin_Manager():
             else:
                 test.plot_filepath = plot_filepath
             test.db = sqlite_data(database_file=database, table_name=test.table_name)
-            plts = test.plot()
-            if plts is None:
-                print(f'WARNING: {self.get_name()} failed to return plots.')
-                plts = []
-            elif isinstance(plts, (LTC_plot.plot, LTC_plot.Page)):
-                plts = [self._convert_svg(plts)]
-            elif isinstance(plts, (str,bytes)):
-                plts = [plts]
+            test.plot()
+            if isinstance(test.plot_list, (LTC_plot.plot, LTC_plot.Page)):
+                test.plot_list = [self._convert_svg(test.plot_list)]
             else:
-                assert isinstance(plts, list)
-                plts = [self._convert_svg(plt) for plt in plts]
-            self._plots.extend(plts)
+                assert isinstance(test.plot_list, list)
+                test.plot_list = [self._convert_svg(plt) for plt in test.plot_list]
+            self._plots.extend(test.plot_list)
             print_banner(f'Plotting for {test.name} complete.')
         if len(self._plots) and 'notifications' in self.used_plugins: #Don't send empty emails
             self.email_plots(self._plots)
