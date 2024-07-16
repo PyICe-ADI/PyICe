@@ -39,26 +39,32 @@ class Master_Test_Template():
         if hasattr(self, 'bench_image_locations'):
             return self.bench_image_locations
         else:
-            raise Exception('Oi! You said you wanted a visual representation of your lab bench! You need to define bench_image_locations in your Test_Template!')
+            raise Exception("PyICe Master Test Template: You said you wanted a visual representation of your lab bench. You'll need to define bench_image_locations in your Test_Template.")
 
     ###
     # EVALUATION METHODS
     ###
-    def evaluate_test_result(self, name, data, conditions=None):
+    def evaluate_rawdata(self, name, data, conditions=None):
         '''This will compare submitted data to limits for the named test.
         args:
             name - string. The name of the test whose limits will be used.
             data - Boolean or iterable object. Each value will be compared to the limits (or boolean value) of the name argument.
             conditions - None or dictionary. A dictionary with channel names as keys and channel values as values. Used to report under what circumstances the data was taken. Default is None.'''
-        self._test_results.test_info[name]=self.get_test_info(name)
+        self._test_results.test_limits[name]=self.get_test_limits(name)
         self._test_results._register_test_result(name=name, iter_data=data, conditions=conditions)
-    def evaluate_test_query(self, name, query):
+    def evaluate_query(self, name, query):
         '''This will compare submitted data to limits for the named test.
         args:
             name - string. The name of the test whose limits will be used.
             database - SQLite database object. The first column will be compared to the limits of the named spec and the rest will be used for grouping.'''
-        self._test_results.test_info[name]=self.get_test_info(name)
+        self._test_results.test_limits[name]=self.get_test_limits(name)
         self.db.query(query)
+        self._test_results._evaluate_database(name=name, database=self.db)
+    def evaluate_db(self, name):
+        '''This method evaluates a pre-massaged SQLite database, self.db, from the user. It returns a bit of flexibility on the sequel query to the user.
+        args:
+            name - string. The name of the test whose limits will be used.'''
+        self._test_results.test_limits[name]=self.get_test_limits(name)
         self._test_results._evaluate_database(name=name, database=self.db)
     def evaluate(self, name, values, conditions=[], where_clause=''):
         '''This compares submitted data from a SQLite database to a named test in a more outlined fashion.
@@ -66,13 +72,11 @@ class Master_Test_Template():
             name - string. The name of the test with limits to be used.
             value_column - string. The name of the channel that will be evaluated.
             grouping_columns - list. The values of the value_column will be grouped and evaluated by the permutations of the channels that are named in this list of strings.'''
-        grouping_str = ''
+        condition_str = ''
         for condition in conditions:
-            grouping_str += ','
-            grouping_str += condition
-        query_str = f'SELECT {values}{grouping_str} FROM {self.table_name} ' + ('WHERE ' + where_clause if where_clause else '')
-        self.evaluate_test_query(name, query=query_str)
-    # def evaluate_database_value_column(self, name, value_channel, where_clause=''):
+            condition_str += f",{condition}"
+        query_str = f'SELECT {values}{condition_str} FROM {self.table_name} ' + ('WHERE ' + where_clause if where_clause else '')
+        self.evaluate_query(name, query=query_str)
     def get_test_results(self):
         '''Returns a string that reports the Pass/Fail status for all the tests evaluated in the script and the test script as a whole.'''
         res_str = ''
@@ -81,9 +85,8 @@ class Master_Test_Template():
         res_str += f'{self._test_results}'
         res_str += f'*** Module {self.name} Summary {"PASS" if self._test_results else "FAIL"}. ***\n\n'
         return res_str
-    def get_test_info(self, name):
-        raise Exception("MASTER TEST TEMPLATE ERROR: This project indicated a use of the TEST_LIMIT plugin but no project specific 'get_test_info' method was provided.")
-
+    def get_test_limits(self, name):
+        raise Exception("MASTER TEST TEMPLATE ERROR: This project indicated a use of the TEST_LIMIT plugin but no project specific 'get_test_limits' method was provided.")
 
     # ###
     # # CORRELATE FEATURE METHODS
@@ -95,7 +98,7 @@ class Master_Test_Template():
         
         # raise("Test scripts requires a correlate_results method.")
     # def correlate_test_result(self, name, data, key_conditions):
-        # self._test_results.test_info[name]=self.get_correlation_test_info(name)
+        # self._test_results.test_limits[name]=self.get_correlation_test_info(name)
         # self._test_results._register_correlation_result(name, data, key_conditions)
     # def get_correlation_data_scalar(self, REFID, data, key_conditions):
         # '''Must return a value from an outside data source associated with the REFID named and matching key_conditions in the data provided.'''

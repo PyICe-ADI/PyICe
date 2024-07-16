@@ -1,4 +1,3 @@
-from PyICe import LTC_plot
 from PyICe.lab_utils.sqlite_data import sqlite_data
 import collections
 import datetime
@@ -84,7 +83,7 @@ def none_abs(a):
 
 
 class generic_results():
-    '''Parent of test_results and correlation_results and keeper of any commonalities.'''
+    '''Parent of Test_Results and correlation_results and keeper of any commonalities.'''
     def __init__(self):
         raise Exception("This class isn't supposed to be instantiated directly.")
         # TODO https://docs.python.org/3/library/abc.html ?
@@ -138,7 +137,7 @@ class generic_results():
         res_dict['tests'] = {}
         for t_d in declarations:
             res_dict['tests'][t_d] = {}
-            res_dict['tests'][t_d]['declaration'] = {k:v for k,v in self.test_info[t_d].items() if k not in ['test_name', 'refid_name']}
+            res_dict['tests'][t_d]['declaration'] = {k:v for k,v in self.test_limits[t_d].items() if k not in ['test_name', 'refid_name']}
             try:
                 results[t_d]
             except KeyError as e:
@@ -146,7 +145,7 @@ class generic_results():
             else:
                 res_dict['tests'][t_d]['results'] = {}
                
-                if isinstance(self, test_results):
+                if isinstance(self, Test_Results):
                     res_dict['tests'][t_d]['results']['cases'] = []
                     res_dict['tests'][t_d]['results']['summary'] = {}
                     for condition_hash, condition_orig in results[t_d].get_conditions().items():
@@ -217,7 +216,7 @@ class generic_results():
         # TODO Signature/CRC?
         return json.dumps(res_dict, indent=2, ensure_ascii=False, cls=CustomJSONizer)
 
-class test_results(generic_results):
+class Test_Results(generic_results):
     class _test_result(collections.namedtuple('test_result', ['test_name', 'conditions', 'min_data', 'max_data', 'passes', 'failure_reason', 'collected_data', 'plot', 'query'])):
         '''add some helper moethods for easy summary'''
         def __new__(cls, **kwargs):
@@ -330,7 +329,7 @@ class test_results(generic_results):
         self._ate_results = collections.OrderedDict()
         self._init(name, module)
         self._test_declarations = []
-        self.test_info = {}
+        self.test_limits = {}
     def json_report(self):
         return self._json_report(declarations=self._test_declarations, results=self._test_results, ate_results=self._ate_results)
     def get_test_declarations(self):
@@ -406,7 +405,7 @@ class test_results(generic_results):
     def _evaluate_list(self, name, iter_data, conditions, query=None):
         if name not in self._test_declarations:
             self._test_declarations.append(name)
-            self._test_results[name] = self._test_results_list(name=name, upper_limit=self.test_info[name]['upper_limit'], lower_limit=self.test_info[name]['lower_limit'])
+            self._test_results[name] = self._test_results_list(name=name, upper_limit=self.test_limits[name]['upper_limit'], lower_limit=self.test_limits[name]['lower_limit'])
         #############################################################
         # TODO deal with functional test pass/fail non-numeric data #
         #############################################################
@@ -424,20 +423,20 @@ class test_results(generic_results):
             if not len(iter_data): 
                 return t_f
             
-        self.test_info[name]['upper_limit'] = self.test_info[name]['upper_limit'] if self.test_info[name]['upper_limit']==self.test_info[name]['upper_limit'] else None
-        self.test_info[name]['lower_limit'] = self.test_info[name]['lower_limit'] if self.test_info[name]['lower_limit']==self.test_info[name]['lower_limit'] else None
-        assert (self.test_info[name]['upper_limit'] is not None or self.test_info[name]['lower_limit'] is not None), f'Something is wrong with test limits for {name}. Contact support.'
-        if self.test_info[name]['upper_limit'] != self.test_info[name]['lower_limit']:
+        self.test_limits[name]['upper_limit'] = self.test_limits[name]['upper_limit'] if self.test_limits[name]['upper_limit']==self.test_limits[name]['upper_limit'] else None
+        self.test_limits[name]['lower_limit'] = self.test_limits[name]['lower_limit'] if self.test_limits[name]['lower_limit']==self.test_limits[name]['lower_limit'] else None
+        assert (self.test_limits[name]['upper_limit'] is not None or self.test_limits[name]['lower_limit'] is not None), f'Something is wrong with test limits for {name}. Contact support.'
+        if self.test_limits[name]['upper_limit'] != self.test_limits[name]['lower_limit']:
             passes = functools.reduce(lambda x,y: x and y, [data_pt is not None \
-                                                            and (self.test_info[name]['upper_limit'] is None or data_pt <= self.test_info[name]['upper_limit']) \
-                                                            and (self.test_info[name]['lower_limit'] is None or data_pt >= self.test_info[name]['lower_limit']) \
+                                                            and (self.test_limits[name]['upper_limit'] is None or data_pt <= self.test_limits[name]['upper_limit']) \
+                                                            and (self.test_limits[name]['lower_limit'] is None or data_pt >= self.test_limits[name]['lower_limit']) \
                                                             for data_pt in iter_data
                                                             ]
                                       )
         else:
             # I think this is an exact test. Avoid arithmetic and ordering comparisons in case data isn't scalar.
             passes = functools.reduce(lambda x,y: x and y, [data_pt is not None \
-                                                            and (data_pt == self.test_info[name]['upper_limit']) #upper==lower \
+                                                            and (data_pt == self.test_limits[name]['upper_limit']) #upper==lower \
                                                             for data_pt in iter_data
                                                             ]
                                       )
@@ -582,9 +581,9 @@ class correlation_results(generic_results):
     def _is_in_spec(self, name, error):
         if error is None:
             return False
-        if self.test_info[name]['upper_limit'] is not None and error > self.test_info[name]['upper_limit']:
+        if self.test_limits[name]['upper_limit'] is not None and error > self.test_limits[name]['upper_limit']:
             return False
-        if self.test_info[name]['lower_limit'] is not None and error < self.test_info[name]['lower_limit']:
+        if self.test_limits[name]['lower_limit'] is not None and error < self.test_limits[name]['lower_limit']:
             return False
         return True
     def _error(self, refid_name,key_conditions,bench_data):
