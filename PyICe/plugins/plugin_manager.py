@@ -5,6 +5,7 @@ from PyICe.lab_utils.sqlite_data import sqlite_data
 from PyICe.plugins.test_results import Test_Results
 from PyICe import virtual_instruments, lab_utils
 from PyICe.lab_utils.banners import print_banner
+from PyICe.lab_utils.communications import email, sms
 from PyICe.lab_core import logger, master
 from PyICe.plugins import test_archive
 from email.mime.image import MIMEImage
@@ -178,8 +179,17 @@ class Plugin_Manager():
     ###
     def notify(self, msg, subject=None, attachment_filenames=[], attachment_MIMEParts=[]):
         if 'notifications' in self.used_plugins:
-            # if not self._debug:
-            # if not True:
+            for signal_type in self.notification_targets:
+                if signal_type == 'emails':
+                    for email_address in self.notification_targets['emails']:
+                        mail = email(email_address)
+                        mail.send(msg, subject=subject, attachment_filenames=attachment_filenames, attachment_MIMEParts=attachment_MIMEParts)
+                elif signal_type == 'texts':
+                    for txt_number, carrier in self.notification_targets['texts']:
+                        text = sms(txt_number, carrier)
+                        text.send(msg)
+                else:
+                    print(f"Plugin Manager Warning: Unrecognized key {signal_type} found in the notification target dictionary. Please only use 'emails' and 'texts'.")
             try:
                 for fn in self._notification_functions:
                     try:
@@ -197,18 +207,20 @@ class Plugin_Manager():
             except AttributeError as e:
                 if not len(attachment_filenames) and not len(attachment_MIMEParts):
                     print(msg)
-            else:
-                if not len(attachment_filenames) and not len(attachment_MIMEParts):
-                    print(msg)
 
     def _find_notifications(self, project_path):
         self._notification_functions = []
+        self.notification_targets = {'emails':[], 'texts':[]}
         for (dirpath, dirnames, filenames) in os.walk(project_path):
             if self.operator+'.py' in filenames: 
                 usernotificationpath = dirpath.replace('\\', '.')
                 usernotificationpath = usernotificationpath[usernotificationpath.index(project_path.split('\\')[-1]):]
                 module = importlib.import_module(name=usernotificationpath+f'.{self.operator}', package=None)
-                module.init(test_manager=self)
+                if hasattr(module, 'add_notifications_to_test_manager'):
+                    module.add_notifications_to_test_manager(test_manager=self)
+                if hasattr(module, 'get_notification_targets'):
+                    self.notification_targets = module.get_notification_targets()
+                break
 
     def add_notification(self, fn):
         self._notification_functions.append(fn)
@@ -386,7 +398,8 @@ class Plugin_Manager():
                         traceback.print_exc()
                         test._is_crashed = True
                         test._crash_info = sys.exc_info()
-                        self.notify(self.crash_info(test), subject='CRASHED!!!')
+                        print(test._crash_info)
+                        self.notify(test._crash_info, subject='CRASHED!!!')
                     self.cleanup()
         else:
             assert self.temperature_channel != None
@@ -405,6 +418,7 @@ class Plugin_Manager():
                             traceback.print_exc()
                             test._is_crashed = True
                             test._crash_info = sys.exc_info()
+                            print(test._crash_info)
                             self.notify(test._crash_info, subject='CRASHED!!!')
                         self.cleanup()
                 if all([x._is_crashed for x in self.tests]):
