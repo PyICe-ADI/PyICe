@@ -2,6 +2,7 @@ import smtplib, re, os
 from email.mime.text import MIMEText #send email/sms message from script
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
+from PyICe.lab_utils.clean_unicode import clean_unicode
 
 class email(object):
     '''sends email to specified destination from ADI mail server. Only works on ADI trusted internal network.'''

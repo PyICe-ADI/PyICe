@@ -51,7 +51,7 @@ class Master_Test_Template():
             data - Boolean or iterable object. Each value will be compared to the limits (or boolean value) of the name argument.
             conditions - None or dictionary. A dictionary with channel names as keys and channel values as values. Used to report under what circumstances the data was taken. Default is None.'''
         self._test_results.test_limits[name]=self.get_test_limits(name)
-        self._test_results._register_test_result(name=name, iter_data=data, conditions=conditions)
+        self._test_results._evaluate_list(name=name, iter_data=data, conditions=conditions)
     def evaluate_query(self, name, query):
         '''This will compare submitted data to limits for the named test.
         args:

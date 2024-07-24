@@ -374,14 +374,13 @@ class Test_Results(generic_results):
                                           )
         self._test_results[name].append(failure_result)
         return failure_result
-    def _evaluate(self, name, database):
+    def _evaluate_database(self, name, database):
         query = (database.sql_query, database.params)
         if database.get_column_names() is None:
             print(f'\nWARNING! The sql query returned nothing. Please double check the query parameters.')
             return self._register_test_failure(name=name, reason="No submitted data.", conditions=None, query=query)
         conditions_columns = database.get_column_names()[1:]
         nt_type = collections.namedtuple('distincts',conditions_columns)
-        # distincts = iter_data.get_distinct(conditions_columns, force_tuple=True)
         database = database.to_list()
         distincts = {nt_type._make(freeze(row[1:])) for row in database}
         try:
@@ -392,16 +391,9 @@ class Test_Results(generic_results):
         match_count = 0
         for condition in distincts:
             data = [row[0] for row in database if freeze(row[1:]) == condition]
-            self._register_test_result(name=name, iter_data=data, conditions=condition._asdict(), query=query) #todo, consider reimplementing __str__ instead of dict conversion.
+            self._evaluate_list(name=name, iter_data=data, conditions=condition._asdict() if len(conditions_columns) else None, query=query) #todo, consider reimplementing __str__ instead of dict conversion.
             match_count += len(data)
         assert match_count == rowcount
-    def _evaluate_database(self, name, database):
-        query = (database.sql_query, database.params)
-        if database.get_column_names() is None:
-            print(f'\nWARNING! The sql query returned nothing. Please double check the query parameters.')
-            return self._register_test_failure(name=name, reason="No submitted data.", conditions=None, query=query)
-        iter_data = [row[0] for row in database]
-        self._evaluate_list(name=name, iter_data=iter_data, conditions=None, query=query)
     def _evaluate_list(self, name, iter_data, conditions, query=None):
         if name not in self._test_declarations:
             self._test_declarations.append(name)
