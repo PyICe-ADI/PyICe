@@ -56,6 +56,3 @@ class Bench_maker():
                             raise Exception(f'BENCH MAKER: Multiple actions have been declared for channel(s) {overwrite_check}.')
                         self.special_channel_actions.update(instrument_dict['special_channel_action'])
             break
-        
-        self.temperature_channel = self.master.add_channel_dummy('tdegc')
-        self.temperature_channel.write(25)
