@@ -79,8 +79,6 @@ class Plugin_Manager():
             self.correlate()
         if 'archive' in self.used_plugins:
             self._archive()
-        else:
-            print_banner("No plugins registered, we're done here...")
 
     def add_instrument_channels(self):
         '''In this method, a master is populated by instruments and their channels.
@@ -133,7 +131,7 @@ class Plugin_Manager():
                         else:
                             raise Exception(f'BENCH MAKER: Multiple channels have been declared the temperature control! One from {temp_instrument} and one from {instrument_dict["instruments"]}.')
                     if 'special_channel_action' in instrument_dict:
-                        overwrite_check = [i.get_name() for i in instrument_dict['special_channel_action'] if i in self.special_channel_actions]
+                        overwrite_check = [i for i in instrument_dict['special_channel_action'] if i in self.special_channel_actions]
                         if overwrite_check:
                             raise Exception(f'BENCH MAKER: Multiple actions have been declared for channel(s) {overwrite_check}.')
                         self.special_channel_actions.update(instrument_dict['special_channel_action'])
@@ -319,9 +317,9 @@ class Plugin_Manager():
                     import_str = test._module_path[test._module_path.index(test.project_folder_name):].replace('\\','.')
                     plot_script_src = "if __name__ == '__main__':\n"
                     plot_script_src += f"    from PyICe.plugins.plugin_manager import Plugin_Manager\n"
-                    plot_script_src += f"    from {import_str}.test import test\n"
+                    plot_script_src += f"    from {import_str}.test import Test\n"
                     plot_script_src += f"    pm = Plugin_Manager()\n"
-                    plot_script_src += f"    pm.add_test(test)\n"
+                    plot_script_src += f"    pm.add_test(Test)\n"
                     plot_script_src += f"    pm.plot(database='data_log.sqlite', table_name='{test.name}')\n"
                     try:
                         with open(dest_file, 'a') as f: #exists, overwrite, append?
@@ -445,7 +443,7 @@ class Plugin_Manager():
             else:
                 test.table_name=table_name
             if plot_filepath is None:
-                test.plot_filepath = test._module_path + '\\plots'
+                test.plot_filepath = os.path.dirname(os.path.abspath(database))
             else:
                 test.plot_filepath = plot_filepath
             test.db = sqlite_data(database_file=database, table_name=test.table_name)
