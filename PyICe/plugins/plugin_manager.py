@@ -331,9 +331,9 @@ class Plugin_Manager():
                     import_str = test._module_path[test._module_path.index(test.project_folder_name):].replace('\\','.')
                     plot_script_src = "if __name__ == '__main__':\n"
                     plot_script_src += f"    from PyICe.plugins.plugin_manager import Plugin_Manager\n"
-                    plot_script_src += f"    from {import_str}.test import test\n"
+                    plot_script_src += f"    from {import_str}.test import Test\n"
                     plot_script_src += f"    pm = Plugin_Manager()\n"
-                    plot_script_src += f"    pm.add_test(test)\n"
+                    plot_script_src += f"    pm.add_test(Test)\n"
                     plot_script_src += f"    pm.evaluate(database='data_log.sqlite', table_name='{test.name}')\n"
                     try:
                         with open(dest_file, 'a') as f: #exists, overwrite, append?
