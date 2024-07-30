@@ -237,6 +237,6 @@ pm.run()'''
             pass
 
     banners.print_banner("",
-        f"New project '{project_name}' structure set!","Be sure the new folder is part of the PYTHONPATH in environment variables.","Please go to the driver folder to make drivers for the instruments you need","and the benches folder to add them to your bench,",f"or go directly to {test_example_folder} to run an example of a test.","")
+        f"New project '{project_name}' structure set!","Be sure the new folder is part of the PYTHONPATH in environment variables.","Please go to the driver folder to make drivers for the instruments you need","and the benches folder to add them to your bench,","or go directly to",f"{test_example_folder}","to run an example of a test.","")
     if len(plugins_to_add):
         print(f"\nBe aware: some plugins may require additional project information in order to function.")
