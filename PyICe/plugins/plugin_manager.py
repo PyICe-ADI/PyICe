@@ -25,10 +25,11 @@ class Callback_logger(logger):
         return readings
 
 class Plugin_Manager():
-    def __init__(self):
+    def __init__(self, scratch_folder='scratch'):
         self.tests = []
         self.operator = os.getlogin().lower()
         self.thismachine = socket.gethostname().replace("-","_")
+        self.scratch_folder = scratch_folder
 
     def find_plugins(self, a_test):
         '''This is called the first time a test is added to the plugin manager. An instance of a test is needed to locate the project path. This facilitates users starting from an individual test and getting all the chosen plugins.'''
@@ -52,11 +53,12 @@ class Plugin_Manager():
         a_test.pm=self
         (a_test._module_path, file) = os.path.split(inspect.getsourcefile(type(a_test)))
         a_test.name = a_test._module_path.split('\\')[-1]
+        os.makedirs(os.path.join(a_test._module_path,self.scratch_folder), exist_ok=True)
         try:
             a_test._project_path = a_test._module_path[:a_test._module_path.index(a_test.project_folder_name)+len(a_test.project_folder_name)]
         except AttributeError as e:
             print_banner("PYICE TEST_MANAGER: User's test template requires an attribute 'project_folder_name' that names the project's topmost folder in order for this PyICe workflow to be able to find the project.")
-        a_test._db_file = os.path.join(a_test._module_path, 'data_log.sqlite')
+        a_test._db_file = os.path.join(a_test._module_path, self.scratch_folder, 'data_log.sqlite')
         if len(self.tests) == 1:
             self._project_path = a_test._project_path
             try:
@@ -112,12 +114,7 @@ class Plugin_Manager():
             driverpath = driverpath[driverpath.index(self._project_path.split('\\')[-1]):]
             for driver in filenames:
                 driver_mod = importlib.import_module(name=driverpath+'.'+driver[:-3], package=None)
-                
-                # setattr(self, f'populate_{driver[:-3]}', types.MethodType(driver_mod.populate,self))
-                # instrument_dict = getattr(self, f'populate_{driver[:-3]}')()
-
                 instrument_dict = driver_mod.populate(self)
-                
                 if instrument_dict['instruments'] is not None:
                     for instrument in instrument_dict['instruments']:
                         self.master.add(instrument)
@@ -136,8 +133,9 @@ class Plugin_Manager():
                             raise Exception(f'BENCH MAKER: Multiple actions have been declared for channel(s) {overwrite_check}.')
                         self.special_channel_actions.update(instrument_dict['special_channel_action'])
             break
-        self.temperature_channel = self.master.add_channel_dummy('tdegc')
-        self.temperature_channel.write(25)
+        if self.temperature_channel == None:
+            self.temperature_channel = self.master.add_channel_dummy("tdegc")
+            self.temperature_channel.write(25)
 
     def _create_logger(self, test):
         '''Each test add to the plugin manager will have its own logger with which it shall store the data collected by their collect method. The channels will be determined by the drivers added to the driver, and a sqlite database and table will be automatically created and linked to the tests.'''
@@ -146,7 +144,7 @@ class Plugin_Manager():
         if hasattr(test, 'customize'):
             test.customize()
         test._logger.new_table(table_name=test.name, replace_table=True)
-        test._logger.write_html(file_name=test.project_folder_name+'.html')
+        test._logger.write_html(file_name='scratch//'+test.project_folder_name+'.html')
 
     def cleanup(self):
         """Runs the functions found in cleanup_fns. Resets the intstruments to predetermined "safe" settings as given by the drivers."""
@@ -293,7 +291,7 @@ class Plugin_Manager():
             archive_folder = datetime.datetime.utcnow().strftime("%Y_%m_%d_%H_%M")
         archived_tables = []
         for test in self.tests:
-            archiver = test_archive.database_archive(db_source_file=test._db_file)
+            archiver = test_archive.database_archive(test_script_file=test._module_path, db_source_file=test._db_file)
             if not archiver.has_data(tablename=test.name):
                 print(f'No data logged for {test.name}. Skipping archive.')
                 continue
@@ -380,7 +378,8 @@ class Plugin_Manager():
             print(self.test_connections.print_connections())
         if 'bench_image_creation' in self.used_plugins:
             visualizer = bench_visualizer.visualizer(connections=self.test_connections.connections, locations=test.get_bench_image_locations())
-            visualizer.generate(file_base_name="Bench_Config", prune=True, file_format='svg', engine='neato')
+            for test in self.tests:
+                visualizer.generate(file_base_name="Bench_Config", prune=True, file_format='svg', engine='neato', file_location=test._module_path+'\\scratch\\')
         summary_msg = f'{self.operator} on {self.thismachine}\n'
         if not len(temperatures):
             for test in self.tests:
