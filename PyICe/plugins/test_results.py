@@ -95,10 +95,10 @@ class generic_results():
     
     def _json_report(self, declarations, results, ate_results=[]):
         # if not len(declarations.keys()):
-        if not len(self):
-            # No tests (or no correlations) in this module
-            # Omit whole report, since there's nothing to report.
-            return None
+        # if not len(self):
+            # # No tests (or no correlations) in this module
+            # # Omit whole report, since there's nothing to report.
+            # return None
         class CustomJSONizer(json.JSONEncoder):
             def default(self, obj):
                 if isinstance(obj, bool_):
