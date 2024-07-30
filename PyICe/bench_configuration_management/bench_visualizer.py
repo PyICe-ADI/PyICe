@@ -13,7 +13,7 @@ class visualizer():
     def __init__(self, connections, locations):
         self.locations = locations
         self.connections = connections
-    def generate(self, file_base_name, prune=True, file_format='svg', engine='neato'):
+    def generate(self, file_base_name, prune=True, file_format='svg', engine='neato', file_location=''):
         if file_format.upper() not in ['SVG','PNG']:
             raise Exception(f"\nBench Visualizer: Sorry don't know how to output file format {file_format}. Try 'svg' or 'png'.\n")
         if graphviz_missing:
@@ -72,22 +72,23 @@ class visualizer():
         # os.remove(file_base_name + ".svg") # This one is junk, incorrect settings. Use a real call to dot.exe.
         try:
             try:
+                breakpoint()
                 if file_format.upper() == 'SVG':
-                    subprocess.run(["dot", "-Kneato", "-n2", "-Tsvg", "-o", f"{file_base_name}.svg"], input=f.source, check=True, encoding='UTF-8')
+                    subprocess.run(["dot", "-Kneato", "-n2", "-Tsvg", "-o", f"{file_location}{file_base_name}.svg"], input=f.source, check=True, encoding='UTF-8')
                 else:
-                    subprocess.run(["dot", "-Kneato", "-n2", "-Tpng", "-o", f"{file_base_name}.png"], input=f.source, check=True, encoding='UTF-8')
+                    subprocess.run(["dot", "-Kneato", "-n2", "-Tpng", "-o", f"{file_location}{file_base_name}.png"], input=f.source, check=True, encoding='UTF-8')
             except Exception as e:
                 print()
                 print_banner("*** WARNING ***", "Graphviz dot.exe not found. Have you installed Graphviz from graphviz.org?", "Ensure that you have a path to graphviz/bin/dot.exe in your environment.")
                 print()
                 return f
             # os.remove(file_base_name)   # Dump the Dot file after the rendered format file is generated.
-            benchimage = open(f"{file_base_name}.svg", 'r')
+            benchimage = open(f"{file_location}{file_base_name}.svg", 'r')
             bench_string = benchimage.read()
             for image in embed_dictionary.keys():
                 bench_string = bench_string.replace(image,embed_dictionary[image])
             benchimage.close()
-            embeded = open(f"{file_base_name}.svg", 'w')
+            embeded = open(f"{file_location}{file_base_name}.svg", 'w')
             embeded.write(bench_string)
             embeded.close()
         except Exception as e:
