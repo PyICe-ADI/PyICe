@@ -5,7 +5,8 @@ import sqlite3
 import re
 
 class database_archive():
-    def __init__(self, db_source_file):
+    def __init__(self, test_script_file, db_source_file):
+        self.test_script_file = test_script_file
         self.db_source_file = os.path.abspath(db_source_file)
         (self.db_source_abspath, self.db_source_filename) = os.path.split(self.db_source_file)
         self.db_source_folder = os.path.basename(self.db_source_abspath)
@@ -119,7 +120,7 @@ class database_archive():
                 return suggestion
         return archive_folder
     def compute_db_destination(self, archive_folder):
-        db_dest_folder = os.path.join(self.db_source_abspath, 'archive', archive_folder)
+        db_dest_folder = os.path.join(self.test_script_file, 'archive', archive_folder)
         db_dest_file = os.path.join(db_dest_folder, self.db_source_filename)
         os.makedirs(db_dest_folder, exist_ok=True)
         return db_dest_file
@@ -138,7 +139,6 @@ class database_archive():
                 resp = self.disposition_table(table_name=table, db_dest_file=db_dest_file)
                 if resp is not None:
                     copied_tables_files.append((resp[0], resp[1]))
-                    breakpoint()
                     if input('Write archive plot script(s)? [y/[n]]: ').lower() in ['y', 'yes']:
                         import_file=os.path.realpath(os.path.relpath(os.getcwd(), start = os.environ['PYTHONPATH']))
                         import_file=import_file[import_file.find(project_folder_name):]
