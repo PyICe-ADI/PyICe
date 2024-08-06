@@ -22,8 +22,6 @@ class database_archive():
             return False
         
     def copy_table(self, db_source_table, db_dest_table, db_dest_file, db_indices=[]):
-        # attach_schema = '__dest_db__'
-        
         conn = sqlite3.connect(db_dest_file)
         attach_schema = '__source_db__'
         
@@ -42,8 +40,7 @@ class database_archive():
         try:
             conn.execute(new_create_statement)
         except sqlite3.OperationalError as e:
-            print(e) # table already exists?
-            # Abort
+            print(e)
             conn.rollback()
             conn.execute(f'DETACH DATABASE {attach_schema}')
             return 
@@ -99,7 +96,7 @@ class database_archive():
         ###########
         conn.commit()
         conn.execute(f'DETACH DATABASE {attach_schema}')
-        return True #Probably ok, if we made it this far
+        return True
     def delete_table(self, db_source_table, commit=True):
         self.source_conn.execute(f'DROP TABLE {db_source_table}')
         self.source_conn.execute(f'DROP VIEW IF EXISTS {db_source_table}_formatted')
@@ -130,7 +127,6 @@ class database_archive():
         if len(table_names):
             print("Database tables:")
             for table in table_names:
-                # Give wold view before start of inquisition.
                 print(f"\t{table}")
             if archive_folder is None:
                 archive_folder = self.ask_archive_folder()
@@ -177,25 +173,37 @@ class database_archive():
                     return None
     @classmethod
     def write_plot_script(cls, test_module, test_class, db_table, db_file):
-        # TODO: allow list of modules/databases to plot? How?
         (dest_folder, f) = os.path.split(os.path.abspath(db_file))
-        dest_file = os.path.join(dest_folder, f"plot_{test_class}.py")
+        dest_file = os.path.join(dest_folder, f"replot_data.py")
         db_rel = os.path.relpath(db_file, start=os.path.commonpath((dest_file, db_file)))
         plot_script_src = "if __name__ == '__main__':\n"
-        plot_script_src += f"    from {test_module} import test\n"
-        # plot_script_src += f"    {test_class}.plot_from_table(table_name=r'{db_table}', db_file=r'{db_rel}')\n"
-        plot_script_src += f"    test.plot_only(database='data_log.sqlite', table_name={test_name}, plot_filepath=os.path.dirname(os.path.abspath(__name__))+'\\plots')\n"
+        plot_script_src += f"    from PyICe.plugins.plugin_manager import Plugin_Manager\n"
+        plot_script_src += f"    from {import_str}.test import Test\n"
+        plot_script_src += f"    pm = Plugin_Manager()\n"
+        plot_script_src += f"    pm.add_test(Test)\n"
+        plot_script_src += f"    pm.plot(database='data_log.sqlite', table_name='{db_table}')\n"
         try:
-            with open(dest_file, 'a') as f: #exists, overwrite, append?
+            with open(dest_file, 'a') as f:
                 f.write(plot_script_src)
         except Exception as e:
-            #write locked? exists?
             print(type(e))
             print(e)
         else:
             return dest_file
 
+class manual_archive():
+    def __init__(self, archive_location=None, db_location=None):
+        if archive_location is None:
+            archive_location = input('What filepath to the archive directory? ')
+        if db_location is None:
+            db_location = input('What filepath to the directory of the database? ')
+        db_arch = database_archive(archive_location, db_location+'/data_log.sqlite')
+        db_arch.copy_interactive()
+    def write_plot_script(self):
+        pass
+
+
 
 if __name__ == '__main__':
-    db_arch = database_archive('./data_log.sqlite')
+    db_arch = database_archive('../', './data_log.sqlite')
     db_arch.copy_interactive()
