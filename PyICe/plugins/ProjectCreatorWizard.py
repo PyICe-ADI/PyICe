@@ -1,6 +1,5 @@
 import socket, os
 from PyICe.lab_utils import banners, select_string_menu
-from PyICe.plugins  import wizard_helper_traceability
 
 if __name__ == '__main__':
     ''' Hokay, all we really need to set up is a project name '''
