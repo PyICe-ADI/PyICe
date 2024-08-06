@@ -94,11 +94,6 @@ class generic_results():
         return self._name
     
     def _json_report(self, declarations, results, ate_results=[]):
-        # if not len(declarations.keys()):
-        # if not len(self):
-            # # No tests (or no correlations) in this module
-            # # Omit whole report, since there's nothing to report.
-            # return None
         class CustomJSONizer(json.JSONEncoder):
             def default(self, obj):
                 if isinstance(obj, bool_):
@@ -107,10 +102,6 @@ class generic_results():
                     return obj.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
                 elif isinstance(obj, ndarray):
                     return obj.tolist()
-                # elif isinstance(obj, np.integer):
-                    # return int(obj)
-                # elif isinstance(obj, np.floating):
-                    # return float(obj)
                 else:
                     try:
                         return super().default(obj)
@@ -162,33 +153,11 @@ class generic_results():
                                                                     'max_data': results[t_d]._max(),
                                                                     'passes':   bool(results[t_d]),
                                                                     }
-                    # res_dict['tests'][t_d]['ate_results'] = []
-                    # for ate_r in ate_results[t_d]:
-                        # res_dict['tests'][t_d]['ate_results'].append({k:v for k,v in ate_r._asdict().items() if k not in ['test_name']})
-                        # #TODO tdegc alignment!
-                        # try:
-                            # min_error = ate_r.result - results[t_d]._min()
-                        # except TypeError as e:
-                            # min_error = None
-                        # try:
-                            # max_error = ate_r.result - results[t_d]._max()
-                        # except TypeError as e:
-                            # max_error = None
-                        # res_dict['tests'][t_d]['ate_results'][-1]['min_error'] = min_error
-                        # res_dict['tests'][t_d]['ate_results'][-1]['max_error'] = max_error
-                        # max_abs_error = none_max(none_abs(min_error), none_abs(max_error))
-                        # if max_abs_error is not None and res_dict['tests'][t_d]['declaration']['correlation_autolimit'] is not None:
-                            # passes = max_abs_error <= res_dict['tests'][t_d]['declaration']['correlation_autolimit']
-                        # else:
-                            # # can't compare something
-                            # passes = True
-                        # res_dict['tests'][t_d]['ate_results'][-1]['passes'] = passes
                 elif isinstance(self, correlation_results):
                     res_dict['tests'][t_d]['results']['temperatures'] = []
                     for temperature in results[t_d].get_temperatures():
                         temperature_dict = {'temperature': temperature,
                                             'cases': [],
-                                            # 'summary': {},
                                            }
                         res_dict['tests'][t_d]['results']['temperatures'].append(temperature_dict)
                         temp_group = results[t_d].filter_temperature(temperature)
@@ -306,7 +275,6 @@ class Test_Results(generic_results):
                 return None
             return functools.reduce(none_max, (r._max() for r in self)) #None creeps in from failures
         def get_conditions(self):
-            #TODO fix hash collisions???
             return {make_hash(data_group.conditions): data_group.conditions for data_group in self}
         def filter(self, condition_hash):
             ret = type(self)(self.name, self.upper_limit, self.lower_limit)
@@ -337,11 +305,9 @@ class Test_Results(generic_results):
     def __str__(self):
         '''printable regression results'''
         #TODO more concise summary when passing, grouped results, etc.
-        #resp = f'*** Module {self.get_name()} ***\n'
         resp = ''
         passes = bool(len(self._test_declarations))
         for test in self._test_declarations:
-            # for line in self.get_test_results_str(test).splitlines():
             for line in str(self[test]).splitlines():
                 resp += f'\t{line}\n'
             passes &= bool(self[test])
@@ -443,7 +409,6 @@ class Test_Results(generic_results):
                                               collected_data=iter_data, #Give a chance to re-compute summary statistics if more data comes in later.
                                               plot=[], #Mutable; add later
                                               query=query,
-                                              # TODO Notes??
                                               )
         self._test_results[name].append(new_result_record)
         return new_result_record
@@ -460,12 +425,11 @@ class correlation_results(generic_results):
                 kwargs['query'] = None
             return super().__new__(cls, **kwargs)
         def __bool__(self):
-            return bool(self.passes) #numpy _bool infiltration
+            return bool(self.passes)
         def __str__(self):
             summary_str = ''
             summary_str += f'\tERROR: {self.error:g}' if self.error is not None else ''
             summary_str += f'\t{self.failure_reason}' if self.failure_reason != '' else ''
-            #TODO bench/ate ?
             summary_str += f'\tVERDICT:{"PASS" if self else "FAIL"}\n'
             return summary_str
 
@@ -486,8 +450,8 @@ class correlation_results(generic_results):
             resp += '\tRESULTS:\n'
             for temperature in self.get_temperatures():
                 resp += f'\t\tTemperature {temperature}\n'
-                temp_group = self.filter_temperature(temperature) #sorted??
-                if {result.failure_reason for result in temp_group} == {'ATE data missing.'} and not functools.reduce(lambda a,b: a or b, [res.passes for res in temp_group]): #Magic number alert!!!!!
+                temp_group = self.filter_temperature(temperature)
+                if {result.failure_reason for result in temp_group} == {'ATE data missing.'} and not functools.reduce(lambda a,b: a or b, [res.passes for res in temp_group]):
                     #Each and every one failed, and because temp data was missing.
                     resp += '\t\t\tATE data missing.\n'
                     resp += f'\t\tTemperature {temperature} summary {"PASS" if temp_group else "FAIL"} ({len(temp_group)} case{"s" if len(temp_group) != 1 else ""}).\n'
@@ -516,7 +480,6 @@ class correlation_results(generic_results):
                 return None
             return functools.reduce(none_max, [res.error for res in self])
         def get_conditions(self):
-            #TODO fix hash collisions???
             return {make_hash(data_group.conditions): data_group.conditions for data_group in self}
         def get_temperatures(self):
             return sorted({data_group.temperature for data_group in self})
@@ -539,16 +502,6 @@ class correlation_results(generic_results):
                 if data_group.temperature in temperatures:
                     ret.append(data_group)
             return ret
-        # Doesn't make sense yet, since results aren't stored as a list; no way to aggregate without data model change.
-        # def factored(self):
-            # '''returns new object; doesn't modifiy existing one in place
-            # merges all resutls from like temperature and conditions'''
-            # ret = type(self)(declaration=self._declaration)
-            # for temperature in self.get_temperatures():
-                # for cond_hash in self.get_conditions():
-                    # data_group = functools.reduce(lambda a,b: a+b, [data_group for data_group in self if make_hash(data_group.conditions)==cond_hash and data_group.temperature==temperature])
-                    # ret.append(data_group)
-            # return ret
 
     def __init__(self, name, module):
         '''TODO'''
@@ -594,7 +547,7 @@ class correlation_results(generic_results):
             return True
         return bool(functools.reduce(lambda a,b: a and b, (self[k] for k in self)))
     
-    def _register_correlation_result(self, refid_name, iter_data, key_conditions, conditions=None, query=None): # TODO conditions
+    def _register_correlation_result(self, refid_name, iter_data, key_conditions, conditions=None, query=None):
         if refid_name not in self._correlation_declarations:
             self._correlation_declarations.append(refid_name)
         if type(iter_data) == sqlite_data:
@@ -602,7 +555,6 @@ class correlation_results(generic_results):
         if type(iter_data) == sqlite_data and len(iter_data.get_column_names()) > 1+len(key_conditions):
             conditions_columns = iter_data.get_column_names()[1+len(key_conditions):]
             nt_type = collections.namedtuple('distincts',conditions_columns)
-            #distincts = iter_data.get_distinct(conditions_columns, force_tuple=True)
             iter_data = iter_data.to_list()
             distincts = {nt_type._make(freeze(row[1+len(key_conditions):])) for row in iter_data}
             try:
@@ -614,12 +566,11 @@ class correlation_results(generic_results):
             assert conditions is None, "TODO: This isn't a permanent error, but it hasn't been implemented yet. What to do about explicit conditions???? Append???"
             for condition in distincts:
                 data = [row for row in iter_data if freeze(row[1+len(key_conditions):]) == condition]
-                self._register_correlation_result(refid_name=refid_name, iter_data=data, key_conditions=key_conditions, conditions=condition._asdict(), query=query) #todo, consider reimplementing __str__ instead of dict conversion.
+                self._register_correlation_result(refid_name=refid_name, iter_data=data, key_conditions=key_conditions, conditions=condition._asdict(), query=query)
                 match_count += len(data)
             assert match_count == rowcount
             return
         for result in iter_data:
-            #todo dimensional error handling?
             key_records = {key_condition:result[key_condition] for key_condition in key_conditions}
             if result[0] is None:
                 # There's no bench data. Something has gone pretty wrong already, and this correlation is doomed to failure.
@@ -639,7 +590,7 @@ class correlation_results(generic_results):
                                                                                   bench_data  = result,
                                                                                   ate_data=self.ate_result,
                                                                                   error=err,
-                                                                                  failure_reason='', #TODO None (new schema?)
+                                                                                  failure_reason='',
                                                                                   passes=passes,
                                                                                   query=query,
                                                                                  ))
@@ -665,13 +616,10 @@ class correlation_results_reload(correlation_results):
         with open(results_json, mode='r', encoding='utf-8') as f:
             self.__results = json.load(f)
             f.close()
-        # if self.__results['schema_version'] != self._schema_version:
         if self.__results['schema_version'] not in (0.2, 1.0, 1.1):
             raise ResultsSchemaMismatchException(f'Results file {results_json} written with schema version {self.__results["schema_version"]}, but reader expecting {self._schema_version}.')
         self._init(name=self.__results['test_module'], module=None)
-        # print(f'INFO Loading correlation {self.get_name()} record produced on {self.__results["report_date"]} from data collected on {self.__results["collection_date"]}.\n\t({results_json})') #TODO too loud for logs?
         self._set_traceability_info(datetime=self.__results["collection_date"], **self.__results["traceability"])
-        # TODO flag json re-output as derivative????
         for test in self.__results['tests']:
             self._register_correlation_test(refid_name=test, **self.__results['tests'][test]['declaration'])
             for temperature_group in self.__results['tests'][test]['results']['temperatures']:
@@ -688,79 +636,3 @@ class correlation_results_reload(correlation_results):
         with open(filename, 'wb') as f:
             f.write(super().json_report().encode('utf-8'))
             f.close()
-
-
-if __name__ == '__main__':
-    from stowe_eval.stowe_eval_base.modules import refid_importer
-    #TODO command line filter/group args like stowe_die_traceability?
-    refids_plan = refid_importer.refid_importer()
-    try:
-        trr = test_results_reload()
-    except FileNotFoundError as e:
-        print("test_results.json not found in working directory.")
-    else:
-      print(trr)
-      # Copied from jira refid crosscheck
-      for refid in trr:
-          try:
-              spec_lower_limit = refids_plan[refid]['MIN'] if not refid_importer.isnan(refids_plan[refid]['MIN']) else None
-              spec_upper_limit = refids_plan[refid]['MAX'] if not refid_importer.isnan(refids_plan[refid]['MAX']) else None
-              spec_units = refids_plan[refid]['UNIT'] #if not refid_importer.isnan(refids_plan[refid]['UNIT']) else None
-              spec_ate_test = refids_plan[refid]['ATE TEST #'] if not refid_importer.isnan(refids_plan[refid]['ATE TEST #']) else None
-              spec_ate_subtest = refids_plan[refid]['ATE SUBTEST #'] if not refid_importer.isnan(refids_plan[refid]['ATE SUBTEST #']) else None
-              #todo collect script and multitest unit revisions check here against json????
-          except KeyError as e:
-              print(f'ERROR REFID {refid} missing from eval plan.')
-              continue
-          
-          result_lower_limit = trr.get_test_declaration(refid).lower_limit
-          result_upper_limit = trr.get_test_declaration(refid).upper_limit
-          result_units = trr.get_test_declaration(refid).unit
-          result_ate_test = trr.get_test_declaration(refid).ATE_test if not refid_importer.isnan(trr.get_test_declaration(refid).ATE_test) else None
-          result_ate_subtest = trr.get_test_declaration(refid).ATE_subtest if not refid_importer.isnan(trr.get_test_declaration(refid).ATE_subtest) else None
-          if result_lower_limit != spec_lower_limit:
-              print(f'WARNING {refid} lower limit mismatches REFID spec. ({result_lower_limit} vs {spec_lower_limit})')
-          elif result_upper_limit != spec_upper_limit:
-              print(f'WARNING {refid} upper limit mismatches REFID spec. ({result_upper_limit} vs {spec_upper_limit})')
-          elif result_units != spec_units:
-              print(f'WARNING {refid} units mismatch REFID spec. ({result_units} vs {spec_units})')
-          elif result_ate_test != spec_ate_test:
-              print(f'WARNING {refid} ATE test mismatch REFID spec. ({result_ate_test} vs {spec_ate_test})')
-          elif result_ate_subtest != spec_ate_subtest:
-              print(f'WARNING {refid} ATE subtest mismatch REFID spec. ({result_ate_subtest} vs {spec_ate_subtest})')
-
-    try:
-        crr = correlation_results_reload()
-    except FileNotFoundError as e:
-        print("correlation_results.json not found in working directory.")
-    else:
-        print(crr)
-        # Copied from jira refid crosscheck
-        for refid in crr:
-            try:
-                spec_lower_limit = refids_plan[refid]['MIN'] if not refid_importer.isnan(refids_plan[refid]['MIN']) else None
-                spec_upper_limit = refids_plan[refid]['MAX'] if not refid_importer.isnan(refids_plan[refid]['MAX']) else None
-                spec_units = refids_plan[refid]['UNIT'] #if not refid_importer.isnan(refids_plan[refid]['UNIT']) else None
-                spec_ate_test = refids_plan[refid]['ATE TEST #'] if not refid_importer.isnan(refids_plan[refid]['ATE TEST #']) else None
-                spec_ate_subtest = refids_plan[refid]['ATE SUBTEST #'] if not refid_importer.isnan(refids_plan[refid]['ATE SUBTEST #']) else None
-            except KeyError as e:
-                print(f'ERROR REFID {refid} missing from eval plan.')
-                continue
-            result_lower_limit = crr.get_correlation_declaration(refid).lower_limit
-            result_upper_limit = crr.get_correlation_declaration(refid).upper_limit
-            result_units = crr.get_correlation_declaration(refid).unit
-            result_ate_test = crr.get_correlation_declaration(refid).ATE_test if not refid_importer.isnan(crr.get_correlation_declaration(refid).ATE_test) else None
-            result_ate_subtest = crr.get_correlation_declaration(refid).ATE_subtest if not refid_importer.isnan(crr.get_correlation_declaration(refid).ATE_subtest) else None
-            if result_lower_limit != spec_lower_limit:
-                print(f'WARNING {refid} lower limit mismatches REFID spec. ({f"{result_lower_limit:g}" if result_lower_limit is not None else None} vs {f"{spec_lower_limit:g}" if spec_lower_limit is not None else None})')
-            elif result_upper_limit != spec_upper_limit:
-                print(f'WARNING {refid} upper limit mismatches REFID spec. ({f"{result_upper_limit:g}" if result_upper_limit is not None else None} vs {f"{spec_upper_limit:g}" if spec_upper_limit is not None else None})')
-            elif result_units != spec_units:
-                print(f'WARNING {refid} units mismatch REFID spec. ({result_units} vs {spec_units})')
-            elif result_ate_test != spec_ate_test:
-                print(f'WARNING {refid} ATE test mismatch REFID spec. ({result_ate_test} vs {spec_ate_test})')
-            elif result_ate_subtest != spec_ate_subtest:
-                print(f'WARNING {refid} ATE subtest mismatch REFID spec. ({result_ate_subtest} vs {spec_ate_subtest})')
-
-            
-
