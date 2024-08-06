@@ -79,6 +79,13 @@ class Plugin_Manager():
             self.evaluate()
         if 'correlate_tests' in self.used_plugins:
             self.correlate()
+        for test in self.tests:
+            if hasattr(test, '_test_results') and test._test_results._test_results:
+                self.notify(test.get_test_results(), subject='Test Results')
+            if len(self._plots): #Don't send empty emails
+                self.email_plots(self._plots)
+            if len(self._linked_plots): #Don't send empty emails
+                self.email_plot_dictionary(self._linked_plots)
         if 'archive' in self.used_plugins:
             self._archive()
 
@@ -144,7 +151,7 @@ class Plugin_Manager():
         if hasattr(test, 'customize'):
             test.customize()
         test._logger.new_table(table_name=test.name, replace_table=True)
-        test._logger.write_html(file_name='scratch//'+test.project_folder_name+'.html')
+        test._logger.write_html(file_name=test._module_path+'//scratch//'+test.project_folder_name+'.html')
 
     def cleanup(self):
         """Runs the functions found in cleanup_fns. Resets the intstruments to predetermined "safe" settings as given by the drivers."""
@@ -246,12 +253,26 @@ class Plugin_Manager():
             msg_body += f'<img src="cid:plot_{i}"/>'
             attachment_MIMEParts.append(plot_mime)
         self.notify(msg_body, subject='Plot Results', attachment_MIMEParts=attachment_MIMEParts)
+    def email_plot_dictionary(self, plot_svg_source):
+        msg_body = ''
+        attachment_MIMEParts=[]
+        for plot_group in plot_svg_source:
+            msg_body+=plot_group
+            msg_body+='\n'
+            for (i,plot) in enumerate(plot_svg_source[plot_group]):
+                plot_png = cairosvg.svg2png(bytestring=plot)
+                plot_mime = MIMEImage(plot_png, 'image/png')
+                plot_mime.add_header('Content-Disposition', 'inline')
+                plot_mime.add_header('Content-ID', f'<plot_{plot_group}_{i}>')
+                msg_body += f'<img src="cid:plot_{plot_group}_{i}"/>'
+                attachment_MIMEParts.append(plot_mime)
+            msg_body+='\n'
+        self.notify(msg_body, subject='Plot Results', attachment_MIMEParts=attachment_MIMEParts)
     def crash_info(self, test):
         (typ, value, trace_bk) = test._crash_info
         crash_str = f'Test: {test.name} crashed: {typ},{value}\n'
         crash_sep = '==================================================\n'
         crash_str += crash_sep
-        # crash_str += f'{traceback.print_tb(trace_bk)}\n'
         crash_str += f'{"".join(traceback.format_exception(typ, value, trace_bk))}\n'
         crash_str += crash_sep
         return crash_str
@@ -389,6 +410,7 @@ class Plugin_Manager():
                     try:
                         # test.test_timer.resume_timer()
                         test._reconfigure()
+                        print_banner(f'{test.name} Collecting. . .')
                         test.collect()
                         test._restore()
                     except (Exception, BaseException) as e:
@@ -430,32 +452,51 @@ class Plugin_Manager():
             table_name - string. The name of the table in the database with the data to plot. If left blank, the plot will continue with the table named after the test script.
             plot_filepath - string. This is where the plots will be placed upon creation. If left blank, a directory name plots will be created in the directory with the plot script and and the plots will be placed in there.'''
         self._plots=[]
+        self._linked_plots={}
+        reset_db = False
+        reset_tn = False
+        reset_pf = False
         for test in self.tests:
             if not hasattr(test, 'plot'):
                 continue
             test.plot_list=[]
+            test.linked_plots={}
             print_banner(f'{test.name} Plotting. . .')
             if database is None:
                 database = test._db_file
+                reset_db = True
             if table_name is None:
                 test.table_name = test.name
+                reset_tn = True
             else:
                 test.table_name=table_name
             if plot_filepath is None:
                 test.plot_filepath = os.path.dirname(os.path.abspath(database))
+                reset_pf = True
             else:
                 test.plot_filepath = plot_filepath
             test.db = sqlite_data(database_file=database, table_name=test.table_name)
-            test.plot()
+            try:
+                test.plot()
+            except Exception as e:
+                # Don't stop other test's plotting or archiving because of a plotting error.
+                print_banner(e)
             if isinstance(test.plot_list, (LTC_plot.plot, LTC_plot.Page)):
                 test.plot_list = [self._convert_svg(test.plot_list)]
             else:
                 assert isinstance(test.plot_list, list)
                 test.plot_list = [self._convert_svg(plt) for plt in test.plot_list]
+            for plot_group in test.linked_plots:
+                test.linked_plots[plot_group] = [self._convert_svg(plt) for plt in test.linked_plots[plot_group]]
             self._plots.extend(test.plot_list)
+            self._linked_plots.update(test.linked_plots)
             print_banner(f'Plotting for {test.name} complete.')
-        if len(self._plots) and 'notifications' in self.used_plugins: #Don't send empty emails
-            self.email_plots(self._plots)
+            if reset_db:
+                database = None
+            if reset_tn:
+                table_name = None
+            if reset_pf:
+                plot_filepath = None
 
     def evaluate(self, database=None, table_name=None):
         '''Run the evaluate method of each test in self.tests.
@@ -464,11 +505,15 @@ class Plugin_Manager():
             table_name - string. The name of the table in the database with the relevant data. If left blank, the evaluation will continue with the table named after the test script.'''
 
         print_banner('Evaluating. . .')
+        reset_db = False
+        reset_tn = False
         for test in self.tests:
             if database is None:
                 database = test._db_file
+                reset_db = True
             if table_name is None:
                 test.table_name = test.name
+                reset_tn = True
             else:
                 test.table_name = table_name
             test._test_results = Test_Results(test.name, module=test)
@@ -476,7 +521,6 @@ class Plugin_Manager():
             test.evaluate_results()
             if test._test_results._test_results:
                 print(test.get_test_results())
-                self.notify(test.get_test_results(), subject='Test Results')
             elif self.verbose:
                 print(f'No results submitted for {test.name}.')
             t_r = test._test_results.json_report()
@@ -485,6 +529,10 @@ class Plugin_Manager():
                 with open(dest_abs_filepath, 'wb') as f:
                     f.write(t_r.encode('utf-8'))
                     f.close()
+            if reset_db:
+                database = None
+            if reset_tn:
+                table_name = None
 
     def correlate(self, database=None, table_name=None):
         '''Run the correlate method of each test in self.tests.
