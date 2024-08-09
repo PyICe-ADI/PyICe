@@ -89,22 +89,3 @@ class Master_Test_Template():
         return res_str
     def get_test_limits(self, name):
         raise Exception("MASTER TEST TEMPLATE ERROR: This project indicated a use of the TEST_LIMIT plugin but no project specific 'get_test_limits' method was provided.")
-
-    # ###
-    # # CORRELATE FEATURE METHODS
-    # ###
-    # def correlate_results(self):
-        # ''' Optional method for correlating data collected with user provided other set keyed by a unique device identifier (e.g. serial number of sorts)
-        # Use of this feature requires the correlate test plugins.
-         # User is expected to overwrite this with their own method that describes how their results are to be correlated.'''
-        
-        # raise("Test scripts requires a correlate_results method.")
-    # def correlate_test_result(self, name, data, key_conditions):
-        # self._test_results.test_limits[name]=self.get_correlation_test_info(name)
-        # self._test_results._register_correlation_result(name, data, key_conditions)
-    # def get_correlation_data_scalar(self, REFID, data, key_conditions):
-        # '''Must return a value from an outside data source associated with the REFID named and matching key_conditions in the data provided.'''
-        # raise Exception("MASTER TEST TEMPLATE ERROR: This project indicated a use of the CORRELATION plugin but no project specific 'get_correlation_data_scalar' method was provided.")
-    # def get_correlation_test_info(self, name):
-        # '''Must return a dictionary of info relating to the REFID name, with keys that include AT LEAST 'upper_limit', 'lower_limit', and 'UNIT'.'''
-        # raise Exception("MASTER TEST TEMPLATE ERROR: This project indicated a use of the CORRELATION plugin but no project specific 'get_correlation_test_info' method was provided.")
