@@ -149,9 +149,8 @@ def populate(self):
         hameg.add_channel_fuse_link(channel_name = f'{names[channel]}_links', num = channel).write(list(set([x for x in names]) - set([channel])))
         hameg_cleanup_list.append(lambda ch=names[channel] : hameg.write(ch, 0))
         hameg_cleanup_list.append(lambda ch=f'{names[channel]}_enable' : hameg.write(ch, False))
-    for channels in [hameg, ramper]:
-        for channel in channels:
-            channel.set_category("supplies")
+    for channel in hameg:
+        channel.set_category("supplies")
     return {'instruments':[hameg], "cleanup_list":hameg_cleanup_list}'''
     script_creator_dict[os.path.join(driver_folder, f"example_HAMEG.py")] = new_sample_driver
 
