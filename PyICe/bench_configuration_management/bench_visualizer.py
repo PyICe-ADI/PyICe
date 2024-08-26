@@ -72,7 +72,6 @@ class visualizer():
         # os.remove(file_base_name + ".svg") # This one is junk, incorrect settings. Use a real call to dot.exe.
         try:
             try:
-                breakpoint()
                 if file_format.upper() == 'SVG':
                     subprocess.run(["dot", "-Kneato", "-n2", "-Tsvg", "-o", f"{file_location}{file_base_name}.svg"], input=f.source, check=True, encoding='UTF-8')
                 else:
