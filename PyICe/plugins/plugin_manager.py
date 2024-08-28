@@ -181,6 +181,12 @@ class Plugin_Manager():
     # NOTIFICATION METHODS
     ###
     def notify(self, msg, subject=None, attachment_filenames=[], attachment_MIMEParts=[]):
+        '''Sends the provided message to all emails and phone numbers found in the variable self.notification_targets.
+        args:
+            msg - str. The body of the email or the complete text.
+            subject - str. Default None. The subject given to any email sent. No affect on texts.
+            attachment filenames - list. Default empty list. A list of strings denoting the names of files that will be attached to any emails sent.
+            attachment_MIMEParts - list. Default empty list. A list of MIME (Multipurpose Internet Mail Extensions) objects that will be added to the body of any email sent.'''
         if 'notifications' in self.used_plugins:
             for signal_type in self.notification_targets:
                 if signal_type == 'emails':
@@ -226,6 +232,7 @@ class Plugin_Manager():
                 break
 
     def add_notification(self, fn):
+        '''Add a function that will be run whenever a notification is sent. Arguments for the provided function are either the standard for lab_utils.communications.email.send(self, body, subject=None, attachment_filenames=[], attachment_MIMEParts=[]) or a simple text string.'''
         self._notification_functions.append(fn)
 
     def _convert_svg(self, plot):
