@@ -4,37 +4,7 @@ import datetime
 import functools
 import json
 import numbers
-import pprint
-import statistics
-from deprecated import deprecated
 from numpy import bool_, ndarray
-
-pp = pprint.PrettyPrinter(indent=4)
-# pp.pformat(obj)
-# pp.pprint(obj)
-# print = pp.pprint
-
-# 2021/12/14 Dave Simmons
-# Notes collected below w.r.t deficiencies identified in the output format, and tests results module more generally
-# Gathered through discussions with Sauparna and Steve.
-# Intend to fix them incrementally and remove comment line here as-addressed.
-
-# eeprom contents logging
-# change stowe logger to directly capture collect() method?
-# add compile() to report? Logging not necessary because it's re-run at report gen time.
-# https://json-schema.org/understanding-json-schema/structuring.html#structuring
-# test results schema checker
-# 
-# https://jama.analog.com/perspective.req#/items/4382084?projectId=597
-# plot hyperlink
-# data hyperlink
-# conditions
-# scope of measurement
-# test method
-# jira link
-
-# https://docs.python.org/3/library/dataclasses.html
-
 
 # https://stackoverflow.com/questions/5884066/hashing-a-dictionary/22003440#22003440
 def freeze(o):
@@ -50,7 +20,7 @@ def freeze(o):
   try:
     hash(o)
   except TypeError as e:
-    raise TypeError("Something slipped through the freeze function. See Dave.") from e
+    raise TypeError("Something slipped through the freeze function. Contact support.") from e
   else:
     return o
 
@@ -92,7 +62,7 @@ class generic_results():
         self._module = module
     def get_name(self):
         return self._name
-    
+
     def _json_report(self, declarations, results, ate_results=[]):
         class CustomJSONizer(json.JSONEncoder):
             def default(self, obj):
@@ -124,7 +94,7 @@ class generic_results():
                 if channel_name == 'datetime' or channel_name =='rowid':
                     continue
                 res_dict['traceability'][channel_name] = trace_data[trace_data.keys().index(channel_name)]
-        
+
         res_dict['tests'] = {}
         for t_d in declarations:
             res_dict['tests'][t_d] = {}
@@ -135,13 +105,12 @@ class generic_results():
                 res_dict['tests'][t_d]['passes'] = False
             else:
                 res_dict['tests'][t_d]['results'] = {}
-               
                 if isinstance(self, Test_Results):
                     res_dict['tests'][t_d]['results']['cases'] = []
                     res_dict['tests'][t_d]['results']['summary'] = {}
                     for condition_hash, condition_orig in results[t_d].get_conditions().items():
                         filter_results = results[t_d].filter(condition_hash)
-                        cond_dict =  {'conditions': condition_orig, #TODO put back to dictionary!
+                        cond_dict =  {'conditions': condition_orig,
                                       'case_results': [{k:v for k,v in t_r._asdict().items() if k not in ['test_name', 'conditions', 'plot']} for t_r in filter_results], 
                                       'summary': {'min_data': filter_results._min(),
                                                   'max_data': filter_results._max(),
@@ -182,7 +151,6 @@ class generic_results():
                 else:
                     raise Exception("I'm lost.")
         res_dict['summary'] = {'passes': bool(self)}
-        # TODO Signature/CRC?
         return json.dumps(res_dict, indent=2, ensure_ascii=False, cls=CustomJSONizer)
 
 class Test_Results(generic_results):
@@ -248,7 +216,7 @@ class Test_Results(generic_results):
             resp = ''
             resp += f'{self.name}\n'
             resp += f'\tLIMITS:'
-            if self.upper_limit == self.lower_limit: #DOES THIS WORK? WRONG CLASS?????
+            if self.upper_limit == self.lower_limit:
                 #Exact test
                 try:
                     resp += f'\t SL:{self.upper_limit:g}'
@@ -269,11 +237,11 @@ class Test_Results(generic_results):
         def _min(self):
             if not len(self):
                 return None
-            return functools.reduce(none_min, (r._min() for r in self)) #None creeps in from failures
+            return functools.reduce(none_min, (r._min() for r in self))
         def _max(self):
             if not len(self):
                 return None
-            return functools.reduce(none_max, (r._max() for r in self)) #None creeps in from failures
+            return functools.reduce(none_max, (r._max() for r in self))
         def get_conditions(self):
             return {make_hash(data_group.conditions): data_group.conditions for data_group in self}
         def filter(self, condition_hash):
@@ -370,9 +338,8 @@ class Test_Results(generic_results):
         if isinstance(iter_data, numbers.Number):
             iter_data = [iter_data]
         elif isinstance(iter_data, (list, tuple)):
-            # Steve passing in an ordered list for sequence order. Needs to be double-listed to avoid iterating the sequence itself!
+            # An ordered list is passed in for sequence order. Needs to be double-listed to avoid iterating the sequence itself!
             pass
-        # assert iter_data is not None and len(iter_data) and None not in iter_data, f'Something is wrong with submited test result data for {name}. See Dave.\n{iter_data}' #NULLs can creep in from missing db data and group/join operations. ie, tsd threshold temperature test only run at room.
         if iter_data is None:
             return self._register_test_failure(name=name, reason="None encountered in submitted data.", conditions=conditions, query=query)
         if None in iter_data:
@@ -380,7 +347,7 @@ class Test_Results(generic_results):
             iter_data = [item for item in iter_data if item is not None]
             if not len(iter_data): 
                 return t_f
-            
+
         self.test_limits[name]['upper_limit'] = self.test_limits[name]['upper_limit'] if self.test_limits[name]['upper_limit']==self.test_limits[name]['upper_limit'] else None
         self.test_limits[name]['lower_limit'] = self.test_limits[name]['lower_limit'] if self.test_limits[name]['lower_limit']==self.test_limits[name]['lower_limit'] else None
         assert (self.test_limits[name]['upper_limit'] is not None or self.test_limits[name]['lower_limit'] is not None), f'Something is wrong with test limits for {name}. Contact support.'
@@ -392,7 +359,6 @@ class Test_Results(generic_results):
                                                             ]
                                       )
         else:
-            # I think this is an exact test. Avoid arithmetic and ordering comparisons in case data isn't scalar.
             passes = functools.reduce(lambda x,y: x and y, [data_pt is not None \
                                                             and (data_pt == self.test_limits[name]['upper_limit']) #upper==lower \
                                                             for data_pt in iter_data
@@ -412,227 +378,3 @@ class Test_Results(generic_results):
                                               )
         self._test_results[name].append(new_result_record)
         return new_result_record
-
-        
-        
-class correlation_results(generic_results):
-    _correlation_declaration = collections.namedtuple('correlation_declaration', ['refid_name', 'ATE_test', 'ATE_subtest', 'owner', 'assignee', 'lower_limit', 'upper_limit', 'unit', 'description', 'notes', 'limits_units_percentage'])
-    class _correlation_result(collections.namedtuple('correlation_result', ['refid_name', 'key_conditions', 'conditions', 'bench_data', 'ate_data', 'error', 'failure_reason', 'passes', 'query'])):
-        '''add some helper moethods for easy summary'''
-        def __new__(cls, **kwargs):
-            '''fix (allowed) missing fields. FOr instance, original JSON didn't retain SQL query string.'''
-            if 'query' not in kwargs:
-                kwargs['query'] = None
-            return super().__new__(cls, **kwargs)
-        def __bool__(self):
-            return bool(self.passes)
-        def __str__(self):
-            summary_str = ''
-            summary_str += f'\tERROR: {self.error:g}' if self.error is not None else ''
-            summary_str += f'\t{self.failure_reason}' if self.failure_reason != '' else ''
-            summary_str += f'\tVERDICT:{"PASS" if self else "FAIL"}\n'
-            return summary_str
-
-    class _correlation_results_list(list):
-        '''helper methods'''
-        def __init__(self, declaration):
-            self._declaration = declaration
-        def __bool__(self):
-            if not len(self):
-                return False
-            return bool(functools.reduce(lambda a,b: a and b, [item.passes for item in self]))
-        def __str__(self):
-            resp = f'{self._declaration.refid_name}\n'
-            resp += f'\tLIMITS:\t'
-            resp += f'LSL: {self._declaration.lower_limit:g}\t' if self._declaration.lower_limit is not None else ''
-            resp += f'USL: {self._declaration.upper_limit:g}\t' if self._declaration.upper_limit is not None else ''
-            resp += '\n'
-            resp += '\tRESULTS:\n'
-            for temperature in self.get_temperatures():
-                resp += f'\t\tTemperature {temperature}\n'
-                temp_group = self.filter_temperature(temperature)
-                if {result.failure_reason for result in temp_group} == {'ATE data missing.'} and not functools.reduce(lambda a,b: a or b, [res.passes for res in temp_group]):
-                    #Each and every one failed, and because temp data was missing.
-                    resp += '\t\t\tATE data missing.\n'
-                    resp += f'\t\tTemperature {temperature} summary {"PASS" if temp_group else "FAIL"} ({len(temp_group)} case{"s" if len(temp_group) != 1 else ""}).\n'
-                    continue
-                for cond_hash, cond_orig in temp_group.get_conditions().items():
-                    resp_cond = f'{cond_orig}'
-                    cond_group = temp_group.filter_conditions(cond_hash)
-                    if len(cond_group) > 1:
-                        resp += f'\t\t\t{resp_cond}\n'
-                        for result in cond_group:
-                            res_line = str(result).lstrip('\t').expandtabs()
-                            resp += f'\t\t\t\t{res_line}'
-                    else:
-                        for result in cond_group:
-                            resp_cond = f'{resp_cond}{result}'.expandtabs()
-                            resp += f'\t\t\t{resp_cond}'
-                resp += f'\t\tTemperature {temperature} summary {"PASS" if temp_group else "FAIL"} ({len(temp_group)} case{"s" if len(temp_group) != 1 else ""}).\n'
-            resp += f'{self._declaration.refid_name} Summary {"PASS" if self else "FAIL"}.\n'
-            return resp
-        def _min_error(self):
-            if not len(self):
-                return None
-            return functools.reduce(none_min, [res.error for res in self])
-        def _max_error(self):
-            if not len(self):
-                return None
-            return functools.reduce(none_max, [res.error for res in self])
-        def get_conditions(self):
-            return {make_hash(data_group.conditions): data_group.conditions for data_group in self}
-        def get_temperatures(self):
-            return sorted({data_group.temperature for data_group in self})
-        def filter_conditions(self, condition_hash):
-            ret = type(self)(declaration=self._declaration)
-            for data_group in self:
-                if make_hash(data_group.conditions) == condition_hash:
-                    ret.append(data_group)
-            return ret
-        def filter_temperature(self, temperature):
-            '''single temp or list'''
-            try:
-                iter(temperature)
-            except TypeError as e:
-                temperatures = (temperature,)
-            else:
-                temperatures = temperature
-            ret = type(self)(declaration=self._declaration)
-            for data_group in self:
-                if data_group.temperature in temperatures:
-                    ret.append(data_group)
-            return ret
-
-    def __init__(self, name, module):
-        '''TODO'''
-        self._correlation_declarations = []
-        self._correlation_results = collections.OrderedDict()
-        self._init(name, module)
-    def __str__(self):
-        resp = ''
-        for test in self._correlation_declarations:
-            for line in str(self[test]).splitlines():
-                resp += f'\t{line}\n'
-        return resp.expandtabs(3)
-        return resp
-    def __getitem__(self, key):
-        return self._correlation_results[key]
-    def __iter__(self):
-        return iter(self._correlation_declarations.keys())
-    def json_report(self):
-        return self._json_report(declarations=self._correlation_declarations, results=self._correlation_results)
-    def get_correlation_declarations(self):
-        return self._correlation_declarations
-    def _is_in_spec(self, name, error):
-        if error is None:
-            return False
-        if self.test_limits[name]['upper_limit'] is not None and error > self.test_limits[name]['upper_limit']:
-            return False
-        if self.test_limits[name]['lower_limit'] is not None and error < self.test_limits[name]['lower_limit']:
-            return False
-        return True
-    def _error(self, refid_name,key_conditions,bench_data):
-        declaration = self._correlation_declarations[refid_name]
-        self.ate_result = self._module.get_correlation_data_scalar(REFID=refid_name, data=result, key_conditions=key_conditions)
-        if declaration.limits_units_percentage:
-            return (self.ate_result - bench_data) / bench_data
-        else:
-            return self.ate_result - bench_data
-
-    def __len__(self):
-        return len(self._correlation_declarations.keys())
-    def __bool__(self):
-        if not len(self):
-            #No declarations
-            return True
-        return bool(functools.reduce(lambda a,b: a and b, (self[k] for k in self)))
-    
-    def _register_correlation_result(self, refid_name, iter_data, key_conditions, conditions=None, query=None):
-        if refid_name not in self._correlation_declarations:
-            self._correlation_declarations.append(refid_name)
-        if type(iter_data) == sqlite_data:
-            query = (iter_data.sql_query, iter_data.params)
-        if type(iter_data) == sqlite_data and len(iter_data.get_column_names()) > 1+len(key_conditions):
-            conditions_columns = iter_data.get_column_names()[1+len(key_conditions):]
-            nt_type = collections.namedtuple('distincts',conditions_columns)
-            iter_data = iter_data.to_list()
-            distincts = {nt_type._make(freeze(row[1+len(key_conditions):])) for row in iter_data}
-            try:
-                distincts = sorted(distincts)
-            except TypeError:
-                pass
-            rowcount = len(iter_data)
-            match_count = 0
-            assert conditions is None, "TODO: This isn't a permanent error, but it hasn't been implemented yet. What to do about explicit conditions???? Append???"
-            for condition in distincts:
-                data = [row for row in iter_data if freeze(row[1+len(key_conditions):]) == condition]
-                self._register_correlation_result(refid_name=refid_name, iter_data=data, key_conditions=key_conditions, conditions=condition._asdict(), query=query)
-                match_count += len(data)
-            assert match_count == rowcount
-            return
-        for result in iter_data:
-            key_records = {key_condition:result[key_condition] for key_condition in key_conditions}
-            if result[0] is None:
-                # There's no bench data. Something has gone pretty wrong already, and this correlation is doomed to failure.
-                # Just to be extra-nice, we'll make a Hail Mary attempt to fetch ATE data, for the permanent record. It might be useful for debugging.
-                # If there were bench data, this work would be done inside self._error.
-                try:
-                  ate_result = self._module.get_correlation_data_scalar(REFID=refid_name, data=result, key_conditions=key_conditions)
-                except ATEDataException as e:
-                  ate_result = None
-                self._register_correlation_failure(name=refid_name, reason='Bench data missing.', key_conditions = key_records, conditions=conditions, ate_data=ate_result, query=query)
-                continue
-            err=self._error(refid_name, result)
-            passes  = self._is_in_spec(refid_name, err)
-            self._correlation_results[refid_name].append(self._correlation_result(refid_name  = refid_name, 
-                                                                                  key_conditions = key_records,
-                                                                                  conditions=conditions,
-                                                                                  bench_data  = result,
-                                                                                  ate_data=self.ate_result,
-                                                                                  error=err,
-                                                                                  failure_reason='',
-                                                                                  passes=passes,
-                                                                                  query=query,
-                                                                                 ))
-    def _register_correlation_failure(self, name, reason, temperature, key_conditions, conditions, bench_data=None, ate_data=None, query=None):
-        if name not in self._correlation_declarations:
-            raise Exception(f'Undeclared correlation results: {name}')
-        self._correlation_results[name].append(self._correlation_result(refid_name=name,
-                                                                        key_conditions = {key_condition:result[key_condition] for key_condition in key_conditions},
-                                                                        conditions=conditions,
-                                                                        bench_data=bench_data,
-                                                                        error=None,
-                                                                        ate_data=ate_data,
-                                                                        failure_reason=reason,
-                                                                        passes=False,
-                                                                        query=query,
-                                                                        ))
-
-class correlation_results_reload(correlation_results):
-    def __init__(self, results_json='correlation_results.json'):
-        self._schema_version = 1.1
-        self._correlation_declarations = collections.OrderedDict()
-        self._correlation_results = collections.OrderedDict()
-        with open(results_json, mode='r', encoding='utf-8') as f:
-            self.__results = json.load(f)
-            f.close()
-        if self.__results['schema_version'] not in (0.2, 1.0, 1.1):
-            raise ResultsSchemaMismatchException(f'Results file {results_json} written with schema version {self.__results["schema_version"]}, but reader expecting {self._schema_version}.')
-        self._init(name=self.__results['test_module'], module=None)
-        self._set_traceability_info(datetime=self.__results["collection_date"], **self.__results["traceability"])
-        for test in self.__results['tests']:
-            self._register_correlation_test(refid_name=test, **self.__results['tests'][test]['declaration'])
-            for temperature_group in self.__results['tests'][test]['results']['temperatures']:
-                temperature = temperature_group['temperature']
-                for condition_group in temperature_group['cases']:
-                    for result in condition_group['case_results']:
-                        self._correlation_results[test].append(self._correlation_result(refid_name  = test, 
-                                                                                        temperature = temperature,
-                                                                                        conditions=condition_group['conditions'],
-                                                                                        **result,
-                                                                                       )
-                                                              )
-    def json_report(self, filename='correlation_results_rewrite.json'):
-        with open(filename, 'wb') as f:
-            f.write(super().json_report().encode('utf-8'))
-            f.close()
