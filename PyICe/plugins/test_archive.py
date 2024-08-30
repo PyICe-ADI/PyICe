@@ -99,11 +99,11 @@ class database_archive():
             except sqlite3.OperationalError as e:
                 missing_col_mat = re.match('no such column: (?P<missing_col>\w+)', str(e)) #alphanumeric column names only? prob ok.
                 if missing_col_mat is not None:
-                    print(f"You done goofed. One or more of {columns_str} do not exist. Now think about what you've done.")
+                    print(f"One or more of {columns_str} do not exist.")
                     breakpoint()
                 else:
                     print(e)
-                    print('This is unexpected. Please email trace above to Dave')
+                    print('This is unexpected. Please contact support.')
                     breakpoint()
                     pass
         ###########
