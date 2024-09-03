@@ -237,15 +237,11 @@ class database_archive():
 class manual_archive():
     def __init__(self, archive_location=None, db_location=None):
         if archive_location is None:
-            archive_location = input('What filepath to the archive directory? ')
+            archive_location = input('What is the filepath to the archive directory? ')
         if db_location is None:
-            db_location = input('What filepath to the directory of the database? ')
+            db_location = input('What is the filepath to the directory of the database? ')
         db_arch = database_archive(archive_location, db_location+'/data_log.sqlite')
         db_arch.copy_interactive()
-    def write_plot_script(self):
-        pass
-
-
 
 if __name__ == '__main__':
     db_arch = database_archive('../', './data_log.sqlite')
