@@ -1,6 +1,5 @@
 # This is based on the app note:
 # https://fscdn.rohm.com/en/products/databook/applinote/ic/power/switching_regulator/buck_converter_efficiency_app-e.pdf
-# https://analog-my.sharepoint.com/:b:/r/personal/steve_martin_analog_com/Documents/IC%20Design/Switching%20Converters/Buck_converter_efficiency_app-e%20RHOM%20APP%20NOTE.pdf?csf=1&web=1&e=RlhgHf
 
 class buck_power_loss(object):
     def __init__(self, **kwargs):
