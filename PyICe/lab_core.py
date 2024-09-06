@@ -1072,6 +1072,8 @@ class channel_group(object):
             for scg in self._sub_channel_groups:
                 scg.sort(**kwargs)
     def add(self,channel_or_group):
+        '''If a channel object is given, the channel is added to the topmost level of the channel group.
+           If a channel group object is given, a subgroup is added to the channel group. When a parent group, but the channels are not considered to be part of the parent group.'''
         if isinstance(channel_or_group,channel):
             return self._add_channel(channel_or_group)
         elif isinstance(channel_or_group,channel_group):
@@ -1099,12 +1101,13 @@ class channel_group(object):
         self._channel_dict[channel_object.get_name()] = channel_object
         return channel_object
     def merge_in_channel_group(self,channel_group_object):
-        '''merges in a channel group'''
+        '''adds to the topmost level of this channel group all the channels of the given channel group.'''
         if not isinstance(channel_group_object,channel_group):
             raise Exception('\nAttempted to merge a non-channel_group to a channel_group')
         for channel_object in channel_group_object:
             self._add_channel(channel_object)
     def _add_sub_channel_group(self,channel_group_object):
+        '''adds a subgroup to this channel group. Subgroups are also resolved when the parents group is, but the channels of the subgroup are not considered to be part of the parent group.'''
         if not isinstance(channel_group_object,channel_group):
             raise Exception('\nAttempted to add a "{}" to a channel_group as a sub group'.format(channel_group_object))
         channel_name_conflicts = set(self.get_all_channels_dict().keys()) & set(channel_group_object.get_all_channels_dict().keys())
