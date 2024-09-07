@@ -6,13 +6,15 @@ if __name__ == '__main__':
     banners.print_banner("", "Welcome to the PyICE Project Creator Wizard!",
                            "This will help you get started with a basic folder structure for your new Project!",
                            "Good luck and enjoy!", "", length=90)
-    project_name = input('Project name? ')
-    this_machine = input(f'Setting up on what machine? [default {socket.gethostname().replace("-", "_")}] ')
+    project_name = input('Project name: ')
+    this_machine = input(f'Setting up on what machine [{socket.gethostname().replace("-", "_")}]: ')
     if not len(this_machine):
         this_machine = socket.gethostname().replace("-", "_")
-    project_folder = input(f"Project folder location? [default {os.path.join(os.path.dirname(os.path.abspath(__file__))[:os.path.dirname(os.path.abspath(__file__)).index('pyice-adi')],project_name)}] ")
-    if not len(project_folder):
-        project_folder = os.path.join(os.path.dirname(os.path.abspath(__file__))[:os.path.dirname(os.path.abspath(__file__)).index('pyice-adi')],project_name)
+    project_folder = ''
+    while not len(project_folder):
+        project_folder = input(f'Project folder location e.g. D:\\users\\anonymous\\projects\\{project_name}: ')
+        if not len(project_folder):
+            print("Please enter a filepath to your project folder.")
 
     script_creator_dict = {}
     dir_to_make = []
