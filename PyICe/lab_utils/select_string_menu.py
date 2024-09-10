@@ -65,7 +65,7 @@ def select_string_menu(header, items):
                 mode = curses.A_REVERSE
             else:
                 mode = curses.A_NORMAL
-            msg = f"{index}.\t{item}"
+            msg = f"{item}"
             window.addstr(2 + index, 1, msg, mode)
         key = window.getch()
         if key in [curses.KEY_ENTER, ord("\n")]:
