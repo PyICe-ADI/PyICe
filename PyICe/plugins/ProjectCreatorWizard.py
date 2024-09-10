@@ -2,7 +2,7 @@ import socket, os
 from PyICe.lab_utils import banners, select_string_menu
 
 if __name__ == '__main__':
-    '''Creates an folder hierarchy to utilize the PyICe Infrastructure Extensions.'''
+    '''Creates a folder hierarchy to utilize PyICe Infrastructure Extensions.'''
     banners.print_banner("", "Welcome to the PyICe Project Creator Wizard!",
                            "This will help you get started with a basic folder structure for your new Project.",
                            "Good luck and enjoy!", "", length=90)
