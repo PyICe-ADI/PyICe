@@ -6,20 +6,19 @@ if __name__ == '__main__':
     banners.print_banner("", "Welcome to the PyICE Project Creator Wizard!",
                            "This will help you get started with a basic folder structure for your new Project!",
                            "Good luck and enjoy!", "", length=90)
-    project_name = input('Project name: ')
-    this_machine = input(f'Setting up on what machine [{socket.gethostname().replace("-", "_")}]: ')
-    if not len(this_machine):
-        this_machine = socket.gethostname().replace("-", "_")
+    project_name = input('Enter project name: ')
+    this_machine = socket.gethostname().replace("-", "_")
+    banners.print_banner(f'Creating a bench file for "{this_machine}".','*** Users on other benches will need to make their own bench files. ***')
     project_folder = ''
     while not len(project_folder):
-        project_folder = input(f'Project folder location e.g. D:\\users\\anonymous\\projects\\{project_name}: ')
+        project_folder = input(f'Enter project folder location (e.g. D:\\users\\{os.getlogin().lower()}\\projects\\{project_name}): ')
         if not len(project_folder):
             print("Please enter a filepath to your project folder.")
             continue
         try:
             os.mkdir(project_folder)
         except FileExistsError:
-            print(f'{project_folder} name already exists. Please pick another location.')
+            print(f'{project_folder} already exists. Please pick another location.\n')
             project_folder = ''
 
     script_creator_dict = {}
@@ -72,19 +71,18 @@ def get_traceability_items(test):
 
     print('\n\nPLUGINS\nPlugins add additional features to the default test template.\nThey can help with traceability and streamline evaluation.')
     plugins_to_add = []
-    while True:
-        if not len(plugins_to_add):
-            plugin_check = input('Would you like to add a ready made plugin to your test module? ')
-        else:
-            plugin_check = input('Would you like to add another plugin to your test module? ')
-        if plugin_check.upper() in ['NO', 'N']:
-            break
-        plugin_list = ["evaluate_tests","traceability","archive","notifications","bench_config_management","bench_image_creation"]
-        to_add = select_string_menu.select_string_menu('Which plugin would you like to add?', [z for z in plugin_list if z not in plugins_to_add])
-        if to_add is None:
-            break
-        print(f"{to_add} has been added!\n")
-        plugins_to_add.append(to_add)
+    os.system("")
+    plugin_check = input('Would you like to add plugins to your test module [\033[4mY\033[0m/N]? ')
+    if not len(plugin_check) or plugin_check.upper() not in ['NO', 'N']:
+        while True:
+            plugin_list = ["evaluate_tests","traceability","archive","notifications","bench_config_management","bench_image_creation"]
+            to_add = select_string_menu.select_string_menu('Select plugins to add, then select exit.', [(' ' if z not in plugins_to_add else '•')+z for z in plugin_list])
+            if to_add is None:  ## The menu returns a None when default menu item 'exit' is selected.
+                break
+            elif to_add[1:] in plugins_to_add:
+                plugins_to_add.remove(to_add[1:])
+            else:
+                plugins_to_add.append(to_add[1:])
     if 'notifications' in plugins_to_add:
         os.mkdir(os.path.join(plugin_folder, 'user_notifications'))
         script_creator_dict[os.path.join(plugin_folder, 'user_notifications', f"example_user.py")] = user_script_maker()
