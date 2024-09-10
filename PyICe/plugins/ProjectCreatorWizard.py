@@ -3,12 +3,12 @@ from PyICe.lab_utils import banners, select_string_menu
 
 if __name__ == '__main__':
     ''' Hokay, all we really need to set up is a project name '''
-    banners.print_banner("", "Welcome to the PyICE Project Creator Wizard!",
-                           "This will help you get started with a basic folder structure for your new Project!",
+    banners.print_banner("", "Welcome to the PyICe Project Creator Wizard!",
+                           "This will help you get started with a basic folder structure for your new Project.",
                            "Good luck and enjoy!", "", length=90)
     project_name = input('Enter project name: ')
     this_machine = socket.gethostname().replace("-", "_")
-    banners.print_banner(f'Creating a bench file for "{this_machine}".','*** Users on other benches will need to make their own bench files. ***')
+    banners.print_banner(f'Creating a bench file for "{this_machine}".', '*** Users on other benches will need to make their own bench files. ***')
     project_folder = ''
     while not len(project_folder):
         project_folder = input(f'Enter project folder location (e.g. D:\\users\\{os.getlogin().lower()}\\projects\\{project_name}): ')
@@ -20,6 +20,7 @@ if __name__ == '__main__':
         except FileExistsError:
             print(f'{project_folder} already exists. Please pick another location.\n')
             project_folder = ''
+    banners.print_banner("Project folder has been created at:", f"{os.path.abspath(project_folder)}")
 
     script_creator_dict = {}
     dir_to_make = []
@@ -72,7 +73,12 @@ def get_traceability_items(test):
     print('\n\nPLUGINS\nPlugins add additional features to the default test template.\nThey can help with traceability and streamline evaluation.')
     plugins_to_add = []
     os.system("")
-    plugin_check = input('Would you like to add plugins to your test module [\033[4mY\033[0m/N]? ')
+    while True:
+        plugin_check = input('Would you like to add plugins to your test module [\33[38;5;0;48;5;255mY\33[m/N]? ')
+        if len(plugin_check) and plugin_check.upper() not in ['Y','N']:
+            print('Please enter either "Y" or "N".')
+        else:
+            break
     if not len(plugin_check) or plugin_check.upper() not in ['NO', 'N']:
         while True:
             plugin_list = ["evaluate_tests","traceability","archive","notifications","bench_config_management","bench_image_creation"]
@@ -236,6 +242,6 @@ pm.run()'''
             pass
 
     banners.print_banner("",
-        f"New project '{project_name}' structure set!","Be sure the new folder is part of the PYTHONPATH in environment variables.","Please go to the driver folder to make drivers for the instruments you need","and the benches folder to add them to your bench,","or go directly to",f"{test_example_folder}","to run an example of a test.","")
+        f"New project '{project_name}' structure set!", "Be sure the new folder is part of the PYTHONPATH in environment variables.", "Please go to the driver folder to make drivers for the instruments you need", "and the benches folder to add them to your bench,", "or go directly to:", f"{test_example_folder}","to run an example of a test.", "")
     if len(plugins_to_add):
         print(f"\nBe aware: some plugins may require additional project information in order to function.")
