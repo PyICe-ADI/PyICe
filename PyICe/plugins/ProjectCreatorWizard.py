@@ -15,11 +15,16 @@ if __name__ == '__main__':
         project_folder = input(f'Project folder location e.g. D:\\users\\anonymous\\projects\\{project_name}: ')
         if not len(project_folder):
             print("Please enter a filepath to your project folder.")
+            continue
+        try:
+            os.mkdir(project_folder)
+        except FileExistsError:
+            print(f'{project_folder} name already exists. Please pick another location.')
+            project_folder = ''
 
     script_creator_dict = {}
     dir_to_make = []
 
-    dir_to_make.append(project_folder)
     project_test_folder = os.path.join(project_folder, f'tests')
     dir_to_make.append(project_test_folder)
     test_example_folder = os.path.join(project_test_folder, f'example')
@@ -34,11 +39,7 @@ if __name__ == '__main__':
     dir_to_make.append(plugin_folder)
 
     for folder in dir_to_make:
-        try:
-            os.mkdir(folder)
-        except FileExistsError:
-            print(f'{folder} name already exists. Please pick another name.')
-            breakpoint()
+        os.mkdir(folder)
 
     def traceability_script_maker():
         script_str = '''from PyICe.plugins.traceability_items import traceability_items
