@@ -1414,7 +1414,7 @@ class channel_group(object):
         txt += '<HEAD>\n'
         txt += '<META charset="UTF-8"/>\n'
         txt += '<TITLE>\n'
-        txt += 'Secret Channel Decoder Ring\n'
+        txt += 'Channel Finder\n'
         txt += '</TITLE>\n'
         txt += '<STYLE>\n'
         txt += '    table, th, td {\n'
