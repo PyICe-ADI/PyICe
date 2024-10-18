@@ -1939,7 +1939,7 @@ class background_worker(QtCore.QThread):
         #     if item[0] == 'read' and set(item[1]) == set(read_list):
         #         return
         # FIXME FL: self.log.write("master.read_channel_list({})\n".format(read_list))
-        self.log.write("master.read_channel_list({})\n".format(read_list))
+        self.log.write("master.read_channels({})\n".format(read_list))
         self.queue.put ( ('read',read_list) )
     def write_channel_list(self,write_list):
         for e in write_list:
