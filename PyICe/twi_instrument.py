@@ -10,6 +10,7 @@ import xml.etree.ElementTree as ET
 from PyICe.lab_utils.str2num import str2num
 from PyICe.lab_utils.interpolator import interpolator
 import json
+import traceback
 
 try:
     from scipy.interpolate import UnivariateSpline
@@ -124,19 +125,19 @@ class twi_instrument(lab_core.instrument,lab_core.delegator):
             try:
                 return function()
             except (twi_interface.i2cError,twi_interface.i2cMasterError) as e:
-                print(e)
+                print(traceback.format_exc())
                 try:
                     self._interface.resync_communication()
                 except (twi_interface.i2cError,twi_interface.i2cMasterError) as init_err:
                     if (self.except_on_i2cInitError):
                         raise init_err
                     else:
-                        print(init_err)
+                        print(traceback.format_exc())
                 if try_count <= 0:
                     if (self.except_on_i2cCommError):
                         raise e
                     else:
-                        print("{}:  twi transaction failed: {}".format(self.get_name(), e))
+                        print("{}:  twi transaction failed: {}".format(self.get_name(), traceback.format_exc()))
                         return None
     def _extract(self,data,size,offset):
         if data is None or isinstance(data, lab_core.ChannelReadException):
