@@ -17,7 +17,7 @@ description.
 
 For more detailed documentation, please go [here](https://pyice-adi.github.io/PyICe/)
 
-# [PyICe contributors, please go here for install instructions](CONTRIBUTING.md)
+# [PyICe contributors, please go here for install instructions](https://pyice-adi.github.io/PyICe/CONTRIBUTING.md)
 
 # PyICe user install instructions
 To install PyICe from PyPI, run the command: 
