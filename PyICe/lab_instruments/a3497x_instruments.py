@@ -478,6 +478,7 @@ class agilent_3497xa_20ch(agilent_3497xa_20ch_40ch):
         ####################################
         # Offset Compeasation Channel      #
         ####################################
+        '''Enable Offset Compensation'''
         def _set_offset_compensated(value):
             self.get_interface().write(f'SENSe:FRESistance:OCOMpensated {"ON" if value in [1,True,"ON"] else "OFF"}, (@{channel_num + self.bay*100})')
         def _get_offset_compensated():
