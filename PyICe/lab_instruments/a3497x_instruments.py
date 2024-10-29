@@ -399,7 +399,9 @@ class agilent_3497xa_20ch(agilent_3497xa_20ch_40ch):
         self.get_interface().write("CONFigure:RESistance " + ch_list)
     def add_channel_fres(self, channel_name, channel_num, NPLC=1, range='AUTO', offset_compensated=True, delay=None, disable_autozero=True, add_extended_channels=True):
         '''Four Wire DC resistance measurement
-        
+        ####################################
+        # Related SCPI Commands            #
+        ####################################
         CONFigure
           :FRESistance [{<range>|AUTO|MIN|MAX|DEF} [,<resolution>|MIN|MAX|DEF}],] (@<scan_list>)
         CONFigure? [(@<ch_list>)]
@@ -427,7 +429,7 @@ class agilent_3497xa_20ch(agilent_3497xa_20ch_40ch):
                 '''Presumably AUTO OFF not needed if range being set to MIN, MAX or value.'''
                 self.get_interface().write(f'SENSe:FRESistance:RANGe {value}, (@{channel_num + self.bay*100})')
         def _get_range():
-            return self.get_interface().ask(f'SENSe:FRESistance:RANGe? (@{channel_num + self.bay*100})')
+            return float(self.get_interface().ask(f'SENSe:FRESistance:RANGe? (@{channel_num + self.bay*100})'))
         def _add_channel_range():
             range_channel = channel(channel_name + '_range', write_function=_set_range)
             range_channel._read = _get_range
@@ -436,51 +438,50 @@ class agilent_3497xa_20ch(agilent_3497xa_20ch_40ch):
         ####################################
         # NPLC Channel                     #
         ####################################
+        '''Power Line Cycles'''
         def _set_NPLC(value):
             self.get_interface().write(f'SENSe:FRESistance:NPLC {value}, (@{channel_num + self.bay*100})')
         def _get_NPLC():
-            return self.get_interface().ask(f'SENSe:FRESistance:NPLC? (@{channel_num + self.bay*100})')
+            return float(self.get_interface().ask(f'SENSe:FRESistance:NPLC? (@{channel_num + self.bay*100})'))
         def _add_channel_NPLC():
             NPLC_channel = channel(channel_name + '_NPLC', write_function=_set_NPLC)
             NPLC_channel._read = _get_NPLC
+            NPLC_channel.set_display_format_function(function = lambda float_data: eng_string(float_data, fmt=':0.5g', si=True) + '')
             self._add_channel(NPLC_channel)
         ####################################
         # Aperature Channel                #
         ####################################
-        '''Linked with NPLC'''
+        '''Integration Time, Linked with / Inverse of NPLC'''
         def _set_aperature(value):
              self.get_interface().write(f'SENSe:FRESistance:APERture {value}, (@{channel_num + self.bay*100})')
         def _get_aperature():
-            return self.get_interface().ask(f'SENSe:FRESistance:APERture? (@{channel_num + self.bay*100})')
+            return float(self.get_interface().ask(f'SENSe:FRESistance:APERture? (@{channel_num + self.bay*100})'))
         def _add_channel_aperature():
             aperature_channel = channel(channel_name + '_aperature', write_function=_set_aperature)
             aperature_channel._read = _get_aperature
+            aperature_channel.set_display_format_function(function = lambda float_data: eng_string(float_data, fmt=':0.5g', si=True) + 's')
             self._add_channel(aperature_channel)
         ####################################
         # Resolution Channel               #
         ####################################
-        '''Linked with NPLC'''
+        '''Linked with Aperature Time and NPLC'''
         def _set_resolution(value):
                 self.get_interface().write(f'SENSe:FRESistance:RANGe:AUTO OFF, (@{channel_num + self.bay*100})')
                 self.get_interface().write(f'SENSe:FRESistance:RESolution {value}, (@{channel_num + self.bay*100})')
         def _get_resolution():
-            return self.get_interface().ask(f'SENSe:FRESistance:RESolution? (@{channel_num + self.bay*100})')
+            return float(self.get_interface().ask(f'SENSe:FRESistance:RESolution? (@{channel_num + self.bay*100})'))
         def _add_channel_resolution():
             resolution_channel = channel(channel_name + '_resolution', write_function=_set_resolution)
             resolution_channel._read = _get_resolution
             resolution_channel.set_display_format_function(function = lambda float_data: eng_string(float_data, fmt=':0.5g', si=True) + 'Ω')
             self._add_channel(resolution_channel)
         ####################################
-        # Offset Channel                   #
+        # Offset Compeasation Channel      #
         ####################################
         def _set_offset_compensated(value):
-            if value in [1,True,"ON"]:
-                value = "ON"
-            else:
-                value = "OFF"
-            self.get_interface().write(f'SENSe:FRESistance:OCOMpensated {value}, (@{channel_num + self.bay*100})')
+            self.get_interface().write(f'SENSe:FRESistance:OCOMpensated {"ON" if value in [1,True,"ON"] else "OFF"}, (@{channel_num + self.bay*100})')
         def _get_offset_compensated():
-            return self.get_interface().ask(f'SENSe:FRESistance:OCOMpensated? (@{channel_num + self.bay*100})')
+            return True if int(self.get_interface().ask(f'SENSe:FRESistance:OCOMpensated? (@{channel_num + self.bay*100})')) else False
         def _add_channel_offset_compensated():
             offset_compensated_channel = channel(channel_name + '_offscomp', write_function=_set_offset_compensated)
             offset_compensated_channel._read = _get_offset_compensated
