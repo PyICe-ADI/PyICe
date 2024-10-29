@@ -1,9 +1,8 @@
 from PyICe.bench_configuration_management.bench_configuration_management import component_collection, connection_collection
-import os, inspect, importlib, datetime, socket, traceback, sys, cairosvg, json
+import os, inspect, importlib, datetime, socket, traceback, sys, cairosvg, json, getpass
 from PyICe.bench_configuration_management import bench_visualizer
 from PyICe.lab_utils.sqlite_data import sqlite_data
 from PyICe.plugins.test_results import Test_Results
-from PyICe import virtual_instruments, lab_utils
 from PyICe.lab_utils.banners import print_banner
 from PyICe.lab_utils.communications import email, sms
 from PyICe.lab_core import logger, master
@@ -27,7 +26,7 @@ class Callback_logger(logger):
 class Plugin_Manager():
     def __init__(self, scratch_folder='scratch'):
         self.tests = []
-        self.operator = os.getlogin().lower()
+        self.operator = getpass.getuser().lower()
         self.thismachine = socket.gethostname().replace("-","_")
         self.scratch_folder = scratch_folder
 
