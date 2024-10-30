@@ -11,7 +11,7 @@ if __name__ == '__main__':
     banners.print_banner(f'Creating a bench file for "{this_machine}".', '*** Users on other benches will need to make their own bench files. ***')
     project_folder = ''
     while not len(project_folder):
-        project_folder = input(f'Enter project folder location (e.g. D:\\users\\{os.getlogin().lower()}\\projects\\{project_name}): ')
+        project_folder = input(f'Enter project folder location (e.g. D:{os.sep}users{os.sep}{os.getlogin().lower()}{os.sep}projects{os.sep}{project_name}): ')
         if not len(project_folder):
             print("Please enter a filepath to your project folder.")
             continue
