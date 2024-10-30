@@ -150,7 +150,7 @@ class Plugin_Manager():
         if hasattr(test, 'customize'):
             test.customize()
         test._logger.new_table(table_name=test.name, replace_table=True)
-        test._logger.write_html(file_name=test._module_path+'//scratch//'+test.project_folder_name+'.html')
+        test._logger.write_html(file_name=test._module_path+os.sep+'scratch'+os.sep+test.project_folder_name+'.html')
 
     def cleanup(self):
         """Runs the functions found in cleanup_fns. Resets the intstruments to predetermined "safe" settings as given by the drivers."""

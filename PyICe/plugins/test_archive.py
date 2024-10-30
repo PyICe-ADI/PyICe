@@ -1,8 +1,4 @@
-#!/usr/bin/env python
-
-import os
-import sqlite3
-import re
+import os, re, sqlite3
 
 class database_archive():
     def __init__(self, test_script_file, db_source_file):
@@ -172,8 +168,8 @@ class database_archive():
                     if input('Write archive plot script(s)? [y/[n]]: ').lower() in ['y', 'yes']:
                         import_file=os.path.realpath(os.path.relpath(os.getcwd(), start = os.environ['PYTHONPATH']))
                         import_file=import_file[import_file.find(project_folder_name):]
-                        import_file += '\\'
-                        import_file=import_file.replace('\\',".")
+                        import_file += os.sep
+                        import_file=import_file.replace(os.sep,".")
                         import_file += os.path.basename(os.getcwd())
                         self.write_plot_script(test_module= import_file, test_class=os.path.basename(os.getcwd()), db_table=resp[0], db_file=resp[1])
             self.source_conn.commit()
