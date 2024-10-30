@@ -1,9 +1,8 @@
 from PyICe.bench_configuration_management.bench_configuration_management import component_collection, connection_collection
-import os, inspect, importlib, datetime, socket, traceback, sys, cairosvg, json
+import os, inspect, importlib, datetime, socket, traceback, sys, cairosvg, json, getpass
 from PyICe.bench_configuration_management import bench_visualizer
 from PyICe.lab_utils.sqlite_data import sqlite_data
 from PyICe.plugins.test_results import Test_Results
-from PyICe import virtual_instruments, lab_utils
 from PyICe.lab_utils.banners import print_banner
 from PyICe.lab_utils.communications import email, sms
 from PyICe.lab_core import logger, master
@@ -27,21 +26,21 @@ class Callback_logger(logger):
 class Plugin_Manager():
     def __init__(self, scratch_folder='scratch'):
         self.tests = []
-        self.operator = os.getlogin().lower()
-        self.thismachine = socket.gethostname().replace("-","_")
+        self.operator = getpass.getuser().lower()
+        self.thismachine = socket.gethostname().replace("-","_").split(".")[0]
         self.scratch_folder = scratch_folder
 
     def find_plugins(self, a_test):
         '''This is called the first time a test is added to the plugin manager. An instance of a test is needed to locate the project path. This facilitates users starting from an individual test and getting all the chosen plugins.'''
         for (dirpath, dirnames, filenames) in os.walk(a_test._project_path):
             if 'plugins.json' in filenames: 
-                pluginpath = dirpath.replace('\\', '.')
-                pluginpath = pluginpath[pluginpath.index(a_test._project_path.split('\\')[-1]):]
-                with open(dirpath+'\\plugins.json') as f:
+                pluginpath = dirpath.replace(os.sep, '.')
+                pluginpath = pluginpath[pluginpath.index(a_test._project_path.split(os.sep)[-1]):]
+                with open(dirpath+os.sep+'plugins.json') as f:
                     self.used_plugins = json.load(f)
                 if self.verbose:
                     for plugin in self.used_plugins:
-                        print_banner(f'PYICE Plugin Manager, plugin found: "{plugin}".')
+                        print_banner(f'PyICe Plugin Manager, plugin found: "{plugin}".')
 
     def add_test(self, test, debug=False):
         '''Adds a script to the list that will be operated on. If this is the first time a test is added to this instance of plugin manager, plugin manager also takes this opportunity to acquire the list of plugins used for the project.
@@ -52,12 +51,12 @@ class Plugin_Manager():
         self.tests.append(a_test)
         a_test.pm=self
         (a_test._module_path, file) = os.path.split(inspect.getsourcefile(type(a_test)))
-        a_test.name = a_test._module_path.split('\\')[-1]
+        a_test.name = a_test._module_path.split(os.sep)[-1]
         os.makedirs(os.path.join(a_test._module_path,self.scratch_folder), exist_ok=True)
         try:
             a_test._project_path = a_test._module_path[:a_test._module_path.index(a_test.project_folder_name)+len(a_test.project_folder_name)]
         except AttributeError as e:
-            print_banner("PYICE TEST_MANAGER: User's test template requires an attribute 'project_folder_name' that names the project's topmost folder in order for this PyICe workflow to be able to find the project.")
+            print_banner("PyICe TEST_MANAGER: User's test template requires an attribute 'project_folder_name' that names the project's topmost folder in order for this PyICe workflow to be able to find the project.")
         a_test._db_file = os.path.join(a_test._module_path, self.scratch_folder, 'data_log.sqlite')
         if len(self.tests) == 1:
             self._project_path = a_test._project_path
@@ -107,8 +106,8 @@ class Plugin_Manager():
         for (dirpath1, dirnames, filenames) in os.walk(self._project_path):
             if 'benches' not in dirpath1 or self._project_path not in dirpath1: continue
             try:
-                benchpath = dirpath1.replace('\\', '.')
-                benchpath = benchpath[benchpath.index(self._project_path.split('\\')[-1]):]
+                benchpath = dirpath1.replace(os.sep, '.')
+                benchpath = benchpath[benchpath.index(self._project_path.split(os.sep)[-1]):]
                 module = importlib.import_module(name=benchpath+'.'+self.thismachine, package=None)
                 break
             except ImportError as e:
@@ -117,8 +116,8 @@ class Plugin_Manager():
         self.interfaces = module.get_interfaces()
         for (dirpath, dirnames, filenames) in os.walk(self._project_path):
             if 'hardware_drivers' not in dirpath: continue
-            driverpath = dirpath.replace('\\', '.')
-            driverpath = driverpath[driverpath.index(self._project_path.split('\\')[-1]):]
+            driverpath = dirpath.replace(os.sep, '.')
+            driverpath = driverpath[driverpath.index(self._project_path.split(os.sep)[-1]):]
             for driver in filenames:
                 driver_mod = importlib.import_module(name=driverpath+'.'+driver[:-3], package=None)
                 instrument_dict = driver_mod.populate(self)
@@ -222,8 +221,8 @@ class Plugin_Manager():
         self.notification_targets = {'emails':[], 'texts':[]}
         for (dirpath, dirnames, filenames) in os.walk(project_path):
             if self.operator+'.py' in filenames: 
-                usernotificationpath = dirpath.replace('\\', '.')
-                usernotificationpath = usernotificationpath[usernotificationpath.index(project_path.split('\\')[-1]):]
+                usernotificationpath = dirpath.replace(os.sep, '.')
+                usernotificationpath = usernotificationpath[usernotificationpath.index(project_path.split(os.sep)[-1]):]
                 module = importlib.import_module(name=usernotificationpath+f'.{self.operator}', package=None)
                 if hasattr(module, 'add_notifications_to_test_manager'):
                     module.add_notifications_to_test_manager(test_manager=self)
@@ -340,7 +339,7 @@ class Plugin_Manager():
             for (test, db_table, db_file) in archived_tables:
                 if hasattr(test, 'plot'):
                     dest_file = os.path.join(os.path.dirname(db_file), f"replot_data.py")
-                    import_str = test._module_path[test._module_path.index(test.project_folder_name):].replace('\\','.')
+                    import_str = test._module_path[test._module_path.index(test.project_folder_name):].replace(os.sep,'.')
                     plot_script_src = "if __name__ == '__main__':\n"
                     plot_script_src += f"    from PyICe.plugins.plugin_manager import Plugin_Manager\n"
                     plot_script_src += f"    from {import_str}.test import Test\n"
@@ -356,7 +355,7 @@ class Plugin_Manager():
                         print(e)
                 if 'evaluate_tests' in self.used_plugins:
                     dest_file = os.path.join(os.path.dirname(db_file), f"reeval_data.py")
-                    import_str = test._module_path[test._module_path.index(test.project_folder_name):].replace('\\','.')
+                    import_str = test._module_path[test._module_path.index(test.project_folder_name):].replace(os.sep,'.')
                     plot_script_src = "if __name__ == '__main__':\n"
                     plot_script_src += f"    from PyICe.plugins.plugin_manager import Plugin_Manager\n"
                     plot_script_src += f"    from {import_str}.test import Test\n"
@@ -407,7 +406,7 @@ class Plugin_Manager():
         if 'bench_image_creation' in self.used_plugins:
             visualizer = bench_visualizer.visualizer(connections=self.test_connections.connections, locations=test.get_bench_image_locations())
             for test in self.tests:
-                visualizer.generate(file_base_name="Bench_Config", prune=True, file_format='svg', engine='neato', file_location=test._module_path+'\\scratch\\')
+                visualizer.generate(file_base_name="Bench_Config", prune=True, file_format='svg', engine='neato', file_location=test._module_path+os.sep+'scratch'+os.sep)
         summary_msg = f'{self.operator} on {self.thismachine}\n'
         if not len(temperatures):
             for test in self.tests:
