@@ -381,62 +381,43 @@ class Plugin_Manager():
         args:
             temperatures (list): What values will be written to the temp_control_channel.'''
             # debug (Boolean): This will be passed on to the script and can be used to trigger shorter loops or fewer conditions under which to gather data to verify script completeness.'''
-        self.master = master()
-        self.add_instrument_channels()
-        if 'bench_config_management' in self.used_plugins:
-            self.test_components = component_collection()
-            self.test_connections = connection_collection(name="test_connections")
-        for test in self.tests:
-            test._channel_reconfiguration_settings=[]
-            self._create_logger(test)
+        try:
+            self.master = master()
+            self.add_instrument_channels()
             if 'bench_config_management' in self.used_plugins:
-                try:
-                    test._declare_bench_connections()
-                except Exception as e:
-                    raise("TEST_MANAGER ERROR: This project indicated bench configuration data would be stored. Test template requires a _declare_bench_connections method that gathers the data.")
-            if 'traceability' in self.used_plugins:
-                self._create_metalogger(test)
+                self.test_components = component_collection()
+                self.test_connections = connection_collection(name="test_connections")
+            for test in self.tests:
+                test._channel_reconfiguration_settings=[]
+                self._create_logger(test)
                 if 'bench_config_management' in self.used_plugins:
-                    test.traceability_items.get_traceability_data()['bench_connections'] = self.test_connections.get_readable_connections()
-                    test._metalogger.add_channel_dummy('bench_connections')
-                    test._metalogger.write('bench_connections', self.test_connections.get_readable_connections())
-                self._metalog(test)
-        if 'bench_config_management' in self.used_plugins and self.verbose:
-            print(self.test_connections.print_connections())
-        if 'bench_image_creation' in self.used_plugins:
-            visualizer = bench_visualizer.visualizer(connections=self.test_connections.connections, locations=test.get_bench_image_locations())
-            for test in self.tests:
-                visualizer.generate(file_base_name="Bench_Config", prune=True, file_format='svg', engine='neato', file_location=test._module_path+os.sep+'scratch'+os.sep)
-        summary_msg = f'{self.operator} on {self.thismachine}\n'
-        if not len(temperatures):
-            for test in self.tests:
-                # test.debug=debug
-                summary_msg += f'\t* {test.name}*\n'
-                if not test._is_crashed:
                     try:
-                        # test.test_timer.resume_timer()
-                        test._reconfigure()
-                        print_banner(f'{test.name} Collecting. . .')
-                        test.collect()
-                        test._restore()
-                    except (Exception, BaseException) as e:
-                        traceback.print_exc()
-                        test._is_crashed = True
-                        test._crash_info = sys.exc_info()
-                        print(test._crash_info)
-                        self.notify(test._crash_info, subject='CRASHED!!!')
-                    self.cleanup()
-        else:
-            assert self.temperature_channel != None
-            for temp in temperatures:
-                print_banner(f'Setting temperature to {temp}')
-                self.temperature_channel.write(temp)
+                        test._declare_bench_connections()
+                    except Exception as e:
+                        raise("TEST_MANAGER ERROR: This project indicated bench configuration data would be stored. Test template requires a _declare_bench_connections method that gathers the data.")
+                if 'traceability' in self.used_plugins:
+                    self._create_metalogger(test)
+                    if 'bench_config_management' in self.used_plugins:
+                        test.traceability_items.get_traceability_data()['bench_connections'] = self.test_connections.get_readable_connections()
+                        test._metalogger.add_channel_dummy('bench_connections')
+                        test._metalogger.write('bench_connections', self.test_connections.get_readable_connections())
+                    self._metalog(test)
+            if 'bench_config_management' in self.used_plugins and self.verbose:
+                print(self.test_connections.print_connections())
+            if 'bench_image_creation' in self.used_plugins:
+                visualizer = bench_visualizer.visualizer(connections=self.test_connections.connections, locations=test.get_bench_image_locations())
                 for test in self.tests:
+                    visualizer.generate(file_base_name="Bench_Config", prune=True, file_format='svg', engine='neato', file_location=test._module_path+os.sep+'scratch'+os.sep)
+            summary_msg = f'{self.operator} on {self.thismachine}\n'
+            if not len(temperatures):
+                for test in self.tests:
+                    # test.debug=debug
+                    summary_msg += f'\t* {test.name}*\n'
                     if not test._is_crashed:
                         try:
-                            print_banner(f'Starting {test.name} at {temp}C')
                             # test.test_timer.resume_timer()
                             test._reconfigure()
+                            print_banner(f'{test.name} Collecting. . .')
                             test.collect()
                             test._restore()
                         except (Exception, BaseException) as e:
@@ -446,10 +427,47 @@ class Plugin_Manager():
                             print(test._crash_info)
                             self.notify(test._crash_info, subject='CRASHED!!!')
                         self.cleanup()
-                if all([x._is_crashed for x in self.tests]):
-                    print_banner('All tests have crashed. Skipping remaining temperatures.')
-                    break
-        self.close_ports()
+            else:
+                assert self.temperature_channel != None
+                for temp in temperatures:
+                    print_banner(f'Setting temperature to {temp}')
+                    self.temperature_channel.write(temp)
+                    for test in self.tests:
+                        if not test._is_crashed:
+                            try:
+                                print_banner(f'Starting {test.name} at {temp}C')
+                                # test.test_timer.resume_timer()
+                                test._reconfigure()
+                                test.collect()
+                                test._restore()
+                            except (Exception, BaseException) as e:
+                                traceback.print_exc()
+                                test._is_crashed = True
+                                test._crash_info = sys.exc_info()
+                                print(test._crash_info)
+                                self.notify(test._crash_info, subject='CRASHED!!!')
+                            self.cleanup()
+                    if all([x._is_crashed for x in self.tests]):
+                        print_banner('All tests have crashed. Skipping remaining temperatures.')
+                        break
+        except Exception as e:
+            try:
+                self.cleanup()
+            except AttributeError as e:
+                # Didn't get far enough to populate the bench before crashing.
+                pass
+        finally:
+            try:
+                self.close_ports()
+            except AttributeError as e:
+                # Didn't get far enough to populate the bench before crashing.
+                pass
+            except Exception as e:
+                # Not sure if this should crash now or not, or how it might happen
+                try:
+                    self.notify(f'{self.operator} on {self.thismachine}\n'+str(e), subject='Port cleanup crash!')
+                except:
+                    pass
 
     def plot(self, database=None, table_name=None, plot_filepath=None):
         '''Run the plot method of each test in self.tests. Any plots returned by a test script's plot method will be emailed if the notifications plugin is used.
