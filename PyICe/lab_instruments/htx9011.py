@@ -264,6 +264,20 @@ class htx9011(scpi_instrument):
         ret_str = self.get_interface().readline()
         if not self._pin_response_valid(ret_str) or (ret_str[2] != str(value).upper()):
             self._write_pin(pin, value, tries+1, ret_str)
+            
+    def _write_pins(self, pins, values):
+        year,month,day = [int(value) for value in self.get_firmware_version().split(".")]
+        assert year >=2024 and month >=11 and day >=6, "GPIO pin atomic handling requires HTX9011 firmware >= 2024.11.06"
+        assert len(pins) == len(values)
+        for pin in pins:
+            assert pin[:2] != 'NS', "oops, wrong SCPI path. Contact PyICe developers."
+        pinvals = ','.join([f'{pins[i]}={values[i]}' for i in range(len(pins))])
+        write_str = f':SETPin (@{pinvals});'
+        self.get_interface().write(write_str)
+        # resp checking removed
+        #ret_str = self.get_interface().readline()
+        #if not self._pin_response_valid(ret_str) or (ret_str[2] != str(value).upper()):
+        #    self._write_pin(pin, value, tries+1, ret_str)
     def _read_pin_setting(self,pin, tries=0, ret_str=None):
         if tries == self.tries:
             raise Exception(f"HTX9011: Failed to read pin: {pin} after {tries} tries. Return value is {ret_str}.")
@@ -345,10 +359,9 @@ class htx9011(scpi_instrument):
                 out += str(value)
         return out
     def _write_gpio(self,gpio_list,value):
+        #no gpio pins are attached to bus expander, so redirecting all to new scpi path to write multiple pins.
         bit_list = self._to_bit_list(value,len(gpio_list))
-        pin_values = list(zip(gpio_list,bit_list))
-        for pin_name,pin_value in pin_values:
-            self._write_pin(self.gpio_pins[pin_name],pin_value)
+        return self._write_pins([self.gpio_pins[p] for p in gpio_list], bit_list)
     def _write_relay_bypass(self,relay_number,value):
         value = self._clean_value(value)
         if value not in [0,1]:
@@ -380,6 +393,7 @@ class htx9011(scpi_instrument):
         self._write_pin("PE3",value)
         time.sleep(0.1)
     def _read_pins_values(self,pins,invert=False):
+        #todo - read all pins at once for with single SCPI exchange for GPIO, rather than iterating.
         pin_names = [self.gpio_pins[pin] for pin in pins]
         return self._read_pins_generic(pin_names,invert=invert,function=self._read_pin_value)
     def _read_pins_generic(self,pins,invert=False,function=None):
