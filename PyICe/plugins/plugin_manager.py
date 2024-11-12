@@ -451,6 +451,7 @@ class Plugin_Manager():
                         print_banner('All tests have crashed. Skipping remaining temperatures.')
                         break
         except Exception as e:
+            traceback.print_exc()
             try:
                 self.cleanup()
             except AttributeError as e:
