@@ -452,6 +452,8 @@ class Plugin_Manager():
                         break
         except Exception as e:
             traceback.print_exc()
+            for test in self.tests:
+                test._is_crashed = True
             try:
                 self.cleanup()
             except AttributeError as e:
@@ -483,6 +485,9 @@ class Plugin_Manager():
         reset_pf = False
         for test in self.tests:
             if not hasattr(test, 'plot'):
+                continue
+            if test._is_crashed:
+                print(f"{test.name} crashed. Skipping plot.")
                 continue
             test.plot_list=[]
             test.linked_plots={}
@@ -533,6 +538,9 @@ class Plugin_Manager():
         reset_db = False
         reset_tn = False
         for test in self.tests:
+            if test._is_crashed:
+                print(f"{test.name} crashed. Skipping evaluation.")
+                continue
             if database is None:
                 database = test._db_file
                 reset_db = True
@@ -566,6 +574,9 @@ class Plugin_Manager():
             table_name - string. The name of the table in the database with the relevant data. If left blank, the evaluation will continue with the table named after the test script.'''
         print_banner('Correlating. . .')
         for test in self.tests:
+            if test._is_crashed:
+                print(f"{test.name} crashed. Skipping correlation.")
+                continue
             if database is None:
                 database = test._db_file
             if table_name is None:
