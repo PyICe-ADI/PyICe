@@ -425,7 +425,7 @@ class twi_instrument(lab_core.instrument,lab_core.delegator):
 
                 
                 try:
-                    bf['writey_side_effect']
+                    bf['write_side_effect']
                 except KeyError as e:
                     # Old schema
                     pass
