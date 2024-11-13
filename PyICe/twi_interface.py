@@ -1587,7 +1587,7 @@ class i2c_scpi_sp(twi_interface):
         if len(ret_str) > 9:
             raise i2cMasterError("I2C Error: Long Response to read_byte: {}".format(ret_str))
         if ret_str[2] != "1":
-            raise i2cAcknowledgeError(f"I2C Acknowledge Error reading command code:{commandCode} at addr7: {hex(addr7)}. Got: {ret_str}")
+            raise i2cAcknowledgeError(f"I2C Acknowledge Error addr7: {hex(addr7)}. Got: {ret_str}")
         word = ret_str[4:6]
         data8 = int(word,16)
         return data8
@@ -1611,7 +1611,7 @@ class i2c_scpi_sp(twi_interface):
         if len(ret_str) > 4:
             raise i2cMasterError(f"I2C Error: Long Response to send_byte: {ret_str}")
         if ret_str[2] != "1":
-            raise i2cAcknowledgeError(f"I2C Acknowledge Error writing command code: {commandCode} at addr7: {hex(addr7)}. Got: {ret_str}")
+            raise i2cAcknowledgeError(f"I2C Acknowledge Error writing command code: {data8} at addr7: {hex(addr7)}. Got: {ret_str}")
         return True
     def send_byte_pec(self, addr7, data8):
         '''Sent data looks like: "I2CSPx:SMB:SEND:PEC?(@AA,00,DD);"
@@ -1631,7 +1631,7 @@ class i2c_scpi_sp(twi_interface):
         if len(ret_str) > 4:
             raise i2cMasterError(f"I2C Error: Long Response to send_byte PEC: {ret_str}")
         if ret_str[2] != "1":
-            raise i2cAcknowledgeError(f"I2C Acknowledge Error writing command code: {commandCode} at addr7: {hex(addr7)}. Got: {ret_str}")
+            raise i2cAcknowledgeError(f"I2C Acknowledge Error writing command code: {data8} at addr7: {hex(addr7)}. Got: {ret_str}")
         return True
     def read_word(self,addr7,commandCode):
         '''faster way to do an smbus read word'''

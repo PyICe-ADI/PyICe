@@ -33,6 +33,7 @@ import numbers
 import os
 import copy
 import functools
+import pickle
 
 try:
     from numpy import ndarray, insert
@@ -74,6 +75,8 @@ class results_ord_dict(collections.OrderedDict):
         # s = s.replace(' ', '\xFA') # just the tab spaces
         # s = s.replace('\xFF', ' ') # put back non-tab spaces
         return s
+    def __getstate__(self):
+        return {}
 
 class delegator(object):
     '''base class for a read delegator, this is the lowest level class in the library.
@@ -138,6 +141,9 @@ class delegator(object):
         for channel in channel_list:
             results[channel.get_name()] = channel.read_without_delegator()
         return results
+
+def retfirst (t):
+    return (t[0])
 
 class channel(delegator):
     '''The base channel object.
@@ -367,7 +373,9 @@ class channel(delegator):
         return self._attributes[attribute_name]
     def get_attributes(self):
         '''return dictionary of all channel attributes previously set with set_attribute(attribute_name, value)'''
-        return results_ord_dict(sorted(list(self._attributes.items()), key=lambda t: t[0]))
+        #return results_ord_dict(sorted(list(self._attributes.items()), key=lambda t: t[0]))
+        return dict(self._attributes)
+        #return results_ord_dict(sorted(retfirst(list((self._attributes.items())))))
     def set_category(self, category):
         '''each channel may be a member of a single category for sorting purposes. category argument is usually a string'''
         if not isinstance(category,str):
@@ -1454,7 +1462,8 @@ class channel_group(object):
                         txt += '</select>\n'
                         txt += '</p>\n'
                         txt += '</form>\n'
-                except:
+                except Exception as e:
+                    print((traceback.format_exc())) 
                     pass # Only integer_channels and registers can have presets
                 if len(channel.get_attributes()):
                     txt += '<form action="/action_page.php">\n'
@@ -1743,6 +1752,7 @@ class remote_channel(channel):
                 'get_description',
                 'get_name',
                 'get_tags',
+                'get_type_affinity',
                 'get_write_delay',
                 'get_write_history',
                 'is_readable',
@@ -1768,9 +1778,9 @@ class remote_channel(channel):
         delegator.__init__(self)
         self.set_delegator(parent_delegator)
         self._proxy_delegator = delegator
-        for method in self.methods_to_proxy:
-            if hasattr( proxy_channel, method):
-                setattr(self, method, getattr(proxy_channel, method))
+        for method_name in self.methods_to_proxy:
+            if hasattr( proxy_channel, method_name):
+                setattr(self, method_name, getattr(proxy_channel, method_name))
 
 class remote_channel_group_client(channel_group,delegator):
     def __init__(self, address='localhost',port=5001,authkey=DEFAULT_AUTHKEY):
