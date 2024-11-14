@@ -155,7 +155,13 @@ class Plugin_Manager():
     def cleanup(self):
         """Runs the functions found in cleanup_fns. Resets the intstruments to predetermined "safe" settings as given by the drivers."""
         for func in self.cleanup_fns:
-            func()
+            try:
+                func()
+            except:
+                print("\n\PyICE Plugin Manager: One or more cleanup functions not executable. See list below.\n")
+                for function in self.cleanup_fns:
+                    print(function)
+                exit()
 
     def close_ports(self):
         """Release the instruments from bench control."""
@@ -388,6 +394,7 @@ class Plugin_Manager():
                 self.test_components = component_collection()
                 self.test_connections = connection_collection(name="test_connections")
             for test in self.tests:
+                test._temperatures = temperatures
                 test._channel_reconfiguration_settings=[]
                 self._create_logger(test)
                 if 'bench_config_management' in self.used_plugins:
