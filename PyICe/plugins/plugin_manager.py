@@ -375,6 +375,8 @@ class Plugin_Manager():
                         #write locked? exists?
                         print(type(e))
                         print(e)
+                if 'bench_image_creation' in self.used_plugins:
+                    self.visualizer.generate(file_base_name="Bench_Config", prune=True, file_format='svg', engine='neato', file_location=os.path.dirname(db_file))
 
                 arch_plot_scripts.append(dest_file)
                 print_banner(f'Archiving for {test.name} complete.')
@@ -412,9 +414,9 @@ class Plugin_Manager():
             if 'bench_config_management' in self.used_plugins and self.verbose:
                 print(self.test_connections.print_connections())
             if 'bench_image_creation' in self.used_plugins:
-                visualizer = bench_visualizer.visualizer(connections=self.test_connections.connections, locations=test.get_bench_image_locations())
+                self.visualizer = bench_visualizer.visualizer(connections=self.test_connections.connections, locations=test.get_bench_image_locations())
                 for test in self.tests:
-                    visualizer.generate(file_base_name="Bench_Config", prune=True, file_format='svg', engine='neato', file_location=test._module_path+os.sep+'scratch'+os.sep)
+                    self.visualizer.generate(file_base_name="Bench_Config", prune=True, file_format='svg', engine='neato', file_location=test._module_path+os.sep+'scratch'+os.sep)
             summary_msg = f'{self.operator} on {self.thismachine}\n'
             if not len(temperatures):
                 for test in self.tests:
