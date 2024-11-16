@@ -17,7 +17,7 @@ class u2300aBufferUnderflowError(Exception):
 class u2300a_scope(scpi_instrument,delegator):
     '''superclass of all Keysight U2300A series instruments treated as scope'''
     def __init__(self,interface_visa, force_trigger = False, timeout = 1, trigger_timeout=10):
-        self._base_name = str(type(self))
+        self._base_name = 'U2300A'
         scpi_instrument.__init__(self,f"{self._base_name} @ {interface_visa}")
         delegator.__init__(self)  # Clears self._interfaces list, so must happen before add_interface_visa(). --FL 12/21/2016
         self.add_interface_visa(interface_visa, timeout = timeout)
