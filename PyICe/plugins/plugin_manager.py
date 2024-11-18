@@ -101,6 +101,7 @@ class Plugin_Manager():
         The special channel actions are functions that are run on each logging of data and the value is a dicionary with a channel object or the string name of a channel as key, and the value the function to be run. The function requires the arguments channel_name, readings, and test.'''
 
         self.cleanup_fns = []
+        self.startup_fns = []
         self.temperature_channel = None
         self.special_channel_actions = {}
         for (dirpath1, dirnames, filenames) in os.walk(self._project_path):
@@ -127,6 +128,9 @@ class Plugin_Manager():
                     if 'cleanup_list' in instrument_dict:
                         for fn in instrument_dict['cleanup_list']:
                             self.cleanup_fns.append(fn)
+                    if 'startup_list' in instrument_dict:
+                        for fn in instrument_dict['startup_list']:
+                            self.startup_fns.append(fn)
                     if 'temp_control_channel' in instrument_dict:
                         if self.temperature_channel == None:
                             self.temperature_channel = instrument_dict['temp_control_channel']
@@ -152,6 +156,16 @@ class Plugin_Manager():
         test._logger.new_table(table_name=test.name, replace_table=True)
         test._logger.write_html(file_name=test._module_path+os.sep+'scratch'+os.sep+test.project_folder_name+'.html')
 
+    def startup(self):
+        for func in self.startup_fns:
+            try:
+                func()
+            except:
+                print("\n\PyICE Plugin Manager: One or more startup functions not executable. See list below.\n")
+                for function in self.startup_fns:
+                    print(function)
+                exit()
+        
     def cleanup(self):
         """Runs the functions found in cleanup_fns. Resets the intstruments to predetermined "safe" settings as given by the drivers."""
         for func in self.cleanup_fns:
@@ -425,6 +439,7 @@ class Plugin_Manager():
                     if not test._is_crashed:
                         try:
                             # test.test_timer.resume_timer()
+                            self.startup()
                             test._reconfigure()
                             print_banner(f'{test.name} Collecting. . .')
                             test.collect()
@@ -446,6 +461,7 @@ class Plugin_Manager():
                             try:
                                 print_banner(f'Starting {test.name} at {temp}C')
                                 # test.test_timer.resume_timer()
+                                self.startup()
                                 test._reconfigure()
                                 test.collect()
                                 test._restore()
