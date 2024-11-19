@@ -102,6 +102,7 @@ class Plugin_Manager():
 
         self.cleanup_fns = []
         self.startup_fns = []
+        self.shutdown_fns = []
         self.temperature_channel = None
         self.special_channel_actions = {}
         for (dirpath1, dirnames, filenames) in os.walk(self._project_path):
@@ -137,6 +138,9 @@ class Plugin_Manager():
                             temp_instrument = instrument_dict['instruments']
                         else:
                             raise Exception(f'BENCH MAKER: Multiple channels have been declared the temperature control! One from {temp_instrument} and one from {instrument_dict["instruments"]}.')
+                    if 'shutdown_list' in instrument_dict:
+                        for fn in instrument_dict['shutdown_list']:
+                            self.shutdown_fns.append(fn)
                     if 'special_channel_action' in instrument_dict:
                         overwrite_check = [i for i in instrument_dict['special_channel_action'] if i in self.special_channel_actions]
                         if overwrite_check:
@@ -174,6 +178,16 @@ class Plugin_Manager():
             except:
                 print("\n\PyICE Plugin Manager: One or more cleanup functions not executable. See list below.\n")
                 for function in self.cleanup_fns:
+                    print(function)
+                exit()
+
+    def shutdown(self):
+        for func in self.shutdown_fns:
+            try:
+                func()
+            except:
+                print("\n\PyICE Plugin Manager: One or more shutdown functions not executable. See list below.\n")
+                for function in self.shutdown_fns:
                     print(function)
                 exit()
 
@@ -451,6 +465,7 @@ class Plugin_Manager():
                             print(test._crash_info)
                             self.notify(test._crash_info, subject='CRASHED!!!')
                         self.cleanup()
+                self.shutdown()
             else:
                 assert self.temperature_channel != None
                 for temp in temperatures:
@@ -475,12 +490,14 @@ class Plugin_Manager():
                     if all([x._is_crashed for x in self.tests]):
                         print_banner('All tests have crashed. Skipping remaining temperatures.')
                         break
+                self.shutdown()
         except Exception as e:
             traceback.print_exc()
             for test in self.tests:
                 test._is_crashed = True
             try:
                 self.cleanup()
+                self.shutdown()
             except AttributeError as e:
                 # Didn't get far enough to populate the bench before crashing.
                 pass
