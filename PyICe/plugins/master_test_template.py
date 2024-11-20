@@ -16,7 +16,7 @@ class Master_Test_Template():
     def customize(self):
         '''Optional method to alter the logger before the test begins.'''
         if self.verbose:
-            print("This test script does not have a collect method.")
+            print("This test script does not have a customize method.")
     def declare_bench_connections(self):
         '''Optional method to log the setup needed to run the test. Plugin required.'''
         if self.verbose:
@@ -27,14 +27,48 @@ class Master_Test_Template():
             print("This test script does not have a collect method.")
     def plot(self):
         ''' Optional method to retrieve the data collected and create plots. Can be run over and over once a collect has run. User must return a list or tuple of plots and/or pages, or an individual LTC_plot.Page, or a single LTC_plot.plot.'''
-        print("No plots were made with this script.")
+        if self.verbose:
+            print("No plots were made with this script.")
         return []
 
     ###
-    # BEHIND THE SCENES METHODS
+    # GET METHODS
     ###
     def get_channels(self):
         return self._logger
+    def get_name(self):
+        return self._name
+    def get_project_folder_name(self):
+        return self.project_folder_name
+    def get_module_path(self):
+        if hasattr(self, '_module_path'):
+            return self._module_path
+        else:
+            print(f'No database file has been assigned to {self.get_name()} at this time. One is assigned upon adding a test to the plugin manager.')
+    def get_debug(self):
+        return self._debug
+    def get_verbose(self):
+        return self.verbose
+    def get_db_file(self):
+        if hasattr(self, '_db_file'):
+            return self._db_file
+        else:
+            print(f'No database file has been assigned to {self.get_name()} at this time. One is assigned upon adding a test to the plugin manager.')
+    def get_database(self):
+        if hasattr(self, '_db'):
+            return self._db
+        else:
+            print(f'No database has been assigned to {self.get_name()} at this time. One is assigned in during evaluation or plotting.')
+    def get_table_name(self):
+        if hasattr(self, '_table_name'):
+            return self._table_name
+        else:
+            print(f'No table name has been assigned to {self.get_name()} at this time.')
+    def get_plot_filepath(self):
+        if hasattr(self, '_plot_filepath'):
+            return self._plot_filepath
+        else:
+            print(f'No file path for plot locations has been assigned to {self.get_name()} at this time.')
     def get_bench_image_locations(self):
         if hasattr(self, 'bench_image_locations'):
             return self.bench_image_locations
@@ -45,7 +79,8 @@ class Master_Test_Template():
     # EVALUATION METHODS
     ###
     def evaluate_results(self):
-        print("No tests were submitted for evaluation with this script.")
+        if self.verbose:
+            print("No tests were submitted for evaluation with this script.")
     def evaluate_rawdata(self, name, data, conditions=None):
         '''This will compare submitted data to limits for the named test.
         args:

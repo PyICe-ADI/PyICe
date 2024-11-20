@@ -47,11 +47,11 @@ class Plugin_Manager():
         args: test - class object. A test that contains the methods necessary for data collection and processing in the project.
         args: debug - Boolean. This will be passed into all run tests to be used for abbreviating data collection loops. Default value is False.'''
         a_test = test()
-        a_test.debug = debug
+        a_test._debug = debug
         self.tests.append(a_test)
         a_test.pm=self
         (a_test._module_path, file) = os.path.split(inspect.getsourcefile(type(a_test)))
-        a_test.name = a_test._module_path.split(os.sep)[-1]
+        a_test._name = a_test._module_path.split(os.sep)[-1]
         os.makedirs(os.path.join(a_test._module_path,self.scratch_folder), exist_ok=True)
         try:
             a_test._project_path = a_test._module_path[:a_test._module_path.index(a_test.project_folder_name)+len(a_test.project_folder_name)]
@@ -61,7 +61,7 @@ class Plugin_Manager():
         if len(self.tests) == 1:
             self._project_path = a_test._project_path
             try:
-                self.verbose = a_test.verbose
+                self.verbose = a_test.get_verbose()
             except Exception:
                 self.verbose = True
             self.find_plugins(a_test)
@@ -153,12 +153,12 @@ class Plugin_Manager():
 
     def _create_logger(self, test):
         '''Each test add to the plugin manager will have its own logger with which it shall store the data collected by their collect method. The channels will be determined by the drivers added to the driver, and a sqlite database and table will be automatically created and linked to the tests.'''
-        test._logger = Callback_logger(database=test._db_file, special_channel_actions=self.special_channel_actions, test=test)
+        test._logger = Callback_logger(database=test.get_db_file(), special_channel_actions=self.special_channel_actions, test=test)
         test._logger.merge_in_channel_group(self.master.get_flat_channel_group())
         if hasattr(test, 'customize'):
             test.customize()
-        test._logger.new_table(table_name=test.name, replace_table=True)
-        test._logger.write_html(file_name=test._module_path+os.sep+'scratch'+os.sep+test.project_folder_name+'.html')
+        test._logger.new_table(table_name=test.get_name(), replace_table=True)
+        test._logger.write_html(file_name=test.get_module_path()+os.sep+'scratch'+os.sep+test.get_project_folder_name()+'.html')
 
     def startup(self):
         for func in self.startup_fns:
@@ -310,7 +310,7 @@ class Plugin_Manager():
         self.notify(msg_body, subject='Plot Results', attachment_MIMEParts=attachment_MIMEParts)
     def crash_info(self, test):
         (typ, value, trace_bk) = test._crash_info
-        crash_str = f'Test: {test.name} crashed: {typ},{value}\n'
+        crash_str = f'Test: {test.get_name()} crashed: {typ},{value}\n'
         crash_sep = '==================================================\n'
         crash_str += crash_sep
         crash_str += f'{"".join(traceback.format_exception(typ, value, trace_bk))}\n'
@@ -323,7 +323,7 @@ class Plugin_Manager():
     def _create_metalogger(self, test):
         '''Called from the plugin_master if the 'traceability' plugin was included in the plugin_registry, this creates a master and logger separate from the test data logger, and populates them using user provided metadata gathering functions. '''
         _master = master()
-        test._metalogger = logger(database=test._db_file)
+        test._metalogger = logger(database=test.get_db_file())
         test._metalogger.add(_master)
         test.traceability_items.populate_traceability_data()
         test.traceability_items.add_data_to_metalogger(test._metalogger)
@@ -352,7 +352,7 @@ class Plugin_Manager():
             archive_folder = datetime.datetime.utcnow().strftime("%Y_%m_%d_%H_%M")
         archived_tables = []
         for test in self.tests:
-            archiver = test_archive.database_archive(test_script_file=test._module_path, db_source_file=test._db_file)
+            archiver = test_archive.database_archive(test_script_file=test.get_module_path(), db_source_file=test.get_db_file())
             if not archiver.has_data(tablename=test.name):
                 print(f'No data logged for {test.name}. Skipping archive.')
                 continue
@@ -444,11 +444,10 @@ class Plugin_Manager():
             if 'bench_image_creation' in self.used_plugins:
                 self.visualizer = bench_visualizer.visualizer(connections=self.test_connections.connections, locations=test.get_bench_image_locations())
                 for test in self.tests:
-                    self.visualizer.generate(file_base_name="Bench_Config", prune=True, file_format='svg', engine='neato', file_location=test._module_path+os.sep+'scratch'+os.sep)
+                    self.visualizer.generate(file_base_name="Bench_Config", prune=True, file_format='svg', engine='neato', file_location=test._module_path+os.sep+'scratch')
             summary_msg = f'{self.operator} on {self.thismachine}\n'
             if not len(temperatures):
                 for test in self.tests:
-                    # test.debug=debug
                     summary_msg += f'\t* {test.name}*\n'
                     if not test._is_crashed:
                         try:
@@ -525,6 +524,7 @@ class Plugin_Manager():
         reset_db = False
         reset_tn = False
         reset_pf = False
+        print_banner('Plotting. . .')
         for test in self.tests:
             if not hasattr(test, 'plot'):
                 continue
@@ -538,16 +538,16 @@ class Plugin_Manager():
                 database = test._db_file
                 reset_db = True
             if table_name is None:
-                test.table_name = test.name
+                test._table_name = test.name
                 reset_tn = True
             else:
-                test.table_name=table_name
+                test._table_name=table_name
             if plot_filepath is None:
-                test.plot_filepath = os.path.dirname(os.path.abspath(database))
+                test._plot_filepath = os.path.dirname(os.path.abspath(database))
                 reset_pf = True
             else:
-                test.plot_filepath = plot_filepath
-            test.db = sqlite_data(database_file=database, table_name=test.table_name)
+                test._plot_filepath = plot_filepath
+            test._db = sqlite_data(database_file=database, table_name=test.table_name)
             try:
                 test.plot()
             except Exception as e:
@@ -587,12 +587,12 @@ class Plugin_Manager():
                 database = test._db_file
                 reset_db = True
             if table_name is None:
-                test.table_name = test.name
+                test._table_name = test.name
                 reset_tn = True
             else:
-                test.table_name = table_name
-            test._test_results = Test_Results(test.name, module=test)
-            test.db = sqlite_data(database_file=database, table_name=test.table_name)
+                test._table_name = table_name
+            test._test_results = Test_Results(test._name, module=test)
+            test._db = sqlite_data(database_file=database, table_name=test.table_name)
             test.evaluate_results()
             if test._test_results._test_results:
                 print(test.get_test_results())
@@ -622,11 +622,11 @@ class Plugin_Manager():
             if database is None:
                 database = test._db_file
             if table_name is None:
-                test.table_name = test.name
+                test._table_name = test.name
             else:
-                test.table_name = table_name
+                test._table_name = table_name
             test._corr_results = Test_Results(test.name, module=test)
-            test.db = sqlite_data(database_file=database, table_name=test.table_name)
+            test._db = sqlite_data(database_file=database, table_name=test.table_name)
             test.correlate_results()
             print(test.get_test_results())
             t_r = test._corr_results.json_report()
