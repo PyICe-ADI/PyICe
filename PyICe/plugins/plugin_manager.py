@@ -535,10 +535,10 @@ class Plugin_Manager():
             test.linked_plots={}
             print_banner(f'{test.name} Plotting. . .')
             if database is None:
-                database = test._db_file
+                database = test.get_db_file()
                 reset_db = True
             if table_name is None:
-                test._table_name = test.name
+                test._table_name = test.get_name()
                 reset_tn = True
             else:
                 test._table_name=table_name
@@ -547,7 +547,7 @@ class Plugin_Manager():
                 reset_pf = True
             else:
                 test._plot_filepath = plot_filepath
-            test._db = sqlite_data(database_file=database, table_name=test.table_name)
+            test._db = sqlite_data(database_file=database, table_name=test.get_table_name())
             try:
                 test.plot()
             except Exception as e:
