@@ -118,9 +118,9 @@ class Master_Test_Template():
         '''Returns a string that reports the Pass/Fail status for all the tests evaluated in the script and the test script as a whole.'''
         res_str = ''
         all_pass = True
-        res_str += f'*** Module {self.name} ***\n'
+        res_str += f'*** Module {self.get_name()} ***\n'
         res_str += f'{self._test_results}'
-        res_str += f'*** Module {self.name} Summary {"PASS" if self._test_results else "FAIL"}. ***\n\n'
+        res_str += f'*** Module {self.get_name()} Summary {"PASS" if self._test_results else "FAIL"}. ***\n\n'
         return res_str
     def get_test_limits(self, name):
         raise Exception("MASTER TEST TEMPLATE ERROR: This project indicated a use of the TEST_LIMIT plugin but no project specific 'get_test_limits' method was provided.")

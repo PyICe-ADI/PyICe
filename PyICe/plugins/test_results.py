@@ -85,9 +85,9 @@ class generic_results():
         res_dict['test_module'] = self.get_name()
         res_dict['report_date'] = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
         
-        if self._module.name+'_metadata' in self._module.db.get_table_names():
-            trace_database = self._module.db
-            trace_data = trace_database.query(f'SELECT * FROM {self._module.name}_metadata WHERE rowid is 1').fetchone()
+        if self._module.get_name()+'_metadata' in self._module.get_database().get_table_names():
+            trace_database = self._module.get_database()
+            trace_data = trace_database.query(f'SELECT * FROM {self._module.get_name()}_metadata WHERE rowid is 1').fetchone()
             res_dict['collection_date'] = trace_data[trace_data.keys().index('datetime')]
             res_dict['traceability']= {}
             for channel_name in trace_data.keys():
