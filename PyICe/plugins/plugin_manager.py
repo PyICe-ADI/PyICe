@@ -1,10 +1,11 @@
 from PyICe.bench_configuration_management.bench_configuration_management import component_collection, connection_collection
 import os, inspect, importlib, datetime, socket, traceback, sys, cairosvg, json, getpass
 from PyICe.bench_configuration_management import bench_visualizer
+from PyICe.plugins.traceability_items import Traceability_items
+from PyICe.lab_utils.communications import email, sms
 from PyICe.lab_utils.sqlite_data import sqlite_data
 from PyICe.plugins.test_results import Test_Results
 from PyICe.lab_utils.banners import print_banner
-from PyICe.lab_utils.communications import email, sms
 from PyICe.lab_core import logger, master
 from PyICe.plugins import test_archive
 from email.mime.image import MIMEImage
@@ -321,12 +322,13 @@ class Plugin_Manager():
     # TRACEABILITY METHODS
     ###
     def _create_metalogger(self, test):
-        '''Called from the plugin_master if the 'traceability' plugin was included in the plugin_registry, this creates a master and logger separate from the test data logger, and populates them using user provided metadata gathering functions. '''
+        '''Called from the plugin_master if the 'traceability' plugin was included in the plugin_registry, this creates a master and logger separate from the test data logger, and populates them using user provided metadata gathering functions.'''
         _master = master()
         test._metalogger = logger(database=test.get_db_file())
         test._metalogger.add(_master)
-        test.traceability_items.populate_traceability_data()
-        test.traceability_items.add_data_to_metalogger(test._metalogger)
+        test._traceabilities = Traceability_items(test)
+        test._traceabilities.populate_traceability_data(test.traceability_items)
+        test._traceabilities.add_data_to_metalogger(test._metalogger)
     def _metalog(self, test):
         '''This is separate from the _create_metalogger method in order to give other plugins the opportunity to add to the metalogger before the channel list is commited to a table.'''
         test._metalogger.new_table(table_name=test.get_name() + "_metadata", replace_table=True)
@@ -435,7 +437,7 @@ class Plugin_Manager():
                 if 'traceability' in self.used_plugins:
                     self._create_metalogger(test)
                     if 'bench_config_management' in self.used_plugins:
-                        test.traceability_items.get_traceability_data()['test_bench_connections'] = self.test_connections.get_readable_connections()
+                        test._traceabilities.get_traceability_data()['test_bench_connections'] = self.test_connections.get_readable_connections()
                         test._metalogger.add_channel_dummy('test_bench_connections')
                         test._metalogger.write('test_bench_connections', self.test_connections.get_readable_connections())
                     self._metalog(test)
