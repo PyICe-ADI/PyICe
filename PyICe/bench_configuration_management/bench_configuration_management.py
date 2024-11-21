@@ -126,12 +126,12 @@ class connection_collection():
         else:
             print(f'\n\n***\n* WARNING\n***\nPYICE BENCH CONFIG MANAGEMENT: Attempt to remove connection between terminals ({connextion.get_terminals()[0].owner},{connextion.get_terminals()[0].type}) and ({connextion.get_terminals()[1].owner},{connextion.get_terminals()[1].type}) failed. Such a connection does not exist in the list of connections.\n\n')
     def get_connections(self):
-        '''Returns a list of connection object.'''
-        return self.connections
+        '''Returns itself.'''
+        return self
     def get_readable_connections(self):
         '''Returns a parsable list of instrument terminal connections that is also human readable.'''
         if not self.readable_list:
-            for connection in self.get_connections():
+            for connection in self.connections:
                 self.readable_list.append(([connection.get_terminals()[0].owner,connection.get_terminals()[0].type],[connection.get_terminals()[1].owner,connection.get_terminals()[1].type]))
         return self.readable_list
     def print_connections(self, exclude=None):
@@ -161,15 +161,15 @@ class connection_collection():
         for collection in connection_collections:
             if collection._invalid_config:
                 pass # TODO Do something
-            for potential_connection in collection.get_connections():
+            for potential_connection in collection.connections:
                 connection_poi = potential_connection.terminals[0].get_owner(), potential_connection.terminals[0].get_type(), potential_connection.terminals[1].get_owner(), potential_connection.terminals[1].get_type()
-                if len(aggregate_collection.get_connections()) == 0: # Prime the pump...
+                if len(aggregate_collection.connections) == 0: # Prime the pump...
                     aggregate_collection.add_connection(potential_connection.terminals[0], potential_connection.terminals[1])
-                    connection_source[connection_poi] = collection.get_connections()[0].get_script_name()
-                for existing_connection in aggregate_collection.get_connections():
+                    connection_source[connection_poi] = collection.connections[0].get_script_name()
+                for existing_connection in aggregate_collection.connections:
                     if not existing_connection.has_terminals([potential_connection.terminals[0], potential_connection.terminals[1]]):
                         aggregate_collection.add_connection(potential_connection.terminals[0], potential_connection.terminals[1])
-                        connection_source[connection_poi] = collection.get_connections()[0].get_script_name()
+                        connection_source[connection_poi] = collection.connections[0].get_script_name()
             for blocked_terminal in collection.blocked_terminals:
                 if blocked_terminal not in aggregate_collection.blocked_terminals:
                     aggregate_collection.blocked_terminals.append(blocked_terminal)
