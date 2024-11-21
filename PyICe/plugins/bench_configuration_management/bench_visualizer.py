@@ -1,5 +1,5 @@
 from PyICe.lab_utils.banners import print_banner
-import os
+import traceback, subprocess, os, base64
 
 try:
     import graphviz
@@ -7,9 +7,6 @@ except ImportError as e:
     graphviz_missing = True
 else:
     graphviz_missing = False
-
-import traceback,subprocess, os
-import base64
 
 class visualizer():
     def __init__(self, connections, locations):

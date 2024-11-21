@@ -1,6 +1,6 @@
-from PyICe.bench_configuration_management.bench_configuration_management import component_collection, connection_collection
+from PyICe.plugins.bench_configuration_management.bench_configuration_management import component_collection, connection_collection
 import os, inspect, importlib, datetime, socket, traceback, sys, cairosvg, json, getpass
-from PyICe.bench_configuration_management import bench_visualizer
+from PyICe.plugins.bench_configuration_management import bench_visualizer
 from PyICe.plugins.traceability_items import Traceability_items
 from PyICe.lab_utils.communications import email, sms
 from PyICe.lab_utils.sqlite_data import sqlite_data
