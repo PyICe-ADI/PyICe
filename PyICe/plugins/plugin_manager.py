@@ -435,9 +435,9 @@ class Plugin_Manager():
                 if 'traceability' in self.used_plugins:
                     self._create_metalogger(test)
                     if 'bench_config_management' in self.used_plugins:
-                        test.traceability_items.get_traceability_data()['bench_connections'] = self.test_connections.get_readable_connections()
-                        test._metalogger.add_channel_dummy('bench_connections')
-                        test._metalogger.write('bench_connections', self.test_connections.get_readable_connections())
+                        test.traceability_items.get_traceability_data()['test_bench_connections'] = self.test_connections.get_readable_connections()
+                        test._metalogger.add_channel_dummy('test_bench_connections')
+                        test._metalogger.write('test_bench_connections', self.test_connections.get_readable_connections())
                     self._metalog(test)
             if 'bench_config_management' in self.used_plugins and self.verbose:
                 print(self.test_connections.print_connections())
