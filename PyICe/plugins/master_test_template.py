@@ -58,7 +58,7 @@ class Master_Test_Template():
         if hasattr(self, '_db'):
             return self._db
         else:
-            print(f'No database has been assigned to {self.get_name()} at this time. One is assigned in during evaluation or plotting.')
+            print(f'No database has been assigned to {self.get_name()} at this time. One is assigned during evaluation or plotting.')
     def get_table_name(self):
         if hasattr(self, '_table_name'):
             return self._table_name
@@ -95,14 +95,14 @@ class Master_Test_Template():
             name - string. The name of the test whose limits will be used.
             database - SQLite database object. The first column will be compared to the limits of the named spec and the rest will be used for grouping.'''
         self._test_results.test_limits[name]=self.get_test_limits(name)
-        self.db.query(query)
-        self._test_results._evaluate_database(name=name, database=self.db)
+        self.get_database().query(query)
+        self._test_results._evaluate_database(name=name, database=self.get_database())
     def evaluate_db(self, name):
-        '''This method evaluates a pre-massaged SQLite database, self.db, from the user. It returns a bit of flexibility on the sequel query to the user.
+        '''This method evaluates a pre-massaged SQLite database, self.get_database(), from the user. It returns a bit of flexibility on the sequel query to the user.
         args:
             name - string. The name of the test whose limits will be used.'''
         self._test_results.test_limits[name]=self.get_test_limits(name)
-        self._test_results._evaluate_database(name=name, database=self.db)
+        self._test_results._evaluate_database(name=name, database=self.get_database())
     def evaluate(self, name, values, conditions=[], where_clause=''):
         '''This compares submitted data from a SQLite database to a named test in a more outlined fashion.
         args:
@@ -112,7 +112,7 @@ class Master_Test_Template():
         condition_str = ''
         for condition in conditions:
             condition_str += f",{condition}"
-        query_str = f'SELECT {values}{condition_str} FROM {self.table_name} ' + ('WHERE ' + where_clause if where_clause else '')
+        query_str = f'SELECT {values}{condition_str} FROM {self.get_table_name()} ' + ('WHERE ' + where_clause if where_clause else '')
         self.evaluate_query(name, query=query_str)
     def get_test_results(self):
         '''Returns a string that reports the Pass/Fail status for all the tests evaluated in the script and the test script as a whole.'''
