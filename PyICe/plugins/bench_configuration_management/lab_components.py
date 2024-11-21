@@ -1,4 +1,4 @@
-from PyICe.bench_configuration_management.bench_configuration_management import bench_config_component
+from PyICe.plugins.bench_configuration_management.bench_configuration_management import bench_config_component
 
 class thru_terminator(bench_config_component):
     def add_terminals(self):

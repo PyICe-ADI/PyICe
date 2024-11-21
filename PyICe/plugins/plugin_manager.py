@@ -1,10 +1,11 @@
-from PyICe.bench_configuration_management.bench_configuration_management import component_collection, connection_collection
+from PyICe.plugins.bench_configuration_management.bench_configuration_management import component_collection, connection_collection
 import os, inspect, importlib, datetime, socket, traceback, sys, cairosvg, json, getpass
-from PyICe.bench_configuration_management import bench_visualizer
+from PyICe.plugins.bench_configuration_management import bench_visualizer
+from PyICe.plugins.traceability_items import Traceability_items
+from PyICe.lab_utils.communications import email, sms
 from PyICe.lab_utils.sqlite_data import sqlite_data
 from PyICe.plugins.test_results import Test_Results
 from PyICe.lab_utils.banners import print_banner
-from PyICe.lab_utils.communications import email, sms
 from PyICe.lab_core import logger, master
 from PyICe.plugins import test_archive
 from email.mime.image import MIMEImage
@@ -47,11 +48,11 @@ class Plugin_Manager():
         args: test - class object. A test that contains the methods necessary for data collection and processing in the project.
         args: debug - Boolean. This will be passed into all run tests to be used for abbreviating data collection loops. Default value is False.'''
         a_test = test()
-        a_test.debug = debug
+        a_test._debug = debug
         self.tests.append(a_test)
         a_test.pm=self
         (a_test._module_path, file) = os.path.split(inspect.getsourcefile(type(a_test)))
-        a_test.name = a_test._module_path.split(os.sep)[-1]
+        a_test._name = a_test._module_path.split(os.sep)[-1]
         os.makedirs(os.path.join(a_test._module_path,self.scratch_folder), exist_ok=True)
         try:
             a_test._project_path = a_test._module_path[:a_test._module_path.index(a_test.project_folder_name)+len(a_test.project_folder_name)]
@@ -61,7 +62,7 @@ class Plugin_Manager():
         if len(self.tests) == 1:
             self._project_path = a_test._project_path
             try:
-                self.verbose = a_test.verbose
+                self.verbose = a_test.get_verbose()
             except Exception:
                 self.verbose = True
             self.find_plugins(a_test)
@@ -153,12 +154,12 @@ class Plugin_Manager():
 
     def _create_logger(self, test):
         '''Each test add to the plugin manager will have its own logger with which it shall store the data collected by their collect method. The channels will be determined by the drivers added to the driver, and a sqlite database and table will be automatically created and linked to the tests.'''
-        test._logger = Callback_logger(database=test._db_file, special_channel_actions=self.special_channel_actions, test=test)
+        test._logger = Callback_logger(database=test.get_db_file(), special_channel_actions=self.special_channel_actions, test=test)
         test._logger.merge_in_channel_group(self.master.get_flat_channel_group())
         if hasattr(test, 'customize'):
             test.customize()
-        test._logger.new_table(table_name=test.name, replace_table=True)
-        test._logger.write_html(file_name=test._module_path+os.sep+'scratch'+os.sep+test.project_folder_name+'.html')
+        test._logger.new_table(table_name=test.get_name(), replace_table=True)
+        test._logger.write_html(file_name=test.get_module_path()+os.sep+'scratch'+os.sep+test.get_project_folder_name()+'.html')
 
     def startup(self):
         for func in self.startup_fns:
@@ -310,7 +311,7 @@ class Plugin_Manager():
         self.notify(msg_body, subject='Plot Results', attachment_MIMEParts=attachment_MIMEParts)
     def crash_info(self, test):
         (typ, value, trace_bk) = test._crash_info
-        crash_str = f'Test: {test.name} crashed: {typ},{value}\n'
+        crash_str = f'Test: {test.get_name()} crashed: {typ},{value}\n'
         crash_sep = '==================================================\n'
         crash_str += crash_sep
         crash_str += f'{"".join(traceback.format_exception(typ, value, trace_bk))}\n'
@@ -321,15 +322,16 @@ class Plugin_Manager():
     # TRACEABILITY METHODS
     ###
     def _create_metalogger(self, test):
-        '''Called from the plugin_master if the 'traceability' plugin was included in the plugin_registry, this creates a master and logger separate from the test data logger, and populates them using user provided metadata gathering functions. '''
+        '''Called from the plugin_master if the 'traceability' plugin was included in the plugin_registry, this creates a master and logger separate from the test data logger, and populates them using user provided metadata gathering functions.'''
         _master = master()
-        test._metalogger = logger(database=test._db_file)
+        test._metalogger = logger(database=test.get_db_file())
         test._metalogger.add(_master)
-        test.traceability_items.populate_traceability_data()
-        test.traceability_items.add_data_to_metalogger(test._metalogger)
+        test._traceabilities = Traceability_items(test)
+        test._traceabilities.populate_traceability_data(test.traceability_items)
+        test._traceabilities.add_data_to_metalogger(test._metalogger)
     def _metalog(self, test):
         '''This is separate from the _create_metalogger method in order to give other plugins the opportunity to add to the metalogger before the channel list is commited to a table.'''
-        test._metalogger.new_table(table_name=test.name+"_metadata", replace_table=True)
+        test._metalogger.new_table(table_name=test.get_name() + "_metadata", replace_table=True)
         test._metalogger.log()
 
     ###
@@ -352,22 +354,22 @@ class Plugin_Manager():
             archive_folder = datetime.datetime.utcnow().strftime("%Y_%m_%d_%H_%M")
         archived_tables = []
         for test in self.tests:
-            archiver = test_archive.database_archive(test_script_file=test._module_path, db_source_file=test._db_file)
-            if not archiver.has_data(tablename=test.name):
-                print(f'No data logged for {test.name}. Skipping archive.')
+            archiver = test_archive.database_archive(test_script_file=test.get_module_path(), db_source_file=test.get_db_file())
+            if not archiver.has_data(tablename=test.get_name()):
+                print(f'No data logged for {test.get_name()}. Skipping archive.')
                 continue
             if test._is_crashed:
                 this_archive_folder = archive_folder + '_CRASHED'
             else:
                 this_archive_folder = archive_folder
             db_dest_file = archiver.compute_db_destination(this_archive_folder)
-            archiver.copy_table(db_source_table=test.name, db_dest_table=test.name, db_dest_file=db_dest_file)
-            test._logger.copy_table(old_table=test.name, new_table=test.name+'_'+archive_folder)
+            archiver.copy_table(db_source_table=test.get_name(), db_dest_table=test.get_name(), db_dest_file=db_dest_file)
+            test._logger.copy_table(old_table=test.get_name(), new_table=test.get_name()+'_'+archive_folder)
             if 'traceability' in self.used_plugins:
-                archiver.copy_table(db_source_table=test.name+'_metadata', db_dest_table=test.name+'_metadata', db_dest_file=db_dest_file)
-                test._logger.copy_table(old_table=test.name+'_metadata', new_table=test.name+'_'+archive_folder+'_metadata')
-            archived_tables.append((test, test.name, db_dest_file))
-            # test._add_db_indices(table_name=test.name, db_file=db_dest_file)
+                archiver.copy_table(db_source_table=test.get_name()+'_metadata', db_dest_table=test.get_name()+'_metadata', db_dest_file=db_dest_file)
+                test._logger.copy_table(old_table=test.get_name()+'_metadata', new_table=test.get_name()+'_'+archive_folder+'_metadata')
+            archived_tables.append((test, test.get_name(), db_dest_file))
+            # test._add_db_indices(table_name=test.get_name(), db_file=db_dest_file)
         if len(archived_tables):
             arch_plot_scripts = []
             for (test, db_table, db_file) in archived_tables:
@@ -379,7 +381,7 @@ class Plugin_Manager():
                     plot_script_src += f"    from {import_str}.test import Test\n"
                     plot_script_src += f"    pm = Plugin_Manager()\n"
                     plot_script_src += f"    pm.add_test(Test)\n"
-                    plot_script_src += f"    pm.plot(database='data_log.sqlite', table_name='{test.name}')\n"
+                    plot_script_src += f"    pm.plot(database='data_log.sqlite', table_name='{test.get_name()}')\n"
                     try:
                         with open(dest_file, 'a') as f: #exists, overwrite, append?
                             f.write(plot_script_src)
@@ -395,7 +397,7 @@ class Plugin_Manager():
                     plot_script_src += f"    from {import_str}.test import Test\n"
                     plot_script_src += f"    pm = Plugin_Manager()\n"
                     plot_script_src += f"    pm.add_test(Test)\n"
-                    plot_script_src += f"    pm.evaluate(database='data_log.sqlite', table_name='{test.name}')\n"
+                    plot_script_src += f"    pm.evaluate(database='data_log.sqlite', table_name='{test.get_name()}')\n"
                     try:
                         with open(dest_file, 'a') as f: #exists, overwrite, append?
                             f.write(plot_script_src)
@@ -407,7 +409,7 @@ class Plugin_Manager():
                     self.visualizer.generate(file_base_name="Bench_Config", prune=True, file_format='svg', engine='neato', file_location=os.path.dirname(db_file))
 
                 arch_plot_scripts.append(dest_file)
-                print_banner(f'Archiving for {test.name} complete.')
+                print_banner(f'Archiving for {test.get_name()} complete.')
 
     ###
     # SCRIPT METHODS
@@ -435,27 +437,26 @@ class Plugin_Manager():
                 if 'traceability' in self.used_plugins:
                     self._create_metalogger(test)
                     if 'bench_config_management' in self.used_plugins:
-                        test.traceability_items.get_traceability_data()['bench_connections'] = self.test_connections.get_readable_connections()
-                        test._metalogger.add_channel_dummy('bench_connections')
-                        test._metalogger.write('bench_connections', self.test_connections.get_readable_connections())
+                        test._traceabilities.get_traceability_data()['test_bench_connections'] = self.test_connections.get_readable_connections()
+                        test._metalogger.add_channel_dummy('test_bench_connections')
+                        test._metalogger.write('test_bench_connections', self.test_connections.get_readable_connections())
                     self._metalog(test)
             if 'bench_config_management' in self.used_plugins and self.verbose:
                 print(self.test_connections.print_connections())
             if 'bench_image_creation' in self.used_plugins:
                 self.visualizer = bench_visualizer.visualizer(connections=self.test_connections.connections, locations=test.get_bench_image_locations())
                 for test in self.tests:
-                    self.visualizer.generate(file_base_name="Bench_Config", prune=True, file_format='svg', engine='neato', file_location=test._module_path+os.sep+'scratch'+os.sep)
+                    self.visualizer.generate(file_base_name="Bench_Config", prune=True, file_format='svg', engine='neato', file_location=test._module_path+os.sep+'scratch')
             summary_msg = f'{self.operator} on {self.thismachine}\n'
             if not len(temperatures):
                 for test in self.tests:
-                    # test.debug=debug
-                    summary_msg += f'\t* {test.name}*\n'
+                    summary_msg += f'\t* {test.get_name()}*\n'
                     if not test._is_crashed:
                         try:
                             # test.test_timer.resume_timer()
                             self.startup()
                             test._reconfigure()
-                            print_banner(f'{test.name} Collecting. . .')
+                            print_banner(f'{test.get_name()} Collecting. . .')
                             test.collect()
                             test._restore()
                         except (Exception, BaseException) as e:
@@ -474,7 +475,7 @@ class Plugin_Manager():
                     for test in self.tests:
                         if not test._is_crashed:
                             try:
-                                print_banner(f'Starting {test.name} at {temp}C')
+                                print_banner(f'Starting {test.get_name()} at {temp}C')
                                 # test.test_timer.resume_timer()
                                 self.startup()
                                 test._reconfigure()
@@ -525,29 +526,30 @@ class Plugin_Manager():
         reset_db = False
         reset_tn = False
         reset_pf = False
+        print_banner('Plotting. . .')
         for test in self.tests:
             if not hasattr(test, 'plot'):
                 continue
             if test._is_crashed:
-                print(f"{test.name} crashed. Skipping plot.")
+                print(f"{test.get_name()} crashed. Skipping plot.")
                 continue
             test.plot_list=[]
             test.linked_plots={}
-            print_banner(f'{test.name} Plotting. . .')
+            print_banner(f'{test.get_name()} Plotting. . .')
             if database is None:
-                database = test._db_file
+                database = test.get_db_file()
                 reset_db = True
             if table_name is None:
-                test.table_name = test.name
+                test._table_name = test.get_name()
                 reset_tn = True
             else:
-                test.table_name=table_name
+                test._table_name=table_name
             if plot_filepath is None:
-                test.plot_filepath = os.path.dirname(os.path.abspath(database))
+                test._plot_filepath = os.path.dirname(os.path.abspath(database))
                 reset_pf = True
             else:
-                test.plot_filepath = plot_filepath
-            test.db = sqlite_data(database_file=database, table_name=test.table_name)
+                test._plot_filepath = plot_filepath
+            test._db = sqlite_data(database_file=database, table_name=test.get_table_name())
             try:
                 test.plot()
             except Exception as e:
@@ -562,7 +564,7 @@ class Plugin_Manager():
                 test.linked_plots[plot_group] = [self._convert_svg(plt) for plt in test.linked_plots[plot_group]]
             self._plots.extend(test.plot_list)
             self._linked_plots.update(test.linked_plots)
-            print_banner(f'Plotting for {test.name} complete.')
+            print_banner(f'Plotting for {test.get_name()} complete.')
             if reset_db:
                 database = None
             if reset_tn:
@@ -581,23 +583,23 @@ class Plugin_Manager():
         reset_tn = False
         for test in self.tests:
             if test._is_crashed:
-                print(f"{test.name} crashed. Skipping evaluation.")
+                print(f"{test.get_name()} crashed. Skipping evaluation.")
                 continue
             if database is None:
                 database = test._db_file
                 reset_db = True
             if table_name is None:
-                test.table_name = test.name
+                test._table_name = test.get_name()
                 reset_tn = True
             else:
-                test.table_name = table_name
-            test._test_results = Test_Results(test.name, module=test)
-            test.db = sqlite_data(database_file=database, table_name=test.table_name)
+                test._table_name = table_name
+            test._test_results = Test_Results(test._name, module=test)
+            test._db = sqlite_data(database_file=database, table_name=test.get_table_name())
             test.evaluate_results()
             if test._test_results._test_results:
                 print(test.get_test_results())
             elif self.verbose:
-                print(f'No results submitted for {test.name}.')
+                print(f'No results submitted for {test.get_name()}.')
             t_r = test._test_results.json_report()
             dest_abs_filepath = os.path.join(os.path.dirname(database), f"test_results.json")
             if t_r is not None:
@@ -617,16 +619,16 @@ class Plugin_Manager():
         print_banner('Correlating. . .')
         for test in self.tests:
             if test._is_crashed:
-                print(f"{test.name} crashed. Skipping correlation.")
+                print(f"{test.get_name()} crashed. Skipping correlation.")
                 continue
             if database is None:
                 database = test._db_file
             if table_name is None:
-                test.table_name = test.name
+                test._table_name = test.get_name()
             else:
-                test.table_name = table_name
-            test._corr_results = Test_Results(test.name, module=test)
-            test.db = sqlite_data(database_file=database, table_name=test.table_name)
+                test._table_name = table_name
+            test._corr_results = Test_Results(test.get_name(), module=test)
+            test._db = sqlite_data(database_file=database, table_name=test.get_table_name())
             test.correlate_results()
             print(test.get_test_results())
             t_r = test._corr_results.json_report()

@@ -1,13 +1,12 @@
 from PyICe.lab_utils.banners import print_banner
+import traceback, subprocess, os, base64
+
 try:
     import graphviz
 except ImportError as e:
     graphviz_missing = True
 else:
     graphviz_missing = False
-
-import traceback,subprocess, os
-import base64
 
 class visualizer():
     def __init__(self, connections, locations):
@@ -73,21 +72,21 @@ class visualizer():
         try:
             try:
                 if file_format.upper() == 'SVG':
-                    subprocess.run(["dot", "-Kneato", "-n2", "-Tsvg", "-o", f"{file_location}{file_base_name}.svg"], input=f.source, check=True, encoding='UTF-8')
+                    subprocess.run(["dot", "-Kneato", "-n2", "-Tsvg", "-o", file_location+os.sep+file_base_name+".svg"], input=f.source, check=True, encoding='UTF-8')
                 else:
-                    subprocess.run(["dot", "-Kneato", "-n2", "-Tpng", "-o", f"{file_location}{file_base_name}.png"], input=f.source, check=True, encoding='UTF-8')
+                    subprocess.run(["dot", "-Kneato", "-n2", "-Tpng", "-o", file_location+os.sep+file_base_name+".png"], input=f.source, check=True, encoding='UTF-8')
             except Exception as e:
                 print()
                 print_banner("*** WARNING ***", "Graphviz dot.exe not found. Have you installed Graphviz from graphviz.org?", "Ensure that you have a path to graphviz/bin/dot.exe in your environment.")
                 print()
                 return f
             # os.remove(file_base_name)   # Dump the Dot file after the rendered format file is generated.
-            benchimage = open(f"{file_location}{file_base_name}.svg", 'r')
+            benchimage = open(file_location+os.sep+file_base_name+".svg", 'r')
             bench_string = benchimage.read()
             for image in embed_dictionary.keys():
                 bench_string = bench_string.replace(image,embed_dictionary[image])
             benchimage.close()
-            embeded = open(f"{file_location}{file_base_name}.svg", 'w')
+            embeded = open(file_location+os.sep+file_base_name+".svg", 'w')
             embeded.write(bench_string)
             embeded.close()
         except Exception as e:

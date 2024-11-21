@@ -142,7 +142,7 @@ class database_archive():
             archive_folder - str. The name for the folder that will house the archived data under the archive folder.
         Returns:
             Returns an os path to the new database.'''
-        db_dest_folder = os.path.join(self.test_script_file, 'archive', archive_folder)
+        db_dest_folder = os.path.join(self.test_script_file, 'archives', archive_folder)
         db_dest_file = os.path.join(db_dest_folder, self.db_source_filename)
         os.makedirs(db_dest_folder, exist_ok=True)
         return db_dest_file
