@@ -1,13 +1,13 @@
 from PyICe.lab_utils.banners import print_banner
 from PyICe.lab_core import channel
-import datetime
+import collections
 
 class traceability_items():
     def __init__(self, test, warn_only=True):
-        self.item_list=[]
-        self.trace_data={}
-        self.warn_only=warn_only
-        self.test=test
+        self.item_list = []
+        self.test = test
+        self.warn_only = warn_only
+        self.trace_data = collections.OrderedDict()
     def add(self, channel_name, func):
         self.item_list.append({'channel_name':channel_name, 'func':func})
     def populate_traceability_data(self):
