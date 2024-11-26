@@ -54,7 +54,7 @@ class twi_instrument(lab_core.instrument,lab_core.delegator):
         new_register.set_attribute("offset",offset)
         new_register.set_attribute("command_code",command_code)
         new_register.set_attribute("word_size",word_size)
-        new_register.set_attribute("command_code_and_rmw_value", lambda new_value,
+        new_register._command_code_and_rmw_value = (lambda new_value,
                                                 addr7=addr7,
                                                 size=size,
                                                 offset=offset,
