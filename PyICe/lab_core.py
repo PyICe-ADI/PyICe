@@ -33,7 +33,6 @@ import numbers
 import os
 import copy
 import functools
-import pickle
 
 try:
     from numpy import ndarray, insert
@@ -373,9 +372,7 @@ class channel(delegator):
         return self._attributes[attribute_name]
     def get_attributes(self):
         '''return dictionary of all channel attributes previously set with set_attribute(attribute_name, value)'''
-        #return results_ord_dict(sorted(list(self._attributes.items()), key=lambda t: t[0]))
-        return dict(self._attributes)
-        #return results_ord_dict(sorted(retfirst(list((self._attributes.items())))))
+        return results_ord_dict(sorted(list(self._attributes.items()), key=lambda t: t[0]))
     def set_category(self, category):
         '''each channel may be a member of a single category for sorting purposes. category argument is usually a string'''
         if not isinstance(category,str):
