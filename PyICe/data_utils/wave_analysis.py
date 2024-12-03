@@ -67,7 +67,7 @@ class waveform(object):
 
         # Bokeh debug plots
         from bokeh.plotting import figure #, output_file, show
-        self.plt = figure(title="Waveform Analyzer Data", plot_width=300, plot_height=300)
+        self.plt = figure(title="Waveform Analyzer Data", width=300, height=300)
         self.debug = debug
         if self.debug:
         # if True:
