@@ -1,21 +1,29 @@
-import numpy
+from PyICe.lab_utils.banners import print_banner
 from statsmodels.tsa.stattools import adfuller
-from scipy import stats
 from operator import itemgetter
-    
+from scipy import stats
+import numpy
+
+warned_1_already = False
+warned_2_already = False
+
 class waveform(object):
     # @profile
-    def __init__(self, data, trigger_sigma=10, trigger_level=None, leader_size=0.099, debug=False, stationarity_check=True):
+    def __init__(self, data, trigger_sigma=10, trigger_level=None, leader_size=0.099, debug=False, stationarity_check=False):
         MAX_POINTS              = 10000
         LEADER_SIZE             = leader_size
         MAX_NONSTATIONARITY     = 1e-4
+        global warned_2_already
 
         #Figure out transposition/zip status.
         # assume (x,y) paired unless proven otherwise for legacy compatibility
         # This is pretty hacky, but promises trememdous speed improvement when passing data straight from sqlite and numpy to here, compared with list(zip) operations to meet the legacy calling argument format, but are then immediately undone.
         def _zip(data):
+            global warned_1_already
             # Let the nagging begin
-            print('WARNING: waveform class instantiated with (x,y) pair data (legacy format) N x 2. This is both expensive to zip together from independent database columns, and expensive to unzip on the other side of the function call, for no net benefit. Consider sending data in instead as (x_data, y_data) 2 x N column tuple.')
+            if not warned_1_already:
+                print_banner("WARNING: The waveform class instantiated with (x,y) pair data (legacy format) N x 2.", "This is both expensive to zip together from independent database columns", "and expensive to unzip on the other side of the function call, for no net benefit.", "Consider sending data in instead as (x_data, y_data) 2 x N column tuple.", length=160)
+                warned_1_already = True
             self.data               = data
             self.xdata,self.ydata   = list(zip(*data)) #TODO numpy array, not list!
         try:
@@ -33,10 +41,12 @@ class waveform(object):
             _zip(data)
         # and then there was more nagging
         if type(self.xdata) != numpy.ndarray or type(self.ydata) != numpy.ndarray:
-            print(f'WARNING: waveform class initialized with non-numpy arrays ({type(self.xdata)},{type(self.ydata)}). They will be converted here to enable more computationally efficient internal methods, at some expense. Consider whether this data can travel from its source (SQLite?) to here without needing to become a Python list at any point in its journey. See Russell for help in converting column types and/or data. TODO box_filter, etc.')
-            self.xdata = numpy.array(self.xdata)
-            self.ydata = numpy.array(self.ydata)
-                
+            if not warned_2_already:
+                print_banner(f"WARNING: The waveform class initialized with non-numpy arrays ({type(self.xdata)},{type(self.ydata)}).", "They will be converted here to enable more computationally efficient internal methods, at some expense.", "Consider whether this data can travel from its source (SQLite?) to here without needing to become a Python list at any point in its journey.", "Contact pyice-developers@analog.com for help in converting column types and/or data.", "TODO box_filter, etc.", length=160)
+                self.xdata = numpy.array(self.xdata)
+                self.ydata = numpy.array(self.ydata)
+                warned_2_already=True
+
         self.index_size         = int(len(self.xdata)*LEADER_SIZE)  # Leadin and leadout.
         leadin                  = self.ydata[:self.index_size]      # Rules require stationarity in and out...
         leadout                 = self.ydata[-self.index_size:]     # for at least 10% of the record size.
@@ -47,10 +57,10 @@ class waveform(object):
             self.stationarity_out   = 1-adfuller(leadout)[1]
         
             if self.stationarity_in < 1 - MAX_NONSTATIONARITY:
-                print(f"Waveform Analyser ** WARNING **: Waveform is not stationary leading in, stationarity: {self.stationarity_in:0.5e}")
+                print_banner(f"Waveform Analyser ** WARNING **: Waveform is not stationary leading in, stationarity: {self.stationarity_in:0.5e}")
                 self.warning = -1
             if self.stationarity_out < 1 - MAX_NONSTATIONARITY:
-                print(f"Waveform Analyser ** WARNING **: Waveform is not stationary leading out, stationarity: {self.stationarity_out:0.5e}")
+                print_banner(f"Waveform Analyser ** WARNING **: Waveform is not stationary leading out, stationarity: {self.stationarity_out:0.5e}")
                 self.warning = -1
         else:
             self.stationarity_in    = None
@@ -63,19 +73,15 @@ class waveform(object):
         self._trigger_level      = trigger_level
         self.index_10 = 0
 
-
-
         # Bokeh debug plots
         from bokeh.plotting import figure #, output_file, show
         self.plt = figure(title="Waveform Analyzer Data", plot_width=300, plot_height=300)
         self.debug = debug
         if self.debug:
-        # if True:
             self._plot()
             self.dump_data()
             self.plot()
 
-            
         # self.trigger()
         # if self._trigger_polarity == 0:
             # raise ValueError("\nWaveform Analyser: No discernable trigger found within data record.\n")
@@ -190,10 +196,10 @@ class waveform(object):
         for idx, value in enumerate(yreverse):
             if value >= high_limit or value <= low_limit:
                 if idx == 0:
-                    print(f"\nWaveform Analyser: Warning, waveform did not settle to the tolerance requested: ({low_limit}, {high_limit}).\n")
+                    print_banner("Waveform Analyser: Warning, The waveform did not settle to the tolerance requested...", f"({low_limit}, {high_limit})")
                     return -1
                 return xreverse[idx] - self.xdata[self._trigger_index]
-        print(f"\nWaveform Analyser: Warning, waveform was never outside the tolerance region requested: ({low_limit}, {high_limit}).\n")
+        print_banner("Waveform Analyser: Warning, waveform was never outside the tolerance region requested...", f"({low_limit}, {high_limit})")
         return -1
 
     def settling_time_from_max_deviation(self, limit, deviation):
@@ -214,7 +220,7 @@ class waveform(object):
         for idx, value in enumerate(yreverse):
             if value-self._average_in >= abs(limit) or value-self._average_in <= -1*abs(limit):
                 if idx == 0:
-                    print(f"\nWaveform Analyser: Warning, waveform did not settle to the tolerance requested: {limit}.\n")
+                    print_banner("Waveform Analyser: Warning, The waveform did not settle to the tolerance requested...", f"{limit}")
                     return -1
                 self.plt.add_layout(Span(location   = abs(limit)+self._average_in,
                                          dimension  = 'width',
@@ -245,7 +251,7 @@ class waveform(object):
                                         )
                                    )
                 return xreverse[idx] - start_time
-        print(f"\nWaveform Analyser: Warning, waveform was never outside the tolerance region requested: {limit}.\n")
+        print_banner("Waveform Analyser: Warning, The waveform was never outside the tolerance region requested...", f"{limit}")
         return -1
 
     def settling_time_outside_limit(self, limit):
@@ -258,14 +264,14 @@ class waveform(object):
         for idx, value in enumerate(self.ydata):
             if value-self._average_in >= abs(limit) or value-self._average_in <= -1*abs(limit):
                 if idx == len(self.ydata)-1:
-                    print(f"\nWaveform Analyser: Warning, waveform was always outside the tolerance requested: {limit}.\n")
+                    print_banner("Waveform Analyser: Warning, The waveform was always outside the tolerance requested...", f"{limit}")
                     return -1
                 start_index = idx
                 break
         for idx, value in enumerate(yreverse):
             if value-self._average_in >= abs(limit) or value-self._average_in <= -1*abs(limit):
                 if idx == start_index:
-                    print(f"\nWaveform Analyser: Warning, waveform did not settle to the tolerance requested: {limit}.\n")
+                    print_banner("Waveform Analyser: Warning, The waveform did not settle to the tolerance requested...", f"{limit}")
                     return -1
                 self.plt.add_layout(Span(location   = abs(limit)+self._average_in,
                                          dimension  = 'width',
@@ -296,7 +302,7 @@ class waveform(object):
                                         )
                                    )
                 return xreverse[idx]-self.xdata[start_index]
-        print(f"\nWaveform Analyser: Warning, waveform was never outside the tolerance region requested: {limit}.\n")
+        print_banner("Waveform Analyser: Warning, The waveform was never outside the tolerance region requested...", f"{limit}")
         return -1
 
     def undershoot(self):
@@ -514,7 +520,7 @@ class waveform(object):
         
         index_50    = self.find_first_rising_edge(vhigh=vhigh, vlow=vlow, lvl=0.5)
         if index_50 == -1:
-            print(f"\nWaveform Analyser: The 50% level of a rising edge is not found in the data record\n")
+            print_banner("Waveform Analyser: The 50% level of a rising edge was not found in the data record")
             return (-1,-1,-1)
         real_50_lvl = round((self.ydata[index_50]-vlow)/amplitude,4)
         
@@ -526,7 +532,7 @@ class waveform(object):
         else:
             index_lo = self.find_less_than_or_equal_to(vth=vth_lo, start_index=index_50, stop_index=0, increment=-1)
         if index_lo == -1 or index_lo == -2:
-            print(f"\nWaveform Analyser: The {round(lo_lvl*100,1)}% level of the waveform is not found in the data record.\n")
+            print_banner("Waveform Analyser", f"The {round(lo_lvl*100,1)}% level of the waveform was not found in the data record")
             return (-1,-1,-1)
         
         vth_hi = vlow + hi_lvl*amplitude
@@ -537,10 +543,9 @@ class waveform(object):
             ### To be consistent with when hi_lvl>50%, increased the index by one 
             index_hi = self.find_less_than_or_equal_to(vth=vth_hi, start_index=index_50, stop_index=0, increment=-1) + 1
         if index_hi == -1 or index_hi == 0:
-            print(f"\nWaveform Analyser: The {round(hi_lvl*100,1)}% level of the waveform is not found in the data record.\n")
+            print_banner("Waveform Analyser", f"The {round(hi_lvl*100,1)}% level of the waveform was not found in the data record")
             return (-1,-1,-1)
-        
-        # print(f'index50={index_50}, index_lo={index_lo}, index_hi={index_hi}')
+
         from bokeh.models import Span
         self.plt.add_layout(Span(location   = self.xdata[index_lo],
                                  dimension  = 'height',
@@ -571,7 +576,7 @@ class waveform(object):
         
         index_50    = self.find_first_falling_edge(vhigh=vhigh, vlow=vlow, lvl=0.5)
         if index_50 == -1:
-            print(f"\nWaveform Analyser: The 50% level of a falling  edge is not found in the data record\n")
+            print_banner("Waveform Analyser", "The 50% level of a falling  edge is not found in the data record")
             return (-1,-1,-1)
         real_50_lvl = round((self.ydata[index_50]-vlow)/amplitude,4)
         
@@ -583,7 +588,7 @@ class waveform(object):
             ### To be consistent with when lo_lvl< 50%, increased the index by one 
             index_lo = self.find_grt_than_or_equal_to(vth=vth_lo, start_index=index_50, stop_index=0, increment=-1) + 1
         if index_lo == -1 or index_lo == 0:
-            print(f"\nWaveform Analyser: The {round(lo_lvl*100,1)}% level of the waveform is not found in the data record.\n")
+            print_banner("Waveform Analyser", f"The {round(lo_lvl*100,1)}% level of the waveform was not found in the data record")
             return (-1,-1,-1)
         
         vth_hi = vlow + hi_lvl*amplitude
@@ -594,10 +599,9 @@ class waveform(object):
         else:
             index_hi = self.find_grt_than_or_equal_to(vth=vth_hi, start_index=index_50, stop_index=0, increment=-1)
         if index_hi == -1 or index_hi == -2:
-            print(f"\nWaveform Analyser: The {round(hi_lvl*100,1)}% level of the waveform is not found in the data record.\n")
+            print_banner("Waveform Analyser", f"The {round(hi_lvl*100,1)}% level of the waveform was not found in the data record")
             return (-1,-1,-1)
-        
-        # print(f'index50={index_50}, index_lo={index_lo}, index_hi={index_hi}')
+
         from bokeh.models import Span
         self.plt.add_layout(Span(location   = self.xdata[index_lo],
                                  dimension  ='height',
@@ -629,7 +633,7 @@ class waveform(object):
         
         index_50    = self.find_first_rising_edge(vhigh=vhigh, vlow=vlow, lvl=0.5)
         if index_50 == -1:
-            print(f"\nWaveform Analyser: The 50% level of a rising edge is not found in the data record\n")
+            print_banner("Waveform Analyser", "The 50% level of a rising edge is not found in the data record")
             return (-1,-1)
         
         nol_low_side_start_index = self.find_less_than_or_equal_to(vth=vlow-vth, start_index=index_50, stop_index=0, increment=-1)
@@ -638,7 +642,7 @@ class waveform(object):
         else:
             nol_low_side_stop_index = self.find_grt_than_or_equal_to(vth=vlow-vth, start_index=nol_low_side_start_index, stop_index=0, increment=-1)
             if nol_low_side_stop_index == -1:
-                print(f"\nWaveform Analyser: sw waveform was below vlow - vth from the beginning of the scope shot to the first rising edge\n")
+                print_banner("Waveform Analyser", "The waveform was below vlow - vth from the beginning of the scope shot to the first rising edge")
                 nol_low_side = -1
             else:
                 nol_low_side = self.xdata[nol_low_side_start_index] - self.xdata[nol_low_side_stop_index]
@@ -670,7 +674,7 @@ class waveform(object):
         else:
             nol_high_side_stop_index = self.find_less_than_or_equal_to(vth=vhigh+vth, start_index=nol_high_side_start_index, stop_index=len(self.ydata)-1, increment=1)
             if nol_high_side_stop_index == -1:
-                print(f"\nWaveform Analyser: sw waveform was above vhigh +vth at the end of the scope shot\n")
+                print_banner("Waveform Analyser", "The waveform was above vhigh +vth at the end of the scope shot")
                 nol_high_side = -1
             else:
                 nol_high_side = self.xdata[nol_high_side_stop_index] - self.xdata[nol_high_side_start_index]
@@ -711,7 +715,7 @@ class waveform(object):
         
         index_50    = self.find_first_falling_edge(vhigh=vhigh, vlow=vlow, lvl=0.5)
         if index_50 == -1:
-            print(f"\nWaveform Analyser: The 50% level of a falling edge is not found in the data record\n")
+            print_banner("Waveform Analyser", "The 50% level of a falling edge is not found in the data record")
             return (-1,-1)
         
         nol_low_side_start_index = self.find_less_than_or_equal_to(vth=vlow-vth, start_index=index_50, stop_index=len(self.ydata)-1, increment=1)
@@ -720,7 +724,7 @@ class waveform(object):
         else:
             nol_low_side_stop_index = self.find_grt_than_or_equal_to(vth=vlow-vth, start_index=nol_low_side_start_index, stop_index=len(self.ydata)-1, increment=1)
             if nol_low_side_stop_index == -1:
-                print(f"\nWaveform Analyser: sw waveform was below vlow - vth from the beginning of the scope shot to the first rising edge\n")
+                print_banner("Waveform Analyser", "The waveform was below vlow - vth from the beginning of the scope shot to the first rising edge")
                 nol_low_side = -1
             else:
                 nol_low_side = self.xdata[nol_low_side_stop_index] - self.xdata[nol_low_side_start_index]
@@ -752,7 +756,7 @@ class waveform(object):
         else:
             nol_high_side_stop_index = self.find_less_than_or_equal_to(vth=vhigh+vth, start_index=nol_high_side_start_index, stop_index=0, increment=-1)
             if nol_high_side_stop_index == -1:
-                print(f"\nWaveform Analyser: sw waveform was above vhigh +vth at the end of the scope shot\n")
+                print_banner("Waveform Analyser", "The waveform was above vhigh +vth at the end of the scope shot")
                 nol_high_side = -1
             else:
                 nol_high_side = self.xdata[nol_high_side_start_index] - self.xdata[nol_high_side_stop_index]
@@ -802,4 +806,3 @@ class waveform(object):
                                 )
                            )
         return self.ydata[index]
-
