@@ -1,25 +1,30 @@
 # Contributing to PyICe
-# Please download Python [3.10.11](https://www.python.org/downloads/release/python-31011/) to develop on PyICe 
+# Please download Python [3.10.11](https://www.python.org/downloads/release/python-31011/) to develop on PyICe
+
 ## Introduction
 Welcome to PyICe!  There is always room for improvement, whether it be new instrument
 drivers, updated test infrastructure or anything else. 
 
 ## Installation and Setup
 
+### Clone a copy of PyICe
+Pick a folder on your computer - preferably one not already under version control like OneDrive, etc.
+
+A folder such as c:\users\projects is recommended.
+
+Using a Git client such as Tortoise Git, clone a copy of https://github.com/PyICe-ADI/PyICe.git to that folder
+
 ### Create a virtual Environment
-Once you have cloned the PyICe git repository, you will need to create a virtual environment:
-```commandline
-python -m venv pyice-env
-```
-If you already have an older or newer version of Python installed, you can peg the PyICe virtual environment to Python 3.10 as shown below.
 Be sure you have added Python 3.10 to the system environment variable _Path_.
+
+In the event you already have an older or newer version of Python installed, you **must** peg the PyICe virtual environment to Python 3.10 as shown below.
 ```commandline
 py -3.10 -m venv pyice-env
 ```
 This will create a directory `pyice-env/` with the Python binaries which will allow
 you to install packages for that isolated environment. 
 ### Activate your virtual environment 
-You can activate your virtual environment in a Windows Powershell:
+Active your virtual environment in Windows:
 ```commandline
 .\pyice-env\Scripts\activate
 ```
@@ -32,24 +37,16 @@ this includes pytest
 )
 
 ### Install the development packages
-
+Change directory into the PyICe container directory which contains pyproject.toml
 ```commandline
-python -m pip install -r PyICe/requirements/dev-requirements.txt
+cd PyICe
 ```
-You are now all set up to start developing PyICe on your machine! 
-
-## Get an editable copy of PyICe on your machine
-If you would like to work on an editable copy of PyICe on your machine in 
-a different environment, you can. Go to your cloned copy of PyICe, and in your shell
-(**please make sure to complete the previous step**):
+Install PyICE's depdendencies
 ```commandline
 python -m pip install --editable .[dev]
 ```
-Note: if pip gives you a warning to upgrade, please do so. You may need to upgrade 
-pip to install an editable version of PyICe from the pyproject.toml file.
-Adding `[dev]` will include the optional development packages in your local 
-editable install. 
 
+You are now all set up to start developing PyICe on your machine! 
 
 ## Contributing Guidelines
 
@@ -58,7 +55,8 @@ editable install.
 Please follow PEP8 as best you can.
 
 ## Contact info
-General: PyICe inquires:
+General PyICe inquires:
+
     Developers: pyice-developers@analog.com
     Zachary Lewko: zachary.lewko@analog.com
     Dave Simmons: david.simmons@analog.com
@@ -85,16 +83,3 @@ git branch new_feature_name
 ```
 Make your commits small - that makes it much easier for other contributors to
 see your workflow.
-
-## PyICe Maintainers Tips and Tricks!
-
-To rebuild requirements.txt after editing pyproject.toml
-```commandline
-python -m pip install pip-tools
-pip-compile --output-file=./requirements/requirements.txt pyproject.toml
-```
-
-To upgrade an environment with a new requirements.txt file
-```commandline
-pip install -r requirements.txt --upgrade
-```

@@ -13,7 +13,7 @@ readme='README.md'
 authors=[
     {name='Dave Simmons', email='david.simmons@analog.com'},
 ]
-description='A python package to aid in evaluating integrated circuits'
+description='A Python package to aid in evaluating integrated circuits using standard electronics laboratory equipment'
 classifiers=[
     'Development Status :: 3 - Alpha',
     'Intended Audience :: Developers',
@@ -83,4 +83,3 @@ exclude = [
     "/PyICe/examples/",
 #    "/PyICe/deps/"
 ]
-
