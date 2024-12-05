@@ -534,51 +534,47 @@ class Plugin_Manager():
         reset_pf = False
         print_banner('Plotting. . .')
         for test in self.tests:
-            if not hasattr(test, 'plot'):
-                continue
-            if test._is_crashed:
+            if not test._skip_plot and hasattr(test, 'plot') and not test._is_crashed:
+                test.plot_list=[]
+                test.linked_plots={}
+                print_banner(f'{test.get_name()} Plotting. . .')
+                if database is None:
+                    database = test.get_db_file()
+                    reset_db = True
+                if table_name is None:
+                    test._table_name = test.get_name()
+                    reset_tn = True
+                else:
+                    test._table_name=table_name
+                if plot_filepath is None:
+                    test._plot_filepath = os.path.dirname(os.path.abspath(database))
+                    reset_pf = True
+                else:
+                    test._plot_filepath = plot_filepath
+                test._db = sqlite_data(database_file=database, table_name=test.get_table_name())
+                try:
+                    test.plot()
+                except Exception as e:
+                    # Don't stop other test's plotting or archiving because of a plotting error.
+                    print_banner(e)
+                if isinstance(test.plot_list, (LTC_plot.plot, LTC_plot.Page)):
+                    test.plot_list = [self._convert_svg(test.plot_list)]
+                else:
+                    assert isinstance(test.plot_list, list)
+                    test.plot_list = [self._convert_svg(plt) for plt in test.plot_list]
+                for plot_group in test.linked_plots:
+                    test.linked_plots[plot_group] = [self._convert_svg(plt) for plt in test.linked_plots[plot_group]]
+                self._plots.extend(test.plot_list)
+                self._linked_plots.update(test.linked_plots)
+                print_banner(f'Plotting for {test.get_name()} complete.')
+                if reset_db:
+                    database = None
+                if reset_tn:
+                    table_name = None
+                if reset_pf:
+                    plot_filepath = None
+            elif test._is_crashed:
                 print(f"{test.get_name()} crashed. Skipping plot.")
-                continue
-            if test._skip_plot:
-                continue
-            test.plot_list=[]
-            test.linked_plots={}
-            print_banner(f'{test.get_name()} Plotting. . .')
-            if database is None:
-                database = test.get_db_file()
-                reset_db = True
-            if table_name is None:
-                test._table_name = test.get_name()
-                reset_tn = True
-            else:
-                test._table_name=table_name
-            if plot_filepath is None:
-                test._plot_filepath = os.path.dirname(os.path.abspath(database))
-                reset_pf = True
-            else:
-                test._plot_filepath = plot_filepath
-            test._db = sqlite_data(database_file=database, table_name=test.get_table_name())
-            try:
-                test.plot()
-            except Exception as e:
-                # Don't stop other test's plotting or archiving because of a plotting error.
-                print_banner(e)
-            if isinstance(test.plot_list, (LTC_plot.plot, LTC_plot.Page)):
-                test.plot_list = [self._convert_svg(test.plot_list)]
-            else:
-                assert isinstance(test.plot_list, list)
-                test.plot_list = [self._convert_svg(plt) for plt in test.plot_list]
-            for plot_group in test.linked_plots:
-                test.linked_plots[plot_group] = [self._convert_svg(plt) for plt in test.linked_plots[plot_group]]
-            self._plots.extend(test.plot_list)
-            self._linked_plots.update(test.linked_plots)
-            print_banner(f'Plotting for {test.get_name()} complete.')
-            if reset_db:
-                database = None
-            if reset_tn:
-                table_name = None
-            if reset_pf:
-                plot_filepath = None
 
     def evaluate(self, database=None, table_name=None):
         '''Run the evaluate method of each test in self.tests.
@@ -590,36 +586,35 @@ class Plugin_Manager():
         reset_db = False
         reset_tn = False
         for test in self.tests:
-            if test._is_crashed:
+            if not test._skip_eval and not test._is_crashed:
+                if database is None:
+                    database = test._db_file
+                    reset_db = True
+                if table_name is None:
+                    test._table_name = test.get_name()
+                    reset_tn = True
+                else:
+                    test._table_name = table_name
+                test._test_results = Test_Results(test._name, module=test)
+                test._db = sqlite_data(database_file=database, table_name=test.get_table_name())
+                test.evaluate_results()
+                if test._test_results._test_results:
+                    print(test.get_test_results())
+                elif self.verbose:
+                    print(f'No results submitted for {test.get_name()}.')
+                t_r = test._test_results.json_report()
+                dest_abs_filepath = os.path.join(os.path.dirname(database), f"test_results.json")
+                if t_r is not None:
+                    with open(dest_abs_filepath, 'wb') as f:
+                        f.write(t_r.encode('utf-8'))
+                        f.close()
+                if reset_db:
+                    database = None
+                if reset_tn:
+                    table_name = None
+            elif test._is_crashed:
                 print(f"{test.get_name()} crashed. Skipping evaluation.")
-                continue
-            if test._skip_eval:
-                continue
-            if database is None:
-                database = test._db_file
-                reset_db = True
-            if table_name is None:
-                test._table_name = test.get_name()
-                reset_tn = True
-            else:
-                test._table_name = table_name
-            test._test_results = Test_Results(test._name, module=test)
-            test._db = sqlite_data(database_file=database, table_name=test.get_table_name())
-            test.evaluate_results()
-            if test._test_results._test_results:
-                print(test.get_test_results())
-            elif self.verbose:
-                print(f'No results submitted for {test.get_name()}.')
-            t_r = test._test_results.json_report()
-            dest_abs_filepath = os.path.join(os.path.dirname(database), f"test_results.json")
-            if t_r is not None:
-                with open(dest_abs_filepath, 'wb') as f:
-                    f.write(t_r.encode('utf-8'))
-                    f.close()
-            if reset_db:
-                database = None
-            if reset_tn:
-                table_name = None
+                
 
     def correlate(self, database=None, table_name=None):
         '''Run the correlate method of each test in self.tests.
