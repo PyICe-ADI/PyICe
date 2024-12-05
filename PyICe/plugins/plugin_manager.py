@@ -1,5 +1,5 @@
 from PyICe.plugins.bench_configuration_management.bench_configuration_management import component_collection, connection_collection
-import os, inspect, importlib, datetime, socket, traceback, sys, cairosvg, json, getpass
+import os, inspect, importlib, datetime, socket, traceback, sys, cairosvg, json, getpass, contextlib, io
 from PyICe.plugins.bench_configuration_management import bench_visualizer
 from PyICe.plugins.traceability_items import Traceability_items
 from PyICe.lab_utils.communications import email, sms
@@ -43,7 +43,7 @@ class Plugin_Manager():
                     for plugin in self.used_plugins:
                         print_banner(f'PyICe Plugin Manager, plugin found: "{plugin}".')
 
-    def add_test(self, test, debug=False):
+    def add_test(self, test, debug=False, skip_plot=False, skip_eval=False):
         '''Adds a script to the list that will be operated on. If this is the first time a test is added to this instance of plugin manager, plugin manager also takes this opportunity to acquire the list of plugins used for the project.
         args: test - class object. A test that contains the methods necessary for data collection and processing in the project.
         args: debug - Boolean. This will be passed into all run tests to be used for abbreviating data collection loops. Default value is False.'''
@@ -51,6 +51,8 @@ class Plugin_Manager():
         a_test._debug = debug
         self.tests.append(a_test)
         a_test.pm=self
+        a_test._skip_plot=skip_plot
+        a_test._skip_eval=skip_eval
         (a_test._module_path, file) = os.path.split(inspect.getsourcefile(type(a_test)))
         a_test._name = a_test._module_path.split(os.sep)[-1]
         os.makedirs(os.path.join(a_test._module_path,self.scratch_folder), exist_ok=True)
@@ -389,6 +391,8 @@ class Plugin_Manager():
                         #write locked? exists?
                         print(type(e))
                         print(e)
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        self.plot(database=os.path.relpath(db_file), table_name=db_table)
                 if 'evaluate_tests' in self.used_plugins:
                     dest_file = os.path.join(os.path.dirname(db_file), f"reeval_data.py")
                     import_str = test._module_path[test._module_path.index(test.project_folder_name):].replace(os.sep,'.')
@@ -405,6 +409,8 @@ class Plugin_Manager():
                         #write locked? exists?
                         print(type(e))
                         print(e)
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        self.evaluate(database=os.path.relpath(db_file), table_name=db_table)
                 if 'bench_image_creation' in self.used_plugins:
                     self.visualizer.generate(file_base_name="Bench_Config", prune=True, file_format='svg', engine='neato', file_location=os.path.dirname(db_file))
 
@@ -528,49 +534,47 @@ class Plugin_Manager():
         reset_pf = False
         print_banner('Plotting. . .')
         for test in self.tests:
-            if not hasattr(test, 'plot'):
-                continue
-            if test._is_crashed:
+            if not test._skip_plot and hasattr(test, 'plot') and not test._is_crashed:
+                test.plot_list=[]
+                test.linked_plots={}
+                print_banner(f'{test.get_name()} Plotting. . .')
+                if database is None:
+                    database = test.get_db_file()
+                    reset_db = True
+                if table_name is None:
+                    test._table_name = test.get_name()
+                    reset_tn = True
+                else:
+                    test._table_name=table_name
+                if plot_filepath is None:
+                    test._plot_filepath = os.path.dirname(os.path.abspath(database))
+                    reset_pf = True
+                else:
+                    test._plot_filepath = plot_filepath
+                test._db = sqlite_data(database_file=database, table_name=test.get_table_name())
+                try:
+                    test.plot()
+                except Exception as e:
+                    # Don't stop other test's plotting or archiving because of a plotting error.
+                    print_banner(e)
+                if isinstance(test.plot_list, (LTC_plot.plot, LTC_plot.Page)):
+                    test.plot_list = [self._convert_svg(test.plot_list)]
+                else:
+                    assert isinstance(test.plot_list, list)
+                    test.plot_list = [self._convert_svg(plt) for plt in test.plot_list]
+                for plot_group in test.linked_plots:
+                    test.linked_plots[plot_group] = [self._convert_svg(plt) for plt in test.linked_plots[plot_group]]
+                self._plots.extend(test.plot_list)
+                self._linked_plots.update(test.linked_plots)
+                print_banner(f'Plotting for {test.get_name()} complete.')
+                if reset_db:
+                    database = None
+                if reset_tn:
+                    table_name = None
+                if reset_pf:
+                    plot_filepath = None
+            elif test._is_crashed:
                 print(f"{test.get_name()} crashed. Skipping plot.")
-                continue
-            test.plot_list=[]
-            test.linked_plots={}
-            print_banner(f'{test.get_name()} Plotting. . .')
-            if database is None:
-                database = test.get_db_file()
-                reset_db = True
-            if table_name is None:
-                test._table_name = test.get_name()
-                reset_tn = True
-            else:
-                test._table_name=table_name
-            if plot_filepath is None:
-                test._plot_filepath = os.path.dirname(os.path.abspath(database))
-                reset_pf = True
-            else:
-                test._plot_filepath = plot_filepath
-            test._db = sqlite_data(database_file=database, table_name=test.get_table_name())
-            try:
-                test.plot()
-            except Exception as e:
-                # Don't stop other test's plotting or archiving because of a plotting error.
-                print_banner(e)
-            if isinstance(test.plot_list, (LTC_plot.plot, LTC_plot.Page)):
-                test.plot_list = [self._convert_svg(test.plot_list)]
-            else:
-                assert isinstance(test.plot_list, list)
-                test.plot_list = [self._convert_svg(plt) for plt in test.plot_list]
-            for plot_group in test.linked_plots:
-                test.linked_plots[plot_group] = [self._convert_svg(plt) for plt in test.linked_plots[plot_group]]
-            self._plots.extend(test.plot_list)
-            self._linked_plots.update(test.linked_plots)
-            print_banner(f'Plotting for {test.get_name()} complete.')
-            if reset_db:
-                database = None
-            if reset_tn:
-                table_name = None
-            if reset_pf:
-                plot_filepath = None
 
     def evaluate(self, database=None, table_name=None):
         '''Run the evaluate method of each test in self.tests.
@@ -582,34 +586,35 @@ class Plugin_Manager():
         reset_db = False
         reset_tn = False
         for test in self.tests:
-            if test._is_crashed:
+            if not test._skip_eval and not test._is_crashed:
+                if database is None:
+                    database = test._db_file
+                    reset_db = True
+                if table_name is None:
+                    test._table_name = test.get_name()
+                    reset_tn = True
+                else:
+                    test._table_name = table_name
+                test._test_results = Test_Results(test._name, module=test)
+                test._db = sqlite_data(database_file=database, table_name=test.get_table_name())
+                test.evaluate_results()
+                if test._test_results._test_results:
+                    print(test.get_test_results())
+                elif self.verbose:
+                    print(f'No results submitted for {test.get_name()}.')
+                t_r = test._test_results.json_report()
+                dest_abs_filepath = os.path.join(os.path.dirname(database), f"test_results.json")
+                if t_r is not None:
+                    with open(dest_abs_filepath, 'wb') as f:
+                        f.write(t_r.encode('utf-8'))
+                        f.close()
+                if reset_db:
+                    database = None
+                if reset_tn:
+                    table_name = None
+            elif test._is_crashed:
                 print(f"{test.get_name()} crashed. Skipping evaluation.")
-                continue
-            if database is None:
-                database = test._db_file
-                reset_db = True
-            if table_name is None:
-                test._table_name = test.get_name()
-                reset_tn = True
-            else:
-                test._table_name = table_name
-            test._test_results = Test_Results(test._name, module=test)
-            test._db = sqlite_data(database_file=database, table_name=test.get_table_name())
-            test.evaluate_results()
-            if test._test_results._test_results:
-                print(test.get_test_results())
-            elif self.verbose:
-                print(f'No results submitted for {test.get_name()}.')
-            t_r = test._test_results.json_report()
-            dest_abs_filepath = os.path.join(os.path.dirname(database), f"test_results.json")
-            if t_r is not None:
-                with open(dest_abs_filepath, 'wb') as f:
-                    f.write(t_r.encode('utf-8'))
-                    f.close()
-            if reset_db:
-                database = None
-            if reset_tn:
-                table_name = None
+                
 
     def correlate(self, database=None, table_name=None):
         '''Run the correlate method of each test in self.tests.
