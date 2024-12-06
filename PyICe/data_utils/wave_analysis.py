@@ -75,7 +75,7 @@ class waveform(object):
 
         # Bokeh debug plots
         from bokeh.plotting import figure #, output_file, show
-        self.plt = figure(title="Waveform Analyzer Data", plot_width=300, plot_height=300)
+        self.plt = figure(title="Waveform Analyzer Data", width=300, height=300)
         self.debug = debug
         if self.debug:
             self._plot()
@@ -101,10 +101,15 @@ class waveform(object):
         if self.index_10:
             data_txt = f'{data_txt}\n10%_point: [{self.xdata[self.index_10]},{round(self.ydata[self.index_10],3)}]'
             data_txt += f'\n90%_point: [{self.xdata[self.index_90]},{round(self.ydata[self.index_90],3)}]'
-        data_label = Label(x=300, y=70, x_units='screen', y_units='screen',
-                           text=data_txt, render_mode='css',
-                           border_line_color='black', border_line_alpha=1.0,
-                           background_fill_color='white', background_fill_alpha=1.0
+        data_label = Label( x=300,
+                            y=70,
+                            x_units='screen',
+                            y_units='screen',
+                            text=data_txt,
+                            border_line_color='black',
+                            border_line_alpha=1.0,
+                            background_fill_color='white',
+                            background_fill_alpha=1.0
                            )
         self.plt.add_layout(data_label)
     def plot(self):
@@ -367,12 +372,17 @@ class waveform(object):
         from bokeh.models import Span
         from bokeh.models import Label
 
-        data_txt                = f'ramp slope={1e-6*self.ramp_slope}A/us'
-        data_label              = Label(x=300, y=200, x_units='screen', y_units='screen',
-                                        text=data_txt, render_mode='css',
-                                        border_line_color='black', border_line_alpha=1.0,
-                                        background_fill_color='white', background_fill_alpha=1.0
-                                        )
+        data_txt   = f'ramp slope={1e-6*self.ramp_slope}A/us'
+        data_label = Label(x=300,
+                           y=200,
+                           x_units='screen',
+                           y_units='screen',
+                           text=data_txt,
+                           border_line_color='black',
+                           border_line_alpha=1.0,
+                           background_fill_color='white',
+                           background_fill_alpha=1.0
+                           )
         self.plt.line(x=self.xdata[self.trigger_10_90_index:rampend_index], y=self.ydata[self.trigger_10_90_index:rampend_index], 
                       line_color='red', line_dash=[50,50], line_width=1
                      )

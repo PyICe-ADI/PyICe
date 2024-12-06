@@ -8,12 +8,12 @@ build-backend = "hatchling.build"
 [project]
 name='PyICe-ADI'
 #packages=find_packages(include=['src'])
-requires-python = ">=3.10,<=3.14"
+requires-python = ">=3.10,<3.11"
 readme='README.md'
 authors=[
     {name='Dave Simmons', email='david.simmons@analog.com'},
 ]
-description='A python package to aid in evaluating integrated circuits'
+description='A Python package to aid in evaluating integrated circuits using standard electronics laboratory equipment'
 classifiers=[
     'Development Status :: 3 - Alpha',
     'Intended Audience :: Developers',
@@ -29,10 +29,11 @@ dependencies=[
     "deprecated==1.2.12",
     "graphviz",
     "jsonc-parser",
-    "labcomm==0.0.2",
+    "labcomm",
     "matplotlib>=3.6.0",
     "minimalmodbus",
     "nifgen",
+    "objutils",
     "openpyxl",
     "pandas",
     "pybind11",
@@ -45,13 +46,13 @@ dependencies=[
     "pyusb",
     "pyvisa",
     "pywin32 ; platform_system == \"Windows\"",
-    "requests==2.22.0",
-    "scikit_rf==0.26.0",
+    "requests",
+    "scikit_rf",
     "scipy>=1.7 ",
     "statsmodels",
     "windows-curses==2.3.1 ; platform_system == \"Windows\"",
     "xlrd",
-    "xlsxwriter==1.2.9",
+    "xlsxwriter",
 ]
 
 #dynamic = ["version"]
@@ -64,7 +65,7 @@ include = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest", "pytest-mock", "pytest-cov", "sphinx", "sphinx_rtd_theme"]
+dev = ["pip-tools", "pytest", "pytest-mock", "pytest-cov", "sphinx", "sphinx_rtd_theme"]
 #[tool.hatch.envs.default]
 #dependencies = ["pytest", "pytest-mock"]
 [tool.hatch.build.targets.sdist]
@@ -82,4 +83,3 @@ exclude = [
     "/PyICe/examples/",
 #    "/PyICe/deps/"
 ]
-
