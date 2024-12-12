@@ -59,10 +59,16 @@ class generic_results():
         # TODO https://docs.python.org/3/library/abc.html ?
     def _init(self, name, module):
         self._name = name
+        self._traceability_info = collections.OrderedDict()
         self._module = module
     def get_name(self):
         return self._name
-
+    def get_traceability_info(self):
+        return self._traceability_info
+    def _set_traceability_info(self, **kwargs):
+        for k,v in kwargs.items():
+            self._traceability_info[k] = v
+    
     def _json_report(self, declarations, results, ate_results=[]):
         class CustomJSONizer(json.JSONEncoder):
             def default(self, obj):
@@ -378,3 +384,50 @@ class Test_Results(generic_results):
                                               )
         self._test_results[name].append(new_result_record)
         return new_result_record
+
+class test_results_reload(Test_Results):
+    def __init__(self, results_json='test_results.json'):
+        self._schema_version = 1.1
+        self._test_declarations = collections.OrderedDict()
+        self._test_results = collections.OrderedDict()
+        self._ate_results = collections.OrderedDict()
+        with open(results_json, mode='r', encoding='utf-8') as f:
+            self.__results = json.load(f)
+            f.close()
+        # if self.__results['schema_version'] != self._schema_version:
+        if self.__results['schema_version'] not in (0.2, 1.0, 1.1):
+            raise ResultsSchemaMismatchException(f'Results file {results_json} written with schema version {self.__results["schema_version"]}, but reader expecting {self._schema_version}.')
+        self._init(name=self.__results['test_module'], module=None)
+        # print(f'INFO Loading test {self.get_name()} record produced on {self.__results["report_date"]} from data collected on {self.__results["collection_date"]}.\n\t({results_json})')  #TODO too loud for logs?
+        self._set_traceability_info(datetime=self.__results["collection_date"], **self.__results["traceability"])
+        # TODO flag json re-output as derivative????
+        for test in self.__results['tests']:
+            try:
+                # Not used on read-in. Recreated from limts each time.
+                del self.__results['tests'][test]['declaration']['correlation_autolimit']
+            except KeyError:
+                # Not present before schema 1.1
+                pass
+            self._register_test(name=test, **self.__results['tests'][test]['declaration'])
+            for case in self.__results['tests'][test]['results']['cases']:
+                for trial in case['case_results']:
+                    self._test_results[test].append(self._test_result(test_name=test,
+                                                                      conditions=case['conditions'],
+                                                                      plot=[],
+                                                                      **trial
+                                                                      )
+                                                   )
+            for ate_data in self.__results['tests'][test]['ate_results']:
+                try:
+                    # Not used on read-in. Recreated from limts and raw data each time.
+                    del ate_data['min_error']
+                    del ate_data['max_error']
+                    del ate_data['passes']
+                except KeyError:
+                    # Not present before schema 1.1
+                    pass
+                self._register_ate_result(name=test, **ate_data)
+    def json_report(self, filename='test_results_rewrite.json'):
+        with open(filename, 'wb') as f:
+            f.write(super().json_report().encode('utf-8'))
+            f.close()
