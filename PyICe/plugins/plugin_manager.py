@@ -1,5 +1,5 @@
 from PyICe.plugins.bench_configuration_management.bench_configuration_management import component_collection, connection_collection
-import os, inspect, importlib, datetime, socket, traceback, sys, cairosvg, json, getpass, contextlib, io
+import os, inspect, importlib, datetime, socket, traceback, sys, json, getpass, contextlib, io
 from PyICe.plugins.bench_configuration_management import bench_visualizer
 from PyICe.plugins.traceability_items import Traceability_items
 from PyICe.lab_utils.communications import email, sms
@@ -42,6 +42,13 @@ class Plugin_Manager():
                 if self.verbose:
                     for plugin in self.used_plugins:
                         print_banner(f'PyICe Plugin Manager, plugin found: "{plugin}".')
+        self._send_notifications = "notifications" in self.used_plugins
+        if self._send_notifications:
+            try:
+                import cairosvg
+                self._cairosvg = cairosvg
+            except Exception as e:
+                print_banner("*** PLUGIN MANAGER WARNING ****", "", "You elected to use the 'Notifications' Plugin.", "Unable to import cairosvg's Python package or compiled dll.", "Try installing the Glade/Gtk+ for Windows development environment.", "Otherwise suggest you opt out of the 'Notifications' plugin.", "Write to pyice-developers@analog.com for more information.", "", "*** Expect a crash when generating plots ****", "")
 
     def add_test(self, test, debug=False, skip_plot=False, skip_eval=False):
         '''Adds a script to the list that will be operated on. If this is the first time a test is added to this instance of plugin manager, plugin manager also takes this opportunity to acquire the list of plugins used for the project.
@@ -84,9 +91,9 @@ class Plugin_Manager():
         for test in self.tests:
             if hasattr(test, '_test_results') and test._test_results._test_results:
                 self.notify(test.get_test_results(), subject='Test Results')
-            if len(self._plots): #Don't send empty emails
+            if len(self._plots) and self._send_notifications: #Don't send empty emails
                 self.email_plots(self._plots)
-            if len(self._linked_plots): #Don't send empty emails
+            if len(self._linked_plots) and self._send_notifications: #Don't send empty emails
                 self.email_plot_dictionary(self._linked_plots)
         if 'archive' in self.used_plugins:
             self._archive()
@@ -289,13 +296,14 @@ class Plugin_Manager():
         msg_body = ''
         attachment_MIMEParts=[]
         for (i,plot_src) in enumerate(plot_svg_source):
-            plot_png = cairosvg.svg2png(bytestring=plot_src)
+            plot_png = self._cairosvg.svg2png(bytestring=plot_src)
             plot_mime = MIMEImage(plot_png, 'image/png')
             plot_mime.add_header('Content-Disposition', 'inline')
             plot_mime.add_header('Content-ID', f'<plot_{i}>')
             msg_body += f'<img src="cid:plot_{i}"/>'
             attachment_MIMEParts.append(plot_mime)
         self.notify(msg_body, subject='Plot Results', attachment_MIMEParts=attachment_MIMEParts)
+
     def email_plot_dictionary(self, plot_svg_source):
         msg_body = ''
         attachment_MIMEParts=[]
@@ -303,7 +311,7 @@ class Plugin_Manager():
             msg_body+=plot_group
             msg_body+='\n'
             for (i,plot) in enumerate(plot_svg_source[plot_group]):
-                plot_png = cairosvg.svg2png(bytestring=plot)
+                plot_png = self._cairosvg.svg2png(bytestring=plot)
                 plot_mime = MIMEImage(plot_png, 'image/png')
                 plot_mime.add_header('Content-Disposition', 'inline')
                 plot_mime.add_header('Content-ID', f'<plot_{plot_group}_{i}>')
@@ -311,6 +319,7 @@ class Plugin_Manager():
                 attachment_MIMEParts.append(plot_mime)
             msg_body+='\n'
         self.notify(msg_body, subject='Plot Results', attachment_MIMEParts=attachment_MIMEParts)
+
     def crash_info(self, test):
         (typ, value, trace_bk) = test._crash_info
         crash_str = f'Test: {test.get_name()} crashed: {typ},{value}\n'
@@ -581,7 +590,6 @@ class Plugin_Manager():
         args:   
             database - string. The location of the database with the data to evaluate If left blank, the evaluation will continue with the database in the same directory as the test script.
             table_name - string. The name of the table in the database with the relevant data. If left blank, the evaluation will continue with the table named after the test script.'''
-
         print_banner('Evaluating. . .')
         reset_db = False
         reset_tn = False
