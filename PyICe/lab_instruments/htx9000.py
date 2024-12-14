@@ -144,7 +144,7 @@ class htx9000(scpi_instrument):
         ident = self.get_interface().ask("*IDN?")
         return ident.split(",")[2].strip()
         
-class htx90000SE_5A(htx9000):
+class htx9000SE_5A(htx9000):
     '''Modified Single Channel Hypertronix (Steve Martin) HTX9000SE
     400nA < IL < 5A, up to 60V.'''
     def __init__(self,interface_visa):
@@ -162,10 +162,3 @@ class htx90000SE_5A(htx9000):
         new_channel.add_write_callback(write_callback=self._wait_settle_callback)
         new_channel.write(0)
         return self._add_channel(new_channel)
-        
-        
-        
-        
-        
-        
-        
