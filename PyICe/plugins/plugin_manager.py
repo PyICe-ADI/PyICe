@@ -181,8 +181,8 @@ class Plugin_Manager():
                 exit()
         
     def cleanup(self):
-        """Runs the functions found in cleanup_fns. Resets the intstruments to predetermined "safe" settings as given by the drivers."""
-        for func in self.cleanup_fns:
+        """Runs the functions found in cleanup_fns. Resets the intstruments to predetermined "safe" settings as given by the drivers. Does so in the reverse order in which the channels were created whereas startups go in forward order of which created."""
+        for func in reversed(self.cleanup_fns):
             try:
                 func()
             except:
