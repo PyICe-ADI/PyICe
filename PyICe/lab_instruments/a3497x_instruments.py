@@ -163,20 +163,20 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
         global relay_count_bay1_warned_already
         global relay_count_bay2_warned_already
         global relay_count_bay3_warned_already
-        if not relay_count_bay1_warned_already:
+        if bay==1 and not relay_count_bay1_warned_already:
             self.warn_about_relays(bay)
             relay_count_bay1_warned_already = True
-        if not relay_count_bay2_warned_already:
+        if bay==2 and not relay_count_bay2_warned_already:
             self.warn_about_relays(bay)
             relay_count_bay2_warned_already = True
-        if not relay_count_bay3_warned_already:
+        if bay==3 and not relay_count_bay3_warned_already:
             self.warn_about_relays(bay)
             relay_count_bay3_warned_already = True
     def warn_about_relays(self, bay):
         plugin_type = self.get_interface().ask(f"SYSTem:CTYPe? {bay*100}").split(",")[1]
         self.relay_cycle_counts = self._get_all_relay_cycles(channel_count=20 if plugin_type=="34901A" else 40)
         if any(count > 10e6 for count in self.relay_cycle_counts):
-            print_banner(f"One or more relays in the 3497xa bay {bay} plugin have more than 10 million cycles.", "Consider replacing plugin.")
+            print_banner(f"One or more relays in the 3497xa bay {bay} plugin have more than 10M cycles.", "Consider replacing plugin.")
             print(f"Relay Cycle Counts: {self.relay_cycle_counts}")    
     def get_relay_cycle_counts(self):
         return self.relay_cycle_counts
@@ -363,7 +363,7 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
         return self._add_channel(new_channel)
     def _get_all_relay_cycles(self, channel_count):
         channel_list = "@ "
-        for channel in range(1,channel_count+1):
+        for channel in range(1, channel_count+1):
             channel_list += f"{self.bay*100+channel},"
         counts = [int(count) for count in (self.get_interface().ask(f"DIAGnostic:RELay:CYCLes? ({channel_list})")).split(",")]
         return counts
