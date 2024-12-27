@@ -2,6 +2,7 @@ from PyICe.lab_utils.banners import print_banner, build_banner
 import abc
 
 ARROW_STRING = "◄――――――――►"
+BLOCKED_STRING = "◄――――――――■ [BLOCKED]"
 
 class terminal():
     '''A terminal object represents a potential port of a component to which a single connection can be made. A component will typically have one or more terminals. Terminals will likely be paired with connections once the bench wiring is defined. A terminal can only have a single connection. Any more will cause an error. A terminal represents a single port, regardless of pin count.'''
@@ -146,7 +147,9 @@ class connection_collection():
                         ok=False
             if not ok:
                 continue
-            connection_diagram += (35-len(f"{connextion.terminals[0].get_owner()}:{connextion.terminals[0].get_type()}"))*" "+f"{connextion.terminals[0].get_owner()}:{connextion.terminals[0].get_type()}" + " " + ARROW_STRING + " " + f"{connextion.terminals[1].get_owner()}:{connextion.terminals[1].get_type()}\n"
+            connection_diagram += (35-len(f"{connextion.terminals[0].get_owner()}:{connextion.terminals[0].get_type()}"))*" " + f"{connextion.terminals[0].get_owner()}:{connextion.terminals[0].get_type()}" + " " + ARROW_STRING + " " + f"{connextion.terminals[1].get_owner()}:{connextion.terminals[1].get_type()}\n"
+        for blocked_terminal in self.blocked_terminals:
+            connection_diagram += (35-len(f"{blocked_terminal.get_owner()}:{blocked_terminal.get_type()}"))*" " + f"{blocked_terminal.get_owner()}:{blocked_terminal.get_type()}" + " " + BLOCKED_STRING + f"\n"
         if exclude is not None:
             print_banner("Begin Bench Configuration Connections")
             print(connection_diagram)
