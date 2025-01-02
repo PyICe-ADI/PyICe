@@ -88,6 +88,7 @@ class generic_results():
                         raise e
         res_dict = {}
 
+        res_dict['schema_version'] = 1.0
         res_dict['test_module'] = self.get_name()
         res_dict['report_date'] = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
         
@@ -104,7 +105,7 @@ class generic_results():
         res_dict['tests'] = {}
         for t_d in declarations:
             res_dict['tests'][t_d] = {}
-            res_dict['tests'][t_d]['declaration'] = {k:v for k,v in self.test_limits[t_d].items() if k not in ['test_name', 'refid_name']}
+            res_dict['tests'][t_d]['declaration'] = {k:v for k,v in self.test_limits[t_d].items() if k not in ['test_name']}
             try:
                 results[t_d]
             except KeyError as e:
@@ -139,7 +140,7 @@ class generic_results():
                         for condition_hash, condition_orig in temp_group.get_conditions().items():
                             cond_group = temp_group.filter_conditions(condition_hash)
                             cond_dict =  {'conditions': condition_orig,
-                                          'case_results': [{k:v for k,v in cond._asdict().items() if k not in ['refid_name', 'temperature', 'conditions']} for cond in cond_group],
+                                          'case_results': [{k:v for k,v in cond._asdict().items() if k not in ['temperature', 'conditions']} for cond in cond_group],
                                           'summary': {'min_error': cond_group._min_error(),
                                                       'max_error': cond_group._max_error(),
                                                       'passes':    bool(cond_group),
@@ -276,6 +277,8 @@ class Test_Results(generic_results):
         return self._json_report(declarations=self._test_declarations, results=self._test_results, ate_results=self._ate_results)
     def get_test_declarations(self):
         return self._test_declarations
+    def get_test_declaration(self, key):
+        return self._test_declarations[key]
     def __str__(self):
         '''printable regression results'''
         #TODO more concise summary when passing, grouped results, etc.
@@ -298,7 +301,16 @@ class Test_Results(generic_results):
         return len(self.get_test_declarations())
     def __getitem__(self, key):
         return self._test_results[key]
-
+    def _register_test(self, name, **kwargs):
+        _test_declaration = collections.namedtuple('test_declaration', ['test_name']+list(kwargs.keys()))
+        if name in self._test_declarations:
+            raise Exception(f'Duplicated test name {name} within module {self.get_name()}!')
+        self._test_declarations[name] = _test_declaration(  test_name=name,
+                                                            **kwargs
+                                                               )
+        self._test_results[name] = self._test_results_list(name = name, upper_limit=self._test_declarations[name].upper_limit, lower_limit=self._test_declarations[name].lower_limit)
+        self._ate_results[name] = []
+        return self._test_declarations[name]
     def _register_test_failure(self, name, reason, conditions, query=None):
         if name not in self._test_declarations:
             raise Exception(f'Undeclared test results: {name}')
@@ -385,29 +397,23 @@ class Test_Results(generic_results):
         self._test_results[name].append(new_result_record)
         return new_result_record
 
+class ResultsSchemaMismatchException(Exception):
+    '''Mismatch between writer and reader formats'''
+
 class test_results_reload(Test_Results):
     def __init__(self, results_json='test_results.json'):
-        self._schema_version = 1.1
+        self._schema_version = 1.0
         self._test_declarations = collections.OrderedDict()
         self._test_results = collections.OrderedDict()
         self._ate_results = collections.OrderedDict()
         with open(results_json, mode='r', encoding='utf-8') as f:
             self.__results = json.load(f)
             f.close()
-        # if self.__results['schema_version'] != self._schema_version:
-        if self.__results['schema_version'] not in (0.2, 1.0, 1.1):
+        if self.__results['schema_version'] != self._schema_version:
             raise ResultsSchemaMismatchException(f'Results file {results_json} written with schema version {self.__results["schema_version"]}, but reader expecting {self._schema_version}.')
         self._init(name=self.__results['test_module'], module=None)
-        # print(f'INFO Loading test {self.get_name()} record produced on {self.__results["report_date"]} from data collected on {self.__results["collection_date"]}.\n\t({results_json})')  #TODO too loud for logs?
         self._set_traceability_info(datetime=self.__results["collection_date"], **self.__results["traceability"])
-        # TODO flag json re-output as derivative????
         for test in self.__results['tests']:
-            try:
-                # Not used on read-in. Recreated from limts each time.
-                del self.__results['tests'][test]['declaration']['correlation_autolimit']
-            except KeyError:
-                # Not present before schema 1.1
-                pass
             self._register_test(name=test, **self.__results['tests'][test]['declaration'])
             for case in self.__results['tests'][test]['results']['cases']:
                 for trial in case['case_results']:
@@ -417,16 +423,6 @@ class test_results_reload(Test_Results):
                                                                       **trial
                                                                       )
                                                    )
-            for ate_data in self.__results['tests'][test]['ate_results']:
-                try:
-                    # Not used on read-in. Recreated from limts and raw data each time.
-                    del ate_data['min_error']
-                    del ate_data['max_error']
-                    del ate_data['passes']
-                except KeyError:
-                    # Not present before schema 1.1
-                    pass
-                self._register_ate_result(name=test, **ate_data)
     def json_report(self, filename='test_results_rewrite.json'):
         with open(filename, 'wb') as f:
             f.write(super().json_report().encode('utf-8'))
