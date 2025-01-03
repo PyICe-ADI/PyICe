@@ -459,6 +459,10 @@ class Plugin_Manager():
                         test._traceabilities.get_traceability_data()['test_bench_connections'] = self.all_connections.get_readable_connections()
                         test._metalogger.add_channel_dummy('test_bench_connections')
                         test._metalogger.write('test_bench_connections', self.all_connections.get_readable_connections())
+                        
+                        test._traceabilities.get_traceability_data()['blocked_bench_terminals'] = lambda: self.all_connections.get_readable_blocked_terminals()
+                        test._metalogger.add_channel_dummy('blocked_bench_terminals')
+                        test._metalogger.write('blocked_bench_terminals', self.all_connections.get_readable_blocked_terminals())
                     self._metalog(test)
             if 'bench_config_management' in self.used_plugins and self.verbose:
                 print(self.all_connections.print_connections())
