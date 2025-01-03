@@ -93,7 +93,8 @@ class connection_collection():
     def __init__(self, name):
         self.connections = []
         self.blocked_terminals = []
-        self.readable_list=[]
+        self.readable_list = []
+        self.readable_blocked = []
         self.name = name
         self._invalid_config = False
     def set_invalid(self):
@@ -135,6 +136,12 @@ class connection_collection():
             for connection in self.connections:
                 self.readable_list.append(([connection.get_terminals()[0].owner,connection.get_terminals()[0].type],[connection.get_terminals()[1].owner,connection.get_terminals()[1].type]))
         return self.readable_list
+    def get_readable_blocked_terminals(self):
+        '''Returns a parsable list of instrument terminal connections that is also human readable.'''
+        if not self.readable_blocked:
+            for blocked in self.blocked_terminals:
+                self.readable_blocked.append((blocked.owner,blocked.type))
+        return self.readable_blocked
     def print_connections(self, exclude=None):
         ''''Returns a presentable diagram centrally aligned. Becomes difficult to read if not enough window width is provided.'''
         connection_diagram = ""
