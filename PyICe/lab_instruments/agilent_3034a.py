@@ -1,8 +1,10 @@
-from .oscilloscope import oscilloscope
-from ..lab_core import *
+from PyICe.lab_instruments.oscilloscope import oscilloscope
 from PyICe.lab_utils.ranges import decadeListRange
-import time, math
+from PyICe.lab_utils.banners import print_banner
 from deprecated import deprecated
+from PyICe.lab_core import *
+import time, math
+
 try:
     from numpy import fromiter, dtype
     numpy_missing = False
@@ -30,6 +32,7 @@ class agilent_3034a(oscilloscope):
         self.force_trigger = force_trigger
         self.Xchannels = {}##############################################DELETE ME after rollout
         self.Ychannels = {}##############################################DELETE ME after rollout
+        self.SINGLE_wait_time = SINGLE_wait_time
         
         # Make sure time channel reads don't crash before acquisition
         self.time_info                  = {}
@@ -114,7 +117,7 @@ class agilent_3034a(oscilloscope):
         enabled_unique = set(enabled_channels)
         self.disable_all_Ychannels()
         self.enable_channels(enabled_unique)
-
+       
     def setup_channels(self, scope_channels, prefix="scope"):
         '''Shortcut to quickly setup scope channels for most common use cases.  If vector data is not desired when using a measurement channels, manual setup of channels is required.'''
         for channel in scope_channels:
@@ -265,7 +268,6 @@ class agilent_3034a(oscilloscope):
                 xpoints_gen   = map(lambda x: (x - time_info["reference"]) * time_info["increment"] + time_info["origin"], range(time_info["points"]))
                 return fromiter(xpoints_gen, dtype=dtype('<d'))
             return [(x - time_info["reference"]) * time_info["increment"] + time_info["origin"] for x in range(time_info["points"])]
-                
         new_channel = channel(name, read_function=lambda: compute_x_points(self))
         new_channel.set_delegator(self)
         self._add_channel(new_channel)
@@ -285,7 +287,6 @@ class agilent_3034a(oscilloscope):
 
     def _read_scope_timebase_info(self):
         #DJS 2021/12/09. This method is almost identical to _read_scope_time_info. This one is called from add_channel_timebase and add_channel_time_info. The other is called from the delegated read of the instrument. This one discards the results after the return while the other stores results in an instance variable. I don't understand why there are two copies of essentially the same thing.
-    
         time_info = {}
         enable_status = {}
         for scope_channel_number in range(1,5):
@@ -369,7 +370,7 @@ class agilent_3034a(oscilloscope):
         
         #DJS 2021/12/09. This method is almost identical to _read_scope_timebase_info. This one is called from the delegated read of the instrument. The other is called from add_channel_timebase and add_channel_time_info. This one stores results in an instance variable while the other discards the results after the return. I don't understand why there are two copies of essentially the same thing.
         
-        self.time_info                = {}
+        self.time_info = {}
         enable_status = {}
         for scope_channel_number in range(1,5):
             enable_status[scope_channel_number] = int(self.get_interface().ask(f":CHANnel{scope_channel_number}:DISPlay?"))
@@ -402,9 +403,8 @@ class agilent_3034a(oscilloscope):
         # return data
 
     def scope_stopped(self):
-        run_msk = 1 << 3
-        cond = int(self.get_interface().ask(":OPERegister:CONDition?"))  #From Keysight app note. Is this really even a SCPI parse tree path???
-        return (cond & run_msk) != run_msk
+        '''From the Keysight Programmer's Guide regarding Status Reporting (Chapter 37) pages 205 and 1114.'''
+        return (int(self.get_interface().ask(":OPERegister:CONDition?")) & 1<<3) != 1<<3
 
     def read_delegated_channel_list(self, channels):
         if self.force_trigger:
@@ -415,26 +415,21 @@ class agilent_3034a(oscilloscope):
         timeout_time = time.time() + timeout
         while(True):
             if self.scope_stopped():
-                #Stopped!
                 self._read_scope_time_info()
                 for channel in channels:
                     results[channel.get_name()] = channel.read_without_delegator()
-                break
+                return results
             elif time.time() > timeout_time:
                 for channel in channels:
-                    # Trigger problem. Don't force bogus data
-                    results[channel.get_name()] = None
-                break
+                    results[channel.get_name()] = None # Not Triggered. Send Nothing
+                print()
+                return results
             else:
                 remaining_time = int(timeout_time-time.time()) #round down
                 if remaining_time < last_remaining_time:
                     last_remaining_time = remaining_time
-                    print(f'Agilent Scope waiting for trigger: {remaining_time}')
+                    print(f'Agilent Scope waiting for trigger: {remaining_time}\r', end="")
                 time.sleep(0.05)
-        # self.digitize()
-        # self.get_interface().write((":STOP")))# scope will timeout on :WAVeform:PREamble? if not "STOPped"
-        # print("ACQ Complete: ", self.get_interface().ask((":ACQuire:COMPlete?")))
-        return results
 
     def add_channel_probe_gain(self, name, number):
         def _set_probe_gain(number,value):
@@ -964,21 +959,103 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_frequency(self, name, number):
         def _get_frequency_measurement(number):
-            if not self.scope_stopped():
+            scope_was_stopped = self.scope_stopped()
+            if not scope_was_stopped:
                 self._set_runmode('STOP')
-                print("Warning: Scope FREQUENCY measurement stopped the scope.  If this is unexpected check scope triggers.")
+                print_banner("Note: Scope FREQUENCY measurement stopped the scope to retrieve data.")
             self.get_interface().write(f":MEASure:SOURce CHANnel{number}")
-            return float(self.get_interface().ask(":MEASure:FREQuency?"))
-        new_channel = channel(name, read_function = lambda : _get_frequency_measurement(number))
+            value = float(self.get_interface().ask(":MEASure:FREQuency?"))
+            if not scope_was_stopped:
+                self.get_interface().write("RUN") # Return it as we found it...
+            return value
+        new_channel = channel(name, read_function=lambda : _get_frequency_measurement(number))
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels',(number,))
+        return new_channel
+        
+    def add_channel_meas_period(self, name, number):
+        def _get_period_measurement():
+            scope_was_stopped = self.scope_stopped()
+            if not scope_was_stopped: # Scope needs to be stopped to retreive data via interface
+                self._set_runmode('STOP')
+                print_banner("Note: Scope PERIOD measurement stopped the scope to retrieve data.")
+            self.get_interface().write(f":MEASure:PERiod CHANnel{number}")
+            value = float(self.get_interface().ask(":MEASure:PERiod?"))
+            if not scope_was_stopped:
+                self.get_interface().write("RUN") # Return it as we found it...
+            return value
+        new_channel = channel(name, read_function=_get_period_measurement)
+        self._add_channel(new_channel)
+        new_channel.set_attribute('dependent_physical_channels', (number,))
+        return new_channel
+        
+    def add_channel_meas_stats_current(self, name, number):
+        def _get_stats_current():
+            self.get_interface().write(":MEASure:STATistics CURRent")
+            return float(self.get_interface().ask(":MEASure:RESults?"))
+        new_channel = channel(name, read_function=_get_stats_current)
+        self._add_channel(new_channel)
+        new_channel.set_attribute('dependent_physical_channels', (number,))
+        return new_channel
+        
+    def add_channel_meas_stats_minimum(self, name, number):
+        def _get_stats_minimum():
+            self.get_interface().write(":MEASure:STATistics MINimum")
+            return float(self.get_interface().ask(":MEASure:RESults?"))
+        new_channel = channel(name, read_function=_get_stats_minimum)
+        self._add_channel(new_channel)
+        new_channel.set_attribute('dependent_physical_channels', (number,))
+        return new_channel
+        
+    def add_channel_meas_stats_maximum(self, name, number):
+        def _get_stats_maximum():
+            self.get_interface().write(":MEASure:STATistics MAXimum")
+            return float(self.get_interface().ask(":MEASure:RESults?"))
+        new_channel = channel(name, read_function=_get_stats_maximum)
+        self._add_channel(new_channel)
+        new_channel.set_attribute('dependent_physical_channels', (number,))
+        return new_channel
+
+    def add_channel_meas_stats_mean(self, name, number):
+        def _get_stats_mean():
+            self.get_interface().write(":MEASure:STATistics MEAN")
+            return float(self.get_interface().ask(":MEASure:RESults?"))
+        new_channel = channel(name, read_function=_get_stats_mean)
+        self._add_channel(new_channel)
+        new_channel.set_attribute('dependent_physical_channels', (number,))
+        return new_channel
+
+    def add_channel_meas_stats_stdev(self, name, number):
+        def _get_stats_stdev():
+            self.get_interface().write(":MEASure:STATistics STDDev")
+            return float(self.get_interface().ask(":MEASure:RESults?"))
+        new_channel = channel(name, read_function=_get_stats_stdev)
+        self._add_channel(new_channel)
+        new_channel.set_attribute('dependent_physical_channels', (number,))
+        return new_channel
+
+    def add_channel_meas_stats_count(self, name, number):
+        def _get_stats_count():
+            self.get_interface().write(":MEASure:STATistics COUNt")
+            return float(self.get_interface().ask(":MEASure:RESults?"))
+        new_channel = channel(name, read_function=_get_stats_count)
+        self._add_channel(new_channel)
+        new_channel.set_attribute('dependent_physical_channels', (number,))
+        return new_channel
+        
+    def add_channel_meas_stats_reset(self, name, number):
+        def _reset_stats(x):
+            self.get_interface().write(":MEASure:STATistics:RESet")
+        new_channel = channel(name, write_function= lambda x : _reset_stats(x))
+        self._add_channel(new_channel)
+        new_channel.set_attribute('dependent_physical_channels', (number,))
         return new_channel
 
     def add_channel_meas_dutycycle(self, name, number):
         def _get_dutycycle_measurement(number):
             if not self.scope_stopped():
                 self._set_runmode('STOP')
-                print("Warning: Scope DUTY CYCLE measurement stopped the scope.  If this is unexpected check scope triggers.")
+                print("Warning: Scope DUTY CYCLE measurement stopped the scope. If this is unexpected check scope triggers.")
             self.get_interface().write(f":MEASure:SOURce CHANnel{number}")
             return float(self.get_interface().ask(":MEASure:DUTYcycle?"))
         new_channel = channel(name, read_function = lambda : _get_dutycycle_measurement(number))
@@ -990,7 +1067,7 @@ class agilent_3034a(oscilloscope):
         def _get_risetime_measurement(number):
             if not self.scope_stopped():
                 self._set_runmode('STOP')
-                print("Warning: Scope RISE TIME measurement stopped the scope.  If this is unexpected check scope triggers.")
+                print("Warning: Scope RISE TIME measurement stopped the scope. If this is unexpected check scope triggers.")
             self.get_interface().write(f":MEASure:SOURce CHANnel{number}")
             return float(self.get_interface().ask(":MEASure:RISetime?"))
         new_channel = channel(name, read_function = lambda : _get_risetime_measurement(number))
@@ -1002,7 +1079,7 @@ class agilent_3034a(oscilloscope):
         def _get_falltime_measurement(number):
             if not self.scope_stopped():
                 self._set_runmode('STOP')
-                print("Warning: Scope FALL TIME measurement stopped the scope.  If this is unexpected check scope triggers.")
+                print("Warning: Scope FALL TIME measurement stopped the scope. If this is unexpected check scope triggers.")
             self.get_interface().write(f":MEASure:SOURce CHANnel{number}")
             return float(self.get_interface().ask(":MEASure:FALLtime?"))
         new_channel = channel(name, read_function = lambda : _get_falltime_measurement(number))
