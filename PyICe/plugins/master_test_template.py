@@ -2,17 +2,18 @@ class Master_Test_Template():
     ###
     # SCRIPT METHODS
     ###
-    def reconfigure(self, channel, value):
+    def reconfigure(self, channel, attribute_change={}):
         '''Optional method used during customize() if changes are made to the DUT on a particular test in a suite. Unwound after test's collect at each temperature.'''
-        self._channel_reconfiguration_settings.append((channel, channel.read(), value))
+        for setting in attribute_change:
+            self._channel_reconfiguration_settings.append((channel, channel.get_attribute(setting), attribute_change[setting]))
     def _reconfigure(self):
         '''save channel setting before writing to value'''
         for (ch, old, new) in self._channel_reconfiguration_settings:
-            ch.write(new)
+            ch.set_attribute(new)
     def _restore(self):
         '''undo any changes made by reconfigure'''
         for (ch, old, new) in self._channel_reconfiguration_settings:
-            ch.write(old)
+            ch.set_attribute(old)
     def customize(self):
         '''Optional method to alter the logger before the test begins.'''
         if self.verbose:
