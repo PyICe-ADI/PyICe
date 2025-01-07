@@ -13,7 +13,7 @@ except ImportError as e:
 
 class agilent_3034a(oscilloscope):
     '''Agilent 4-channel mixed signal DSO'''
-    def __init__(self, interface_visa, force_trigger=False, reset=False, SINGLE_wait_time=2, timeout=10): # 10 seconds recommended in programmer"s manual page 63
+    def __init__(self, interface_visa, force_trigger=False, reset=False, timeout=10): # 10 seconds recommended in programmer"s manual page 63
         '''interface_visa'''
         self._base_name = "agilent_3034a"
         scpi_instrument.__init__(self,f"agilent_3034a @ {interface_visa}")
