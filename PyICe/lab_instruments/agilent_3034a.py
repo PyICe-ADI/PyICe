@@ -32,7 +32,6 @@ class agilent_3034a(oscilloscope):
         self.force_trigger = force_trigger
         self.Xchannels = {}##############################################DELETE ME after rollout
         self.Ychannels = {}##############################################DELETE ME after rollout
-        self.SINGLE_wait_time = SINGLE_wait_time
         
         # Make sure time channel reads don't crash before acquisition
         self.time_info                  = {}
