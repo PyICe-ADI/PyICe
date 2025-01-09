@@ -1,13 +1,7 @@
-from ..lab_core import *
 from PyICe.lab_utils.eng_string import eng_string
-import struct
-import time
-import datetime
-try:
-    from numpy import fromiter, dtype
-    numpy_missing = False
-except ImportError as e:
-    numpy_missing = True
+from numpy import fromiter, dtype
+import struct, time, datetime
+from ..lab_core import *
 
 class u2300aBufferOverflowError(Exception):
     """Device ran out of memory."""
@@ -16,7 +10,7 @@ class u2300aBufferUnderflowError(Exception):
 
 class u2300a_scope(scpi_instrument,delegator):
     '''superclass of all Keysight U2300A series instruments treated as scope'''
-    def __init__(self,interface_visa, force_trigger = False, timeout = 1, trigger_timeout=10):
+    def __init__(self,interface_visa, force_trigger=False, timeout=1, trigger_timeout=15):
         self._base_name = 'U2300A'
         scpi_instrument.__init__(self,f"{self._base_name} @ {interface_visa}")
         delegator.__init__(self)  # Clears self._interfaces list, so must happen before add_interface_visa(). --FL 12/21/2016
@@ -29,10 +23,10 @@ class u2300a_scope(scpi_instrument,delegator):
                                    'acquisition_time' : 'MIN',
                                   }
         self.set_trigger(None)
-        self._states = [None, 'IDLE', 'ARMED'] #, 'TRIGGERED', 'ACQUISITION_COMPLETE']
+        self._states = [None, 'IDLE', 'ARMED']
         self._state = None
         self.set_burst_mode(True)
-        self._trigger_timeout = trigger_timeout #None for no limit
+        self._trigger_timeout = trigger_timeout
     def _set_state(self, state):
         assert state in self._states
         #Check that transition is allowed
@@ -44,8 +38,7 @@ class u2300a_scope(scpi_instrument,delegator):
     def check_errors(self):
         err = self.get_interface().ask("SYST:ERR?")#Check that nothing has gone wrong with configuration
         if err != '+0,"No error"':
-            breakpoint()
-            raise Exception(err)
+            raise Exception(f"U2300: {err}")
     def _get_state(self):
         return self._state
     def calibrate(self):
@@ -72,10 +65,7 @@ class u2300a_scope(scpi_instrument,delegator):
         new_ch.set_attribute('u2300a_type','ain_time')
         new_ch.set_delegator(self)
         new_ch.set_description(self.get_name() + ': ' + self.add_channel_time.__doc__)
-        if not numpy_missing:
-            new_ch._set_type_affinity('PyICeBLOB')
-        else:
-            new_ch._set_type_affinity('PyICeFloatList')
+        new_ch._set_type_affinity('PyICeBLOB')
         return self._add_channel(new_ch)
     def add_channel_ain_single_ended_bipolar(self, channel_name, channel_num, sig_range):
         '''Add single ended, bipolar, channel to u23xx instrument.
@@ -94,10 +84,7 @@ class u2300a_scope(scpi_instrument,delegator):
         new_ch.set_attribute('scale_fn', self._scale_fn(new_ch))
         new_ch.set_delegator(self)
         new_ch.set_description(self.get_name() + ': ' + self.add_channel_ain_single_ended_bipolar.__doc__)
-        if not numpy_missing:
-            new_ch._set_type_affinity('PyICeBLOB')
-        else:
-            new_ch._set_type_affinity('PyICeFloatList')
+        new_ch._set_type_affinity('PyICeBLOB')
         return self._add_channel(new_ch)
     def add_channel_ain_diff_bipolar(self, channel_name, channel_num, sig_range):
         '''Add differential, bipolar, channel to u23xx instrument.
@@ -115,8 +102,7 @@ class u2300a_scope(scpi_instrument,delegator):
         new_ch.set_attribute('scale_fn', self._scale_fn(new_ch))
         new_ch.set_delegator(self)
         new_ch.set_description(self.get_name() + ': ' + self.add_channel_ain_diff_bipolar.__doc__)
-        if not numpy_missing:
-            new_ch._set_type_affinity('PyICeBLOB')
+        new_ch._set_type_affinity('PyICeBLOB')
         return self._add_channel(new_ch)
     def add_channel_ain_single_ended_unipolar(self, channel_name, channel_num, sig_range):
         '''Add single ended, unipolar, channel to u23xx instrument.
@@ -135,10 +121,7 @@ class u2300a_scope(scpi_instrument,delegator):
         new_ch.set_attribute('scale_fn', self._scale_fn(new_ch))
         new_ch.set_delegator(self)
         new_ch.set_description(self.get_name() + ': ' + self.add_channel_ain_single_ended_unipolar.__doc__)
-        if not numpy_missing:
-            new_ch._set_type_affinity('PyICeBLOB')
-        else:
-            new_ch._set_type_affinity('PyICeFloatList')
+        new_ch._set_type_affinity('PyICeBLOB')
         return self._add_channel(new_ch)
     def add_channel_ain_diff_unipolar(self, channel_name, channel_num, sig_range):
         '''Add differential, unipolar, channel to u23xx instrument.
@@ -156,8 +139,7 @@ class u2300a_scope(scpi_instrument,delegator):
         new_ch.set_attribute('scale_fn', self._scale_fn(new_ch))
         new_ch.set_delegator(self)
         new_ch.set_description(self.get_name() + ': ' + self.add_channel_ain_diff_unipolar.__doc__)
-        if not numpy_missing:
-            new_ch._set_type_affinity('PyICeBLOB')
+        new_ch._set_type_affinity('PyICeBLOB')
         return self._add_channel(new_ch)
     def set_trigger(self, trigger_channel, mode='POST', delay_count=None, polarity_condition='AHIG', high_threshold=1, low_threshold=1):
         ''''''
@@ -281,8 +263,12 @@ class u2300a_scope(scpi_instrument,delegator):
             self.set_trigger(**vals)
         def trigger_arm_ch_write(value):
             if value == "ARM":
+                dwell_time = {  "PRE"   : 1.02 * self.acq_time_ch.read(),   # Alot time to acquire (at least) the entire record.
+                                "POST"  : 0,                                # No dwell needed, all data to be acquired post trigger.
+                                "MID"   : 0.51 * self.acq_time_ch.read()    # Alot time to acquire (at least) the first half of the record.
+                             }
                 self.arm_trigger()
-             # elif value == "FORCE":
+                time.sleep(dwell_time[self.trigger_mode_ch.read()])
 
         trigger_arm_ch = channel(name=base_name)
         trigger_arm_ch.set_attribute('trigger_config_type', 'arm')
@@ -306,17 +292,17 @@ class u2300a_scope(scpi_instrument,delegator):
         trigger_source_ch._set_value(None)
         self._add_channel(trigger_source_ch)
 
-        trigger_mode_ch = channel(name=f'{base_name}_mode')
-        trigger_mode_ch.set_attribute('trigger_config_type', 'mode')
-        trigger_mode_ch.set_attribute('u2300a_type', 'trigger_control')
-        trigger_mode_ch._write = lambda val: trigger_config_ch_write(trigger_mode_ch, val)
-        trigger_mode_ch.set_description(self.get_name() + ': ' + self.add_channels_trigger.__doc__)
-        trigger_mode_ch.add_preset(preset_value='POST', preset_description='(Post-trigger): Input is acquired immediately after the trigger condition is met.')
-        trigger_mode_ch.add_preset(preset_value='PRE', preset_description='(Pre-trigger): Input is acquired immediately and is stopped when the trigger condition is met.')
-        trigger_mode_ch.add_preset(preset_value='MID', preset_description='(Mid-trigger): Input is acquired before and after the trigger condition is met. The sample points acquired before and after the trigger is equally divided.')
-        trigger_mode_ch.add_preset(preset_value='DEL', preset_description='(Delay-trigger): Input is acquired when the delay count reaches zero. The delay count starts immediately after the trigger condition is met.')
-        trigger_mode_ch._set_value('POST')
-        self._add_channel(trigger_mode_ch)
+        self.trigger_mode_ch = channel(name=f'{base_name}_mode')
+        self.trigger_mode_ch.set_attribute('trigger_config_type', 'mode')
+        self.trigger_mode_ch.set_attribute('u2300a_type', 'trigger_control')
+        self.trigger_mode_ch._write = lambda val: trigger_config_ch_write(self.trigger_mode_ch, val)
+        self.trigger_mode_ch.set_description(self.get_name() + ': ' + self.add_channels_trigger.__doc__)
+        self.trigger_mode_ch.add_preset(preset_value='POST', preset_description='(Post-trigger): Continuous recording stops when trigger condition is met and data from time: (trigger_event - acq_time) to the trigger_event is returned. Trigger ARM delay will be set equal to acq_time (plus a little) to allow the minimum time needed for the entire buffer to populate.')
+        self.trigger_mode_ch.add_preset(preset_value='PRE', preset_description='(Pre-trigger): Recording begins when the trigger condition is met and data from the time of the trigger_event to the time (trigger_event + acq_time) is returned. Recording is causal with trigger, no need for extra ARM delay.')
+        self.trigger_mode_ch.add_preset(preset_value='MID', preset_description='(Mid-trigger): Continuous recording extends from half the acquisition time before the trigger event to half the acquisition after the trigger event. Trigger ARM delay will be set equal to acq_time/2 (plus a little) to allow the minimum time needed to populate the first half of the buffer.')
+        self.trigger_mode_ch.add_preset(preset_value='DEL', preset_description='(Delay-trigger): Input is acquired when the delay count reaches zero. The delay count starts immediately after the trigger condition is met.')
+        self.trigger_mode_ch._set_value('POST')
+        self._add_channel(self.trigger_mode_ch)
         
         trigger_delay_count_ch = channel(name=f'{base_name}_delay')
         trigger_delay_count_ch.set_attribute('trigger_config_type', 'delay_count')
@@ -360,20 +346,20 @@ class u2300a_scope(scpi_instrument,delegator):
         trigger_low_threshold_ch._set_value(1)
         self._add_channel(trigger_low_threshold_ch)
         
-        trigger_source_ch.set_attribute('trigger_related_channels', [trigger_mode_ch, trigger_delay_count_ch, trigger_polarity_condition_ch, trigger_high_threshold_ch, trigger_low_threshold_ch])
-        trigger_mode_ch.set_attribute('trigger_related_channels', [trigger_source_ch, trigger_delay_count_ch, trigger_polarity_condition_ch, trigger_high_threshold_ch, trigger_low_threshold_ch])
-        trigger_delay_count_ch.set_attribute('trigger_related_channels', [trigger_source_ch, trigger_mode_ch, trigger_polarity_condition_ch, trigger_high_threshold_ch, trigger_low_threshold_ch])
-        trigger_polarity_condition_ch.set_attribute('trigger_related_channels', [trigger_source_ch, trigger_mode_ch, trigger_delay_count_ch, trigger_high_threshold_ch, trigger_low_threshold_ch])
-        trigger_high_threshold_ch.set_attribute('trigger_related_channels', [trigger_source_ch, trigger_mode_ch, trigger_delay_count_ch, trigger_polarity_condition_ch, trigger_low_threshold_ch])
-        trigger_low_threshold_ch.set_attribute('trigger_related_channels', [trigger_source_ch, trigger_mode_ch, trigger_delay_count_ch, trigger_polarity_condition_ch, trigger_high_threshold_ch])
+        trigger_source_ch.set_attribute('trigger_related_channels', [self.trigger_mode_ch, trigger_delay_count_ch, trigger_polarity_condition_ch, trigger_high_threshold_ch, trigger_low_threshold_ch])
+        self.trigger_mode_ch.set_attribute('trigger_related_channels', [trigger_source_ch, trigger_delay_count_ch, trigger_polarity_condition_ch, trigger_high_threshold_ch, trigger_low_threshold_ch])
+        trigger_delay_count_ch.set_attribute('trigger_related_channels', [trigger_source_ch, self.trigger_mode_ch, trigger_polarity_condition_ch, trigger_high_threshold_ch, trigger_low_threshold_ch])
+        trigger_polarity_condition_ch.set_attribute('trigger_related_channels', [trigger_source_ch, self.trigger_mode_ch, trigger_delay_count_ch, trigger_high_threshold_ch, trigger_low_threshold_ch])
+        trigger_high_threshold_ch.set_attribute('trigger_related_channels', [trigger_source_ch, self.trigger_mode_ch, trigger_delay_count_ch, trigger_polarity_condition_ch, trigger_low_threshold_ch])
+        trigger_low_threshold_ch.set_attribute('trigger_related_channels', [trigger_source_ch, self.trigger_mode_ch, trigger_delay_count_ch, trigger_polarity_condition_ch, trigger_high_threshold_ch])
         
         return trigger_arm_ch
     def add_channel_acquisition_time(self, name):
         '''Channel-ize option otherwise availabe from set_acquisition_time() method.'''
-        acq_time_ch = channel(name, write_function=self.set_acquisition_time)
-        acq_time_ch.set_attribute('u2300a_type', 'ain_acquisition_control')
-        acq_time_ch.set_description(self.get_name() + ': ' + self.add_channel_acquisition_time.__doc__)
-        self._add_channel(acq_time_ch)
+        self.acq_time_ch = channel(name, write_function=self.set_acquisition_time)
+        self.acq_time_ch.set_attribute('u2300a_type', 'ain_acquisition_control')
+        self.acq_time_ch.set_description(self.get_name() + ': ' + self.add_channel_acquisition_time.__doc__)
+        self._add_channel(self.acq_time_ch)
     def set_acquisition_time(self, acquisition_time):
         '''additional option "MAX", to auto-compute max record length'''
         # Don't do any configuration until trigger time to make sure configuration is fully self-consistent.
@@ -394,10 +380,10 @@ class u2300a_scope(scpi_instrument,delegator):
         self._point_count = point_count
     def add_channel_sample_rate(self, name):
         '''Channel-ize option otherwise availabe from set_sample_rate() method.'''
-        acq_time_ch = channel(name, write_function=self.set_sample_rate)
-        acq_time_ch.set_attribute('u2300a_type', 'ain_acquisition_control')
-        acq_time_ch.set_description(self.get_name() + ': ' + self.add_channel_sample_rate.__doc__)
-        self._add_channel(acq_time_ch)
+        sample_rate_ch = channel(name, write_function=self.set_sample_rate)
+        sample_rate_ch.set_attribute('u2300a_type', 'ain_acquisition_control')
+        sample_rate_ch.set_description(self.get_name() + ': ' + self.add_channel_sample_rate.__doc__)
+        self._add_channel(sample_rate_ch)
     def set_sample_rate(self, sample_rate):
         '''units of Hz
         additional option "MAX", to auto-compute max performace
@@ -470,10 +456,6 @@ class u2300a_scope(scpi_instrument,delegator):
         gains = self._ai_channels[channel.get_attribute('polarity')]['range'][channel.get_attribute('sig_range')]
         offset = 0.5 * (gains['max'] + gains['min'])
         return lambda x,lsb=gains['lsb'], offset=offset, shift=self._ai_channels['bit_offset']: lsb*(x>>shift) + offset
-    def _scale_point(self, adc_raw, channel):
-        '''TODO remove!'''
-        print("Shouldn't be here....")
-        return channel.get_attribute('scale_fn')(adc_raw)
     def arm_trigger(self, channel_list=None):
         if channel_list is None:
             #Without channel list, let's compromise and acquire every channel that this instrument has registered to date
@@ -499,28 +481,19 @@ class u2300a_scope(scpi_instrument,delegator):
         self._set_state('ARMED')
         self.get_interface().write('DIGitize')
     def read_delegated_channel_list(self,channel_list):
-        # breakpoint()
         if self._get_state() == 'ARMED':
-            #Already armed manually!
-            pass
+            pass  #Already armed manually!
         else:
             self.arm_trigger(channel_list)
-        # resp = self.get_interface().ask('WAVeform:STATus?')
-        # while resp != 'DATA':
-            # print(f'...{self.get_name()}: {resp}')
-            # time.sleep(0.1)
-            # # TODO: timeout??
-            # resp = self.get_interface().ask('WAVeform:STATus?')
         arm_time = time.time()
         resp = self.get_interface().ask('WAVeform:COMPlete?')
-        while resp != 'YES' and (self._trigger_timeout is None or (time.time()-arm_time) <= self._trigger_timeout):
-            print(f'...{self.get_name()}: {resp}')
+        while resp == 'NO' and (self._trigger_timeout==None or (time.time()-arm_time)<=self._trigger_timeout):
+            print(f'{self.get_name()} Waiting for Trigger... {time.time()-arm_time:0.1f}s\r', end="")
             time.sleep(0.1)
-            # TODO: timeout??
             resp = self.get_interface().ask('WAVeform:COMPlete?')
         if resp == 'YES':
             self.get_interface().write('WAVeform:DATA?')
-            raw_data = self.get_interface().read_raw() #I don't know why the binary drivers aren't working right. I get a response only 9 points long... Workaround for now rather than debug.
+            raw_data = self.get_interface().read_raw() # I don't know why the binary drivers aren't working right. I get a response only 9 points long... Workaround for now rather than debug.
             self._set_state('IDLE')
             header = raw_data[:10]
             raw_data = raw_data[10:]
@@ -529,11 +502,10 @@ class u2300a_scope(scpi_instrument,delegator):
             int_data_len = resp_len // 2 #Points from all channels
             fmt_str = '<' + 'h'* self._point_count * len(self._last_scan_internal_addresses)
             int_data = struct.unpack(fmt_str, raw_data)
-            #TODO: what if a channel address appears twice or more in the scanlist??
         else:
-            self._set_state('IDLE') # ???
+            self._set_state('IDLE')
             int_data = None
-            print(f'{self._trigger_timeout}s : No trigger detected') ##might leave scope state armed. Dave and Scott looked at this and is unknown
+            print(f'U2300: {self._trigger_timeout}s : No trigger detected')
         results = results_ord_dict()
         for ch in channel_list:
             if ch.get_attribute('u2300a_type') == 'ain_time':
@@ -545,10 +517,9 @@ class u2300a_scope(scpi_instrument,delegator):
                 elif trig_mode == 'PRE':
                     int_points = range(-self._point_count+1, 0+1)
                 elif trig_mode == 'DEL':
-                    raise Exception('Unimplemented')
+                    raise Exception('"U2300: Unimplemented')
                 else:
-                    breakpoint()
-                    raise Exception('What happened?')
+                    raise Exception('U2300: What happened?')
                 assert len(int_points) == self._point_count
                 if not numpy_missing:
                     results[ch.get_name()] = fromiter(map(lambda idx: idx / self._sample_rate, int_points), dtype=dtype('<d'))
@@ -724,7 +695,6 @@ class u2300a_datalogger(u2300a_scope):
                 if ch.get_attribute('u2300a_type') == 'ain_time':
                     results[ch.get_name()] = self.point_idx / self._sample_rate
                 elif ch.get_attribute('u2300a_type') in self._waveform_channel_types:
-                    # results[ch.get_name()] = self._scale_point(self.data_buffer[ch.get_attribute('internal_address')].popleft(), ch)
                     results[ch.get_name()] = ch.get_attribute('scale_fn')(self.data_buffer[ch.get_attribute('internal_address')].popleft())
                 else:
                     raise Exception("U2300A: Don't know what to do yet.")
@@ -749,8 +719,7 @@ class u2300a_DVM(scpi_instrument,delegator):
     def check_errors(self):
         err = self.get_interface().ask("SYST:ERR?")#Check that nothing has gone wrong with configuration
         if err != '+0,"No error"':
-            breakpoint()
-            raise Exception(err)
+            raise Exception(f"U2300: {err}")
     def calibrate(self):
         print(f'Begin {self.get_name()} calibration.')
         self.get_interface().write('CALibration:BEGin')
