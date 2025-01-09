@@ -15,20 +15,16 @@ class Master_Test_Template():
             ch.write(old)
     def customize(self):
         '''Optional method to alter the logger before the test begins.'''
-        if self.verbose:
-            print("This test script does not have a customize method.")
+        pass
     def declare_bench_connections(self):
         '''Optional method to log the setup needed to run the test. Plugin required.'''
-        if self.verbose:
-            print("This test script does not have a declare_bench_connections method, and is assumed to use the default setup")
+        pass
     def collect(self):
         ''' Mandatory method to operate the bench and collect the data.'''
-        if self.verbose:
-            print("This test script does not have a collect method.")
+        pass
     def plot(self):
         ''' Optional method to retrieve the data collected and create plots. Can be run over and over once a collect has run. User must return a list or tuple of plots and/or pages, or an individual LTC_plot.Page, or a single LTC_plot.plot.'''
-        if self.verbose:
-            print("No plots were made with this script.")
+        pass
         return []
 
     ###

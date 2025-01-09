@@ -437,29 +437,37 @@ class Plugin_Manager():
         try:
             self.master = master()
             self.add_instrument_channels()
-            if 'bench_config_management' in self.used_plugins:
-                self.test_components = component_collection()
-                self.test_connections = connection_collection(name="test_connections")
+            self.all_benches = []
             for test in self.tests:
                 test._temperatures = temperatures
                 test._channel_reconfiguration_settings=[]
                 self._create_logger(test)
                 if 'bench_config_management' in self.used_plugins:
+                    self.test_components = component_collection()
+                    self.test_connections = connection_collection(name=test.get_name())
                     try:
                         test._declare_bench_connections()
                     except Exception as e:
                         raise("TEST_MANAGER ERROR: This project indicated bench configuration data would be stored. Test template requires a _declare_bench_connections method that gathers the data.")
+                    self.all_benches.append(self.test_connections)
+            if 'bench_config_management' in self.used_plugins:
+                self.all_connections = connection_collection.distill(self.all_benches)
+            for test in self.tests:
                 if 'traceability' in self.used_plugins:
                     self._create_metalogger(test)
                     if 'bench_config_management' in self.used_plugins:
-                        test._traceabilities.get_traceability_data()['test_bench_connections'] = self.test_connections.get_readable_connections()
+                        test._traceabilities.get_traceability_data()['test_bench_connections'] = self.all_connections.get_readable_connections()
                         test._metalogger.add_channel_dummy('test_bench_connections')
-                        test._metalogger.write('test_bench_connections', self.test_connections.get_readable_connections())
+                        test._metalogger.write('test_bench_connections', self.all_connections.get_readable_connections())
+                        
+                        test._traceabilities.get_traceability_data()['blocked_bench_terminals'] = lambda: self.all_connections.get_readable_blocked_terminals()
+                        test._metalogger.add_channel_dummy('blocked_bench_terminals')
+                        test._metalogger.write('blocked_bench_terminals', self.all_connections.get_readable_blocked_terminals())
                     self._metalog(test)
             if 'bench_config_management' in self.used_plugins and self.verbose:
-                print(self.test_connections.print_connections())
+                print(self.all_connections.print_connections())
             if 'bench_image_creation' in self.used_plugins:
-                self.visualizer = bench_visualizer.visualizer(connections=self.test_connections.connections, locations=test.get_bench_image_locations())
+                self.visualizer = bench_visualizer.visualizer(connections=self.all_connections.connections, locations=test.get_bench_image_locations())
                 for test in self.tests:
                     self.visualizer.generate(file_base_name="Bench_Config", prune=True, file_format='svg', engine='neato', file_location=test._module_path+os.sep+'scratch')
             summary_msg = f'{self.operator} on {self.thismachine}\n'

@@ -93,7 +93,8 @@ class connection_collection():
     def __init__(self, name):
         self.connections = []
         self.blocked_terminals = []
-        self.readable_list=[]
+        self.readable_list = []
+        self.readable_blocked = []
         self.name = name
         self._invalid_config = False
     def set_invalid(self):
@@ -135,6 +136,12 @@ class connection_collection():
             for connection in self.connections:
                 self.readable_list.append(([connection.get_terminals()[0].owner,connection.get_terminals()[0].type],[connection.get_terminals()[1].owner,connection.get_terminals()[1].type]))
         return self.readable_list
+    def get_readable_blocked_terminals(self):
+        '''Returns a parsable list of instrument terminal connections that is also human readable.'''
+        if not self.readable_blocked:
+            for blocked in self.blocked_terminals:
+                self.readable_blocked.append((blocked.owner,blocked.type))
+        return self.readable_blocked
     def print_connections(self, exclude=None):
         ''''Returns a presentable diagram centrally aligned. Becomes difficult to read if not enough window width is provided.'''
         connection_diagram = ""
@@ -197,8 +204,8 @@ class connection_collection():
 
     def check_consistency(self, connection_source):
         def raise_error(terminal1,terminal2a,terminal2b, script1, script2):
-            banner_a = build_banner("*** CONNECTION ERROR ***", f'"{terminal1.get_owner()}:{terminal1.get_type()}" is assigned differently in {script1}({terminal2a.get_owner()}:{terminal2a.get_type()}) and {script2}({terminal2b.get_owner()}:{terminal2b.get_type()}).')
-            raise bench_configuration_error(banner_a)
+            print_banner("*** CONNECTION ERROR ***", f'"{terminal1.get_owner()}:{terminal1.get_type()}" is assigned differently in',f'{script1}({terminal2a.get_owner()}:{terminal2a.get_type()})','and',f'{script2}({terminal2b.get_owner()}:{terminal2b.get_type()}).')
+            raise bench_configuration_error()
         delete_connections = []
         for connextion1 in self.connections:
             connection_poi_1 = connextion1.terminals[0].get_owner(), connextion1.terminals[0].get_type(), connextion1.terminals[1].get_owner(), connextion1.terminals[1].get_type()
@@ -255,8 +262,8 @@ class connection_collection():
             for terminal in connextion.get_terminals():
                 if terminal in self.blocked_terminals:
                     terminals = [f"{terminal.get_owner()}:{terminal.get_type()}" for terminal in connextion.get_terminals()]
-                    banner_b=build_banner("*** CONNECTION ERROR *** A Connection blocker blocks a requested connection.", f'"{terminal.get_owner()}:{terminal.get_type()}" blocks connection:', f'{terminals}')
-                    raise bench_configuration_error(banner_b)
+                    print_banner("*** CONNECTION ERROR *** A Connection blocker blocks a requested connection.", f'"{terminal.get_owner()}:{terminal.get_type()}" blocks connection:', f'{terminals}')
+                    raise bench_configuration_error()
 
 class configuration_parser():
     '''Can be used to reconstitute an equipment connection and terminal list from a displayable string.
