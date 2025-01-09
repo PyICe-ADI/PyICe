@@ -220,7 +220,7 @@ class Test_Results(generic_results):
                 #Exact test
                 try:
                     resp += f'\t SL:{self.upper_limit:g}'
-                except TypeError as e:
+                except (TypeError, ValueError) as e:
                     resp += f'\t SL:{self.upper_limit}'
             else:
                 if self.lower_limit is not None:
