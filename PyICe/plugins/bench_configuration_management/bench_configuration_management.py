@@ -262,8 +262,8 @@ class connection_collection():
             for terminal in connextion.get_terminals():
                 if terminal in self.blocked_terminals:
                     terminals = [f"{terminal.get_owner()}:{terminal.get_type()}" for terminal in connextion.get_terminals()]
-                    banner_b=build_banner("*** CONNECTION ERROR *** A Connection blocker blocks a requested connection.", f'"{terminal.get_owner()}:{terminal.get_type()}" blocks connection:', f'{terminals}')
-                    raise bench_configuration_error(banner_b)
+                    print_banner("*** CONNECTION ERROR *** A Connection blocker blocks a requested connection.", f'"{terminal.get_owner()}:{terminal.get_type()}" blocks connection:', f'{terminals}')
+                    raise bench_configuration_error()
 
 class configuration_parser():
     '''Can be used to reconstitute an equipment connection and terminal list from a displayable string.
