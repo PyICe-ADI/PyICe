@@ -204,8 +204,8 @@ class connection_collection():
 
     def check_consistency(self, connection_source):
         def raise_error(terminal1,terminal2a,terminal2b, script1, script2):
-            banner_a = build_banner("","*** CONNECTION ERROR ***", f'"{terminal1.get_owner()}:{terminal1.get_type()}" is assigned differently in','{script1}({terminal2a.get_owner()}:{terminal2a.get_type()})','and','{script2}({terminal2b.get_owner()}:{terminal2b.get_type()}).')
-            raise bench_configuration_error(banner_a)
+            print_banner("*** CONNECTION ERROR ***", f'"{terminal1.get_owner()}:{terminal1.get_type()}" is assigned differently in',f'{script1}({terminal2a.get_owner()}:{terminal2a.get_type()})','and',f'{script2}({terminal2b.get_owner()}:{terminal2b.get_type()}).')
+            raise bench_configuration_error()
         delete_connections = []
         for connextion1 in self.connections:
             connection_poi_1 = connextion1.terminals[0].get_owner(), connextion1.terminals[0].get_type(), connextion1.terminals[1].get_owner(), connextion1.terminals[1].get_type()
