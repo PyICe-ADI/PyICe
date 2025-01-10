@@ -88,15 +88,25 @@ class Plugin_Manager():
             self.evaluate()
         if 'correlate_tests' in self.used_plugins:
             self.correlate()
-        for test in self.tests:
-            if hasattr(test, '_test_results') and test._test_results._test_results:
-                self.notify(test.get_test_results(), subject='Test Results')
-            if len(self._plots) and self._send_notifications: #Don't send empty emails
-                self.email_plots(self._plots)
-            if len(self._linked_plots) and self._send_notifications: #Don't send empty emails
-                self.email_plot_dictionary(self._linked_plots)
         if 'archive' in self.used_plugins:
             self._archive()
+        for test in self.tests:
+            try:
+                if hasattr(test, '_test_results') and test._test_results._test_results:
+                    self.notify(test.get_test_results(), subject='Test Results')
+            except Exception as e:
+                print('\n***PLUGIN MANAGER ERROR***\nError occurred while attempting to email test results.\n')
+            try:
+                if len(self._plots) and self._send_notifications: #Don't send empty emails
+                    self.email_plots(self._plots)
+            except Exception as e:
+                print ('\n***PLUGIN MANAGER ERROR***\nError occurred while attemptin to email plots.\n'
+            try:
+                if len(self._linked_plots) and self._send_notifications: #Don't send empty emails
+                    self.email_plot_dictionary(self._linked_plots)
+            except Exception as e:
+                print('\n***PLUGIN MANAGER ERROR***\nError occurred while attempting to email linked plots.\n')
+
 
     def add_instrument_channels(self):
         '''In this method, a master is populated by instruments and their channels.
