@@ -509,15 +509,14 @@ class plot(object):
         if note is not None:
             self.add_note(note=note, location=text_location, use_axes_scale=True, fontsize=3, axis=axis)
 
-    def add_histogram(self, axis, xdata, num_bins, color, normed=False, legend="", edgecolor="black", linewidth=0.5, alpha=1):
-        histo_data = { "axis"           : axis,
-                       "xdata"          : xdata,
-                       "num_bins"       : num_bins,
-                       "color"          : color,
-                       "legend"         : legend,
-                       "edgecolor"      : edgecolor,
-                       "linewidth"      : linewidth,
-                       "alpha"          : alpha,
+    def add_histogram(self, axis, xdata, num_bins, color, normed=False, legend="", linewidth=0.5, alpha=1):
+        histo_data = { "axis"       : axis,
+                       "xdata"      : xdata,
+                       "num_bins"   : num_bins,
+                       "color"      : color,
+                       "legend"     : legend,
+                       "linewidth"  : linewidth,
+                       "alpha"      : alpha,
                     }
         if axis == 1:
             self.y1_axis_params["histo_data"].append(histo_data)
@@ -936,49 +935,48 @@ class Page():
                         else:
                             x,y = zip(*trace["data"])
                         if trace["stepped_style"]:
-                            y_axis_params["axis"].step(         x,
-                                                                y,
-                                                color           = trace["color"],
-                                                linewidth       = trace_width,
-                                                marker          = trace["marker"],
-                                                markersize      = trace["markersize"],
-                                                label           = trace["legend"],
-                                                linestyle       = trace["linestyle"],
-                                                alpha           = 1,
-                                                scalex          = y_axis_params["autoscaley"],
-                                                scaley          = y_axis_params["autoscaley"],
-                                                where           ='post')
+                            y_axis_params["axis"].step(     x,
+                                                            y,
+                                                color       = trace["color"],
+                                                linewidth   = trace_width,
+                                                marker      = trace["marker"],
+                                                markersize  = trace["markersize"],
+                                                label       = trace["legend"],
+                                                linestyle   = trace["linestyle"],
+                                                alpha       = 1,
+                                                scalex      = y_axis_params["autoscaley"],
+                                                scaley      = y_axis_params["autoscaley"],
+                                                where       ='post')
                         else:
-                            y_axis_params["axis"].plot(         x,
-                                                                y,
-                                                color           = trace["color"],
-                                                linewidth       = trace_width,
-                                                marker          = trace["marker"],
-                                                markersize      = trace["markersize"],
-                                                label           = trace["legend"],
-                                                linestyle       = trace["linestyle"],
-                                                alpha           = 1,
-                                                scalex          = y_axis_params["autoscaley"],
-                                                scaley          = y_axis_params["autoscaley"])
+                            y_axis_params["axis"].plot(     x,
+                                                            y,
+                                                color       = trace["color"],
+                                                linewidth   = trace_width,
+                                                marker      = trace["marker"],
+                                                markersize  = trace["markersize"],
+                                                label       = trace["legend"],
+                                                linestyle   = trace["linestyle"],
+                                                alpha       = 1,
+                                                scalex      = y_axis_params["autoscaley"],
+                                                scaley      = y_axis_params["autoscaley"])
                 if plot.plot_type != "scope_plot":
                     for histogram in y_axis_params["histo_data"]:
-                        y_axis_params["axis"].hist(  x  = histogram["xdata"],
-                                            bins        = histogram["num_bins"],
-                                            range       = None,
-                                            weights     = None,
-                                            cumulative  = False,
-                                            bottom      = None,
-                                            histtype    = 'bar',
-                                            align       = 'mid',
-                                            orientation = 'vertical',
-                                            rwidth      = None,
-                                            log         = False,
-                                            color       = histogram["color"],
-                                            label       = histogram["legend"],
-                                            stacked     = False,
-                                            linewidth   = histogram["linewidth"],
-                                            alpha       = histogram["alpha"],
-                                            edgecolor   = histogram["edgecolor"])
+                        y_axis_params["axis"].hist( x           = histogram["xdata"],
+                                                    bins        = histogram["num_bins"],
+                                                    range       = None,
+                                                    weights     = None,
+                                                    cumulative  = False,
+                                                    bottom      = None,
+                                                    histtype    = 'bar',
+                                                    align       = 'mid',
+                                                    orientation = 'vertical',
+                                                    rwidth      = None,
+                                                    log         = False,
+                                                    color       = histogram["color"],
+                                                    label       = histogram["legend"],
+                                                    stacked     = False,
+                                                    linewidth   = histogram["linewidth"],
+                                                    alpha       = histogram["alpha"])
         #################################################################
         # Place the legends                                             #
         #################################################################
