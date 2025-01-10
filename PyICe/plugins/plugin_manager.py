@@ -100,7 +100,7 @@ class Plugin_Manager():
                 if len(self._plots) and self._send_notifications: #Don't send empty emails
                     self.email_plots(self._plots)
             except Exception as e:
-                print ('\n***PLUGIN MANAGER ERROR***\nError occurred while attemptin to email plots.\n'
+                print ('\n***PLUGIN MANAGER ERROR***\nError occurred while attemptin to email plots.\n')
             try:
                 if len(self._linked_plots) and self._send_notifications: #Don't send empty emails
                     self.email_plot_dictionary(self._linked_plots)
