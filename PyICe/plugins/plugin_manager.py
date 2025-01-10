@@ -40,8 +40,11 @@ class Plugin_Manager():
                 with open(dirpath+os.sep+'plugins.json') as f:
                     self.used_plugins = json.load(f)
                 if self.verbose:
-                    for plugin in self.used_plugins:
-                        print_banner(f'PyICe Plugin Manager, plugin found: "{plugin}".')
+                    if self.used_plugins:
+                        plugin_str=[f'PyICe Plugin Manager, plugins found:']
+                        for plugin in self.used_plugins:
+                            plugin_str.append(f'"{plugin}"')
+                        print_banner(*plugin_str)
         self._send_notifications = "notifications" in self.used_plugins
         if self._send_notifications:
             try:
@@ -626,8 +629,6 @@ class Plugin_Manager():
                 test.evaluate_results()
                 if test._test_results._test_results:
                     print(test.get_test_results())
-                elif self.verbose:
-                    print(f'No results submitted for {test.get_name()}.')
                 t_r = test._test_results.json_report()
                 dest_abs_filepath = os.path.join(os.path.dirname(database), f"test_results.json")
                 if t_r is not None:

@@ -75,8 +75,7 @@ class Master_Test_Template():
     # EVALUATION METHODS
     ###
     def evaluate_results(self):
-        if self.verbose:
-            print("No tests were submitted for evaluation with this script.")
+        pass
     def evaluate_rawdata(self, name, data, conditions=None):
         '''This will compare submitted data to limits for the named test.
         args:
