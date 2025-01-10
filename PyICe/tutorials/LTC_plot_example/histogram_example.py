@@ -26,7 +26,6 @@ G18.add_histogram(      axis            = 1,
                         color           = LTC_plot.LT_BLUE_2_40PCT,
                         normed          = False,
                         legend          = "data1",
-                        edgecolor       = None,
                         linewidth       = 0.5,
                         alpha           = None)
 G18.add_note("194 PARTS SOLDERED DOWN", [-0.082, 74])
@@ -57,7 +56,6 @@ G02.add_histogram(      axis            = 1,
                         color           = LTC_plot.LT_RED_1,
                         normed          = False,
                         legend          = "data1",
-                        edgecolor       = LTC_plot.LT_RED_1,
                         linewidth       = 0.001,
                         alpha           = 1)
                         
