@@ -41,10 +41,10 @@ class Plugin_Manager():
                     self.used_plugins = json.load(f)
                 if self.verbose:
                     if self.used_plugins:
-                        plugin_str=f'PyICe Plugin Manager, plugins found:\n'
+                        plugin_str=[f'PyICe Plugin Manager, plugins found:']
                         for plugin in self.used_plugins:
-                            plugin_str+=f'"{plugin}"\n'
-                        print_banner(plugin_str)
+                            plugin_str.append(f'"{plugin}"')
+                        print_banner(*plugin_str)
         self._send_notifications = "notifications" in self.used_plugins
         if self._send_notifications:
             try:
