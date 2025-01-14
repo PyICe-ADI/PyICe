@@ -2,18 +2,13 @@ from PyICe.lab_instruments.oscilloscope import oscilloscope
 from PyICe.lab_utils.ranges import decadeListRange
 from PyICe.lab_utils.banners import print_banner
 from deprecated import deprecated
+from numpy import fromiter, dtype
 from PyICe.lab_core import *
 import time, math
 
-try:
-    from numpy import fromiter, dtype
-    numpy_missing = False
-except ImportError as e:
-    numpy_missing = True
-
 class agilent_3034a(oscilloscope):
     '''Agilent 4-channel mixed signal DSO'''
-    def __init__(self, interface_visa, force_trigger=False, reset=False, timeout=10): # 10 seconds recommended in programmer"s manual page 63
+    def __init__(self, interface_visa, force_trigger=False, reset=False, verbose=False, timeout=10): # 10 seconds recommended in programmer's manual page 63
         '''interface_visa'''
         self._base_name = "agilent_3034a"
         scpi_instrument.__init__(self,f"agilent_3034a @ {interface_visa}")
@@ -41,6 +36,7 @@ class agilent_3034a(oscilloscope):
         self.time_info["reference"]     = None
         self.time_info["scale"]         = None
         self.time_info["enable_status"] = None
+        self.verbose = verbose
 
     @deprecated(version='47', reason="You are using old scope driver methods.  Consider updating to new scope binding.  See https://confluence.analog.com/display/stowe/Preferred+Practices")
     def add_Ychannel(self, name, number):
@@ -65,12 +61,12 @@ class agilent_3034a(oscilloscope):
         self.Ychannels[number]["display_channel"].write(True) # legacy script support
         return self.Ychannels
 
-    @deprecated(version='47', reason="You are using old scope driver methods.  Consider updating to new scope binding.  See https://confluence.analog.com/display/stowe/Preferred+Practices")
+    @deprecated(version='47', reason="You are using old scope driver methods. Consider updating to new scope binding.")
     def purge_all_Xchannels(self):
         for channel in self.Xchannels:
             self.remove_channel(self.Xchannels[channel])
 
-    @deprecated(version='47', reason="You are using old scope driver methods.  Consider updating to new scope binding.  See https://confluence.analog.com/display/stowe/Preferred+Practices")
+    @deprecated(version='47', reason="You are using old scope driver methods. Consider updating to new scope binding.")
     def purge_all_Ychannels(self):
         remove_channels = []
         for channel_number in self.Ychannels:
@@ -189,10 +185,7 @@ class agilent_3034a(oscilloscope):
         new_channel = channel(name, read_function=lambda: self._read_scope_channel(number))
         new_channel.set_delegator(self)  ##########################what does this do?
         self._add_channel(new_channel)
-        if not numpy_missing:
-            new_channel._set_type_affinity('PyICeBLOB')
-        else:
-            new_channel._set_type_affinity('PyICeFloatList')
+        new_channel._set_type_affinity('PyICeBLOB')
         new_channel.set_attribute('dependent_physical_channels',(number,))
         self.add_Ycontrol_Yreadback_channels(name, number)
         return new_channel
@@ -262,18 +255,12 @@ class agilent_3034a(oscilloscope):
             voltage = [(data value - yreference) * yincrement] + yorigin
             time = [(data point number - xreference) * xincrement] + xorigin'''
             time_info = self._read_scope_timebase_info()
-            if not numpy_missing:
-            # xpoints   = [(x - time_info["reference"]) * time_info["increment"] + time_info["origin"] for x in range(time_info["points"])]
-                xpoints_gen   = map(lambda x: (x - time_info["reference"]) * time_info["increment"] + time_info["origin"], range(time_info["points"]))
-                return fromiter(xpoints_gen, dtype=dtype('<d'))
-            return [(x - time_info["reference"]) * time_info["increment"] + time_info["origin"] for x in range(time_info["points"])]
+            xpoints_gen   = map(lambda x: (x - time_info["reference"]) * time_info["increment"] + time_info["origin"], range(time_info["points"]))
+            return fromiter(xpoints_gen, dtype=dtype('<d'))
         new_channel = channel(name, read_function=lambda: compute_x_points(self))
         new_channel.set_delegator(self)
         self._add_channel(new_channel)
-        if not numpy_missing:
-            new_channel._set_type_affinity('PyICeBLOB')
-        else:
-            new_channel._set_type_affinity('PyICeFloatList')
+        new_channel._set_type_affinity('PyICeBLOB')
         new_channel.set_attribute('dependent_physical_channels',(None,))
         return new_channel
 
@@ -317,7 +304,7 @@ class agilent_3034a(oscilloscope):
         allowed_points.extend(decadeListRange([1000,2000,5000],4))
         allowed_points.extend((8000000,))
         if points not in allowed_points:
-            raise ValueError(f"\n\n{self.get_name()}: set_points: points argument muse be in: {allowed_points}")
+            raise ValueError(f"\nAgilent 3034a: {self.get_name()}: set_points: points argument muse be in: {allowed_points}")
         self.get_interface().write(f":WAVeform:POINts {points}")
 
     def get_channel_enable_status(self, number):
@@ -329,7 +316,7 @@ class agilent_3034a(oscilloscope):
     def _set_runmode(self, value):
         value = value.upper()
         if value not in ["RUN", "STOP", "SINGLE"]:
-            raise ValueError("\n\nRun mode must be one of: RUN, STOP, SINGLE")
+            raise ValueError("\nAgilent 3034a: Run mode must be one of: RUN, STOP, SINGLE")
         self.get_interface().write(f":{value}")
         if value in ["RUN", "SINGLE"]:
             # Wait until it arms
@@ -340,10 +327,9 @@ class agilent_3034a(oscilloscope):
             while not int(self.get_interface().ask(":AER?")):   #Asking AER? clears AER.  If SINGLE/SINGLE or RUN/RUN is written without a trigger in between, AER won't be high, and the timeout exception is raised. Note: SINGLE/RUN/SINGLE/RUN etc. CAN be written without triggers in between and AER goes high each time.
                 time.sleep(0.01)
                 if time.time() > timeout_time:
-                    raise Exception(f'AER is still low {timeout}s after writing two {value} commands in a row to the scope without a scope trigger in between')
+                    raise Exception(f'Agilent 3034a: AER is still low {timeout}s after writing two {value} commands in a row to the scope without a scope trigger in between')
         else:
-            # Wait until it stops
-            self.operation_complete()
+            self.operation_complete() # Blocking wait until it stops
 
     def trigger_force(self):
         # self.get_interface().write(":RUN;:TRIGger:FORCe")
@@ -352,21 +338,15 @@ class agilent_3034a(oscilloscope):
         time.sleep(1.5*xrange)
         self.get_interface().write(":TRIGger:FORCe")
         while(True):
-            if self.scope_stopped():
-                #Stopped!
+            if self.scope_stopped():#Stopped!
                 break
         time.sleep(0.1) #Sleep additional .1s after scope stops
-        # self.operation_complete()
 
     # def digitize(self):
         # self.get_interface().write(":DIGitize")
         # # self.operation_complete()
 
     def _read_scope_time_info(self):
-        # print('time info')
-        # print(self.get_interface().ask('WAV:SOURCE?'))
-        # print(self.get_interface().ask('WAV:PRE?'))
-        
         #DJS 2021/12/09. This method is almost identical to _read_scope_timebase_info. This one is called from the delegated read of the instrument. The other is called from add_channel_timebase and add_channel_time_info. This one stores results in an instance variable while the other discards the results after the return. I don't understand why there are two copies of essentially the same thing.
         
         self.time_info = {}
@@ -501,13 +481,11 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_impedance(self, name, number):
         def _set_impedance(number, value):
-            # self.channel_display(number, True)   #Make sure the channel is on
             if value in [50, "50", 1000000, 1e6, "1000000", "1e6", "1M"]:
                 value = "FIFTy" if value in [50, "50"] else "ONEMeg"
             else:
-                raise ValueError("\n\nScope input impedance must be either 50, 1000000 or 1M")
+                raise ValueError("\nAgilent 3034a: Scope input impedance must be either 50, 1000000 or 1M")
             self.get_interface().write(f":CHANnel{number}:IMPedance {value}")
-            # self.operation_complete()
         new_channel = channel(name, write_function=lambda value : _set_impedance(number, value))
         new_channel.add_preset("50",    "50Ω")
         new_channel.add_preset("1M",    "1MΩ")
@@ -518,11 +496,10 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_units(self, name, number):
         def _set_units(number, value):
-            # self.channel_display(number, True)   #Make sure the channel is on
             if value.upper() in ["V", "A", "VOLTS", "AMPS"]:
                 value = "VOLT" if value.upper() in ["V", "VOLTS"] else "AMPere"
             else:
-                raise ValueError("\n\nUnits must be one of V, A, VOLTS, AMPS")
+                raise ValueError("\nAgilent 3034a: Units must be one of V, A, VOLTS, AMPS")
             self.get_interface().write(f":CHANnel{number}:UNITs {value}")
             # self.operation_complete()
         new_channel = channel(name, write_function=lambda value : _set_units(number, value))
@@ -535,11 +512,9 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_coupling(self, name, number):
         def _set_coupling(number, value):
-            # self.channel_display(number, True)   #Make sure the channel is on
             if value.upper() not in ["AC", "DC"]:
-                raise ValueError("\n\nUnits must be either AC or DC")
+                raise ValueError("\nAgilent 3034a: Units must be either AC or DC")
             self.get_interface().write(f":CHANnel{number}:COUPling {value}")
-            # self.operation_complete()
         new_channel = channel(name, write_function=lambda value : _set_coupling(number, value))
         new_channel.add_preset("AC", "AC")
         new_channel.add_preset("DC", "DC")
@@ -550,7 +525,6 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_Xrange(self, name):
         new_channel = channel(name, write_function=lambda value : self.get_interface().write(f":TIMebase:RANGe {value}"))
-        # new_channel._set_value(self.get_interface().ask(f":TIMebase:RANGe?"))
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels',(None,))
         return new_channel
@@ -565,9 +539,8 @@ class agilent_3034a(oscilloscope):
     def add_channel_Xreference(self, name):
         def _set_xreference(value):
             if value.upper() not in ["LEFT", "CENTER", "RIGHT"]:
-                raise ValueError("\n\nX reference must be one of must be one of: LEFT, CENTER, RIGHT")
+                raise ValueError("\nAgilent 3034a: X reference must be one of must be one of: LEFT, CENTER, RIGHT")
             self.get_interface().write(f":TIMebase:REFerence {value}")
-            # self.operation_complete()
         new_channel = channel(name, write_function=lambda value : _set_xreference(value))
         new_channel.add_preset("LEFT",      "One Division from the left")
         new_channel.add_preset("CENTER",    "Screen Center")
@@ -617,7 +590,7 @@ class agilent_3034a(oscilloscope):
     def add_channel_triggermode(self, name):
         def _set_triggermode(value):
             if value.upper() not in ["AUTO", "NORMAL"]:
-                raise ValueError("\n\nTrigger mode must be one of: AUTO, NORMAL")
+                raise ValueError("\nAgilent 3034a: Trigger mode must be one of: AUTO, NORMAL")
             self.get_interface().write(f":TRIGger:SWEep {value}")
             self.operation_complete()
         new_channel = channel(name, write_function=lambda value : _set_triggermode(value))
@@ -631,7 +604,7 @@ class agilent_3034a(oscilloscope):
     def add_channel_triggerslope(self, name):
         def _set_triggerslope(value):
             if value.upper() not in ["NEGATIVE", "POSITIVE", "EITHER", "ALTERNATE"]:
-                raise ValueError("\n\nTrigger mode must be one of: AUTO, NORMAL, EITHER, ALTERNATE")
+                raise ValueError("\nAgilent 3034a: Trigger mode must be one of: AUTO, NORMAL, EITHER, ALTERNATE")
             self.get_interface().write(f":TRIGger:SLOPe {value}")
             self.operation_complete()
         new_channel = channel(name, write_function=lambda value : _set_triggerslope(value))
@@ -648,7 +621,7 @@ class agilent_3034a(oscilloscope):
         def _set_triggersource(value):
             valid_sources = ["EXT", "LINE", "WGEN", "CHANNEL1", "CHANNEL2", "CHANNEL3", "CHANNEL4"]
             if value.upper() not in valid_sources:
-                raise ValueError(f"\n\nTrigger mode must be one of: {valid_sources}")
+                raise ValueError(f"\nAgilent 3034a: Trigger mode must be one of: {valid_sources}")
             self.get_interface().write(f":TRIGger:SOURce {value}")
             self.operation_complete()
         new_channel = channel(name, write_function=lambda value : _set_triggersource(value))
@@ -667,7 +640,7 @@ class agilent_3034a(oscilloscope):
     def add_channel_acquire_type(self, name):
         def _set_acquiretype(value):
             if value.upper() not in ["NORMAL", "AVERAGE", "HRESOLUTION", "PEAK"]:
-                raise ValueError("\n\nAcquire type must be one of: NORMAL, AVERAGE, HRESOLUTION, PEAK")
+                raise ValueError("\nAgilent 3034a: Acquire type must be one of: NORMAL, AVERAGE, HRESOLUTION, PEAK")
             self.get_interface().write(f":ACQuire:TYPE {value}")
             self.operation_complete()
         new_channel = channel(name, write_function=lambda value : _set_acquiretype(value))
@@ -683,7 +656,7 @@ class agilent_3034a(oscilloscope):
     def add_channel_acquire_count(self, name):
         def _set_acquirecount(value):
             if value not in range(2,65536+1):
-                raise ValueError("\n\nAcquire Count must be in [2..65536]")
+                raise ValueError("\nAgilent 3034a: Acquire Count must be in [2..65536]")
             self.get_interface().write(f":ACQuire:COUNt {value}")
             self.operation_complete()
         new_channel = channel(name, write_function=lambda value : _set_acquirecount(value))
@@ -697,7 +670,7 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_pointcount(self, name):
         new_channel = channel(name, write_function=lambda value : self.set_points(value))
-        # new_channel._set_value(self.get_interface().ask(":WAVeform:POINts?"))  #Do not ask the scope for points when channel is created.  WAVeform:SOURce may be set to a channel that's off.
+        # new_channel._set_value(self.get_interface().ask(":WAVeform:POINts?"))  #Do not ask the scope for points when channel is created. WAVeform:SOURce may be set to a channel that's off.
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels',(None,))
         return new_channel
@@ -711,7 +684,7 @@ class agilent_3034a(oscilloscope):
     def add_channel_triggertype(self, name):
         def _set_triggertype(value):
             if value.upper() not in ["EDGE", "GLITCH", "PATTERN", "TV", "DELAY", "EBURST", "OR", "RUNT", "SHOLD", "TRANSITION", "SBUS1", "SBUS2", "USB"]:
-                raise ValueError(f"\Sorry, I don't know what TRIGger:MODE {value} is. Must be one of  : EDGE, GLITCH, PATTERN, TV, DELAY, EBURST, OR, RUNT, SHOLD, TRANSITION, SBUS1, SBUS2, USB")
+                raise ValueError(f"\nAgilent 3034a: Sorry, don't know what TRIGger:MODE {value} is. Must be one of  : EDGE, GLITCH, PATTERN, TV, DELAY, EBURST, OR, RUNT, SHOLD, TRANSITION, SBUS1, SBUS2, USB")
             self.get_interface().write(f":TRIGger:MODE {value}")
             self.operation_complete()
         new_channel = channel(name, write_function=lambda value : _set_triggertype(value))
@@ -746,7 +719,7 @@ class agilent_3034a(oscilloscope):
     def add_channel_trigger_pattern_qualifier(self, name):
         def _set_trigger_pattern_qualifier(value):
             if value not in ["ENTered", "GREaterthan", "LESSthan", "INRange", "OUTRange", "TIMeout"]:
-                raise ValueError("\nTrigger pattern qualifier must be ENTered, GREaterthan, LESSthan, INRange, "
+                raise ValueError("\nAgilent 3034a: Trigger pattern qualifier must be ENTered, GREaterthan, LESSthan, INRange, "
                                  "OUTRange, TIMeout")
             self.get_interface().write(f":TRIGger:PATTern:QUALifier {value}")
             self.operation_complete()
@@ -765,7 +738,7 @@ class agilent_3034a(oscilloscope):
     def add_channel_trigger_pattern_format(self, name):
         def _set_trigger_pattern_format(value):
             if value.upper() not in ['ASCII', 'HEX']:
-                raise ValueError('\nTrigger pattern format must be ASCII or HEX')
+                raise ValueError('\nAgilent 3034a: Trigger pattern format must be ASCII or HEX')
             self.get_interface().write(f":TRIGger:PATTern:FORMat {value}")
             self.operation_complete()
         new_channel = channel(name, write_function=lambda value: _set_trigger_pattern_format(value))
@@ -847,7 +820,7 @@ class agilent_3034a(oscilloscope):
     def add_channel_trigger_glitch_polarity(self, name):
         def _set_trigger_glitch_polarity(value):
             if value.upper() not in ["POSITIVE", "NEGATIVE"]:
-                raise ValueError("\nTrigger glitch polarity must be either POSITIVE or NEGATIVE")
+                raise ValueError("\nAgilent 3034a: Trigger glitch polarity must be either POSITIVE or NEGATIVE")
             self.get_interface().write(f":TRIGger:GLITch:POLarity {value}")
             self.operation_complete()
         new_channel = channel(name, write_function=lambda value : _set_trigger_glitch_polarity(value))
@@ -861,7 +834,7 @@ class agilent_3034a(oscilloscope):
     def add_channel_trigger_glitch_qualifier(self, name):
         def _set_trigger_glitch_qualifier(value):
             if value.upper() not in ["GREATERTHAN", "LESSTHAN", "RANGE"]:
-                raise ValueError("\nTrigger glitch qualifier must be GREATERTHAN, LESSTHAN, or RANGE")
+                raise ValueError("\nAgilent 3034a: Trigger glitch qualifier must be GREATERTHAN, LESSTHAN, or RANGE")
             self.get_interface().write(f":TRIGger:GLITch:QUALifier {value}")
             self.operation_complete()
         new_channel = channel(name, write_function=lambda value : _set_trigger_glitch_qualifier(value))
@@ -887,7 +860,7 @@ class agilent_3034a(oscilloscope):
     def add_channel_trigger_runt_polarity(self, name):
         def _set_trigger_runt_polarity(value):
             if value.upper() not in ["POSITIVE", "NEGATIVE", "EITHER"]:
-                raise ValueError("\nTrigger runt polarity must be POSITIVE, NEGATIVE, or EITHER")
+                raise ValueError("\nAgilent 3034a: Trigger runt polarity must be POSITIVE, NEGATIVE, or EITHER")
             self.get_interface().write(f":TRIGger:RUNT:POLarity {value}")
             self.operation_complete()
         new_channel = channel(name, write_function=lambda value : _set_trigger_runt_polarity(value))
@@ -902,7 +875,7 @@ class agilent_3034a(oscilloscope):
     def add_channel_trigger_runt_qualifier(self, name):
         def _set_trigger_runt_qualifier(value):
             if value.upper() not in ["GREATERTHAN", "LESSTHAN", "RANGE"]:
-                raise ValueError("\nTrigger runt qualifier must be GREATERTHAN, LESSTHAN, or RANGE")
+                raise ValueError("\nAGILENT 3034a: Trigger runt qualifier must be GREATERTHAN, LESSTHAN, or RANGE")
             self.get_interface().write(f":TRIGger:RUNT:QUALifier {value}")
             self.operation_complete()
         new_channel = channel(name, write_function=lambda value : _set_trigger_runt_qualifier(value))
@@ -961,7 +934,7 @@ class agilent_3034a(oscilloscope):
             scope_was_stopped = self.scope_stopped()
             if not scope_was_stopped:
                 self._set_runmode('STOP')
-                print_banner("Note: Scope FREQUENCY measurement stopped the scope to retrieve data.")
+                if self.verbose: print_banner("Note: Scope FREQUENCY measurement stopped the scope to retrieve data.")
             self.get_interface().write(f":MEASure:SOURce CHANnel{number}")
             value = float(self.get_interface().ask(":MEASure:FREQuency?"))
             if not scope_was_stopped:
@@ -975,9 +948,9 @@ class agilent_3034a(oscilloscope):
     def add_channel_meas_period(self, name, number):
         def _get_period_measurement():
             scope_was_stopped = self.scope_stopped()
-            if not scope_was_stopped: # Scope needs to be stopped to retreive data via interface
+            if not scope_was_stopped:
                 self._set_runmode('STOP')
-                print_banner("Note: Scope PERIOD measurement stopped the scope to retrieve data.")
+                if self.verbose: print_banner("Note: Scope PERIOD measurement stopped the scope to retrieve data.")
             self.get_interface().write(f":MEASure:PERiod CHANnel{number}")
             value = float(self.get_interface().ask(":MEASure:PERiod?"))
             if not scope_was_stopped:
@@ -1054,7 +1027,7 @@ class agilent_3034a(oscilloscope):
         def _get_dutycycle_measurement(number):
             if not self.scope_stopped():
                 self._set_runmode('STOP')
-                print("Warning: Scope DUTY CYCLE measurement stopped the scope. If this is unexpected check scope triggers.")
+                if self.verbose: print_banner("Warning: Scope DUTY CYCLE measurement stopped the scope. If this is unexpected check scope triggers.")
             self.get_interface().write(f":MEASure:SOURce CHANnel{number}")
             return float(self.get_interface().ask(":MEASure:DUTYcycle?"))
         new_channel = channel(name, read_function = lambda : _get_dutycycle_measurement(number))
@@ -1066,7 +1039,7 @@ class agilent_3034a(oscilloscope):
         def _get_risetime_measurement(number):
             if not self.scope_stopped():
                 self._set_runmode('STOP')
-                print("Warning: Scope RISE TIME measurement stopped the scope. If this is unexpected check scope triggers.")
+                if self.verbose: print_banner("Warning: Scope RISE TIME measurement stopped the scope. If this is unexpected check scope triggers.")
             self.get_interface().write(f":MEASure:SOURce CHANnel{number}")
             return float(self.get_interface().ask(":MEASure:RISetime?"))
         new_channel = channel(name, read_function = lambda : _get_risetime_measurement(number))
@@ -1078,7 +1051,7 @@ class agilent_3034a(oscilloscope):
         def _get_falltime_measurement(number):
             if not self.scope_stopped():
                 self._set_runmode('STOP')
-                print("Warning: Scope FALL TIME measurement stopped the scope. If this is unexpected check scope triggers.")
+                if self.verbose: print_banner("Warning: Scope FALL TIME measurement stopped the scope. If this is unexpected check scope triggers.")
             self.get_interface().write(f":MEASure:SOURce CHANnel{number}")
             return float(self.get_interface().ask(":MEASure:FALLtime?"))
         new_channel = channel(name, read_function = lambda : _get_falltime_measurement(number))
@@ -1091,9 +1064,6 @@ class agilent_3034a(oscilloscope):
         self.operation_complete()
 
     def add_channel_display(self, name, number):
-        # def _set_display(channel_number, value):
-            # self.get_interface().write(f':CHANnel{channel_number}:DISPlay {"ON" if value else "OFF"}')
-            # self.operation_complete()
         new_channel = channel(name, write_function=lambda value: self.channel_display(number, value))
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels',(number,))
@@ -1145,7 +1115,7 @@ class agilent_3034a(oscilloscope):
         def _get_pwidth_measurement(number):
             if not self.scope_stopped():
                 self._set_runmode('STOP')
-                print("Warning: Scope PWIDTH measurement stopped the scope.  If this is unexpected check scope triggers.")
+                if self.verbose: print_banner("Warning: Scope PWIDTH measurement stopped the scope.  If this is unexpected check scope triggers.")
             self.get_interface().write(f":MEASure:SOURce CHANnel{number}")
             return float(self.get_interface().ask(":MEASure:PWIDth?"))
         new_channel = channel(name, read_function = lambda : _get_pwidth_measurement(number))
@@ -1157,7 +1127,7 @@ class agilent_3034a(oscilloscope):
         def _get_nwidth_measurement(number):
             if not self.scope_stopped():
                 self._set_runmode('STOP')
-                print("Warning: Scope NWIDTH measurement stopped the scope.  If this is unexpected check scope triggers.")
+                if self.verbose: print_banner("Warning: Scope NWIDTH measurement stopped the scope. If this is unexpected check scope triggers.")
             self.get_interface().write(f":MEASure:SOURce CHANnel{number}")
             return float(self.get_interface().ask(":MEASure:NWIDth?"))
         new_channel = channel(name, read_function = lambda : _get_nwidth_measurement(number))
@@ -1169,10 +1139,25 @@ class agilent_3034a(oscilloscope):
         def _get_vmax_measurement(number):
             if not self.scope_stopped():
                 self._set_runmode('STOP')
-                print("Warning: Scope VMAX measurement stopped the scope.  If this is unexpected check scope triggers.")
+                if self.verbose: print_banner("Warning: Scope VMAX measurement stopped the scope. If this is unexpected check scope triggers.")
             self.get_interface().write(f":MEASure:SOURce CHANnel{number}")
             return float(self.get_interface().ask(":MEASure:VMAX?"))
         new_channel = channel(name, read_function = lambda : _get_vmax_measurement(number))
+        self._add_channel(new_channel)
+        new_channel.set_attribute('dependent_physical_channels',(number,))
+        return new_channel
+        
+    def add_channel_meas_vaverage(self, name, number):
+        def _get_vaverage_measurement(number):
+            time.sleep(1)# TODO, HACK! should probably be set based on timebase!!!??
+            scope_was_stopped = self.scope_stopped()
+            if not scope_was_stopped:
+                self._set_runmode('STOP')
+                if self.verbose: print_banner("Warning: Scope Vaverage measurement stopped the scope. If this is unexpected check scope triggers.")
+            value = float(self.get_interface().ask(f":MEASure:VAVerage? CHANnel{number}"))
+            if not scope_was_stopped: self._set_runmode('RUN')
+            return value
+        new_channel = channel(name, read_function = lambda : _get_vaverage_measurement(number))
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels',(number,))
         return new_channel
@@ -1181,17 +1166,3 @@ class agilent_3034a(oscilloscope):
         self.get_interface().write(":SAVE:IMAGe:FORMat BMP8bit")
         self.get_interface().write(f':SAVE:IMAGe:STARt "{file_name}"')
         self.operation_complete()
-
-    #############################
-    # Boneyard
-    #############################
-
-    # def add_channel_meas_delay(self, name, first_channel, first_trigger, second_channel, second_trigger):
-        # def _get_delay_measurement():
-            # return self.get_interface().read(":MEASure:DELay?")
-            # self.get_interface().write(f":MEASure:DEFine DELay,{first_trigger}{first_channel},{second_trigger}{second_channel}")
-            # self.get_interface().write(f":MEASure:DELay CHANnel{first_channel},CHANnel{second_channel}")
-            # self.operation_complete()
-        # new_channel = channel(name, read_function=lambda : _get_delay_measurement())
-        # self._add_channel(new_channel)
-        # return new_channel
