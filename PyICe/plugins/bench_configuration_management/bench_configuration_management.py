@@ -100,7 +100,12 @@ class connection_collection():
     def set_invalid(self):
         self._invalid_config = True
     def block_connection(self, terminal):
-        if terminal not in self.blocked_terminals:
+        needs_blocking = True
+        for blocky in self.blocked_terminals:
+            readable = (blocky.owner,blocky.type)
+            if (terminal.owner,terminal.type) == readable:
+                needs_blocking = False
+        if needs_blocking:
             self.blocked_terminals.append(terminal)
     def unblock_connection(self, terminal):
         if terminal in self.blocked_terminals:
@@ -110,7 +115,10 @@ class connection_collection():
             raise ValueError("\nConnections must specify precisely 2 terminals.\n")
         connected_already = False
         for connextion in self.connections:
-            connected_already = (terminals[0] in connextion.terminals and terminals[1] in connextion.terminals) or connected_already
+            readable = [(connextion.get_terminals()[0].owner,connextion.get_terminals()[0].type),(connextion.get_terminals()[1].owner,connextion.get_terminals()[1].type)]
+            term1 = (terminals[0].owner,terminals[0].type)
+            term2 = (terminals[1].owner,terminals[1].type)
+            connected_already = (term1 in readable and term2 in readable) or connected_already
         if not connected_already:
             self.connections.append(connection(terminals, owner=self.name))
     def remove_connection_by_terminals(self, *terminals):
@@ -181,7 +189,11 @@ class connection_collection():
                         aggregate_collection.add_connection(potential_connection.terminals[0], potential_connection.terminals[1])
                         connection_source[connection_poi] = collection.connections[0].get_script_name()
             for blocked_terminal in collection.blocked_terminals:
-                if blocked_terminal not in aggregate_collection.blocked_terminals:
+                needs_blocking = True
+                for blocked in aggregate_collection.blocked_terminals:
+                    if (blocked_terminal.owner,blocked_terminal.type) == (blocked.owner,blocked.type):
+                        needs_blocking = False
+                if needs_blocking:
                     aggregate_collection.blocked_terminals.append(blocked_terminal)
         aggregate_collection.check_consistency(connection_source)
         return aggregate_collection
