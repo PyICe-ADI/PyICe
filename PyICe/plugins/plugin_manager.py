@@ -351,7 +351,11 @@ class Plugin_Manager():
         test._metalogger = logger(database=test.get_db_file())
         test._metalogger.add(_master)
         test._traceabilities = Traceability_items(test)
-        test._traceabilities.populate_traceability_data(test.traceability_items)
+        if not hasattr(self,'_traceabilities'):
+            test._traceabilities.populate_traceability_data(test.traceability_items)
+            self._traceabilities = test._traceabilities.get_traceability_data().copy()
+        else:
+            test._traceabilities.trace_data = self._traceabilities.copy()
         test._traceabilities.add_data_to_metalogger(test._metalogger)
     def _metalog(self, test):
         '''This is separate from the _create_metalogger method in order to give other plugins the opportunity to add to the metalogger before the channel list is commited to a table.'''
