@@ -30,6 +30,7 @@ class Plugin_Manager():
         self.operator = getpass.getuser().lower()
         self.thismachine = socket.gethostname().replace("-","_").split(".")[0]
         self.scratch_folder = scratch_folder
+        self.debug=False
 
     def find_plugins(self, a_test):
         '''This is called the first time a test is added to the plugin manager. An instance of a test is needed to locate the project path. This facilitates users starting from an individual test and getting all the chosen plugins.'''
@@ -59,6 +60,8 @@ class Plugin_Manager():
         args: debug - Boolean. This will be passed into all run tests to be used for abbreviating data collection loops. Default value is False.'''
         a_test = test()
         a_test._debug = debug
+        if debug:
+            self.debug = True
         self.tests.append(a_test)
         a_test.pm=self
         a_test._skip_plot=skip_plot
@@ -88,27 +91,45 @@ class Plugin_Manager():
         self.collect(temperatures)
         self.plot()
         if 'evaluate_tests' in self.used_plugins:
+            self._test_results_str = ''
             self.evaluate()
         if 'correlate_tests' in self.used_plugins:
             self.correlate()
         if 'archive' in self.used_plugins:
             self._archive()
-        for test in self.tests:
-            try:
-                if hasattr(test, '_test_results') and test._test_results._test_results:
-                    self.notify(test.get_test_results(), subject='Test Results')
-            except Exception as e:
-                print('\n***PLUGIN MANAGER ERROR***\nError occurred while attempting to email test results.\n')
-            try:
-                if len(self._plots) and self._send_notifications: #Don't send empty emails
-                    self.email_plots(self._plots)
-            except Exception as e:
-                print ('\n***PLUGIN MANAGER ERROR***\nError occurred while attemptin to email plots.\n')
-            try:
-                if len(self._linked_plots) and self._send_notifications: #Don't send empty emails
-                    self.email_plot_dictionary(self._linked_plots)
-            except Exception as e:
-                print('\n***PLUGIN MANAGER ERROR***\nError occurred while attempting to email linked plots.\n')
+        try:
+            if 'evaluate_tests' in self.used_plugins and self._send_notifications:
+                for test in self.tests:
+                    if hasattr(test, '_test_results'):
+                        self._test_results_str+=str(test._test_results)
+                        if not test._test_results:
+                            self.failed_tests[test.get_name()] = ''
+                        if test._is_crashed:
+                             self.failed_tests[test.get_name()] = test._crash_info
+                if len(self.failed_tests):
+                    self._test_results_str+='\nThe following tests failed:\n'
+                    for failed_test in self.failed_tests.keys():
+                        self._test_results_str+=f'{failed_test}\n'
+                        if len(self.failed_tests[failed_test]):
+                            self._test_results_str+=f'{self.failed_tests[failed_test]}\n'
+                else:
+                    self._test_results_str+='\n\nAll tests passed!\n\n'
+                self.notify(self._test_results_str, subject='Test Results')
+        except Exception as e:
+            traceback.print_exc()
+            print('\n***PLUGIN MANAGER ERROR***\nError occurred while attempting to email test results.\n')
+        try:
+            if len(self._plots) and self._send_notifications: #Don't send empty emails
+                self.email_plots(self._plots)
+        except Exception as e:
+            traceback.print_exc()
+            print ('\n***PLUGIN MANAGER ERROR***\nError occurred while attemptin to email plots.\n')
+        try:
+            if len(self._linked_plots) and self._send_notifications: #Don't send empty emails
+                self.email_plot_dictionary(self._linked_plots)
+        except Exception as e:
+            traceback.print_exc()
+            print('\n***PLUGIN MANAGER ERROR***\nError occurred while attempting to email linked plots.\n')
 
 
     def add_instrument_channels(self):
@@ -243,7 +264,7 @@ class Plugin_Manager():
             subject - str. Default None. The subject given to any email sent. No affect on texts.
             attachment filenames - list. Default empty list. A list of strings denoting the names of files that will be attached to any emails sent.
             attachment_MIMEParts - list. Default empty list. A list of MIME (Multipurpose Internet Mail Extensions) objects that will be added to the body of any email sent.'''
-        if 'notifications' in self.used_plugins:
+        if 'notifications' in self.used_plugins and self.debug is False:
             for signal_type in self.notification_targets:
                 if signal_type == 'emails':
                     for email_address in self.notification_targets['emails']:
@@ -276,7 +297,17 @@ class Plugin_Manager():
     def _find_notifications(self, project_path):
         self._notification_functions = []
         self.notification_targets = {'emails':[], 'texts':[]}
+        found_both = 0
         for (dirpath, dirnames, filenames) in os.walk(project_path):
+            if 'always_notify.py' in filenames:
+                globalnotificationpath = dirpath.replace(os.sep, '.')
+                globalnotificationpath = globalnotificationpath[globalnotificationpath.index(project_path.split(os.sep)[-1]):]
+                module = importlib.import_module(name=globalnotificationpath+f'.{self.operator}', package=None)
+                for x in ['emails','texts']:
+                    self.notification_targets[x].append(module.get_notification_targets()[x])
+                found_both+=1
+                if found_both==2:
+                    break
             if self.operator+'.py' in filenames: 
                 usernotificationpath = dirpath.replace(os.sep, '.')
                 usernotificationpath = usernotificationpath[usernotificationpath.index(project_path.split(os.sep)[-1]):]
@@ -285,7 +316,9 @@ class Plugin_Manager():
                     module.add_notifications_to_test_manager(test_manager=self)
                 if hasattr(module, 'get_notification_targets'):
                     self.notification_targets = module.get_notification_targets()
-                break
+                found_both+=1
+                if found_both==2:
+                    break
 
     def add_notification(self, fn):
         '''Add a function that will be run whenever a notification is sent. Arguments for the provided function are either the standard for lab_utils.communications.email.send(self, body, subject=None, attachment_filenames=[], attachment_MIMEParts=[]) or a simple text string.'''
@@ -452,6 +485,7 @@ class Plugin_Manager():
             temperatures (list): What values will be written to the temp_control_channel.'''
             # debug (Boolean): This will be passed on to the script and can be used to trigger shorter loops or fewer conditions under which to gather data to verify script completeness.'''
         try:
+            far_enough = False
             self.master = master()
             self.add_instrument_channels()
             self.all_benches = []
@@ -495,6 +529,7 @@ class Plugin_Manager():
                         try:
                             # test.test_timer.resume_timer()
                             self.startup()
+                            far_enough = True
                             test._reconfigure()
                             print_banner(f'{test.get_name()} Collecting. . .')
                             test.collect()
@@ -506,11 +541,12 @@ class Plugin_Manager():
                             print(test._crash_info)
                             self.notify(test._crash_info, subject='CRASHED!!!')
                         self.cleanup()
-                self.shutdown()
             else:
                 assert self.temperature_channel != None
                 for temp in temperatures:
                     print_banner(f'Setting temperature to {temp}')
+                    summary_msg += f"\nSetting temperature to {temp}°C\n"
+                    self.notify(f'{self.operator} on {self.thismachine}\nSetting temperature to {temp}', subject='Next Temperature')
                     self.temperature_channel.write(temp)
                     for test in self.tests:
                         if not test._is_crashed:
@@ -518,6 +554,7 @@ class Plugin_Manager():
                                 print_banner(f'Starting {test.get_name()} at {temp}C')
                                 # test.test_timer.resume_timer()
                                 self.startup()
+                                far_enough = True
                                 test._reconfigure()
                                 test.collect()
                                 test._restore()
@@ -531,14 +568,15 @@ class Plugin_Manager():
                     if all([x._is_crashed for x in self.tests]):
                         print_banner('All tests have crashed. Skipping remaining temperatures.')
                         break
-                self.shutdown()
+            self.shutdown()
         except Exception as e:
             traceback.print_exc()
             for test in self.tests:
                 test._is_crashed = True
             try:
-                self.cleanup()
-                self.shutdown()
+                if far_enough:
+                    self.cleanup()
+                    self.shutdown()
             except AttributeError as e:
                 # Didn't get far enough to populate the bench before crashing.
                 pass
@@ -622,6 +660,7 @@ class Plugin_Manager():
         reset_tn = False
         if test_list is None:
             test_list = self.tests
+        self.failed_tests = {}
         for test in test_list:
             if not test._skip_eval and not test._is_crashed:
                 if database is None:
