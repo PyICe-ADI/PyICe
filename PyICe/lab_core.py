@@ -351,7 +351,11 @@ class channel(delegator):
         return value
     def is_changed(self):
         '''returns boolean status of whether channel value is different from previously read/written value (once per change)'''
-        changed = (self.cached_value != self.previous_cached_value)
+        try:
+            changed = (self.cached_value != self.previous_cached_value)
+        except ValueError as e:
+            #if the before and after values aren't even sensibly comparable, they're certainly not the same. Ex Numpy Arrays of dissimilar length.
+            changed = True
         try:
             if changed:
                 if not self._change_detected:
