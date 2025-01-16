@@ -336,7 +336,11 @@ class channel(delegator):
         '''private method to set channel cached value without actualy _write call or any checking for writability, limits, etc.'''
         self._previous_value = self._value
         self._value = value
-        changed = (self._value != self._previous_value)
+        try:
+            changed = (self._value != self._previous_value)
+        except ValueError as e:
+            #if the before and after values aren't even sensibly comparable, they're certainly not the same. Ex Numpy Arrays of dissimilar length.
+            changed = True
         try:
             if changed:
                 self._change_detected = False
