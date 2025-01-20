@@ -232,7 +232,7 @@ class Test_Results(generic_results):
             for cond_res in self.factored():
                 for line in str(cond_res).splitlines():
                     resp += f'\t\t{line}\n'
-            resp += f'{self.name} summary {"PASS" if self else "FAIL"}.\n'
+            resp += f'{self.name} summary {"PASS" if self else "FAIL"}.\n\n'
             return resp
         def _min(self):
             if not len(self):
