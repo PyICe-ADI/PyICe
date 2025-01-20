@@ -252,7 +252,7 @@ class agilent_3034a(oscilloscope):
         self.add_channel_acquire_type(name=f"{prefix}_acquire_type")
         self.add_channel_acquire_count(name=f"{prefix}_acquire_count")
 
-    def add_channel_timebase(self,name):
+    def add_channel_timebase(self, name):
         def compute_x_points(self):
             '''Data conversion:
             voltage = [(data value - yreference) * yincrement] + yorigin
@@ -1107,14 +1107,8 @@ class agilent_3034a(oscilloscope):
         
     def add_channel_meas_vaverage(self, name, number):
         def _get_vaverage_measurement(number):
-            print("\n\nSteve, figure out the time scale here and make the delay appropriatre \n\n.")
-            breakpoint()
-            #
-            #
-            self.delay(1)# TODO, HACK! should probably be set based on timebase!!!??
-            #
-            #
             scope_was_not_stopped = not self.scope_stopped()
+            self.delay(0.1) # Hack!!! - give the screen time to update, measurement is screen centric? How much time is enough?
             if scope_was_not_stopped: self._set_runmode('STOP')
             result = float(self.get_interface().ask(f":MEASure:VAVerage? CHANnel{number}"))
             if scope_was_not_stopped: self._set_runmode('RUN')
