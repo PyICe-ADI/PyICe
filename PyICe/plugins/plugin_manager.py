@@ -25,28 +25,16 @@ class Callback_logger(logger):
         return readings
 
 class Plugin_Manager():
-    def __init__(self, scratch_folder='scratch'):
+    def __init__(self, scratch_folder='scratch', settings={}):
         self.tests = []
         self.operator = getpass.getuser().lower()
         self.thismachine = socket.gethostname().replace("-","_").split(".")[0]
         self.scratch_folder = scratch_folder
-
-    def find_plugins(self, a_test):
-        '''This is called the first time a test is added to the plugin manager. An instance of a test is needed to locate the project path. This facilitates users starting from an individual test and getting all the chosen plugins.'''
-        for (dirpath, dirnames, filenames) in os.walk(a_test._project_path):
-            if 'plugins.json' in filenames: 
-                pluginpath = dirpath.replace(os.sep, '.')
-                pluginpath = pluginpath[pluginpath.index(a_test._project_path.split(os.sep)[-1]):]
-                with open(dirpath+os.sep+'plugins.json') as f:
-                    self.used_plugins = json.load(f)
-                if self.verbose:
-                    if self.used_plugins:
-                        plugin_str=[f'PyICe Plugin Manager, plugins found:']
-                        for plugin in self.used_plugins:
-                            plugin_str.append(f'"{plugin}"')
-                        print_banner(*plugin_str)
-        self._send_notifications = "notifications" in self.used_plugins
+        for attr in settings:
+            setattr(self, attr, settings[attr])
+        self._send_notifications = "notifications" in self.plugins
         if self._send_notifications:
+            self._find_notifications(self.project_path)
             try:
                 import cairosvg
                 self._cairosvg = cairosvg
@@ -61,25 +49,13 @@ class Plugin_Manager():
         a_test._debug = debug
         self.tests.append(a_test)
         a_test.pm=self
+        a_test.verbose = self.verbose
         a_test._skip_plot=skip_plot
         a_test._skip_eval=skip_eval
         (a_test._module_path, file) = os.path.split(inspect.getsourcefile(type(a_test)))
         a_test._name = a_test._module_path.split(os.sep)[-1]
         os.makedirs(os.path.join(a_test._module_path,self.scratch_folder), exist_ok=True)
-        try:
-            a_test._project_path = a_test._module_path[:a_test._module_path.index(a_test.project_folder_name)+len(a_test.project_folder_name)]
-        except AttributeError as e:
-            print_banner("PyICe TEST_MANAGER: User's test template requires an attribute 'project_folder_name' that names the project's topmost folder in order for this PyICe workflow to be able to find the project.")
         a_test._db_file = os.path.join(a_test._module_path, self.scratch_folder, 'data_log.sqlite')
-        if len(self.tests) == 1:
-            self._project_path = a_test._project_path
-            try:
-                self.verbose = a_test.get_verbose()
-            except Exception:
-                self.verbose = True
-            self.find_plugins(a_test)
-            if 'notifications' in self.used_plugins:
-                self._find_notifications(a_test._project_path)
         a_test._is_crashed = False
 
     def run(self, temperatures=[]):
@@ -87,11 +63,11 @@ class Plugin_Manager():
         args: temperatures- list. The list consists of values that will be set to the 'temp_control_channel' assigned by the instrument drivers. Default value is an empty list.'''
         self.collect(temperatures)
         self.plot()
-        if 'evaluate_tests' in self.used_plugins:
+        if 'evaluate_tests' in self.plugins:
             self.evaluate()
-        if 'correlate_tests' in self.used_plugins:
+        if 'correlate_tests' in self.plugins:
             self.correlate()
-        if 'archive' in self.used_plugins:
+        if 'archive' in self.plugins:
             self._archive()
         for test in self.tests:
             try:
@@ -128,21 +104,21 @@ class Plugin_Manager():
         self.shutdown_fns = []
         self.temperature_channel = None
         self.special_channel_actions = {}
-        for (dirpath1, dirnames, filenames) in os.walk(self._project_path):
-            if 'benches' not in dirpath1 or self._project_path not in dirpath1: continue
+        for (dirpath1, dirnames, filenames) in os.walk(self.project_path):
+            if 'benches' not in dirpath1 or self.project_path not in dirpath1: continue
             try:
                 benchpath = dirpath1.replace(os.sep, '.')
-                benchpath = benchpath[benchpath.index(self._project_path.split(os.sep)[-1]):]
+                benchpath = benchpath[benchpath.index(self.project_path.split(os.sep)[-1]):]
                 module = importlib.import_module(name=benchpath+'.'+self.thismachine, package=None)
                 break
             except ImportError as e:
                 print(e)
                 raise Exception(f"Can't find bench file {self.thismachine}. Note that dashes must be replaced with underscores.")
         self.interfaces = module.get_interfaces()
-        for (dirpath, dirnames, filenames) in os.walk(self._project_path):
+        for (dirpath, dirnames, filenames) in os.walk(self.project_path):
             if 'hardware_drivers' not in dirpath: continue
             driverpath = dirpath.replace(os.sep, '.')
-            driverpath = driverpath[driverpath.index(self._project_path.split(os.sep)[-1]):]
+            driverpath = driverpath[driverpath.index(self.project_path.split(os.sep)[-1]):]
             for driver in filenames:
                 driver_mod = importlib.import_module(name=driverpath+'.'+driver[:-3], package=None)
                 instrument_dict = driver_mod.populate(self)
@@ -174,6 +150,10 @@ class Plugin_Manager():
             self.temperature_channel = self.master.add_channel_dummy("tdegc")
             self.temperature_channel.write(25)
 
+    def _add_components(self):
+        for component in self.component_list:
+            self.test_components.add_component(component)
+
     def _create_logger(self, test):
         '''Each test add to the plugin manager will have its own logger with which it shall store the data collected by their collect method. The channels will be determined by the drivers added to the driver, and a sqlite database and table will be automatically created and linked to the tests.'''
         test._logger = Callback_logger(database=test.get_db_file(), special_channel_actions=self.special_channel_actions, test=test)
@@ -181,7 +161,7 @@ class Plugin_Manager():
         if hasattr(test, 'customize'):
             test.customize()
         test._logger.new_table(table_name=test.get_name(), replace_table=True)
-        test._logger.write_html(file_name=test.get_module_path()+os.sep+'scratch'+os.sep+test.get_project_folder_name()+'.html')
+        test._logger.write_html(file_name=f"{test.get_module_path()}{os.sep}scratch{os.sep}{self.project_folder_name}.html")
 
     def startup(self):
         for func in self.startup_fns:
@@ -243,7 +223,7 @@ class Plugin_Manager():
             subject - str. Default None. The subject given to any email sent. No affect on texts.
             attachment filenames - list. Default empty list. A list of strings denoting the names of files that will be attached to any emails sent.
             attachment_MIMEParts - list. Default empty list. A list of MIME (Multipurpose Internet Mail Extensions) objects that will be added to the body of any email sent.'''
-        if 'notifications' in self.used_plugins:
+        if 'notifications' in self.plugins:
             for signal_type in self.notification_targets:
                 if signal_type == 'emails':
                     for email_address in self.notification_targets['emails']:
@@ -345,18 +325,15 @@ class Plugin_Manager():
     ###
     # TRACEABILITY METHODS
     ###
+    def _populate_traceability_data(self):
+        self._traceabilities = Traceability_items(self.tests[0])
+        self._traceabilities.populate_traceability_data(self.traceability_items)
     def _create_metalogger(self, test):
         '''Called from the plugin_master if the 'traceability' plugin was included in the plugin_registry, this creates a master and logger separate from the test data logger, and populates them using user provided metadata gathering functions.'''
         _master = master()
         test._metalogger = logger(database=test.get_db_file())
         test._metalogger.add(_master)
-        test._traceabilities = Traceability_items(test)
-        if not hasattr(self,'_traceabilities'):
-            test._traceabilities.populate_traceability_data(test.traceability_items)
-            self._traceabilities = test._traceabilities.get_traceability_data().copy()
-        else:
-            test._traceabilities.trace_data = self._traceabilities.copy()
-        test._traceabilities.add_data_to_metalogger(test._metalogger)
+        self._traceabilities.add_data_to_metalogger(test._metalogger)
     def _metalog(self, test):
         '''This is separate from the _create_metalogger method in order to give other plugins the opportunity to add to the metalogger before the channel list is commited to a table.'''
         test._metalogger.new_table(table_name=test.get_name() + "_metadata", replace_table=True)
@@ -393,7 +370,7 @@ class Plugin_Manager():
             db_dest_file = archiver.compute_db_destination(this_archive_folder)
             archiver.copy_table(db_source_table=test.get_name(), db_dest_table=test.get_name(), db_dest_file=db_dest_file)
             test._logger.copy_table(old_table=test.get_name(), new_table=test.get_name()+'_'+archive_folder)
-            if 'traceability' in self.used_plugins:
+            if 'traceability' in self.plugins:
                 archiver.copy_table(db_source_table=test.get_name()+'_metadata', db_dest_table=test.get_name()+'_metadata', db_dest_file=db_dest_file)
                 test._logger.copy_table(old_table=test.get_name()+'_metadata', new_table=test.get_name()+'_'+archive_folder+'_metadata')
             archived_tables.append((test, test.get_name(), db_dest_file))
@@ -403,7 +380,7 @@ class Plugin_Manager():
             for (test, db_table, db_file) in archived_tables:
                 if hasattr(test, 'plot'):
                     dest_file = os.path.join(os.path.dirname(db_file), f"replot_data.py")
-                    import_str = test._module_path[test._module_path.index(test.project_folder_name):].replace(os.sep,'.')
+                    import_str = test._module_path[test._module_path.index(self.project_folder_name):].replace(os.sep,'.')
                     plot_script_src = "if __name__ == '__main__':\n"
                     plot_script_src += f"    from PyICe.plugins.plugin_manager import Plugin_Manager\n"
                     plot_script_src += f"    from {import_str}.test import Test\n"
@@ -419,9 +396,9 @@ class Plugin_Manager():
                         print(e)
                     with contextlib.redirect_stdout(io.StringIO()):
                         self.plot(database=os.path.relpath(db_file), table_name=db_table, test_list=[test])
-                if 'evaluate_tests' in self.used_plugins:
+                if 'evaluate_tests' in self.plugins:
                     dest_file = os.path.join(os.path.dirname(db_file), f"reeval_data.py")
-                    import_str = test._module_path[test._module_path.index(test.project_folder_name):].replace(os.sep,'.')
+                    import_str = test._module_path[test._module_path.index(self.project_folder_name):].replace(os.sep,'.')
                     plot_script_src = "if __name__ == '__main__':\n"
                     plot_script_src += f"    from PyICe.plugins.plugin_manager import Plugin_Manager\n"
                     plot_script_src += f"    from {import_str}.test import Test\n"
@@ -437,7 +414,7 @@ class Plugin_Manager():
                         print(e)
                     with contextlib.redirect_stdout(io.StringIO()):
                         self.evaluate(database=os.path.relpath(db_file), table_name=db_table, test_list=[test])
-                if 'bench_image_creation' in self.used_plugins:
+                if 'bench_image_creation' in self.plugins:
                     self.visualizer.generate(file_base_name="Bench_Config", prune=True, file_format='svg', engine='neato', file_location=os.path.dirname(db_file))
 
                 arch_plot_scripts.append(dest_file)
@@ -454,37 +431,38 @@ class Plugin_Manager():
         try:
             self.master = master()
             self.add_instrument_channels()
+            if 'bench_config_management' in self.plugins:
+                self.test_components = component_collection()
+                self._add_components()
             self.all_benches = []
             for test in self.tests:
                 test._temperatures = temperatures
                 test._channel_reconfiguration_settings=[]
                 self._create_logger(test)
-                if 'bench_config_management' in self.used_plugins:
-                    self.test_components = component_collection()
+                if 'bench_config_management' in self.plugins:
                     self.test_connections = connection_collection(name=test.get_name())
                     try:
                         test._declare_bench_connections()
                     except Exception as e:
                         raise("TEST_MANAGER ERROR: This project indicated bench configuration data would be stored. Test template requires a _declare_bench_connections method that gathers the data.")
                     self.all_benches.append(self.test_connections)
-            if 'bench_config_management' in self.used_plugins:
+            if 'bench_config_management' in self.plugins:
                 self.all_connections = connection_collection.distill(self.all_benches)
-            for test in self.tests:
-                if 'traceability' in self.used_plugins:
+            if 'traceability' in self.plugins:
+                self._populate_traceability_data()
+                if 'bench_config_management' in self.plugins:
+                    self._traceabilities.get_traceability_data()['test_bench_connections'] = self.all_connections.get_readable_connections()
+                    self._traceabilities.get_traceability_data()['blocked_bench_terminals'] = lambda: self.all_connections.get_readable_blocked_terminals()
+                for test in self.tests:
                     self._create_metalogger(test)
-                    if 'bench_config_management' in self.used_plugins:
-                        test._traceabilities.get_traceability_data()['test_bench_connections'] = self.all_connections.get_readable_connections()
-                        test._metalogger.add_channel_dummy('test_bench_connections')
+                    if 'bench_config_management' in self.plugins:
                         test._metalogger.write('test_bench_connections', self.all_connections.get_readable_connections())
-                        
-                        test._traceabilities.get_traceability_data()['blocked_bench_terminals'] = lambda: self.all_connections.get_readable_blocked_terminals()
-                        test._metalogger.add_channel_dummy('blocked_bench_terminals')
                         test._metalogger.write('blocked_bench_terminals', self.all_connections.get_readable_blocked_terminals())
                     self._metalog(test)
-            if 'bench_config_management' in self.used_plugins and self.verbose:
+            if 'bench_config_management' in self.plugins and self.verbose:
                 print(self.all_connections.print_connections())
-            if 'bench_image_creation' in self.used_plugins:
-                self.visualizer = bench_visualizer.visualizer(connections=self.all_connections.connections, locations=test.get_bench_image_locations())
+            if 'bench_image_creation' in self.plugins:
+                self.visualizer = bench_visualizer.visualizer(connections=self.all_connections.connections, locations=self.bench_image_locations)
                 for test in self.tests:
                     self.visualizer.generate(file_base_name="Bench_Config", prune=True, file_format='svg', engine='neato', file_location=test._module_path+os.sep+'scratch')
             summary_msg = f'{self.operator} on {self.thismachine}\n'
@@ -592,7 +570,7 @@ class Plugin_Manager():
                     test.plot()
                 except Exception as e:
                     # Don't stop other test's plotting or archiving because of a plotting error.
-                    print_banner(e)
+                    traceback.print_exc()
                 if isinstance(test.plot_list, (LTC_plot.plot, LTC_plot.Page)):
                     test.plot_list = [self._convert_svg(test.plot_list)]
                 else:
