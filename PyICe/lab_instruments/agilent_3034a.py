@@ -46,44 +46,6 @@ class agilent_3034a(oscilloscope):
         '''From the Keysight Programmer's Guide regarding Status Reporting (Chapter 37) pages 205 and 1114.'''
         return (int(self.get_interface().ask(":OPERegister:CONDition?")) & 1<<3) != 1<<3
 
-    @deprecated(version='47', reason="You are using old scope driver methods.  Consider updating to new scope binding.  See https://confluence.analog.com/display/stowe/Preferred+Practices")
-    def add_Ychannel(self, name, number):
-        '''Add named channel to instrument. num is 1-4.'''
-        assert number in range(1,5)
-        self.Ychannels[number]                          = {}
-        self.Ychannels[number]["main_channel"]          = channel(name, read_function=lambda: self._read_scope_channel(number))
-        self.Ychannels[number]["probe_gain_channel"]    = self.add_channel_probe_gain(name=f"{name}_probe_gain", number=number)
-        self.Ychannels[number]["BWLimit_channel"]       = self.add_channel_BWLimit(name=f"{name}_BWlimit", number=number)
-        self.Ychannels[number]["invert_channel"]        = self.add_channel_invert(name=f"{name}_invert", number=number)
-        self.Ychannels[number]["Yrange_channel"]        = self.add_channel_Yrange(name=f"{name}_Yrange", number=number)
-        self.Ychannels[number]["Yoffset_channel"]       = self.add_channel_Yoffset(name=f"{name}_Yoffset", number=number)
-        self.Ychannels[number]["Yrange_readback"]       = self.add_channel_Yrange_readback(name=f"{name}_Yrange_readback", number=number)
-        self.Ychannels[number]["Yoffset_readback"]      = self.add_channel_Yoffset_readback(name=f"{name}_Yoffset_readback", number=number)
-        self.Ychannels[number]["impedance_channel"]     = self.add_channel_impedance(name=f"{name}_Impedance", number=number)
-        self.Ychannels[number]["units_channel"]         = self.add_channel_units(name=f"{name}_units", number=number)
-        self.Ychannels[number]["coupling_channel"]      = self.add_channel_coupling(name=f"{name}_coupling", number=number)
-        self.Ychannels[number]["display_channel"]       = self.add_channel_display(name=f"{name}_display", number=number)
-        self.Ychannels[number]["main_channel"].set_delegator(self)
-        main_channel = self._add_channel(self.Ychannels[number]["main_channel"])
-        main_channel.set_attribute('dependent_physical_channels',(number,))
-        self.Ychannels[number]["display_channel"].write(True) # legacy script support
-        return self.Ychannels
-
-    @deprecated(version='47', reason="You are using old scope driver methods. Consider updating to new scope binding.")
-    def purge_all_Xchannels(self):
-        for channel in self.Xchannels:
-            self.remove_channel(self.Xchannels[channel])
-
-    @deprecated(version='47', reason="You are using old scope driver methods. Consider updating to new scope binding.")
-    def purge_all_Ychannels(self):
-        remove_channels = []
-        for channel_number in self.Ychannels:
-            for channel_name in self.Ychannels[channel_number]:
-                self.remove_channel(self.Ychannels[channel_number][channel_name])
-                remove_channels.append({"channel_number":channel_number, "channel_name":channel_name})
-        for remove_channel in remove_channels:                                                      # This can't be done in the loop
-            del self.Ychannels[remove_channel["channel_number"]][remove_channel["channel_name"]]    # Iterator size not allowed to change dynamically.
-
     def disable_all_Ychannels(self):
         for number in [1,2,3,4]:
             self.channel_display(number=number, value=False)
@@ -100,7 +62,7 @@ class agilent_3034a(oscilloscope):
             self.channel_display(number=channel_number, value=False)
 
     def resync_scope(self):
-        '''call at the top of collect to reconfigure physical instrument to the test's used channels.  Resets the scope.
+        '''call at the top of collect to reconfigure physical instrument to the test's used channels. Resets the scope.
         Requires every single oscilloscope channel be loaded with the channel attribute 'dependent_physical_channels', in turn
         containing a tuple of all channels required to be turned on. (None,) is acceptable for timebase channels, etc.'''
         self.get_interface().clear()  # Clear command in \deps\usbtmc\usmtmc.py. Helps if the scope is not responding because it was asked about data that isn't there because it didn't trigger.
@@ -126,65 +88,6 @@ class agilent_3034a(oscilloscope):
         for channel in scope_channels:
             self.add_Ychannel_waveform(name=channel, number=scope_channels[channel])
         self.add_all_timebase_trigger_aquisition_channels(prefix=prefix)
-
-    @deprecated(version='47', reason="You are using old scope driver methods. Consider updating to new scope binding. See https://confluence.analog.com/display/stowe/Preferred+Practices")
-    def add_Xchannels(self, prefix):
-        self.Xchannels["Xrange"]                        = self.add_channel_Xrange(name=f"{prefix}_Xrange")
-        self.Xchannels["Xposition"]                     = self.add_channel_Xposition(name=f"{prefix}_Xposition")
-        self.Xchannels["Xreference"]                    = self.add_channel_Xreference(name=f"{prefix}_Xreference")
-        self.Xchannels["Xrange_readback"]               = self.add_channel_Xrange_readback(name=f"{prefix}_Xrange_readback")
-        self.Xchannels["Xposition_readback"]            = self.add_channel_Xposition_readback(name=f"{prefix}_Xposition_readback")
-        self.Xchannels["Xreference_readback"]           = self.add_channel_Xreference_readback(name=f"{prefix}_Xreference_readback")
-        self.Xchannels["triggerlevel"]                  = self.add_channel_triggerlevel(name=f"{prefix}_trigger_level")
-        self.Xchannels["triggermode"]                   = self.add_channel_triggermode(name=f"{prefix}_trigger_mode")
-        self.Xchannels["triggerslope"]                  = self.add_channel_triggerslope(name=f"{prefix}_trigger_slope")
-        self.Xchannels["triggersource"]                 = self.add_channel_triggersource(name=f"{prefix}_trigger_source")
-        self.Xchannels["triggertype"]                   = self.add_channel_triggertype(name=f"{prefix}_trigger_type")
-        self.Xchannels["acquire_type"]                  = self.add_channel_acquire_type(name=f"{prefix}_acquire_type")
-        self.Xchannels["acquire_count"]                 = self.add_channel_acquire_count(name=f"{prefix}_acquire_count")
-        self.Xchannels["pointcount"]                    = self.add_channel_pointcount(name=f"{prefix}_points_count")
-        self.Xchannels["pointcount_readback"]           = self.add_channel_pointcount_readback(name=f"{prefix}_points_count_readback")
-        self.Xchannels["runmode"]                       = self.add_channel_runmode(name=f"{prefix}_run_mode")
-        self.Xchannels["time"]                          = self.add_channel_time(name=f"{prefix}_timedata")
-        self.Xchannels["trigger_glitch_range"]          = self.add_channel_trigger_glitch_range(name=f"{prefix}_glitch_range")
-        self.Xchannels["trigger_glitch_level"]          = self.add_channel_trigger_glitch_level(name=f"{prefix}_glitch_level")
-        self.Xchannels["trigger_glitch_source"]         = self.add_channel_trigger_glitch_source(name=f"{prefix}_glitch_source")
-        self.Xchannels["trigger_glitch_lessthan"]       = self.add_channel_trigger_glitch_lessthan(name=f"{prefix}_glitch_lessthan")
-        self.Xchannels["trigger_glitch_polarity"]       = self.add_channel_trigger_glitch_polarity(name=f"{prefix}_glitch_polarity")
-        self.Xchannels["trigger_glitch_qualifier"]      = self.add_channel_trigger_glitch_qualifier(name=f"{prefix}_glitch_qualifier")
-        self.Xchannels["trigger_glitch_greaterthan"]    = self.add_channel_trigger_glitch_greaterthan(name=f"{prefix}_glitch_greaterthan")
-        self.Xchannels["trigger_runt_polarity"]         = self.add_channel_trigger_runt_polarity(name=f"{prefix}_runt_polarity")
-        self.Xchannels["trigger_runt_qualifier"]        = self.add_channel_trigger_runt_qualifier(name=f"{prefix}_runt_qualifier")
-        self.Xchannels["trigger_runt_source"]           = self.add_channel_trigger_runt_source(name=f"{prefix}_runt_source")
-        self.Xchannels["trigger_runt_time"]             = self.add_channel_trigger_runt_time(name=f"{prefix}_runt_time")
-        self.Xchannels["trigger_runt_level_high"]       = self.add_channel_trigger_runt_level_high(name=f"{prefix}_trigger_runt_level_high")
-        self.Xchannels["trigger_runt_level_low"]        = self.add_channel_trigger_runt_level_low(name=f"{prefix}_trigger_runt_level_low")
-        self.Xchannels["trigger_HFReject"]              = self.add_channel_trigger_HFReject(name=f"{prefix}_trigger_HFReject")
-        return self.Xchannels
-
-    @deprecated(version='47', reason="You are using old scope driver methods. Consider updating to new scope binding. See https://confluence.analog.com/display/stowe/Preferred+Practices")
-    def get_Xchannels(self):
-        return self.Xchannels
-
-    @deprecated(version='47', reason="You are using old scope driver methods. Consider updating to new scope binding. See https://confluence.analog.com/display/stowe/Preferred+Practices")
-    def add_channel_time(self,name):
-        def compute_x_points(self):
-            '''Data conversion:
-            voltage = [(data value - yreference) * yincrement] + yorigin
-            time = [(data point number - xreference) * xincrement] + xorigin'''
-            xpoints = [(x - self.time_info["reference"]) * self.time_info["increment"] + self.time_info["origin"] for x in range(self.time_info["points"])]
-            return xpoints
-        time_channel = channel(name, read_function=lambda: compute_x_points(self))
-        time_channel.set_delegator(self)
-        self._add_channel(time_channel)
-        time_channel.set_attribute('dependent_physical_channels',(None,))
-        def get_time_info(self):
-            return self.time_info
-        time_info = channel(name + "_info", read_function=lambda: get_time_info(self))
-        time_info.set_delegator(self)
-        self._add_channel(time_info)
-        time_info.set_attribute('dependent_physical_channels',(None,))
-        return time_channel
 
     def add_Ychannel_waveform(self, name, number):
         '''Add named waveform channels to instrument. num is 1-4.  Add all control and readback channels by calling add_Ycontrol_Yreadback_channels()'''
@@ -336,23 +239,13 @@ class agilent_3034a(oscilloscope):
 
     def _read_scope_channel(self, scope_channel_number):
         ''' 
-        return list of y-axis points for named channel
-        list will be datalogged by logger as a string in a single cell in the table
+        Return list of y-axis points for named channel.
+        List will be datalogged by logger as a string in a single cell in the table.
         trigger=False can by used to suppress acquisition of new data by the instrument so that
         data from a single trigger may be retrieved from each of the four channels in turn by read_channels()
         '''
         self.get_interface().write(f':WAVeform:SOURce CHANnel{scope_channel_number}')
         return self.fetch_waveform_data()
-        # self.get_interface().write(':WAVeform:DATA?')
-        # raw_data = self.get_interface().read_raw()
-        # preamble = self.get_interface().ask(':WAVeform:PREamble?')
-
-        # #Example: "#800027579 4.03266e-002, 1.25647e-004, 1.25647e-004, 1.25647e-004,......."
-        # raw_data = raw_data[10:] #remove header
-        # raw_data = raw_data.decode().split(",")
-        # data = [float(x) for x in raw_data]
-        # #TODO - implement binary transfer if speed becomes a problem
-        # return data
 
     def read_delegated_channel_list(self, channels):
         if self.force_trigger:
@@ -1108,7 +1001,7 @@ class agilent_3034a(oscilloscope):
     def add_channel_meas_vaverage(self, name, number):
         def _get_vaverage_measurement(number):
             scope_was_not_stopped = not self.scope_stopped()
-            self.delay(0.1) # Hack!!! - give the screen time to update, measurement is screen centric? How much time is enough?
+            self.delay(0.1 +  self.get_time_base() * 10 * 1.2) # Give the screen time to update, measurement is screen centric!
             if scope_was_not_stopped: self._set_runmode('STOP')
             result = float(self.get_interface().ask(f":MEASure:VAVerage? CHANnel{number}"))
             if scope_was_not_stopped: self._set_runmode('RUN')
@@ -1122,3 +1015,106 @@ class agilent_3034a(oscilloscope):
         self.get_interface().write(":SAVE:IMAGe:FORMat BMP8bit")
         self.get_interface().write(f':SAVE:IMAGe:STARt "{file_name}"')
         self.delay()
+        
+#############################################################################################################################
+#                                                                                                                           #
+#                             BONE YARD                                                                                     #
+#                                                                                                                           #
+#############################################################################################################################
+
+    @deprecated(version='47', reason="You are using old scope driver methods.  Consider updating to new scope binding.  See https://confluence.analog.com/display/stowe/Preferred+Practices")
+    def add_Ychannel(self, name, number):
+        '''Add named channel to instrument. num is 1-4.'''
+        assert number in range(1,5)
+        self.Ychannels[number]                          = {}
+        self.Ychannels[number]["main_channel"]          = channel(name, read_function=lambda: self._read_scope_channel(number))
+        self.Ychannels[number]["probe_gain_channel"]    = self.add_channel_probe_gain(name=f"{name}_probe_gain", number=number)
+        self.Ychannels[number]["BWLimit_channel"]       = self.add_channel_BWLimit(name=f"{name}_BWlimit", number=number)
+        self.Ychannels[number]["invert_channel"]        = self.add_channel_invert(name=f"{name}_invert", number=number)
+        self.Ychannels[number]["Yrange_channel"]        = self.add_channel_Yrange(name=f"{name}_Yrange", number=number)
+        self.Ychannels[number]["Yoffset_channel"]       = self.add_channel_Yoffset(name=f"{name}_Yoffset", number=number)
+        self.Ychannels[number]["Yrange_readback"]       = self.add_channel_Yrange_readback(name=f"{name}_Yrange_readback", number=number)
+        self.Ychannels[number]["Yoffset_readback"]      = self.add_channel_Yoffset_readback(name=f"{name}_Yoffset_readback", number=number)
+        self.Ychannels[number]["impedance_channel"]     = self.add_channel_impedance(name=f"{name}_Impedance", number=number)
+        self.Ychannels[number]["units_channel"]         = self.add_channel_units(name=f"{name}_units", number=number)
+        self.Ychannels[number]["coupling_channel"]      = self.add_channel_coupling(name=f"{name}_coupling", number=number)
+        self.Ychannels[number]["display_channel"]       = self.add_channel_display(name=f"{name}_display", number=number)
+        self.Ychannels[number]["main_channel"].set_delegator(self)
+        main_channel = self._add_channel(self.Ychannels[number]["main_channel"])
+        main_channel.set_attribute('dependent_physical_channels',(number,))
+        self.Ychannels[number]["display_channel"].write(True) # legacy script support
+        return self.Ychannels
+
+    @deprecated(version='47', reason="You are using old scope driver methods. Consider updating to new scope binding.")
+    def purge_all_Xchannels(self):
+        for channel in self.Xchannels:
+            self.remove_channel(self.Xchannels[channel])
+
+    @deprecated(version='47', reason="You are using old scope driver methods. Consider updating to new scope binding.")
+    def purge_all_Ychannels(self):
+        remove_channels = []
+        for channel_number in self.Ychannels:
+            for channel_name in self.Ychannels[channel_number]:
+                self.remove_channel(self.Ychannels[channel_number][channel_name])
+                remove_channels.append({"channel_number":channel_number, "channel_name":channel_name})
+        for remove_channel in remove_channels:                                                      # This can't be done in the loop
+            del self.Ychannels[remove_channel["channel_number"]][remove_channel["channel_name"]]    # Iterator size not allowed to change dynamically.
+            
+    @deprecated(version='47', reason="You are using old scope driver methods. Consider updating to new scope binding. See https://confluence.analog.com/display/stowe/Preferred+Practices")
+    def add_Xchannels(self, prefix):
+        self.Xchannels["Xrange"]                        = self.add_channel_Xrange(name=f"{prefix}_Xrange")
+        self.Xchannels["Xposition"]                     = self.add_channel_Xposition(name=f"{prefix}_Xposition")
+        self.Xchannels["Xreference"]                    = self.add_channel_Xreference(name=f"{prefix}_Xreference")
+        self.Xchannels["Xrange_readback"]               = self.add_channel_Xrange_readback(name=f"{prefix}_Xrange_readback")
+        self.Xchannels["Xposition_readback"]            = self.add_channel_Xposition_readback(name=f"{prefix}_Xposition_readback")
+        self.Xchannels["Xreference_readback"]           = self.add_channel_Xreference_readback(name=f"{prefix}_Xreference_readback")
+        self.Xchannels["triggerlevel"]                  = self.add_channel_triggerlevel(name=f"{prefix}_trigger_level")
+        self.Xchannels["triggermode"]                   = self.add_channel_triggermode(name=f"{prefix}_trigger_mode")
+        self.Xchannels["triggerslope"]                  = self.add_channel_triggerslope(name=f"{prefix}_trigger_slope")
+        self.Xchannels["triggersource"]                 = self.add_channel_triggersource(name=f"{prefix}_trigger_source")
+        self.Xchannels["triggertype"]                   = self.add_channel_triggertype(name=f"{prefix}_trigger_type")
+        self.Xchannels["acquire_type"]                  = self.add_channel_acquire_type(name=f"{prefix}_acquire_type")
+        self.Xchannels["acquire_count"]                 = self.add_channel_acquire_count(name=f"{prefix}_acquire_count")
+        self.Xchannels["pointcount"]                    = self.add_channel_pointcount(name=f"{prefix}_points_count")
+        self.Xchannels["pointcount_readback"]           = self.add_channel_pointcount_readback(name=f"{prefix}_points_count_readback")
+        self.Xchannels["runmode"]                       = self.add_channel_runmode(name=f"{prefix}_run_mode")
+        self.Xchannels["time"]                          = self.add_channel_time(name=f"{prefix}_timedata")
+        self.Xchannels["trigger_glitch_range"]          = self.add_channel_trigger_glitch_range(name=f"{prefix}_glitch_range")
+        self.Xchannels["trigger_glitch_level"]          = self.add_channel_trigger_glitch_level(name=f"{prefix}_glitch_level")
+        self.Xchannels["trigger_glitch_source"]         = self.add_channel_trigger_glitch_source(name=f"{prefix}_glitch_source")
+        self.Xchannels["trigger_glitch_lessthan"]       = self.add_channel_trigger_glitch_lessthan(name=f"{prefix}_glitch_lessthan")
+        self.Xchannels["trigger_glitch_polarity"]       = self.add_channel_trigger_glitch_polarity(name=f"{prefix}_glitch_polarity")
+        self.Xchannels["trigger_glitch_qualifier"]      = self.add_channel_trigger_glitch_qualifier(name=f"{prefix}_glitch_qualifier")
+        self.Xchannels["trigger_glitch_greaterthan"]    = self.add_channel_trigger_glitch_greaterthan(name=f"{prefix}_glitch_greaterthan")
+        self.Xchannels["trigger_runt_polarity"]         = self.add_channel_trigger_runt_polarity(name=f"{prefix}_runt_polarity")
+        self.Xchannels["trigger_runt_qualifier"]        = self.add_channel_trigger_runt_qualifier(name=f"{prefix}_runt_qualifier")
+        self.Xchannels["trigger_runt_source"]           = self.add_channel_trigger_runt_source(name=f"{prefix}_runt_source")
+        self.Xchannels["trigger_runt_time"]             = self.add_channel_trigger_runt_time(name=f"{prefix}_runt_time")
+        self.Xchannels["trigger_runt_level_high"]       = self.add_channel_trigger_runt_level_high(name=f"{prefix}_trigger_runt_level_high")
+        self.Xchannels["trigger_runt_level_low"]        = self.add_channel_trigger_runt_level_low(name=f"{prefix}_trigger_runt_level_low")
+        self.Xchannels["trigger_HFReject"]              = self.add_channel_trigger_HFReject(name=f"{prefix}_trigger_HFReject")
+        return self.Xchannels
+
+    @deprecated(version='47', reason="You are using old scope driver methods. Consider updating to new scope binding. See https://confluence.analog.com/display/stowe/Preferred+Practices")
+    def get_Xchannels(self):
+        return self.Xchannels
+
+    @deprecated(version='47', reason="You are using old scope driver methods. Consider updating to new scope binding. See https://confluence.analog.com/display/stowe/Preferred+Practices")
+    def add_channel_time(self,name):
+        def compute_x_points(self):
+            '''Data conversion:
+            voltage = [(data value - yreference) * yincrement] + yorigin
+            time = [(data point number - xreference) * xincrement] + xorigin'''
+            xpoints = [(x - self.time_info["reference"]) * self.time_info["increment"] + self.time_info["origin"] for x in range(self.time_info["points"])]
+            return xpoints
+        time_channel = channel(name, read_function=lambda: compute_x_points(self))
+        time_channel.set_delegator(self)
+        self._add_channel(time_channel)
+        time_channel.set_attribute('dependent_physical_channels',(None,))
+        def get_time_info(self):
+            return self.time_info
+        time_info = channel(name + "_info", read_function=lambda: get_time_info(self))
+        time_info.set_delegator(self)
+        self._add_channel(time_info)
+        time_info.set_attribute('dependent_physical_channels',(None,))
+        return time_channel
