@@ -69,22 +69,39 @@ class Plugin_Manager():
             self.correlate()
         if 'archive' in self.plugins:
             self._archive()
-        for test in self.tests:
-            try:
-                if hasattr(test, '_test_results') and test._test_results._test_results:
-                    self.notify(test.get_test_results(), subject='Test Results')
-            except Exception as e:
-                print('\n***PLUGIN MANAGER ERROR***\nError occurred while attempting to email test results.\n')
-            try:
-                if len(self._plots) and self._send_notifications: #Don't send empty emails
-                    self.email_plots(self._plots)
-            except Exception as e:
-                print ('\n***PLUGIN MANAGER ERROR***\nError occurred while attemptin to email plots.\n')
-            try:
-                if len(self._linked_plots) and self._send_notifications: #Don't send empty emails
-                    self.email_plot_dictionary(self._linked_plots)
-            except Exception as e:
-                print('\n***PLUGIN MANAGER ERROR***\nError occurred while attempting to email linked plots.\n')
+        try:
+            if 'evaluate_tests' in self.used_plugins and self._send_notifications:
+                for test in self.tests:
+                    if hasattr(test, '_test_results'):
+                        self._test_results_str+=str(test._test_results)
+                        if not test._test_results:
+                            self.failed_tests[test.get_name()] = ''
+                        if test._is_crashed:
+                             self.failed_tests[test.get_name()] = test._crash_info
+                if len(self.failed_tests):
+                    self._test_results_str+='\nThe following tests failed:\n'
+                    for failed_test in self.failed_tests.keys():
+                        self._test_results_str+=f'{failed_test}\n'
+                        if len(self.failed_tests[failed_test]):
+                            self._test_results_str+=f'{self.failed_tests[failed_test]}\n'
+                else:
+                    self._test_results_str+='\n\nAll tests passed!\n\n'
+                self.notify(self._test_results_str, subject='Test Results')
+        except Exception as e:
+            traceback.print_exc()
+            print('\n***PLUGIN MANAGER ERROR***\nError occurred while attempting to email test results.\n')
+        try:
+            if len(self._plots) and self._send_notifications: #Don't send empty emails
+                self.email_plots(self._plots)
+        except Exception as e:
+            traceback.print_exc()
+            print ('\n***PLUGIN MANAGER ERROR***\nError occurred while attemptin to email plots.\n')
+        try:
+            if len(self._linked_plots) and self._send_notifications: #Don't send empty emails
+                self.email_plot_dictionary(self._linked_plots)
+        except Exception as e:
+            traceback.print_exc()
+            print('\n***PLUGIN MANAGER ERROR***\nError occurred while attempting to email linked plots.\n')
 
 
     def add_instrument_channels(self):
@@ -382,7 +399,7 @@ class Plugin_Manager():
                     dest_file = os.path.join(os.path.dirname(db_file), f"replot_data.py")
                     import_str = test._module_path[test._module_path.index(self.project_folder_name):].replace(os.sep,'.')
                     settings_path = self.project_settings_location.replace(os.sep, '.')[1:-3]
-                    plot_script_src + f"from {self.project_folder_name}.{settings_path} import Project_Settings\n"
+                    plot_script_src = f"from {self.project_folder_name}.{settings_path} import Project_Settings\n"
                     plot_script_src += f"from PyICe.plugins.plugin_manager import Plugin_Manager\n"
                     plot_script_src += f"from {import_str}.test import Test\n"
                     plot_script_src += f"pm = Plugin_Manager(settings=Project_Settings)\n"
@@ -401,7 +418,7 @@ class Plugin_Manager():
                     dest_file = os.path.join(os.path.dirname(db_file), f"reeval_data.py")
                     import_str = test._module_path[test._module_path.index(self.project_folder_name):].replace(os.sep,'.')
                     settings_path = self.project_settings_location.replace(os.sep, '.')[1:-3]
-                    plot_script_src +  f"from {self.project_folder_name}.{settings_path} import Project_Settings\n"
+                    plot_script_src =  f"from {self.project_folder_name}.{settings_path} import Project_Settings\n"
                     plot_script_src += f"from PyICe.plugins.plugin_manager import Plugin_Manager\n"
                     plot_script_src += f"from {import_str}.test import Test\n"
                     plot_script_src += f"pm = Plugin_Manager(settings=Project_Settings)\n"
