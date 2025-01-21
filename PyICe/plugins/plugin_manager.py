@@ -30,6 +30,7 @@ class Plugin_Manager():
         self.operator = getpass.getuser().lower()
         self.thismachine = socket.gethostname().replace("-","_").split(".")[0]
         self.scratch_folder = scratch_folder
+        self.debug = False
         for attr in settings:
             setattr(self, attr, settings[attr])
         self._send_notifications = "notifications" in self.plugins
@@ -47,6 +48,8 @@ class Plugin_Manager():
         args: debug - Boolean. This will be passed into all run tests to be used for abbreviating data collection loops. Default value is False.'''
         a_test = test()
         a_test._debug = debug
+        if debug:
+            self.debug=True
         self.tests.append(a_test)
         a_test.pm=self
         a_test.verbose = self.verbose
@@ -64,13 +67,15 @@ class Plugin_Manager():
         self.collect(temperatures)
         self.plot()
         if 'evaluate_tests' in self.plugins:
+            self._test_results_str = ''
             self.evaluate()
         if 'correlate_tests' in self.plugins:
             self.correlate()
         if 'archive' in self.plugins:
             self._archive()
         try:
-            if 'evaluate_tests' in self.used_plugins and self._send_notifications:
+            if 'evaluate_tests' in self.plugins and self._send_notifications:
+                self.failed_tests = {}
                 for test in self.tests:
                     if hasattr(test, '_test_results'):
                         self._test_results_str+=str(test._test_results)
@@ -240,7 +245,7 @@ class Plugin_Manager():
             subject - str. Default None. The subject given to any email sent. No affect on texts.
             attachment filenames - list. Default empty list. A list of strings denoting the names of files that will be attached to any emails sent.
             attachment_MIMEParts - list. Default empty list. A list of MIME (Multipurpose Internet Mail Extensions) objects that will be added to the body of any email sent.'''
-        if 'notifications' in self.plugins:
+        if 'notifications' in self.plugins and not self.debug:
             for signal_type in self.notification_targets:
                 if signal_type == 'emails':
                     for email_address in self.notification_targets['emails']:
