@@ -381,12 +381,13 @@ class Plugin_Manager():
                 if hasattr(test, 'plot'):
                     dest_file = os.path.join(os.path.dirname(db_file), f"replot_data.py")
                     import_str = test._module_path[test._module_path.index(self.project_folder_name):].replace(os.sep,'.')
-                    plot_script_src = "if __name__ == '__main__':\n"
-                    plot_script_src += f"    from PyICe.plugins.plugin_manager import Plugin_Manager\n"
-                    plot_script_src += f"    from {import_str}.test import Test\n"
-                    plot_script_src += f"    pm = Plugin_Manager()\n"
-                    plot_script_src += f"    pm.add_test(Test)\n"
-                    plot_script_src += f"    pm.plot(database='data_log.sqlite', table_name='{test.get_name()}')\n"
+                    settings_path = self.project_settings_location.replace(os.sep, '.')[1:-3]
+                    plot_script_src + f"from {self.project_folder_name}.{settings_path} import Project_Settings\n"
+                    plot_script_src += f"from PyICe.plugins.plugin_manager import Plugin_Manager\n"
+                    plot_script_src += f"from {import_str}.test import Test\n"
+                    plot_script_src += f"pm = Plugin_Manager(settings=Project_Settings)\n"
+                    plot_script_src += f"pm.add_test(Test)\n"
+                    plot_script_src += f"pm.plot(database='data_log.sqlite', table_name='{test.get_name()}')\n"
                     try:
                         with open(dest_file, 'a') as f: #exists, overwrite, append?
                             f.write(plot_script_src)
@@ -399,12 +400,13 @@ class Plugin_Manager():
                 if 'evaluate_tests' in self.plugins:
                     dest_file = os.path.join(os.path.dirname(db_file), f"reeval_data.py")
                     import_str = test._module_path[test._module_path.index(self.project_folder_name):].replace(os.sep,'.')
-                    plot_script_src = "if __name__ == '__main__':\n"
-                    plot_script_src += f"    from PyICe.plugins.plugin_manager import Plugin_Manager\n"
-                    plot_script_src += f"    from {import_str}.test import Test\n"
-                    plot_script_src += f"    pm = Plugin_Manager()\n"
-                    plot_script_src += f"    pm.add_test(Test)\n"
-                    plot_script_src += f"    pm.evaluate(database='data_log.sqlite', table_name='{test.get_name()}')\n"
+                    settings_path = self.project_settings_location.replace(os.sep, '.')[1:-3]
+                    plot_script_src +  f"from {self.project_folder_name}.{settings_path} import Project_Settings\n"
+                    plot_script_src += f"from PyICe.plugins.plugin_manager import Plugin_Manager\n"
+                    plot_script_src += f"from {import_str}.test import Test\n"
+                    plot_script_src += f"pm = Plugin_Manager(settings=Project_Settings)\n"
+                    plot_script_src += f"pm.add_test(Test)\n"
+                    plot_script_src += f"pm.evaluate(database='data_log.sqlite', table_name='{test.get_name()}')\n"
                     try:
                         with open(dest_file, 'a') as f: #exists, overwrite, append?
                             f.write(plot_script_src)
