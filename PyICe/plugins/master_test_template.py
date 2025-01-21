@@ -7,7 +7,7 @@ class Master_Test_Template():
         channel - channel obj or string of channel name
         attribute_change - dictionary with keys being attribute names and values being the value to be assigned.'''
         if isinstance(channel, str):
-            channel = self.get_channels.get_channel(channel)
+            channel = self.get_channels().get_channel(channel)
         for setting in attribute_change:
             self._channel_reconfiguration_settings.append((channel, channel.get_attribute(setting), attribute_change[setting]))
     def _reconfigure(self):
