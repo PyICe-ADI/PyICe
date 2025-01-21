@@ -25,7 +25,7 @@ class Callback_logger(logger):
         return readings
 
 class Plugin_Manager():
-    def __init__(self, scratch_folder='scratch'):
+    def __init__(self, scratch_folder='scratch', settings={}):
         self.tests = []
         self.operator = getpass.getuser().lower()
         self.thismachine = socket.gethostname().replace("-","_").split(".")[0]
