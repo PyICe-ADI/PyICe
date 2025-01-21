@@ -9,15 +9,15 @@ class Master_Test_Template():
         if isinstance(channel, str):
             channel = self.get_channels().get_channel(channel)
         for setting in attribute_change:
-            self._channel_reconfiguration_settings.append((channel, channel.get_attribute(setting), attribute_change[setting]))
+            self._channel_reconfiguration_settings.append((channel, setting, channel.get_attribute(setting), attribute_change[setting]))
     def _reconfigure(self):
         '''save channel setting before writing to value'''
-        for (ch, old, new) in self._channel_reconfiguration_settings:
-            ch.set_attribute(new)
+        for (ch, setting, old, new) in self._channel_reconfiguration_settings:
+            ch.set_attribute(setting, new)
     def _restore(self):
         '''undo any changes made by reconfigure'''
-        for (ch, old, new) in self._channel_reconfiguration_settings:
-            ch.set_attribute(old)
+        for (ch, setting, old, new) in self._channel_reconfiguration_settings:
+            ch.set_attribute(setting, old)
     def customize(self):
         '''Optional method to alter the logger before the test begins.'''
         pass
