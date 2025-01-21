@@ -98,7 +98,7 @@ class generic_results():
         res_dict['tests'] = {}
         for t_d in declarations:
             res_dict['tests'][t_d] = {}
-            res_dict['tests'][t_d]['declaration'] = {k:v for k,v in self.test_limits[t_d].items() if k not in ['test_name', 'refid_name']}
+            res_dict['tests'][t_d]['declaration'] = {k:v for k,v in self.test_limits[t_d].items() if k not in ['test_name']}
             try:
                 results[t_d]
             except KeyError as e:
@@ -133,7 +133,7 @@ class generic_results():
                         for condition_hash, condition_orig in temp_group.get_conditions().items():
                             cond_group = temp_group.filter_conditions(condition_hash)
                             cond_dict =  {'conditions': condition_orig,
-                                          'case_results': [{k:v for k,v in cond._asdict().items() if k not in ['refid_name', 'temperature', 'conditions']} for cond in cond_group],
+                                          'case_results': [{k:v for k,v in cond._asdict().items() if k not in ['temperature', 'conditions']} for cond in cond_group],
                                           'summary': {'min_error': cond_group._min_error(),
                                                       'max_error': cond_group._max_error(),
                                                       'passes':    bool(cond_group),
