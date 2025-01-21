@@ -3,7 +3,11 @@ class Master_Test_Template():
     # SCRIPT METHODS
     ###
     def reconfigure(self, channel, attribute_change={}):
-        '''Optional method used during customize() if changes are made to the DUT on a particular test in a suite. Unwound after test's collect at each temperature.'''
+        '''Optional method used during customize() if changes are made to the DUT on a particular test in a suite. Unwound after test's collect at each temperature.
+        channel - channel obj or string of channel name
+        attribute_change - dictionary with keys being attribute names and values being the value to be assigned.'''
+        if isinstance(channel, str):
+            channel = self.get_channels.get_channel(channel)
         for setting in attribute_change:
             self._channel_reconfiguration_settings.append((channel, channel.get_attribute(setting), attribute_change[setting]))
     def _reconfigure(self):
