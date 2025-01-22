@@ -20,16 +20,12 @@ class Master_Test_Template():
             ch.set_attribute(setting, old)
     def customize(self):
         '''Optional method to alter the logger before the test begins.'''
-        pass
     def declare_bench_connections(self):
         '''Optional method to log the setup needed to run the test. Plugin required.'''
-        pass
     def collect(self):
         ''' Mandatory method to operate the bench and collect the data.'''
-        pass
     def plot(self):
         ''' Optional method to retrieve the data collected and create plots. Can be run over and over once a collect has run. User must return a list or tuple of plots and/or pages, or an individual LTC_plot.Page, or a single LTC_plot.plot.'''
-        pass
         return []
 
     ###
@@ -80,7 +76,7 @@ class Master_Test_Template():
     # EVALUATION METHODS
     ###
     def evaluate_results(self):
-        pass
+        '''Optional evaluate_results method placeholder'''
     def evaluate_rawdata(self, name, data, conditions=None):
         '''This will compare submitted data to limits for the named test.
         args:
