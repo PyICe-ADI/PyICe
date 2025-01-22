@@ -1,6 +1,11 @@
-from PyICe.instruments.oscilloscope import oscilloscope
+from PyICe.lab_instruments.oscilloscope import oscilloscope
 from PyICe import lab_core
 from PyICe.lab_utils.sqlite_data import sqlite_data
+import numpy
+import json
+import re
+import time
+
 try:
     from bokeh.models import Label, Toggle
     from bokeh import colors
@@ -9,9 +14,11 @@ try:
     from bokeh.plotting import show, output_file, figure
     from bokeh.io import curdoc
     from bokeh.layouts import layout
-except:
+except Exception as e:
+    import traceback
+    traceback.print_exc()
     print("Broken Bokeh")
-import time
+
 
 class dict_print(dict):
     def __str__(self):
@@ -46,7 +53,9 @@ class oscilloscope_waveform_dump(oscilloscope):
         self.time_info["x_origin"]      = float(self.get_interface().ask(":WAVeform:XORigin?"))      # float(preamble[5])
         self.time_info["x_reference"]   = float(self.get_interface().ask(":WAVeform:XREFerence?"))   # float(preamble[6])
         self.time_info["x_scale"]       = self.time_info["x_increment"] * self.time_info["points"] / 10
-        self.time_info["x_values"] = [(x - self.time_info["x_reference"]) * self.time_info["x_increment"] + self.time_info["x_origin"] for x in range(self.time_info["points"])]
+        # self.time_info["x_values"] = [(x - self.time_info["x_reference"]) * self.time_info["x_increment"] + self.time_info["x_origin"] for x in range(self.time_info["points"])]
+        xvalues_gen   = map(lambda x: (x - self.time_info["x_reference"]) * self.time_info["x_increment"] + self.time_info["x_origin"], range(self.time_info["points"]))
+        self.time_info["x_values"] = numpy.fromiter(xvalues_gen, dtype=numpy.dtype('<d'))
         return self.time_info
     def fetch_active_scope_channels(self):
         results_dict = dict_print()
@@ -71,6 +80,11 @@ class oscilloscope_waveform_dump(oscilloscope):
         logger = lab_core.logger(database=db_filename, use_threads=False)
         scope_data= self.fetch_active_scope_channels()
         logger.add_data_channels(scope_data)
+        for ch in logger:
+            if re.match(r"^channel_[1234]$", ch.get_name()):
+                ch._set_type_affinity('PyICeBLOB')
+            elif re.match(r"^x_values$", ch.get_name()):
+                ch._set_type_affinity('PyICeBLOB')
         db_tablename = ''
         while not len(db_tablename):
             db_tablename = input(f"What would you like the table name to be: ")
@@ -84,7 +98,7 @@ def plot_dumped_waveform(db_tablename, db_filename = 'scope_data.sqlite'):
     db = sqlite_data(table_name=db_tablename, database_file=db_filename, timezone=None)
     output_file(filename=f'{db_tablename}.html', title = db_tablename)
     curdoc().theme = 'dark_minimal'
-    plot = figure(title=db_tablename, plot_width=1000, plot_height=800)
+    plot = figure(title=db_tablename, width=1000, height=800)
     active_channels = {}
     channel_colors = {1:colors.named.gold, 2:colors.named.forestgreen, 3:colors.named.mediumblue, 4:colors.named.fuchsia}
     (datetime,x_values, active_channels[1], active_channels[2], active_channels[3], active_channels[4]) = db.query(f'SELECT datetime,x_values, channel_1_active, channel_2_active, channel_3_active, channel_4_active FROM {db_tablename}').fetchone()
@@ -97,17 +111,52 @@ def plot_dumped_waveform(db_tablename, db_filename = 'scope_data.sqlite'):
             toggles[i].js_link('active', this_line, 'visible')
     show(layout([plot], list(toggles.values())))
 
+def write_waveform_data(db_tablename, db_filename='scope_data.sqlite', output_filename=None):
+    if output_filename is None:
+        output_filename = f'{db_tablename}.json'
+    db = sqlite_data(table_name=db_tablename, database_file=db_filename, timezone=None)
+    active_channels = {}
+    (datetime,x_values, active_channels[1], active_channels[2], active_channels[3], active_channels[4]) = db.query(f'SELECT datetime,x_values, channel_1_active, channel_2_active, channel_3_active, channel_4_active FROM {db_tablename}').fetchone()
+    scope_data = {}
+    scope_data['x_values'] = x_values
+    for i in range(1,5):
+        if active_channels[i]:
+            (ydata,data_name) = db.query(f'SELECT channel_{i}, channel_{i}_name FROM {db_tablename}').fetchone()
+            scope_data[data_name] = ydata
+    class NumpyEncoder(json.JSONEncoder):
+        """ Special json encoder for numpy types """        
+        def default(self, obj):
+            if isinstance(obj, numpy.integer):
+                return int(obj)
+            elif isinstance(obj, numpy.floating):
+                return float(obj)
+            elif isinstance(obj, numpy.ndarray):
+                return obj.tolist()
+            elif isinstance(obj, numpy.bool_):
+                return bool(obj)
+            # elif isinstance(obj, datetime.datetime):
+                # return obj.isoformat()
+            return json.JSONEncoder.default(self, obj)
+    with open(output_filename, 'w') as f:
+        json.dump(scope_data, f, cls=NumpyEncoder)
+    print(f'Scope data dumped to {output_filename} successfully.')
+
 if __name__=='__main__':
-    answer = input("(P)lot data only or (C)ollect and plot: ")
+    answer = input("(P)lot data only or (C)ollect and plot or (D)ump JSON: ")
     if answer.lower() == "c":
         from create_user_files import create_my_scopefile
         create_my_scopefile()
         from local.my_instruments import agilent_3034a
         dump = oscilloscope_waveform_dump(agilent_3034a)
         db_tablename = dump.data_to_sqlite()
-    elif answer.lower() == "p":
+    elif answer.lower() == "p" or answer.lower() == "d":
         db_tablename = input("Enter the table name in the preexisting scope_data.sqlite file: ")
     else:
-        print(f"\n\nYour response to (C)ollect or (P)lot was: '{answer}'.\nDon't know what '{answer}' is supposed to do.\nDoing nothing.\n\n")
+        print(f"\n\nYour response was: '{answer}'.\nDon't know what '{answer}' is supposed to do.\nDoing nothing.\n\n")
         exit()
-    plot_dumped_waveform(db_tablename)
+    if answer.lower() != "d":
+        plot_dumped_waveform(db_tablename)
+    elif answer.lower() == "d":
+        write_waveform_data(db_tablename)
+    else:
+        raise Exception("I'm lost")
