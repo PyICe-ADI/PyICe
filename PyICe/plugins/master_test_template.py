@@ -2,22 +2,22 @@ class Master_Test_Template():
     ###
     # SCRIPT METHODS
     ###
-    def reconfigure(self, channel, attribute_change={}):
-        '''Optional method used during customize() if changes are made to the DUT on a particular test in a suite. Unwound after test's collect at each temperature.
-        channel - channel obj or string of channel name
-        attribute_change - dictionary with keys being attribute names and values being the value to be assigned.'''
-        if isinstance(channel, str):
-            channel = self.get_channels().get_channel(channel)
-        for setting in attribute_change:
-            self._channel_reconfiguration_settings.append((channel, setting, channel.get_attribute(setting), attribute_change[setting]))
+    def reconfigure(self, read_function, write_function, value):
+        '''
+        Optional method used during customize() if changes are made to the DUT on a particular test in a suite.
+        Unwound after test's collect at each temperature.
+        read_function and write_function should be conjugate methods of a particular channel to help the system unwind after _this_ test.
+        "value" is the value to which the channel will be assigned for _this_ test.
+        '''
+        self._channel_reconfiguration_settings.append((read_function(), write_function, value))
     def _reconfigure(self):
         '''save channel setting before writing to value'''
-        for (ch, setting, old, new) in self._channel_reconfiguration_settings:
-            ch.set_attribute(setting, new)
+        for (old, write_function, new) in self._channel_reconfiguration_settings:
+            write_function(new)
     def _restore(self):
         '''undo any changes made by reconfigure'''
-        for (ch, setting, old, new) in self._channel_reconfiguration_settings:
-            ch.set_attribute(setting, old)
+        for (old, write_function, new) in self._channel_reconfiguration_settings:
+            write_function(old)
     def customize(self):
         '''Optional method to alter the logger before the test begins.'''
     def declare_bench_connections(self):
