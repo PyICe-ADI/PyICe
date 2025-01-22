@@ -495,7 +495,6 @@ class Plugin_Manager():
                     summary_msg += f'\t* {test.get_name()}*\n'
                     if not test._is_crashed:
                         try:
-                            # test.test_timer.resume_timer()
                             self.startup()
                             test._reconfigure()
                             print_banner(f'{test.get_name()} Collecting. . .')
