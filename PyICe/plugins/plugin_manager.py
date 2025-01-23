@@ -231,7 +231,7 @@ class Plugin_Manager():
             except AttributeError as e:
                 pass
             except Exception as e:
-                print(e)
+                traceback.print_exc()
         else:
             print_banner('Bench cleaned!')
 
@@ -278,16 +278,34 @@ class Plugin_Manager():
     def _find_notifications(self, project_path):
         self._notification_functions = []
         self.notification_targets = {'emails':[], 'texts':[]}
+        found_both = 0
         for (dirpath, dirnames, filenames) in os.walk(project_path):
+            if 'always_notify.py' in filenames:
+                breakpoint()
+                globalnotificationpath = dirpath.replace(os.sep, '.')
+                globalnotificationpath = globalnotificationpath[globalnotificationpath.index(project_path.split(os.sep)[-1]):]
+                module = importlib.import_module(name=globalnotificationpath+f'.always_notify', package=None)
+                for x in ['emails','texts']:
+                    [self.notification_targets[x].append(target) for target in module.get_notification_targets()[x]]
+                found_both+=1
+                if found_both==2:
+                    break
             if self.operator+'.py' in filenames: 
+                breakpoint()
                 usernotificationpath = dirpath.replace(os.sep, '.')
                 usernotificationpath = usernotificationpath[usernotificationpath.index(project_path.split(os.sep)[-1]):]
                 module = importlib.import_module(name=usernotificationpath+f'.{self.operator}', package=None)
                 if hasattr(module, 'add_notifications_to_test_manager'):
                     module.add_notifications_to_test_manager(test_manager=self)
                 if hasattr(module, 'get_notification_targets'):
-                    self.notification_targets = module.get_notification_targets()
-                break
+                    for x in ['emails','texts']:
+                        for target in module.get_notification_targets()[x]:
+                            self.notification_targets[x].append(target)
+                found_both+=1
+                if found_both==2:
+                    break
+        for x in ['emails','texts']:
+            self.notification_targets[x]= set(self.notification_targets[x])
 
     def add_notification(self, fn):
         '''Add a function that will be run whenever a notification is sent. Arguments for the provided function are either the standard for lab_utils.communications.email.send(self, body, subject=None, attachment_filenames=[], attachment_MIMEParts=[]) or a simple text string.'''
@@ -453,6 +471,7 @@ class Plugin_Manager():
             temperatures (list): What values will be written to the temp_control_channel.'''
             # debug (Boolean): This will be passed on to the script and can be used to trigger shorter loops or fewer conditions under which to gather data to verify script completeness.'''
         try:
+            far_enough = False
             self.master = master()
             self.add_instrument_channels()
             if 'bench_config_management' in self.plugins:
@@ -490,6 +509,7 @@ class Plugin_Manager():
                 for test in self.tests:
                     self.visualizer.generate(file_base_name="Bench_Config", prune=True, file_format='svg', engine='neato', file_location=test._module_path+os.sep+'scratch')
             summary_msg = f'{self.operator} on {self.thismachine}\n'
+            far_enough = True
             if not len(temperatures):
                 for test in self.tests:
                     summary_msg += f'\t* {test.get_name()}*\n'
@@ -507,7 +527,6 @@ class Plugin_Manager():
                             print(test._crash_info)
                             self.notify(test._crash_info, subject='CRASHED!!!')
                         self.cleanup()
-                self.shutdown()
             else:
                 assert self.temperature_channel != None
                 for temp in temperatures:
@@ -532,14 +551,15 @@ class Plugin_Manager():
                     if all([x._is_crashed for x in self.tests]):
                         print_banner('All tests have crashed. Skipping remaining temperatures.')
                         break
-                self.shutdown()
+            self.shutdown()
         except Exception as e:
             traceback.print_exc()
             for test in self.tests:
                 test._is_crashed = True
             try:
-                self.cleanup()
-                self.shutdown()
+                if far_enough:
+                    self.cleanup()
+                    self.shutdown()
             except AttributeError as e:
                 # Didn't get far enough to populate the bench before crashing.
                 pass
