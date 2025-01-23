@@ -1129,7 +1129,7 @@ class i2c_scpi(twi_interface):
         self.interface.close()
     def init_i2c(self):
         self.reset_twi()
-        time.sleep(0.1)
+        # time.sleep(0.1)
         #modified this to remove the pyserial inWaiting, now its a plain visa interface
         timeout = self.interface.timeout
         self.interface.timeout = 0.02
@@ -1141,7 +1141,7 @@ class i2c_scpi(twi_interface):
         self.interface.timeout = timeout
     def resync_communication(self):
         print("***** Attempting RE-SYNC")
-        time.sleep(1.0)
+        # time.sleep(1.0)
         self.init_i2c()
     def close(self):
         '''close the underlying (serial) interface'''
