@@ -281,7 +281,6 @@ class Plugin_Manager():
         found_both = 0
         for (dirpath, dirnames, filenames) in os.walk(project_path):
             if 'always_notify.py' in filenames:
-                breakpoint()
                 globalnotificationpath = dirpath.replace(os.sep, '.')
                 globalnotificationpath = globalnotificationpath[globalnotificationpath.index(project_path.split(os.sep)[-1]):]
                 module = importlib.import_module(name=globalnotificationpath+f'.always_notify', package=None)
@@ -291,7 +290,6 @@ class Plugin_Manager():
                 if found_both==2:
                     break
             if self.operator+'.py' in filenames: 
-                breakpoint()
                 usernotificationpath = dirpath.replace(os.sep, '.')
                 usernotificationpath = usernotificationpath[usernotificationpath.index(project_path.split(os.sep)[-1]):]
                 module = importlib.import_module(name=usernotificationpath+f'.{self.operator}', package=None)
