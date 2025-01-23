@@ -29,6 +29,7 @@ class Plugin_Manager():
         self.tests = []
         self.operator = getpass.getuser().lower()
         self.thismachine = socket.gethostname().replace("-","_").split(".")[0]
+        self.ident_header = f'Operator: {self.operator}\n Machine: {self.thismachine}\n\n'
         self.scratch_folder = scratch_folder
         self.debug = False
         for attr in settings:
@@ -62,8 +63,14 @@ class Plugin_Manager():
         a_test._is_crashed = False
 
     def run(self, temperatures=[]):
-        '''This method goes through the complete data collection process the project set out. Scripts will be run once per temperature or just once if no temperature is given. Debug will be passed on to the script to be used at the script's discretion.
-        args: temperatures- list. The list consists of values that will be set to the 'temp_control_channel' assigned by the instrument drivers. Default value is an empty list.'''
+        '''
+        This method goes through the complete data collection process the project set out.
+        Scripts will be run once per temperature or just once if no temperature is given.
+        Debug will be passed on to the script to be used at the script's discretion.
+        args: temperatures- list.
+        The list consists of values that will be set to the 'temp_control_channel' assigned by the instrument drivers.
+        Default value is an empty list.
+        '''
         self.collect(temperatures)
         self.plot()
         if 'evaluate_tests' in self.plugins:
@@ -82,16 +89,19 @@ class Plugin_Manager():
                         if not test._test_results:
                             self.failed_tests[test.get_name()] = ''
                         if test._is_crashed:
-                             self.failed_tests[test.get_name()] = test._crash_info
+                             self.failed_tests[test.get_name()] = self._crash_str(test)
                 if len(self.failed_tests):
                     self._test_results_str+='\nThe following tests failed:\n'
                     for failed_test in self.failed_tests.keys():
                         self._test_results_str+=f'{failed_test}\n'
                         if len(self.failed_tests[failed_test]):
                             self._test_results_str+=f'{self.failed_tests[failed_test]}\n'
-                else:
+                    self.notify(self._test_results_str, subject='Test Results')
+                elif self._test_results_str:
                     self._test_results_str+='\n\nAll tests passed!\n\n'
-                self.notify(self._test_results_str, subject='Test Results')
+                    self.notify(self._test_results_str, subject='Test Results')
+                else:
+                    pass # No failed tests and no test results, nothing to do.
         except Exception as e:
             traceback.print_exc()
             print('\n***PLUGIN MANAGER ERROR***\nError occurred while attempting to email test results.\n')
@@ -107,7 +117,6 @@ class Plugin_Manager():
         except Exception as e:
             traceback.print_exc()
             print('\n***PLUGIN MANAGER ERROR***\nError occurred while attempting to email linked plots.\n')
-
 
     def add_instrument_channels(self):
         '''In this method, a master is populated by instruments and their channels.
@@ -250,7 +259,7 @@ class Plugin_Manager():
                 if signal_type == 'emails':
                     for email_address in self.notification_targets['emails']:
                         mail = email(email_address)
-                        mail.send(msg, subject=subject, attachment_filenames=attachment_filenames, attachment_MIMEParts=attachment_MIMEParts)
+                        mail.send(f"{self.ident_header}{msg}", subject=subject, attachment_filenames=attachment_filenames, attachment_MIMEParts=attachment_MIMEParts)
                 elif signal_type == 'texts':
                     for txt_number, carrier in self.notification_targets['texts']:
                         text = sms(txt_number, carrier)
@@ -260,11 +269,11 @@ class Plugin_Manager():
             try:
                 for fn in self._notification_functions:
                     try:
-                        fn(msg, subject=subject, attachment_filenames=attachment_filenames, attachment_MIMEParts=attachment_MIMEParts)
+                        fn(f"{self.ident_header}{msg}", subject=subject, attachment_filenames=attachment_filenames, attachment_MIMEParts=attachment_MIMEParts)
                     except TypeError:
                         # Function probably doesn't accept subject or attachments
                         try:
-                            fn(msg)
+                            fn(f"{self.ident_header}{msg}")
                         except Exception as e:
                             # Don't let a notification crash a more-important cleanup/shutdown.
                             print(e)
@@ -273,7 +282,7 @@ class Plugin_Manager():
                         print(e)
             except AttributeError as e:
                 if not len(attachment_filenames) and not len(attachment_MIMEParts):
-                    print(msg)
+                    print(f"{self.ident_header}{msg}")
 
     def _find_notifications(self, project_path):
         self._notification_functions = []
@@ -351,7 +360,7 @@ class Plugin_Manager():
             msg_body+='\n'
         self.notify(msg_body, subject='Plot Results', attachment_MIMEParts=attachment_MIMEParts)
 
-    def crash_info(self, test):
+    def _crash_str(self, test):
         (typ, value, trace_bk) = test._crash_info
         crash_str = f'Test: {test.get_name()} crashed: {typ},{value}\n'
         crash_sep = '==================================================\n'
@@ -389,14 +398,26 @@ class Plugin_Manager():
     # ARCHIVE METHODS
     ###
     def _archive(self):
-        '''Makes a copy of the data just collected and puts it and the associated metatable (if there is one) in an archive folder. Also adds a copy of the table (and metatable) to the database with the time of collection to the test's generic database, so it will not be overwritten when the test is next run. Will also generate scripts to rerun plotting (if the script has a plot method) and evaluation (if the evaluation feature is used).'''
+        '''
+        Makes a copy of the data just collected and puts it and the associated metadata table (if there is one) in an archive folder.
+        Also adds a copy of the table (and metatable) to the database with the time of collection to the test's generic database, so it will not be overwritten when the test is next run.
+        Will also generate scripts to rerun plotting (if the script has a plot method) and evaluation (if the evaluation feature is used).
+        '''
         print_banner('Archiving. . .')
-        try:
-            archive_folder = self.tests[0].get_archive_folder_name()
-        except AttributeError:
+        for test in self.tests:
+            try:
+                archive_folder = test.get_archive_folder_name()
+                break
+            except AttributeError:
+                archive_folder = datetime.datetime.utcnow().strftime("%Y_%m_%d_%H_%M")
+                break
+            except Exception:
+                continue
             archive_folder = datetime.datetime.utcnow().strftime("%Y_%m_%d_%H_%M")
         archived_tables = []
         for test in self.tests:
+            if not hasattr(test, "_logger"):
+                print(f"No logger exists for {test.get_name()}. Skipping archive.")
             archiver = test_archive.database_archive(test_script_file=test.get_module_path(), db_source_file=test.get_db_file())
             if not archiver.has_data(tablename=test.get_name()):
                 print(f'No data logged for {test.get_name()}. Skipping archive.')
@@ -412,7 +433,6 @@ class Plugin_Manager():
                 archiver.copy_table(db_source_table=test.get_name()+'_metadata', db_dest_table=test.get_name()+'_metadata', db_dest_file=db_dest_file)
                 test._logger.copy_table(old_table=test.get_name()+'_metadata', new_table=test.get_name()+'_'+archive_folder+'_metadata')
             archived_tables.append((test, test.get_name(), db_dest_file))
-            # test._add_db_indices(table_name=test.get_name(), db_file=db_dest_file)
         if len(archived_tables):
             arch_plot_scripts = []
             for (test, db_table, db_file) in archived_tables:
@@ -467,7 +487,6 @@ class Plugin_Manager():
         '''This method aggregates the channels that will be logged and calls the collect method in every test added via self.add_test.
         args:
             temperatures (list): What values will be written to the temp_control_channel.'''
-            # debug (Boolean): This will be passed on to the script and can be used to trigger shorter loops or fewer conditions under which to gather data to verify script completeness.'''
         try:
             far_enough = False
             self.master = master()
@@ -506,46 +525,26 @@ class Plugin_Manager():
                 self.visualizer = bench_visualizer.visualizer(connections=self.all_connections.connections, locations=self.bench_image_locations)
                 for test in self.tests:
                     self.visualizer.generate(file_base_name="Bench_Config", prune=True, file_format='svg', engine='neato', file_location=test._module_path+os.sep+'scratch')
-            summary_msg = f'{self.operator} on {self.thismachine}\n'
             far_enough = True
-            if not len(temperatures):
+            for temp in temperatures or ["ambient"]:
+                if temp != "ambient":
+                    print_banner(f'Setting temperature to {temp}°C')
+                    self.temperature_channel.write(temp)
                 for test in self.tests:
-                    summary_msg += f'\t* {test.get_name()}*\n'
                     if not test._is_crashed:
                         try:
+                            print_banner(f'{test.get_name()} Collecting. . .')
                             self.startup()
                             test._reconfigure()
-                            print_banner(f'{test.get_name()} Collecting. . .')
                             test.collect()
                             test._restore()
                         except (Exception, BaseException) as e:
                             traceback.print_exc()
                             test._is_crashed = True
                             test._crash_info = sys.exc_info()
-                            print(test._crash_info)
-                            self.notify(test._crash_info, subject='CRASHED!!!')
+                            self.notify(self._crash_str(test), subject='CRASHED!!!')
                         self.cleanup()
-            else:
-                assert self.temperature_channel != None
-                for temp in temperatures:
-                    print_banner(f'Setting temperature to {temp}')
-                    self.temperature_channel.write(temp)
-                    for test in self.tests:
-                        if not test._is_crashed:
-                            try:
-                                print_banner(f'Starting {test.get_name()} at {temp}C')
-                                # test.test_timer.resume_timer()
-                                self.startup()
-                                test._reconfigure()
-                                test.collect()
-                                test._restore()
-                            except (Exception, BaseException) as e:
-                                traceback.print_exc()
-                                test._is_crashed = True
-                                test._crash_info = sys.exc_info()
-                                print(test._crash_info)
-                                self.notify(test._crash_info, subject='CRASHED!!!')
-                            self.cleanup()
+                if temp != "ambient":
                     if all([x._is_crashed for x in self.tests]):
                         print_banner('All tests have crashed. Skipping remaining temperatures.')
                         break
@@ -608,7 +607,7 @@ class Plugin_Manager():
                     test._plot_filepath = plot_filepath
                 test._db = sqlite_data(database_file=database, table_name=test.get_table_name())
                 try:
-                    test.plot()
+                    returned_plots=test.plot()
                 except Exception as e:
                     # Don't stop other test's plotting or archiving because of a plotting error.
                     traceback.print_exc()
@@ -617,6 +616,12 @@ class Plugin_Manager():
                 else:
                     assert isinstance(test.plot_list, list)
                     test.plot_list = [self._convert_svg(plt) for plt in test.plot_list]
+                if isinstance(returned_plots, (LTC_plot.plot, LTC_plot.Page)):
+                    test.plot_list = [self._convert_svg(returned_plots)]
+                elif isinstance(returned_plots, list):
+                    test.plot_list = [self._convert_svg(plt) for plt in returned_plots]
+                else:
+                    assert returned_plots == None
                 for plot_group in test.linked_plots:
                     test.linked_plots[plot_group] = [self._convert_svg(plt) for plt in test.linked_plots[plot_group]]
                 self._plots.extend(test.plot_list)
