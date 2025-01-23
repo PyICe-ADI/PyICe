@@ -9,8 +9,8 @@ def build_banner(*message, offset=1, length=80):
     lower_right = u"\u2518"
     wall = u"\u2502"
     
-    ret_str=f'{upper_left}{bar * (length-2)}{upper_right}\n"
+    ret_str=f'{upper_left}{bar * (length-2)}{upper_right}\n'
     for line in message:
-        ret_str+=f'{wall}{" " * offset}{line}{" " * ((length-2-offset) - len(line))}{wall}\n'
+        ret_str+=f'{wall}{" " * offset}{str(line)}{" " * ((length-2-offset) - len(str(line)))}{wall}\n'
     ret_str+=f'{lower_left}{bar * (length-2)}{lower_right}'
     return ret_str
