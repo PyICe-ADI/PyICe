@@ -131,6 +131,7 @@ class Plugin_Manager():
         The special channel actions are functions that are run on each logging of data and the value is a dicionary with a channel object or the string name of a channel as key, and the value the function to be run. The function requires the arguments channel_name, readings, and test.'''
 
         self.cleanup_fns = []
+        self.temp_run_fns = []
         self.startup_fns = []
         self.shutdown_fns = []
         self.temperature_channel = None
@@ -159,6 +160,9 @@ class Plugin_Manager():
                     if 'cleanup_list' in instrument_dict:
                         for fn in instrument_dict['cleanup_list']:
                             self.cleanup_fns.append(fn)
+                    if 'temperature_run_startup_list' in instrument_dict:
+                        for fn in instrument_dict['temperature_run_startup_list']:
+                            self.temp_run_fns.append(fn)
                     if 'startup_list' in instrument_dict:
                         for fn in instrument_dict['startup_list']:
                             self.startup_fns.append(fn)
@@ -193,6 +197,16 @@ class Plugin_Manager():
             test.customize()
         test._logger.new_table(table_name=test.get_name(), replace_table=True)
         test._logger.write_html(file_name=f"{test.get_module_path()}{os.sep}scratch{os.sep}{self.project_folder_name}.html")
+
+    def temperature_run_startup(self):
+        for func in self.temp_run_fns:
+            try:
+                func()
+            except:
+                print("\n\PyICE Plugin Manager: One or more temperature start functions not executable. See list below.\n")
+                for function in self.temp_run_fns:
+                    print(function)
+                exit()
 
     def startup(self):
         for func in self.startup_fns:
@@ -526,6 +540,8 @@ class Plugin_Manager():
                 for test in self.tests:
                     self.visualizer.generate(file_base_name="Bench_Config", prune=True, file_format='svg', engine='neato', file_location=test._module_path+os.sep+'scratch')
             far_enough = True
+            if len(temperatures):
+                self.temperature_run_startup()
             for temp in temperatures or ["ambient"]:
                 if temp != "ambient":
                     print_banner(f'Setting temperature to {temp}°C')
