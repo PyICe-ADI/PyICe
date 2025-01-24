@@ -41,7 +41,7 @@ class Master_Test_Template():
         if hasattr(self, '_module_path'):
             return self._module_path
         else:
-            print(f'No database file has been assigned to {self.get_name()} at this time. One is assigned upon adding a test to the plugin manager.')
+            print(f"Attempted to access the module path for {self.get_name()}. It would be created upon adding a test to the plugin manager but you didn't get that far.")
     def get_debug(self):
         return self._debug
     def get_verbose(self):
@@ -50,12 +50,12 @@ class Master_Test_Template():
         if hasattr(self, '_db_file'):
             return self._db_file
         else:
-            print(f'No database file has been assigned to {self.get_name()} at this time. One is assigned upon adding a test to the plugin manager.')
+            print(f"Attempted to access the database file for {self.get_name()}. It would be created upon adding a test to the plugin manager but you didn't get that far.")
     def get_database(self):
         if hasattr(self, '_db'):
             return self._db
         else:
-            print(f'No database has been assigned to {self.get_name()} at this time. One is assigned during evaluation or plotting.')
+            print(f"Attempted to access the database for {self.get_name()}. It's only intended to be accessible from inside the plot() or evaluate() methods.")
     def get_table_name(self):
         if hasattr(self, '_table_name'):
             return self._table_name
