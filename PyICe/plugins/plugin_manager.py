@@ -158,7 +158,7 @@ class Plugin_Manager():
             driverpath = dirpath.replace(os.sep, '.')
             driverpath = driverpath[driverpath.index(self.project_path.split(os.sep)[-1]):]
             for driver in filenames:
-                driver_mod = importlib.import_module(name=driverpath+'.'+driver[:-3], package=None)
+                driver_mod = importlib.import_module(name=driverpath+'.'+os.path.splitext(driver)[0], package=None)
                 instrument_dict = driver_mod.populate(self)
                 if instrument_dict['instruments'] is not None:
                     for instrument in instrument_dict['instruments']:
