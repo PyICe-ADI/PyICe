@@ -2,9 +2,9 @@ from PyICe.plugins.bench_configuration_management.bench_configuration_management
 import os, inspect, importlib, datetime, socket, traceback, sys, json, getpass, contextlib, io
 from PyICe.plugins.bench_configuration_management import bench_visualizer
 from PyICe.plugins.traceability_items import Traceability_items
+from PyICe.plugins.test_results import Test_Results, Failed_Eval
 from PyICe.lab_utils.communications import email, sms
 from PyICe.lab_utils.sqlite_data import sqlite_data
-from PyICe.plugins.test_results import Test_Results
 from PyICe.lab_utils.banners import print_banner
 from PyICe.lab_core import logger, master
 from PyICe.plugins import test_archive
@@ -83,25 +83,31 @@ class Plugin_Manager():
         try:
             if 'evaluate_tests' in self.plugins and self._send_notifications:
                 self.failed_tests = {}
+                self.failed_evals = []
                 for test in self.tests:
                     if hasattr(test, '_test_results'):
                         self._test_results_str+=str(test._test_results)
                         if not test._test_results:
-                            self.failed_tests[test.get_name()] = ''
-                        if test._is_crashed:
-                             self.failed_tests[test.get_name()] = self._crash_str(test)
+                            if isinstance(test._test_results, Failed_Eval):
+                                self.failed_evals.append(test.get_name())
+                            else:
+                                self.failed_tests[test.get_name()] = ''
+                            if test._is_crashed:
+                                self.failed_tests[test.get_name()] = self._crash_str(test)
+                if len(self.failed_evals):
+                    self._test_results_str += "\nThe following evaluation methods themselves crashed:\n"
+                    for failed_eval in self.failed_evals:
+                        self._test_results_str += f"    {failed_eval}\n"
+                    self._test_results_str += "\n"
                 if len(self.failed_tests):
                     self._test_results_str+='\nThe following tests failed:\n'
                     for failed_test in self.failed_tests.keys():
-                        self._test_results_str+=f'{failed_test}\n'
+                        self._test_results_str+=f'    {failed_test}\n'
                         if len(self.failed_tests[failed_test]):
                             self._test_results_str+=f'{self.failed_tests[failed_test]}\n'
+                if self._test_results_str:
+                    self._test_results_str += "*** END OF REPORT ***"
                     self.notify(self._test_results_str, subject='Test Results')
-                elif self._test_results_str:
-                    self._test_results_str+='\n\nAll tests passed!\n\n'
-                    self.notify(self._test_results_str, subject='Test Results')
-                else:
-                    pass # No failed tests and no test results, nothing to do.
         except Exception as e:
             traceback.print_exc()
             print('\n***PLUGIN MANAGER ERROR***\nError occurred while attempting to email test results.\n')
@@ -347,16 +353,22 @@ class Plugin_Manager():
             raise Exception(f'Not sure what this plot is:\n{type(plot)}\n{plot}')
 
     def email_plots(self, plot_svg_source):
-        msg_body = ''
-        attachment_MIMEParts=[]
-        for (i,plot_src) in enumerate(plot_svg_source):
-            plot_png = self._cairosvg.svg2png(bytestring=plot_src)
-            plot_mime = MIMEImage(plot_png, 'image/png')
-            plot_mime.add_header('Content-Disposition', 'inline')
-            plot_mime.add_header('Content-ID', f'<plot_{i}>')
-            msg_body += f'<img src="cid:plot_{i}"/>'
-            attachment_MIMEParts.append(plot_mime)
-        self.notify(msg_body, subject='Plot Results', attachment_MIMEParts=attachment_MIMEParts)
+        try:
+            msg_body = ''
+            attachment_MIMEParts=[]
+            for (i,plot_src) in enumerate(plot_svg_source):
+                plot_png = self._cairosvg.svg2png(bytestring=plot_src)
+                plot_mime = MIMEImage(plot_png, 'image/png')
+                plot_mime.add_header('Content-Disposition', 'inline')
+                plot_mime.add_header('Content-ID', f'<plot_{i}>')
+                msg_body += f'<img src="cid:plot_{i}"/>'
+                attachment_MIMEParts.append(plot_mime)
+            self.notify(msg_body, subject='Plot Results', attachment_MIMEParts=attachment_MIMEParts)
+        except AttributeError as e:
+            print("*** ALERT *** Cairo SVG likely missing, skipping emailing of plots.")
+            traceback.print_exc()
+        except Exception:
+            traceback.print_exc()
 
     def email_plot_dictionary(self, plot_svg_source):
         msg_body = ''
@@ -680,7 +692,16 @@ class Plugin_Manager():
                     test._table_name = table_name
                 test._test_results = Test_Results(test._name, module=test)
                 test._db = sqlite_data(database_file=database, table_name=test.get_table_name())
-                test.evaluate_results()
+                try:
+                    test.evaluate_results()
+                except Exception:
+                    traceback.print_exc()
+                    print_banner(f"*** ERROR ***", f"{test.get_name()} crashed during evaluation, skipping.")
+                    print("\n")
+                    database = None
+                    table_name = None
+                    test._test_results = Failed_Eval(test)
+                    continue
                 if test._test_results._test_results:
                     print(test.get_test_results())
                 t_r = test._test_results.json_report()
@@ -695,7 +716,6 @@ class Plugin_Manager():
                     table_name = None
             elif test._is_crashed:
                 print(f"{test.get_name()} crashed. Skipping evaluation.")
-                
 
     def correlate(self, database=None, table_name=None):
         '''Run the correlate method of each test in self.tests.

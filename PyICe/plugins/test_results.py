@@ -378,3 +378,11 @@ class Test_Results(generic_results):
                                               )
         self._test_results[name].append(new_result_record)
         return new_result_record
+        
+class Failed_Eval(Test_Results):
+    def __init__(self, test):
+        self.test = test
+    def __str__(self):
+        return f'Evaluation method itself failed for {self.test.get_name()}.\n\n'
+    def __bool__(self):
+        return False
