@@ -454,7 +454,7 @@ class Plugin_Manager():
                         print(type(e))
                         print(e)
                     with contextlib.redirect_stdout(io.StringIO()):
-                        self.plot(database=os.path.relpath(db_file), table_name=db_table, test_list=[test])
+                        self.plot(database=os.path.relpath(db_file), table_name=db_table, test_list=[test], skip_email_input=True)
                 if 'evaluate_tests' in self.plugins:
                     dest_file = os.path.join(os.path.dirname(db_file), f"reeval_data.py")
                     import_str = test._module_path[test._module_path.index(self.project_folder_name):].replace(os.sep,'.')
@@ -573,14 +573,18 @@ class Plugin_Manager():
                 except:
                     pass
 
-    def plot(self, database=None, table_name=None, plot_filepath=None, test_list=None):
+    def plot(self, database=None, table_name=None, plot_filepath=None, test_list=None, skip_email_input=False):
         '''Run the plot method of each test in self.tests. Any plots returned by a test script's plot method will be emailed if the notifications plugin is used.
         args:
             database - string. The location of the database with the data to plot If left blank, the plot will continue with the database in the same directory as the test script.
             table_name - string. The name of the table in the database with the data to plot. If left blank, the plot will continue with the table named after the test script.
-            plot_filepath - string. This is where the plots will be placed upon creation. If left blank, a directory name plots will be created in the directory with the plot script and and the plots will be placed in there.'''
-        self._plots=[]
-        self._linked_plots={}
+            plot_filepath - string. This is where the plots will be placed upon creation. If left blank, a directory name plots will be created in the directory with the plot script and and the plots will be placed in there.
+            test_list - list. List of test class objects that have plot methods you want to run. If left blank, will default to every test added to the plugin manager.
+            skip_email_input: boolean. Set to true, will not empty the _plots list and will not extend it. Useful in replotting during archive.
+            '''
+        if not skip_email_input:
+            self._plots=[]
+            self._linked_plots={}
         reset_db = False
         reset_tn = False
         reset_pf = False
@@ -606,6 +610,7 @@ class Plugin_Manager():
                 else:
                     test._plot_filepath = plot_filepath
                 test._db = sqlite_data(database_file=database, table_name=test.get_table_name())
+                returned_plots = None
                 try:
                     returned_plots=test.plot()
                 except Exception as e:
@@ -624,8 +629,9 @@ class Plugin_Manager():
                     assert returned_plots == None
                 for plot_group in test.linked_plots:
                     test.linked_plots[plot_group] = [self._convert_svg(plt) for plt in test.linked_plots[plot_group]]
-                self._plots.extend(test.plot_list)
-                self._linked_plots.update(test.linked_plots)
+                if skip_email_input:
+                    self._plots.extend(test.plot_list)
+                    self._linked_plots.update(test.linked_plots)
                 print_banner(f'Plotting for {test.get_name()} complete.')
                 if reset_db:
                     database = None
