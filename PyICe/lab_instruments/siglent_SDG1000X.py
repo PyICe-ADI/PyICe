@@ -186,7 +186,7 @@ class siglent_SDG1000X(scpi_instrument):
 
     def _set_offset_and_amplitude(self, channel_number):
         offset_command      = f"C{channel_number}:BursTWaVe CARR,OFST"
-        offset_argument     = f",{(self.low_voltage+self.high_voltage)/2.}"
+        offset_argument     = f",{(self.low_voltage+self.high_voltage)/2}"
         self._try_command(offset_command, offset_argument)
         amplitude_command   = f"C{channel_number}:BursTWaVe CARR,AMP"
         amplitude_argument  = f",{self.high_voltage-self.low_voltage}"
@@ -197,6 +197,7 @@ class siglent_SDG1000X(scpi_instrument):
             self.low_voltage = value
             self._set_offset_and_amplitude(channel_number)
         new_channel = channel(channel_name, write_function=lambda value: _write_burstwave_low_voltage(channel_number, value))
+        new_channel.set_write_delay(0.25)
         return self._add_channel(new_channel)
         
     def add_channel_burstwave_high_voltage(self, channel_name, channel_number):
@@ -204,6 +205,7 @@ class siglent_SDG1000X(scpi_instrument):
             self.high_voltage = value            
             self._set_offset_and_amplitude(channel_number)
         new_channel = channel(channel_name, write_function=lambda value: _write_burstwave_high_voltage(channel_number, value))
+        new_channel.set_write_delay(0.25)
         return self._add_channel(new_channel)
         
     def add_channel_burstwave_pulse_width(self, channel_name, channel_number):
