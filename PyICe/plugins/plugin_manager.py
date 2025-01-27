@@ -569,7 +569,9 @@ class Plugin_Manager():
                         except (Exception, BaseException) as e:
                             traceback.print_exc()
                             test._is_crashed = True
+                            test._db.conn.execute(f'ALTER TABLE {test.get_name()} ADD crashed DEFAULT True')
                             test._crash_info = sys.exc_info()
+                            breakpoint()
                             self.notify(self._crash_str(test), subject='CRASHED!!!')
                         self.cleanup()
                 if temp != "ambient":
@@ -681,7 +683,7 @@ class Plugin_Manager():
         if test_list is None:
             test_list = self.tests
         for test in test_list:
-            if not test._skip_eval and not test._is_crashed:
+            if not test._skip_eval:
                 if database is None:
                     database = test._db_file
                     reset_db = True
@@ -715,7 +717,7 @@ class Plugin_Manager():
                 if reset_tn:
                     table_name = None
             elif test._is_crashed:
-                print(f"{test.get_name()} crashed. Skipping evaluation.")
+                print(f"Skipping evaluation for {test.get_name()}.")
 
     def correlate(self, database=None, table_name=None):
         '''Run the correlate method of each test in self.tests.
