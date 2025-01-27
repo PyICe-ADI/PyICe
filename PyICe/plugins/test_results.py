@@ -95,6 +95,8 @@ class generic_results():
                     continue
                 res_dict['traceability'][channel_name] = trace_data[trace_data.keys().index(channel_name)]
 
+        res_dict['test_crashed'] = self._module._is_crashed
+
         res_dict['tests'] = {}
         for t_d in declarations:
             res_dict['tests'][t_d] = {}
@@ -150,7 +152,10 @@ class generic_results():
                                                                    }
                 else:
                     raise Exception("I'm lost.")
-        res_dict['summary'] = {'passes': bool(self)}
+        if res_dict['test_crashed']:
+            res_dict['summary'] = {'passes': False}
+        else:
+            res_dict['summary'] = {'passes': bool(self)}
         return json.dumps(res_dict, indent=2, ensure_ascii=False, cls=CustomJSONizer)
 
 class Test_Results(generic_results):
