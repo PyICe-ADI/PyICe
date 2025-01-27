@@ -1,3 +1,4 @@
+from PyICe.lab_utils.sqlite_data import sqlite_data
 from PyICe.lab_utils.eng_string import eng_string
 from PyICe.lab_utils.banners import print_banner
 from sqlite3 import OperationalError
@@ -135,3 +136,49 @@ class scope_data():
 
     def volts_per_division(self, channel_name):
         return self.row[f'{channel_name}_Yrange_readback'] / 8
+
+
+
+def plot_waveform(y_data_column_names, db_tablename, db_filename = 'scope_data.sqlite'):
+    from bokeh import colors
+    from bokeh.io import curdoc
+    from bokeh.layouts import layout
+    from bokeh.models import Label, Toggle
+    from bokeh.plotting import show, output_file, figure
+    
+    db = sqlite_data(table_name=db_tablename, database_file=db_filename, timezone=None)
+    sd = scope_data(database=db, table_name=db_tablename, where_clause='')
+    output_file(filename=f'{db_tablename}.html', title = db_tablename)
+    curdoc().theme = 'dark_minimal'
+    plot = figure(title=db_tablename, plot_width=1000, plot_height=800)
+    channel_colors = {1:colors.named.gold, 2:colors.named.forestgreen, 3:colors.named.mediumblue, 4:colors.named.fuchsia}
+    toggles={}
+    for i, ch in enumerate(y_data_column_names):
+        j = i%4+1
+        ch_data = sd.trace_data(trace_name=ch, graticule=None, scale_by=1)
+        this_line = plot.line(x=ch_data[:,0], y=ch_data[:,1], line_color=channel_colors[j], legend_label=f"{ch}", alpha=.5)
+        toggles[j] = Toggle(label=f'Show {ch}', button_type='success', active=True, background = channel_colors[j]) #background does NOTHING!
+        toggles[j].js_link('active', this_line, 'visible')
+    show(layout([plot], list(toggles.values())))
+
+if __name__=='__main__':
+    db_filename = input("Database filename? [data_log.sqlite]: ")
+    if db_filename == "":
+        db_filename = "data_log.sqlite"
+    db = sqlite_data(table_name=None, database_file=db_filename, timezone=None)
+    try:
+        first_table = db.get_table_names(include_views=True)[0]
+    except IndexError as e:
+        raise Exception(f'{db_filename} contains no tables.') from e
+    db_table = input(f"Database tablename? [{first_table}]: ")
+    if db_table == "":
+        db_table = first_table
+    col_names = []
+    while True:
+        col_name = input("Y data column name or Enter to continue? ")
+        if col_name == "":
+            break
+        else:
+            col_names.append(col_name)
+    assert len(col_names), "Cannot plot zero traces."
+    plot_waveform(y_data_column_names=col_names, db_tablename=db_table, db_filename=db_filename)
