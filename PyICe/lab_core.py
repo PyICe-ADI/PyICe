@@ -392,7 +392,6 @@ class channel(delegator):
         return self._category
     def add_tag(self,tag):
         '''each channel may receive several tags for sorting purposes. The tag is usually a string.'''
-        print("*** Added tag {} to {}".format(tag, self.get_name()))
         self._tags.append(tag)
     def add_tags(self,tag_list):
         '''each channel may receive several tags for sorting purposes. This function adds a list of tags. The tags are usually strings.'''

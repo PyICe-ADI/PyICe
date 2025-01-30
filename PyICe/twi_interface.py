@@ -1118,18 +1118,16 @@ class i2c_pic(twi_interface):
         data16 = (msb << 8) + lsb
         return data16
 class i2c_scpi(twi_interface):
-    '''communication class to simplify talking to atmega32u4 with Steve/Eric SCPI firmware
-    requires pySerial
-    '''
+    '''communication class to simplify talking to atmega32u4 with Steve/Eric SCPI firmware requires pySerial'''
     def __init__(self, visa_interface, **kwargs):
         self.interface = visa_interface
         self._cc_list = None
         super().__init__(name="Configurator MCU native i2c port", **kwargs)
+        self.set_frequency(400e3)
     def __del__(self):
         self.interface.close()
     def init_i2c(self):
         self.reset_twi()
-        time.sleep(0.1)
         #modified this to remove the pyserial inWaiting, now its a plain visa interface
         timeout = self.interface.timeout
         self.interface.timeout = 0.02
@@ -1140,8 +1138,7 @@ class i2c_scpi(twi_interface):
             pass
         self.interface.timeout = timeout
     def resync_communication(self):
-        print("***** Attempting RE-SYNC")
-        time.sleep(1.0)
+        print("***** i2c_scpi: Attempting RE-SYNC *****")
         self.init_i2c()
     def close(self):
         '''close the underlying (serial) interface'''
@@ -1162,9 +1159,8 @@ class i2c_scpi(twi_interface):
         FCLK = 16e6
         TWBR = int(round(((FCLK / frequency - 16) / 2)))
         assert TWBR <= 255 and TWBR >= 0
-        self.interface.write(':I2C:PORT:TWBR {};'.format(TWBR))
+        self.interface.write(f':I2C:PORT:TWBR {TWBR};')
         self.reset_twi()
-        print("Setting I2C port to {}Hz".format(FCLK / (16 + 2 * TWBR)))
     ###I2C Primitives###
     def start(self):
         self.interface.write(':S?;')
