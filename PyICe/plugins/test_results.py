@@ -399,6 +399,7 @@ class Test_Results_Reload(Test_Results):
     def __init__(self, results_json='test_results.json'):
         # self._schema_version = 1.0
         self._test_declarations = []
+        self.test_limits = {}
         self._test_results = collections.OrderedDict()
         with open(results_json, mode='r', encoding='utf-8') as f:
             self._results = json.load(f)
@@ -414,7 +415,8 @@ class Test_Results_Reload(Test_Results):
         self._set_traceability_info(datetime=self._results["collection_date"], **self._results["traceability"])
         for test in self._results['tests']:
             self._test_declarations.append(test)
-            self._test_results[test] = self._test_results_list(name=test, upper_limit=self._results['tests'][test]['declaration']['upper_limit'], lower_limit=self._results['tests'][test]['declaration']['lower_limit'], override=self._failure_override)
+            self.test_limits[test] = self._results['tests'][test]['declaration']
+            self._test_results[test] = self._test_results_list(name=test, upper_limit=self.test_limits[test]['upper_limit'], lower_limit=self.test_limits[test]['lower_limit'], override=self._failure_override)
             for case in self._results['tests'][test]['results']['cases']:
                 for trial in case['case_results']:
                     self._test_results[test].append(self._test_result(test_name=test,
