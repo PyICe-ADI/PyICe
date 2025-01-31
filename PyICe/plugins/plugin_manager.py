@@ -547,6 +547,8 @@ class Plugin_Manager():
                     self._metalog(test)
             if 'bench_config_management' in self.plugins and self.verbose:
                 print(self.all_connections.print_connections())
+                if temperatures and input(f'Above are the required connections to run the added test(s). Are you ready? [y/n]: ').lower() in ['n', 'no']:
+                    return
             if 'bench_image_creation' in self.plugins:
                 self.visualizer = bench_visualizer.visualizer(connections=self.all_connections.connections, locations=self.bench_image_locations)
                 for test in self.tests:
