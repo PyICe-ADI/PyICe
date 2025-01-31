@@ -411,7 +411,7 @@ class Test_Results_Reload(Test_Results):
             if self._results['test_crashed']:
                 self._failure_override = True
         except KeyError:
-            print("JSON came to be before we started tracking test crashes.")
+            print("JSON came to be before we started tracking test crashes. Regenerating this json will remove this notice.")
         self._set_traceability_info(datetime=self._results["collection_date"], **self._results["traceability"])
         for test in self._results['tests']:
             self._test_declarations.append(test)
