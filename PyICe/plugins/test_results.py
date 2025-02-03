@@ -397,15 +397,12 @@ class Test_Results(generic_results):
 class Test_Results_Reload(Test_Results):
     '''Rereads a json file and converts it back to a Test_Results compatible schema.'''
     def __init__(self, results_json='test_results.json'):
-        # self._schema_version = 1.0
         self._test_declarations = []
         self.test_limits = {}
         self._test_results = collections.OrderedDict()
         with open(results_json, mode='r', encoding='utf-8') as f:
             self._results = json.load(f)
             f.close()
-        # if self.__results['schema_version'] != self._schema_version:
-            # raise ResultsSchemaMismatchException(f'Results file {results_json} written with schema version {self.__results["schema_version"]}, but reader expecting {self._schema_version}.')
         self._init(name=self._results['test_module'], module=None)
         try:
             if self._results['test_crashed']:
