@@ -719,7 +719,7 @@ class Plugin_Manager():
                     database = None
                 if reset_tn:
                     table_name = None
-            elif test._is_crashed:
+            else:
                 print(f"Skipping evaluation for {test.get_name()}.")
 
     def correlate(self, database=None, table_name=None):
