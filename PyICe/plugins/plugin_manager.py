@@ -10,6 +10,7 @@ from PyICe.lab_core import logger, master
 from PyICe.plugins import test_archive
 from email.mime.image import MIMEImage
 from PyICe import LTC_plot
+import logging
 
 class Callback_logger(logger):
     '''Wrapper for the standard logger. Used to perform special actions for specific channels on a per-log basis.'''
@@ -31,6 +32,8 @@ class Plugin_Manager():
         self.thismachine = socket.gethostname().replace("-","_").split(".")[0]
         self.ident_header = f'Operator: {self.operator}\n Machine: {self.thismachine}\n\n'
         self.scratch_folder = scratch_folder
+        self.logger = logging.getLogger('output')
+        logging.basicConfig(filename=f'{scratch_folder}/sample.log', encoding='utf-8', filemode='w', level=logging.INFO)
         self.debug = False
         for attr in settings:
             setattr(self, attr, settings[attr])
@@ -41,6 +44,7 @@ class Plugin_Manager():
                 import cairosvg
                 self._cairosvg = cairosvg
             except Exception as e:
+                self.logger.info("*** PLUGIN MANAGER WARNING ****", "", "You elected to use the 'Notifications' Plugin.", "Unable to import cairosvg's Python package or compiled dll.", "Try installing the Glade/Gtk+ for Windows development environment.", "Otherwise suggest you opt out of the 'Notifications' plugin.", "Write to pyice-developers@analog.com for more information.", "", "*** Expect a crash when generating plots ****", "")
                 print_banner("*** PLUGIN MANAGER WARNING ****", "", "You elected to use the 'Notifications' Plugin.", "Unable to import cairosvg's Python package or compiled dll.", "Try installing the Glade/Gtk+ for Windows development environment.", "Otherwise suggest you opt out of the 'Notifications' plugin.", "Write to pyice-developers@analog.com for more information.", "", "*** Expect a crash when generating plots ****", "")
 
     def add_test(self, test, debug=False, skip_plot=False, skip_eval=False):
@@ -62,6 +66,10 @@ class Plugin_Manager():
         a_test._db_file = os.path.join(a_test._module_path, self.scratch_folder, 'data_log.sqlite')
         a_test._is_crashed = False
 
+    # def run(self, temperatures=[]):
+        # command = "ls -l | tee output.txt"
+        # subprocess.run(command, shell=True)
+
     def run(self, temperatures=[]):
         '''
         This method goes through the complete data collection process the project set out.
@@ -71,8 +79,8 @@ class Plugin_Manager():
         The list consists of values that will be set to the 'temp_control_channel' assigned by the instrument drivers.
         Default value is an empty list.
         '''
-        self.collect(temperatures)
         self._temperatures = temperatures
+        self.collect(temperatures)
         self.plot()
         if 'evaluate_tests' in self.plugins:
             self._test_results_str = ''
@@ -110,6 +118,7 @@ class Plugin_Manager():
                     self._test_results_str += "*** END OF REPORT ***"
                     self.notify(self._test_results_str, subject='Test Results')
         except Exception as e:
+            traceback.print_exc()
             traceback.print_exc()
             print('\n***PLUGIN MANAGER ERROR***\nError occurred while attempting to email test results.\n')
         try:
@@ -532,6 +541,7 @@ class Plugin_Manager():
                     try:
                         test._declare_bench_connections()
                     except Exception as e:
+                        self.logger.error("TEST_MANAGER ERROR: This project indicated bench configuration data would be stored. Test template requires a _declare_bench_connections method that gathers the data.")
                         raise("TEST_MANAGER ERROR: This project indicated bench configuration data would be stored. Test template requires a _declare_bench_connections method that gathers the data.")
                     self.all_benches.append(self.test_connections)
             if 'bench_config_management' in self.plugins:
@@ -560,12 +570,14 @@ class Plugin_Manager():
                 self.temperature_run_startup()
             for temp in temperatures or ["ambient"]:
                 if temp != "ambient":
+                    self.logger.info(f'Setting temperature to {temp}°C')
                     print_banner(f'Setting temperature to {temp}°C')
                     self.temperature_channel.write(temp)
                 for test in self.tests:
                     if not test._is_crashed:
                         try:
                             print_banner(f'{test.get_name()} Collecting. . .')
+                            self.logger.info(f'{test.get_name()} Collecting. . .')
                             self.startup()
                             test._reconfigure()
                             test.collect()
@@ -574,10 +586,12 @@ class Plugin_Manager():
                             traceback.print_exc()
                             test._is_crashed = True
                             test._crash_info = sys.exc_info()
+                            self.logger.error(test._crash_info)
                             self.notify(self._crash_str(test), subject='CRASHED!!!')
                         self.cleanup()
                 if temp != "ambient":
                     if all([x._is_crashed for x in self.tests]):
+                        self.logger.info('All tests have crashed. Skipping remaining temperatures.')
                         print_banner('All tests have crashed. Skipping remaining temperatures.')
                         break
             self.shutdown()
@@ -622,11 +636,13 @@ class Plugin_Manager():
         reset_pf = False
         if test_list is None:
             test_list = self.tests
+        self.logger.info('Plotting')
         print_banner('Plotting. . .')
         for test in test_list:
             if not test._skip_plot and hasattr(test, 'plot') and not test._is_crashed:
                 test.plot_list=[]
                 test.linked_plots={}
+                self.logger.info(f'{test.get_name()} Plotting. . .')
                 print_banner(f'{test.get_name()} Plotting. . .')
                 if database is None:
                     database = test.get_db_file()
@@ -664,6 +680,7 @@ class Plugin_Manager():
                 if skip_email_input:
                     self._plots.extend(test.plot_list)
                     self._linked_plots.update(test.linked_plots)
+                self.logger.info(f'Plotting for {test.get_name()} complete.')
                 print_banner(f'Plotting for {test.get_name()} complete.')
                 if reset_db:
                     database = None
@@ -672,6 +689,7 @@ class Plugin_Manager():
                 if reset_pf:
                     plot_filepath = None
             elif test._is_crashed:
+                self.logger.info(f"{test.get_name()} crashed. Skipping plot.")
                 print(f"{test.get_name()} crashed. Skipping plot.")
 
     def evaluate(self, database=None, table_name=None, test_list=None):
@@ -679,6 +697,7 @@ class Plugin_Manager():
         args:   
             database - string. The location of the database with the data to evaluate If left blank, the evaluation will continue with the database in the same directory as the test script.
             table_name - string. The name of the table in the database with the relevant data. If left blank, the evaluation will continue with the table named after the test script.'''
+        self.logger.info('Evaluating. . .')
         print_banner('Evaluating. . .')
         reset_db = False
         reset_tn = False
@@ -700,6 +719,7 @@ class Plugin_Manager():
                     test.evaluate_results()
                 except Exception:
                     traceback.print_exc()
+                    self.logger.error(f"*** ERROR ***", f"{test.get_name()} crashed during evaluation, skipping.")
                     print_banner(f"*** ERROR ***", f"{test.get_name()} crashed during evaluation, skipping.")
                     print("\n")
                     database = None
