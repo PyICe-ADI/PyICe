@@ -32,8 +32,8 @@ class Plugin_Manager():
         self.thismachine = socket.gethostname().replace("-","_").split(".")[0]
         self.ident_header = f'Operator: {self.operator}\n Machine: {self.thismachine}\n\n'
         self.scratch_folder = scratch_folder
-        self.logger = logging.getLogger('output')
-        logging.basicConfig(filename=f'{scratch_folder}/sample.log', encoding='utf-8', filemode='w', level=logging.INFO)
+        self.logger = logging.getLogger(__name__)
+        logging.basicConfig(filename=f'{scratch_folder}/sample.log', encoding='utf-8', filemode='w', level=logging.INFO, force=True)
         self.debug = False
         for attr in settings:
             setattr(self, attr, settings[attr])
@@ -118,7 +118,6 @@ class Plugin_Manager():
                     self._test_results_str += "*** END OF REPORT ***"
                     self.notify(self._test_results_str, subject='Test Results')
         except Exception as e:
-            traceback.print_exc()
             traceback.print_exc()
             print('\n***PLUGIN MANAGER ERROR***\nError occurred while attempting to email test results.\n')
         try:
@@ -586,7 +585,7 @@ class Plugin_Manager():
                             traceback.print_exc()
                             test._is_crashed = True
                             test._crash_info = sys.exc_info()
-                            self.logger.error(test._crash_info)
+                            self.logger.error(self._crash_str(test))
                             self.notify(self._crash_str(test), subject='CRASHED!!!')
                         self.cleanup()
                 if temp != "ambient":
