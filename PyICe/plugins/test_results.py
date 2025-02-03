@@ -20,7 +20,7 @@ def freeze(o):
   try:
     hash(o)
   except TypeError as e:
-    raise TypeError("Something slipped through the freeze function. Contact support.") from e
+    raise TypeError(f"***P.I.E. TEST_RESULTS.PY FREEZE***\n Expecting a dictionary, set, list, or tuple. Was given {type(o)}.") from e
   else:
     return o
 
@@ -156,7 +156,7 @@ class generic_results():
                                                                     'passes':    bool(results[t_d]),
                                                                    }
                 else:
-                    raise Exception("I'm lost.")
+                    raise Exception(f"*** P.I.E. TEST_RESULTS.PY ***\nExpected self to be either a Test_Results class or a Correlation_Results class. Was given a(n) {self}.")
         if self._failure_override:
             res_dict['summary'] = {'passes': False}
         else:
