@@ -648,7 +648,9 @@ class Plugin_Manager():
                     returned_plots=test.plot()
                 except Exception as e:
                     # Don't stop other test's plotting or archiving because of a plotting error.
+                    print(f"Plot method for {test.get_name()} crashed.")
                     traceback.print_exc()
+                    continue
                 if isinstance(test.plot_list, (LTC_plot.plot, LTC_plot.Page)):
                     test.plot_list = [self._convert_svg(test.plot_list)]
                 else:
@@ -750,3 +752,23 @@ class Plugin_Manager():
                 with open(dest_abs_filepath, 'wb') as f:
                     f.write(t_r.encode('utf-8'))
                     f.close()
+
+    def display_connections(self):
+        '''Distills the connections of all added tests and prints the diagram'''
+        if 'bench_config_management' in self.plugins:
+            self.test_components = component_collection()
+            self._add_components()
+            self.all_benches = []
+            for test in self.tests:
+                self.test_connections = connection_collection(name=test.get_name())
+                try:
+                    test._declare_bench_connections()
+                except Exception as e:
+                    raise("TEST_MANAGER ERROR: This project indicated bench configuration data would be stored. Test template requires a _declare_bench_connections method that gathers the data.")
+                self.all_benches.append(self.test_connections)
+            self.all_connections = connection_collection.distill(self.all_benches)
+            print(self.all_connections.print_connections())
+            if 'bench_image_creation' in self.plugins:
+                self.visualizer = bench_visualizer.visualizer(connections=self.all_connections.connections, locations=self.bench_image_locations)
+                for test in self.tests:
+                    self.visualizer.generate(file_base_name="Bench_Config", prune=True, file_format='svg', engine='neato', file_location=test._module_path+os.sep+'scratch')
