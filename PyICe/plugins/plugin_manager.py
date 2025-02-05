@@ -71,6 +71,7 @@ class Plugin_Manager():
         The list consists of values that will be set to the 'temp_control_channel' assigned by the instrument drivers.
         Default value is an empty list.
         '''
+        self._temperatures = temperatures
         self.collect(temperatures)
         self.plot()
         if 'evaluate_tests' in self.plugins:
