@@ -449,16 +449,19 @@ class Plugin_Manager():
                 print(f'No data logged for {test.get_name()}. Skipping archive.')
                 continue
             if test._is_crashed:
-                this_archive_folder = archive_folder + '_CRASHED'
+                this_archive_folder = archive_folder + '__CRASHED'
             else:
                 this_archive_folder = archive_folder
             db_dest_file = archiver.compute_db_destination(this_archive_folder)
-            archiver.copy_table(db_source_table=test.get_name(), db_dest_table=test.get_name(), db_dest_file=db_dest_file)
-            test._logger.copy_table(old_table=test.get_name(), new_table=test.get_name()+'_'+archive_folder)
+            archived_table_name = test.get_name()
+            if test._is_crashed:
+                archived_table_name+='__CRASHED'
+            archiver.copy_table(db_source_table=test.get_name(), db_dest_table=archived_table_name, db_dest_file=db_dest_file)
+            test._logger.copy_table(old_table=test.get_name(), new_table=archived_table_name+'_'+archive_folder)
             if 'traceability' in self.plugins:
                 archiver.copy_table(db_source_table=test.get_name()+'_metadata', db_dest_table=test.get_name()+'_metadata', db_dest_file=db_dest_file)
                 test._logger.copy_table(old_table=test.get_name()+'_metadata', new_table=test.get_name()+'_'+archive_folder+'_metadata')
-            archived_tables.append((test, test.get_name(), db_dest_file))
+            archived_tables.append((test, archived_table_name, db_dest_file))
         if len(archived_tables):
             arch_plot_scripts = []
             for (test, db_table, db_file) in archived_tables:
@@ -471,7 +474,7 @@ class Plugin_Manager():
                     plot_script_src += f"from {import_str}.test import Test\n"
                     plot_script_src += f"pm = Plugin_Manager(settings=Project_Settings)\n"
                     plot_script_src += f"pm.add_test(Test)\n"
-                    plot_script_src += f"pm.plot(database='data_log.sqlite', table_name='{test.get_name()}')\n"
+                    plot_script_src += f"pm.plot(database='data_log.sqlite', table_name='{archived_table_name}')\n"
                     try:
                         with open(dest_file, 'a') as f: #exists, overwrite, append?
                             f.write(plot_script_src)
@@ -490,7 +493,7 @@ class Plugin_Manager():
                     plot_script_src += f"from {import_str}.test import Test\n"
                     plot_script_src += f"pm = Plugin_Manager(settings=Project_Settings)\n"
                     plot_script_src += f"pm.add_test(Test)\n"
-                    plot_script_src += f"pm.evaluate(database='data_log.sqlite', table_name='{test.get_name()}')\n"
+                    plot_script_src += f"pm.evaluate(database='data_log.sqlite', table_name='{archived_table_name}')\n"
                     try:
                         with open(dest_file, 'a') as f: #exists, overwrite, append?
                             f.write(plot_script_src)
@@ -683,7 +686,7 @@ class Plugin_Manager():
         if test_list is None:
             test_list = self.tests
         for test in test_list:
-            if not test._skip_eval and not test._is_crashed:
+            if not test._skip_eval:
                 if database is None:
                     database = test._db_file
                     reset_db = True
@@ -693,6 +696,8 @@ class Plugin_Manager():
                 else:
                     test._table_name = table_name
                 test._test_results = Test_Results(test._name, module=test)
+                if test._is_crashed or test._table_name.endswith('__CRASHED'):
+                    test._test_results._failure_override = True
                 test._db = sqlite_data(database_file=database, table_name=test.get_table_name())
                 try:
                     test.evaluate_results()
@@ -716,8 +721,8 @@ class Plugin_Manager():
                     database = None
                 if reset_tn:
                     table_name = None
-            elif test._is_crashed:
-                print(f"{test.get_name()} crashed. Skipping evaluation.")
+            else:
+                print(f"Skipping evaluation for {test.get_name()}.")
 
     def correlate(self, database=None, table_name=None):
         '''Run the correlate method of each test in self.tests.
