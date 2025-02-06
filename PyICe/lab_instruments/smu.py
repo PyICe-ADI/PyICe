@@ -200,7 +200,7 @@ class keithley_2400(scpi_smu):
                 )
     #TODO read_delegated??
 
-import time
+
 class keithley_2600(keithley_2400):
     '''use 2400 personality emulator compatibility script. Script must be loaded via USB front panel manually.
     https://download.tek.com/software/supporting_files/2600B-800A-readme_2600B-EMUL2400.pdf'''
