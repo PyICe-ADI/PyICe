@@ -475,7 +475,7 @@ class Plugin_Manager():
                     plot_script_src += f"from {import_str}.test import Test\n"
                     plot_script_src += f"pm = Plugin_Manager(settings=Project_Settings)\n"
                     plot_script_src += f"pm.add_test(Test)\n"
-                    plot_script_src += f"pm.plot(database='data_log.sqlite', table_name='{archived_table_name}')\n"
+                    plot_script_src += f"pm.plot(database='data_log.sqlite', table_name='{db_table}')\n"
                     try:
                         with open(dest_file, 'a') as f: #exists, overwrite, append?
                             f.write(plot_script_src)
@@ -494,7 +494,7 @@ class Plugin_Manager():
                     plot_script_src += f"from {import_str}.test import Test\n"
                     plot_script_src += f"pm = Plugin_Manager(settings=Project_Settings)\n"
                     plot_script_src += f"pm.add_test(Test)\n"
-                    plot_script_src += f"pm.evaluate(database='data_log.sqlite', table_name='{archived_table_name}')\n"
+                    plot_script_src += f"pm.evaluate(database='data_log.sqlite', table_name='{db_table}')\n"
                     try:
                         with open(dest_file, 'a') as f: #exists, overwrite, append?
                             f.write(plot_script_src)
