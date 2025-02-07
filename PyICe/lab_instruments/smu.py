@@ -266,7 +266,8 @@ class keithley_2600(keithley_smu):
         self.get_interface().write(f'smua.sense = smua.SENSE_REMOTE')
         self.get_interface().write(f'smub.sense = smub.SENSE_REMOTE')
         # self.get_interface().write(':SOURce1:VOLTage:PROTection:LEVel 20') ##todo Dave fix
-        # atexit.register(self._output_off, channel_number=1) #TODO debug
+        atexit.register(self._output_off, channel_number=1)
+        atexit.register(self._output_off, channel_number=2)
     def _channel_id(self, channel_number):
         if channel_number == 1:
             return 'a'
