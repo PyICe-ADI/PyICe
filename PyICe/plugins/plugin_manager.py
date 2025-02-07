@@ -1,6 +1,6 @@
 from PyICe.plugins.bench_configuration_management.bench_configuration_management import component_collection, connection_collection
 import os, inspect, importlib, datetime, socket, traceback, sys, json, getpass, contextlib, io
-from PyICe.plugins.bench_configuration_management import bench_visualizer
+from PyICe.plugins.bench_configuration_management import bench_visualizer, configuration_parser
 from PyICe.plugins.traceability_items import Traceability_items
 from PyICe.plugins.test_results import Test_Results, Failed_Eval
 from PyICe.lab_utils.communications import email, sms
@@ -580,7 +580,10 @@ class Plugin_Manager():
                         self.evaluate(database=os.path.relpath(db_file), table_name=db_table, test_list=[test])
                 # if 'bench_image_creation' in self.plugins:
                     # try:
-                        # self.visualizer = bench_visualizer.visualizer(connections=, locations=self.bench_image_locations)
+                        # connections = []
+                        # for connection_bits in sqlite_data(database_file=self.get_db_file(), table_name=self.get_name()).query(f'SELECT test_bench_connections FROM {self.get_name()}_metadata').fetchone()[0]):
+                            # connections
+                        # self.visualizer = bench_visualizer.visualizer(connections=configuration_parser, locations=self.bench_image_locations)
                     # self.visualizer.generate(file_base_name="Bench_Config", prune=True, file_format='svg', engine='neato', file_location=os.path.dirname(db_file))
 
     ###
