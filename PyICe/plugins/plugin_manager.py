@@ -510,6 +510,76 @@ class Plugin_Manager():
                 arch_plot_scripts.append(dest_file)
                 print_banner(f'Archiving for {test.get_name()} complete.')
 
+    def archive_latest(self, destination_file=None):
+        for test in self.tests:
+            try:
+                archive_folder = test.get_archive_folder_name()
+                break
+            except AttributeError:
+                archive_folder = datetime.datetime.utcnow().strftime("%Y_%m_%d_%H_%M")
+                break
+            except Exception:
+                continue
+        else:
+            archive_folder = datetime.datetime.utcnow().strftime("%Y_%m_%d_%H_%M")
+        archived_tables = []
+        for test in self.tests:
+            archiver = test_archive.database_archive(test_script_file=test.get_module_path(), db_source_file=test.get_db_file())
+            if not archiver.has_data(tablename=test.get_name()):
+                print(f'No data logged for {test.get_name()}. Skipping archive.')
+                continue
+            this_archive_folder = archive_folder
+            if destination_file:
+                db_dest_file=destination_file
+            else:
+                db_dest_file = archiver.compute_db_destination(this_archive_folder)
+            archived_table_name = test.get_name()
+            archiver.copy_table(db_source_table=test.get_name(), db_dest_table=archived_table_name, db_dest_file=db_dest_file)
+            if 'traceability' in self.plugins:
+                archiver.copy_table(db_source_table=test.get_name()+'_metadata', db_dest_table=test.get_name()+'_metadata', db_dest_file=db_dest_file)
+            archived_tables.append((test, archived_table_name, db_dest_file))
+        if len(archived_tables):
+            arch_plot_scripts = []
+            for (test, db_table, db_file) in archived_tables:
+                if hasattr(test, 'plot'):
+                    dest_file = os.path.join(os.path.dirname(db_file), f"replot_data.py")
+                    import_str = test._module_path[test._module_path.index(self.project_folder_name):].replace(os.sep,'.')
+                    settings_path = self.project_settings_location.replace(os.sep, '.')[1:-3]
+                    plot_script_src = f"from {self.project_folder_name}.{settings_path} import Project_Settings\n"
+                    plot_script_src += f"from PyICe.plugins.plugin_manager import Plugin_Manager\n"
+                    plot_script_src += f"from {import_str}.test import Test\n"
+                    plot_script_src += f"pm = Plugin_Manager(settings=Project_Settings)\n"
+                    plot_script_src += f"pm.add_test(Test)\n"
+                    plot_script_src += f"pm.plot(database='data_log.sqlite', table_name='{db_table}')\n"
+                    try:
+                        with open(dest_file, 'a') as f: #exists, overwrite, append?
+                            f.write(plot_script_src)
+                    except Exception as e:
+                        #write locked? exists?
+                        print(type(e))
+                        print(e)
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        self.plot(database=os.path.relpath(db_file), table_name=db_table, test_list=[test], skip_email_input=True)
+                if 'evaluate_tests' in self.plugins:
+                    dest_file = os.path.join(os.path.dirname(db_file), f"reeval_data.py")
+                    import_str = test._module_path[test._module_path.index(self.project_folder_name):].replace(os.sep,'.')
+                    settings_path = self.project_settings_location.replace(os.sep, '.')[1:-3]
+                    plot_script_src =  f"from {self.project_folder_name}.{settings_path} import Project_Settings\n"
+                    plot_script_src += f"from PyICe.plugins.plugin_manager import Plugin_Manager\n"
+                    plot_script_src += f"from {import_str}.test import Test\n"
+                    plot_script_src += f"pm = Plugin_Manager(settings=Project_Settings)\n"
+                    plot_script_src += f"pm.add_test(Test)\n"
+                    plot_script_src += f"pm.evaluate(database='data_log.sqlite', table_name='{db_table}')\n"
+                    try:
+                        with open(dest_file, 'a') as f: #exists, overwrite, append?
+                            f.write(plot_script_src)
+                    except Exception as e:
+                        #write locked? exists?
+                        print(type(e))
+                        print(e)
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        self.evaluate(database=os.path.relpath(db_file), table_name=db_table, test_list=[test])
+
     ###
     # SCRIPT METHODS
     ###
@@ -665,7 +735,7 @@ class Plugin_Manager():
                     assert returned_plots == None
                 for plot_group in test.linked_plots:
                     test.linked_plots[plot_group] = [self._convert_svg(plt) for plt in test.linked_plots[plot_group]]
-                if skip_email_input:
+                if not skip_email_input:
                     self._plots.extend(test.plot_list)
                     self._linked_plots.update(test.linked_plots)
                 print_banner(f'Plotting for {test.get_name()} complete.')
