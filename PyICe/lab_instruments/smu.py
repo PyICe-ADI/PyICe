@@ -18,6 +18,7 @@ class smu(instrument):
         else:
             raise Exception('How did I get here?')
     def _init_channel(self, channel_number):
+        #todo remote sense, high c?
         if channel_number in self._configured_channels:
             assert 'v_force' in self._configured_channels[channel_number]
             assert 'i_force' in self._configured_channels[channel_number]
@@ -35,6 +36,7 @@ class smu(instrument):
                                                         }
     def add_channels(self, channel_name, channel_number=1):
         '''shortcut'''
+        #todo remote sense, high c?
         return (self.add_channel_voltage_force(f'{channel_name}_vforce', channel_number),
                 self.add_channel_current_force(f'{channel_name}_iforce', channel_number),
                 self.add_channel_voltage_sense(f'{channel_name}_vsense', channel_number),
@@ -92,7 +94,27 @@ class smu(instrument):
         new_channel.set_description(self.get_name() + ': ' + self.add_channel_current_compliance.__doc__)
         # new_channel.set_display_format_function(function = lambda float_data: lab_utils.eng_string(float_data, fmt=fmt,si=True) + 'V')
         return self._add_channel(new_channel)
-
+    def add_channel_remote_sense(self, channel_name, channel_number=1):
+        '''remote (4-wire) sense enable control'''
+        self._init_channel(channel_number)
+        new_channel = channel(channel_name,write_function=lambda i, channel_number=channel_number: self._remote_sense(channel_number, i))
+        self._configured_channels[channel_number]['remote_sense'] = new_channel
+        new_channel.set_attribute('channel_number', channel_number)
+        new_channel.set_attribute('channel_type', 'remote_sense')
+        new_channel.set_description(self.get_name() + ': ' + self.add_channel_remote_sense.__doc__)
+        return self._add_channel(new_channel)
+        #todo initial value?
+    def add_channel_high_capacitance(self, channel_name, channel_number=1):
+        '''stabilize forcing source for higher DUT capacitance, typically tens of uF'''
+        self._init_channel(channel_number)
+        new_channel = channel(channel_name,write_function=lambda i, channel_number=channel_number: self._high_capacitance(channel_number, i))
+        self._configured_channels[channel_number]['high_capacitance'] = new_channel
+        new_channel.set_attribute('channel_number', channel_number)
+        new_channel.set_attribute('channel_type', 'high_capacitance')
+        new_channel.set_description(self.get_name() + ': ' + self.add_channel_high_capacitance.__doc__)
+        return self._add_channel(new_channel)
+        #todo initial value?
+    
 class keithley_smu(smu):
     def _parse_float(self, val):
         f = float(val)
@@ -143,6 +165,12 @@ class scpi_smu(scpi_instrument, smu):
         self.get_interface().write(f':SENSe{channel_number}:VOLTage:DC:PROTection:LEVel {value}')
     def _icompl(self, channel_number, value):
         self.get_interface().write(f':SENSe{channel_number}:CURRent:DC:PROTection:LEVel {value}')
+    def _remote_sense(self, channel_number, value):
+        '''ignores channel number!!!!!!!!!!!!!!!!!!!'''
+        self.get_interface().write(f':SYSTem:RSENse {1 if value else 0}')
+    def _high_capacitance(self, channel_number, value):
+        raise Exception('Unimplemented. Contact PyICe developers.')
+        
 
 class keithley_2400(scpi_smu, keithley_smu):
     ''''''
@@ -263,8 +291,10 @@ class keithley_2600(keithley_smu):
         self._configured_channels = {}
         self._output_off(channel_number=1)
         self._output_off(channel_number=2)
-        self.get_interface().write(f'smua.sense = smua.SENSE_REMOTE')
-        self.get_interface().write(f'smub.sense = smub.SENSE_REMOTE')
+        self._high_capacitance(1, True)
+        self._high_capacitance(2, True)
+        self._remote_sense(1, True)
+        self._remote_sense(2, True)
         # self.get_interface().write(':SOURce1:VOLTage:PROTection:LEVel 20') ##todo Dave fix
         atexit.register(self._output_off, channel_number=1)
         atexit.register(self._output_off, channel_number=2)
@@ -275,6 +305,10 @@ class keithley_2600(keithley_smu):
             return 'b'
         else:
             raise Exception(f'Unknown SMU channel number {channel_number}.')
+    def _high_capacitance(self, channel_number, is_high_c):
+        self.get_interface().write(f'smu{self._channel_id(channel_number)}.source.highc = smu{self._channel_id(channel_number)}.{"ENABLE" if is_high_c else "DISABLE"}')
+    def _remote_sense(self, channel_number, is_remote_sense):
+        self.get_interface().write(f'smu{self._channel_id(channel_number)}.sense = smu{self._channel_id(channel_number)}.{"SENSE_REMOTE" if is_remote_sense else "SENSE_LOCAL"}')
     def _output_off(self, channel_number):
         self.get_interface().write(f'smu{self._channel_id(channel_number)}.source.output = smu{self._channel_id(channel_number)}.OUTPUT_HIGH_Z')
     def _vforce(self, channel_number, value):
@@ -344,4 +378,4 @@ class keithley_2600(keithley_smu):
         new_channel.set_description(self.get_name() + ': ' + self.add_channel_current_force.__doc__)
         # new_channel.set_display_format_function(function = lambda float_data: lab_utils.eng_string(float_data, fmt=fmt,si=True) + 'A')
         return self._add_channel(new_channel)
-
+        
