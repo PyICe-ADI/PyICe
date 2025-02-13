@@ -1908,7 +1908,7 @@ class threshold_finder(instrument,delegator):
         self.search_algorithm = "linear search"
         res = self._compute_outputs()
         return res
-    def find_linear_no_hyeteresis(self, rising_direction=True):
+    def find_linear_no_hysteresis(self, rising_direction=True):
         '''hysteresis-unaware linear sweep. Returns dictionary of results. Optionally sweep in downward direction.'''
         #todo integer awareness
         self._check_polarity()
