@@ -1908,6 +1908,31 @@ class threshold_finder(instrument,delegator):
         self.search_algorithm = "linear search"
         res = self._compute_outputs()
         return res
+    def find_linear_no_hysteresis(self, rising_direction=True):
+        '''hysteresis-unaware linear sweep. Returns dictionary of results. Optionally sweep in downward direction.'''
+        #todo integer awareness
+        self._check_polarity()
+        self.tries = 0
+        if rising_direction:
+            self.debug_print("------------------------------")
+            self.debug_print("Searching for rising threshold")
+            self.rising_min = self._minimum
+            self.rising_max = self._maximum
+            self._find_linear_threshold(self._minimum, self._maximum, self._abstol) # find rising threshold
+            self.falling_min = self.rising_min
+            self.falling_max = self.rising_max
+            self.search_algorithm = "single linear search - rising"
+        else:
+            self.debug_print("-------------------------------")
+            self.debug_print("Searching for falling threshold")
+            self.falling_min = self._minimum
+            self.falling_max = self._maximum
+            self._find_linear_threshold(self._minimum, self._maximum, -1 * self._abstol) # find falling threshold starting just after rising hysteresis flip.
+            self.rising_min = self.falling_min
+            self.rising_max = self.falling_max
+            self.search_algorithm = "single linear search - falling"
+        res = self._compute_outputs()
+        return res
     def find_geometric(self, decades=None):
         #todo integer awareness
         '''Perform repeated linear searches for rising and falling thresholds with 10x increase in resolution each iteration.
