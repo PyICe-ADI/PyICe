@@ -79,6 +79,11 @@ class BK8500(single_channel_electronic_load):
 class one_channel_power_supply(bench_config_component):
     def add_terminals(self):
         self.add_terminal("VOUT1", instrument=self)
+        
+class two_channel_power_supply(bench_config_component):        
+    def add_terminals(self):
+        self.add_terminal("CHANNELA", instrument=self)
+        self.add_terminal("CHANNELB", instrument=self)
 
 class four_channel_power_supply(bench_config_component):
     def add_terminals(self):
