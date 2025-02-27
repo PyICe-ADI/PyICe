@@ -1,20 +1,23 @@
 from PyICe.lab_core import *
 
-# class agilent_8110a(instrument):
-class agilent_8110a(scpi_instrument):
+class Agilent_8110a(scpi_instrument):
     '''
     HP 150MHz Dual Channel Pattern Generator from the early 1990's
     The manual advises to use the short form of SCPI commands to save communication time since this thing has a lousy GPIB port.
+    It also advises to turn the display off but there doesn't seem to be a speed issue turning off seems ill advised for debug reasons.
     '''
 
-    ###### TODO, Manual also advises to turn the display off to save resources   #####
-
-    def __init__(self, interface_visa):
-        self._debug_comms = False
+    def __init__(self, interface_visa, debug_comms=False):
+        self._debug_comms = debug_comms
         self._base_name = 'agilent_8110a'
         instrument.__init__(self, f"agilent_8110a @ {interface_visa}")
         self.add_interface_visa(interface_visa)
         self.get_interface().write("*RST")
+        '''
+        Minimum width of a pulse duration (1 or 0) in the digital pattern.
+        Set by add_channel_pulse_period()
+        '''
+        self.timestep = 6.65e-9
 
     def add_channel_trigger_source(self, channel_name):
         '''
@@ -266,8 +269,11 @@ class agilent_8110a(scpi_instrument):
     def add_channel_delay(self, channel_name, number):
         '''
         Sets the delay of a given channel.
+        Adding a delay of 800ps anecdotally makes the two channels line perfectly. This may only be true when the edges are set to 2ns so caveat-emptor.
         **** WARNING ****
-        Setting the delay of a channel that is in manual trigger pattern mode causes the pattern become malformed and actually hangs the machine from accepting further trigger requests. Returning the trigger mode to CONTINUOUS (aka IMMEDIATE) can clear this hung state but it should be avoided. Setting the state to CONTINUOUS (IMMEDIATE) while changing the delay seems safe.
+        Setting the delay of a channel that is in manual trigger pattern mode causes the pattern become to malformed and actually hangs the machine from accepting further trigger requests.
+        Returning the trigger mode to CONTINUOUS (aka IMMEDIATE) can clear this hung state but it should be avoided.
+        Setting the state to CONTINUOUS (IMMEDIATE) while changing the delay or setting the delay before going to triggered mode for the first time seems safe.
         *** WARNING ***
         '''
         def set_delay(delay):
@@ -367,13 +373,105 @@ class agilent_8110a(scpi_instrument):
         new_channel.add_preset("RZ", "Return to Zero")
         new_channel.add_preset("NRZ", "Non Return to Zero")
         return self._add_channel(new_channel)
+
+class TWI():
+
+    def __init__(self, time_step):
+        self.time_step = time_step
+        self.tbuf = 1300e-9
+        self.thd_sta = 600e-9
+        self.tlow = 1300e-9
+        self.thd_dat = 0e-9     # Allowed to be 0ns to 900ns
+        self.thigh = 600e-9
+        self.tsu_dat = 100e-9
+        self.tsu_sta = 600e-9   # Restart
+        self.tsu_sto = 600e-9
+        self.tsp = 50e-9
+        self.tlead = 1.8e-9
+        self.ttrail = 1.8e-9
+        self.frequency = 1 / ( self.tlead + self.thigh + self.tlow + self.ttrail)
+        self.SCL = []
+        self.SDA = []
+
+    def biterator(self, byte):
+        '''Iterates over the bits of an integer from left to right.'''
+        length = byte.bit_length()
+        for index in range(length):
+            yield 1 if byte << index & 1 << length-1 == 1 << length-1 else 0
+
+    def add_lead_in(self, SDA, SCL):
+        self.SCL.extend(SCL)
+        self.SDA.extend(SDA)
         
-if __name__ == "__main__":
+    def add_lead_out(self, SDA, SCL):
+        self.SCL.extend(SCL)
+        self.SDA.extend(SDA)
+
+    def add_start(self):
+        self.SCL.extend([1])
+        self.SDA.extend([0])
+        self.dwell(self.thd_sta)
+        self.SCL.extend([0])
+        self.SDA.extend([0])
+        self.dwell(self.tlow - self.tsu_dat)
+
+    def add_stop(self):
+        self.SCL.extend([1])
+        self.SDA.extend([1])
+        self.dwell(self.tbuf)
+
+    def add_data_to_low(self):
+        self.SCL.extend([0])
+        self.SDA.extend([0])
+        self.dwell(self.tlow)
+
+    def add_clock_high(self):
+        self.SCL.extend([1])
+        self.SDA.extend([0])
+        self.dwell(self.tsu_sto)
+
+    def add_data_bit(self, d):
+        self.SCL.extend([0])
+        self.SDA.extend([d])
+        self.dwell(self.tsu_dat)
+        self.SCL.extend([1])
+        self.SDA.extend([d])
+        self.dwell(self.thigh)
+        self.SCL.extend([0])
+        self.SDA.extend([d])
+        self.dwell(self.thd_dat)
+
+    def add_ack_bit(self):
+        self.dwell(self.tlow)
+        self.add_data_bit(1)
+
+    def add_byte(self, byte):
+        for bit in self.biterator(byte):
+            self.dwell(self.tlow)
+            twi.add_data_bit(bit)
+        twi.add_ack_bit()
+
+    def add_addr7(self, addr7, R_Wb):
+        self.add_byte(addr7*2 + R_Wb)
+
+    def dwell(self, tdwell):
+        cycles = round(tdwell / self.time_step)
+        self.SCL.extend(self.SCL[-1:] * cycles)
+        self.SDA.extend(self.SDA[-1:] * cycles)
+
+    def get_SDA(self):
+        return self.SDA
+        
+    def get_SCL(self):
+        return self.SCL
+
+if __name__ == "__main__":   
+
     from PyICe import lab_interfaces
     interface_factory = lab_interfaces.interface_factory()
     interface_factory.set_gpib_adapter_visa(adapter_number=0)
-    my_interface = interface_factory.get_visa_gpib_interface(gpib_adapter_number=0, gpib_address_number=1, timeout=1)
-    pulsegen = agilent_8110a(my_interface)
+    my_interface = interface_factory.get_visa_gpib_interface(gpib_adapter_number=0, gpib_address_number=1, timeout=10)
+    pulsegen = Agilent_8110a(my_interface)
     pulsegen.add_channel_ouput_mode("pulsegen_output_mode")
     pulsegen.add_channel_ouput_state("pulsegen_output_state1", number=1)
     pulsegen.add_channel_ouput_state("pulsegen_output_state2", number=2)
@@ -413,8 +511,8 @@ if __name__ == "__main__":
     m.write("pulsegen_output_impedance2", 50)
     m.write("pulsegen_external_impedance1", 50)
     m.write("pulsegen_external_impedance2", 50)
-    m.write("pulsegen_high_voltage1", 2.75)
-    m.write("pulsegen_high_voltage2", 2.75)
+    m.write("pulsegen_high_voltage1", 2)
+    m.write("pulsegen_high_voltage2", 2)
     m.write("pulsegen_low_voltage1", 0)
     m.write("pulsegen_low_voltage2", 0)
     m.write("pulsegen_polarity1", "NORMAL")
@@ -429,19 +527,119 @@ if __name__ == "__main__":
     m.write("pulsegen_pattern_format1", "NRZ")
     m.write("pulsegen_pattern_format2", "NRZ")
     m.write("pulsegen_trigger_source", "IMMEDIATE")
-    m.write("add_channel_delay1", 1e-9)
+    # m.write("add_channel_delay1", 800e-12)
     m.write("pulsegen_trigger_source", "SOFTWARE")
-
-    
-    m.write("pulsegen_pattern1", "1")   # Set port to Neutral
-    m.write("pulsegen_pattern2", [1])   # Set port to Neutral
-    m.write("pulsegen_trigger", "GO")   # Set port to Neutral
-
-
     m.write("pulsegen_output_state1", "ON")
     m.write("pulsegen_output_state2", "ON")
 
-    m.write("pulsegen_pattern1", "101010")
-    m.write("pulsegen_pattern2", "010010")
+    twi = TWI(time_step=pulsegen.timestep)
+    twi.add_lead_in(SCL=[1,1], SDA=[0,0])
+    twi.add_stop()
+    twi.add_start()
+    twi.add_addr7(0x69, R_Wb=0)
+    twi.add_data_to_low()
+    twi.add_clock_high()
+    twi.add_stop()
+    twi.add_lead_out(SCL=[0,0,1], SDA=[0,0,0])
     
+    from PyICe.lab_utils.eng_string import eng_string
+    print("FREQ", eng_string(twi.frequency, fmt=':.2f', si=True, units="Hz"))
+    print("Pattern Length", len(twi.get_SCL()))
+    m.write("pulsegen_pattern1", twi.get_SCL())
+    m.write("pulsegen_pattern2", twi.get_SDA())
+    m.write("pulsegen_trigger", "GO")
     m.gui()
+    
+    
+# Done:
+    # :ARM:IMPedance
+    # :ARM:LEVe1
+    # :ARM:SENSe
+    # :ARM:SLOPe
+    # :ARM:SOURce
+    # *TRG
+    # :TRIGger:IMPedance
+    # :TRIGger:LEVe1
+    # :TRIGger:SLOPe
+    # :TRIGger:SOURce
+    # [:SOURce]:HOLD VOLTage|CURRent
+    # [:SOUR]:VOLT[1|2][:LEV][:IMMediate]:HIGH
+    # [:SOUR]:VOLT[1|2][:LEV][:IMMediate]:LOW
+    # [:SOUR]:CURR[1|21[:LEV][:IMM]:HIGH
+    # [:SOUR]:CURR[1|2][:LEV][:IMMediate]:LOW
+    # :OUTPut[1|2][:STATe] ON|OFF|0|1
+    # :OUTPut[1|2]:IMPedance[:INTernal]
+    # :OUTPut[1|2]:IMPedance:EXTernal
+    # :OUTPut[1|2]:POLarity
+    # [:SOURce]:PULSe:PERiod
+    # [:SOURce]:PULSe:WIDTh[1|2]
+    # [:SOURce]:PULSe:TRANsition[1|2][:LEADing]
+    # f:SOURcel:PULSe:TRANsition[1|2]:TRAiling
+    # :DIGitall:STIMulus]:PATTern[:STATE]
+    # :DIGital[:STIMulus]:SIGNal[1|2]:FORMat
+    # :DIGital[:STIMulus]:PATTern:DATA[1|2|3]
+
+# WIP:
+
+# To Do:
+
+    # :ARM:EWIDth:STATe
+    # :ARM:FREQuency
+    # :ARM:PERiod
+    # :CHANnel:MATH
+    # :DIGital[:STIMulus]:PATTern:PRBS[1|2|3]
+    # :DIGital[:STIMulus]:PATTern:PRESet[1|2|3]
+    # :DIGital[:STIMulus]:PATTern:UPDate
+    # :DISPlay[:WINDow][:STATe]
+    # :MMEMory:CATalog?
+    # :MMEMory:CDIRectory
+    # :MMEMory:COPY
+    # :MMEMory:DELete
+    # :MMEMory:INITialize
+    # :MMEMory:LOAD:STATe
+    # :MMEMory:STORe:STATe
+    # [:SOURce]:CORRection[1|2]:EDELay[:TIME]
+    # [:SOUR]:CURRent[1|2][:LEV][:IMM][:AMPL]
+    # [:SOUR]:CURR[1|2][:LEVel][:IMM]:OFFS
+    # [:SOURce]:CURRent[1|2]:LIMit[:HIGH]
+    # [:SOURce]:CURRent[1|2]:LIMit:LOW
+    # [:SOURce]:CURRent[1|2]: LIMit:STATe
+    # [:SOURce]:FREQuency[:CW|:FIXed]
+    # [:SOURce]:FREQuency[:CW|:FIXed]:AUTO
+    # [:SOURce]:PHASe[1|2][:ADJust]
+    # [:SOURce]:PULSe:DCYCle[1|2]
+    # [:SOURce]:PULSe:DELay[1|2]
+    # [:SOURce]:PULSe:DELay[1|2j:HOLD
+    # [:SOURce]:PULSe:DELay[1|2]:UNIT
+    # [:SOURce]:PULSe:DOUBle[1|2][:STATe]
+    # [:SOURce]:PULSe:DOUBle[1|2]:DELay
+    # [:SOURce]:PULSe:DOUBle[1|2]:DELay:HOLD
+    # [:SOURce]:PULSe:DOUBle[1|21:DELay:UNIT
+    # [:SOURce]:PULSe:HOLD [1|2]
+    # [:SOURce]:PULSe:PERiod:AUTO
+    # [:SOURce]:PULSe:TrailingDELay[1|2]
+    # [:SOURce]:PULSe:TRANsition[1|2]:HOLD
+    # [:SOURce]:PULSe:TRANsition[1|2]:UNIT
+    # [:SOURce]:PULSe:TRAN[1|2]:TRAiling:AUTO
+    # [:SOURce]:PULSe:TRIGger[1|2]:VOLTage
+    # [:SOURce]:ROSCillator:SOURce
+    # [:SOURce]:ROSCillator:ENIernal:FREQuency
+    # [SOUR]:VOLT[1|2][:LEV][:IMM][:AMPLitude]
+    # [:SOUR]:VOLTage[1|2][:LEV][:IMM]:OFFSet
+    # [:SOURce]:VOLTage[1|2]:LIMit[:HIGH]
+    # [:SOURce]:VOLTage[1|2]:LIMit:LOW
+    # [:SOURce]:VOLTage[1|2]:LIMit:STATe
+    # :STATus:OPERation
+    # :STATus:PRESet
+    # :STATus:QUEStionable
+    # :SYSTem:CHECk[:ALL][:STATe]
+    # :SYSTem:ERRor?
+    # :SYSTem:KEY
+    # :SYSTem:PRESet
+    # :SYSTem:SECurity[:STATe]
+    # :SYSTem:SET
+    # :SYSTem:VERSion?
+    # :SYSTem:WARNing[:COUNt]?
+    # :SYSTem:WARNing:STRing?
+    # :SYSTem:WARNing:BUFFer?
+    # :TRIGger:COUNt
