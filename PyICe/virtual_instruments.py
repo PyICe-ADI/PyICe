@@ -1663,9 +1663,9 @@ class threshold_finder(instrument,delegator):
         self.debug_print("Check polarity and output digitizer threshold.".format(self.tries))
 
         #get the polarity
-        low_test = self._test(self._minimum, measure_input=True, controlled=False)
+        low_test = self._test(self._integer_round(self._minimum), measure_input=True, controlled=False)
         self.debug_print("Measured low output: {} at input: {}".format(low_test['output_analog'], self._minimum))
-        high_test = self._test(self._maximum, measure_input=True, controlled=False)
+        high_test = self._test(self._integer_round(self._maximum), measure_input=True, controlled=False)
         self.debug_print("Measured high output: {} at input: {}".format(high_test['output_analog'], self._maximum))
         if high_test['output_analog'] == low_test['output_analog']:
             raise ThresholdUndetectableError(f'{self.get_name()}: Comparator output unchanged at max and min input forcing levels!')
