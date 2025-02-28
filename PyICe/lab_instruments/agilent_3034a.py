@@ -268,7 +268,10 @@ class agilent_3034a(oscilloscope):
                 return results
             else:
                 if not helper_message_sent:
-                    print_banner("***WARNING***", "The Agilent 3034a must be in [STOP] mode to retrieve waveforms (RED light).", "Try using [SINGLE] instead of [RUN][NORMAL] to capture the waveform.")
+                    print_banner("***WARNING***",
+                                 "The Agilent 3034a must be in [STOP] mode to retrieve waveforms (RED light).",
+                                 "Try using [SINGLE] instead of [RUN][NORMAL] to capture the waveform.",
+                                 "Alternately try increasing the write delay (.set_write_delay()) on the event", "triggering channel.")
                     helper_message_sent = True
                 remaining_time = int(timeout_time-time.time()) #round down
                 if remaining_time < last_remaining_time:
