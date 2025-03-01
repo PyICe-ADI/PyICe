@@ -242,6 +242,14 @@ class E5061B_ENA(bench_config_component):
         self.add_terminal("PORT1", instrument=self)
         self.add_terminal("PORT2", instrument=self)
         
+class HP8110A(bench_config_component):
+    def add_terminals(self):
+        self.add_terminal("OUTPUT1", instrument=self)
+        self.add_terminal("OUTPUT2", instrument=self)
+        self.add_terminal("STROBE_OUT", instrument=self)
+        self.add_terminal("EXT_INPUT", instrument=self)
+        self.add_terminal("TRIGGER_OUT", instrument=self)
+        
 class PICOTEST_J2111B(bench_config_component):
     def add_terminals(self):
         self.add_terminal("MOD", instrument=self)

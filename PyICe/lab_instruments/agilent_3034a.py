@@ -251,9 +251,10 @@ class agilent_3034a(oscilloscope):
         if self.force_trigger:
             self.trigger_force()
         results = results_ord_dict()
-        timeout = 10
+        timeout = 6
         last_remaining_time = timeout-1
         timeout_time = time.time() + timeout
+        helper_message_sent = False
         while(True):
             if self.scope_stopped():
                 self._read_scope_time_info()
@@ -266,6 +267,12 @@ class agilent_3034a(oscilloscope):
                 print()
                 return results
             else:
+                if not helper_message_sent:
+                    print_banner("***WARNING***",
+                                 "The Agilent 3034a must be in [STOP] mode to retrieve waveforms (RED light).",
+                                 "Try using [SINGLE] instead of [RUN][NORMAL] to capture the waveform.",
+                                 "Alternately try increasing the write delay (.set_write_delay()) on the event", "triggering channel.")
+                    helper_message_sent = True
                 remaining_time = int(timeout_time-time.time()) #round down
                 if remaining_time < last_remaining_time:
                     last_remaining_time = remaining_time
