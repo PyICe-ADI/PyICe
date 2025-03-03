@@ -138,7 +138,7 @@ class Plugin_Manager():
             if len(self._linked_plots) and self._send_notifications: #Don't send empty emails
                 self.email_plot_dictionary(self._linked_plots)
         except Exception as e:
-            self.run_logger.warning(traceback.format_exc()
+            self.run_logger.warning(traceback.format_exc())
             self.run_logger.warning('***PLUGIN MANAGER ERROR***\nError occurred while attempting to email linked plots.')
 
     def add_instrument_channels(self):
