@@ -63,7 +63,7 @@ class Plugin_Manager():
         a_test._db_file = os.path.join(a_test._module_path, self.scratch_folder, 'data_log.sqlite')
         a_test._is_crashed = False
         try:
-            os.remove(os.path.join(a_test._module_path, self.scratch_folder, 'output.log'))
+            os.remove(os.path.join(a_test._module_path, self.scratch_folder, f'{datetime.datetime.utcnow().strftime("%Y_%m_%d_%H_%M")}.log'))
         except FileNotFoundError:
             # First time running, or user deleted it manually.
             pass
