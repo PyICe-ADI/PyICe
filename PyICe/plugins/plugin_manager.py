@@ -27,12 +27,13 @@ class Callback_logger(logger):
 class Plugin_Manager():
     def __init__(self, scratch_folder='scratch', settings={}):
         self.tests = []
-        self.run_logger = logging.getLogger(__name__)
+        self.trial_report = logging.getLogger(__name__)
         self.operator = getpass.getuser().lower()
         self.thismachine = socket.gethostname().replace("-","_").split(".")[0]
         self.ident_header = f'Operator: {self.operator}\n Machine: {self.thismachine}\n\n'
         self.scratch_folder = scratch_folder
         self.debug = False
+        self.actively_archiving = False
         for attr in settings:
             setattr(self, attr, settings[attr])
         self._send_notifications = "notifications" in self.plugins
@@ -62,20 +63,13 @@ class Plugin_Manager():
         os.makedirs(os.path.join(a_test._module_path,self.scratch_folder), exist_ok=True)
         a_test._db_file = os.path.join(a_test._module_path, self.scratch_folder, 'data_log.sqlite')
         a_test._is_crashed = False
-        try:
-            os.remove(os.path.join(a_test._module_path, self.scratch_folder, f'{datetime.datetime.utcnow().strftime("%Y_%m_%d_%H_%M")}.log'))
-        except FileNotFoundError:
-            # First time running, or user deleted it manually.
-            pass
-        except Exception :
-            traceback.print_exc
-            print('Failed to delete the existing output log. This run will be appended to it.')
-        file_handler = logging.FileHandler(filename = os.path.join(a_test._module_path, self.scratch_folder, 'output.log'), encoding='utf-8')
+        file_handler = logging.FileHandler(filename = os.path.join(a_test._module_path, self.scratch_folder, f'{datetime.datetime.utcnow().strftime("%Y_%m_%d_%H_%M")}.log'), encoding='utf-8')
         if debug:
             file_handler.setLevel(logging.DEBUG)
         else:
             file_handler.setLevel(logging.INFO)
-        self.run_logger.addHandler(file_handler)
+        self.trial_report.addHandler(file_handler)
+        a_test.trial_report = self.trial_report
 
     def run(self, temperatures=[]):
         '''
@@ -124,22 +118,21 @@ class Plugin_Manager():
                 if self._test_results_str:
                     self._test_results_str += "*** END OF REPORT ***"
                     self.notify(self._test_results_str, subject='Test Results')
-                    self.run_logger.info(self._test_results_str)
         except Exception as e:
-            self.run_logger.warning(traceback.format_exc())
-            self.run_logger.warning('***PLUGIN MANAGER ERROR***\nError occurred while attempting to email test results.')
+            self.trial_report.warning(traceback.format_exc())
+            self.trial_report.warning('***PLUGIN MANAGER ERROR***\nError occurred while attempting to email test results.')
         try:
             if len(self._plots) and self._send_notifications: #Don't send empty emails
                 self.email_plots(self._plots)
         except Exception as e:
-            self.run_logger.warning(traceback.format_exc())
-            self.run_logger.warning('***PLUGIN MANAGER ERROR***\nError occurred while attempting to email plots.')
+            self.trial_report.warning(traceback.format_exc())
+            self.trial_report.warning('***PLUGIN MANAGER ERROR***\nError occurred while attempting to email plots.')
         try:
             if len(self._linked_plots) and self._send_notifications: #Don't send empty emails
                 self.email_plot_dictionary(self._linked_plots)
         except Exception as e:
-            self.run_logger.warning(traceback.format_exc())
-            self.run_logger.warning('***PLUGIN MANAGER ERROR***\nError occurred while attempting to email linked plots.')
+            self.trial_report.warning(traceback.format_exc())
+            self.trial_report.warning('***PLUGIN MANAGER ERROR***\nError occurred while attempting to email linked plots.')
 
     def add_instrument_channels(self):
         '''In this method, a master is populated by instruments and their channels.
@@ -168,7 +161,7 @@ class Plugin_Manager():
                 break
             except ImportError as e:
                 print(e)
-                self.run_logger.error(f"Can't find bench file {self.thismachine}. Note that dashes must be replaced with underscores.")
+                self.trial_report.error(f"Can't find bench file {self.thismachine}. Note that dashes must be replaced with underscores.")
                 raise Exception(f"Can't find bench file {self.thismachine}. Note that dashes must be replaced with underscores.")
         self.interfaces = module.get_interfaces()
         for (dirpath, dirnames, filenames) in os.walk(self.project_path):
@@ -195,7 +188,7 @@ class Plugin_Manager():
                             self.temperature_channel = instrument_dict['temp_control_channel']
                             temp_instrument = instrument_dict['instruments']
                         else:
-                            self.run_logger.error(f'BENCH MAKER: Multiple channels have been declared the temperature control! One from {temp_instrument} and one from {instrument_dict["instruments"]}.')
+                            self.trial_report.error(f'BENCH MAKER: Multiple channels have been declared the temperature control! One from {temp_instrument} and one from {instrument_dict["instruments"]}.')
                             raise Exception(f'BENCH MAKER: Multiple channels have been declared the temperature control! One from {temp_instrument} and one from {instrument_dict["instruments"]}.')
                     if 'shutdown_list' in instrument_dict:
                         for fn in instrument_dict['shutdown_list']:
@@ -203,7 +196,7 @@ class Plugin_Manager():
                     if 'special_channel_action' in instrument_dict:
                         overwrite_check = [i for i in instrument_dict['special_channel_action'] if i in self.special_channel_actions]
                         if overwrite_check:
-                            self.run_logger.error(f'BENCH MAKER: Multiple actions have been declared for channel(s) {overwrite_check}.')
+                            self.trial_report.error(f'BENCH MAKER: Multiple actions have been declared for channel(s) {overwrite_check}.')
                             raise Exception(f'BENCH MAKER: Multiple actions have been declared for channel(s) {overwrite_check}.')
                         self.special_channel_actions.update(instrument_dict['special_channel_action'])
             break
@@ -230,7 +223,7 @@ class Plugin_Manager():
             try:
                 func()
             except:
-                self.run_logger.error("\nPyICE Plugin Manager: One or more temperature start functions not executable. See list below.\n")
+                self.trial_report.error("\nPyICE Plugin Manager: One or more temperature start functions not executable. See list below.\n")
                 for function in self.temp_run_fns:
                     print(function)
                 exit()
@@ -240,7 +233,7 @@ class Plugin_Manager():
             try:
                 func()
             except:
-                self.run_logger.error("\nPyICE Plugin Manager: One or more startup functions not executable. See list below.\n")
+                self.trial_report.error("\nPyICE Plugin Manager: One or more startup functions not executable. See list below.\n")
                 for function in self.startup_fns:
                     print(function)
                 exit()
@@ -251,7 +244,7 @@ class Plugin_Manager():
             try:
                 func()
             except:
-                self.run_logger.error("\nPyICE Plugin Manager: One or more cleanup functions not executable. See list below.\n")
+                self.trial_report.error("\nPyICE Plugin Manager: One or more cleanup functions not executable. See list below.\n")
                 for function in self.cleanup_fns:
                     print(function)
                 exit()
@@ -261,7 +254,7 @@ class Plugin_Manager():
             try:
                 func()
             except:
-                self.run_logger.error("\nPyICE Plugin Manager: One or more shutdown functions not executable. See list below.\n")
+                self.trial_report.error("\nPyICE Plugin Manager: One or more shutdown functions not executable. See list below.\n")
                 for function in self.shutdown_fns:
                     print(function)
                 exit()
@@ -281,9 +274,9 @@ class Plugin_Manager():
             except AttributeError as e:
                 pass
             except Exception as e:
-                self.run_logger.error(traceback.format_exc())
+                self.trial_report.error(traceback.format_exc())
         else:
-            self.run_logger.info(build_banner('Bench cleaned!'))
+            self.trial_report.info(build_banner('Bench cleaned!'))
 
     ###
     # NOTIFICATION METHODS
@@ -386,10 +379,10 @@ class Plugin_Manager():
                 attachment_MIMEParts.append(plot_mime)
             self.notify(msg_body, subject='Plot Results', attachment_MIMEParts=attachment_MIMEParts)
         except AttributeError as e:
-            self.run_logger.warning("*** ALERT *** Cairo SVG likely missing, skipping emailing of plots.")
-            self.run_logger.warning(traceback.format_exc())
+            self.trial_report.warning("*** ALERT *** Cairo SVG likely missing, skipping emailing of plots.")
+            self.trial_report.warning(traceback.format_exc())
         except Exception:
-            self.run_logger.warning(traceback.format_exc())
+            self.trial_report.warning(traceback.format_exc())
 
     def email_plot_dictionary(self, plot_svg_source):
         msg_body = ''
@@ -450,7 +443,7 @@ class Plugin_Manager():
         Also adds a copy of the table (and metatable) to the database with the time of collection to the test's generic database, so it will not be overwritten when the test is next run.
         Will also generate scripts to rerun plotting (if the script has a plot method) and evaluation (if the evaluation feature is used).
         '''
-        self.run_logger.info(build_banner('Archiving. . .'))
+        self.trial_report.info(build_banner('Archiving. . .'))
         for test in self.tests:
             try:
                 archive_folder = test.get_archive_folder_name()
@@ -503,8 +496,9 @@ class Plugin_Manager():
                         #write locked? exists?
                         print(type(e))
                         print(e)
-                    with contextlib.redirect_stdout(io.StringIO()):
-                        self.plot(database=os.path.relpath(db_file), table_name=db_table, test_list=[test], skip_email_input=True)
+                    self.actively_archiving = True
+                    self.plot(database=os.path.relpath(db_file), table_name=db_table, test_list=[test], skip_email_input=True)
+                    self.actively_archiving = False
                 if 'evaluate_tests' in self.plugins:
                     dest_file = os.path.join(os.path.dirname(db_file), f"reeval_data.py")
                     import_str = test._module_path[test._module_path.index(self.project_folder_name):].replace(os.sep,'.')
@@ -522,13 +516,14 @@ class Plugin_Manager():
                         #write locked? exists?
                         print(type(e))
                         print(e)
-                    with contextlib.redirect_stdout(io.StringIO()):
-                        self.evaluate(database=os.path.relpath(db_file), table_name=db_table, test_list=[test])
+                    self.actively_archiving = True
+                    self.evaluate(database=os.path.relpath(db_file), table_name=db_table, test_list=[test])
+                    self.actively_archiving=False
                 if 'bench_image_creation' in self.plugins:
                     self.visualizer.generate(file_base_name="Bench_Config", prune=True, file_format='svg', engine='neato', file_location=os.path.dirname(db_file))
 
                 arch_plot_scripts.append(dest_file)
-                self.run_logger.info(build_banner(f'Archiving for {test.get_name()} complete.'))
+                self.trial_report.info(build_banner(f'Archiving for {test.get_name()} complete.'))
 
     def archive_latest(self, destination_file=None):
         for test in self.tests:
@@ -578,8 +573,9 @@ class Plugin_Manager():
                         #write locked? exists?
                         print(type(e))
                         print(e)
-                    with contextlib.redirect_stdout(io.StringIO()):
-                        self.plot(database=os.path.relpath(db_file), table_name=db_table, test_list=[test], skip_email_input=True)
+                    self.actively_archiving = True
+                    self.plot(database=os.path.relpath(db_file), table_name=db_table, test_list=[test], skip_email_input=True)
+                    self.actively_archiving = False
                 if 'evaluate_tests' in self.plugins:
                     dest_file = os.path.join(os.path.dirname(db_file), f"reeval_data.py")
                     import_str = test._module_path[test._module_path.index(self.project_folder_name):].replace(os.sep,'.')
@@ -597,8 +593,9 @@ class Plugin_Manager():
                         #write locked? exists?
                         print(type(e))
                         print(e)
-                    with contextlib.redirect_stdout(io.StringIO()):
-                        self.evaluate(database=os.path.relpath(db_file), table_name=db_table, test_list=[test])
+                    self.actively_archiving = True
+                    self.evaluate(database=os.path.relpath(db_file), table_name=db_table, test_list=[test])
+                    self.actively_archiving = False
 
     ###
     # SCRIPT METHODS
@@ -640,7 +637,7 @@ class Plugin_Manager():
                         test._metalogger.write('blocked_bench_terminals', self.all_connections.get_readable_blocked_terminals())
                     self._metalog(test)
             if 'bench_config_management' in self.plugins and self.verbose:
-                print(self.all_connections.print_connections())
+                self.trial_report.info(self.all_connections.print_connections())
                 if temperatures and input(f'Above are the required connections to run the added test(s). Are you ready? [y/n]: ').lower() in ['n', 'no']:
                     return
             if 'bench_image_creation' in self.plugins:
@@ -652,30 +649,29 @@ class Plugin_Manager():
                 self.temperature_run_startup()
             for temp in temperatures or ["ambient"]:
                 if temp != "ambient":
-                    self.run_logger.info(build_banner(f'Setting temperature to {temp}°C'))
+                    self.trial_report.info(build_banner(f'Setting temperature to {temp}°C'))
                     self.temperature_channel.write(temp)
                 for test in self.tests:
                     if not test._is_crashed:
                         try:
-                            breakpoint()
-                            self.run_logger.info(build_banner(f'{test.get_name()} Collecting. . .'))
+                            self.trial_report.info(build_banner(f'{test.get_name()} Collecting. . .'))
                             self.startup()
                             test._reconfigure()
                             test.collect()
                             test._restore()
                         except (Exception, BaseException) as e:
-                            self.run_logger.error(traceback.format_exc())
+                            self.trial_report.error(traceback.format_exc())
                             test._is_crashed = True
                             test._crash_info = sys.exc_info()
                             self.notify(self._crash_str(test), subject='CRASHED!!!')
                         self.cleanup()
                 if temp != "ambient":
                     if all([x._is_crashed for x in self.tests]):
-                        self.run_logger.info(build_banner('All tests have crashed. Skipping remaining temperatures.'))
+                        self.trial_report.info(build_banner('All tests have crashed. Skipping remaining temperatures.'))
                         break
             self.shutdown()
         except Exception as e:
-            self.run_logger.error(traceback.format_exc())
+            self.trial_report.error(traceback.format_exc())
             for test in self.tests:
                 test._is_crashed = True
             try:
@@ -715,12 +711,14 @@ class Plugin_Manager():
         reset_pf = False
         if test_list is None:
             test_list = self.tests
-        self.run_logger.info(build_banner('Plotting. . .'))
+        if not self.actively_archiving:
+            self.trial_report.info(build_banner('Plotting. . .'))
         for test in test_list:
             if not test._skip_plot and hasattr(test, 'plot') and not test._is_crashed:
                 test.plot_list=[]
                 test.linked_plots={}
-                self.run_logger.info(build_banner(f'{test.get_name()} Plotting. . .'))
+                if not self.actively_archiving:
+                    self.trial_report.info(build_banner(f'{test.get_name()} Plotting. . .'))
                 if database is None:
                     database = test.get_db_file()
                     reset_db = True
@@ -740,8 +738,9 @@ class Plugin_Manager():
                     returned_plots=test.plot()
                 except Exception as e:
                     # Don't stop other test's plotting or archiving because of a plotting error.
-                    self.run_logger.error(f"Plot method for {test.get_name()} crashed.")
-                    self.run_logger.error(traceback.format_exc())
+                    if not self.actively_archiving:
+                        self.trial_report.error(f"Plot method for {test.get_name()} crashed.")
+                        self.trial_report.error(traceback.format_exc())
                     continue
                 if isinstance(test.plot_list, (LTC_plot.plot, LTC_plot.Page)):
                     test.plot_list = [self._convert_svg(test.plot_list)]
@@ -759,7 +758,8 @@ class Plugin_Manager():
                 if not skip_email_input:
                     self._plots.extend(test.plot_list)
                     self._linked_plots.update(test.linked_plots)
-                self.run_logger.info(build_banner(f'Plotting for {test.get_name()} complete.'))
+                if not self.actively_archiving:
+                    self.trial_report.info(build_banner(f'Plotting for {test.get_name()} complete.'))
                 if reset_db:
                     database = None
                 if reset_tn:
@@ -767,14 +767,16 @@ class Plugin_Manager():
                 if reset_pf:
                     plot_filepath = None
             elif test._is_crashed:
-                self.run_logger.warning(f"{test.get_name()} crashed. Skipping plot.")
+                if not self.actively_archiving:
+                    self.trial_report.warning(f"{test.get_name()} crashed. Skipping plot.")
 
     def evaluate(self, database=None, table_name=None, test_list=None):
         '''Run the evaluate method of each test in self.tests.
         args:   
             database - string. The location of the database with the data to evaluate If left blank, the evaluation will continue with the database in the same directory as the test script.
             table_name - string. The name of the table in the database with the relevant data. If left blank, the evaluation will continue with the table named after the test script.'''
-        self.run_logger.info(build_banner('Evaluating. . .'))
+        if not self.actively_archiving:
+            self.trial_report.info(build_banner('Evaluating. . .'))
         reset_db = False
         reset_tn = False
         if test_list is None:
@@ -796,15 +798,17 @@ class Plugin_Manager():
                 try:
                     test.evaluate_results()
                 except Exception:
-                    self.run_logger.error(traceback.format_exc())
-                    self.run_logger.error(build_banner(f"*** ERROR ***", f"{test.get_name()} crashed during evaluation, skipping."))
-                    print("\n")
+                    if not self.actively_archiving:
+                        self.trial_report.error(traceback.format_exc())
+                        self.trial_report.error(build_banner(f"*** ERROR ***", f"{test.get_name()} crashed during evaluation, skipping."))
+                        print("\n")
                     database = None
                     table_name = None
                     test._test_results = Failed_Eval(test)
                     continue
                 if test._test_results._test_results:
-                    self.run_logger.info(test.get_test_results())
+                    if not self.actively_archiving:
+                        self.trial_report.info(test.get_test_results())
                 t_r = test._test_results.json_report()
                 dest_abs_filepath = os.path.join(os.path.dirname(database), f"test_results.json")
                 if t_r is not None:
@@ -816,7 +820,8 @@ class Plugin_Manager():
                 if reset_tn:
                     table_name = None
             else:
-                self.run_logger.info(f"Skipping evaluation for {test.get_name()}.")
+                if not self.actively_archiving:
+                    self.trial_report.info(f"Skipping evaluation for {test.get_name()}.")
 
     def correlate(self, database=None, table_name=None):
         '''Run the correlate method of each test in self.tests.
