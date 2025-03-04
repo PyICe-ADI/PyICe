@@ -1,5 +1,3 @@
-VCDFiles
-
 from vcdvcd import VCDVCD
 
 from PyICe.data_utils.wave_analysis import waveform
@@ -59,6 +57,7 @@ class vcd_reader():
 
     def get_data_as_waveform(self, variable_name):
         return waveform(data=self.process_data(variable_name, add_staircase_points=True))
+
     def get_value(self, variable_name, at_time):
         arrayed_data = self.process_data(variable_name)
         for i, time in enumerate(arrayed_data[0]):
@@ -77,7 +76,7 @@ class vcd_reader():
         plt.step(x=arrayed_data[0], y=arrayed_data[1], mode='after')
         show(plt)
 
-    def plot_raw(self, variable_name,add_staircase_points=False):
+    def plot_raw(self, variable_name, add_staircase_points=False):
         arrayed_data = self.process_data(variable_name=variable_name, add_staircase_points=add_staircase_points)
         plt = figure(title=variable_name, plot_width=300, plot_height=300)
         plt.line(x=arrayed_data[0], y=arrayed_data[1])
