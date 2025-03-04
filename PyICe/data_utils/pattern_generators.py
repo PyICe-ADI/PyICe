@@ -6,27 +6,18 @@ class TWI():
     '''
     def __init__(self, time_step):
         self.time_step = time_step
-        self.tbuf = 1300e-9
-        self.thd_sta = 600e-9
-        self.tlow = 1300e-9
-        self.thd_dat = 0e-9     # Allowed to be 0ns to 900ns
-        self.thigh = 600e-9
-        self.tsu_dat = 100e-9
-        self.tsu_sta = 600e-9   # Restart
-        self.tsu_sto = 600e-9
-        self.tsp = 50e-9
-        self.tlead = 1.8e-9
-        self.ttrail = 1.8e-9
-        self.frequency = 1 / ( self.tlead + self.thigh + self.tlow + self.ttrail)
-        self.SCL = []
-        self.SDA = []
-        self.STB = []
+        self.init_pattern()
 
     def biterator(self, byte):
         '''Iterates over the bits of an integer from left to right.'''
         length = byte.bit_length()
         for index in range(length):
             yield 1 if byte << index & 1 << length-1 == 1 << length-1 else 0
+            
+    def init_pattern(self):
+        self.SCL = []
+        self.SDA = []
+        self.STB = []
 
     def add_lead_in(self, SDA, SCL, STROBE):
         self.SCL.extend(SCL)
@@ -67,18 +58,32 @@ class TWI():
         self.dwell(self.tsu_sto)
 
     def add_data_bit(self, d, strobe):
-        self.SCL.extend([0])
-        self.SDA.extend([d])
-        self.STB.extend(self.STB[-1:])
-        self.dwell(self.tsu_dat)
-        self.SCL.extend([1])
-        self.SDA.extend([d])
-        self.STB.extend([strobe])
-        self.dwell(self.thigh)
-        self.SCL.extend([0])
-        self.SDA.extend([d])
-        self.STB.extend([0])
-        self.dwell(self.thd_dat)
+
+        self.SCL.extend([0])                            # Clock low
+        self.SDA.extend([d])                            # Data to d
+        self.STB.extend(self.STB[-1:])                  # Hold Strobe
+        self.dwell(self.tsu_dat)                        # Wait data setup time
+
+        self.SCL.extend([1])                            # Clock high
+        self.SDA.extend([d])                            # Hold data at d
+        self.STB.extend([strobe])                       # Assert strobe
+
+        if self.thd_dat >= 0:                           # Positive hold time
+            self.dwell(self.thigh)                      # Wait clock high time
+            self.SCL.extend([0])                        # Clock low
+            self.SDA.extend([d])                        # Hold data at d
+            self.STB.extend([0])                        # Strobe low
+            self.dwell(self.thd_dat)                    # Wait data hold time
+
+        else:                                           # Negative hold time
+            self.dwell(self.thigh + self.thd_dat)       # Wait clock high time minus negative hold time
+            self.SCL.extend([1])                        # Hold clock high
+            self.SDA.extend([d^1])                      # Flip the data
+            self.STB.extend([strobe])                   # Hold Strobe as is
+            self.dwell(-self.thd_dat)                   # Wait out what would have been the thigh time
+            self.SCL.extend([0])                        # Clock low
+            self.SDA.extend([d^1])                      # Hold data at d
+            self.STB.extend([0])                        # Strobe low
 
     def add_ack_bit(self, strobe):
         self.dwell(self.tlow)
@@ -99,6 +104,12 @@ class TWI():
 
     def dwell(self, tdwell):
         cycles = round(tdwell / self.time_step)
+        self.SCL.extend(self.SCL[-1:] * cycles)
+        self.SDA.extend(self.SDA[-1:] * cycles)
+        self.STB.extend(self.STB[-1:] * cycles)
+        
+    def pad_out(self):
+        cycles = 4096 - len(self.SCL)
         self.SCL.extend(self.SCL[-1:] * cycles)
         self.SDA.extend(self.SDA[-1:] * cycles)
         self.STB.extend(self.STB[-1:] * cycles)
