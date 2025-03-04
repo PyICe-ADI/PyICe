@@ -2,29 +2,30 @@ class Master_Test_Template():
     ###
     # SCRIPT METHODS
     ###
-    def reconfigure(self, channel, value):
-        '''Optional method used during customize() if changes are made to the DUT on a particular test in a suite. Unwound after test's collect at each temperature.'''
-        self._channel_reconfiguration_settings.append((channel, channel.read(), value))
+    def reconfigure(self, read_function, write_function, value):
+        '''
+        Optional method used during customize() if changes are made to the DUT on a particular test in a suite.
+        Unwound after test's collect at each temperature.
+        read_function and write_function should be conjugate methods of a particular channel to help the system unwind after _this_ test.
+        "value" is the value to which the channel will be assigned for _this_ test.
+        '''
+        self._channel_reconfiguration_settings.append((read_function(), write_function, value))
     def _reconfigure(self):
         '''save channel setting before writing to value'''
-        for (ch, old, new) in self._channel_reconfiguration_settings:
-            ch.write(new)
+        for (old, write_function, new) in self._channel_reconfiguration_settings:
+            write_function(new)
     def _restore(self):
         '''undo any changes made by reconfigure'''
-        for (ch, old, new) in self._channel_reconfiguration_settings:
-            ch.write(old)
+        for (old, write_function, new) in self._channel_reconfiguration_settings:
+            write_function(old)
     def customize(self):
         '''Optional method to alter the logger before the test begins.'''
-        pass
     def declare_bench_connections(self):
         '''Optional method to log the setup needed to run the test. Plugin required.'''
-        pass
     def collect(self):
         ''' Mandatory method to operate the bench and collect the data.'''
-        pass
     def plot(self):
         ''' Optional method to retrieve the data collected and create plots. Can be run over and over once a collect has run. User must return a list or tuple of plots and/or pages, or an individual LTC_plot.Page, or a single LTC_plot.plot.'''
-        pass
         return []
 
     ###
@@ -40,7 +41,7 @@ class Master_Test_Template():
         if hasattr(self, '_module_path'):
             return self._module_path
         else:
-            print(f'No database file has been assigned to {self.get_name()} at this time. One is assigned upon adding a test to the plugin manager.')
+            print(f"Attempted to access the module path for {self.get_name()}. It would be created upon adding a test to the plugin manager but you didn't get that far.")
     def get_debug(self):
         return self._debug
     def get_verbose(self):
@@ -49,12 +50,12 @@ class Master_Test_Template():
         if hasattr(self, '_db_file'):
             return self._db_file
         else:
-            print(f'No database file has been assigned to {self.get_name()} at this time. One is assigned upon adding a test to the plugin manager.')
+            print(f"Attempted to access the database file for {self.get_name()}. It would be created upon adding a test to the plugin manager but you didn't get that far.")
     def get_database(self):
         if hasattr(self, '_db'):
             return self._db
         else:
-            print(f'No database has been assigned to {self.get_name()} at this time. One is assigned during evaluation or plotting.')
+            print(f"Attempted to access the database for {self.get_name()}. It's only intended to be accessible from inside the plot() or evaluate() methods.")
     def get_table_name(self):
         if hasattr(self, '_table_name'):
             return self._table_name
@@ -75,7 +76,7 @@ class Master_Test_Template():
     # EVALUATION METHODS
     ###
     def evaluate_results(self):
-        pass
+        '''Optional evaluate_results method placeholder'''
     def evaluate_rawdata(self, name, data, conditions=None):
         '''This will compare submitted data to limits for the named test.
         args:

@@ -2,9 +2,9 @@ from PyICe.plugins.bench_configuration_management.bench_configuration_management
 import os, inspect, importlib, datetime, socket, traceback, sys, json, getpass, contextlib, io
 from PyICe.plugins.bench_configuration_management import bench_visualizer
 from PyICe.plugins.traceability_items import Traceability_items
+from PyICe.plugins.test_results import Test_Results, Failed_Eval
 from PyICe.lab_utils.communications import email, sms
 from PyICe.lab_utils.sqlite_data import sqlite_data
-from PyICe.plugins.test_results import Test_Results
 from PyICe.lab_utils.banners import print_banner
 from PyICe.lab_core import logger, master
 from PyICe.plugins import test_archive
@@ -29,24 +29,14 @@ class Plugin_Manager():
         self.tests = []
         self.operator = getpass.getuser().lower()
         self.thismachine = socket.gethostname().replace("-","_").split(".")[0]
+        self.ident_header = f'Operator: {self.operator}\n Machine: {self.thismachine}\n\n'
         self.scratch_folder = scratch_folder
-
-    def find_plugins(self, a_test):
-        '''This is called the first time a test is added to the plugin manager. An instance of a test is needed to locate the project path. This facilitates users starting from an individual test and getting all the chosen plugins.'''
-        for (dirpath, dirnames, filenames) in os.walk(a_test._project_path):
-            if 'plugins.json' in filenames: 
-                pluginpath = dirpath.replace(os.sep, '.')
-                pluginpath = pluginpath[pluginpath.index(a_test._project_path.split(os.sep)[-1]):]
-                with open(dirpath+os.sep+'plugins.json') as f:
-                    self.used_plugins = json.load(f)
-                if self.verbose:
-                    if self.used_plugins:
-                        plugin_str=[f'PyICe Plugin Manager, plugins found:']
-                        for plugin in self.used_plugins:
-                            plugin_str.append(f'"{plugin}"')
-                        print_banner(*plugin_str)
-        self._send_notifications = "notifications" in self.used_plugins
+        self.debug = False
+        for attr in settings:
+            setattr(self, attr, settings[attr])
+        self._send_notifications = "notifications" in self.plugins
         if self._send_notifications:
+            self._find_notifications(self.project_path)
             try:
                 import cairosvg
                 self._cairosvg = cairosvg
@@ -59,57 +49,81 @@ class Plugin_Manager():
         args: debug - Boolean. This will be passed into all run tests to be used for abbreviating data collection loops. Default value is False.'''
         a_test = test()
         a_test._debug = debug
+        if debug:
+            self.debug=True
         self.tests.append(a_test)
         a_test.pm=self
+        a_test.verbose = self.verbose
         a_test._skip_plot=skip_plot
         a_test._skip_eval=skip_eval
         (a_test._module_path, file) = os.path.split(inspect.getsourcefile(type(a_test)))
         a_test._name = a_test._module_path.split(os.sep)[-1]
         os.makedirs(os.path.join(a_test._module_path,self.scratch_folder), exist_ok=True)
-        try:
-            a_test._project_path = a_test._module_path[:a_test._module_path.index(a_test.project_folder_name)+len(a_test.project_folder_name)]
-        except AttributeError as e:
-            print_banner("PyICe TEST_MANAGER: User's test template requires an attribute 'project_folder_name' that names the project's topmost folder in order for this PyICe workflow to be able to find the project.")
         a_test._db_file = os.path.join(a_test._module_path, self.scratch_folder, 'data_log.sqlite')
-        if len(self.tests) == 1:
-            self._project_path = a_test._project_path
-            try:
-                self.verbose = a_test.get_verbose()
-            except Exception:
-                self.verbose = True
-            self.find_plugins(a_test)
-            if 'notifications' in self.used_plugins:
-                self._find_notifications(a_test._project_path)
         a_test._is_crashed = False
 
     def run(self, temperatures=[]):
-        '''This method goes through the complete data collection process the project set out. Scripts will be run once per temperature or just once if no temperature is given. Debug will be passed on to the script to be used at the script's discretion.
-        args: temperatures- list. The list consists of values that will be set to the 'temp_control_channel' assigned by the instrument drivers. Default value is an empty list.'''
+        '''
+        This method goes through the complete data collection process the project set out.
+        Scripts will be run once per temperature or just once if no temperature is given.
+        Debug will be passed on to the script to be used at the script's discretion.
+        args: temperatures- list.
+        The list consists of values that will be set to the 'temp_control_channel' assigned by the instrument drivers.
+        Default value is an empty list.
+        '''
+        self._temperatures = temperatures
         self.collect(temperatures)
         self.plot()
-        if 'evaluate_tests' in self.used_plugins:
+        if 'evaluate_tests' in self.plugins:
+            self._test_results_str = ''
             self.evaluate()
-        if 'correlate_tests' in self.used_plugins:
+        if 'correlate_tests' in self.plugins:
             self.correlate()
-        if 'archive' in self.used_plugins:
+        if 'archive' in self.plugins:
             self._archive()
-        for test in self.tests:
-            try:
-                if hasattr(test, '_test_results') and test._test_results._test_results:
-                    self.notify(test.get_test_results(), subject='Test Results')
-            except Exception as e:
-                print('\n***PLUGIN MANAGER ERROR***\nError occurred while attempting to email test results.\n')
-            try:
-                if len(self._plots) and self._send_notifications: #Don't send empty emails
-                    self.email_plots(self._plots)
-            except Exception as e:
-                print ('\n***PLUGIN MANAGER ERROR***\nError occurred while attemptin to email plots.\n')
-            try:
-                if len(self._linked_plots) and self._send_notifications: #Don't send empty emails
-                    self.email_plot_dictionary(self._linked_plots)
-            except Exception as e:
-                print('\n***PLUGIN MANAGER ERROR***\nError occurred while attempting to email linked plots.\n')
-
+        try:
+            if 'evaluate_tests' in self.plugins and self._send_notifications:
+                self.failed_tests = {}
+                self.failed_evals = []
+                for test in self.tests:
+                    if hasattr(test, '_test_results'):
+                        self._test_results_str+=str(test._test_results)
+                        if not test._test_results:
+                            if isinstance(test._test_results, Failed_Eval):
+                                self.failed_evals.append(test.get_name())
+                            else:
+                                self.failed_tests[test.get_name()] = ''
+                            if test._is_crashed:
+                                self.failed_tests[test.get_name()] = self._crash_str(test)
+                if len(self.failed_evals):
+                    self._test_results_str += "\nThe following evaluation methods themselves crashed:\n"
+                    for failed_eval in self.failed_evals:
+                        self._test_results_str += f"    {failed_eval}\n"
+                    self._test_results_str += "\n"
+                if len(self.failed_tests):
+                    self._test_results_str+='\nThe following tests failed:\n'
+                    for failed_test in self.failed_tests.keys():
+                        self._test_results_str+=f'    {failed_test}\n'
+                        if len(self.failed_tests[failed_test]):
+                            self._test_results_str+=f'{self.failed_tests[failed_test]}\n'
+                if self._test_results_str:
+                    self._test_results_str += "*** END OF REPORT ***"
+                    self.notify(self._test_results_str, subject='Test Results')
+        except Exception as e:
+            traceback.print_exc()
+            print('\n***PLUGIN MANAGER ERROR***\nError occurred while attempting to email test results.\n')
+        try:
+            if len(self._plots) and self._send_notifications: #Don't send empty emails
+                self.email_plots(self._plots)
+        except Exception as e:
+            traceback.print_exc()
+            print ('\n***PLUGIN MANAGER ERROR***\nError occurred while attemptin to email plots.\n')
+        try:
+            if len(self._linked_plots) and self._send_notifications: #Don't send empty emails
+                self.email_plot_dictionary(self._linked_plots)
+        except Exception as e:
+            traceback.print_exc()
+            print('\n***PLUGIN MANAGER ERROR***\nError occurred while attempting to email linked plots.\n')
 
     def add_instrument_channels(self):
         '''In this method, a master is populated by instruments and their channels.
@@ -124,27 +138,28 @@ class Plugin_Manager():
         The special channel actions are functions that are run on each logging of data and the value is a dicionary with a channel object or the string name of a channel as key, and the value the function to be run. The function requires the arguments channel_name, readings, and test.'''
 
         self.cleanup_fns = []
+        self.temp_run_fns = []
         self.startup_fns = []
         self.shutdown_fns = []
         self.temperature_channel = None
         self.special_channel_actions = {}
-        for (dirpath1, dirnames, filenames) in os.walk(self._project_path):
-            if 'benches' not in dirpath1 or self._project_path not in dirpath1: continue
+        for (dirpath1, dirnames, filenames) in os.walk(self.project_path):
+            if 'benches' not in dirpath1 or self.project_path not in dirpath1: continue
             try:
                 benchpath = dirpath1.replace(os.sep, '.')
-                benchpath = benchpath[benchpath.index(self._project_path.split(os.sep)[-1]):]
+                benchpath = benchpath[benchpath.index(self.project_path.split(os.sep)[-1]):]
                 module = importlib.import_module(name=benchpath+'.'+self.thismachine, package=None)
                 break
             except ImportError as e:
                 print(e)
                 raise Exception(f"Can't find bench file {self.thismachine}. Note that dashes must be replaced with underscores.")
         self.interfaces = module.get_interfaces()
-        for (dirpath, dirnames, filenames) in os.walk(self._project_path):
+        for (dirpath, dirnames, filenames) in os.walk(self.project_path):
             if 'hardware_drivers' not in dirpath: continue
             driverpath = dirpath.replace(os.sep, '.')
-            driverpath = driverpath[driverpath.index(self._project_path.split(os.sep)[-1]):]
+            driverpath = driverpath[driverpath.index(self.project_path.split(os.sep)[-1]):]
             for driver in filenames:
-                driver_mod = importlib.import_module(name=driverpath+'.'+driver[:-3], package=None)
+                driver_mod = importlib.import_module(name=f"{driverpath}.{driver.split('.')[0]}", package=None)
                 instrument_dict = driver_mod.populate(self)
                 if instrument_dict['instruments'] is not None:
                     for instrument in instrument_dict['instruments']:
@@ -152,6 +167,9 @@ class Plugin_Manager():
                     if 'cleanup_list' in instrument_dict:
                         for fn in instrument_dict['cleanup_list']:
                             self.cleanup_fns.append(fn)
+                    if 'temperature_run_startup_list' in instrument_dict:
+                        for fn in instrument_dict['temperature_run_startup_list']:
+                            self.temp_run_fns.append(fn)
                     if 'startup_list' in instrument_dict:
                         for fn in instrument_dict['startup_list']:
                             self.startup_fns.append(fn)
@@ -172,7 +190,12 @@ class Plugin_Manager():
             break
         if self.temperature_channel == None:
             self.temperature_channel = self.master.add_channel_dummy("tdegc")
+        if not self._temperatures:
             self.temperature_channel.write(25)
+
+    def _add_components(self):
+        for component in self.component_list:
+            self.test_components.add_component(component)
 
     def _create_logger(self, test):
         '''Each test add to the plugin manager will have its own logger with which it shall store the data collected by their collect method. The channels will be determined by the drivers added to the driver, and a sqlite database and table will be automatically created and linked to the tests.'''
@@ -181,7 +204,17 @@ class Plugin_Manager():
         if hasattr(test, 'customize'):
             test.customize()
         test._logger.new_table(table_name=test.get_name(), replace_table=True)
-        test._logger.write_html(file_name=test.get_module_path()+os.sep+'scratch'+os.sep+test.get_project_folder_name()+'.html')
+        test._logger.write_html(file_name=f"{test.get_module_path()}{os.sep}scratch{os.sep}{self.project_folder_name}.html")
+
+    def temperature_run_startup(self):
+        for func in self.temp_run_fns:
+            try:
+                func()
+            except:
+                print("\n\PyICE Plugin Manager: One or more temperature start functions not executable. See list below.\n")
+                for function in self.temp_run_fns:
+                    print(function)
+                exit()
 
     def startup(self):
         for func in self.startup_fns:
@@ -229,7 +262,7 @@ class Plugin_Manager():
             except AttributeError as e:
                 pass
             except Exception as e:
-                print(e)
+                traceback.print_exc()
         else:
             print_banner('Bench cleaned!')
 
@@ -243,12 +276,12 @@ class Plugin_Manager():
             subject - str. Default None. The subject given to any email sent. No affect on texts.
             attachment filenames - list. Default empty list. A list of strings denoting the names of files that will be attached to any emails sent.
             attachment_MIMEParts - list. Default empty list. A list of MIME (Multipurpose Internet Mail Extensions) objects that will be added to the body of any email sent.'''
-        if 'notifications' in self.used_plugins:
+        if 'notifications' in self.plugins and not self.debug:
             for signal_type in self.notification_targets:
                 if signal_type == 'emails':
                     for email_address in self.notification_targets['emails']:
                         mail = email(email_address)
-                        mail.send(msg, subject=subject, attachment_filenames=attachment_filenames, attachment_MIMEParts=attachment_MIMEParts)
+                        mail.send(f"{self.ident_header}{msg}", subject=subject, attachment_filenames=attachment_filenames, attachment_MIMEParts=attachment_MIMEParts)
                 elif signal_type == 'texts':
                     for txt_number, carrier in self.notification_targets['texts']:
                         text = sms(txt_number, carrier)
@@ -258,11 +291,11 @@ class Plugin_Manager():
             try:
                 for fn in self._notification_functions:
                     try:
-                        fn(msg, subject=subject, attachment_filenames=attachment_filenames, attachment_MIMEParts=attachment_MIMEParts)
+                        fn(f"{self.ident_header}{msg}", subject=subject, attachment_filenames=attachment_filenames, attachment_MIMEParts=attachment_MIMEParts)
                     except TypeError:
                         # Function probably doesn't accept subject or attachments
                         try:
-                            fn(msg)
+                            fn(f"{self.ident_header}{msg}")
                         except Exception as e:
                             # Don't let a notification crash a more-important cleanup/shutdown.
                             print(e)
@@ -271,12 +304,22 @@ class Plugin_Manager():
                         print(e)
             except AttributeError as e:
                 if not len(attachment_filenames) and not len(attachment_MIMEParts):
-                    print(msg)
+                    print(f"{self.ident_header}{msg}")
 
     def _find_notifications(self, project_path):
         self._notification_functions = []
         self.notification_targets = {'emails':[], 'texts':[]}
+        found_both = 0
         for (dirpath, dirnames, filenames) in os.walk(project_path):
+            if 'always_notify.py' in filenames:
+                globalnotificationpath = dirpath.replace(os.sep, '.')
+                globalnotificationpath = globalnotificationpath[globalnotificationpath.index(project_path.split(os.sep)[-1]):]
+                module = importlib.import_module(name=globalnotificationpath+f'.always_notify', package=None)
+                for x in ['emails','texts']:
+                    [self.notification_targets[x].append(target) for target in module.get_notification_targets()[x]]
+                found_both+=1
+                if found_both==2:
+                    break
             if self.operator+'.py' in filenames: 
                 usernotificationpath = dirpath.replace(os.sep, '.')
                 usernotificationpath = usernotificationpath[usernotificationpath.index(project_path.split(os.sep)[-1]):]
@@ -284,8 +327,14 @@ class Plugin_Manager():
                 if hasattr(module, 'add_notifications_to_test_manager'):
                     module.add_notifications_to_test_manager(test_manager=self)
                 if hasattr(module, 'get_notification_targets'):
-                    self.notification_targets = module.get_notification_targets()
-                break
+                    for x in ['emails','texts']:
+                        for target in module.get_notification_targets()[x]:
+                            self.notification_targets[x].append(target)
+                found_both+=1
+                if found_both==2:
+                    break
+        for x in ['emails','texts']:
+            self.notification_targets[x]= set(self.notification_targets[x])
 
     def add_notification(self, fn):
         '''Add a function that will be run whenever a notification is sent. Arguments for the provided function are either the standard for lab_utils.communications.email.send(self, body, subject=None, attachment_filenames=[], attachment_MIMEParts=[]) or a simple text string.'''
@@ -306,16 +355,22 @@ class Plugin_Manager():
             raise Exception(f'Not sure what this plot is:\n{type(plot)}\n{plot}')
 
     def email_plots(self, plot_svg_source):
-        msg_body = ''
-        attachment_MIMEParts=[]
-        for (i,plot_src) in enumerate(plot_svg_source):
-            plot_png = self._cairosvg.svg2png(bytestring=plot_src)
-            plot_mime = MIMEImage(plot_png, 'image/png')
-            plot_mime.add_header('Content-Disposition', 'inline')
-            plot_mime.add_header('Content-ID', f'<plot_{i}>')
-            msg_body += f'<img src="cid:plot_{i}"/>'
-            attachment_MIMEParts.append(plot_mime)
-        self.notify(msg_body, subject='Plot Results', attachment_MIMEParts=attachment_MIMEParts)
+        try:
+            msg_body = ''
+            attachment_MIMEParts=[]
+            for (i,plot_src) in enumerate(plot_svg_source):
+                plot_png = self._cairosvg.svg2png(bytestring=plot_src)
+                plot_mime = MIMEImage(plot_png, 'image/png')
+                plot_mime.add_header('Content-Disposition', 'inline')
+                plot_mime.add_header('Content-ID', f'<plot_{i}>')
+                msg_body += f'<img src="cid:plot_{i}"/>'
+                attachment_MIMEParts.append(plot_mime)
+            self.notify(msg_body, subject='Plot Results', attachment_MIMEParts=attachment_MIMEParts)
+        except AttributeError as e:
+            print("*** ALERT *** Cairo SVG likely missing, skipping emailing of plots.")
+            traceback.print_exc()
+        except Exception:
+            traceback.print_exc()
 
     def email_plot_dictionary(self, plot_svg_source):
         msg_body = ''
@@ -333,7 +388,7 @@ class Plugin_Manager():
             msg_body+='\n'
         self.notify(msg_body, subject='Plot Results', attachment_MIMEParts=attachment_MIMEParts)
 
-    def crash_info(self, test):
+    def _crash_str(self, test):
         (typ, value, trace_bk) = test._crash_info
         crash_str = f'Test: {test.get_name()} crashed: {typ},{value}\n'
         crash_sep = '==================================================\n'
@@ -345,18 +400,15 @@ class Plugin_Manager():
     ###
     # TRACEABILITY METHODS
     ###
+    def _populate_traceability_data(self):
+        self._traceabilities = Traceability_items(self.tests[0])
+        self._traceabilities.populate_traceability_data(self.traceability_items)
     def _create_metalogger(self, test):
         '''Called from the plugin_master if the 'traceability' plugin was included in the plugin_registry, this creates a master and logger separate from the test data logger, and populates them using user provided metadata gathering functions.'''
         _master = master()
         test._metalogger = logger(database=test.get_db_file())
         test._metalogger.add(_master)
-        test._traceabilities = Traceability_items(test)
-        if not hasattr(self,'_traceabilities'):
-            test._traceabilities.populate_traceability_data(test.traceability_items)
-            self._traceabilities = test._traceabilities.get_traceability_data().copy()
-        else:
-            test._traceabilities.trace_data = self._traceabilities.copy()
-        test._traceabilities.add_data_to_metalogger(test._metalogger)
+        self._traceabilities.add_data_to_metalogger(test._metalogger)
     def _metalog(self, test):
         '''This is separate from the _create_metalogger method in order to give other plugins the opportunity to add to the metalogger before the channel list is commited to a table.'''
         test._metalogger.new_table(table_name=test.get_name() + "_metadata", replace_table=True)
@@ -374,42 +426,57 @@ class Plugin_Manager():
     # ARCHIVE METHODS
     ###
     def _archive(self):
-        '''Makes a copy of the data just collected and puts it and the associated metatable (if there is one) in an archive folder. Also adds a copy of the table (and metatable) to the database with the time of collection to the test's generic database, so it will not be overwritten when the test is next run. Will also generate scripts to rerun plotting (if the script has a plot method) and evaluation (if the evaluation feature is used).'''
+        '''
+        Makes a copy of the data just collected and puts it and the associated metadata table (if there is one) in an archive folder.
+        Also adds a copy of the table (and metatable) to the database with the time of collection to the test's generic database, so it will not be overwritten when the test is next run.
+        Will also generate scripts to rerun plotting (if the script has a plot method) and evaluation (if the evaluation feature is used).
+        '''
         print_banner('Archiving. . .')
-        try:
-            archive_folder = self.tests[0].get_archive_folder_name()
-        except AttributeError:
+        for test in self.tests:
+            try:
+                archive_folder = test.get_archive_folder_name()
+                break
+            except AttributeError:
+                archive_folder = datetime.datetime.utcnow().strftime("%Y_%m_%d_%H_%M")
+                break
+            except Exception:
+                continue
             archive_folder = datetime.datetime.utcnow().strftime("%Y_%m_%d_%H_%M")
         archived_tables = []
         for test in self.tests:
+            if not hasattr(test, "_logger"):
+                print(f"No logger exists for {test.get_name()}. Skipping archive.")
             archiver = test_archive.database_archive(test_script_file=test.get_module_path(), db_source_file=test.get_db_file())
             if not archiver.has_data(tablename=test.get_name()):
                 print(f'No data logged for {test.get_name()}. Skipping archive.')
                 continue
             if test._is_crashed:
-                this_archive_folder = archive_folder + '_CRASHED'
+                this_archive_folder = archive_folder + '__CRASHED'
             else:
                 this_archive_folder = archive_folder
             db_dest_file = archiver.compute_db_destination(this_archive_folder)
-            archiver.copy_table(db_source_table=test.get_name(), db_dest_table=test.get_name(), db_dest_file=db_dest_file)
-            test._logger.copy_table(old_table=test.get_name(), new_table=test.get_name()+'_'+archive_folder)
-            if 'traceability' in self.used_plugins:
+            archived_table_name = test.get_name()
+            if test._is_crashed:
+                archived_table_name+='__CRASHED'
+            archiver.copy_table(db_source_table=test.get_name(), db_dest_table=archived_table_name, db_dest_file=db_dest_file)
+            test._logger.copy_table(old_table=test.get_name(), new_table=archived_table_name+'_'+archive_folder)
+            if 'traceability' in self.plugins:
                 archiver.copy_table(db_source_table=test.get_name()+'_metadata', db_dest_table=test.get_name()+'_metadata', db_dest_file=db_dest_file)
                 test._logger.copy_table(old_table=test.get_name()+'_metadata', new_table=test.get_name()+'_'+archive_folder+'_metadata')
-            archived_tables.append((test, test.get_name(), db_dest_file))
-            # test._add_db_indices(table_name=test.get_name(), db_file=db_dest_file)
+            archived_tables.append((test, archived_table_name, db_dest_file))
         if len(archived_tables):
             arch_plot_scripts = []
             for (test, db_table, db_file) in archived_tables:
                 if hasattr(test, 'plot'):
                     dest_file = os.path.join(os.path.dirname(db_file), f"replot_data.py")
-                    import_str = test._module_path[test._module_path.index(test.project_folder_name):].replace(os.sep,'.')
-                    plot_script_src = "if __name__ == '__main__':\n"
-                    plot_script_src += f"    from PyICe.plugins.plugin_manager import Plugin_Manager\n"
-                    plot_script_src += f"    from {import_str}.test import Test\n"
-                    plot_script_src += f"    pm = Plugin_Manager()\n"
-                    plot_script_src += f"    pm.add_test(Test)\n"
-                    plot_script_src += f"    pm.plot(database='data_log.sqlite', table_name='{test.get_name()}')\n"
+                    import_str = test._module_path[test._module_path.index(self.project_folder_name):].replace(os.sep,'.')
+                    settings_path = self.project_settings_location.replace(os.sep, '.')[1:-3]
+                    plot_script_src = f"from {self.project_folder_name}.{settings_path} import Project_Settings\n"
+                    plot_script_src += f"from PyICe.plugins.plugin_manager import Plugin_Manager\n"
+                    plot_script_src += f"from {import_str}.test import Test\n"
+                    plot_script_src += f"pm = Plugin_Manager(settings=Project_Settings)\n"
+                    plot_script_src += f"pm.add_test(Test)\n"
+                    plot_script_src += f"pm.plot(database='data_log.sqlite', table_name='{db_table}')\n"
                     try:
                         with open(dest_file, 'a') as f: #exists, overwrite, append?
                             f.write(plot_script_src)
@@ -418,16 +485,17 @@ class Plugin_Manager():
                         print(type(e))
                         print(e)
                     with contextlib.redirect_stdout(io.StringIO()):
-                        self.plot(database=os.path.relpath(db_file), table_name=db_table, test_list=[test])
-                if 'evaluate_tests' in self.used_plugins:
+                        self.plot(database=os.path.relpath(db_file), table_name=db_table, test_list=[test], skip_email_input=True)
+                if 'evaluate_tests' in self.plugins:
                     dest_file = os.path.join(os.path.dirname(db_file), f"reeval_data.py")
-                    import_str = test._module_path[test._module_path.index(test.project_folder_name):].replace(os.sep,'.')
-                    plot_script_src = "if __name__ == '__main__':\n"
-                    plot_script_src += f"    from PyICe.plugins.plugin_manager import Plugin_Manager\n"
-                    plot_script_src += f"    from {import_str}.test import Test\n"
-                    plot_script_src += f"    pm = Plugin_Manager()\n"
-                    plot_script_src += f"    pm.add_test(Test)\n"
-                    plot_script_src += f"    pm.evaluate(database='data_log.sqlite', table_name='{test.get_name()}')\n"
+                    import_str = test._module_path[test._module_path.index(self.project_folder_name):].replace(os.sep,'.')
+                    settings_path = self.project_settings_location.replace(os.sep, '.')[1:-3]
+                    plot_script_src =  f"from {self.project_folder_name}.{settings_path} import Project_Settings\n"
+                    plot_script_src += f"from PyICe.plugins.plugin_manager import Plugin_Manager\n"
+                    plot_script_src += f"from {import_str}.test import Test\n"
+                    plot_script_src += f"pm = Plugin_Manager(settings=Project_Settings)\n"
+                    plot_script_src += f"pm.add_test(Test)\n"
+                    plot_script_src += f"pm.evaluate(database='data_log.sqlite', table_name='{db_table}')\n"
                     try:
                         with open(dest_file, 'a') as f: #exists, overwrite, append?
                             f.write(plot_script_src)
@@ -437,11 +505,81 @@ class Plugin_Manager():
                         print(e)
                     with contextlib.redirect_stdout(io.StringIO()):
                         self.evaluate(database=os.path.relpath(db_file), table_name=db_table, test_list=[test])
-                if 'bench_image_creation' in self.used_plugins:
+                if 'bench_image_creation' in self.plugins:
                     self.visualizer.generate(file_base_name="Bench_Config", prune=True, file_format='svg', engine='neato', file_location=os.path.dirname(db_file))
 
                 arch_plot_scripts.append(dest_file)
                 print_banner(f'Archiving for {test.get_name()} complete.')
+
+    def archive_latest(self, destination_file=None):
+        for test in self.tests:
+            try:
+                archive_folder = test.get_archive_folder_name()
+                break
+            except AttributeError:
+                archive_folder = datetime.datetime.utcnow().strftime("%Y_%m_%d_%H_%M")
+                break
+            except Exception:
+                continue
+        else:
+            archive_folder = datetime.datetime.utcnow().strftime("%Y_%m_%d_%H_%M")
+        archived_tables = []
+        for test in self.tests:
+            archiver = test_archive.database_archive(test_script_file=test.get_module_path(), db_source_file=test.get_db_file())
+            if not archiver.has_data(tablename=test.get_name()):
+                print(f'No data logged for {test.get_name()}. Skipping archive.')
+                continue
+            this_archive_folder = archive_folder
+            if destination_file:
+                db_dest_file=destination_file
+            else:
+                db_dest_file = archiver.compute_db_destination(this_archive_folder)
+            archived_table_name = test.get_name()
+            archiver.copy_table(db_source_table=test.get_name(), db_dest_table=archived_table_name, db_dest_file=db_dest_file)
+            if 'traceability' in self.plugins:
+                archiver.copy_table(db_source_table=test.get_name()+'_metadata', db_dest_table=test.get_name()+'_metadata', db_dest_file=db_dest_file)
+            archived_tables.append((test, archived_table_name, db_dest_file))
+        if len(archived_tables):
+            arch_plot_scripts = []
+            for (test, db_table, db_file) in archived_tables:
+                if hasattr(test, 'plot'):
+                    dest_file = os.path.join(os.path.dirname(db_file), f"replot_data.py")
+                    import_str = test._module_path[test._module_path.index(self.project_folder_name):].replace(os.sep,'.')
+                    settings_path = self.project_settings_location.replace(os.sep, '.')[1:-3]
+                    plot_script_src = f"from {self.project_folder_name}.{settings_path} import Project_Settings\n"
+                    plot_script_src += f"from PyICe.plugins.plugin_manager import Plugin_Manager\n"
+                    plot_script_src += f"from {import_str}.test import Test\n"
+                    plot_script_src += f"pm = Plugin_Manager(settings=Project_Settings)\n"
+                    plot_script_src += f"pm.add_test(Test)\n"
+                    plot_script_src += f"pm.plot(database='data_log.sqlite', table_name='{db_table}')\n"
+                    try:
+                        with open(dest_file, 'a') as f: #exists, overwrite, append?
+                            f.write(plot_script_src)
+                    except Exception as e:
+                        #write locked? exists?
+                        print(type(e))
+                        print(e)
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        self.plot(database=os.path.relpath(db_file), table_name=db_table, test_list=[test], skip_email_input=True)
+                if 'evaluate_tests' in self.plugins:
+                    dest_file = os.path.join(os.path.dirname(db_file), f"reeval_data.py")
+                    import_str = test._module_path[test._module_path.index(self.project_folder_name):].replace(os.sep,'.')
+                    settings_path = self.project_settings_location.replace(os.sep, '.')[1:-3]
+                    plot_script_src =  f"from {self.project_folder_name}.{settings_path} import Project_Settings\n"
+                    plot_script_src += f"from PyICe.plugins.plugin_manager import Plugin_Manager\n"
+                    plot_script_src += f"from {import_str}.test import Test\n"
+                    plot_script_src += f"pm = Plugin_Manager(settings=Project_Settings)\n"
+                    plot_script_src += f"pm.add_test(Test)\n"
+                    plot_script_src += f"pm.evaluate(database='data_log.sqlite', table_name='{db_table}')\n"
+                    try:
+                        with open(dest_file, 'a') as f: #exists, overwrite, append?
+                            f.write(plot_script_src)
+                    except Exception as e:
+                        #write locked? exists?
+                        print(type(e))
+                        print(e)
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        self.evaluate(database=os.path.relpath(db_file), table_name=db_table, test_list=[test])
 
     ###
     # SCRIPT METHODS
@@ -450,95 +588,80 @@ class Plugin_Manager():
         '''This method aggregates the channels that will be logged and calls the collect method in every test added via self.add_test.
         args:
             temperatures (list): What values will be written to the temp_control_channel.'''
-            # debug (Boolean): This will be passed on to the script and can be used to trigger shorter loops or fewer conditions under which to gather data to verify script completeness.'''
         try:
+            far_enough = False
             self.master = master()
             self.add_instrument_channels()
+            if 'bench_config_management' in self.plugins:
+                self.test_components = component_collection()
+                self._add_components()
             self.all_benches = []
             for test in self.tests:
                 test._temperatures = temperatures
                 test._channel_reconfiguration_settings=[]
                 self._create_logger(test)
-                if 'bench_config_management' in self.used_plugins:
-                    self.test_components = component_collection()
+                if 'bench_config_management' in self.plugins:
                     self.test_connections = connection_collection(name=test.get_name())
                     try:
                         test._declare_bench_connections()
                     except Exception as e:
                         raise("TEST_MANAGER ERROR: This project indicated bench configuration data would be stored. Test template requires a _declare_bench_connections method that gathers the data.")
                     self.all_benches.append(self.test_connections)
-            if 'bench_config_management' in self.used_plugins:
+            if 'bench_config_management' in self.plugins:
                 self.all_connections = connection_collection.distill(self.all_benches)
-            for test in self.tests:
-                if 'traceability' in self.used_plugins:
+            if 'traceability' in self.plugins:
+                self._populate_traceability_data()
+                if 'bench_config_management' in self.plugins:
+                    self._traceabilities.get_traceability_data()['test_bench_connections'] = self.all_connections.get_readable_connections()
+                    self._traceabilities.get_traceability_data()['blocked_bench_terminals'] = lambda: self.all_connections.get_readable_blocked_terminals()
+                for test in self.tests:
                     self._create_metalogger(test)
-                    if 'bench_config_management' in self.used_plugins:
-                        test._traceabilities.get_traceability_data()['test_bench_connections'] = self.all_connections.get_readable_connections()
-                        test._metalogger.add_channel_dummy('test_bench_connections')
+                    if 'bench_config_management' in self.plugins:
                         test._metalogger.write('test_bench_connections', self.all_connections.get_readable_connections())
-                        
-                        test._traceabilities.get_traceability_data()['blocked_bench_terminals'] = lambda: self.all_connections.get_readable_blocked_terminals()
-                        test._metalogger.add_channel_dummy('blocked_bench_terminals')
                         test._metalogger.write('blocked_bench_terminals', self.all_connections.get_readable_blocked_terminals())
                     self._metalog(test)
-            if 'bench_config_management' in self.used_plugins and self.verbose:
+            if 'bench_config_management' in self.plugins and self.verbose:
                 print(self.all_connections.print_connections())
-            if 'bench_image_creation' in self.used_plugins:
-                self.visualizer = bench_visualizer.visualizer(connections=self.all_connections.connections, locations=test.get_bench_image_locations())
+                if temperatures and input(f'Above are the required connections to run the added test(s). Are you ready? [y/n]: ').lower() in ['n', 'no']:
+                    return
+            if 'bench_image_creation' in self.plugins:
+                self.visualizer = bench_visualizer.visualizer(connections=self.all_connections.connections, locations=self.bench_image_locations)
                 for test in self.tests:
                     self.visualizer.generate(file_base_name="Bench_Config", prune=True, file_format='svg', engine='neato', file_location=test._module_path+os.sep+'scratch')
-            summary_msg = f'{self.operator} on {self.thismachine}\n'
-            if not len(temperatures):
+            far_enough = True
+            if len(temperatures):
+                self.temperature_run_startup()
+            for temp in temperatures or ["ambient"]:
+                if temp != "ambient":
+                    print_banner(f'Setting temperature to {temp}°C')
+                    self.temperature_channel.write(temp)
                 for test in self.tests:
-                    summary_msg += f'\t* {test.get_name()}*\n'
                     if not test._is_crashed:
                         try:
-                            # test.test_timer.resume_timer()
+                            print_banner(f'{test.get_name()} Collecting. . .')
                             self.startup()
                             test._reconfigure()
-                            print_banner(f'{test.get_name()} Collecting. . .')
                             test.collect()
                             test._restore()
                         except (Exception, BaseException) as e:
                             traceback.print_exc()
                             test._is_crashed = True
                             test._crash_info = sys.exc_info()
-                            print(test._crash_info)
-                            self.notify(test._crash_info, subject='CRASHED!!!')
+                            self.notify(self._crash_str(test), subject='CRASHED!!!')
                         self.cleanup()
-                self.shutdown()
-            else:
-                assert self.temperature_channel != None
-                for temp in temperatures:
-                    print_banner(f'Setting temperature to {temp}')
-                    self.temperature_channel.write(temp)
-                    for test in self.tests:
-                        if not test._is_crashed:
-                            try:
-                                print_banner(f'Starting {test.get_name()} at {temp}C')
-                                # test.test_timer.resume_timer()
-                                self.startup()
-                                test._reconfigure()
-                                test.collect()
-                                test._restore()
-                            except (Exception, BaseException) as e:
-                                traceback.print_exc()
-                                test._is_crashed = True
-                                test._crash_info = sys.exc_info()
-                                print(test._crash_info)
-                                self.notify(test._crash_info, subject='CRASHED!!!')
-                            self.cleanup()
+                if temp != "ambient":
                     if all([x._is_crashed for x in self.tests]):
                         print_banner('All tests have crashed. Skipping remaining temperatures.')
                         break
-                self.shutdown()
+            self.shutdown()
         except Exception as e:
             traceback.print_exc()
             for test in self.tests:
                 test._is_crashed = True
             try:
-                self.cleanup()
-                self.shutdown()
+                if far_enough:
+                    self.cleanup()
+                    self.shutdown()
             except AttributeError as e:
                 # Didn't get far enough to populate the bench before crashing.
                 pass
@@ -555,14 +678,18 @@ class Plugin_Manager():
                 except:
                     pass
 
-    def plot(self, database=None, table_name=None, plot_filepath=None, test_list=None):
+    def plot(self, database=None, table_name=None, plot_filepath=None, test_list=None, skip_email_input=False):
         '''Run the plot method of each test in self.tests. Any plots returned by a test script's plot method will be emailed if the notifications plugin is used.
         args:
             database - string. The location of the database with the data to plot If left blank, the plot will continue with the database in the same directory as the test script.
             table_name - string. The name of the table in the database with the data to plot. If left blank, the plot will continue with the table named after the test script.
-            plot_filepath - string. This is where the plots will be placed upon creation. If left blank, a directory name plots will be created in the directory with the plot script and and the plots will be placed in there.'''
-        self._plots=[]
-        self._linked_plots={}
+            plot_filepath - string. This is where the plots will be placed upon creation. If left blank, a directory name plots will be created in the directory with the plot script and and the plots will be placed in there.
+            test_list - list. List of test class objects that have plot methods you want to run. If left blank, will default to every test added to the plugin manager.
+            skip_email_input: boolean. Set to true, will not empty the _plots list and will not extend it. Useful in replotting during archive.
+            '''
+        if not skip_email_input:
+            self._plots=[]
+            self._linked_plots={}
         reset_db = False
         reset_tn = False
         reset_pf = False
@@ -588,20 +715,30 @@ class Plugin_Manager():
                 else:
                     test._plot_filepath = plot_filepath
                 test._db = sqlite_data(database_file=database, table_name=test.get_table_name())
+                returned_plots = None
                 try:
-                    test.plot()
+                    returned_plots=test.plot()
                 except Exception as e:
                     # Don't stop other test's plotting or archiving because of a plotting error.
-                    print_banner(e)
+                    print(f"Plot method for {test.get_name()} crashed.")
+                    traceback.print_exc()
+                    continue
                 if isinstance(test.plot_list, (LTC_plot.plot, LTC_plot.Page)):
                     test.plot_list = [self._convert_svg(test.plot_list)]
                 else:
                     assert isinstance(test.plot_list, list)
                     test.plot_list = [self._convert_svg(plt) for plt in test.plot_list]
+                if isinstance(returned_plots, (LTC_plot.plot, LTC_plot.Page)):
+                    test.plot_list = [self._convert_svg(returned_plots)]
+                elif isinstance(returned_plots, list):
+                    test.plot_list = [self._convert_svg(plt) for plt in returned_plots]
+                else:
+                    assert returned_plots == None
                 for plot_group in test.linked_plots:
                     test.linked_plots[plot_group] = [self._convert_svg(plt) for plt in test.linked_plots[plot_group]]
-                self._plots.extend(test.plot_list)
-                self._linked_plots.update(test.linked_plots)
+                if not skip_email_input:
+                    self._plots.extend(test.plot_list)
+                    self._linked_plots.update(test.linked_plots)
                 print_banner(f'Plotting for {test.get_name()} complete.')
                 if reset_db:
                     database = None
@@ -623,7 +760,7 @@ class Plugin_Manager():
         if test_list is None:
             test_list = self.tests
         for test in test_list:
-            if not test._skip_eval and not test._is_crashed:
+            if not test._skip_eval:
                 if database is None:
                     database = test._db_file
                     reset_db = True
@@ -633,8 +770,19 @@ class Plugin_Manager():
                 else:
                     test._table_name = table_name
                 test._test_results = Test_Results(test._name, module=test)
+                if test._is_crashed or test._table_name.endswith('__CRASHED'):
+                    test._test_results._failure_override = True
                 test._db = sqlite_data(database_file=database, table_name=test.get_table_name())
-                test.evaluate_results()
+                try:
+                    test.evaluate_results()
+                except Exception:
+                    traceback.print_exc()
+                    print_banner(f"*** ERROR ***", f"{test.get_name()} crashed during evaluation, skipping.")
+                    print("\n")
+                    database = None
+                    table_name = None
+                    test._test_results = Failed_Eval(test)
+                    continue
                 if test._test_results._test_results:
                     print(test.get_test_results())
                 t_r = test._test_results.json_report()
@@ -647,9 +795,8 @@ class Plugin_Manager():
                     database = None
                 if reset_tn:
                     table_name = None
-            elif test._is_crashed:
-                print(f"{test.get_name()} crashed. Skipping evaluation.")
-                
+            else:
+                print(f"Skipping evaluation for {test.get_name()}.")
 
     def correlate(self, database=None, table_name=None):
         '''Run the correlate method of each test in self.tests.
@@ -677,3 +824,23 @@ class Plugin_Manager():
                 with open(dest_abs_filepath, 'wb') as f:
                     f.write(t_r.encode('utf-8'))
                     f.close()
+
+    def display_connections(self):
+        '''Distills the connections of all added tests and prints the diagram'''
+        if 'bench_config_management' in self.plugins:
+            self.test_components = component_collection()
+            self._add_components()
+            self.all_benches = []
+            for test in self.tests:
+                self.test_connections = connection_collection(name=test.get_name())
+                try:
+                    test._declare_bench_connections()
+                except Exception as e:
+                    raise("TEST_MANAGER ERROR: This project indicated bench configuration data would be stored. Test template requires a _declare_bench_connections method that gathers the data.")
+                self.all_benches.append(self.test_connections)
+            self.all_connections = connection_collection.distill(self.all_benches)
+            print(self.all_connections.print_connections())
+            if 'bench_image_creation' in self.plugins:
+                self.visualizer = bench_visualizer.visualizer(connections=self.all_connections.connections, locations=self.bench_image_locations)
+                for test in self.tests:
+                    self.visualizer.generate(file_base_name="Bench_Config", prune=True, file_format='svg', engine='neato', file_location=test._module_path+os.sep+'scratch')

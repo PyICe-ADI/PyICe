@@ -1663,9 +1663,9 @@ class threshold_finder(instrument,delegator):
         self.debug_print("Check polarity and output digitizer threshold.".format(self.tries))
 
         #get the polarity
-        low_test = self._test(self._minimum, measure_input=True, controlled=False)
+        low_test = self._test(self._integer_round(self._minimum), measure_input=True, controlled=False)
         self.debug_print("Measured low output: {} at input: {}".format(low_test['output_analog'], self._minimum))
-        high_test = self._test(self._maximum, measure_input=True, controlled=False)
+        high_test = self._test(self._integer_round(self._maximum), measure_input=True, controlled=False)
         self.debug_print("Measured high output: {} at input: {}".format(high_test['output_analog'], self._maximum))
         if high_test['output_analog'] == low_test['output_analog']:
             raise ThresholdUndetectableError(f'{self.get_name()}: Comparator output unchanged at max and min input forcing levels!')
@@ -1906,6 +1906,31 @@ class threshold_finder(instrument,delegator):
         self.debug_print("Searching for falling threshold")
         self._find_linear_threshold(self._minimum, self.rising_max, -1 * self._abstol) # find falling threshold starting just after rising hysteresis flip.
         self.search_algorithm = "linear search"
+        res = self._compute_outputs()
+        return res
+    def find_linear_no_hysteresis(self, rising_direction=True):
+        '''hysteresis-unaware linear sweep. Returns dictionary of results. Optionally sweep in downward direction.'''
+        #todo integer awareness
+        self._check_polarity()
+        self.tries = 0
+        if rising_direction:
+            self.debug_print("------------------------------")
+            self.debug_print("Searching for rising threshold")
+            self.rising_min = self._minimum
+            self.rising_max = self._maximum
+            self._find_linear_threshold(self._minimum, self._maximum, self._abstol) # find rising threshold
+            self.falling_min = self.rising_min
+            self.falling_max = self.rising_max
+            self.search_algorithm = "single linear search - rising"
+        else:
+            self.debug_print("-------------------------------")
+            self.debug_print("Searching for falling threshold")
+            self.falling_min = self._minimum
+            self.falling_max = self._maximum
+            self._find_linear_threshold(self._minimum, self._maximum, -1 * self._abstol) # find falling threshold starting just after rising hysteresis flip.
+            self.rising_min = self.falling_min
+            self.rising_max = self.falling_max
+            self.search_algorithm = "single linear search - falling"
         res = self._compute_outputs()
         return res
     def find_geometric(self, decades=None):

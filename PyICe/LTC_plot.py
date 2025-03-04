@@ -1164,9 +1164,13 @@ class Multipage_pdf():
     def add_page(self, page):
         FigureCanvasPdf(page.Figure)
         self.page_list.append(page)
-    def create_pdf(self, file_basename):
-        filepath = '.\\plots\\'
-        filename = filepath + "{}.pdf".format(file_basename).replace(" ", "_")
+    def create_pdf(self, file_basename, filepath=None):
+        filepath = './plots/' if filepath is None else os.path.join(filepath,'plots')
+        try:
+            os.makedirs(filepath)
+        except OSError:
+            pass
+        filename = os.path.join(filepath,"{}.pdf".format(file_basename).replace(" ", "_"))
         try:
             os.makedirs(filepath)
         except OSError:

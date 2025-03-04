@@ -1,4 +1,5 @@
 from PyICe import lab_core
+import json
 import objutils
 import os
 
@@ -90,3 +91,35 @@ class memory_decoder():
         bf_data = self._parse_bitfields()
         self.prettyprint(bf_data)
         return bf_data
+    def read(self, ascii_dump_file):
+        #Warning, this modifies the twii, making it incompatible with binary decode()
+        for bf in self.twii:
+            bf.set_delegator(bf)
+            bf._write = None
+            bf._read = None
+            bf.set_write_access(True)
+        file_ext = os.path.splitext(ascii_dump_file)[1]
+        with open(ascii_dump_file, 'r') as f:
+            if file_ext == ".txt":
+                # "KEY: VALUE\n" record, like PyICe GUI dump
+                for line in f:
+                    k,v = line.strip().split(":")
+                    try:
+                        twii[k].write(v)
+                    except lab_core.ChannelAccessException as e:
+                        print(e)
+                    except Exception as e:
+                        raise e
+            elif file_ext == ".json" or file_ext == ".jsonc":
+                for k,v in json.json.load(f).items():
+                    try:
+                        twii[k].write(v)
+                    except lab_core.ChannelAccessException as e:
+                        print(e)
+                    except Exception as e:
+                        raise e
+            else:
+                raise Exception(f'Unknown file type {file_ext}. Contact PyICe-developers@analog.com for more information.')
+            f.close()
+        return self.twii.read_all_channels()
+        
