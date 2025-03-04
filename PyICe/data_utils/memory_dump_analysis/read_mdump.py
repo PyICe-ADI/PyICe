@@ -90,24 +90,3 @@ class memory_decoder():
         bf_data = self._parse_bitfields()
         self.prettyprint(bf_data)
         return bf_data
-
-if __name__ == '__main__':
-    # stowe_offset = -0x32534003C61
-    import sys, os
-    #Example usage
-    from PyICe import twi_instrument
-    m = lab_core.master()
-    twi = m.get_twi_mdump_interface(data_source=None) #populate later
-    twii = twi_instrument.twi_instrument(twi) #, PEC = True, except_on_i2cCommError = True, retry_count = 1)
-    json_rel = '../../../../stowe_eval/stowe_eval_base/yoda/output/pyice'
-    json_root = os.path.abspath(json_rel)
-    YODA_JSON_FILE = os.path.join(json_root, 'stowe_pyice.json')
-    YODA_FUSE_JSON_FILE = os.path.join(json_root, 'stowe_pyice_fuse.json')
-    twii.populate_from_yoda_json_bridge(YODA_JSON_FILE, i2c_addr7 = None)
-    twii.populate_from_yoda_json_bridge(YODA_FUSE_JSON_FILE, i2c_addr7 = None)
-    if len(sys.argv) == 2:
-        bf_data = memory_decoder(twii).decode(sys.argv[1])
-    else:
-        raise Exception(f'Usage: {os.path.split(__file__)[1]} <record>.[srec | s19]')
-    from stowe_eval.stowe_eval_base.modules import stowe_die_traceability
-    print(stowe_die_traceability.stowe_die_traceability.get_ATE_config(stowe_die_traceability.byte_ord_dict(bf_data)))
