@@ -1,10 +1,10 @@
 import collections
 from ..lab_core import *
-from .modbus_register import modbus_register #todo use?
+from .modbus_register import modbus_register
 from enum import Enum, auto
 import minimalmodbus
 
-class modbus_reg_type(Enum)
+class modbus_reg_type(Enum):
     bit = auto()
     register = auto()
     long = auto()
@@ -12,7 +12,7 @@ class modbus_reg_type(Enum)
     string = auto()
     
 register_description =  collections.namedtuple('Register_description',
-                                                'name',
+                                                ('name',
                                                 'address',
                                                 'readable',
                                                 'writeable',
@@ -21,8 +21,8 @@ register_description =  collections.namedtuple('Register_description',
                                                 'number_of_decimals', 
                                                 'number_of_registers', #for long, float, string
                                                 'byteorder', #for long, float
-                                                'documentation',
-                                                defaults = (modbus.register, None, None, None, None, None),
+                                                'documentation'),
+                                                defaults = (modbus_reg_type.register, None, None, None, None, None),
                                                 )
 
 
@@ -39,7 +39,7 @@ class modbus_instrument(instrument, minimalmodbus.Instrument):
         #self.modbus_pid = minimalmodbus.Instrument(interface_raw_serial,modbus_address)
         #self.modbus_pid.serial.stopbits = 1
         #self.modbus_pid.serial.timeout = 5
-    def add_registers(self, resigter_descriptions):
+    def add_registers(self, register_descriptions):
         for reg_description in register_descriptions:
             if reg_description.reg_type == modbus_reg_type.bit:
                 ch = register(name = reg_description.name,
@@ -48,18 +48,27 @@ class modbus_instrument(instrument, minimalmodbus.Instrument):
                               write_function = lambda v, addr=reg_description.address: self.write_bit(registeraddress=addr, value=v, functioncode=5) if reg_description.writeable else None,
                               )
             elif reg_description.reg_type == modbus_reg_type.register:
-                ch = register(name = reg_description.name,
-                              size = 16,
+                if reg_description.number_of_decimals is None:
+                    number_of_decimals = 0
+                else:
+                    number_of_decimals = reg_description.number_of_decimals
+                if reg_description.signed is None:
+                    signed = False
+                else:
+                    signed = True
+                # ch = register(name = reg_description.name,
+                ch = modbus_register(name = reg_description.name,
+                              # size = 16,
                               read_function = lambda addr=reg_description.address,
-                                                     nod=reg_description.number_of_decimals,
-                                                     signed=reg_description.signed: self.read_register(registeraddress=addr,
+                                                     nod=number_of_decimals,
+                                                     signed=signed: self.read_register(registeraddress=addr,
                                                                                                        number_of_decimals=nod,
                                                                                                        functioncode=3,
                                                                                                        signed=signed) if reg_description.readable else None,
                               write_function = lambda v, 
                                                       addr=reg_description.address,
-                                                      nod=reg_description.number_of_decimals,
-                                                      signed=reg_description.signed: self.write_register(registeraddress=addr,
+                                                      nod=number_of_decimals,
+                                                      signed=signed: self.write_register(registeraddress=addr,
                                                                                                          value=v,
                                                                                                          number_of_decimals=nod,
                                                                                                          functioncode=16,

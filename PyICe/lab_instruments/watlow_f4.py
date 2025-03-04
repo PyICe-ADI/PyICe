@@ -4,7 +4,7 @@ from .modbus_instrument import modbus_instrument, modbus_reg_type, register_desc
 
 class watlow_f4(temperature_chamber, modbus_instrument):
     REGISTERS = [
-        rd('Setpoint1', 300, readable=True, writeable=True),
+        rd('Setpoint1', 300, readable=True, writeable=True, signed=True),
     ]
     def __init__(self, interface_raw_serial, modbus_address, baudrate=19200):
         modbus_instrument.__init__(self,
