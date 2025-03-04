@@ -560,7 +560,8 @@ class Plugin_Manager():
                         print(type(e))
                         print(e)
                     with contextlib.redirect_stdout(io.StringIO()):
-                        self.plot(database=os.path.relpath(db_file), table_name=db_table, test_list=[test], skip_email_input=True)
+                        with contextlib.redirect_stderr(io.StringIO()):
+                            self.plot(database=os.path.relpath(db_file), table_name=db_table, test_list=[test], skip_email_input=True)
                 if 'evaluate_tests' in self.plugins:
                     dest_file = os.path.join(os.path.dirname(db_file), f"reeval_data.py")
                     import_str = test._module_path[test._module_path.index(self.project_folder_name):].replace(os.sep,'.')
@@ -579,7 +580,8 @@ class Plugin_Manager():
                         print(type(e))
                         print(e)
                     with contextlib.redirect_stdout(io.StringIO()):
-                        self.evaluate(database=os.path.relpath(db_file), table_name=db_table, test_list=[test])
+                        with contextlib.redirect_stderr(io.StringIO()):
+                            self.evaluate(database=os.path.relpath(db_file), table_name=db_table, test_list=[test])
 
     ###
     # SCRIPT METHODS
