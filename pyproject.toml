@@ -37,6 +37,7 @@ dependencies=[
     "objutils",
     "openpyxl",
     "pandas",
+    "vcdvcd",
     "pybind11",
     "pycairo",
     "pyserial==3.4",
