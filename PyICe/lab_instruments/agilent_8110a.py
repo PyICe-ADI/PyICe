@@ -222,7 +222,7 @@ class Agilent_8110a(scpi_instrument):
         new_channel.set_max_write_limit(0.396)
         return self._add_channel(new_channel)
 
-    def add_channel_trasition_leading(self, channel_name, number):
+    def add_channel_transition_leading(self, channel_name, number):
         '''
         Sets the leading edge speed of the waveform.
         '''
@@ -233,7 +233,7 @@ class Agilent_8110a(scpi_instrument):
         new_channel.set_max_write_limit(0.2)
         return self._add_channel(new_channel)
         
-    def add_channel_trasition_trailing(self, channel_name, number):
+    def add_channel_transition_trailing(self, channel_name, number):
         '''
         Sets the trailing edge speed of the waveform.
         '''
@@ -390,6 +390,7 @@ class Agilent_8110a(scpi_instrument):
         new_channel.add_preset("ON", "Allow the pattern to update automatically upon being re-written.")
         new_channel.add_preset("OFF", "Prevent the pattern from updating automatically upon being re-written.")
         new_channel.add_preset("ONCE", "Update the pattern one time (once re-written)?")
+        new_channel.set_write_delay(0.1) # HP81110A seems to generate wayward STROBE outputs during innocuous SCPI commands. This helps prevent scope arming and such.
         return self._add_channel(new_channel)
 
 # Done:
