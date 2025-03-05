@@ -39,45 +39,41 @@ class modbus_instrument(instrument, minimalmodbus.Instrument):
         #self.modbus_pid = minimalmodbus.Instrument(interface_raw_serial,modbus_address)
         #self.modbus_pid.serial.stopbits = 1
         #self.modbus_pid.serial.timeout = 5
+    def _read_register(self, ch):
+        return self.read_register(registeraddress=register_description.address,
+                                  number_of_decimals=register_description.number_of_decimals if register_description.number_of_decimals is not None else 0,
+                                  functioncode=3,
+                                  signed=register_description.signed if register_description.signed is not None else False,
+                                 )
+    def _write_register(self, v, ch):
+        return self.write_register(registeraddress=register_description.address,
+                                   value=v,
+                                   number_of_decimals=register_description.number_of_decimals if register_description.number_of_decimals is not None else 0,
+                                   functioncode=16,
+                                   signed=register_description.signed if register_description.signed is not None else False,
+                                  )
     def add_registers(self, register_descriptions):
         for reg_description in register_descriptions:
             if reg_description.reg_type == modbus_reg_type.bit:
                 ch = register(name = reg_description.name,
                               size = 1,
-                              read_function = lambda addr=reg_description.address: self.read_bit(registeraddress=addr, functioncode=2) if reg_description.readable else None,
-                              write_function = lambda v, addr=reg_description.address: self.write_bit(registeraddress=addr, value=v, functioncode=5) if reg_description.writeable else None,
+                              #todo lambda closure problem?!??!
+                              read_function = None, #lambda addr=reg_description.address: self.read_bit(registeraddress=addr, functioncode=2) if reg_description.readable else None,
+                              write_function = None, #lambda v, addr=reg_description.address: self.write_bit(registeraddress=addr, value=v, functioncode=5) if reg_description.writeable else None,
                               )
+                ch._read = lambda ch=ch: self._read_register(ch)
+                ch._write = lambda v, ch=ch: self._write_register(v, ch)
             elif reg_description.reg_type == modbus_reg_type.register:
-                if reg_description.number_of_decimals is None:
-                    number_of_decimals = 0
-                else:
-                    number_of_decimals = reg_description.number_of_decimals
-                if reg_description.signed is None:
-                    signed = False
-                else:
-                    signed = True
-                # ch = register(name = reg_description.name,
                 ch = modbus_register(name = reg_description.name,
-                              # size = 16,
-                              read_function = lambda addr=reg_description.address,
-                                                     nod=number_of_decimals,
-                                                     signed=signed: self.read_register(registeraddress=addr,
-                                                                                                       number_of_decimals=nod,
-                                                                                                       functioncode=3,
-                                                                                                       signed=signed) if reg_description.readable else None,
-                              write_function = lambda v, 
-                                                      addr=reg_description.address,
-                                                      nod=number_of_decimals,
-                                                      signed=signed: self.write_register(registeraddress=addr,
-                                                                                                         value=v,
-                                                                                                         number_of_decimals=nod,
-                                                                                                         functioncode=16,
-                                                                                                         signed=signed) if reg_description.writeable else None,
+                              read_function = lambda reg=reg_description: self._read_register(reg) if reg_description.readable else None,
+                              write_function = lambda v, reg=reg_description: self._write_register(v, reg) if reg_description.writeable else None,
                               )
             elif reg_description.reg_type in modbus_reg_type:
                 raise Exception('Currently unimplemented. Contact PyICe developers')
             else:
                 raise Exception(f'Unknown register type {reg_description.reg_type} not a member of {modbus_reg_type}')
+            for attr in reg_description._fields:
+                ch.set_attribute(attr, getattr(reg_description, attr))
             ch.set_description(reg_description.documentation)
             self._add_channel(ch)
      
