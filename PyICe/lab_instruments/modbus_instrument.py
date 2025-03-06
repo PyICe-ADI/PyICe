@@ -1,6 +1,5 @@
 import collections
 from ..lab_core import *
-from .modbus_register import modbus_register
 from enum import Enum, auto
 import minimalmodbus
 
@@ -10,6 +9,14 @@ class modbus_reg_type(Enum):
     long = auto()
     float = auto()
     string = auto()
+
+class modbus_register(channel):
+    '''register in the sense of remote memory (read AND write functions), but without binary/2's comp features'''
+    def __init__(self, name, read_function, write_function=None):
+        channel.__init__(self, name=name, read_function=read_function)
+        if write_function is not None:
+            self._write = write_function
+            self.set_write_access(True)
     
 register_description =  collections.namedtuple('Register_description',
                                                 ('name',
