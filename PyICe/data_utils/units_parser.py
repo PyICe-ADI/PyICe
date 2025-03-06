@@ -31,6 +31,7 @@ def parser(units):
             "°C"        :{"scale":1,     "isunit": True,     "DESCRIPTION":  "Degree Celcius"},
             "°F"        :{"scale":1,     "isunit": True,     "DESCRIPTION":  "Degree Farneheit"},
             "V•m"       :{"scale":1,     "isunit": True,     "DESCRIPTION":  "Volt•Meter"},
+            "Vrms"      :{"scale":1,     "isunit": True,     "DESCRIPTION":  "Root mean square Voltage"},
             "eV"        :{"scale":1,     "isunit": True,     "DESCRIPTION":  "Electron Volt"},
             "Ω•m"       :{"scale":1,     "isunit": True,     "DESCRIPTION":  "Ohm•Meter"},
             "Wb"        :{"scale":1,     "isunit": True,     "DESCRIPTION":  "Weber"},
