@@ -6,6 +6,12 @@ class watlow_f4(temperature_chamber, modbus_instrument):
     REGISTERS = [
         rd('SV1', 300, readable=True, writeable=True, signed=True),
         rd('PV1', 100, readable=True, writeable=False, signed=True),
+        rd('heat_power', 103, readable=True, writeable=False, number_of_decimals=2, signed=True),
+        rd('cool_power', 107, readable=True, writeable=False, number_of_decimals=2, signed=True),
+        #308 Idle Set Point, Channel 1, Power Out Action
+        #1206 Power-Out Action
+        #2072 Power On
+        #2073 Power Off
     ]
     def __init__(self, interface_raw_serial, modbus_address, baudrate=19200):
         self._base_name = 'Watlow F4'
