@@ -19,6 +19,16 @@ class TWI():
         self.SCL = []
         self.SDA = []
         self.STB = []
+        
+    def update(self, SDA, SCL, STB, dwell):
+        self.SCL.extend([SCL])
+        self.SDA.extend([SDA])
+        if STB == "HOLD":
+            self.STB.extend(self.STB[-1:])
+        else:
+            self.STB.extend([STB])
+        self.dwell(dwell)
+        self.audit_pattern()
 
     def add_lead_in(self, SDA, SCL, STROBE):
         self.SCL.extend(SCL)
@@ -64,40 +74,55 @@ class TWI():
         self.dwell(self.tsu_sto - self.time_step)
         self.audit_pattern()
 
-    def add_data_bit(self, d, strobe):
-        self.dwell(self.tlow)
-        self.SCL.extend([0])                                        # Clock low
-        self.SDA.extend([d])                                        # Data to d
-        self.STB.extend(self.STB[-1:])                              # Hold Strobe
-        self.dwell(self.tsu_dat - self.time_step)                   # Wait data setup time
-        self.SCL.extend([1])                                        # Clock high
-        self.SDA.extend([d])                                        # Hold data at d
-        self.STB.extend([strobe])                                   # Assert strobe
+    def add_data_bit(self, d, strobe, spike_SCL_when_low, spike_SCL_when_high, spike_SDA_when_low, spike_SDA_when_high):
+        '''
+        The data bit cycle starts by dwelling low for TLOW.
+        Then it SCL low.
+        Data is simultaneously transitioned to its new value.
+        It then dwells with SCL low and data at 'd' for T_SU_DAT (minus one time slice to account for the first one used as a transition).
+        After T_SU_DAT, SCL goes high and data remains at 'd'.
+        What happens next depends on the requested hold time.
+        If the requested hold time is zero, it dwells for thigh and then sets SCL and SDA low together at next time slice.
+        If the requested hold time is positive, it dwells for the high time and then brings SCL low while leaving SDA as is, whereupon it then dwells for the hold time T_HD_DAT.
+        If the requested hold time is negative, it dwells for the high time minus the (negative) hold time, sets SCL high and SDA low and then dwells for the remainder of the high time whereupon is sets SDA and SCL low.
+
+        |                                                                  |
+        |                      _____________________________               |
+    SCL |                     |                             |              |
+        |_____________________|                             |______________|
+        |                     |                             |              |
+        |              ____________________________________________________|
+    SDA |             |       |             D2              |              | RZ
+        |_____________|____________________________________________________|____
+        |             |                                     |              |
+        |             |<-TSU->|                             |<--- THD ---->|
+        |             |       |                             |              |
+        |<----- TLOW (A) ---->|<--------- THIGH ----------->|<- TLOW (B) ->|
+        |             |       |                             |              |
+        |•••••••••••••█•••••••█•••••••••••••••••••••••••••••█••••••••••••••█  <------ █ (Blocks) Denote where changes occur, • (Dots) denote time slices
+        '''
         thd_dat_steps = round(self.thd_dat / self.time_step)
-        if thd_dat_steps == 0:                                      # Request is zero hold time
-            self.dwell(self.thigh - self.time_step)                 # Wait clock high time
-            self.SCL.extend([0])                                    # Clock low
-            self.SDA.extend([0])                                    # Make this port RZ (Return to Zero), One's will get hammered.
-            self.STB.extend([0])                                    # Strobe low
-        elif thd_dat_steps > 0:                                     # Positive hold time
-            self.dwell(self.thigh - self.time_step)                 # Wait clock high time
-            self.SCL.extend([0])                                    # Clock low
-            self.SDA.extend([d])                                    # Hold data at d
-            self.STB.extend([0])                                    # Strobe low
-            self.dwell(self.thd_dat - self.time_step)               # Wait data hold time
-        else: # Must be negative hold time                          # Negative hold time
-            self.dwell(self.thigh + self.thd_dat - self.time_step)  # Wait clock high time minus negative hold time
-            self.SCL.extend([1])                                    # Hold clock high
-            self.SDA.extend([0])                                    # Make this port RZ (Return to Zero), One's will get hammered.
-            self.STB.extend([strobe])                               # Hold Strobe as is
-            self.dwell(-self.thd_dat - self.time_step)              # Wait out what would have been the thigh time
-            self.SCL.extend([0])                                    # Clock low
-            self.SDA.extend([0])                                    # Make this port RZ (Return to Zero), One's will get hammered.
-            self.STB.extend([0])                                    # Strobe low
+        if thd_dat_steps == 0:                                                                  # Request is zero hold time
+            self.dwell(self.tlow - self.tsu_dat - self.time_step)                               # Dwell until time one tic short of time to change the data
+            self.update(SCL=0, SDA=d, STB="HOLD", dwell=self.tsu_dat-self.time_step)            # Change SDA to data, SCL stays low, wait one tic short of data setup time
+            self.update(SCL=1, SDA=d, STB=strobe, dwell=self.thigh-self.time_step)              # Bring SCL high, data holds at d, maybe assert STROBE
+            self.update(SCL=0, SDA=0, STB=0, dwell=0)                                           # Clock low, make this port RZ (Return to Zero), One's will get hammered, STROBE back low
+        elif thd_dat_steps > 0:                                                                 # Positive hold time
+            self.dwell(self.tlow - self.tsu_dat - self.thd_dat - self.time_step)                # Dwell until time to change the data
+            self.update(SCL=0, SDA=d, STB="HOLD", dwell=self.tsu_dat-self.time_step)            # Change SDA to d, SCL stays low, dwell until time to raise SCL
+            self.update(SCL=1, SDA=d, STB=strobe, dwell=self.thigh-self.time_step)              # Bring SCL high, data holds at d, maybe assert STROBE
+            self.update(SCL=0, SDA=d, STB=0, dwell=self.thd_dat-self.time_step)                 # Clock low, data stays put
+            self.update(SCL=0, SDA=0, STB=0, dwell=0)                                           # Clock low, make this port RZ (Return to Zero), One's will get hammered, STROBE back low
+        else: # thd_dat_steps < 0                                                               # Negative hold time
+            self.dwell(self.tlow - self.tsu_dat - self.time_step)                               # Dwell until time to change the data
+            self.update(SCL=0, SDA=d, STB="HOLD", dwell=self.tsu_dat-self.time_step)            # Bring data high, hold STROBE
+            self.update(SCL=1, SDA=d, STB=strobe, dwell=self.thigh+self.thd_dat-self.time_step) # Bring SCL high, maybe assert STROBE
+            self.update(SCL=1, SDA=0, STB=strobe, dwell=-self.thd_dat-self.time_step)           # Brind SDA low, maybe keep STROBE high
+            self.update(SCL=0, SDA=0, STB=0, dwell=0)                                           # Clock low, Make this port RZ (Return to Zero), One's will get hammered, STROBE low
         self.audit_pattern()
 
     def add_ack_bit(self, strobe):
-        self.add_data_bit(1, strobe=strobe)
+        self.add_data_bit(1, strobe=strobe, spike_SCL_when_low=False, spike_SCL_when_high=False, spike_SDA_when_low=False, spike_SDA_when_high=False)
 
     def add_byte(self, byte, strobes):
         '''
@@ -105,8 +130,8 @@ class TWI():
         Bits are [0..8] where 0 is the MSB of the data, 7 is the LSB of the data and 8 is the ACK.
         '''
         for bit in self.biterator(byte):
-            self.add_data_bit(d = bit, strobe = 1 if strobes[bit] else 0)
-        self.add_ack_bit(strobe = 1 if strobes[8] else 0)
+            self.add_data_bit(d=bit, strobe=1 if strobes[bit] else 0, spike_SCL_when_low=False, spike_SCL_when_high=False, spike_SDA_when_low=False, spike_SDA_when_high=False)
+        self.add_ack_bit(strobe=1 if strobes[8] else 0)
 
     def add_addr7(self, addr7, R_Wb, strobes):
         self.add_byte(byte=addr7*2 + R_Wb, strobes=strobes)
