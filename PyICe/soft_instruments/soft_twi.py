@@ -72,9 +72,30 @@ class Soft_TWI(instrument):
         new_channel = channel(channel_name, write_function=_write_value)
         return self._add_channel(new_channel)
         
-    def add_channel_tsp(self, channel_name):
-        '''Controls the spike width, high for d=0 and low for d=1. The port must be tolerant of (ignore) spikes on either data value such as 50ns.'''
+    def add_channel_tsp_SCL_hi(self, channel_name):
+        '''Controls the high spike width on SCL'''
         def _write_value(value):
-            self.twi_pattern.tsp = value
+            self.twi_pattern.tsp_SCL_hi = value
+        new_channel = channel(channel_name, write_function=_write_value)
+        return self._add_channel(new_channel)
+        
+    def add_channel_tsp_SCL_lo(self, channel_name):
+        '''Controls the low spike width on SCL'''
+        def _write_value(value):
+            self.twi_pattern.tsp_SCL_lo = value
+        new_channel = channel(channel_name, write_function=_write_value)
+        return self._add_channel(new_channel)
+        
+    def add_channel_tsp_SDA_hi(self, channel_name):
+        '''Controls the high spike width on SDA'''
+        def _write_value(value):
+            self.twi_pattern.tsp_SDA_hi = value
+        new_channel = channel(channel_name, write_function=_write_value)
+        return self._add_channel(new_channel)
+        
+    def add_channel_tsp_SDA_lo(self, channel_name):
+        '''Controls the low spike width on SDA'''
+        def _write_value(value):
+            self.twi_pattern.tsp_SDA_lo = value
         new_channel = channel(channel_name, write_function=_write_value)
         return self._add_channel(new_channel)
