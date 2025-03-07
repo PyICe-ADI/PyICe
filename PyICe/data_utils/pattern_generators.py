@@ -18,14 +18,14 @@ class TWI():
         self.SCL = []
         self.SDA = []
         self.STB = []
-        self.tbuf    = self.quantize(self.tbuf)
-        self.thd_sta = self.quantize(self.thd_sta)
-        self.tlow    = self.quantize(self.tlow)
-        self.thd_dat = self.quantize(self.thd_dat)
-        self.thigh   = self.quantize(self.thigh)
-        self.tsu_dat = self.quantize(self.tsu_dat)
-        self.tsu_sta = self.quantize(self.tsu_sta)
-        self.tsu_sto = self.quantize(self.tsu_sto)
+        self.tbuf       = self.quantize(self.tbuf)
+        self.thd_sta    = self.quantize(self.thd_sta)
+        self.tlow       = self.quantize(self.tlow)
+        self.thd_dat    = self.quantize(self.thd_dat)
+        self.thigh      = self.quantize(self.thigh)
+        self.tsu_dat    = self.quantize(self.tsu_dat)
+        self.tsu_sta    = self.quantize(self.tsu_sta)
+        self.tsu_sto    = self.quantize(self.tsu_sto)
         self.tsp_SCL_hi = self.quantize(self.tsp_SCL_hi)
         self.tsp_SCL_lo = self.quantize(self.tsp_SCL_lo)
         self.tsp_SDA_hi = self.quantize(self.tsp_SDA_hi)
@@ -115,24 +115,22 @@ class TWI():
         |             |       |                             |              |
         |•••••••••••••█•••••••█•••••••••••••••••••••••••••••█••••••••••••••█  <------ █ (Blocks) Denote where changes occur, • (Dots) denote time slices
         '''
-        thd_dat_steps = round(self.thd_dat / self.time_step)
-        
-        if  thd_dat_steps > 0:                                                                  # Positive hold time
-            lead_in = self.quantize((self.tlow - self.tsu_dat - self.tsp_SCL_hi) / 2) - self.time_step
-            self.dwell(lead_in - self.time_step)
+        if  self.thd_dat > 0:                                                                   # Positive hold time
+            lead_in = self.quantize((self.tlow - self.tsu_dat - self.tsp_SCL_hi) / 2)
+            self.dwell(lead_in - 2*self.time_step)
             if self.tsp_SCL_hi > 0:
                 self.update(SCL=1, SDA=0, STB="HOLD", dwell=self.tsp_SCL_hi-self.time_step)
-            self.update(SCL=0, SDA=0, STB="HOLD", dwell=self.quantize((self.tlow-self.tsu_dat-self.thd_dat-self.tsp_SCL_hi)) - lead_in - self.time_step)
+            self.update(SCL=0, SDA=0, STB="HOLD", dwell=self.tlow-self.tsu_dat-self.thd_dat-self.tsp_SCL_hi - lead_in)
             self.update(SCL=0, SDA=d, STB="HOLD", dwell=self.tsu_dat-self.time_step)            # Change SDA to d, SCL stays low, dwell until time to raise SCL
             self.update(SCL=1, SDA=d, STB=strobe, dwell=self.thigh-self.time_step)              # Bring SCL high, data holds at d, maybe assert STROBE
             self.update(SCL=0, SDA=d, STB=0, dwell=self.thd_dat-self.time_step)                 # Clock low, data stays put
             self.update(SCL=0, SDA=0, STB=0, dwell=0)                                           # Clock low, make this port RZ (Return to Zero), One's will get hammered, STROBE back low
-        elif thd_dat_steps == 0:                                                                # Request is zero hold time
+        elif self.thd_dat == 0:                                                                 # Request is zero hold time
             self.dwell(self.tlow - self.tsu_dat - self.time_step)                               # Dwell until time one tic short of time to change the data
             self.update(SCL=0, SDA=d, STB="HOLD", dwell=self.tsu_dat-self.time_step)            # Change SDA to data, SCL stays low, wait one tic short of data setup time
             self.update(SCL=1, SDA=d, STB=strobe, dwell=self.thigh-self.time_step)              # Bring SCL high, data holds at d, maybe assert STROBE
             self.update(SCL=0, SDA=0, STB=0, dwell=0)                                           # Clock low, make this port RZ (Return to Zero), One's will get hammered, STROBE back low
-        else: # thd_dat_steps < 0                                                               # Negative hold time
+        else: # self.thd_dat < 0                                                                # Negative hold time
             self.dwell(self.tlow - self.tsu_dat - self.time_step)                               # Dwell until time to change the data
             self.update(SCL=0, SDA=d, STB="HOLD", dwell=self.tsu_dat-self.time_step)            # Bring data high, hold STROBE
             self.update(SCL=1, SDA=d, STB=strobe, dwell=self.thigh+self.thd_dat-self.time_step) # Bring SCL high, maybe assert STROBE
