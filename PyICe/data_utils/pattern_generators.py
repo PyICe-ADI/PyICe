@@ -101,9 +101,9 @@ class TWI():
         If the requested hold time is negative, it dwells for the high time minus the (negative) hold time, sets SCL high and SDA low and then dwells for the remainder of the high time whereupon is sets SDA and SCL low.
 
         |                                                                  |
-        |     __               _____________________________               |
-    SCL |    |  |             |                             |              |
-        |____|  |_____________|                             |______________|
+        |      ___              ____________       _________               |
+    SCL |     /   \            |            \ Tsp /         |              |
+        |____/ Tsp \___________|             \___/          |______________|
         |                     |                             |              |
         |              ____________________________________________________|
     SDA |             |       |             D2              |              | RZ
@@ -114,6 +114,14 @@ class TWI():
         |<----- TLOW (A) ---->|<--------- THIGH ----------->|<- TLOW (B) ->|
         |             |       |                             |              |
         |•••••••••••••█•••••••█•••••••••••••••••••••••••••••█••••••••••••••█  <------ █ (Blocks) Denote where changes occur, • (Dots) denote time slices
+        
+        Spikes shall be inserted as follows:
+        -----------------------------------
+            1) High spikes on SCL from the low phase, if requested, shall be inserted centered in the TLOW (A) clock interval (without regard to data setup and hold times).
+            2) Low spikes on SCL from the high phase, if requested, shall be inserted centered in the THIGH clock interval.
+            3) All spikes on data, if requested, shall be inserted centered in the THIGH clock interval.
+                a) If the data is low, a high spike shall be inserted.
+                b) If the data is high, a low spike shall be inserted.
         '''
         if  self.thd_dat > 0:                                                                   # Positive hold time
             lead_in = self.quantize((self.tlow - self.tsu_dat - self.tsp_SCL_hi) / 2)
@@ -121,21 +129,21 @@ class TWI():
             if self.tsp_SCL_hi > 0:
                 self.update(SCL=1, SDA=0, STB="HOLD", dwell=self.tsp_SCL_hi-self.time_step)
             self.update(SCL=0, SDA=0, STB="HOLD", dwell=self.tlow-self.tsu_dat-self.thd_dat-self.tsp_SCL_hi - lead_in)
-            self.update(SCL=0, SDA=d, STB="HOLD", dwell=self.tsu_dat-self.time_step)            # Change SDA to d, SCL stays low, dwell until time to raise SCL
-            self.update(SCL=1, SDA=d, STB=strobe, dwell=self.thigh-self.time_step)              # Bring SCL high, data holds at d, maybe assert STROBE
-            self.update(SCL=0, SDA=d, STB=0, dwell=self.thd_dat-self.time_step)                 # Clock low, data stays put
-            self.update(SCL=0, SDA=0, STB=0, dwell=0)                                           # Clock low, make this port RZ (Return to Zero), One's will get hammered, STROBE back low
+            self.update(SCL=0, SDA=d, STB="HOLD", dwell=self.tsu_dat-self.time_step)
+            self.update(SCL=1, SDA=d, STB=strobe, dwell=self.thigh-self.time_step)
+            self.update(SCL=0, SDA=d, STB=0, dwell=self.thd_dat-self.time_step)
+            self.update(SCL=0, SDA=0, STB=0, dwell=0)
         elif self.thd_dat == 0:                                                                 # Request is zero hold time
-            self.dwell(self.tlow - self.tsu_dat - self.time_step)                               # Dwell until time one tic short of time to change the data
-            self.update(SCL=0, SDA=d, STB="HOLD", dwell=self.tsu_dat-self.time_step)            # Change SDA to data, SCL stays low, wait one tic short of data setup time
-            self.update(SCL=1, SDA=d, STB=strobe, dwell=self.thigh-self.time_step)              # Bring SCL high, data holds at d, maybe assert STROBE
-            self.update(SCL=0, SDA=0, STB=0, dwell=0)                                           # Clock low, make this port RZ (Return to Zero), One's will get hammered, STROBE back low
+            self.dwell(self.tlow - self.tsu_dat - self.time_step)
+            self.update(SCL=0, SDA=d, STB="HOLD", dwell=self.tsu_dat-self.time_step)
+            self.update(SCL=1, SDA=d, STB=strobe, dwell=self.thigh-self.time_step)
+            self.update(SCL=0, SDA=0, STB=0, dwell=0)
         else: # self.thd_dat < 0                                                                # Negative hold time
-            self.dwell(self.tlow - self.tsu_dat - self.time_step)                               # Dwell until time to change the data
-            self.update(SCL=0, SDA=d, STB="HOLD", dwell=self.tsu_dat-self.time_step)            # Bring data high, hold STROBE
-            self.update(SCL=1, SDA=d, STB=strobe, dwell=self.thigh+self.thd_dat-self.time_step) # Bring SCL high, maybe assert STROBE
-            self.update(SCL=1, SDA=0, STB=strobe, dwell=-self.thd_dat-self.time_step)           # Brind SDA low, maybe keep STROBE high
-            self.update(SCL=0, SDA=0, STB=0, dwell=0)                                           # Clock low, Make this port RZ (Return to Zero), One's will get hammered, STROBE low
+            self.dwell(self.tlow - self.tsu_dat - self.time_step)
+            self.update(SCL=0, SDA=d, STB="HOLD", dwell=self.tsu_dat-self.time_step)
+            self.update(SCL=1, SDA=d, STB=strobe, dwell=self.thigh+self.thd_dat-self.time_step)
+            self.update(SCL=1, SDA=0, STB=strobe, dwell=-self.thd_dat-self.time_step)
+            self.update(SCL=0, SDA=0, STB=0, dwell=0)
         self.audit_pattern()
 
     def add_ack_bit(self, strobe):
