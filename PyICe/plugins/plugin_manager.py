@@ -782,7 +782,7 @@ class Plugin_Manager():
                     test._test_results._failure_override = True
                 test._db = sqlite_data(database_file=database, table_name=test.get_table_name())
                 if f"{test.get_table_name()}_all" in test._db.get_table_names():
-                    test._table_name = f"{table_name}_all" #Redirect to presets-joined table
+                    test._table_name = f"{test.get_table_name()}_all" #Redirect to presets-joined table
                     test._db.set_table(test.get_table_name())
                 try:
                     test.evaluate_results()
