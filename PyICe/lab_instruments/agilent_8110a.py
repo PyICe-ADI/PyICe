@@ -3,21 +3,23 @@ from PyICe.lab_core import *
 class Agilent_8110a(scpi_instrument):
     '''
     HP 150MHz Dual Channel Pattern Generator from the early 1990's
-    The manual advises to use the short form of SCPI commands to save communication time since this thing has a lousy GPIB port (Dare I say even "HPIB" port?).
+    The manual advises to use the short form of SCPI commands to save communication time since this thing has a lousy GPIB port (Dare I say, even, "HPIB" port?).
     It also advises to turn the display off but there doesn't seem to be a speed issue turning off seems ill advised for debug reasons.
     '''
-
-    def __init__(self, interface_visa, debug_comms=False):
+    def __init__(self, interface_visa, plugin, debug_comms=False):
         self._debug_comms = debug_comms
-        self._base_name = 'agilent_8110a'
-        instrument.__init__(self, f"agilent_8110a @ {interface_visa}")
+        self._base_name = 'HP8110A'
+        self.max_record_size = 4096
+        instrument.__init__(self, f"HP8110A @ {interface_visa}")
         self.add_interface_visa(interface_visa)
         self.get_interface().write("*RST")
         '''
         Minimum width of a pulse duration (1 or 0) in the digital pattern.
         Set by add_channel_pulse_period()
         '''
-        self.timestep = 6.65e-9
+        speeds = {"HP81103A": 6.65e-9}
+        assert plugin in speeds, f'''Agilent 8110A doesn't take a plugin called "{plugin}" try one of: {speeds.keys()}'''
+        self.timestep = speeds[plugin]
 
     def add_channel_trigger_source(self, channel_name):
         '''
@@ -221,7 +223,7 @@ class Agilent_8110a(scpi_instrument):
         new_channel.set_max_write_limit(0.396)
         return self._add_channel(new_channel)
 
-    def add_channel_trasition_leading(self, channel_name, number):
+    def add_channel_transition_leading(self, channel_name, number):
         '''
         Sets the leading edge speed of the waveform.
         '''
@@ -232,7 +234,7 @@ class Agilent_8110a(scpi_instrument):
         new_channel.set_max_write_limit(0.2)
         return self._add_channel(new_channel)
         
-    def add_channel_trasition_trailing(self, channel_name, number):
+    def add_channel_transition_trailing(self, channel_name, number):
         '''
         Sets the trailing edge speed of the waveform.
         '''
@@ -263,11 +265,10 @@ class Agilent_8110a(scpi_instrument):
         def set_pulse_period(pulse_period):
             self.get_interface().write(f":SOUR:PULS:PER {pulse_period}S")
         new_channel = channel(channel_name, write_function=set_pulse_period)
-        new_channel.set_min_write_limit(6.65e-9)
+        new_channel.set_min_write_limit(self.timestep)
         new_channel.set_max_write_limit(0.999)
         return self._add_channel(new_channel)
-        
-        
+
     def add_channel_delay(self, channel_name, number):
         '''
         Sets the delay of a given channel.
