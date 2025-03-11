@@ -32,7 +32,7 @@ class watlow_f4(temperature_chamber, modbus_instrument):
     def _write_temperature(self, value):
         '''Program tempertaure setpoint to value. Implement for specific hardware.'''
         self.setpoint = value
-        self_sv.write(value)
+        self._sv.write(value)
         self._wait_settle()
     def _read_temperature_sense(self):
         '''read back actual chamber temperature.  Implement for specific hardware.'''
