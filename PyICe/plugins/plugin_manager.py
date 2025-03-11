@@ -486,7 +486,8 @@ class Plugin_Manager():
                         print(type(e))
                         print(e)
                     with contextlib.redirect_stdout(io.StringIO()):
-                        self.plot(database=os.path.relpath(db_file), table_name=db_table, test_list=[test], skip_email_input=True)
+                        with contextlib.redirect_stderr(io.StringIO()):
+                            self.plot(database=os.path.relpath(db_file), table_name=db_table, test_list=[test], skip_email_input=True)
                 if 'evaluate_tests' in self.plugins:
                     dest_file = os.path.join(os.path.dirname(db_file), f"reeval_data.py")
                     import_str = test._module_path[test._module_path.index(self.project_folder_name):].replace(os.sep,'.')
@@ -505,7 +506,8 @@ class Plugin_Manager():
                         print(type(e))
                         print(e)
                     with contextlib.redirect_stdout(io.StringIO()):
-                        self.evaluate(database=os.path.relpath(db_file), table_name=db_table, test_list=[test])
+                        with contextlib.redirect_stderr(io.StringIO()):
+                            self.evaluate(database=os.path.relpath(db_file), table_name=db_table, test_list=[test])
                 if 'bench_image_creation' in self.plugins:
                     self.visualizer.generate(file_base_name="Bench_Config", prune=True, file_format='svg', engine='neato', file_location=os.path.dirname(db_file))
 
@@ -561,7 +563,8 @@ class Plugin_Manager():
                         print(type(e))
                         print(e)
                     with contextlib.redirect_stdout(io.StringIO()):
-                        self.plot(database=os.path.relpath(db_file), table_name=db_table, test_list=[test], skip_email_input=True)
+                        with contextlib.redirect_stderr(io.StringIO()):
+                            self.plot(database=os.path.relpath(db_file), table_name=db_table, test_list=[test], skip_email_input=True)
                 if 'evaluate_tests' in self.plugins:
                     dest_file = os.path.join(os.path.dirname(db_file), f"reeval_data.py")
                     import_str = test._module_path[test._module_path.index(self.project_folder_name):].replace(os.sep,'.')
@@ -580,7 +583,8 @@ class Plugin_Manager():
                         print(type(e))
                         print(e)
                     with contextlib.redirect_stdout(io.StringIO()):
-                        self.evaluate(database=os.path.relpath(db_file), table_name=db_table, test_list=[test])
+                        with contextlib.redirect_stderr(io.StringIO()):
+                            self.evaluate(database=os.path.relpath(db_file), table_name=db_table, test_list=[test])
 
     ###
     # SCRIPT METHODS
@@ -716,6 +720,9 @@ class Plugin_Manager():
                 else:
                     test._plot_filepath = plot_filepath
                 test._db = sqlite_data(database_file=database, table_name=test.get_table_name())
+                if f"{test.get_table_name()}_all" in test._db.get_table_names():
+                    test._table_name = f"{test.get_table_name()}_all" #Redirect to presets-joined table
+                    test._db.set_table(test.get_table_name())
                 returned_plots = None
                 try:
                     returned_plots=test.plot()
@@ -774,6 +781,9 @@ class Plugin_Manager():
                 if test._is_crashed or test._table_name.endswith('__CRASHED'):
                     test._test_results._failure_override = True
                 test._db = sqlite_data(database_file=database, table_name=test.get_table_name())
+                if f"{test.get_table_name()}_all" in test._db.get_table_names():
+                    test._table_name = f"{test.get_table_name()}_all" #Redirect to presets-joined table
+                    test._db.set_table(test.get_table_name())
                 try:
                     test.evaluate_results()
                 except Exception:
@@ -817,6 +827,9 @@ class Plugin_Manager():
                 test._table_name = table_name
             test._corr_results = Test_Results(test.get_name(), module=test)
             test._db = sqlite_data(database_file=database, table_name=test.get_table_name())
+            if f"{test.get_table_name()}_all" in test._db.get_table_names():
+                test._table_name = f"{table_name}_all" #Redirect to presets-joined table
+                test._db.set_table(f"{test.get_table_name()}_all")
             test.correlate_results()
             print(test.get_test_results())
             t_r = test._corr_results.json_report()
