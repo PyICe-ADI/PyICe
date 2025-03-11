@@ -1,6 +1,6 @@
 from .lab_core import *
 from PyICe.lab_utils.str2num import str2num
-from PyICe.lab_utils.delay_loop import delay_loop
+import PyICe.lab_utils.delay_loop
 from PyICe.lab_utils.eng_string import eng_string
 from PyICe.lab_utils.threaded_writer import threaded_writer
 import random
@@ -483,7 +483,7 @@ class ExpectUnderException(ExpectException):
     '''expect instrument comparison failures for measured < expect'''
     pass
 
-class delay_loop(delay_loop, instrument):
+class delay_loop(PyICe.lab_utils.delay_loop.delay_loop, instrument):
     '''instrument wrapper for lab_utils.delay_loop enables logging of delay diagnostic variables'''
     def __init__(self, strict=False, begin=True, no_drift=True):
         '''Set strict to True to raise an Exception if loop time is longer than requested delay.
@@ -495,7 +495,7 @@ class delay_loop(delay_loop, instrument):
           Set no_drift=False to ignore time over-runs when computing next delay time.
         '''
         instrument.__init__(self, "delay_loop instrument wrapper")
-        delay_loop.__init__(self, strict, begin, no_drift)
+        PyICe.lab_utils.delay_loop.delay_loop.__init__(self, strict, begin, no_drift)
         self._base_name = 'Precision Delay Loop Virtual Instrument Wrapper'
     def add_channel_count(self, channel_name):
         '''total number of times delay() method called'''
