@@ -23,20 +23,26 @@ class watlow_f4(temperature_chamber, modbus_instrument):
         temperature_chamber.__init__(self)
         
         self.add_registers(type(self).REGISTERS)
+        self._sv = self['SV1']
+        self._pv = self['PV1']
+    def add_channels(self,channel_name):
+        self.remove_channel(self._sv)
+        self.remove_channel(self._pv)
+        return super(watlow_f4, self).add_channels(channel_name)
     def _write_temperature(self, value):
         '''Program tempertaure setpoint to value. Implement for specific hardware.'''
         self.setpoint = value
-        self['SV1'].write(value)
+        self_sv.write(value)
         self._wait_settle()
     def _read_temperature_sense(self):
         '''read back actual chamber temperature.  Implement for specific hardware.'''
-        return self['PV1'].read()
+        return self._pv.read()
     def _enable(self, enable):
         '''enable/disable temperature chamber heating and cooling. Also accepts heat/cool only arguments if chamber supports it.'''
         if enable:
             pass #?
         else:
-            self['SV1'].write(25)
+            self._sv.write(25)
     def shutdown(self, shutdown):
         '''separate method to turn off temperature chamber.
         overload if possible for individual hardware.
