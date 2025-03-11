@@ -9,6 +9,7 @@ class Agilent_8110a(scpi_instrument):
     def __init__(self, interface_visa, plugin, debug_comms=False):
         self._debug_comms = debug_comms
         self._base_name = 'HP8110A'
+        self.max_record_size = 4096
         instrument.__init__(self, f"HP8110A @ {interface_visa}")
         self.add_interface_visa(interface_visa)
         self.get_interface().write("*RST")

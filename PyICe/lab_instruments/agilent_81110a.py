@@ -10,6 +10,7 @@ class Agilent_81110a(Agilent_8110a):
     def __init__(self, interface_visa, plugin, debug_comms=False):
         self._debug_comms = debug_comms
         self._base_name = 'HP81110A'
+        self.max_record_size = 16384
         instrument.__init__(self, f"HP81110A @ {interface_visa}")
         self.add_interface_visa(interface_visa)
         self.get_interface().write("*RST")
