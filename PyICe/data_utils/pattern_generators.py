@@ -4,7 +4,6 @@ class TWI_Pattern():
     It's meant to feed into a pattern generator instrument such as the old HP8110A dual pattern generator or its modern equivalent.
     It has two channels, one for the I²C pins SDA and SCL as well as a strobe channel (which the HP811xx family supports) to trigger a scope.
     '''
-    
     class Leader():
         def __init__(self, pattern, SCL, SDA, tleader, strobe=False):
             self.pattern = pattern
@@ -118,9 +117,9 @@ class TWI_Pattern():
         self.tstep = tstep
         self.max_record_size = max_record_size
         
-    def init(self):
+    def initialize(self):
         '''Call this whenever you want to start a new pattern or flush an existing pattern to change settings.
-           Otherwise the pattern will keep on growing as you keep adding items.'''
+           Otherwise the pattern will keep on growing if you keep adding items.'''
         self.items = []
         self.SDA = []
         self.SCL = []
@@ -135,7 +134,7 @@ class TWI_Pattern():
         return round(time / self.tstep) * self.tstep
 
     def dwell(self, SCL, SDA, STB, tdwell):
-        cycles = self.quantize(tdwell)
+        cycles = round(tdwell/self.tstep)
         assert cycles >= 0, f"TWI Pattern Generator: tdwell of {tdwell} results in the addition of a negative time slice, not acheivable."
         self.SCL.extend([SCL] * cycles)
         self.SDA.extend([SDA] * cycles)
@@ -147,7 +146,7 @@ class TWI_Pattern():
         self.SDA.extend(self.SDA[-1:] * cycles)
         self.STB.extend(self.STB[-1:] * cycles)
 
-    def generate(self):
+    def finalize(self):
         previous = None
         for item in self.items:
             item.extend(previous)
@@ -216,11 +215,16 @@ class TWI_Pattern():
         for value in self.get_STB():
             STB1 += "_" if value else " "
             STB2 += " " if value else "_"
-        return f"\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nSCL: {SCL1}\n     {SCL2}\n\n\nSDA: {SDA1}\n     {SDA2}\n\n\nSTB: {STB1}\n     {STB2}\n\n\n"
+        return f"SCL: {SCL1}\n     {SCL2}\n\n\nSDA: {SDA1}\n     {SDA2}\n\n\nSTB: {STB1}\n     {STB2}"
+        
+    def write_pattern_file(self, filename=None):
+        file = open("pattern.txt" if filename==None else filename, "w")
+        file.write(self.get_printable_pattern())
+        file.close()
 
 if __name__ == "__main__":
     pattern = TWI_Pattern(tstep=1, max_record_size=4096)
-    pattern.init()
+    pattern.initialize()
     pattern.add_item(pattern.Leader(pattern, SCL=1, SDA=0, tleader=2))
     pattern.add_item(pattern.Stop(pattern, tsu_sto=3, tbuf=4))
     pattern.add_item(pattern.Start(pattern, thd_sta=5))
@@ -235,22 +239,7 @@ if __name__ == "__main__":
     pattern.add_item(pattern.Bit(pattern, value=1, tlow=6, thigh=4, tsu_dat=1, thd_dat=1, strobe=True))
     pattern.add_item(pattern.Bitend(pattern))
     pattern.add_item(pattern.Stop(pattern, tsu_sto=4, tbuf=3))
-    pattern.add_item(pattern.SDA_Spike(pattern, value=1, tstart=10, twidth=1))
-    pattern.add_item(pattern.SDA_Spike(pattern, value=0, tstart=5, twidth=1))
-    pattern.generate()
-    
-    x = pattern.get_ALL(SCL_channel=1, SDA_channel=2, STB_channel=3)
-    
-    file = open("pattern.txt", "w")
-    file.write(pattern.get_printable_pattern())
-    file.close()
-
-    # pattern.init_pattern()
-    # pattern.add_lead_in(SCL=[1], SDA=[0], STROBE=[0])
-    # pattern.dwell(3)
-    # pattern.add_stop(strobe=False)
-    # pattern.add_start(strobe=False)
-    # pattern.add_addr7(addr7=0x69, R_Wb=0, strobes=[0,0,0,0,0,0,0,0,1])
-    # file = open("pattern.txt", "w")
-    # file.write(pattern.get_printable_pattern())
-    # file.close()
+    # pattern.add_item(pattern.SDA_Spike(pattern, value=1, tstart=10, twidth=1))
+    # pattern.add_item(pattern.SDA_Spike(pattern, value=0, tstart=5, twidth=1))
+    pattern.finalize()
+    pattern.write_pattern_file()
