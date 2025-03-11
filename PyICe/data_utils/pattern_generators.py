@@ -64,23 +64,12 @@ class TWI_Pattern():
 
     class Bit():
         '''
-        The data bit cycle starts by dwelling low for TLOW.
-        Then it SCL low.
-        Data is simultaneously transitioned to its new value.
-        It then dwells with SCL low and data at 'd' for T_SU_DAT (minus one time slice to account for the first one used as a transition).
-        After T_SU_DAT, SCL goes high and data remains at 'd'.
-        What happens next depends on the requested hold time.
-        If the requested hold time is zero, it dwells for thigh and then sets SCL and SDA low together at next time slice.
-        If the requested hold time is positive, it dwells for the high time and then brings SCL low while leaving SDA as is, whereupon it then dwells for the hold time T_HD_DAT.
-        If the requested hold time is negative, it dwells for the high time minus the (negative) hold time, sets SCL high and SDA low and then dwells for the remainder of the high time whereupon is sets SDA and SCL low.
-        
-        Spikes shall be inserted as follows:
-        -----------------------------------
-            1) High spikes on SCL from the low phase, if requested, shall be inserted centered in the TLOW (A) clock interval (without regard to data setup and hold times).
-            2) Low spikes on SCL from the high phase, if requested, shall be inserted centered in the THIGH clock interval.
-            3) All spikes on data, if requested, shall be inserted centered in the THIGH clock interval.
-                a) If the data is low, a high spike shall be inserted.
-                b) If the data is high, a low spike shall be inserted.
+        The data bit cycle starts by bringing SCL low.
+        The previous data bit is held until its hold time (THD_DAT Prev) expires or is brought low immediately if the pervious bit's hold time is 0.
+        It then dwells with SCL low until the setup time of this bit whereupon SDA goes to the value for this bit.
+        It then dwells for the setup time for this bit and then SCL goes high.
+        SCL stays high for the duration of THIGH.
+        If the hold time of this bit is negative, SDA is brought low before this bit's cycle ends.
                                             _____________________________
                                            |
     SCL ___________________________________|
@@ -103,10 +92,7 @@ class TWI_Pattern():
             self.tsu_dat = pattern.quantize(tsu_dat)
             self.thd_dat = pattern.quantize(thd_dat)
             self.STB = strobe
-        def extend(self, previous_item):
-            ''' This item assumes SDA and SCL start out low and that we are starting at the change of data.
-                Be aware, hold time of the last added bit is ignored
-                Presumably OK since it's the ACK bit and has been acptured already?'''                
+        def extend(self, previous_item):              
             if isinstance(previous_item, self.pattern.Start):
                 previous_thd_dat = 0
                 previous_value = 0
@@ -134,7 +120,7 @@ class TWI_Pattern():
         
     def init(self):
         '''Call this whenever you want to start a new pattern or flush an existing pattern to change settings.
-           Otherwise the pattern will keep on growing if you just keep adding items.'''
+           Otherwise the pattern will keep on growing as you keep adding items.'''
         self.items = []
         self.SDA = []
         self.SCL = []
