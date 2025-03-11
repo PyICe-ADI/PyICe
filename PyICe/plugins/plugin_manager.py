@@ -446,6 +446,7 @@ class Plugin_Manager():
         for test in self.tests:
             if not hasattr(test, "_logger"):
                 print(f"No logger exists for {test.get_name()}. Skipping archive.")
+                continue
             archiver = test_archive.database_archive(test_script_file=test.get_module_path(), db_source_file=test.get_db_file())
             if not archiver.has_data(tablename=test.get_name()):
                 print(f'No data logged for {test.get_name()}. Skipping archive.')
