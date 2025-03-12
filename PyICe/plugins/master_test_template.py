@@ -27,6 +27,8 @@ class Master_Test_Template():
     def plot(self):
         ''' Optional method to retrieve the data collected and create plots. Can be run over and over once a collect has run. User must return a list or tuple of plots and/or pages, or an individual LTC_plot.Page, or a single LTC_plot.plot.'''
         return []
+    def _modify_metalogger(self):
+        '''Method used to make any changes to the metalog before it is merged with a sqlite table. Not to be used itself, but to be overwritten in a project specific test_template. Plugin required.'''
 
     ###
     # GET METHODS
