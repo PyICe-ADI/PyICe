@@ -158,14 +158,14 @@ class TWI_Pattern():
             for index in range(len(self.SDA)):
                 if index > sda_spike.tstart / self.tstep and index <= (sda_spike.tstart + sda_spike.twidth) / self.tstep:
                     if sda_spike.value:
-                        self.SDA[index] ^= 1
+                        self.SDA[index] |= 1
                     else:
                         self.SDA[index] &= 0
         for scl_spike in self.scl_spikes:
             for index in range(len(self.SCL)):
                 if index > scl_spike.tstart / self.tstep and index <= (scl_spike.tstart + scl_spike.twidth) / self.tstep:
                     if scl_spike.value:
-                        self.SCL[index] ^= 1
+                        self.SCL[index] |= 1
                     else:
                         self.SCL[index] &= 0
         self.audit()
@@ -227,22 +227,29 @@ class TWI_Pattern():
         Page.create_pdf(file_basename="TWI Pattern" if file_basename==None else file_basename)
 
 if __name__ == "__main__":
-    pattern = TWI_Pattern(tstep=1, max_record_size=4096)
+    tbuf=1300e-9
+    thd_sta=600e-9
+    tsu_sto=600e-9
+    thigh=600e-9
+    tlow=1300e-9
+    tsu_dat=100e-9
+    thd_dat=0
+
+    pattern = TWI_Pattern(tstep=6.65e-9, max_record_size=4096)
     pattern.initialize()
-    pattern.add_item(pattern.Leader(pattern, SCL=1, SDA=0, tleader=2))
-    pattern.add_item(pattern.Stop(pattern, tsu_sto=3, tbuf=4))
-    pattern.add_item(pattern.Start(pattern, thd_sta=5))
-    pattern.add_item(pattern.Bit(pattern, value=1, tlow=6, thigh=4, tsu_dat=1, thd_dat=1))
-    pattern.add_item(pattern.Bit(pattern, value=1, tlow=6, thigh=4, tsu_dat=1, thd_dat=1))
-    pattern.add_item(pattern.Bit(pattern, value=0, tlow=6, thigh=4, tsu_dat=1, thd_dat=1))
-    pattern.add_item(pattern.Bit(pattern, value=1, tlow=6, thigh=4, tsu_dat=1, thd_dat=1))
-    pattern.add_item(pattern.Bit(pattern, value=0, tlow=6, thigh=4, tsu_dat=1, thd_dat=1))
-    pattern.add_item(pattern.Bit(pattern, value=0, tlow=6, thigh=4, tsu_dat=1, thd_dat=1))
-    pattern.add_item(pattern.Bit(pattern, value=1, tlow=6, thigh=4, tsu_dat=1, thd_dat=1))
-    pattern.add_item(pattern.Bit(pattern, value=0, tlow=6, thigh=4, tsu_dat=1, thd_dat=1))
-    pattern.add_item(pattern.Bit(pattern, value=1, tlow=6, thigh=4, tsu_dat=1, thd_dat=1, strobe=True))
-    pattern.add_item(pattern.Bitend(pattern))
-    pattern.add_item(pattern.Stop(pattern, tsu_sto=4, tbuf=3))
-    pattern.add_item(pattern.SDA_Spike(pattern, value=1, tstart=55.5, twidth=2))
+    pattern.add_item(pattern.Leader(pattern, SCL=1, SDA=0, tleader=40e-9))
+    pattern.add_item(pattern.Stop(pattern, tsu_sto=tsu_sto, tbuf=tbuf))
+    pattern.add_item(pattern.Start(pattern, thd_sta=thd_sta))
+    pattern.add_item(pattern.Bit(pattern, value=1, tlow=tlow, thigh=thigh, tsu_dat=tsu_dat, thd_dat=thd_dat))
+    pattern.add_item(pattern.Bit(pattern, value=1, tlow=tlow, thigh=thigh, tsu_dat=tsu_dat, thd_dat=thd_dat))
+    pattern.add_item(pattern.Bit(pattern, value=0, tlow=tlow, thigh=thigh, tsu_dat=tsu_dat, thd_dat=thd_dat))
+    pattern.add_item(pattern.Bit(pattern, value=1, tlow=tlow, thigh=thigh, tsu_dat=tsu_dat, thd_dat=thd_dat))
+    pattern.add_item(pattern.Bit(pattern, value=0, tlow=tlow, thigh=thigh, tsu_dat=tsu_dat, thd_dat=thd_dat))
+    pattern.add_item(pattern.Bit(pattern, value=0, tlow=tlow, thigh=thigh, tsu_dat=tsu_dat, thd_dat=thd_dat))
+    pattern.add_item(pattern.Bit(pattern, value=1, tlow=tlow, thigh=thigh, tsu_dat=tsu_dat, thd_dat=thd_dat))
+    pattern.add_item(pattern.Bit(pattern, value=0, tlow=tlow, thigh=thigh, tsu_dat=tsu_dat, thd_dat=thd_dat))
+    pattern.add_item(pattern.Bit(pattern, value=1, tlow=tlow, thigh=thigh, tsu_dat=tsu_dat, thd_dat=thd_dat, strobe=True))
+    pattern.add_item(pattern.Leader(pattern, SCL=0, SDA=1, tleader=40e-9)) # Release ACK or port hangs
+    pattern.add_item(pattern.SCL_Spike(pattern, value=1, tstart=7e-6, twidth=20e-9)) # Puts the spike between the second and third bits
     pattern.finalize()
-    pattern.visualize()
+    pattern.visualize(title=r"T$_{LOW}$ Visualizer", file_basename="TLOW")
