@@ -411,6 +411,7 @@ class Plugin_Manager():
         self._traceabilities.add_data_to_metalogger(test._metalogger)
     def _metalog(self, test):
         '''This is separate from the _create_metalogger method in order to give other plugins the opportunity to add to the metalogger before the channel list is commited to a table.'''
+        test._modify_metalogger()
         test._metalogger.new_table(table_name=test.get_name() + "_metadata", replace_table=True)
         test._metalogger.log()
 
