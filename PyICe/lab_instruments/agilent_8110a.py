@@ -12,7 +12,8 @@ class Agilent_8110a(scpi_instrument):
         self.max_record_size = 4096
         instrument.__init__(self, f"HP8110A @ {interface_visa}")
         self.add_interface_visa(interface_visa)
-        self.get_interface().write("*RST")
+        self.reset()
+        self.operation_complete()
         '''
         Minimum width of a pulse duration (1 or 0) in the digital pattern.
         Set by add_channel_pulse_period()
@@ -41,6 +42,7 @@ class Agilent_8110a(scpi_instrument):
                     print(f"    -{source}")
                 raise Exception("Bad trigger source.\n\n")
             self.get_interface().write(f":ARM:SOUR {sources[source]['COMMAND']}")
+            self.operation_complete()
         new_channel = channel(channel_name, write_function=set_trigger_source)
         for source in sources:
             new_channel.add_preset(source, sources[source]['COMMENT'])
@@ -54,6 +56,7 @@ class Agilent_8110a(scpi_instrument):
             if sense not in ["EDGE", "LEVEL"]:
                 raise Exception(f"\n\nAgilent 8110A: Sorry don't know how to set trigger sense to: '{sense}', try 'EDGE' or 'LEVEL'.\n\n")
             self.get_interface().write(f":ARM:SENS {sense}")
+            self.operation_complete()
         new_channel = channel(channel_name, write_function=set_trigger_sense)
         new_channel.add_preset("EDGE", "Trigger sense to EDGEs")
         new_channel.add_preset("LEVEL", "Trigger sense to LEVEL")
@@ -67,6 +70,7 @@ class Agilent_8110a(scpi_instrument):
             if impedance not in [50, "10K"]:
                 raise Exception(f"\n\nAgilent 8110A: Sorry don't know how to set EXT input impedance to: '{impedance}', try '50' or '10K'.\n\n")
             self.get_interface().write(f":ARM:IMP {'50OHM' if impedance==50 else '10KOHM'}")
+            self.operation_complete()
         new_channel = channel(channel_name, write_function=set_trigger_impedance)
         new_channel.add_preset(50, "50Ω input impedance")
         new_channel.add_preset("10K", "10kΩ input impedance")
@@ -78,6 +82,7 @@ class Agilent_8110a(scpi_instrument):
         '''
         def set_arm_level(voltage):
             self.get_interface().write(f":ARM:LEV {voltage:0.4f}V")
+            self.operation_complete()
         new_channel = channel(channel_name, write_function=set_arm_level)
         new_channel.set_min_write_limit(-10)
         new_channel.set_max_write_limit(10)
@@ -98,6 +103,7 @@ class Agilent_8110a(scpi_instrument):
                     print(f"    -{slope}")
                 raise Exception("Bad Slope Settin.\n\n")
             self.get_interface().write(f":ARM:SLOP {slopes[slope]['COMMAND']}")
+            self.operation_complete()
         new_channel = channel(channel_name, write_function=set_trigger_slope)
         for slope in slopes:
             new_channel.add_preset(slope, slopes[slope]['COMMENT'])
@@ -112,6 +118,7 @@ class Agilent_8110a(scpi_instrument):
             if mode not in ["VOLTAGE", "CURRENT"]:
                 raise Exception(f"\n\nAgilent 8110A: Sorry don't know how to set ouput mode to: '{mode}', try 'VOLTAGE' or 'CURRENT'.\n\n")
             self.get_interface().write(f":SOUR:HOLD {'VOLT' if mode=='VOLTAGE' else 'CURR'}")
+            self.operation_complete()
         new_channel = channel(channel_name, write_function=set_ouput_mode)
         new_channel.add_preset("VOLTAGE", "Voltage Mode Output")
         new_channel.add_preset("CURRENT", "Current Mode Output")
@@ -127,6 +134,7 @@ class Agilent_8110a(scpi_instrument):
             state = "ON" if state==True else state
             state = "OFF" if state==False else state
             self.get_interface().write(f":OUTP{number} {'ON' if state=='ON' else 'OFF'}")
+            self.operation_complete()
         new_channel = channel(channel_name, write_function=set_ouput_state)
         new_channel.add_preset("ON", "Enable Output")
         new_channel.add_preset("OFF", "Disable Output")
@@ -141,6 +149,7 @@ class Agilent_8110a(scpi_instrument):
             if polarity not in ["NORMAL", "INVERTED"]:
                 raise Exception(f"\n\nAgilent 8110A: Sorry don't know how to set ouput polarity to: '{polarity}', try 'NORMAL' or 'INVERTED'.\n\n")
             self.get_interface().write(f":OUTP{number}:POL {'NORM' if polarity=='NORMAL' else 'INV'}")
+            self.operation_complete()
         new_channel = channel(channel_name, write_function=set_ouput_polarity)
         new_channel.add_preset("NORMAL", "Normal Output Polarity")
         new_channel.add_preset("INVERTED", "Inverted Output Polarity")
@@ -157,6 +166,7 @@ class Agilent_8110a(scpi_instrument):
             if impedance not in [50, "1K"]:
                 raise Exception(f"\n\nAgilent 8110A: Sorry don't know how to set ouput impedance to: '{impedance}', try '50' or '1K'.\n\n")
             self.get_interface().write(f":OUTP{number}:IMP:INT {'50OHM' if impedance==50 else '1KOHM'}")
+            self.operation_complete()
         new_channel = channel(channel_name, write_function=set_ouput_impedance)
         new_channel.add_preset(50, "50Ω Source impedance")
         new_channel.add_preset("1K", "1kΩ Source impedance")
@@ -172,6 +182,7 @@ class Agilent_8110a(scpi_instrument):
         '''
         def set_external_impedance(impedance):
             self.get_interface().write(f":OUTP{number}:IMP:EXT {impedance:0.4f}OHM")
+            self.operation_complete()
         new_channel = channel(channel_name, write_function=set_external_impedance)
         new_channel.set_min_write_limit(2.5)
         new_channel.set_max_write_limit(999e3)
@@ -184,6 +195,7 @@ class Agilent_8110a(scpi_instrument):
         '''
         def set_high_voltage_level(voltage):
             self.get_interface().write(f":SOUR:VOLT{number}:LEV:IMM:HIGH {voltage*scale_factor}V")
+            self.operation_complete()
         new_channel = channel(channel_name, write_function=set_high_voltage_level)
         new_channel.set_min_write_limit(-9.9)
         new_channel.set_max_write_limit(10)
@@ -196,6 +208,7 @@ class Agilent_8110a(scpi_instrument):
         '''
         def set_low_voltage_level(voltage):
             self.get_interface().write(f":SOUR:VOLT{number}:LEV:IMM:LOW {voltage*scale_factor:0.4f}V")
+            self.operation_complete()
         new_channel = channel(channel_name, write_function=set_low_voltage_level)
         new_channel.set_min_write_limit(-9.9)
         new_channel.set_max_write_limit(10)
@@ -207,6 +220,7 @@ class Agilent_8110a(scpi_instrument):
         '''
         def set_high_current_level(current):
             self.get_interface().write(f":SOUR:CURR{number}:LEV:IMM:HIGH {current:0.5f}A")
+            self.operation_complete()
         new_channel = channel(channel_name, write_function=set_high_current_level)
         new_channel.set_min_write_limit(-0.4)
         new_channel.set_max_write_limit(0.396)
@@ -218,6 +232,7 @@ class Agilent_8110a(scpi_instrument):
         '''
         def set_low_current_level(current):
             self.get_interface().write(f":SOUR:CURR{number}:LEV:IMM:LOW {current:0.5f}A")
+            self.operation_complete()
         new_channel = channel(channel_name, write_function=set_low_current_level)
         new_channel.set_min_write_limit(-0.4)
         new_channel.set_max_write_limit(0.396)
@@ -229,6 +244,7 @@ class Agilent_8110a(scpi_instrument):
         '''
         def set_transition_leading(time):
             self.get_interface().write(f":SOUR:PULS:TRAN{number}:LEAD {time}S")
+            self.operation_complete()
         new_channel = channel(channel_name, write_function=set_transition_leading)
         new_channel.set_min_write_limit(1.8e-9)
         new_channel.set_max_write_limit(0.2)
@@ -240,6 +256,7 @@ class Agilent_8110a(scpi_instrument):
         '''
         def set_transition_trailing(time):
             self.get_interface().write(f":SOUR:PULS:TRAN{number}:TRA {time}S")
+            self.operation_complete()
         new_channel = channel(channel_name, write_function=set_transition_trailing)
         new_channel.set_min_write_limit(1.8e-9)
         new_channel.set_max_write_limit(0.2)
@@ -252,6 +269,7 @@ class Agilent_8110a(scpi_instrument):
         '''
         def set_pulse_width(pulse_width):
             self.get_interface().write(f":SOUR:PULS:WIDT{number} {pulse_width}S")
+            self.operation_complete()
         new_channel = channel(channel_name, write_function=set_pulse_width)
         new_channel.set_min_write_limit(3.3e-9)
         new_channel.set_max_write_limit(0.999)
@@ -264,6 +282,7 @@ class Agilent_8110a(scpi_instrument):
         '''
         def set_pulse_period(pulse_period):
             self.get_interface().write(f":SOUR:PULS:PER {pulse_period}S")
+            self.operation_complete()
         new_channel = channel(channel_name, write_function=set_pulse_period)
         new_channel.set_min_write_limit(self.timestep)
         new_channel.set_max_write_limit(0.999)
@@ -281,6 +300,7 @@ class Agilent_8110a(scpi_instrument):
         '''
         def set_delay(delay):
             self.get_interface().write(f":SOUR:PULS:DEL{number} {delay}s")
+            self.operation_complete()
         new_channel = channel(channel_name, write_function=set_delay)
         new_channel.set_min_write_limit(0)
         new_channel.set_max_write_limit(0.999)
@@ -292,6 +312,7 @@ class Agilent_8110a(scpi_instrument):
         '''
         def trigger(value):
             self.trigger()
+            self.operation_complete()
         new_channel = channel(channel_name, write_function=trigger)
         new_channel.add_preset("GO", "Trigger a pattern. Writing any value will work here.")
         return self._add_channel(new_channel)
@@ -314,6 +335,7 @@ class Agilent_8110a(scpi_instrument):
             if not all(value=='0' or value=='1' for value in pattern):
                 raise Exception(f"\n\nAgilent 8110A: Values other than 1 or 0 sent to the pattern. Stick to 1 and 0 for single channel pattern writes.\n\n")
             self.get_interface().write(f":DIG:STIM:PATT:DATA{number} #{len(str(length_of_data))}{length_of_data}{pattern}")
+            self.operation_complete()
         new_channel = channel(channel_name, write_function=set_pattern)
         return self._add_channel(new_channel)
         
@@ -346,6 +368,7 @@ class Agilent_8110a(scpi_instrument):
             if not all(value in [str(val) for val in range(8)] for value in pattern):
                 raise Exception(f"\n\nAgilent 8110A: Values other than 0 to 7 sent to the pattern. Stick to values from 0 to 7 for this 3-bit write.\n\n")
             self.get_interface().write(f":DIG:STIM:PATT:DATA #{len(str(length_of_data))}{length_of_data}{pattern}")
+            self.operation_complete()
         new_channel = channel(channel_name, write_function=set_patterns)
         return self._add_channel(new_channel)
         
@@ -359,6 +382,7 @@ class Agilent_8110a(scpi_instrument):
             state = "ON" if state==True else state
             state = "OFF" if state==False else state
             self.get_interface().write(f"DIG:STIM:PATT:STATE {state}")
+            self.operation_complete()
         new_channel = channel(channel_name, write_function=set_pattern_state)
         new_channel.add_preset("ON", "Enable Pattern")
         new_channel.add_preset("OFF", "Disable Pattern")
@@ -372,6 +396,7 @@ class Agilent_8110a(scpi_instrument):
             if pulse_format not in ["RZ", "NRZ"]:
                 raise Exception(f"\n\nAgilent 8110A: Sorry don't know how to set pattern format to: '{pulse_format}', try 'RZ' or 'NRZ'.\n\n")
             self.get_interface().write(f":DIG:STIM:SIGN{number}:FORM {pulse_format}")
+            self.operation_complete()
         new_channel = channel(channel_name, write_function=set_pattern_format)
         new_channel.add_preset("RZ", "Return to Zero")
         new_channel.add_preset("NRZ", "Non Return to Zero")
@@ -386,6 +411,7 @@ class Agilent_8110a(scpi_instrument):
             if update not in ["ON", "OFF", "ONCE"]:
                 raise Exception(f"\n\nAgilent 8110A: Sorry don't know how to set pattern format to: '{update}', try 'ON', 'OFF' or 'ONCE'.\n\n")
             self.get_interface().write(f":DIG:STIM:PATT:UPD {update}")
+            self.operation_complete()
         new_channel = channel(channel_name, write_function=set_pattern_update)
         new_channel.add_preset("ON", "Allow the pattern to update automatically upon being re-written.")
         new_channel.add_preset("OFF", "Prevent the pattern from updating automatically upon being re-written.")
