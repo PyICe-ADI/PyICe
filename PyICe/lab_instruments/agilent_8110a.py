@@ -294,7 +294,6 @@ class Agilent_8110a(scpi_instrument):
             self.trigger()
         new_channel = channel(channel_name, write_function=trigger)
         new_channel.add_preset("GO", "Trigger a pattern. Writing any value will work here.")
-        new_channel.set_write_delay(2.5) # Slow GPIB port seems to need all this time. TODO, does it need to be record-time aware too?
         return self._add_channel(new_channel)
         
     def add_channel_pattern(self, channel_name, number):
