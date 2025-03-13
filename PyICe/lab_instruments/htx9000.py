@@ -9,7 +9,7 @@ class htx9000(scpi_instrument):
         scpi_instrument.__init__(self,f"HTX9000 {interface_visa}")
         self.add_interface_visa(interface_visa,timeout=0.5)
         self._write_swipepad_lock(True)
-        atexit.register(lambda: self._write_swipepad_lock(False))
+        #atexit.register(lambda: self._write_swipepad_lock(False))
         self._forced_range = None
     def __del__(self):
         '''Close interface (serial) port on exit'''
@@ -152,7 +152,7 @@ class htx9000SE_5A(htx9000):
         scpi_instrument.__init__(self,f"HTX9000SE5A {interface_visa}")
         self.add_interface_visa(interface_visa,timeout=0.5)
         self._write_swipepad_lock(True)
-        atexit.register(lambda: self._write_swipepad_lock(False))
+        #atexit.register(lambda: self._write_swipepad_lock(False))
         self._forced_range = None
     def add_channel_current(self,channel_name):
         new_channel = channel(channel_name,write_function=self._write_current)

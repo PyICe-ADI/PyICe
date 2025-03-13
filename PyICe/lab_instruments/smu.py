@@ -128,6 +128,8 @@ class smu(instrument):
         new_channel.set_attribute('channel_number', channel_number)
         new_channel.set_attribute('channel_type', 'remote_sense')
         new_channel.set_description(self.get_name() + ': ' + self.add_channel_remote_sense.__doc__)
+        new_channel.add_preset('True')
+        new_channel.add_preset('False')
         self._add_channel_remote_sense(channel_name, channel_number)
         return self._add_channel(new_channel)
         #todo initial value?
@@ -139,9 +141,23 @@ class smu(instrument):
         new_channel.set_attribute('channel_number', channel_number)
         new_channel.set_attribute('channel_type', 'high_capacitance')
         new_channel.set_description(self.get_name() + ': ' + self.add_channel_high_capacitance.__doc__)
+        new_channel.add_preset('True')
+        new_channel.add_preset('False')
         self._add_channel_high_capacitance(channel_name, channel_number)
         return self._add_channel(new_channel)
         #todo initial value?
+    def add_channel_terminal_select(self, channel_name, channel_number):
+        '''select between front and rear panel terminals'''
+        self._init_channel(channel_number)
+        new_channel = channel(channel_name,write_function=lambda i, channel_number=channel_number: self._terminal_select(channel_number, i))
+        self._configured_channels[channel_number]['terminal_select'] = new_channel
+        new_channel.set_attribute('channel_number', channel_number)
+        new_channel.set_attribute('channel_type', 'terminal_select')
+        new_channel.set_description(self.get_name() + ': ' + self.add_channel_terminal_select.__doc__)
+        new_channel.add_preset('Front')
+        new_channel.add_preset('Rear')
+        self._add_channel_high_capacitance(channel_name, channel_number)
+        return self._add_channel(new_channel)
     def _add_channel_voltage_force(self, channel_name, channel_number):
         '''voltage force. Mutually exclusive at any moment with current force.'''
     def _add_channel_current_force(self, channel_name, channel_number):
@@ -211,9 +227,14 @@ class scpi_smu(scpi_instrument, smu):
         self.get_interface().write(f':SENSe{channel_number}:CURRent:DC:PROTection:LEVel {value}')
     def _remote_sense(self, channel_number, value):
         '''ignores channel number!!!!!!!!!!!!!!!!!!!'''
-        self.get_interface().write(f':SYSTem:RSENse {1 if value else 0}')
+        print(f'{value}, {type(value)}')
+        self.get_interface().write(f':SYSTem:RSENse {"OFF" if not value or value == "False" else "ON"}')
     def _high_capacitance(self, channel_number, value):
         raise Exception('Unimplemented. Contact PyICe developers.')
+    def _terminal_select(self, channel_number, value):
+        '''select between front and rear panel terminals'''
+        self.get_interface().write(f':ROUTe:TERMinals {value}')
+
         
 
 class keithley_2400(scpi_smu, keithley_smu):
@@ -230,7 +251,7 @@ class keithley_2400(scpi_smu, keithley_smu):
         self._configured_channels = {}
         self._output_off(channel_number=1)
         self.get_interface().write(':SOURce1:VOLTage:PROTection:LEVel 20') ##todo Dave fix
-        atexit.register(self._output_off, channel_number=1) #TODO debug
+        #atexit.register(self._output_off, channel_number=1) #TODO debug
     def _add_channel_voltage_force(self, channel_name, channel_number):
         '''voltage force. Mutually exclusive at any moment with current force.'''
         self.get_interface().write(f':SOURce{channel_number}:VOLTage:RANGe:AUTO ON')
@@ -286,8 +307,8 @@ class keithley_2600(keithley_smu):
         self._remote_sense(1, True)
         self._remote_sense(2, True)
         # self.get_interface().write(':SOURce1:VOLTage:PROTection:LEVel 20') ##todo Dave fix
-        atexit.register(self._output_off, channel_number=1)
-        atexit.register(self._output_off, channel_number=2)
+        #atexit.register(self._output_off, channel_number=1)
+        #atexit.register(self._output_off, channel_number=2)
     def _channel_id(self, channel_number):
         if channel_number == 1:
             return 'a'
