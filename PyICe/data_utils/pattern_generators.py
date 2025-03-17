@@ -36,11 +36,16 @@ class TWI_Pattern():
             self.pattern.dwell(SCL=1, SDA=1, STB=self.STB, tdwell=self.tbuf)
 
     class Bitend():
-        def __init__(self, pattern, strobe=False):
+        def __init__(self, pattern, tdwell, strobe=False):
             self.pattern = pattern
             self.STB = strobe
+            self.tdwell = tdwell
         def extend(self, previous_item):
-            self.pattern.dwell(SCL=0, SDA=previous_item.value, STB=self.STB, tdwell=previous_item.thd_dat)
+            if  previous_item.thd_dat >= 0: # Previous bit had Positive or Zero hold time
+                self.pattern.dwell(SCL=0, SDA=previous_item.value,  STB=self.STB,   tdwell=previous_item.thd_dat)
+                self.pattern.dwell(SCL=0, SDA=0,                    STB=0,          tdwell=self.tdwell)
+            else:                           # Previous bit had Negative hold time
+                self.pattern.dwell(SCL=0, SDA=0, STB=self.STB,                      tdwell=self.tdwell)
 
     class SDA_Spike():
         def __init__(self, pattern, value, tstart, twidth, strobe=False):
@@ -94,10 +99,13 @@ class TWI_Pattern():
             self.tsu_dat = pattern.quantize(tsu_dat)
             self.thd_dat = pattern.quantize(thd_dat)
             self.STB = strobe
-        def extend(self, previous_item):              
+        def extend(self, previous_item):       
             if isinstance(previous_item, self.pattern.Start):
                 previous_thd_dat = 0
                 previous_value = 0
+            elif isinstance(previous_item, self.pattern.Leader):
+                previous_thd_dat = previous_item.tleader
+                previous_value = previous_item.SDA
             else:
                 previous_thd_dat = previous_item.thd_dat
                 previous_value = previous_item.value
@@ -194,16 +202,16 @@ class TWI_Pattern():
         assert len(self.SCL) == len(self.STB), "TWI Pattern Generator: SCL and STB records unequal length!"
         assert len(self.SCL) <= self.max_record_size, f"TWI Pattern Generator: Record size of {len(self.SCL)} exceeds max record size of {self.max_record_size}!"
 
-    def visualize(self, title=None, file_basename=None, plot_sizex=5, plot_sizey=4):
+    def visualize(self, title=None, file_basename=None, offset_SCL=5, offset_SDA=3, offset_STB=1, plot_sizex=5, plot_sizey=4):
         times = [index*self.tstep for index in range(len(self.SCL))]
         G0 = LTC_plot.scope_plot(   plot_title  = "TWI Pattern" if title==None else title,
                                     plot_name   = None,
                                     xaxis_label = f"{eng_string(x=times[-1]/10, fmt=':.3g', si=True, units='s')} / DIV",
                                     xlims       = (times[0], times[-1]),
                                     ylims       = (0, 8))
-        SCL = [value+5 for value in self.SCL]
-        SDA = [value+3 for value in self.SDA]
-        STB = [value+1 for value in self.STB]
+        SCL = [value+offset_SCL for value in self.SCL]
+        SDA = [value+offset_SDA for value in self.SDA]
+        STB = [value+offset_STB for value in self.STB]
         G0.add_trace(   data        = zip(times, SCL),
                         color       = LTC_plot.LT_RED_1,
                         marker      = None,
