@@ -231,10 +231,12 @@ class Plugin_Manager():
         for func in reversed(self.cleanup_fns):
             try:
                 func()
-            except:
-                print("\n\PyICE Plugin Manager: One or more cleanup functions not executable. See list below.\n")
-                for function in self.cleanup_fns:
-                    print(function)
+            except Exception as e:
+                print("\n\PyICE Plugin Manager: One or more cleanup functions not executable. See stack trace below.\n")
+                traceback.print_exc()
+                print(func)
+                #for function in self.cleanup_fns:
+                #    print(function)
                 exit()
 
     def shutdown(self):
