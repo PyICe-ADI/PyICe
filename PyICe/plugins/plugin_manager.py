@@ -78,6 +78,7 @@ class Plugin_Manager():
             self._test_results_str = ''
             self.evaluate()
         if 'correlate_tests' in self.plugins:
+            self._corr_results_str = ''
             self.correlate()
         if 'archive' in self.plugins:
             self._archive()
@@ -114,29 +115,29 @@ class Plugin_Manager():
             print('\n***PLUGIN MANAGER ERROR***\nError occurred while attempting to email test results.\n')
         try:
             if 'correlate_tests' in self.plugins and self._send_notifications:
-                self.failed_tests = {}
-                self.failed_evals = []
+                self.failed_corr_tests = {}
+                self.failed_corrs = []
                 for test in self.tests:
                     if hasattr(test, '_corr_results'):
                         self._corr_results_str+=str(test._corr_results)
                         if not test._corr_results:
                             if isinstance(test._corr_results, Failed_Eval):
-                                self.failed_evals.append(test.get_name())
+                                self.failed_corrs.append(test.get_name())
                             else:
-                                self.failed_tests[test.get_name()] = ''
+                                self.failed_corr_tests[test.get_name()] = ''
                             if test._is_crashed:
-                                self.failed_tests[test.get_name()] = self._crash_str(test)
-                if len(self.failed_evals):
+                                self.failed_corr_tests[test.get_name()] = self._crash_str(test)
+                if len(self.failed_corrs):
                     self._corr_results_str += "\nThe following correlation methods themselves crashed:\n"
-                    for failed_eval in self.failed_evals:
+                    for failed_eval in self.failed_corrs:
                         self._corr_results_str += f"    {failed_eval}\n"
                     self._corr_results_str += "\n"
-                if len(self.failed_tests):
+                if len(self.failed_corr_tests):
                     self._corr_results_str+='\nThe following tests failed:\n'
-                    for failed_test in self.failed_tests.keys():
+                    for failed_test in self.failed_corr_tests.keys():
                         self._corr_results_str+=f'    {failed_test}\n'
-                        if len(self.failed_tests[failed_test]):
-                            self._corr_results_str+=f'{self.failed_tests[failed_test]}\n'
+                        if len(self.failed_corr_tests[failed_test]):
+                            self._corr_results_str+=f'{self.failed_corr_tests[failed_test]}\n'
                 if self._corr_results_str:
                     self._corr_results_str += "*** END OF REPORT ***"
                     self.notify(self._corr_results_str, subject='Corr Results')
@@ -447,14 +448,6 @@ class Plugin_Manager():
         test._metalogger.log()
 
     ###
-    # CORRELATION METHODS
-    ###
-    def correlate_test_result(self, test, name, data, conditions=None):
-        pass
-    def get_corr_results(self, test):
-        pass
-
-    ###
     # ARCHIVE METHODS
     ###
     def _archive(self):
@@ -540,6 +533,26 @@ class Plugin_Manager():
                     with contextlib.redirect_stdout(io.StringIO()):
                         with contextlib.redirect_stderr(io.StringIO()):
                             self.evaluate(database=os.path.relpath(db_file), table_name=db_table, test_list=[test])
+                if 'correlate_tests' in self.plugins:
+                    dest_file = os.path.join(os.path.dirname(db_file), f"recorr_data.py")
+                    import_str = test._module_path[test._module_path.index(self.project_folder_name):].replace(os.sep,'.')
+                    settings_path = self.project_settings_location.replace(os.sep, '.')[1:-3]
+                    plot_script_src =  f"from {self.project_folder_name}.{settings_path} import Project_Settings\n"
+                    plot_script_src += f"from PyICe.plugins.plugin_manager import Plugin_Manager\n"
+                    plot_script_src += f"from {import_str}.test import Test\n"
+                    plot_script_src += f"pm = Plugin_Manager(settings=Project_Settings)\n"
+                    plot_script_src += f"pm.add_test(Test)\n"
+                    plot_script_src += f"pm.correlate(database='data_log.sqlite', table_name='{db_table}')\n"
+                    try:
+                        with open(dest_file, 'a') as f: #exists, overwrite, append?
+                            f.write(plot_script_src)
+                    except Exception as e:
+                        #write locked? exists?
+                        print(type(e))
+                        print(e)
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        with contextlib.redirect_stderr(io.StringIO()):
+                            self.correlate(database=os.path.relpath(db_file), table_name=db_table, test_list=[test])
                 if 'bench_image_creation' in self.plugins:
                     self.visualizer.generate(file_base_name="Bench_Config", prune=True, file_format='svg', engine='neato', file_location=os.path.dirname(db_file))
 
@@ -617,6 +630,26 @@ class Plugin_Manager():
                     with contextlib.redirect_stdout(io.StringIO()):
                         with contextlib.redirect_stderr(io.StringIO()):
                             self.evaluate(database=os.path.relpath(db_file), table_name=db_table, test_list=[test])
+                if 'correlate_tests' in self.plugins:
+                    dest_file = os.path.join(os.path.dirname(db_file), f"recorr_data.py")
+                    import_str = test._module_path[test._module_path.index(self.project_folder_name):].replace(os.sep,'.')
+                    settings_path = self.project_settings_location.replace(os.sep, '.')[1:-3]
+                    plot_script_src =  f"from {self.project_folder_name}.{settings_path} import Project_Settings\n"
+                    plot_script_src += f"from PyICe.plugins.plugin_manager import Plugin_Manager\n"
+                    plot_script_src += f"from {import_str}.test import Test\n"
+                    plot_script_src += f"pm = Plugin_Manager(settings=Project_Settings)\n"
+                    plot_script_src += f"pm.add_test(Test)\n"
+                    plot_script_src += f"pm.correlate(database='data_log.sqlite', table_name='{db_table}')\n"
+                    try:
+                        with open(dest_file, 'a') as f: #exists, overwrite, append?
+                            f.write(plot_script_src)
+                    except Exception as e:
+                        #write locked? exists?
+                        print(type(e))
+                        print(e)
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        with contextlib.redirect_stderr(io.StringIO()):
+                            self.correlate(database=os.path.relpath(db_file), table_name=db_table, test_list=[test])
 
     ###
     # SCRIPT METHODS
@@ -841,11 +874,11 @@ class Plugin_Manager():
             else:
                 print(f"Skipping evaluation for {test.get_name()}.")
 
-    def correlate(self, database=None, table_name=None):
+    def correlate(self, database=None, table_name=None, test_list=None):
         '''Run the correlate method of each test in self.tests.
         args:   
-            database - string. The location of the database with the data to evaluate If left blank, the evaluation will continue with the database in the same directory as the test script.
-            table_name - string. The name of the table in the database with the relevant data. If left blank, the evaluation will continue with the table named after the test script.'''
+            database - string. The location of the database with the data to correlate. If left blank, the correlation will continue with the database in the same directory as the test script.
+            table_name - string. The name of the table in the database with the relevant data. If left blank, the correlation will continue with the table named after the test script.'''
         print_banner('Correlating. . .')
         reset_db = False
         reset_tn = False
