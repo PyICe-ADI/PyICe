@@ -243,9 +243,9 @@ class Plugin_Manager():
             try:
                 func()
             except:
-                print("\n\PyICE Plugin Manager: One or more temperature start functions not executable. See list below.\n")
-                for function in self.temp_run_fns:
-                    print(function)
+                print("\n\PyICE Plugin Manager: One or more temperature startup functions not executable. See stack trace below.\n")
+                traceback.print_exc()
+                print(func)
                 exit()
 
     def startup(self):
@@ -253,9 +253,9 @@ class Plugin_Manager():
             try:
                 func()
             except:
-                print("\n\PyICE Plugin Manager: One or more startup functions not executable. See list below.\n")
-                for function in self.startup_fns:
-                    print(function)
+                print("\n\PyICE Plugin Manager: One or more startup functions not executable. See stack trace below.\n")
+                traceback.print_exc()
+                print(func)
                 exit()
         
     def cleanup(self):
@@ -264,9 +264,9 @@ class Plugin_Manager():
             try:
                 func()
             except:
-                print("\n\PyICE Plugin Manager: One or more cleanup functions not executable. See list below.\n")
-                for function in self.cleanup_fns:
-                    print(function)
+                print("\n\PyICE Plugin Manager: One or more cleanup functions not executable. See stack trace below.\n")
+                traceback.print_exc()
+                print(func)
                 exit()
 
     def shutdown(self):
@@ -274,9 +274,9 @@ class Plugin_Manager():
             try:
                 func()
             except:
-                print("\n\PyICE Plugin Manager: One or more shutdown functions not executable. See list below.\n")
-                for function in self.shutdown_fns:
-                    print(function)
+                print("\n\PyICE Plugin Manager: One or more shutdown functions not executable. See stack trace below.\n")
+                traceback.print_exc()
+                print(func)
                 exit()
 
     def close_ports(self):
