@@ -113,6 +113,37 @@ class Plugin_Manager():
             traceback.print_exc()
             print('\n***PLUGIN MANAGER ERROR***\nError occurred while attempting to email test results.\n')
         try:
+            if 'correlate_tests' in self.plugins and self._send_notifications:
+                self.failed_tests = {}
+                self.failed_evals = []
+                for test in self.tests:
+                    if hasattr(test, '_corr_results'):
+                        self._corr_results_str+=str(test._corr_results)
+                        if not test._corr_results:
+                            if isinstance(test._corr_results, Failed_Eval):
+                                self.failed_evals.append(test.get_name())
+                            else:
+                                self.failed_tests[test.get_name()] = ''
+                            if test._is_crashed:
+                                self.failed_tests[test.get_name()] = self._crash_str(test)
+                if len(self.failed_evals):
+                    self._corr_results_str += "\nThe following correlation methods themselves crashed:\n"
+                    for failed_eval in self.failed_evals:
+                        self._corr_results_str += f"    {failed_eval}\n"
+                    self._corr_results_str += "\n"
+                if len(self.failed_tests):
+                    self._corr_results_str+='\nThe following tests failed:\n'
+                    for failed_test in self.failed_tests.keys():
+                        self._corr_results_str+=f'    {failed_test}\n'
+                        if len(self.failed_tests[failed_test]):
+                            self._corr_results_str+=f'{self.failed_tests[failed_test]}\n'
+                if self._corr_results_str:
+                    self._corr_results_str += "*** END OF REPORT ***"
+                    self.notify(self._corr_results_str, subject='Corr Results')
+        except Exception as e:
+            traceback.print_exc()
+            print('\n***PLUGIN MANAGER ERROR***\nError occurred while attempting to email corr results.\n')
+        try:
             if len(self._plots) and self._send_notifications: #Don't send empty emails
                 self.email_plots(self._plots)
         except Exception as e:
@@ -816,29 +847,48 @@ class Plugin_Manager():
             database - string. The location of the database with the data to evaluate If left blank, the evaluation will continue with the database in the same directory as the test script.
             table_name - string. The name of the table in the database with the relevant data. If left blank, the evaluation will continue with the table named after the test script.'''
         print_banner('Correlating. . .')
-        for test in self.tests:
-            if test._is_crashed:
-                print(f"{test.get_name()} crashed. Skipping correlation.")
-                continue
-            if database is None:
-                database = test._db_file
-            if table_name is None:
-                test._table_name = test.get_name()
+        reset_db = False
+        reset_tn = False
+        if test_list is None:
+            test_list = self.tests
+        for test in test_list:
+            if not test._skip_eval:
+                if database is None:
+                    database = test._db_file
+                    reset_db = True
+                if table_name is None:
+                    test._table_name = test.get_name()
+                    reset_tn = True
+                else:
+                    test._table_name = table_name
+                test._corr_results = Test_Results(test._name, module=test)
+                if test._is_crashed or test._table_name.endswith('__CRASHED'):
+                    test._corr_results._failure_override = True
+                test._db = sqlite_data(database_file=database, table_name=test.get_table_name())
+                try:
+                    test.correlate_results()
+                except Exception:
+                    traceback.print_exc()
+                    print_banner(f"*** ERROR ***", f"{test.get_name()} crashed during evaluation, skipping.")
+                    print("\n")
+                    database = None
+                    table_name = None
+                    test._corr_results = Failed_Eval(test)
+                    continue
+                if test._corr_results._test_results:
+                    print(test.get_corr_results())
+                t_r = test._corr_results.json_report()
+                dest_abs_filepath = os.path.join(os.path.dirname(database), f"corr_results.json")
+                if t_r is not None:
+                    with open(dest_abs_filepath, 'wb') as f:
+                        f.write(t_r.encode('utf-8'))
+                        f.close()
+                if reset_db:
+                    database = None
+                if reset_tn:
+                    table_name = None
             else:
-                test._table_name = table_name
-            test._corr_results = Test_Results(test.get_name(), module=test)
-            test._db = sqlite_data(database_file=database, table_name=test.get_table_name())
-            if f"{test.get_table_name()}_all" in test._db.get_table_names():
-                test._table_name = f"{table_name}_all" #Redirect to presets-joined table
-                test._db.set_table(f"{test.get_table_name()}_all")
-            test.correlate_results()
-            print(test.get_test_results())
-            t_r = test._corr_results.json_report()
-            dest_abs_filepath = os.path.join(os.path.dirname(database),f"correlation_results.json")
-            if t_r is not None:
-                with open(dest_abs_filepath, 'wb') as f:
-                    f.write(t_r.encode('utf-8'))
-                    f.close()
+                print(f"Skipping correlation for {test.get_name()}.")
 
     def display_connections(self):
         '''Distills the connections of all added tests and prints the diagram'''

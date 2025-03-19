@@ -75,7 +75,7 @@ class Master_Test_Template():
             raise Exception("PyICe Master Test Template: You said you wanted a visual representation of your lab bench. You'll need to define bench_image_locations in your Test_Template.")
 
     ###
-    # EVALUATION METHODS
+    # EVALUATION/CORRELATION METHODS
     ###
     def evaluate_results(self):
         '''Optional evaluate_results method placeholder'''
@@ -120,15 +120,22 @@ class Master_Test_Template():
             test_values - iterable. The object values whose distance to the reference value will be calculated.
             spec - string. Either '%' or '-'. Determines whether the comparison is made by percentage or by difference.
             conditions - None or dictionary. A dictionary with channel names as keys and channel values as values. Used to report under what circumstances the data was taken. Default is None.'''
-        self._test_results.test_limits[name]=self.get_test_limits(name)
-        self._test_results._correlate_results(name=name, reference_values=reference_values, test_values=test_values, spec=spec, conditions=conditions)
-
+        self._corr_results.test_limits[name]=self.get_test_limits(name)
+        self._corr_results._correlate_results(name=name, reference_values=reference_values, test_values=test_values, spec=spec, conditions=conditions)
     def get_test_results(self):
         '''Returns a string that reports the Pass/Fail status for all the tests evaluated in the script and the test script as a whole.'''
         res_str = ''
         all_pass = True
         res_str += f'*** Module {self.get_name()} ***\n'
         res_str += f'{self._test_results}'
+        res_str += f'*** Module {self.get_name()} Summary {"PASS" if self._test_results else "FAIL"}. ***\n\n'
+        return res_str
+    def get_corr_results(self):
+        '''Returns a string that reports the Pass/Fail status for all the tests correlated in the script and the test script as a whole.'''
+        res_str = ''
+        all_pass = True
+        res_str += f'*** Module {self.get_name()} ***\n'
+        res_str += f'{self._corr_results}'
         res_str += f'*** Module {self.get_name()} Summary {"PASS" if self._test_results else "FAIL"}. ***\n\n'
         return res_str
     def get_test_limits(self, name):
