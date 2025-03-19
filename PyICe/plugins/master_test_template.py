@@ -79,6 +79,8 @@ class Master_Test_Template():
     ###
     def evaluate_results(self):
         '''Optional evaluate_results method placeholder'''
+    def correlate_results(self):
+        '''Optional correlate_results method placeholder'''
     def evaluate_rawdata(self, name, data, conditions=None):
         '''This will compare submitted data to limits for the named test.
         args:
@@ -136,7 +138,7 @@ class Master_Test_Template():
         all_pass = True
         res_str += f'*** Module {self.get_name()} ***\n'
         res_str += f'{self._corr_results}'
-        res_str += f'*** Module {self.get_name()} Summary {"PASS" if self._test_results else "FAIL"}. ***\n\n'
+        res_str += f'*** Module {self.get_name()} Summary {"PASS" if self._corr_results else "FAIL"}. ***\n\n'
         return res_str
     def get_test_limits(self, name):
         raise Exception("MASTER TEST TEMPLATE ERROR: This project indicated a use of the TEST_LIMIT plugin but no project specific 'get_test_limits' method was provided.")
