@@ -393,7 +393,30 @@ class Test_Results(generic_results):
                                               )
         self._test_results[name].append(new_result_record)
         return new_result_record
- 
+
+    def _correlate_results(self, name, reference_values=[], test_values=[], spec=None, conditions=None):
+        if name not in self._test_declarations:
+            self._test_declarations.append(name)
+            self._test_results[name] = self._test_results_list(name=name, upper_limit=self.test_limits[name]['upper_limit'], lower_limit=self.test_limits[name]['lower_limit'], override=self._failure_override)
+        if len(reference_values) == 0:
+            return self._register_test_failure(name=name, reason=f"No reference values were submitted.", conditions=conditions)
+        if None in reference_values:
+            return self._register_test_failure(name=name, reason=f"None encountered in submitted reference values.", conditions=conditions)
+        if len(test_values) == 0:
+            return self._register_test_failure(name=name, reason=f"No test values were submitted.", conditions=conditions)
+        if None in test_values:
+            return self._register_test_failure(name=name, reason=f"None encountered in submitted test values.", conditions=conditions)
+        DataPoints = []
+        for x in reference_values:
+            for y in test_values:
+                if spec == '%':
+                    DataPoints.append((y-x)/x)
+                elif spec == '-' or spec == "\u0394": # Delta:
+                    DataPoints.append(y-x)
+                else:
+                    return self._register_test_failure(name=name, reason=f"Was expecting a spec of either '%' or '-' or 'Δ'. Received {spec}.", conditions=conditions, query=query)
+        self._evaluate_list(name=name, iter_data=DataPoints, conditions=conditions)
+
 class Test_Results_Reload(Test_Results):
     '''Rereads a json file and converts it back to a Test_Results compatible schema.'''
     def __init__(self, results_json='test_results.json'):

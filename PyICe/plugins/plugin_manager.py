@@ -78,6 +78,7 @@ class Plugin_Manager():
             self._test_results_str = ''
             self.evaluate()
         if 'correlate_tests' in self.plugins:
+            self._corr_results_str = ''
             self.correlate()
         if 'archive' in self.plugins:
             self._archive()
@@ -112,6 +113,37 @@ class Plugin_Manager():
         except Exception as e:
             traceback.print_exc()
             print('\n***PLUGIN MANAGER ERROR***\nError occurred while attempting to email test results.\n')
+        try:
+            if 'correlate_tests' in self.plugins and self._send_notifications:
+                self.failed_corr_tests = {}
+                self.failed_corrs = []
+                for test in self.tests:
+                    if hasattr(test, '_corr_results'):
+                        self._corr_results_str+=str(test._corr_results)
+                        if not test._corr_results:
+                            if isinstance(test._corr_results, Failed_Eval):
+                                self.failed_corrs.append(test.get_name())
+                            else:
+                                self.failed_corr_tests[test.get_name()] = ''
+                            if test._is_crashed:
+                                self.failed_corr_tests[test.get_name()] = self._crash_str(test)
+                if len(self.failed_corrs):
+                    self._corr_results_str += "\nThe following correlation methods themselves crashed:\n"
+                    for failed_eval in self.failed_corrs:
+                        self._corr_results_str += f"    {failed_eval}\n"
+                    self._corr_results_str += "\n"
+                if len(self.failed_corr_tests):
+                    self._corr_results_str+='\nThe following tests failed:\n'
+                    for failed_test in self.failed_corr_tests.keys():
+                        self._corr_results_str+=f'    {failed_test}\n'
+                        if len(self.failed_corr_tests[failed_test]):
+                            self._corr_results_str+=f'{self.failed_corr_tests[failed_test]}\n'
+                if self._corr_results_str:
+                    self._corr_results_str += "*** END OF REPORT ***"
+                    self.notify(self._corr_results_str, subject='Corr Results')
+        except Exception as e:
+            traceback.print_exc()
+            print('\n***PLUGIN MANAGER ERROR***\nError occurred while attempting to email corr results.\n')
         try:
             if len(self._plots) and self._send_notifications: #Don't send empty emails
                 self.email_plots(self._plots)
@@ -211,9 +243,9 @@ class Plugin_Manager():
             try:
                 func()
             except:
-                print("\n\PyICE Plugin Manager: One or more temperature start functions not executable. See list below.\n")
-                for function in self.temp_run_fns:
-                    print(function)
+                print("\n\PyICE Plugin Manager: One or more temperature startup functions not executable. See stack trace below.\n")
+                traceback.print_exc()
+                print(func)
                 exit()
 
     def startup(self):
@@ -221,9 +253,9 @@ class Plugin_Manager():
             try:
                 func()
             except:
-                print("\n\PyICE Plugin Manager: One or more startup functions not executable. See list below.\n")
-                for function in self.startup_fns:
-                    print(function)
+                print("\n\PyICE Plugin Manager: One or more startup functions not executable. See stack trace below.\n")
+                traceback.print_exc()
+                print(func)
                 exit()
         
     def cleanup(self):
@@ -232,9 +264,9 @@ class Plugin_Manager():
             try:
                 func()
             except:
-                print("\n\PyICE Plugin Manager: One or more cleanup functions not executable. See list below.\n")
-                for function in self.cleanup_fns:
-                    print(function)
+                print("\n\PyICE Plugin Manager: One or more cleanup functions not executable. See stack trace below.\n")
+                traceback.print_exc()
+                print(func)
                 exit()
 
     def shutdown(self):
@@ -242,9 +274,9 @@ class Plugin_Manager():
             try:
                 func()
             except:
-                print("\n\PyICE Plugin Manager: One or more shutdown functions not executable. See list below.\n")
-                for function in self.shutdown_fns:
-                    print(function)
+                print("\n\PyICE Plugin Manager: One or more shutdown functions not executable. See stack trace below.\n")
+                traceback.print_exc()
+                print(func)
                 exit()
 
     def close_ports(self):
@@ -411,16 +443,9 @@ class Plugin_Manager():
         self._traceabilities.add_data_to_metalogger(test._metalogger)
     def _metalog(self, test):
         '''This is separate from the _create_metalogger method in order to give other plugins the opportunity to add to the metalogger before the channel list is commited to a table.'''
+        test._modify_metalogger()
         test._metalogger.new_table(table_name=test.get_name() + "_metadata", replace_table=True)
         test._metalogger.log()
-
-    ###
-    # CORRELATION METHODS
-    ###
-    def correlate_test_result(self, test, name, data, conditions=None):
-        pass
-    def get_corr_results(self, test):
-        pass
 
     ###
     # ARCHIVE METHODS
@@ -508,6 +533,26 @@ class Plugin_Manager():
                     with contextlib.redirect_stdout(io.StringIO()):
                         with contextlib.redirect_stderr(io.StringIO()):
                             self.evaluate(database=os.path.relpath(db_file), table_name=db_table, test_list=[test])
+                if 'correlate_tests' in self.plugins:
+                    dest_file = os.path.join(os.path.dirname(db_file), f"recorr_data.py")
+                    import_str = test._module_path[test._module_path.index(self.project_folder_name):].replace(os.sep,'.')
+                    settings_path = self.project_settings_location.replace(os.sep, '.')[1:-3]
+                    plot_script_src =  f"from {self.project_folder_name}.{settings_path} import Project_Settings\n"
+                    plot_script_src += f"from PyICe.plugins.plugin_manager import Plugin_Manager\n"
+                    plot_script_src += f"from {import_str}.test import Test\n"
+                    plot_script_src += f"pm = Plugin_Manager(settings=Project_Settings)\n"
+                    plot_script_src += f"pm.add_test(Test)\n"
+                    plot_script_src += f"pm.correlate(database='data_log.sqlite', table_name='{db_table}')\n"
+                    try:
+                        with open(dest_file, 'a') as f: #exists, overwrite, append?
+                            f.write(plot_script_src)
+                    except Exception as e:
+                        #write locked? exists?
+                        print(type(e))
+                        print(e)
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        with contextlib.redirect_stderr(io.StringIO()):
+                            self.correlate(database=os.path.relpath(db_file), table_name=db_table, test_list=[test])
                 if 'bench_image_creation' in self.plugins:
                     self.visualizer.generate(file_base_name="Bench_Config", prune=True, file_format='svg', engine='neato', file_location=os.path.dirname(db_file))
 
@@ -585,6 +630,26 @@ class Plugin_Manager():
                     with contextlib.redirect_stdout(io.StringIO()):
                         with contextlib.redirect_stderr(io.StringIO()):
                             self.evaluate(database=os.path.relpath(db_file), table_name=db_table, test_list=[test])
+                if 'correlate_tests' in self.plugins:
+                    dest_file = os.path.join(os.path.dirname(db_file), f"recorr_data.py")
+                    import_str = test._module_path[test._module_path.index(self.project_folder_name):].replace(os.sep,'.')
+                    settings_path = self.project_settings_location.replace(os.sep, '.')[1:-3]
+                    plot_script_src =  f"from {self.project_folder_name}.{settings_path} import Project_Settings\n"
+                    plot_script_src += f"from PyICe.plugins.plugin_manager import Plugin_Manager\n"
+                    plot_script_src += f"from {import_str}.test import Test\n"
+                    plot_script_src += f"pm = Plugin_Manager(settings=Project_Settings)\n"
+                    plot_script_src += f"pm.add_test(Test)\n"
+                    plot_script_src += f"pm.correlate(database='data_log.sqlite', table_name='{db_table}')\n"
+                    try:
+                        with open(dest_file, 'a') as f: #exists, overwrite, append?
+                            f.write(plot_script_src)
+                    except Exception as e:
+                        #write locked? exists?
+                        print(type(e))
+                        print(e)
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        with contextlib.redirect_stderr(io.StringIO()):
+                            self.correlate(database=os.path.relpath(db_file), table_name=db_table, test_list=[test])
 
     ###
     # SCRIPT METHODS
@@ -809,35 +874,54 @@ class Plugin_Manager():
             else:
                 print(f"Skipping evaluation for {test.get_name()}.")
 
-    def correlate(self, database=None, table_name=None):
+    def correlate(self, database=None, table_name=None, test_list=None):
         '''Run the correlate method of each test in self.tests.
         args:   
-            database - string. The location of the database with the data to evaluate If left blank, the evaluation will continue with the database in the same directory as the test script.
-            table_name - string. The name of the table in the database with the relevant data. If left blank, the evaluation will continue with the table named after the test script.'''
+            database - string. The location of the database with the data to correlate. If left blank, the correlation will continue with the database in the same directory as the test script.
+            table_name - string. The name of the table in the database with the relevant data. If left blank, the correlation will continue with the table named after the test script.'''
         print_banner('Correlating. . .')
-        for test in self.tests:
-            if test._is_crashed:
-                print(f"{test.get_name()} crashed. Skipping correlation.")
-                continue
-            if database is None:
-                database = test._db_file
-            if table_name is None:
-                test._table_name = test.get_name()
+        reset_db = False
+        reset_tn = False
+        if test_list is None:
+            test_list = self.tests
+        for test in test_list:
+            if not test._skip_eval:
+                if database is None:
+                    database = test._db_file
+                    reset_db = True
+                if table_name is None:
+                    test._table_name = test.get_name()
+                    reset_tn = True
+                else:
+                    test._table_name = table_name
+                test._corr_results = Test_Results(test._name, module=test)
+                if test._is_crashed or test._table_name.endswith('__CRASHED'):
+                    test._corr_results._failure_override = True
+                test._db = sqlite_data(database_file=database, table_name=test.get_table_name())
+                try:
+                    test.correlate_results()
+                except Exception:
+                    traceback.print_exc()
+                    print_banner(f"*** ERROR ***", f"{test.get_name()} crashed during evaluation, skipping.")
+                    print("\n")
+                    database = None
+                    table_name = None
+                    test._corr_results = Failed_Eval(test)
+                    continue
+                if test._corr_results._test_results:
+                    print(test.get_corr_results())
+                t_r = test._corr_results.json_report()
+                dest_abs_filepath = os.path.join(os.path.dirname(database), f"corr_results.json")
+                if t_r is not None:
+                    with open(dest_abs_filepath, 'wb') as f:
+                        f.write(t_r.encode('utf-8'))
+                        f.close()
+                if reset_db:
+                    database = None
+                if reset_tn:
+                    table_name = None
             else:
-                test._table_name = table_name
-            test._corr_results = Test_Results(test.get_name(), module=test)
-            test._db = sqlite_data(database_file=database, table_name=test.get_table_name())
-            if f"{test.get_table_name()}_all" in test._db.get_table_names():
-                test._table_name = f"{table_name}_all" #Redirect to presets-joined table
-                test._db.set_table(f"{test.get_table_name()}_all")
-            test.correlate_results()
-            print(test.get_test_results())
-            t_r = test._corr_results.json_report()
-            dest_abs_filepath = os.path.join(os.path.dirname(database),f"correlation_results.json")
-            if t_r is not None:
-                with open(dest_abs_filepath, 'wb') as f:
-                    f.write(t_r.encode('utf-8'))
-                    f.close()
+                print(f"Skipping correlation for {test.get_name()}.")
 
     def display_connections(self):
         '''Distills the connections of all added tests and prints the diagram'''

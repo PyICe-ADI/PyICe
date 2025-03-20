@@ -27,6 +27,8 @@ class Master_Test_Template():
     def plot(self):
         ''' Optional method to retrieve the data collected and create plots. Can be run over and over once a collect has run. User must return a list or tuple of plots and/or pages, or an individual LTC_plot.Page, or a single LTC_plot.plot.'''
         return []
+    def _modify_metalogger(self):
+        '''Method used to make any changes to the metalog before it is merged with a sqlite table. Not to be used itself, but to be overwritten in a project specific test_template. Plugin required.'''
 
     ###
     # GET METHODS
@@ -73,10 +75,12 @@ class Master_Test_Template():
             raise Exception("PyICe Master Test Template: You said you wanted a visual representation of your lab bench. You'll need to define bench_image_locations in your Test_Template.")
 
     ###
-    # EVALUATION METHODS
+    # EVALUATION/CORRELATION METHODS
     ###
     def evaluate_results(self):
         '''Optional evaluate_results method placeholder'''
+    def correlate_results(self):
+        '''Optional correlate_results method placeholder'''
     def evaluate_rawdata(self, name, data, conditions=None):
         '''This will compare submitted data to limits for the named test.
         args:
@@ -110,6 +114,16 @@ class Master_Test_Template():
             condition_str += f",{condition}"
         query_str = f'SELECT {values}{condition_str} FROM {self.get_table_name()} ' + ('WHERE ' + where_clause if where_clause else '')
         self.evaluate_query(name, query=query_str)
+    def correlate_data(self, name, reference_values=[], test_values=[], spec=None, conditions=None):
+        '''Compares test values to reference values and compare the output to the limits of the named test.
+        args:
+            name - string. The name of the test whose limits will be used.
+            reference_values - iterable. The base values to which test values will be compared.
+            test_values - iterable. The object values whose distance to the reference value will be calculated.
+            spec - string. Either '%' or '-'. Determines whether the comparison is made by percentage or by difference.
+            conditions - None or dictionary. A dictionary with channel names as keys and channel values as values. Used to report under what circumstances the data was taken. Default is None.'''
+        self._corr_results.test_limits[name]=self.get_test_limits(name)
+        self._corr_results._correlate_results(name=name, reference_values=reference_values, test_values=test_values, spec=spec, conditions=conditions)
     def get_test_results(self):
         '''Returns a string that reports the Pass/Fail status for all the tests evaluated in the script and the test script as a whole.'''
         res_str = ''
@@ -117,6 +131,14 @@ class Master_Test_Template():
         res_str += f'*** Module {self.get_name()} ***\n'
         res_str += f'{self._test_results}'
         res_str += f'*** Module {self.get_name()} Summary {"PASS" if self._test_results else "FAIL"}. ***\n\n'
+        return res_str
+    def get_corr_results(self):
+        '''Returns a string that reports the Pass/Fail status for all the tests correlated in the script and the test script as a whole.'''
+        res_str = ''
+        all_pass = True
+        res_str += f'*** Module {self.get_name()} ***\n'
+        res_str += f'{self._corr_results}'
+        res_str += f'*** Module {self.get_name()} Summary {"PASS" if self._corr_results else "FAIL"}. ***\n\n'
         return res_str
     def get_test_limits(self, name):
         raise Exception("MASTER TEST TEMPLATE ERROR: This project indicated a use of the TEST_LIMIT plugin but no project specific 'get_test_limits' method was provided.")
