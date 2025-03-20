@@ -54,6 +54,7 @@ class modbus_instrument(instrument, minimalmodbus.Instrument):
         interface_raw_serial.read = interface_raw_serial.read_raw
         instrument.__init__(self,f"Modbus instrument @ {interface_raw_serial}:{modbus_address}")
         minimalmodbus.Instrument.__init__(self, interface_raw_serial, modbus_address, mode = minimalmodbus.MODE_RTU if mode.lower() == 'rtu' else minimalmodbus.MODE_ASCII, debug=False)
+        self.add_interface_raw_serial(interface_raw_serial)
         #self.sp = interface_raw_serial
         #self.modbus_address = modbus_address
         #self.modbus_pid = minimalmodbus.Instrument(interface_raw_serial,modbus_address)
