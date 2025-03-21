@@ -256,7 +256,7 @@ class connection_collection():
                             raise_error(connextion2.terminals[1],connextion1.terminals[0],connextion2.terminals[0], connection_source[connection_poi_1], connection_source[connection_poi_2])
                         else:
                             delete_connections.append(connextion2 if connextion2.terminals[0].instrument.is_a_kind_of is generic_instrument_class else connextion1)
-        [self.remove_connection(connextion) for connextion in delete_connections]                    
+        [self.remove_connection(connextion) for connextion in list(set(delete_connections))]
         # Check for blocked terminals
         for connextion in self.connections:
             for terminal in connextion.get_terminals():
