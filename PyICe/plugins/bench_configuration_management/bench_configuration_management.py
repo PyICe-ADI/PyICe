@@ -4,6 +4,19 @@ import abc
 ARROW_STRING = "◄――――――――►"
 BLOCKED_STRING = "◄――――――――■ [BLOCKED]"
 
+class Diagram_Reconstructor():
+    def __init__(self, connections, blocked_terminals):
+        self.connections = connections
+        self.blocked_terminals = blocked_terminals
+    def get_connection_diagram(self):
+        ''''Returns a presentable diagram centrally aligned. Becomes difficult to read if not enough window width is provided.'''
+        connection_diagram = ""
+        for connection in self.connections:
+            connection_diagram += (35-len(f"{connection[0][0]}:{connection[0][1]}"))*" " + f"{connection[0][0]}:{connection[0][1]}" + " " + ARROW_STRING + " " + f"{connection[1][0]}:{connection[1][1]}\n"
+        for blocked_terminal in self.blocked_terminals:
+            connection_diagram += (35-len(f"{blocked_terminal[0]}:{blocked_terminal[1]}"))*" " + f"{blocked_terminal[0]}:{blocked_terminal[1]}" + " " + BLOCKED_STRING + f"\n"
+        return connection_diagram
+
 class terminal():
     '''A terminal object represents a potential port of a component to which a single connection can be made. A component will typically have one or more terminals. Terminals will likely be paired with connections once the bench wiring is defined. A terminal can only have a single connection. Any more will cause an error. A terminal represents a single port, regardless of pin count.'''
     def __init__(self, type, owner, instrument):
@@ -196,7 +209,7 @@ class connection_collection():
             remove_spaces = connection.strip()
             goodbye_arrow = remove_spaces.split(' ◄――――――――► ')
             separate_by_colon= [x.split(':') for  x in goodbye_arrow]
-            ## So now we have [[[A,B],[C,D]],[[E,F],[G,H]], ...[[W,X],[Y,Z]]]
+            # So now we have [[[A,B],[C,D]],[[E,F],[G,H]], ...[[W,X],[Y,Z]]]
             connection_list_of_lists.append(separate_by_colon)
         for x in connection_list_of_lists:
             logged_connections.add_connection(components[x[0][0]][x[0][1]],             components[x[1][0]][x[1][1]])

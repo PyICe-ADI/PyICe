@@ -910,28 +910,35 @@ class interface_factory(communication_node):
         new_interface.set_com_node_parent(self._visa_root)
         self._direct_visa_interfaces.append(new_interface)
         return new_interface
-    def get_visa_gpib_interface(self,gpib_adapter_number,gpib_address_number,timeout=None):
+    def get_visa_gpib_interface(self, gpib_adapter_number, gpib_address_number, timeout=None):
         timeout = self._set_timeout(timeout)
-        if gpib_adapter_number not in list(self._gpib_adapters.keys()):
-            print(f'\n\n\n\nAdapter number "{gpib_adapter_number}" not found in adapter list')
-            print(f'It must be added first with .set_gpib_adapter_visa*({gpib_adapter_number},*)')
-            print(f' for example:')
-            print(f'       .set_gpib_adapter_visa({gpib_adapter_number})')
-            raise Exception('Using undefined gpib adapter')
-        #search for an existing gpib_interface
+        if visaMissing:
+            raise Exception("pyVisa or VISA is missing on this computer, install one or both. Cannot use visa for GPIB adapter")
+        if gpib_adapter_number in list(self._gpib_adapters.keys()):
+           if  self._gpib_adapters[gpib_adapter_number]._parent == self._visa_root:
+               raise Exception(f"Attempting to re-define gpib adapter: {gpib_adapter_number}, the same way a second time.")
+           else:
+               raise Exception(f"GPIB adapter_number {gpib_adapter_number} was already defined as something other than visa.")
+        adapter = gpib_adapter_visa()
+        adapter.set_com_node_thread_safe()
+        adapter.set_com_node_parent(self._visa_root)
+        self._gpib_adapters[gpib_adapter_number] = adapter
+        if gpib_adapter_number not in self._gpib_interfaces:
+            self._gpib_interfaces[gpib_adapter_number] = {}
         if gpib_adapter_number in self._gpib_interfaces:
             if gpib_address_number in self._gpib_interfaces[gpib_adapter_number]:
                 interface = self._gpib_interfaces[gpib_adapter_number][gpib_address_number]
                 if timeout > interface.timeout:
                     interface.timeout = timeout
                 return interface
-        #determine the type of gpib adapter
         this_gpib_adapter = self._gpib_adapters[gpib_adapter_number]
         assert isinstance(this_gpib_adapter, gpib_adapter)
         new_interface = self._get_gpib_interface(gpib_adapter=this_gpib_adapter, gpib_adapter_number=gpib_adapter_number, gpib_address_number=gpib_address_number, timeout=timeout)
         new_interface.set_com_node_parent(this_gpib_adapter)
         self._gpib_interfaces[gpib_adapter_number][gpib_address_number] = new_interface
         return new_interface
+    def set_gpib_adapter_visa(self, adapter_number):
+        '''Deprectaed, I put this stuff in .get_visa_gpib_interface() since it asked for an adapter number anyway.'''
     def _get_gpib_interface(self, gpib_adapter, gpib_adapter_number, gpib_address_number, timeout):        
         if isinstance(gpib_adapter, gpib_adapter_visa):
             visa_address_string = f"GPIB{gpib_adapter_number}::{gpib_address_number}"
@@ -1153,20 +1160,6 @@ class interface_factory(communication_node):
         else:
             new_interface.set_com_node_parent(parent)
         return new_interface
-    def set_gpib_adapter_visa(self,adapter_number):
-        if visaMissing:
-            raise Exception("pyVisa or VISA is missing on this computer, install one or both. Cannot use visa for GPIB adapter")
-        if adapter_number in list(self._gpib_adapters.keys()):
-           if  self._gpib_adapters[adapter_number]._parent == self._visa_root:
-               raise Exception(f"Attempting to re-define gpib adapter: {adapter_number}, the same way a second time.")
-           else:
-               raise Exception(f"GPIB adapter_number {adapter_number} was already defined as something other than visa.") 
-        gpib_adapter = gpib_adapter_visa()
-        gpib_adapter.set_com_node_thread_safe()
-        gpib_adapter.set_com_node_parent(self._visa_root)
-        self._gpib_adapters[adapter_number] = gpib_adapter
-        if adapter_number not in self._gpib_interfaces:
-            self._gpib_interfaces[adapter_number] = {}
     def _set_timeout(self,timeout):
         if timeout == None:
             return self._default_timeout
