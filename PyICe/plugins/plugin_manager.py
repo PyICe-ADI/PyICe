@@ -774,6 +774,8 @@ class Plugin_Manager():
                 if database is None:
                     database = test.get_db_file()
                     reset_db = True
+                else:
+                    test._db_file = database
                 if table_name is None:
                     test._table_name = test.get_name()
                     reset_tn = True
