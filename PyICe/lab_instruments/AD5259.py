@@ -8,7 +8,7 @@ class AD5259(instrument):
         '''interface_twi is a PyICe interface_twi
         addr7 is the 7-bit I2C address of the AD5259 set by pinstrapping.
         '''
-        instrument.__init__(self, f'Analog Devices I2C-Compatible 256-Position, Digital Potentiometer at {addr7:X}')
+        instrument.__init__(self, f'Analog Devices I2C-Compatible 256-Position, Digital Potentiometer at 0x{addr7:X}')
         self._base_name = 'AD5259'
         self.add_interface_twi(interface_twi)
         self.twi = interface_twi

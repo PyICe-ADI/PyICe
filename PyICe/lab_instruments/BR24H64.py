@@ -32,7 +32,7 @@ class BR24H64(instrument):
         self.add_interface_twi(interface_twi)
         self.twi = interface_twi
         if addr7 not in range(0x50, 0x58):
-            raise ValueError(f"\n\n\nBR24H64 only supports addresses 0x50 - 0x57, What makes you think it would respond to address: {hex(addr7)}?")
+            raise ValueError(f"\n\n\nBR24H64 only supports addresses 0x50 - 0x57, What makes you think it would respond to address: 0x{hex(addr7)}?")
         self.addr7 = addr7
         self.tries = 3
 

@@ -8,7 +8,7 @@ class AD5272(instrument):
         addr7 is the 7-bit I2C address of the AD5272 set by pinstrapping.
         Choose addr7 from 0x2F, 0x2C, 0x2E
         '''
-        instrument.__init__(self, f'Analog Devices I2C 10-bit Potentiometer at {addr7:X}')
+        instrument.__init__(self, f'Analog Devices I2C 10-bit Potentiometer at 0x{addr7:X}')
         self._base_name = 'AD5272'
         self.add_interface_twi(interface_twi)
         self.twi = interface_twi
