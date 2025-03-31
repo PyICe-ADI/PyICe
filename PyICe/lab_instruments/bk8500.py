@@ -715,11 +715,8 @@ class bk8500(instrument):
         self.PrintCommandAndResponse(cmd, response, "Get product info")
         model = response[3:7]
         res_str = f'Model={model.decode()}'
-        # fw = hex(ord(response[9]))[2:] + "."
-        # fw += hex(ord(response[8]))[2:]
         serial_number = response[10:20]
-        res_str += f'\tSerial #={serial_number.decode()}'
-        # return join((str(model), str(serial_number), str(fw)), "\t")
+        res_str += f'Serialnum: {serial_number.decode()}'
         return res_str
     def GetDemandState(self):
         '''Returns demand_state byte. Add DJS 2017/11/13 for Bat Discharge'''
