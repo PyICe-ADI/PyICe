@@ -14,7 +14,7 @@ class TMP117(instrument):
         ADD0 = SDA:    0x4A
         ADD0 = SCL:    0x4B
         '''
-        instrument.__init__(self, f'Analog Devices TMP117 Silicon Temperature Sensor at {addr7:X}')
+        instrument.__init__(self, f'Analog Devices TMP117 Silicon Temperature Sensor at 0x{addr7:X}')
         self._base_name                 = 'TMP117'
         self.add_interface_twi(interface_twi)
         self.twi                        = interface_twi

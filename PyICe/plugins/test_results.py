@@ -162,7 +162,6 @@ class generic_results():
         else:
             res_dict['summary'] = {'passes': bool(self)}
         return json.dumps(res_dict, indent=2, ensure_ascii=False, cls=CustomJSONizer)
-        return json.dumps(res_dict, indent=2, ensure_ascii=False, cls=CustomJSONizer)
 
 class Test_Results(generic_results):
     class _test_result(collections.namedtuple('test_result', ['test_name', 'conditions', 'min_data', 'max_data', 'passes', 'failure_reason', 'collected_data', 'plot', 'query'])):

@@ -10,7 +10,7 @@ class AD5693R(instrument):
         A0 = 0: 1001100 (4C)
         A1 = 1: 1001110 (4E)
         '''
-        instrument.__init__(self, f'Analog Devices AD5693R Digital to Ananlog Converter at {addr7:X}')
+        instrument.__init__(self, f'Analog Devices AD5693R Digital to Analog Converter at 0x{addr7:X}')
         self._base_name = 'AD5693R'
         self.add_interface_twi(interface_twi)
         self.twi = interface_twi
