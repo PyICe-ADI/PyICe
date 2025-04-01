@@ -77,7 +77,9 @@ class visualizer():
                     subprocess.run(["dot", "-Kneato", "-n2", "-Tpng", "-o", file_location+os.sep+file_base_name+".png"], input=f.source, check=True, encoding='UTF-8')
             except Exception as e:
                 print()
-                print_banner("*** WARNING ***", "Graphviz dot.exe not found. Have you installed Graphviz from graphviz.org?", "Ensure that you have a path to graphviz/bin/dot.exe in your environment.")
+                traceback.print_exc()
+                breakpoint()
+                print_banner("*** WARNING ***", "Graphviz dot.exe (potentially) not found. Have you installed Graphviz from graphviz.org?", "Ensure that you have a path to graphviz/bin/dot.exe in your environment.")
                 print()
                 return f
             # os.remove(file_base_name)   # Dump the Dot file after the rendered format file is generated.
