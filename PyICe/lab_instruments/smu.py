@@ -150,6 +150,7 @@ class smu(instrument):
         '''select between front and rear panel terminals'''
         self._init_channel(channel_number)
         new_channel = channel(channel_name,write_function=lambda i, channel_number=channel_number: self._terminal_select(channel_number, i))
+        new_channel._read = lambda channel_number=channel_number: self._terminal_selectq(channel_number)
         self._configured_channels[channel_number]['terminal_select'] = new_channel
         new_channel.set_attribute('channel_number', channel_number)
         new_channel.set_attribute('channel_type', 'terminal_select')
@@ -186,7 +187,8 @@ class scpi_smu(scpi_instrument, smu):
     ''''''
     #todo abstract methods?
     def _output_off(self, channel_number):
-        self.get_interface().write(f':SOURce{channel_number}:CLEar:IMMediate')
+        self.get_interface().write(f':SOURce{channel_number}:CURRent:LEVel:IMMediate:AMPLitude 0')
+        self.get_interface().write(f':SOURce{channel_number}:CLEar:IMMediate') #dangerous, because it turns back on from reading!
     def _vforce(self, channel_number, value):
         if value is not None:
             self.get_interface().write(f':SOURce{channel_number}:VOLTage:LEVel:IMMediate:AMPLitude {value}')
@@ -234,9 +236,13 @@ class scpi_smu(scpi_instrument, smu):
     def _terminal_select(self, channel_number, value):
         '''select between front and rear panel terminals'''
         self.get_interface().write(f':ROUTe:TERMinals {value}')
-
-        
-
+    def _terminal_selectq(self, channel_number):
+        '''query front vs rear panel terminals'''
+        resp_subst = {"FRON": "Front",
+                      "REAR": "Rear",
+                     }
+        return resp_subst[self.get_interface().ask(f':ROUTe:TERMinals?')]
+       
 class keithley_2400(scpi_smu, keithley_smu):
     ''''''
     # todo NPLC config?
@@ -292,6 +298,10 @@ class keithley_2400(scpi_smu, keithley_smu):
         # TODO if this is useful
     def _add_channel_current_compliance(self, channel_name, channel_number):
         '''max current in voltage forcing modes'''
+        
+class keithley_2400_front_rear(keithley_2400):
+    '''make single 2400 instrument behave like muxed instrument via front and rear panel selection'''
+    #WIP
 
 class keithley_2600(keithley_smu):
     '''https://download.tek.com/manual/2600BS-901-01_C_Aug_2016_2.pdf'''
