@@ -268,7 +268,8 @@ class Plugin_Manager():
                 print("\n\PyICE Plugin Manager: One or more cleanup functions not executable. See stack trace below.\n")
                 traceback.print_exc()
                 print(func)
-                self.notify(msg=traceback.format_exc(), subject="CLEANUP CRASH")
+                if self._send_notifications:
+                    self.notify(msg=traceback.format_exc(), subject="CLEANUP CRASH")
                 self.cleanup_failure = True
 
     def shutdown(self):
@@ -279,10 +280,11 @@ class Plugin_Manager():
             except:
                 print("\n\PyICE Plugin Manager: One or more shutdown functions not executable. See stack trace below.\n")
                 traceback.print_exc()
-                self.notify(msg=traceback.format_exc(), subject="SHUTDOWN CRASH")
+                if self._send_notifications:
+                    self.notify(msg=traceback.format_exc(), subject="SHUTDOWN CRASH")
                 print(func)
                 shutdown_successful=False
-        if shutdown_successful:
+        if shutdown_successful and self._send_notifications:
             self.notify(msg="Successful Bench Shutdown")
 
     def close_ports(self):
