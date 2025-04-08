@@ -774,6 +774,8 @@ class Plugin_Manager():
                 if database is None:
                     database = test.get_db_file()
                     reset_db = True
+                else:
+                    test._db_file = database
                 if table_name is None:
                     test._table_name = test.get_name()
                     reset_tn = True
@@ -837,6 +839,8 @@ class Plugin_Manager():
                 if database is None:
                     database = test._db_file
                     reset_db = True
+                else:
+                    test._db_file = database
                 if table_name is None:
                     test._table_name = test.get_name()
                     reset_tn = True
@@ -889,6 +893,8 @@ class Plugin_Manager():
                 if database is None:
                     database = test._db_file
                     reset_db = True
+                else:
+                    test._db_file = database
                 if table_name is None:
                     test._table_name = test.get_name()
                     reset_tn = True
@@ -915,7 +921,6 @@ class Plugin_Manager():
                 if t_r is not None:
                     with open(dest_abs_filepath, 'wb') as f:
                         f.write(t_r.encode('utf-8'))
-                        f.close()
                 if reset_db:
                     database = None
                 if reset_tn:

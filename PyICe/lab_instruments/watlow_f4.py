@@ -15,13 +15,12 @@ class watlow_f4(temperature_chamber, modbus_instrument):
     ]
     def __init__(self, interface_raw_serial, modbus_address, baudrate=19200):
         self._base_name = 'Watlow F4'
+        temperature_chamber.__init__(self)
         modbus_instrument.__init__(self,
                                    interface_raw_serial=interface_raw_serial,
                                    modbus_address=modbus_address,
                                    baudrate=baudrate,
-                                   mode='rtu')
-        temperature_chamber.__init__(self)
-        
+                                   mode='rtu') #second to preserve self._interfaces
         self.add_registers(type(self).REGISTERS)
         self._sv = self['SV1']
         self._pv = self['PV1']

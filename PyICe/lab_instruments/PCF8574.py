@@ -3,7 +3,7 @@ from ..lab_core import *
 class PCF8574(instrument):
     def __init__(self, interface_twi, addr7):
         '''Multi-vendor 8bit I2C GPIO on Configurator XT. http://www.ti.com/lit/ds/symlink/pcf8574.pdf'''
-        instrument.__init__(self, 'PCF8574 GPIO expander')
+        instrument.__init__(self, f'PCF8574 GPIO expander at 0x{addr7:X}')
         self._base_name = 'PCF8574'
         self.twi = interface_twi
         self.add_interface_twi(interface_twi)
