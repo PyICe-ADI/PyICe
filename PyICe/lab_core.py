@@ -301,6 +301,27 @@ class channel(delegator):
                 callback(self,value)
         self.unlock_interfaces()
         return value
+    def write_confirm(self,value):
+        '''
+        Read back value after writing to make sure it "took".
+        This is only useful for register-type channels that model remote memory.
+        Basic writable channels pass this check trivially.
+        returns value
+        raises ChannelValueException
+        '''
+        v_w = self.write(value)
+        v_r = self.read()
+        try:
+            v_w = self.compute_expect_readback_data(value) # Only register channels do special access
+        except AttributeError as e:
+            if v_w != v_r:
+                raise ChannelValueException(f'Failed to set channel {self.get_name()} to value {v_w}. Read back {v_r}.')
+        else:
+            if v_w is None and value is not None:
+                pass
+            elif v_w != v_r:
+                raise ChannelValueException(f'Failed to write channel {self.get_name()} value {value}. Read back {v_r}.')
+        return v_w
     def add_preset(self, preset_value, preset_description=None):
         '''base channels only have unnamed presets (not enumerations)'''
         if not self.is_writeable():
@@ -1045,6 +1066,21 @@ class register(integer_channel):
             return 2**self.get_size()-1
         else:
             raise Exception(f'Register special access {self.get_attribute("special_access")} improperly implemented. Contact PyICe developers.')
+    def compute_expect_readback_data(self, data):
+        if self.get_attribute('special_access') is None:
+            return self.format_write(data)
+        elif self.get_attribute('special_access') in ('W1C',):
+            return 0 if data==1 else None #unknown
+        elif self.get_attribute('special_access') in ('W1S',):
+            return 1 if data==1 else None
+        elif self.get_attribute('special_access') in ('W0C',):
+            return 0 if data==0 else None
+        elif self.get_attribute('special_access') in ('W0S',):
+            return 1 if data==1 else None
+        elif access.upper in ("WSRC", "WCRS", "W1SRC", "W1CRS", "W0SRC", "W0CRS"):
+            raise Exception('Read/write side effect special register access unimplemented. Please contact PyICe developers.')
+        else:
+            raise Exception('Unknown register side effect special access.. Please contact PyICe developers.')
 
 class channel_group(object):
     def __init__(self, name='Unnamed Channel Group'):
@@ -1131,8 +1167,8 @@ class channel_group(object):
         return list(self._sub_channel_groups)
     def read(self,channel_name):
         return self.read_channel(channel_name)
-    def write(self,channel_name,value):
-        return self.write_channel(channel_name,value)
+    def write(self,channel_name,value,confirm=False):
+        return self.write_channel(channel_name,value,confirm)
     def read_channel(self,channel_name):
         channel = self._resolve_channel(channel_name)
         if channel is None:
@@ -1142,8 +1178,11 @@ class channel_group(object):
         '''item list is a list of channel objects, names or channel_groups'''
         channel_list = self.resolve_channel_list(item_list)
         return self.read_channel_list(channel_list)
-    def write_channel(self,channel_name,value):
-        return self.get_channel(channel_name).write(value)
+    def write_channel(self,channel_name,value,confirm=False):
+        if confirm:
+            return self.get_channel(channel_name).write_confirm(value)
+        else:
+            return self.get_channel(channel_name).write(value)
     def write_channels(self, item_list):
         return [self.write_channel(ch_name, ch_value) for (ch_name, ch_value) in item_list]
     def get_channel(self,channel_name):
@@ -1957,10 +1996,10 @@ class channel_master(channel_group,delegator):
                 debug_logging.debug("Channel master running read callback %s.", function)
                 function(results)
         return results
-    def write_channel(self,channel_name,value):
+    def write_channel(self,channel_name,value,confirm=False):
         '''Delegates channel write to the appropriate registered instrument.'''
         debug_logging.debug("Writing Channel %s to %s", channel_name, value)
-        data =  channel_group.write_channel(self,channel_name,value)
+        data =  channel_group.write_channel(self,channel_name,value,confirm)
         debug_logging.debug("Channel %s write data unformatted to %s", channel_name, data)
         for function in self._write_callbacks:
             debug_logging.debug("Channel master running write callback %s.", function)
