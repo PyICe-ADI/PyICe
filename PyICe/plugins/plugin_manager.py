@@ -260,6 +260,7 @@ class Plugin_Manager():
         
     def cleanup(self):
         """Runs the functions found in cleanup_fns. Resets the intstruments to predetermined "safe" settings as given by the drivers. Does so in the reverse order in which the channels were created whereas startups go in forward order of which created."""
+        self.cleanup_failure = False
         for func in reversed(self.cleanup_fns):
             try:
                 func()
@@ -267,17 +268,22 @@ class Plugin_Manager():
                 print("\n\PyICE Plugin Manager: One or more cleanup functions not executable. See stack trace below.\n")
                 traceback.print_exc()
                 print(func)
-                exit()
+                self.notify(msg=traceback.format_exc(), subject="CLEANUP CRASH")
+                self.cleanup_failure = True
 
     def shutdown(self):
+        shutdown_successful=True
         for func in self.shutdown_fns:
             try:
                 func()
             except:
                 print("\n\PyICE Plugin Manager: One or more shutdown functions not executable. See stack trace below.\n")
                 traceback.print_exc()
+                self.notify(msg=traceback.format_exc(), subject="SHUTDOWN CRASH")
                 print(func)
-                exit()
+                shutdown_successful=False
+        if shutdown_successful:
+            self.notify(msg="Successful Bench Shutdown")
 
     def close_ports(self):
         """Release the instruments from bench control."""
@@ -719,10 +725,14 @@ class Plugin_Manager():
                             test._crash_info = sys.exc_info()
                             self.notify(self._crash_str(test), subject='CRASHED!!!')
                         self.cleanup()
+                        if self.cleanup_failure:
+                            break
                 if temp != "ambient":
                     if all([x._is_crashed for x in self.tests]):
                         print_banner('All tests have crashed. Skipping remaining temperatures.')
                         break
+                if self.cleanup_failure:
+                    break
             self.shutdown()
         except Exception as e:
             traceback.print_exc()
