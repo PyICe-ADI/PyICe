@@ -1069,6 +1069,9 @@ class channel_group(object):
         copy_self._channel_dict = results_ord_dict()                #Replace the channel dictionary with an empty one
         copy_self._channel_dict.update(self._channel_dict)          #Populate the copy of the dictionary with copies of original channels
         ### How should _partial_delegation_results, _self_delegation_channels, _sub_channel_groups be handled by this copy routine?
+        if isinstance(self, delegator):
+            if self.get_delegator() is self:
+                copy_self.set_delegator(copy_self)
         return copy_self
     def get_name(self):
         return self._name
