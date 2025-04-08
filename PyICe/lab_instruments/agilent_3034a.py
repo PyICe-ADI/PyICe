@@ -398,7 +398,13 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_Xreference(self, name):
         def _set_xreference(value):
-            if value.upper() not in ["LEFT", "CENTER", "RIGHT"]:
+            if value.upper() not in ["LEFT", "CENTER", "RIGHT"]: #Why not CUSTom??
+                #  :TIMebase:REFerence:LOCation <loc>
+                # <loc> ::= 0.0 to 1.0 in NR3 format
+                # When the :TIMebase:REFerence is set to CUSTom, the 
+                # :TIMebase:REFerence:LOCation command lets you place the time reference 
+                # location at a percent of the graticule width (where 0.0 is the left edge and 1.0 is 
+                #the right edge).
                 raise ValueError("\nAgilent 3034a: X reference must be one of must be one of: LEFT, CENTER, RIGHT")
             self.get_interface().write(f":TIMebase:REFerence {value}")
         new_channel = channel(name, write_function=_set_xreference)
@@ -789,9 +795,9 @@ class agilent_3034a(oscilloscope):
         def _get_frequency_measurement(number):
             scope_was_not_stopped = not self.scope_stopped()
             if scope_was_not_stopped: self._set_runmode('STOP')
-            self.get_interface().write(f":MEASure:SOURce CHANnel{number}")
-            self.delay()
-            value = float(self.get_interface().ask(":MEASure:FREQuency?"))
+            # self.get_interface().write(f":MEASure:SOURce CHANnel{number}")
+            # self.delay()
+            value = float(self.get_interface().ask(f":MEASure:FREQuency? CHANnel{number}"))
             if scope_was_not_stopped: self.get_interface().write("RUN")
             return value
         new_channel = channel(name, read_function=lambda : _get_frequency_measurement(number))
@@ -803,9 +809,17 @@ class agilent_3034a(oscilloscope):
         def _get_period_measurement():
             scope_was_not_stopped = not self.scope_stopped()
             if scope_was_not_stopped: self._set_runmode('STOP')
-            self.get_interface().write(f":MEASure:PERiod CHANnel{number}")
-            self.delay()
-            value = float(self.get_interface().ask(":MEASure:PERiod?"))
+            # self.get_interface().write(f":MEASure:PERiod CHANnel{number}")
+            # self.delay()
+            #######
+            # DJS: note this doesn't seem to work right. It returns one-cycle old data in case of missed trigger. Trigger handling isn't addressed here.
+            #######
+            value = float(self.get_interface().ask(f":MEASure:PERiod? CHANnel{number}"))
+            
+            if value < 193e-9:
+                breakpoint()
+            
+            
             if scope_was_not_stopped: self.get_interface().write("RUN")
             return value
         new_channel = channel(name, read_function=_get_period_measurement)
