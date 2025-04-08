@@ -311,8 +311,16 @@ class channel(delegator):
         '''
         v_w = self.write(value)
         v_r = self.read()
-        if v_w != v_r:
-            raise ChannelValueException(f'Failed to set channel {self.get_name()} to value {value}. Read back {v_r}.')
+        try:
+            v_w = self.compute_expect_readback_data(value) # Only register channels do special access
+        except AttributeError as e:
+            if v_w != v_r:
+                raise ChannelValueException(f'Failed to set channel {self.get_name()} to value {value}. Read back {v_r}.')
+        else:
+            if v_w is None and value is not None:
+                pass
+            elif v_w != v_r:
+                raise ChannelValueException(f'Failed to set channel {self.get_name()} to value {value}. Read back {v_r}.')
         return v_w
     def add_preset(self, preset_value, preset_description=None):
         '''base channels only have unnamed presets (not enumerations)'''
@@ -1058,6 +1066,21 @@ class register(integer_channel):
             return 2**self.get_size()-1
         else:
             raise Exception(f'Register special access {self.get_attribute("special_access")} improperly implemented. Contact PyICe developers.')
+    def compute_expect_readback_data(self, data):
+        if self.get_attribute('special_access') is None:
+            return data
+        elif self.get_attribute('special_access') in ('W1C',):
+            return 0 if data==1 else None #unknown
+        elif self.get_attribute('special_access') in ('W1S',):
+            return 1 if data==1 else None
+        elif self.get_attribute('special_access') in ('W0C',):
+            return 0 if data==0 else None
+        elif self.get_attribute('special_access') in ('W0S',):
+            return 1 if data==1 else None
+        elif access.upper in ("WSRC", "WCRS", "W1SRC", "W1CRS", "W0SRC", "W0CRS"):
+            raise Exception('Read/write side effect special register access unimplemented. Please contact PyICe developers.')
+        else:
+            raise Exception('Unknown register side effect special access.. Please contact PyICe developers.')
 
 class channel_group(object):
     def __init__(self, name='Unnamed Channel Group'):
