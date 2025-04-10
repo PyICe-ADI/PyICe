@@ -72,7 +72,10 @@ class Plugin_Manager():
         Default value is an empty list.
         '''
         self._temperatures = temperatures
+        self.far_enough = False
         self.collect(temperatures)
+        if not self.far_enough:
+            return
         self.plot()
         if 'evaluate_tests' in self.plugins:
             self._test_results_str = ''
@@ -82,6 +85,7 @@ class Plugin_Manager():
             self.correlate()
         if 'archive' in self.plugins:
             self._archive()
+        results_str = ''
         try:
             if 'evaluate_tests' in self.plugins and self._send_notifications:
                 self.failed_tests = {}
@@ -108,12 +112,7 @@ class Plugin_Manager():
                         if len(self.failed_tests[failed_test]):
                             self._test_results_str+=f'{self.failed_tests[failed_test]}\n'
                 if self._test_results_str:
-                    self._test_results_str += "*** END OF REPORT ***"
-                    self.notify(self._test_results_str, subject='Test Results')
-        except Exception as e:
-            traceback.print_exc()
-            print('\n***PLUGIN MANAGER ERROR***\nError occurred while attempting to email test results.\n')
-        try:
+                    results_str += self._test_results_str
             if 'correlate_tests' in self.plugins and self._send_notifications:
                 self.failed_corr_tests = {}
                 self.failed_corrs = []
@@ -139,11 +138,13 @@ class Plugin_Manager():
                         if len(self.failed_corr_tests[failed_test]):
                             self._corr_results_str+=f'{self.failed_corr_tests[failed_test]}\n'
                 if self._corr_results_str:
-                    self._corr_results_str += "*** END OF REPORT ***"
-                    self.notify(self._corr_results_str, subject='Corr Results')
+                    results_str += self._corr_results_str
+            if results_str:
+                results_str += "*** END OF REPORT ***"
+                self.notify(results_str, subject='Results')
         except Exception as e:
             traceback.print_exc()
-            print('\n***PLUGIN MANAGER ERROR***\nError occurred while attempting to email corr results.\n')
+            print('\n***PLUGIN MANAGER ERROR***\nError occurred while attempting to email results.\n')
         try:
             if len(self._plots) and self._send_notifications: #Don't send empty emails
                 self.email_plots(self._plots)
@@ -261,6 +262,7 @@ class Plugin_Manager():
     def cleanup(self):
         """Runs the functions found in cleanup_fns. Resets the intstruments to predetermined "safe" settings as given by the drivers. Does so in the reverse order in which the channels were created whereas startups go in forward order of which created."""
         self.cleanup_failure = False
+        cleanup_err_str = ''
         for func in reversed(self.cleanup_fns):
             try:
                 func()
@@ -268,22 +270,30 @@ class Plugin_Manager():
                 print("\n\PyICE Plugin Manager: One or more cleanup functions not executable. See stack trace below.\n")
                 traceback.print_exc()
                 print(func)
-                self.notify(msg=traceback.format_exc(), subject="CLEANUP CRASH")
+                cleanup_err_str += traceback.format_exc()
+                cleanup_err_str += '\n\n'
                 self.cleanup_failure = True
+        if self.cleanup_failure:
+            self.notify(msg=cleanup_err_str, subject="CLEANUP CRASH")
 
     def shutdown(self):
         shutdown_successful=True
+        shutdown_err_str = ''
         for func in self.shutdown_fns:
             try:
                 func()
             except:
                 print("\n\PyICE Plugin Manager: One or more shutdown functions not executable. See stack trace below.\n")
                 traceback.print_exc()
-                self.notify(msg=traceback.format_exc(), subject="SHUTDOWN CRASH")
                 print(func)
+                shutdown_err_str += traceback.format_exc()
+                shutdown_err_str += '\n\n'
                 shutdown_successful=False
         if shutdown_successful:
-            self.notify(msg="Successful Bench Shutdown")
+            if len(self.shutdown_fns):
+                self.notify(msg="Successful Bench Shutdown")
+        else:
+            self.notify(msg=shutdown_err_str, subject="SHUTDOWN CRASH")
 
     def close_ports(self):
         """Release the instruments from bench control."""
@@ -669,7 +679,7 @@ class Plugin_Manager():
         args:
             temperatures (list): What values will be written to the temp_control_channel.'''
         try:
-            far_enough = False
+            self.far_enough = False
             self.master = master()
             self.add_instrument_channels()
             if 'bench_config_management' in self.plugins:
@@ -708,7 +718,7 @@ class Plugin_Manager():
                 self.visualizer = bench_visualizer.visualizer(connections=self.all_connections.connections, locations=self.bench_image_locations)
                 for test in self.tests:
                     self.visualizer.generate(file_base_name="Bench_Config", prune=True, file_format='svg', engine='neato', file_location=test._module_path+os.sep+'scratch')
-            far_enough = True
+            self.far_enough = True
             if len(temperatures):
                 self.temperature_run_startup()
             for temp in temperatures or ["ambient"]:
@@ -742,8 +752,9 @@ class Plugin_Manager():
             traceback.print_exc()
             for test in self.tests:
                 test._is_crashed = True
+                test._crash_info = sys.exc_info()
             try:
-                if far_enough:
+                if self.far_enough:
                     self.cleanup()
                     self.shutdown()
             except AttributeError as e:
