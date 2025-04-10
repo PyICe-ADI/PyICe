@@ -316,16 +316,20 @@ class Plugin_Manager():
             attachment_MIMEParts - list. Default empty list. A list of MIME (Multipurpose Internet Mail Extensions) objects that will be added to the body of any email sent.'''
         if 'notifications' in self.plugins and not self.debug:
             for signal_type in self.notification_targets:
-                if signal_type == 'emails':
-                    for email_address in self.notification_targets['emails']:
-                        mail = email(email_address)
-                        mail.send(f"{self.ident_header}{msg}", subject=subject, attachment_filenames=attachment_filenames, attachment_MIMEParts=attachment_MIMEParts)
-                elif signal_type == 'texts':
-                    for txt_number, carrier in self.notification_targets['texts']:
-                        text = sms(txt_number, carrier)
-                        text.send(msg)
-                else:
-                    print(f"Plugin Manager Warning: Unrecognized key {signal_type} found in the notification target dictionary. Please only use 'emails' and 'texts'.")
+                try:
+                    if signal_type == 'emails':
+                        for email_address in self.notification_targets['emails']:
+                            mail = email(email_address)
+                            mail.send(f"{self.ident_header}{msg}", subject=subject, attachment_filenames=attachment_filenames, attachment_MIMEParts=attachment_MIMEParts)
+                    elif signal_type == 'texts':
+                        for txt_number, carrier in self.notification_targets['texts']:
+                            text = sms(txt_number, carrier)
+                            text.send(msg)
+                    else:
+                        print(f"Plugin Manager Warning: Unrecognized key {signal_type} found in the notification target dictionary. Please only use 'emails' and 'texts'.")
+                except Exception as e:
+                    print(f"\n\nPlugin Manager Warning: Unexpected error occurred in notification attempt. The message was:\n {msg}\n See stacktrace below.\n")
+                    traceback.print_exc()
             try:
                 for fn in self._notification_functions:
                     try:
@@ -745,6 +749,8 @@ class Plugin_Manager():
             except AttributeError as e:
                 # Didn't get far enough to populate the bench before crashing.
                 pass
+            except Exception as e:
+                traceback.print_exc()
         finally:
             try:
                 self.close_ports()
