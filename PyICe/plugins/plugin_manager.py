@@ -328,7 +328,7 @@ class Plugin_Manager():
                     else:
                         print(f"Plugin Manager Warning: Unrecognized key {signal_type} found in the notification target dictionary. Please only use 'emails' and 'texts'.")
                 except Exception as e:
-                    print(f"\n\nPlugin Manager Warning: Unexpected error occurred in notification attempt. See stacktrace below.\n")
+                    print(f"\n\nPlugin Manager Warning: Unexpected error occurred in notification attempt. The message was:\n {msg}\n See stacktrace below.\n")
                     traceback.print_exc()
             try:
                 for fn in self._notification_functions:
