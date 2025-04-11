@@ -150,6 +150,10 @@ class ConfiguratorXT(bench_config_component):
         self.add_terminal("PCIEX", instrument=self)
         self.add_terminal("UEXT", instrument=self)
 
+class Uext_Accelerator(bench_config_component):
+    def add_terminals(self):
+        self.add_terminal("UEXT", instrument=self)
+
 class Rampinator(bench_config_component):
     def add_terminals(self):
         self.add_terminal("INPUT", instrument=self)
