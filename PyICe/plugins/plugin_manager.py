@@ -941,8 +941,10 @@ class Plugin_Manager():
                     table_name = None
                     test._corr_results = Failed_Eval(test)
                     continue
-                if test._corr_results._test_results:
+                if len(test._corr_results._test_results):
                     print(test.get_corr_results())
+                else:
+                    continue
                 t_r = test._corr_results.json_report()
                 dest_abs_filepath = os.path.join(os.path.dirname(database), f"corr_results.json")
                 if t_r is not None:
