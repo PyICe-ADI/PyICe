@@ -944,6 +944,10 @@ class Plugin_Manager():
                 if len(test._corr_results._test_results):
                     print(test.get_corr_results())
                 else:
+                    if reset_db:
+                        database = None
+                    if reset_tn:
+                        table_name = None
                     continue
                 t_r = test._corr_results.json_report()
                 dest_abs_filepath = os.path.join(os.path.dirname(database), f"corr_results.json")
