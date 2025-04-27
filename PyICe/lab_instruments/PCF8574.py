@@ -22,10 +22,20 @@ class PCF8574(instrument):
         new_channel.set_description(f"Read back PCF8574 GPIO expander pin # {pin}")
         return self._add_channel(new_channel)
     def _writepin(self, pin, value):
-        if value:
-            self.state |= 2**pin
+        if isinstance(value, str):
+            if value.upper() in ["TRUE", "1"]:
+                value = 1
+            elif value.upper() in ["FALSE", "0"]:
+                value = 0
+            else:
+                raise ValueError(f'\n\nPCF8574: Sorry don\'t know how to set PCF8574 pin {pin} to "{value}"!\nTry one of: [True, False, 1, 0]\n\n')
+        if value in [0, 1, True, False]:
+            if value:
+                self.state |= 2**pin
+            else:
+                self.state &= ~2**pin
+            self.twi.write_register(addr7=self.addr7, commandCode=self.state, data=None, data_size=0, use_pec=False) # data_size=0 is secret code for sendbyte
         else:
-            self.state &= ~2**pin
-        self.twi.write_register(addr7=self.addr7, commandCode=self.state, data=None, data_size=0, use_pec=False) # data_size=0 is secret code for sendbyte
+            raise ValueError(f'\n\nPCF8574: Sorry don\'t know how to set PCF8574 pin {pin} to "{value}"!\nTry one of: [True, False, 1, 0]\n\n')
     def _readpin(self, pin):
         return (data & 2**pin) >> pin
