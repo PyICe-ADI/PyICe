@@ -234,9 +234,9 @@ class Plugin_Manager():
         '''Each test add to the plugin manager will have its own logger with which it shall store the data collected by their collect method. The channels will be determined by the drivers added to the driver, and a sqlite database and table will be automatically created and linked to the tests.'''
         test._logger = Callback_logger(database=test.get_db_file(), special_channel_actions=self.special_channel_actions, test=test)
         test._logger.merge_in_channel_group(self.master.get_flat_channel_group())
+    def _create_table(self, test):
         if hasattr(test, 'customize'):
             test.customize()
-    def _create_table(self, test):
         test._logger.new_table(table_name=test.get_name(), replace_table=True)
         test._logger.write_html(file_name=f"{test.get_module_path()}{os.sep}scratch{os.sep}{self.project_folder_name}.html")
 
