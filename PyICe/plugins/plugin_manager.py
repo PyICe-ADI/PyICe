@@ -236,6 +236,7 @@ class Plugin_Manager():
         test._logger.merge_in_channel_group(self.master.get_flat_channel_group())
         if hasattr(test, 'customize'):
             test.customize()
+    def _create_table(self, test):
         test._logger.new_table(table_name=test.get_name(), replace_table=True)
         test._logger.write_html(file_name=f"{test.get_module_path()}{os.sep}scratch{os.sep}{self.project_folder_name}.html")
 
@@ -718,6 +719,8 @@ class Plugin_Manager():
                 self.visualizer = bench_visualizer.visualizer(connections=self.all_connections.connections, locations=self.bench_image_locations)
                 for test in self.tests:
                     self.visualizer.generate(file_base_name="Bench_Config", prune=True, file_format='svg', engine='neato', file_location=test._module_path+os.sep+'scratch')
+            for test in self.tests:
+                self._create_table(test)
             self.far_enough = True
             if len(temperatures):
                 self.temperature_run_startup()
