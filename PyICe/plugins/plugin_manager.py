@@ -234,6 +234,7 @@ class Plugin_Manager():
         '''Each test add to the plugin manager will have its own logger with which it shall store the data collected by their collect method. The channels will be determined by the drivers added to the driver, and a sqlite database and table will be automatically created and linked to the tests.'''
         test._logger = Callback_logger(database=test.get_db_file(), special_channel_actions=self.special_channel_actions, test=test)
         test._logger.merge_in_channel_group(self.master.get_flat_channel_group())
+    def _create_table(self, test):
         if hasattr(test, 'customize'):
             test.customize()
         test._logger.new_table(table_name=test.get_name(), replace_table=True)
@@ -718,6 +719,8 @@ class Plugin_Manager():
                 self.visualizer = bench_visualizer.visualizer(connections=self.all_connections.connections, locations=self.bench_image_locations)
                 for test in self.tests:
                     self.visualizer.generate(file_base_name="Bench_Config", prune=True, file_format='svg', engine='neato', file_location=test._module_path+os.sep+'scratch')
+            for test in self.tests:
+                self._create_table(test)
             self.far_enough = True
             if len(temperatures):
                 self.temperature_run_startup()
