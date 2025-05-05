@@ -62,6 +62,8 @@ def parser(units):
             "℧"         :{"scale":1,     "isunit": True,     "DESCRIPTION":  "Mho"}, # This is Mhos but doesn't display
             "Mhos"      :{"scale":1,     "isunit": True,     "DESCRIPTION":  "Mho"}, # ETS
             "MHO"       :{"scale":1,     "isunit": True,     "DESCRIPTION":  "Mho"}, # ETS
+            "mhos"      :{"scale":1,     "isunit": True,     "DESCRIPTION":  "Mho"}, # ETS
+            "mho"       :{"scale":1,     "isunit": True,     "DESCRIPTION":  "Mho"}, # ETS
             "s"         :{"scale":1,     "isunit": True,     "DESCRIPTION":  "Second"},
             "sec"       :{"scale":1,     "isunit": True,     "DESCRIPTION":  "Second"},
             "Sec"       :{"scale":1,     "isunit": True,     "DESCRIPTION":  "Second"}, #ETS version!
