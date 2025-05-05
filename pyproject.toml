@@ -34,7 +34,7 @@ dependencies=[
     "minimalmodbus",
 	"numpy<2",
     "nifgen",
-    "objutils",
+    "objutils==0.6.4",
     "openpyxl",
     "pandas",
     "pybind11",
