@@ -115,7 +115,27 @@ class Master_Test_Template():
         query_str = f'SELECT {values}{condition_str} FROM {self.get_table_name()} ' + ('WHERE ' + where_clause if where_clause else '')
         self.evaluate_query(name, query=query_str)
     def register_test_failure(self, name, reason, conditions=None, query=None):
+        '''Submit a result for a test that is considered a FAIL so the test, regardless of other data submitted, will result in a FAIL overall.'''
         self._test_results._register_test_failure(name=name, reason=reason, conditions=conditions, query=query)
+    def evaluate_test_conditions(self, name, expected_conditions= '', report_conditions = [], where_clause=''):
+        select_string=expected_conditions
+        if report_conditions:
+            select_string += ', '
+            for more_channel_names in report_conditions:
+                select_string+=more_channel_names+', '
+            select_string = select_string[:-2]
+        query = f"SELECT {select_string} FROM {self.get_table_name()}"
+        if where_clause:
+            query+=f"WHERE {where_clause}"
+        results = self.get_database().query(query).fetchall()
+        for row in results:
+            for excon in expected_conditions:
+                if row[excon] != 1:
+                    reported_condition = []
+                    for recon in report_conditions:
+                        reported_condition.append(row[tecon])
+                    self.register_test_failure(name=name, reason=f"Channel {excon} was found to be {row[excon]}.", conditions=reported_condition)
+        
     def correlate_data(self, name, reference_values=[], test_values=[], spec=None, conditions=None):
         '''Compares test values to reference values and compare the output to the limits of the named test.
         args:
