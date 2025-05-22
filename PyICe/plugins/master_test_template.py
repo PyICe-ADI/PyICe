@@ -114,6 +114,8 @@ class Master_Test_Template():
             condition_str += f",{condition}"
         query_str = f'SELECT {values}{condition_str} FROM {self.get_table_name()} ' + ('WHERE ' + where_clause if where_clause else '')
         self.evaluate_query(name, query=query_str)
+    def register_test_failure(self, name, reason, conditions=None, query=None):
+        self._test_results._register_test_failure(name=name, reason=reason, conditions=conditions, query=query)
     def correlate_data(self, name, reference_values=[], test_values=[], spec=None, conditions=None):
         '''Compares test values to reference values and compare the output to the limits of the named test.
         args:
