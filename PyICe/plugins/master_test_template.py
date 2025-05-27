@@ -114,6 +114,35 @@ class Master_Test_Template():
             condition_str += f",{condition}"
         query_str = f'SELECT {values}{condition_str} FROM {self.get_table_name()} ' + ('WHERE ' + where_clause if where_clause else '')
         self.evaluate_query(name, query=query_str)
+    def register_test_failure(self, name, reason, conditions=None, query=None):
+        '''Submit a result for a test that is considered a FAIL so the test, regardless of other data submitted, will result in a FAIL overall.'''
+        self._test_results._register_test_failure(name=name, reason=reason, conditions=conditions, query=query)
+    def evaluate_test_conditions(self, name, expected_conditions= '', report_conditions = [], where_clause=''):
+        '''This queries the test's database and checks that the string provided in expected_conditions returns only True values. If a False is returned, a FAIL result is added to the provided test's submitted data.
+            name - string. The name of the test that will fail if the expected conditions are not met.
+            expected_conditions - string. A string that will be added to the SELECT portion of a sqlite query. Should return boolean statements, e.g. vout2 == 3, imaina_force < 5, etc.
+            report_conditions - list of strings. Column names of the database whose values will be included in the FAIL result.
+            where_clause - string. Portion of a sqlite query that goes after WHERE, limiting what rows the database is considering the expected conditions in.'''
+        select_string=expected_conditions
+        if report_conditions:
+            select_string += ', '
+            for more_channel_names in report_conditions:
+                select_string+=more_channel_names+', '
+            select_string = select_string[:-2]
+        query = f"SELECT {select_string} FROM {self.get_table_name()}"
+        if where_clause:
+            query+=f"WHERE {where_clause}"
+        results = self.get_database().query(query).fetchall()
+        for row in results:
+            for excon in row.keys():
+                if excon in report_conditions:
+                    continue
+                if row[excon] != 1:
+                    reported_condition = []
+                    for recon in report_conditions:
+                        reported_condition.append(row[recon])
+                    self.register_test_failure(name=name, reason=f"Channel {excon} was found to be False. ", conditions=reported_condition)
+        
     def correlate_data(self, name, reference_values=[], test_values=[], spec=None, conditions=None):
         '''Compares test values to reference values and compare the output to the limits of the named test.
         args:
