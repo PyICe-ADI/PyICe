@@ -200,13 +200,15 @@ class Test_Results(generic_results):
             assert isinstance(other, type(self))
             assert self.test_name == other.test_name
             assert self.conditions == other.conditions
-            assert self.query == other.query, f"ERROR {self.test_name} grouping mismatch. Grouped results have unexpectedly disparate SQL queries. Consider adding conditions by selecting addtional columns or by keyword argument. If you think you've received this message in error, contact support." 
+            assert self.query == other.query, f"ERROR {self.test_name} grouping mismatch. Grouped results have unexpectedly disparate SQL queries. Consider adding conditions by selecting addtional columns or by keyword argument. If you think you've received this message in error, contact support."
+            if other.failure_reason not in self.failure_reason:
+                self.failure_reason =f'{self.failure_reason}{other.failure_reason}'
             return type(self)(test_name=self.test_name,
                               conditions=self.conditions,
                               min_data=none_min(self.min_data, other.min_data), #None creeps in from register_test_failure()
                               max_data=none_max(self.max_data, other.max_data), #None creeps in from register_test_failure()
                               passes=self.passes and other.passes,
-                              failure_reason=f'{self.failure_reason}{other.failure_reason}', #TODO cleanup format
+                              failure_reason=self.failure_reason,
                               collected_data=self.collected_data + other.collected_data,
                               plot=self.plot + other.plot,
                               query=self.query
