@@ -131,7 +131,7 @@ class Master_Test_Template():
             select_string = select_string[:-2]
         query = f"SELECT {select_string} FROM {self.get_table_name()}"
         if where_clause:
-            query+=f"WHERE {where_clause}"
+            query+=f" WHERE {where_clause}"
         results = self.get_database().query(query).fetchall()
         for row in results:
             for excon in row.keys():
