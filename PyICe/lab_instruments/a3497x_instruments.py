@@ -221,6 +221,17 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
         self._configure_channel_autozero(new_channel, disable_autozero)
         new_channel.set_description(self.get_name() + ': ' + self.add_channel_thermocouple.__doc__)
         return new_channel
+    def add_channel_rtd(self,channel_name,channel_num,rtd_type=85,ptype=4,nom_res=100,NPLC=1,disable_autozero=True):
+        '''Shortcut method to add rtd measurement channel and configure in one step.'''
+        new_channel = self.add_channel(channel_name,channel_num)
+        new_channel.set_attribute('34970_type','RTD')
+        new_channel.set_display_format_function(function = lambda float_data: eng_string(float_data, fmt=':3.6g',si=True) + '°C')
+        internal_address = new_channel.get_attribute('internal_address')
+        self._config_rtd(internal_address,rtd_type, ptype,nom_res)
+        self._configure_channel_nplc(new_channel,NPLC)
+        self._configure_channel_autozero(new_channel, disable_autozero)
+        new_channel.set_description(self.get_name() + ': ' + self.add_channel_rtd.__doc__)
+        return new_channel
     def _set_impedance_10GOhm(self, channel, high_z=True):
         '''set channel impedance to >1GOhm if high_z is True and voltage range allows, otherwise 10M
             impedance always 10M if argument is false'''
@@ -244,6 +255,17 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
         if thermocouple_type.upper() not in ['J','K','T']:
             raise Exception('Invalid thermocouple type, valid types are J,K,T')
         self.get_interface().write(f"CONFigure:TEMPerature TCouple,{thermocouple_type.upper()},(@{internal_address})")
+    def _config_rtd(self,internal_address,rtd_type, ptype, nom_res):
+        if rtd_type not in [85,91]:
+            raise Exception('Invalid RTD type. Acceptable values are 85 and 91')
+        if ptype == 4:
+            self.get_interface().write(f"CONFigure:TEMPerature FRTD,{rtd_type}, (@{internal_address})")
+            self.get_interface().write(f"SENS:TEMP:TRAN:FRTD:RES {nom_res},(@{internal_address})")
+        elif ptype ==2:
+            self.get_interface().write(f"CONFigure:TEMPerature RTD,{rtd_type}, (@{internal_address})")
+            self.get_interface().write(f"SENS:TEMP:TRAN:RTD:RES {nom_res},(@{internal_address})")
+        else:
+            raise Exception('Invalid probe type. Acceptable values are 2 for two wire and 4 for four wire')
     def _config_channel_delay(self,channel,delay):
         '''Delay specified number of seconds between closing relay and starting DMM measurement for channel.'''
         internal_address = channel.get_attribute('internal_address')
@@ -290,6 +312,8 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
         elif channel_type == 'current_dc':
             self.get_interface().write(f"CURRent:DC:NPLC {nplc},(@{internal_address})")
         elif channel_type == 'thermocouple':
+            self.get_interface().write(f"SENSe:TEMPerature:NPLC {nplc},(@{internal_address})")
+        elif channel_type == 'RTD':
             self.get_interface().write(f"SENSe:TEMPerature:NPLC {nplc},(@{internal_address})")
         else:
             raise Exception('Unkown 34970_type, cannot set NPLC for this type of channel')
