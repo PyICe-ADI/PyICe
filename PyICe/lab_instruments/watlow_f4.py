@@ -8,6 +8,7 @@ class watlow_f4(temperature_chamber, modbus_instrument):
         rd('PV1', 100, readable=True, writeable=False, signed=True),
         rd('heat_power', 103, readable=True, writeable=False, number_of_decimals=2, signed=True),
         rd('cool_power', 107, readable=True, writeable=False, number_of_decimals=2, signed=True),
+        #606 Decimal Point, Analog Input 1
         #308 Idle Set Point, Channel 1, Power Out Action
         #1206 Power-Out Action
         #2072 Power On
@@ -21,6 +22,8 @@ class watlow_f4(temperature_chamber, modbus_instrument):
                                    modbus_address=modbus_address,
                                    baudrate=baudrate,
                                    mode='rtu') #second to preserve self._interfaces
+        type(self).REGISTERS[0] = type(self).REGISTERS[0]._replace(number_of_decimals=self.read_register(606))
+        type(self).REGISTERS[1] = type(self).REGISTERS[1]._replace(number_of_decimals=self.read_register(606))
         self.add_registers(type(self).REGISTERS)
         self._sv = self['SV1']
         self._pv = self['PV1']
