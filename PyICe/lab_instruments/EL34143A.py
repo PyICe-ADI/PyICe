@@ -21,7 +21,7 @@ class EL34143A(scpi_instrument):
         '''Sortcut function adds CC force channel.
         if add_extended_channels, additionally add _isense,_vsense,_psense,_mode readback channels
         Add CV,CW,CR,remote_sense channels separately if you need them.'''
-        ch = self.add_channel_current(channel_name)
+        ch = self.add_channel_current(channel_name, curr_range=set_range)
         ch.set_description(self.get_name() + ': ' + self.add_channel.__doc__)
         if add_extended_channels:
             self.add_channel_isense(channel_name + '_isense')
@@ -180,7 +180,7 @@ class EL34143A(scpi_instrument):
             new_range = self._find_voltage_range(voltage)
             if not self.volt_ranges[new_range][0] <= float(self.GetCVVoltage()) <= self.volt_ranges[new_range][1]:
                 self.SetCVVoltage(0.015)
-            self.SetMaxVoltage(self.volt_ranges[self.volt_range][1])
+            self.SetMaxVoltage(self.volt_ranges[new_range][1])
         elif self.volt_range in ['MIN','MAX']:
             self.SetMaxVoltage(self.volt_ranges[self.volt_range][1])
         self.SetCVVoltage(voltage)
@@ -201,7 +201,7 @@ class EL34143A(scpi_instrument):
             new_range = self._find_power_range(power)
             if not self.pow_ranges[new_range][0] <= float(self.GetCWPower()) <= self.pow_ranges[new_range][1]:
                 self.SetCWPower(0.015)
-            self.SetMaxPower(self.pow_ranges[self.pow_range][1])
+            self.SetMaxPower(self.pow_ranges[new_range][1])
         elif self.pow_range in ['MIN', 'MED', 'MAX']:
             self.get_interface().write(f'POW:RANG {self.pow_range}')
         self.SetCWPower(power)
