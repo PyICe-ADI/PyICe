@@ -43,7 +43,7 @@ class Plugin_Manager():
             except Exception as e:
                 print_banner("*** PLUGIN MANAGER WARNING ****", "", "You elected to use the 'Notifications' Plugin.", "Unable to import cairosvg's Python package or compiled dll.", "Try installing the Glade/Gtk+ for Windows development environment.", "Otherwise suggest you opt out of the 'Notifications' plugin.", "Write to pyice-developers@analog.com for more information.", "", "*** Expect a crash when generating plots ****", "")
 
-    def add_test(self, test, debug=False, skip_plot=False, skip_eval=False):
+    def add_test(self, test, debug=False, skip_plot=False, skip_eval=False, archive_desitinations=[]):
         '''Adds a script to the list that will be operated on. If this is the first time a test is added to this instance of plugin manager, plugin manager also takes this opportunity to acquire the list of plugins used for the project.
         args: test - class object. A test that contains the methods necessary for data collection and processing in the project.
         args: debug - Boolean. This will be passed into all run tests to be used for abbreviating data collection loops. Default value is False.'''
@@ -56,6 +56,7 @@ class Plugin_Manager():
         a_test.verbose = self.verbose
         a_test._skip_plot=skip_plot
         a_test._skip_eval=skip_eval
+        a_test._archive_desinations=archive_desitinations
         (a_test._module_path, file) = os.path.split(inspect.getsourcefile(type(a_test)))
         a_test._name = a_test._module_path.split(os.sep)[-1]
         os.makedirs(os.path.join(a_test._module_path,self.scratch_folder), exist_ok=True)
@@ -501,16 +502,18 @@ class Plugin_Manager():
                 this_archive_folder = archive_folder + '__CRASHED'
             else:
                 this_archive_folder = archive_folder
-            db_dest_file = archiver.compute_db_destination(this_archive_folder)
+            default_db_dest_file = archiver.compute_db_destination(this_archive_folder)
+            test._archive_desinations.append(default_db_dest_file)
             archived_table_name = test.get_name()
             if test._is_crashed:
                 archived_table_name+='__CRASHED'
-            archiver.copy_table(db_source_table=test.get_name(), db_dest_table=archived_table_name, db_dest_file=db_dest_file)
-            test._logger.copy_table(old_table=test.get_name(), new_table=archived_table_name+'_'+archive_folder)
-            if 'traceability' in self.plugins:
-                archiver.copy_table(db_source_table=test.get_name()+'_metadata', db_dest_table=test.get_name()+'_metadata', db_dest_file=db_dest_file)
-                test._logger.copy_table(old_table=test.get_name()+'_metadata', new_table=test.get_name()+'_'+archive_folder+'_metadata')
-            archived_tables.append((test, archived_table_name, db_dest_file))
+            for db_dest_file in test._archive_desinations:
+                archiver.copy_table(db_source_table=test.get_name(), db_dest_table=archived_table_name, db_dest_file=db_dest_file)
+                test._logger.copy_table(old_table=test.get_name(), new_table=archived_table_name+'_'+archive_folder)
+                if 'traceability' in self.plugins:
+                    archiver.copy_table(db_source_table=test.get_name()+'_metadata', db_dest_table=test.get_name()+'_metadata', db_dest_file=db_dest_file)
+                    test._logger.copy_table(old_table=test.get_name()+'_metadata', new_table=test.get_name()+'_'+archive_folder+'_metadata')
+                archived_tables.append((test, archived_table_name, db_dest_file))
         if len(archived_tables):
             arch_plot_scripts = []
             for (test, db_table, db_file) in archived_tables:
