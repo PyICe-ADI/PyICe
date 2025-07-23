@@ -35,7 +35,7 @@ class EL34143A(scpi_instrument):
         new_channel.set_description(self.get_name() + ': ' + self.add_channel_current.__doc__)
         self.forcing_channels["CURR"].append(new_channel)
         self._add_channel(new_channel)
-        self._add_channel_curr_range(f"{channel_name}_range", curr_range)
+        self._add_channel_curr_range(channel_name, curr_range)
         new_channel.set_write_delay(0.4)
         new_channel.set_write_resolution(decimal_digits=3) #1mA
         new_channel.write(0)
@@ -47,7 +47,7 @@ class EL34143A(scpi_instrument):
         new_channel.add_preset("MIN",    "Range 0.0002A to 0.612A")
         new_channel.add_preset("MED",    "Range 0.002A to 6.12A")
         new_channel.add_preset("MAX",    "Range 0.012A to 61.2A")
-        new_channel.add_preset("AUTO",   "Determine appropriate range every time.")
+        new_channel.add_preset("AUTO",   "Determine appropriate range when necessary.")
         new_channel.write(curr_range)
         self.curr_range = curr_range
         return self._add_channel(new_channel)
@@ -102,7 +102,7 @@ class EL34143A(scpi_instrument):
         new_channel.set_description(self.get_name() + ': ' + self._add_channel_volt_range.__doc__)
         new_channel.add_preset("MIN",    "Range 0.003V to 15.3V")
         new_channel.add_preset("MAX",    "Range 0.015V to 153V")
-        new_channel.add_preset("AUTO",   "Determine appropriate range every time.")
+        new_channel.add_preset("AUTO",   "Determine appropriate range when necessary.")
         new_channel.write(volt_range)
         return self._add_channel(new_channel)
     def add_channel_power(self,channel_name, pow_range='AUTO'):
@@ -122,7 +122,7 @@ class EL34143A(scpi_instrument):
         new_channel.add_preset("MIN",    "Range 0.01W to 8.16W")
         new_channel.add_preset("MED",    "Range 0.3W to 35.7W")
         new_channel.add_preset("MAX",    "Range 2W to 357W")
-        new_channel.add_preset("AUTO",   "Determine appropriate range every time.")
+        new_channel.add_preset("AUTO",   "Determine appropriate range when necessary.")
         new_channel.write(pow_range)
         return self._add_channel(new_channel)
     def add_channel_resistance(self,channel_name):
@@ -141,7 +141,7 @@ class EL34143A(scpi_instrument):
         new_channel.add_preset("MIN",    "Range 0.05Ω to 30Ω")
         new_channel.add_preset("MED",    "Range 10Ω to 1.25kΩ")
         new_channel.add_preset("MAX",    "Range 100Ω to 4kΩ")
-        new_channel.add_preset("AUTO",   "Determine appropriate range every time.")
+        new_channel.add_preset("AUTO",   "Determine appropriate range when necessary.")
         new_channel.write(res_range)
         return self._add_channel(new_channel)
 
@@ -157,15 +157,17 @@ class EL34143A(scpi_instrument):
             self.SetRemoteControl() #just in case somebody pushed front panel "Local" button
             self.TurnLoadOn() # Because it could be off
         if self.curr_range == 'AUTO':
-            new_range = self._find_current_range(current)
-            if not self.curr_ranges[new_range][0] <= float(self.GetCCCurrent()) <= self.curr_ranges[new_range][1]:
-                self.SetCCCurrent(0.012)       # A value held by all ranges.
-            self.SetMaxCurrent(self.curr_ranges[new_range][1])
+            present_range = self._find_current_range(float(self.GetCCCurrent()))
+            if not self.curr_ranges[present_range][0] <= current <= self.curr_ranges[present_range][1]:                  ### Only change the range if necessary
+                new_range = self._find_current_range(current)
+                self.get_interface().write(f'CURR:RANG {new_range};CURR {current}')     ### Sending both range and value simultaneously SHOULD bypass conflicts.
+            else:
+                self.SetCCCurrent(current)
         elif self.curr_range in ['MIN','MED','MAX']:
             self.SetMaxCurrent(self.curr_ranges[self.curr_range][1])
-        self.SetCCCurrent(current)
+            self.SetCCCurrent(current)
         if float(self.GetCCCurrent()) != current:
-            print(f"WARNING! Failed to set the current to {current}A.\n{self.errors()}")
+            print(f"WARNING! Failed to set the current to {current}A.\n{self.error()}")
     def _SetCVVoltage(self, voltage):
         if voltage is None and self.GetMode() == 'VOLT':
             return self.TurnLoadOff()
@@ -177,15 +179,17 @@ class EL34143A(scpi_instrument):
         self.SetRemoteControl() #just in case somebody pushed front panel "Local" button
         self.TurnLoadOn() # Because it could be off
         if self.volt_range == 'AUTO':
-            new_range = self._find_voltage_range(voltage)
-            if not self.volt_ranges[new_range][0] <= float(self.GetCVVoltage()) <= self.volt_ranges[new_range][1]:
-                self.SetCVVoltage(0.015)
-            self.SetMaxVoltage(self.volt_ranges[new_range][1])
+            present_range = self._find_voltage_range(float(self.GetCVVoltage()))
+            if not self.volt_ranges[present_range][0] <= voltage <= self.volt_ranges[present_range][1]:                  ### Only change the range if necessary
+                new_range = self._find_voltage_range(voltage)
+                if not self.volt_ranges[new_range][0] <= float(self.GetCVVoltage()) <= self.volt_ranges[new_range][1]:   ### Only step the voltage if necessary
+                    self.SetCVVoltage(0.015)
+                self.SetMaxVoltage(self.volt_ranges[new_range][1])
         elif self.volt_range in ['MIN','MAX']:
             self.SetMaxVoltage(self.volt_ranges[self.volt_range][1])
         self.SetCVVoltage(voltage)
         if float(self.GetCVVoltage()) != voltage:
-            print(f"WARNING! Failed to set the voltage to {voltage}V.\n{self.errors()}")
+            print(f"WARNING! Failed to set the voltage to {voltage}V.\n{self.error()}")
     def _SetCWPower(self, power):
         if power is None and self.GetMode() == 'POW':
             return self.TurnLoadOff()
@@ -198,10 +202,12 @@ class EL34143A(scpi_instrument):
             self.SetRemoteControl() #just in case somebody pushed front panel "Local" button
             self.TurnLoadOn() # Because it could be off
         if self.pow_range == 'AUTO':
-            new_range = self._find_power_range(power)
-            if not self.pow_ranges[new_range][0] <= float(self.GetCWPower()) <= self.pow_ranges[new_range][1]:
-                self.SetCWPower(0.015)
-            self.SetMaxPower(self.pow_ranges[new_range][1])
+            present_range = self._find_power_range(float(self.GetCWPower()))
+            if not self.pow_ranges[present_range][0] <= power <= self.pow_ranges[present_range][1]:                  ### Only change the range if necessary
+                new_range = self._find_power_range(power)
+                if not self.pow_ranges[new_range][0] <= float(self.GetCWPower()) <= self.pow_ranges[new_range][1]:   ### Only step the power if necessary
+                    self.SetCWPower(0.015)
+                self.SetMaxPower(self.pow_ranges[new_range][1])
         elif self.pow_range in ['MIN', 'MED', 'MAX']:
             self.get_interface().write(f'POW:RANG {self.pow_range}')
         self.SetCWPower(power)
