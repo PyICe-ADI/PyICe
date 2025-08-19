@@ -100,7 +100,7 @@ class Master_Test_Template():
         args:
             name - string. The name of the test whose limits will be used.
             database - SQLite database object. The first column will be compared to the limits of the named spec and the rest will be used for grouping.
-            limits - dictionary. A dictionary with the value limits to compare to the data obtained by the query. Must provide at least an upper or a lower limit as a key. If none are provided, the project's get_test_limits method will be used.'''
+            limits - dictionary. A dictionary with the value limits to compare to the data obtained by the query. Must provide at least an upper and a lower limit as keys. If the parameter is left empty, the project's get_test_limits method will be used.'''
         if len(limits) == 0:
             self._test_results.test_limits[name]=self.get_test_limits(name)
         elif 'upper_limit' in limits.keys() and 'lower_limit' in limits.keys():
@@ -113,7 +113,7 @@ class Master_Test_Template():
         '''This method evaluates a pre-massaged SQLite database, self.get_database(), from the user. It returns a bit of flexibility on the sequel query to the user.
         args:
             name - string. The name of the test whose limits will be used.
-            limits - dictionary. A dictionary with the value limits to compare to the data obtained from the database. Must provide at least an upper or a lower limit as a key. If none are provided, the project's get_test_limits method will be used.'''
+            limits - dictionary. A dictionary with the value limits to compare to the data obtained from the database. Must provide at least an upper and a lower limit as keys. If the parameter is left empty, the project's get_test_limits method will be used.'''
         if len(limits) == 0:
             self._test_results.test_limits[name]=self.get_test_limits(name)
         elif 'upper_limit' in limits.keys() and 'lower_limit' in limits.keys():
@@ -127,7 +127,7 @@ class Master_Test_Template():
             name - string. The name of the test with limits to be used.
             value_column - string. The name of the channel that will be evaluated.
             grouping_columns - list. The values of the value_column will be grouped and evaluated by the permutations of the channels that are named in this list of strings.
-            limits - dictionary. A dictionary with the value limits to compare to the data obtained from the database. Must provide at least an upper or a lower limit as a key. If none are provided, the project's get_test_limits method will be used.'''
+            limits - dictionary. A dictionary with the value limits to compare to the data obtained from the database. Must provide at least an upper and a lower limit as keys. If the parameter is left empty, the project's get_test_limits method will be used.'''
         condition_str = ''
         for condition in conditions:
             condition_str += f",{condition}"
@@ -169,7 +169,8 @@ class Master_Test_Template():
             reference_values - iterable. The base values to which test values will be compared.
             test_values - iterable. The object values whose distance to the reference value will be calculated.
             spec - string. Either '%' or '-'. Determines whether the comparison is made by percentage or by difference.
-            conditions - None or dictionary. A dictionary with channel names as keys and channel values as values. Used to report under what circumstances the data was taken. Default is None.'''
+            conditions - None or dictionary. A dictionary with channel names as keys and channel values as values. Used to report under what circumstances the data was taken. Default is None.
+            limits - dictionary. A dictionary with the value limits to compare to the two data sets. Must provide at least an upper and a lower limit as keys. If the parameter is left empty, the project's get_test_limits method will be used.'''
         if len(limits) == 0:
             self._corr_results.test_limits[name]=self.get_test_limits(name)
         elif 'upper_limit' in limits.keys() or 'lower_limit' in limits.keys():
