@@ -119,7 +119,7 @@ class Master_Test_Template():
         elif 'upper_limit' in limits.keys() or 'lower_limit' in keys():
             self._test_results.test_limits[name]=limits
         else:
-            raise KeyError(f"The limits argument for evaluate_db requires an upper_limit and/or a lower_limit in its keys.\nFound {limits.keys()}."))
+            raise KeyError(f"The limits argument for evaluate_db requires an upper_limit and/or a lower_limit in its keys.\nFound {limits.keys()}.")
         self._test_results._evaluate_database(name=name, database=self.get_database())
     def evaluate(self, name, values, conditions=[], where_clause='', limits:dict={}):
         '''This compares submitted data from a SQLite database to a named test in a more outlined fashion.
