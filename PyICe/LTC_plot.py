@@ -726,22 +726,16 @@ class Page():
         graph = self.Figure.add_subplot(self.rows_x_cols[0], self.rows_x_cols[1], self.next_position)
         self.plot_list.append(plot)
         rows, columns = self.rows_x_cols
-        if plot_sizex is None:
-            plot_sizex = 11.0/6.0 # Graphs are exactly 11 pica which is 1/6 of an inch
-        else:
-            plot_sizex =  float(plot_sizex)
+        plot_sizex = 11.0/6.0 if plot_sizex == None else float(plot_sizex) # Graphs are exactly 11 pica which is 1/6 of an inch
         if plot_sizey is None:
-            if plot.plot_type == "scope_plot":
-                plot_sizey  = float(8.8/6.0) # Graphs are exactly 11x8.8 pica which make perfect squares on a 10x8 grid. Bob Reay's tool uses 8.6667 pica. Not sure why.
-            else:
-                plot_sizey = 11.0/6.0 # Graphs are exactly 11 pica which is 1/6 of an inch
+            plot_sizey = float(8.8/6.0) if plot.plot_type == "scope_plot" else 11.0/6.0
+            # Graphs are exactly 11x8.8 pica which make perfect squares on a 10x8 grid.
+            # Bob Reay's tool uses 8.6667 pica. Not sure why.
+            # Graphs are exactly 11 pica which is 1/6 of an inch
         else:
             plot_sizey = float(plot_sizey)
         if trace_width is None:
-            if plot.plot_type == "scope_plot":
-                trace_width = 0.6
-            else:
-                trace_width = 1.2
+            trace_width = 0.6 if plot.plot_type == "scope_plot" else 1.2
         left_border     =  float(left_border)
         right_border    =  float(right_border)
         top_border      =  float(top_border)
@@ -760,14 +754,15 @@ class Page():
         else:
             x_total = left_border + right_border + plot_sizex * columns + x_gap * (columns - 1)
             y_total = bottom_border + top_border + plot_sizey * rows + y_gap * (rows - 1)
-        left        = left_border / x_total
-        right       = (x_total - right_border) / x_total
-        bottom      = bottom_border / y_total
-        top         = (y_total - top_border) / y_total
-        hspace      = y_gap / plot_sizey # hspace and wspace are percentages of a plot scale
-        wspace      = x_gap / plot_sizex # for example, wspace = 1 makes gaps the size of the x dimension of a plot
+        # https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.subplots_adjust.html
+        left    = left_border / x_total                 # The position of the left edge of the subplots, as a fraction of the figure width.
+        right   = (x_total - right_border) / x_total    # The position of the right edge of the subplots, as a fraction of the figure width.
+        bottom  = bottom_border / y_total               # The position of the bottom edge of the subplots, as a fraction of the figure height.
+        top     = (y_total - top_border) / y_total      # The position of the top edge of the subplots, as a fraction of the figure height.
+        hspace  = y_gap / plot_sizey                    # The width of the padding between subplots, as a fraction of the average Axes width.
+        wspace  = x_gap / plot_sizex                    # The height of the padding between subplots, as a fraction of the average Axes height. For example, wspace = 1 makes gaps the size of the x dimension of a plot
         self.Figure.set_size_inches(x_total, y_total)
-        graph.figure.subplots_adjust(left = left, right = right, bottom = bottom, top = top, wspace = wspace, hspace = hspace)
+        graph.figure.subplots_adjust(left=left, right=right, bottom=bottom, top=top, wspace=wspace, hspace=hspace)
         graph.set_axisbelow(True) # Puts data in front of axes
         try:
             graph.set_title(plot.plot_title, fontsize = 9.5, fontweight = "bold", color = 'black', loc = "left")
@@ -1179,7 +1174,7 @@ class Multipage_pdf():
         for page in self.page_list:
             self.pdf_file.savefig(page.Figure)
         self.pdf_file.close()
-    def kit_datasheet(self, file_basename = "datasheet_kit"):
+    def kit_datasheet(self, file_basename="datasheet_kit"):
         filepath = 'datasheet_kit\\'
         try:
             os.makedirs('.\\plots\\' + filepath)
@@ -1192,7 +1187,7 @@ class Multipage_pdf():
                 DummyPage = Page(rows_x_cols = (1, 1))
                 DummyPage.add_plot(page.plot_list[plot])
                 DummyPage.create_svg(filepath + plot_name)
-        self.create_pdf("\\datasheet_kit\\PDFView")
+        self.create_pdf(file_basename, "\\datasheet_kit\\PDFView")
         shutil.make_archive('.\\plots\\{}'.format(file_basename), 'zip', '.\\plots\\' + filepath)
         shutil.rmtree('.\\plots\\datasheet_kit')
         print("\nWrote file: {}.zip\n".format(file_basename))
