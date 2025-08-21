@@ -458,24 +458,63 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
         ''''''
         channel_number = 1
         def _single_abort_trigger_wait(run_mode):
+            '''
+            channels.write function for the {ENA}_trigger_mode channel.
+            
+            Configures the ENA to run a continuous measurement sweep or
+            triggers a single measurement sweep.
+            
+            When triggering a single sweep, this function will wait and
+            poll a bitfield in the ENA that indicates if a measurement
+            is active or not until the measurement is no longer active.
+            
+            When setting the ENA to continuous sweep, the ENA will be
+            set to continuous sweep mode, and this function will return
+            control of the program.
+            
+            This trigger code was derived from the examples in the ENA
+            user manual, "Starting a Measurement Cycle (Triggering the
+            Instrument)" and "Waiting for the End of Measurement", on
+            pages 613 and 614. However, in waiting for the end, the
+            recommendations are to form an SRQ or use the "*OPC?"
+            command. Both of these recommendations would use the
+            measurement status bit in the operation status condition
+            register, so the measurement status bit is polled in this
+            function instead. This is because the SRQ involves
+            unnecessary steps, and the OPC command is a blocking
+            command that will cause the instrument to time out in its
+            VISA communication.
+            
+            Args:
+                run_mode (string): Sets the sweep mode of the ENA, must 
+                    be "Single" or "Continuous".
+                
+            Raises:
+                Exception: If run_mode is not "Single" or "Continuous"
+            '''
+            if run_mode not in ['Single', 'Continuous']:
+                exception_str = f'ENA: Unknown trigger/run mode {run_mode}. Expected ' + \
+                    '"Single" or "Continuous".'
+                raise Exception(exception_str)
             if run_mode == 'Single':
                 self.get_interface().write(':ABORt')
-                self.get_interface().write(f':INITiate{channel_number}:CONTinuous OFF')
-            elif run_mode == 'Continuous':
-                self.get_interface().write(f':INITiate{channel_number}:CONTinuous ON')
+            self.get_interface().write(f':INITiate{channel_number}:CONTinuous ON')
+            if run_mode == 'Single':
+                expected_time = float(self.get_interface().ask(':SENSe:SWEep:TIME?'))
+                self.get_interface().write(f':TRIGger:SOURce BUS')
+                self.get_interface().write(f':TRIGger:SINGle')
+                datetime_now_str = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                print(f'{datetime_now_str} trigger time. Expected sweep time {expected_time}s.')
             else:
-                raise Exception(f'ENA: Unknown trigger/run mode {run_mode}. Expected "Single" or "Continuous"')
-            expected_time = float(self.get_interface().ask(':SENSe:SWEep:TIME?'))
-            self.get_interface().write(f':INITiate{channel_number}:IMMediate') #probably not right now that we have trigger source controls coming....
-            print(f'{datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")} trigger time. Expected sweep time {expected_time}s.')
-            if run_mode == 'Continuous':
+                self.get_interface().write(f':TRIGger:SOURce INTernal')
+                print('ENA Continuous sweep activated.')
                 return
-            status = int(self.get_interface().ask(':STATus:OPERation:CONDition?'))
+            status = True
             while status:
                 time.sleep(0.1) #?!?
-                status = int(self.get_interface().ask(':STATus:OPERation:CONDition?'))
+                status_register = int(self.get_interface().ask(':STATus:OPERation:CONDition?'))
+                status = (status_register & int('00010000')) >> 4 # Bitmask 'Measurement' bit
                 # print(f'Waiting for status 0 (idle). Got {status} ({type(status)})')
-
         def _single_write_cb(ch, v):
             # print(f'{ch.get_name()} writtent to {v}')
             if v == 'Single':
