@@ -81,27 +81,45 @@ class Master_Test_Template():
         '''Optional evaluate_results method placeholder'''
     def correlate_results(self):
         '''Optional correlate_results method placeholder'''
+    def set_test_declarations(self, name:str, decl:dict={}):
+        '''Optional means to manually set declarations apart from the evaluation methods.'''
+        established_declarations = self._test_results.test_limits
+        if decl = {}:
+            if name not in established_declarations.keys():
+                established_declarations[name]=self.get_test_limits(name)
+            else:
+                assert established_declarations[name]==self.get_test_limits(name), f"***Master Test Template Error*** Trying to change {name}'s declarations from {established_declarations[name]} to {self.get_test_limits(name)}"
+        elif 'upper_limit' not in decl or 'lower_limit' not in decl:
+            raise Exception(f"Declarations must include at least an upper and a lower limit. Received {decl}")
+        else:
+            if name not in established_declarations.keys():
+                established_declarations[name]=decl
+            else:
+                assert established_declarations[name]==decl, f"***Master Test Template Error*** Trying to change {name}'s declarations from {established_declarations[name]} to {decl}"
     def evaluate_rawdata(self, name, data, conditions=None):
         '''This will compare submitted data to limits for the named test.
         args:
             name - string. The name of the test whose limits will be used.
             data - Boolean or iterable object. Each value will be compared to the limits (or boolean value) of the name argument.
             conditions - None or dictionary. A dictionary with channel names as keys and channel values as values. Used to report under what circumstances the data was taken. Default is None.'''
-        self._test_results.test_limits[name]=self.get_test_limits(name)
+        if name not in self._test_results.test_limits.keys():
+            self.set_test_declarations(name)
         self._test_results._evaluate_list(name=name, iter_data=data, conditions=conditions)
     def evaluate_query(self, name, query):
         '''This will compare submitted data to limits for the named test.
         args:
             name - string. The name of the test whose limits will be used.
             database - SQLite database object. The first column will be compared to the limits of the named spec and the rest will be used for grouping.'''
-        self._test_results.test_limits[name]=self.get_test_limits(name)
+        if name not in self._test_results.test_limits.keys():
+            self.set_test_declarations(name)
         self.get_database().query(query)
         self._test_results._evaluate_database(name=name, database=self.get_database())
     def evaluate_db(self, name):
         '''This method evaluates a pre-massaged SQLite database, self.get_database(), from the user. It returns a bit of flexibility on the sequel query to the user.
         args:
             name - string. The name of the test whose limits will be used.'''
-        self._test_results.test_limits[name]=self.get_test_limits(name)
+        if name not in self._test_results.test_limits.keys():
+            self.set_test_declarations(name)
         self._test_results._evaluate_database(name=name, database=self.get_database())
     def evaluate(self, name, values, conditions=[], where_clause=''):
         '''This compares submitted data from a SQLite database to a named test in a more outlined fashion.
