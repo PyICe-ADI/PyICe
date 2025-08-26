@@ -155,7 +155,6 @@ class EL34143A(scpi_instrument):
             return self.TurnLoadOff() # Don't trust setting of 0 to not drop out load.
         else:
             self.SetRemoteControl() #just in case somebody pushed front panel "Local" button
-            self.TurnLoadOn() # Because it could be off
         if self.curr_range == 'AUTO':
             present_range = self._find_current_range(float(self.GetCCCurrent()))
             if not self.curr_ranges[present_range][0] <= current <= self.curr_ranges[present_range][1]:                  ### Only change the range if necessary
@@ -166,6 +165,7 @@ class EL34143A(scpi_instrument):
         elif self.curr_range in ['MIN','MED','MAX']:
             self.SetMaxCurrent(self.curr_ranges[self.curr_range][1])
             self.SetCCCurrent(current)
+        self.TurnLoadOn() # Because it could be off
         if float(self.GetCCCurrent()) != current:
             print(f"WARNING! Failed to set the current to {current}A.\n{self.error()}")
     def _SetCVVoltage(self, voltage):
@@ -177,7 +177,7 @@ class EL34143A(scpi_instrument):
         if voltage == 0:
             return self.TurnLoadOff() # Don't trust setting of 0 to not drop out load.
         self.SetRemoteControl() #just in case somebody pushed front panel "Local" button
-        self.TurnLoadOn() # Because it could be off
+        
         if self.volt_range == 'AUTO':
             present_range = self._find_voltage_range(float(self.GetCVVoltage()))
             if not self.volt_ranges[present_range][0] <= voltage <= self.volt_ranges[present_range][1]:                  ### Only change the range if necessary
@@ -188,6 +188,7 @@ class EL34143A(scpi_instrument):
         elif self.volt_range in ['MIN','MAX']:
             self.SetMaxVoltage(self.volt_ranges[self.volt_range][1])
         self.SetCVVoltage(voltage)
+        self.TurnLoadOn() # Because it could be off
         if float(self.GetCVVoltage()) != voltage:
             print(f"WARNING! Failed to set the voltage to {voltage}V.\n{self.error()}")
     def _SetCWPower(self, power):
@@ -200,7 +201,6 @@ class EL34143A(scpi_instrument):
             self.TurnLoadOff()
         else:
             self.SetRemoteControl() #just in case somebody pushed front panel "Local" button
-            self.TurnLoadOn() # Because it could be off
         if self.pow_range == 'AUTO':
             present_range = self._find_power_range(float(self.GetCWPower()))
             if not self.pow_ranges[present_range][0] <= power <= self.pow_ranges[present_range][1]:                  ### Only change the range if necessary
@@ -211,6 +211,7 @@ class EL34143A(scpi_instrument):
         elif self.pow_range in ['MIN', 'MED', 'MAX']:
             self.get_interface().write(f'POW:RANG {self.pow_range}')
         self.SetCWPower(power)
+        self.TurnLoadOn() # Because it could be off
     def _SetCRResistance(self, resistance):
         if resistance is None:
             return
@@ -219,12 +220,12 @@ class EL34143A(scpi_instrument):
             self.TurnLoadOff()
         else:
             self.SetRemoteControl() #just in case somebody pushed front panel "Local" button
-            self.TurnLoadOn() # Because it could be off
         if self.res_range == 'AUTO':
             self.get_interface().write(f'RES:RANG {resistance}')
         elif self.res_range in ['MIN', 'MED', 'MAX']:
             self.get_interface().write(f'RES:RANG {self.res_range}')
         self.SetCRResistance(resistance)
+        self.TurnLoadOn() # Because it could be off
 
 
     def TurnLoadOn(self):
