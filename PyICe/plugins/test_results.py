@@ -166,11 +166,13 @@ class generic_results():
 class Test_Results(generic_results):
     class _test_result(collections.namedtuple('test_result', ['test_name', 'conditions', 'min_data', 'max_data', 'passes', 'failure_reason', 'collected_data', 'plot', 'query'])):
         '''add some helper moethods for easy summary'''
-        def __new__(cls, **kwargs):
-            '''fix (allowed) missing fields. FOr instance, original JSON didn't retain SQL query string.'''
+        def __new__(cls, outerclass, **kwargs):
+            '''fix (allowed) missing fields. For instance, original JSON didn't retain SQL query string.'''
             if 'query' not in kwargs:
                 kwargs['query'] = None
             return super().__new__(cls, **kwargs)
+        def __init__(self, outerclass, **kwargs):
+            self.outerclass = outerclass
         def __bool__(self):
             return bool(self.passes)
         def _min(self):
@@ -183,7 +185,7 @@ class Test_Results(generic_results):
             return max(self.collected_data)
         def __str__(self):
             summary_str = ''
-            summary_str += f'{self.conditions}\tTRIALS:{len(self)}\tVERDICT:{"PASS" if self else "FAIL"}\n'.expandtabs()
+            summary_str += f'{self.padded_str(self.conditions)}\tTRIALS:{len(self)}\tVERDICT:{"PASS" if self else "FAIL"}\n'.expandtabs()
             min = self._min()
             if self.failure_reason != '':
                 summary_str += f'\tFORCED_FAIL: {self.failure_reason}\n'
@@ -204,7 +206,9 @@ class Test_Results(generic_results):
             failure_report = self.failure_reason
             if other.failure_reason not in self.failure_reason:
                 failure_report = f'{self.failure_reason}{other.failure_reason}'
-            return type(self)(test_name=self.test_name,
+            return type(self)(
+                              outerclass = self.outerclass,
+                              test_name=self.test_name,
                               conditions=self.conditions,
                               min_data=none_min(self.min_data, other.min_data), #None creeps in from register_test_failure()
                               max_data=none_max(self.max_data, other.max_data), #None creeps in from register_test_failure()
@@ -214,6 +218,9 @@ class Test_Results(generic_results):
                               plot=self.plot + other.plot,
                               query=self.query
                              )
+        def padded_str(self, conditions):
+            return str(conditions).ljust(self.outerclass.max_con_len)
+
     class _test_results_list(list):
         '''add some helper methods for easy filtering and summary'''
         def __init__(self, name, upper_limit, lower_limit, override):
@@ -283,6 +290,7 @@ class Test_Results(generic_results):
         self._init(name, module)
         self._test_declarations = []
         self.test_limits = {}
+        self.max_con_len = 0
     def json_report(self):
         return self._json_report(declarations=self._test_declarations, results=self._test_results, ate_results=self._ate_results)
     def get_test_declarations(self):
@@ -311,10 +319,14 @@ class Test_Results(generic_results):
         return self._test_results[key]
 
     def _register_test_failure(self, name, reason, conditions, query=None):
+        if conditions:
+            self.max_con_len = max([len(str(conditions)),self.max_con_len])
         if name not in self._test_declarations:
             self._test_declarations.append(name)
             self._test_results[name] = self._test_results_list(name=name, upper_limit=self.test_limits[name]['upper_limit'], lower_limit=self.test_limits[name]['lower_limit'], override=self._failure_override)
-        failure_result = self._test_result(test_name=name,
+        failure_result = self._test_result(
+                                           outerclass=self,
+                                           test_name=name,
                                            conditions=conditions,
                                            min_data=None,
                                            max_data=None,
@@ -342,6 +354,7 @@ class Test_Results(generic_results):
         rowcount = len(database)
         match_count = 0
         for condition in distincts:
+            self.max_con_len = max([len(str(condition._asdict())),self.max_con_len])
             data = [row[0] for row in database if freeze(row[1:]) == condition]
             self._evaluate_list(name=name, iter_data=data, conditions=condition._asdict() if len(conditions_columns) else None, query=query) #todo, consider reimplementing __str__ instead of dict conversion.
             match_count += len(data)
@@ -350,6 +363,8 @@ class Test_Results(generic_results):
         if name not in self._test_declarations:
             self._test_declarations.append(name)
             self._test_results[name] = self._test_results_list(name=name, upper_limit=self.test_limits[name]['upper_limit'], lower_limit=self.test_limits[name]['lower_limit'], override=self._failure_override)
+        if conditions:
+            self.max_con_len = max([len(str(conditions)),self.max_con_len])
         #############################################################
         # TODO deal with functional test pass/fail non-numeric data #
         #############################################################
@@ -384,7 +399,9 @@ class Test_Results(generic_results):
                                       )
         min_data = min(iter_data)
         max_data = max(iter_data)
-        new_result_record = self._test_result(test_name=name,
+        new_result_record = self._test_result(
+                                              outerclass=self,
+                                              test_name=name,
                                               conditions=conditions,
                                               min_data=min_data,
                                               max_data=max_data,
@@ -398,6 +415,8 @@ class Test_Results(generic_results):
         return new_result_record
 
     def _correlate_results(self, name, reference_values=[], test_values=[], spec=None, conditions=None):
+        if conditions:
+            self.max_con_len = max([len(str(conditions)),self.max_con_len])
         if name not in self._test_declarations:
             self._test_declarations.append(name)
             self._test_results[name] = self._test_results_list(name=name, upper_limit=self.test_limits[name]['upper_limit'], lower_limit=self.test_limits[name]['lower_limit'], override=self._failure_override)
