@@ -185,7 +185,7 @@ class Test_Results(generic_results):
             return max(self.collected_data)
         def __str__(self):
             summary_str = ''
-            summary_str += f'{self.padded_str(self.conditions)}\tTRIALS:{len(self)}\tVERDICT:{"PASS" if self else "FAIL"}\n'.expandtabs()
+            summary_str += f'{self.__padded_str(self.conditions)}\tTRIALS:{len(self)}\tVERDICT:{"PASS" if self else "FAIL"}\n'.expandtabs()
             min = self._min()
             if self.failure_reason != '':
                 summary_str += f'\tFORCED_FAIL: {self.failure_reason}\n'
@@ -218,7 +218,7 @@ class Test_Results(generic_results):
                               plot=self.plot + other.plot,
                               query=self.query
                              )
-        def padded_str(self, conditions):
+        def __padded_str(self, conditions):
             return str(conditions).ljust(self.outerclass.max_con_len)
 
     class _test_results_list(list):
