@@ -85,14 +85,9 @@ class Master_Test_Template():
         '''Optional means to manually set declarations apart from the evaluation methods.'''
         established_declarations = self._test_results.test_limits
         if name not in established_declarations.keys():
-            established_declarations[name]=self.get_test_limits(name)
+            established_declarations[name]={'lower_limit':lower_limit, 'upper_limit':upper_limit, **kwargs}
         else:
-            assert established_declarations[name]==self.get_test_limits(name), f"***Master Test Template Error*** Trying to change {name}'s declarations from {established_declarations[name]} to {self.get_test_limits(name)}"
-        else:
-            if name not in established_declarations.keys():
-                established_declarations[name]={'lower_limit':lower_limit, 'upper_limit':upper_limit, **kwargs}
-            else:
-                assert established_declarations[name]=={'lower_limit':lower_limit, 'upper_limit':upper_limit, **kwargs}, f"***Master Test Template Error*** Trying to change {name}'s declarations from {established_declarations[name]} to {decl}"
+            assert established_declarations[name]=={'lower_limit':lower_limit, 'upper_limit':upper_limit, **kwargs}, f"***Master Test Template Error*** Trying to change {name}'s declarations from {established_declarations[name]} to lower_limit:{lower_limit}, upper_limit:{upper_limit}, {kwargs}"
     def evaluate_rawdata(self, name, data, conditions=None):
         '''This will compare submitted data to limits for the named test.
         args:
