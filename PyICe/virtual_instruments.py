@@ -52,7 +52,7 @@ aggregator
 dummy_quantum_twin
   Creates dummy channels that opportunistically mirror the state of their live counterparts. Useful for logging DUT state after shutdown, among other things
 virtual_oven
-  Creates oven related channels without actually being connected to an oven.
+  Creates shell of an oven-like instrument. Useful for tests that require oven channels but lack an oven.
 '''
 
 class dummy(instrument):
