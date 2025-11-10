@@ -2754,6 +2754,7 @@ class Virtual_Oven(temperature_chamber):
         temperature_chamber.__init__(self)
     def _write_temperature(self, value):
         self.setpoint = value
+        self._wait_settle()
     def _read_temperature_sense(self):
         return self.setpoint
     def _enable(self, enable):
