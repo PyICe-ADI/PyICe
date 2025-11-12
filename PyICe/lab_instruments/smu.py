@@ -299,6 +299,10 @@ class keithley_2600(keithley_smu):
         self._base_name = 'Keithley 2600'
         super(keithley_2600, self).__init__(f"{self._base_name} @ {interface_visa}")
         self.add_interface_visa(interface_visa)
+        try:
+            self.get_interface().read() #First time powerup loads a string loaded in the buffer 'Keithley Instruments Inc., Model 2604B, 4607450, 3.4.0', needs to be flushed to sync measurement to forced value 
+        except: #pyvisa.errors.VisaIOError: VI_ERROR_TMO (-1073807339)
+            pass
         self._configured_channels = {}
         self._output_off(channel_number=1)
         self._output_off(channel_number=2)
