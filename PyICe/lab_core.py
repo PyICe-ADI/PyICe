@@ -714,6 +714,14 @@ class integer_channel(channel):
             units optionally appended to formatted (real) data when displayed by GUI
             xypoints optionally allows duplicates information from format/unformat function to allow reproduction of transform in SQL, etc'''
         self._formats[format_name] = {}
+        if format_function is None and unformat_function is None and len(xypoints)==2:
+            # Auto straight-line formatter. Don't specify horizontal or vertical non-functinoal, non-reversible transforms.
+            # TODO document
+            # TODO support multi-segment operation
+            m = (xypoints[1][1] - xypoints[0][1]) / (xypoints[1][0] - xypoints[0][0]) #(y2-y1)/(x2-x1)
+            b = xypoints[1][1] - m * xypoints[1][0]
+            format_function = lambda x: m*x+b
+            unformat_function = lambda y: int(round((y-b)/m))
         if signed:
             self._formats[format_name]['format_function'] = lambda x: format_function(self.twosComplementToSigned(x))
             self._formats[format_name]['unformat_function'] = lambda x: self.signedToTwosComplement(unformat_function(x))
