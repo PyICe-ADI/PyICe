@@ -1,8 +1,20 @@
-from bokeh.plotting import figure, show
+from bokeh.plotting import figure, output_file, show
 from bokeh.layouts import column, row
-from bokeh.models import (CustomJS, LinearAxis, Range1d, Select,
-                          WheelZoomTool, ZoomInTool, ZoomOutTool, Span, Label)
+from bokeh.models.scales import LinearScale, LogScale
+from bokeh.models import (CustomJS,
+                          LinearAxis,
+                          Range1d,
+                          Select,
+                          WheelZoomTool,
+                          ZoomInTool,
+                          ZoomOutTool,
+                          Span,
+                          Label,
+                          Toggle,
+                          HoverTool,
+                          )
 import inspect
+import os
 import sys
 this_module = sys.modules[__name__]
 
@@ -32,6 +44,9 @@ class plot(LTCPlotBokehAdapter):
     def __init__(self, *args, **kwargs):
         args_map = bind_to_base(self, original_classes['plot'].__init__, *args, **kwargs)
         self._plotted = False #Russell notifications replot hack. To be revisited!!!!
+        #print(args_map.keys())
+        #dict_keys(['self', 'plot_title', 'plot_name', 'xaxis_label', 'yaxis_label', 'xlims', 'ylims', 'xminor', 'xdivs', 'yminor', 'ydivs', 'logx', 'logy'])
+        self._plot_name = args_map['plot_name']
         self._fig = figure(title=args_map['plot_title'],
                            x_range=args_map['xlims'],
                            y_range=args_map['ylims'],
@@ -49,15 +64,122 @@ class plot(LTCPlotBokehAdapter):
         # self._fig.legend.label_text_font_size = "7pt"
         # self._fig.legend.background_fill_alpha = 0.6
         self._fig.add_tools(WheelZoomTool())
+        self._fig.add_tools(HoverTool(tooltips=[("X", "$x"), ("Y", "$y")]))
 
-        #TODO add axis titles
-        #TODO add series switch widgets
+        #toggle_logx = Toggle(label="Log X", active=False, button_type="primary")
+        #toggle_logy = Toggle(label="Log Y", active=False, button_type="primary")
+
+        
+        # Dropdowns to control scales independently
+        xselect = Select(title="X Scale:", value="log" if args_map['logx'] else "linear", options=["linear", "log"])
+        yselect = Select(title="Y Scale:", value="log" if args_map['logy'] else "linear", options=["linear", "log"])
+
+
+        # toggle_logx.js_on_change("active", CustomJS(args=dict(plot=self._fig), code="""
+        #     // When active, set LogScale for x; otherwise LinearScale
+        #     const { LinearScale, LogScale } = Bokeh.require("models/scales");
+        #     if (cb_obj.active) {
+        #         plot.x_scale = new LogScale();
+        #     } else {
+        #         plot.x_scale = new LinearScale();
+        #     }
+        #     plot.change.emit();  // force re-render
+        # """))
+
+        # toggle_logy.js_on_change("active", CustomJS(args=dict(plot=self._fig), code="""
+        #     const { LinearScale, LogScale } = Bokeh.require("models/scales");
+        #     if (cb_obj.active) {
+        #         plot.y_scale = new LogScale();
+        #     } else {
+        #         plot.y_scale = new LinearScale();
+        #     }
+        #     plot.change.emit();
+        # """))
+        # self._controls = row(toggle_logx, toggle_logy)
+
+        
+        callback_code = """
+        // Helper to force positive ranges when switching to log
+        function ensure_positive_range(range) {
+        const eps = 1e-9;
+        if (range.start <= 0) range.start = eps;
+        if (range.end   <= 0) range.end   = eps * 10.0;
+        // If reversed, keep logical order
+        if (range.start > range.end) {
+            const tmp = range.start;
+            range.start = range.end;
+            range.end = tmp;
+        }
+        range.change.emit();
+        }
+
+        const scales     = Bokeh.require("models/scales");
+        const tickers    = Bokeh.require("models/tickers");
+        const formatters = Bokeh.require("models/formatters");
+
+        function apply_axis(which_axis, kind) {
+        const is_log = (kind === "log");
+
+        // Choose the right scale/ticker/formatter for the requested kind
+        const scale     = is_log ? new scales.LogScale()        : new scales.LinearScale();
+        const ticker    = is_log ? new tickers.LogTicker()      : new tickers.BasicTicker();
+        const formatter = is_log ? new formatters.LogTickFormatter() : new formatters.BasicTickFormatter();
+
+        // Apply scale and axis properties
+        if (which_axis === "x") {
+            plot.x_scale = scale;
+
+            // plot.xaxis is a list; update them all
+            plot.xaxis.forEach(ax => {
+            ax.ticker    = ticker;
+            ax.formatter = formatter;
+            ax.change.emit();
+            });
+
+            if (is_log) ensure_positive_range(plot.x_range);
+
+        } else {
+            plot.y_scale = scale;
+
+            plot.yaxis.forEach(ax => {
+            ax.ticker    = ticker;
+            ax.formatter = formatter;
+            ax.change.emit();
+            });
+
+            if (is_log) ensure_positive_range(plot.y_range);
+        }
+
+        // Emit changes to prompt re-render
+        plot.change.emit();
+        }
+
+        // Respond to control changes
+        apply_axis("x", xselect.value);
+        apply_axis("y", yselect.value);
+        """
+
+        callback = CustomJS(args=dict(plot=self._fig, xselect=xselect, yselect=yselect), code=callback_code)
+        xselect.js_on_change("value", callback)
+        yselect.js_on_change("value", callback)
+        self._controls = row(xselect, yselect)
+
+
         #TODO add log toggle widgets
-        #TODO add zoom controls
-        #TODO plot name is "Bokeh Plot" in browser
+
     def add_note(self, *args, **kwargs):
         args_map = bind_to_base(self, original_classes['plot'].add_note, *args, **kwargs)
         #(self, note, location=[0.05, 0.5], use_axes_scale=True, fontsize=7, axis=1, horizontalalignment="left", verticalalignment="bottom"):
+        label = Label(x=args_map['location'][0],
+                      y=args_map['location'][1],
+                      text=args_map['note'],
+                      x_units='data' if args_map['use_axes_scale'] else 'screen',
+                      y_units='data' if args_map['use_axes_scale'] else 'screen',
+                      text_font_size=f'{args_map["fontsize"]}pt',
+                      text_align=args_map['horizontalalignment'],
+                      text_baseline=args_map['verticalalignment'],
+                      )
+        self._fig.add_layout(label)
     def add_trace(self, *args, **kwargs):
         args_map = bind_to_base(self, original_classes['plot'].add_trace, *args, **kwargs)
         #(self, axis, data, color, marker=None, markersize=0, linestyle="-", legend="", stepped_style=False, vxline=False, hxline=False):
@@ -98,10 +220,25 @@ class Page(LTCPlotBokehAdapter):
     def create_svg(self, *args, **kwargs):
         args_map = bind_to_base(self, original_classes['Page'].create_svg, *args, **kwargs)
         #(self, file_basename=None, filepath=None):
-        for cnt, plt in enumerate(self._plots):
-            if not plt._plotted:
-                plt._plotted = True
-                show(column(plt._fig))
+
+        if args_map['file_basename'] is not None:
+            filepath = './plots/' if args_map['filepath'] is None else os.path.join(args_map['filepath'],'plots')
+            try:
+                os.makedirs(filepath)
+            except OSError:
+                pass
+            file_basename = os.path.join(filepath,f"{args_map['file_basename']}.html".replace(" ", "_"))
+            for cnt, plt in enumerate(self._plots):
+                output_file(filename=file_basename, title=plt._plot_name)
+                if not plt._plotted:
+                    plt._plotted = True
+                    show(column(plt._controls, plt._fig))
+        else:
+            #LTCPlot omits writing plots! Perhaps for notifications?
+            pass
+
+
+        
 
     def add_plot(self, *args, **kwargs):
         args_map = bind_to_base(self, original_classes['Page'].add_plot, *args, **kwargs)
@@ -140,3 +277,41 @@ def install(calling_module):
     store_and_replace('plot')
     store_and_replace('Page')
     store_and_replace('Multipage_pdf')
+
+
+
+'''
+
+from bokeh.models import CheckboxGroup, CustomJS
+checks = CheckboxGroup(labels=["Log X", "Log Y"], active=[])
+
+checks.js_on_change("active", CustomJS(args=dict(plot=p), code="""
+    const active = cb_obj.active;
+    plot.x_scale = active.includes(0) ? new Bokeh.LogScale()   : new Bokeh.LinearScale();
+    plot.y_scale = active.includes(1) ? new Bokeh.LogScale()   : new Bokeh.LinearScale();
+    plot.change.emit();
+"""))
+'''
+
+'''
+
+# Dropdown to select scale type
+select = Select(title="Axis Scale:", value="linear", options=["linear", "log"])
+
+# CustomJS callback to toggle scales
+callback = CustomJS(args=dict(plot=p), code="""
+    const scaleType = cb_obj.value;
+    const { LinearScale, LogScale } = Bokeh.require("models/scales");
+
+    if (scaleType === "linear") {
+        plot.x_scale = new LinearScale();
+        plot.y_scale = new LinearScale();
+    } else {
+        plot.x_scale = new LogScale();
+        plot.y_scale = new LogScale();
+    }
+    plot.change.emit();  // trigger re-render
+""")
+
+select.js_on_change("value", callback
+'''
