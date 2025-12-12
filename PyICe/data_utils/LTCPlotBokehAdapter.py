@@ -179,7 +179,6 @@ class plot(LTCPlotBokehAdapter):
                       text_align=args_map['horizontalalignment'],
                       text_baseline=args_map['verticalalignment'],
                       )
-        print(label.text)
         label.x_offset = -0.1*self._fig.width #I don't know. Different than matplotlib...
         label.y_offset = -0.1*self._fig.height #I don't know. Different than matplotlib...
         self._fig.add_layout(label)
