@@ -18,6 +18,9 @@ class Master_Test_Template():
         '''undo any changes made by reconfigure'''
         for (old, write_function, new) in self._channel_reconfiguration_settings:
             write_function(old)
+    def build_a_bench(self):
+        '''Optional method to add instruments to a master and ignore the bench file of the machine.'''
+        return 'Not used'
     def customize(self):
         '''Optional method to alter the logger before the test begins.'''
     def declare_bench_connections(self):
