@@ -129,32 +129,6 @@ class generic_results():
                                                                     'max_data': results[t_d]._max(),
                                                                     'passes':   bool(results[t_d]) if not self._failure_override else False,
                                                                     }
-                elif isinstance(self, correlation_results):
-                    res_dict['tests'][t_d]['results']['temperatures'] = []
-                    for temperature in results[t_d].get_temperatures():
-                        temperature_dict = {'temperature': temperature,
-                                            'cases': [],
-                                           }
-                        res_dict['tests'][t_d]['results']['temperatures'].append(temperature_dict)
-                        temp_group = results[t_d].filter_temperature(temperature)
-                        for condition_hash, condition_orig in temp_group.get_conditions().items():
-                            cond_group = temp_group.filter_conditions(condition_hash)
-                            cond_dict =  {'conditions': condition_orig,
-                                          'case_results': [{k:v for k,v in cond._asdict().items() if k not in ['temperature', 'conditions']} for cond in cond_group],
-                                          'summary': {'min_error': cond_group._min_error(),
-                                                      'max_error': cond_group._max_error(),
-                                                      'passes':    bool(cond_group),
-                                                     },
-                                         }
-                            temperature_dict['cases'].append(cond_dict)
-                        temperature_dict['summary'] = {'min_error': temp_group._min_error(),
-                                                      'max_error': temp_group._max_error(),
-                                                      'passes':    bool(temp_group),
-                                                      }
-                    res_dict['tests'][t_d]['results']['summary'] = {'min_error': results[t_d]._min_error(),
-                                                                    'max_error': results[t_d]._max_error(),
-                                                                    'passes':    bool(results[t_d]),
-                                                                   }
                 else:
                     raise Exception(f"*** P.I.E. TEST_RESULTS.PY ***\nExpected self to be either a Test_Results class or a Correlation_Results class. Was given a(n) {self}.")
         if self._failure_override:
@@ -368,7 +342,6 @@ class Test_Results(generic_results):
 
         self.test_limits[name]['upper_limit'] = self.test_limits[name]['upper_limit'] if self.test_limits[name]['upper_limit']==self.test_limits[name]['upper_limit'] else None
         self.test_limits[name]['lower_limit'] = self.test_limits[name]['lower_limit'] if self.test_limits[name]['lower_limit']==self.test_limits[name]['lower_limit'] else None
-        assert (self.test_limits[name]['upper_limit'] is not None or self.test_limits[name]['lower_limit'] is not None), f'Something is wrong with test limits for {name}. Contact support.'
         if self.test_limits[name]['upper_limit'] != self.test_limits[name]['lower_limit']:
             passes = functools.reduce(lambda x,y: x and y, [data_pt is not None \
                                                             and (self.test_limits[name]['upper_limit'] is None or data_pt <= self.test_limits[name]['upper_limit']) \
@@ -376,6 +349,8 @@ class Test_Results(generic_results):
                                                             for data_pt in iter_data
                                                             ]
                                       )
+        elif self.test_limits[name]['upper_limit'] is None:
+            passes = True 
         else:
             passes = functools.reduce(lambda x,y: x and y, [data_pt is not None \
                                                             and (data_pt == self.test_limits[name]['upper_limit']) #upper==lower \
@@ -417,7 +392,7 @@ class Test_Results(generic_results):
                 elif spec == '-' or spec == "\u0394": # Delta:
                     DataPoints.append(y-x)
                 else:
-                    return self._register_test_failure(name=name, reason=f"Was expecting a spec of either '%' or '-' or 'Δ'. Received {spec}.", conditions=conditions, query=query)
+                    return self._register_test_failure(name=name, reason=f"Was expecting a spec of either '%' or '-' or 'Δ'. Received {spec}.", conditions=conditions)
         self._evaluate_list(name=name, iter_data=DataPoints, conditions=conditions)
 
 class Test_Results_Reload(Test_Results):

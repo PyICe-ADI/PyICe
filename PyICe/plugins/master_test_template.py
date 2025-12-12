@@ -81,7 +81,7 @@ class Master_Test_Template():
         '''Optional evaluate_results method placeholder'''
     def correlate_results(self):
         '''Optional correlate_results method placeholder'''
-    def declare_test(self, name:str, lower_limit, upper_limit, **kwargs):
+    def declare_test(self, name:str, lower_limit=None, upper_limit=None, **kwargs):
         '''Optional means to manually set declarations apart from the evaluation methods.'''
         established_declarations = self._test_results.test_limits
         if name not in established_declarations.keys():
