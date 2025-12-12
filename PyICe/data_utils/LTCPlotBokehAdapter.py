@@ -170,8 +170,8 @@ class plot(LTCPlotBokehAdapter):
     def add_note(self, *args, **kwargs):
         args_map = bind_to_base(self, original_classes['plot'].add_note, *args, **kwargs)
         #(self, note, location=[0.05, 0.5], use_axes_scale=True, fontsize=7, axis=1, horizontalalignment="left", verticalalignment="bottom"):
-        label = Label(x=args_map['location'][0],
-                      y=args_map['location'][1],
+        label = Label(x=args_map['location'][0] if args_map['use_axes_scale'] else args_map['location'][0]*self._fig.width,
+                      y=args_map['location'][1] if args_map['use_axes_scale'] else args_map['location'][1]*self._fig.height,
                       text=args_map['note'],
                       x_units='data' if args_map['use_axes_scale'] else 'screen',
                       y_units='data' if args_map['use_axes_scale'] else 'screen',
@@ -179,6 +179,9 @@ class plot(LTCPlotBokehAdapter):
                       text_align=args_map['horizontalalignment'],
                       text_baseline=args_map['verticalalignment'],
                       )
+        print(label.text)
+        label.x_offset = -0.1*self._fig.width #I don't know. Different than matplotlib...
+        label.y_offset = -0.1*self._fig.height #I don't know. Different than matplotlib...
         self._fig.add_layout(label)
     def add_trace(self, *args, **kwargs):
         args_map = bind_to_base(self, original_classes['plot'].add_trace, *args, **kwargs)
