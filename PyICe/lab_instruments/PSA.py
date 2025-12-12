@@ -746,7 +746,7 @@ mixing.'''
         
         # return (peak_position_channel, amplitude_channel, search_position_channel, search_threshold_channel, search_excursion_channel)
         
-    def add_chanel_max_marker(self, channel_name, marker_number=1, trace_number=1):
+    def add_channel_max_marker(self, channel_name, marker_number=1, trace_number=1):
         '''Spot measurment scalar finds the maximum value on the screen.
         This instrument is very screen memory centric.'''
         self.get_interface().write(f':CALCulate:MARKer{marker_number}:STATe ON') # OFF|ON|0|1
@@ -774,17 +774,17 @@ mixing.'''
         
         frequency_channel = channel(f'{channel_name}_frequency', read_function=lambda marker_number=marker_number: self.get_interface().ask(f':CALCulate:MARKer{marker_number}:X?'))
         frequency_channel.set_attribute('channel_type', 'x_data')
-        frequency_channel.set_description(self.get_name() + ': ' + self.add_chanel_max_marker.__doc__)
+        frequency_channel.set_description(self.get_name() + ': ' + self.add_channel_max_marker.__doc__)
         self._add_channel(frequency_channel)
         
         amplitude_channel = channel(f'{channel_name}_amplitude', read_function=lambda marker_number=marker_number: float(self.get_interface().ask(f':CALCulate:MARKer{marker_number}:Y?')))
         amplitude_channel.set_attribute('channel_type', 'y_data')
-        amplitude_channel.set_description(self.get_name() + ': ' + self.add_chanel_max_marker.__doc__)
+        amplitude_channel.set_description(self.get_name() + ': ' + self.add_channel_max_marker.__doc__)
         self._add_channel(amplitude_channel)
         
         return (trigger_channel, frequency_channel, amplitude_channel)
         
-    def add_chanel_noise_marker(self, channel_name, marker_number=1, trace_number=1):
+    def add_channel_noise_marker(self, channel_name, marker_number=1, trace_number=1):
         '''spot measurmeent scalar at given frequency
         
             Activates a noise marker for the selected marker. If the selected marker is off it is turned on and located 
@@ -810,12 +810,12 @@ mixing.'''
         position_channel = channel(f'{channel_name}_frequency',write_function=lambda freq, marker_number=marker_number: self.get_interface().write(f':CALCulate:MARKer{marker_number}:X {freq}'))
         # todo - readback in case somebody touches front panel???
         position_channel.set_attribute('channel_type', 'meas_control')
-        position_channel.set_description(self.get_name() + ': ' + self.add_chanel_noise_marker.__doc__)
+        position_channel.set_description(self.get_name() + ': ' + self.add_channel_noise_marker.__doc__)
         self._add_channel(position_channel)
         
         amplitude_channel = channel(f'{channel_name}_amplitude',read_function=lambda marker_number=marker_number: float(self.get_interface().ask(f':CALCulate:MARKer{marker_number}:Y?')))
         amplitude_channel.set_attribute('channel_type', 'y_data')
-        amplitude_channel.set_description(self.get_name() + ': ' + self.add_chanel_noise_marker.__doc__)
+        amplitude_channel.set_description(self.get_name() + ': ' + self.add_channel_noise_marker.__doc__)
         self._add_channel(amplitude_channel)
         return (position_channel, amplitude_channel)
         
@@ -1269,14 +1269,14 @@ input level to within 200 mV of 0 Vdc. In AC or DC coupling, limit the input RF 
         channels.append(self.add_channel_RBW(f'{channel_name}_RBW'))
         channels.append(self.add_channel_RBW_auto(f'{channel_name}_RBW_auto'))
         channels.append(self.add_channel_VBW(f'{channel_name}_VBW'))
-        channels.extend(self.add_channel_VBW_auto(f'{channel_name}_VBW_auto'))
+        channels.extend(self.add_channel_VBW_auto(f'{channel_name}_VBW_auto')) # '', _RBW_VBW_ratio, _RBW_VBW_auto
         channels.extend(self.add_channel_average(f'{channel_name}_average'))
         channels.append(self.add_channel_detector(f'{channel_name}_detector'))
         channels.append(self.add_channel_attenuator(f'{channel_name}_attenuator'))
         channels.append(self.add_channel_attenuator_auto(f'{channel_name}_attenuator_auto'))
         channels.append(self.add_channel_max_power(f'{channel_name}_max_power'))
         channels.append(self.add_channel_preamp(f'{channel_name}_preamp'))
-        channels.extend(self.add_channel_trigger(f'{channel_name}_trigger'))
+        channels.extend(self.add_channel_trigger(f'{channel_name}_trigger')) # _mode, _source, _video_level, _slope
         channels.append(self.add_channel_sweep_time(f'{channel_name}_sweep_time'))
         channels.append(self.add_channel_sweep_time_auto(f'{channel_name}_sweep_time_auto'))
         channels.append(self.add_channel_message(f'{channel_name}_message'))
