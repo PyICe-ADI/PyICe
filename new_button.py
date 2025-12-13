@@ -22,17 +22,6 @@ Usage examples:
 pyautogui.FAILSAFE = True  # move mouse to a corner to abort
 pyautogui.PAUSE = 0
 
-def parse_args():
-        p = argparse.ArgumentParser(description="Click random places with pyautogui.")
-        p.add_argument("--min", type=float, default=0.5, help="minimum delay between clicks (s)")
-        p.add_argument("--max", type=float, default=2.0, help="maximum delay between clicks (s)")
-        p.add_argument("--clicks", type=int, default=0, help="number of clicks (0 = infinite)")
-        p.add_argument("--duration", type=float, default=0.0, help="total duration to run in seconds (0 = no limit)")
-        p.add_argument("--region", type=int, nargs=4, metavar=("LEFT","TOP","RIGHT","BOTTOM"),
-                                     help="restrict clicks to this rectangle")
-        p.add_argument("--button", choices=("left","right","middle"), default="left", help="mouse button")
-        return p.parse_args()
-
 def region_bounds(region):
         if region:
                 left, top, right, bottom = region
@@ -42,7 +31,7 @@ def region_bounds(region):
         w, h = pyautogui.size()
         return 0, 0, w - 1, h - 1
 
-def random_point(bounds):
+def random_points(bounds):
         left, top, right, bottom = bounds
         x = random.randint(left, right)
         y = random.randint(top, bottom)
