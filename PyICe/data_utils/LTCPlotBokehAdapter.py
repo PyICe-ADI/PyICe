@@ -275,7 +275,7 @@ def install(calling_module):
     def store_and_replace(class_name):
         original_classes[class_name] = getattr(calling_module.LTC_plot, class_name)
         setattr(calling_module.LTC_plot, class_name, getattr(this_module, class_name))
-    print(f'INFO: Replacing LTCPlot calls with Bokey adapter from {this_module}')
+    print(f'INFO: Replacing LTCPlot calls with Bokeh adapter from {this_module}')
     store_and_replace('plot')
     store_and_replace('Page')
     store_and_replace('Multipage_pdf')
