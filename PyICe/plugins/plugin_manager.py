@@ -215,10 +215,6 @@ class Plugin_Manager():
                             raise Exception(f'BENCH MAKER: Multiple actions have been declared for channel(s) {overwrite_check}.')
                         self.special_channel_actions.update(instrument_dict['special_channel_action'])
             break
-        if self.temperature_channel == None:
-            self.temperature_channel = self.master.add_channel_dummy("tdegc")
-        if not self._temperatures:
-            self.temperature_channel.write(25)
 
     def _add_components(self):
         for component in self.component_list:
@@ -685,6 +681,10 @@ class Plugin_Manager():
             self_made_bench = self.tests[0].build_a_bench()
             if self_made_bench == 'Not used':
                 self.add_instrument_channels()
+            if self.temperature_channel == None:
+                self.temperature_channel = self.master.add_channel_dummy("tdegc")
+            if not self._temperatures:
+                self.temperature_channel.write(25)
             if 'bench_config_management' in self.plugins:
                 self.test_components = component_collection()
                 self._add_components()
