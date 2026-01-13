@@ -715,9 +715,13 @@ class integer_channel(channel):
             xypoints optionally allows duplicates information from format/unformat function to allow reproduction of transform in SQL, etc'''
         self._formats[format_name] = {}
         if format_function is None and unformat_function is None and len(xypoints)==2:
-            # Auto straight-line formatter. Don't specify horizontal or vertical non-functinoal, non-reversible transforms.
+            '''Auto straight-line formatter. Don't specify horizontal or vertical non-functinoal, non-reversible transforms.'''
             # TODO document
-            # TODO support multi-segment operation
+            # TODO support multi-segment operation. This shouldn't be a big lift, given PWL multi-segment support elsewhere in PyICe.
+            # TODO signed domain support?
+            x_pts, y_pts = zip(*xypoints)
+            assert len(x_pts) == len(set(x_pts)), f'ERROR: {self.get_name()} format {format_name} has non-reversible horizontal segment.'
+            assert len(y_pts) == len(set(y_pts)), f'ERROR: {self.get_name()} format {format_name} has non-functional vertical segment.'
             m = (xypoints[1][1] - xypoints[0][1]) / (xypoints[1][0] - xypoints[0][0]) #(y2-y1)/(x2-x1)
             b = xypoints[1][1] - m * xypoints[1][0]
             format_function = lambda x: m*x+b
