@@ -20,7 +20,7 @@ G0.add_trace(           axis            = 1,
                         markersize      = 0,
                         linestyle       = "-",
                         legend          = "")
-                        
+
 Page1 = LTC_plot.Page(rows_x_cols = (1, 1), page_size = None)
 Page1.add_plot(G0, position = 1)
 Page1.create_svg(file_basename = "CSV Example")
