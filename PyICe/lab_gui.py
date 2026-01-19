@@ -7,10 +7,17 @@ import xml.etree.ElementTree as ET
 from xml.sax.saxutils import escape as escape
 import sys
 import os
-from PySide2 import QtGui
-from PySide2 import QtWidgets
-from PySide2 import QtCore
-from PySide2.QtCore import SIGNAL, SLOT, QObject, Signal, Slot
+try:
+    from PySide2 import QtGui
+    from PySide2 import QtWidgets
+    from PySide2 import QtCore
+    from PySide2.QtCore import SIGNAL, SLOT, QObject, Signal, Slot
+except:
+    from PySide6 import QtGui
+    from PySide6 import QtWidgets
+    from PySide6 import QtCore
+    from PySide6.QtCore import SIGNAL, SLOT, QObject, Signal, Slot
+    QtWidgets.QAction = QtGui.QAction # it moved in PySide6, move back until removing PySide2 support to avoid rewriting
 import queue
 import datetime
 import collections
@@ -131,10 +138,12 @@ class DataStoreException(Exception):
     pass
 
 class channel_wrapper(object):
-    def __init__(self,channel):
-        self._channel = channel
-        self._name = self._channel.get_name()
-        self._tag = self._channel.get_category()
+    def __init__(self,channel=None):
+        # for some reason this is probably getting supered in Qt due to multiple inheritance, doing nothing when called without a channel is a workaround
+        if channel is not None:
+            self._channel = channel
+            self._name = self._channel.get_name()
+            self._tag = self._channel.get_category()
     def get_default_format(self):
         if self.get_formats():
             if self._channel.get_format() is not None:
@@ -235,6 +244,7 @@ class display_item(QtWidgets.QLabel,channel_wrapper):
     SI_request_read_channel_list = QtCore.Signal(object)
     SI_request_write_channel_list = QtCore.Signal(object)
     def __init__(self,channel_object):
+        channel_wrapper.__init__(self,channel_object)
         QtWidgets.QLabel.__init__(self)
         self._alpha = 0
         #https://en.wikipedia.org/wiki/Web_colors
@@ -254,7 +264,7 @@ class display_item(QtWidgets.QLabel,channel_wrapper):
         self.highlight.setEasingCurve(QtCore.QEasingCurve.OutCirc)
         # self.highlight.setEndValue(80) # green
         self.highlight.setEndValue(40) # safety yellow is more visible, so can be faded further
-        channel_wrapper.__init__(self,channel_object)
+        
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.connect(self,SIGNAL("customContextMenuRequested(QPoint)"),self, SLOT("contextMenuRequested(QPoint)"))
         self._use_presets_read = True #False
@@ -1102,7 +1112,7 @@ class display_item_group(QtWidgets.QWidget):
         menu = QtWidgets.QMenu()
         # write menu item
         action_read = QtWidgets.QAction("Read All",menu)
-        action_read.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_R)) #doesn't do anything out of context, but reminds user of hotkey
+        action_read.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL | QtCore.Qt.Key_R)) #doesn't do anything out of context, but reminds user of hotkey
         self.connect(action_read,SIGNAL("triggered()"),self.request_read_all)
         menu.addAction(action_read)
         # continuous read
@@ -1152,7 +1162,11 @@ class display_item_group(QtWidgets.QWidget):
         if modifiers == QtCore.Qt.ControlModifier:
             #15 degree physical steps * eight's of a degree resolution = +/-120 count typical single movement.
             #self.change_font_size(int(round(QWheelEvent.delta()/120.0)))
-            self.change_font_size(1 if QWheelEvent.delta() > 0 else -1) #independent of mouse resolution, but doesn't support super-mega-rapid-zoom
+            try:
+                delta = QWheelEvent.delta() #qt5
+            except:
+                delta = QWheelEvent.angleDelta() #qt6
+            self.change_font_size(1 if delta > 0 else -1) #independent of mouse resolution, but doesn't support super-mega-rapid-zoom
         else:
             QWheelEvent.ignore() #allow signal to bubble up to scroll function (hold meta/alt with wheel)
     def change_font_size(self, increment):
@@ -1238,7 +1252,7 @@ class display_tag_group(QtWidgets.QWidget):
     def get_selected_tags(self):
         selected_tags = []
         for (tag_name,check_box) in list(self._check_boxes.items()):
-            if check_box.checkState():
+            if check_box.isChecked():
                 selected_tags.append(tag_name)
         return selected_tags
     def _create_tag_list(self):
@@ -1276,6 +1290,7 @@ class display_tag_group(QtWidgets.QWidget):
             self._check_boxes[tag_name] = new_tag_check_box
             new_tag_check_box.setCheckState(QtCore.Qt.Unchecked)
             self.connect(new_tag_check_box, QtCore.SIGNAL("stateChanged(int)"), self._on_change)
+            #new_tag_check_box.checkStateChanged.connect(self._on_change)  # qt6
             y_pos += 1
             if y_pos >= MAX_TAG_ROWS:
                 x_pos += 1
@@ -1373,7 +1388,12 @@ class tab_view(QtWidgets.QWidget):
         if modifiers == QtCore.Qt.NoModifier:
             #remap mouse wheel vertical scroll to horizontal scroll, since the only scroll bar is horizontal.
             scroll_bar = self.scroll_area.horizontalScrollBar()
-            scroll_bar.triggerAction(scroll_bar.SliderSingleStepAdd if QWheelEvent.delta() < 0 else scroll_bar.SliderSingleStepSub)
+            try:
+                delta = QWheelEvent.delta() #qt5
+                scroll_bar.triggerAction(scroll_bar.SliderSingleStepAdd if delta > 0 else scroll_bar.SliderSingleStepSub)
+            except:
+                delta = QWheelEvent.angleDelta().y() #qt6
+                scroll_bar.triggerAction(QtWidgets.QAbstractSlider.SliderSingleStepAdd if delta > 0 else QtWidgets.QAbstractSlider.SliderSingleStepSub)
         else:
             QWheelEvent.ignore()
     def update_from_dict(self,data_dict):
@@ -2118,15 +2138,15 @@ class ltc_lab_gui_main_window(QtWidgets.QMainWindow):
         file_menu = QtWidgets.QMenu("File",menu_bar)
         menu_bar.addMenu(file_menu)
         file_open = QtWidgets.QAction("Open...",file_menu)
-        file_open.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_O))
+        file_open.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL | QtCore.Qt.Key_O))
         file_menu.addAction(file_open)
         file_open.triggered.connect(self._disp_open_dialog)
         file_save_as = QtWidgets.QAction("Save As...",file_menu)
-        file_save_as.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_S))
+        file_save_as.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL | QtCore.Qt.SHIFT | QtCore.Qt.Key_S))
         file_menu.addAction(file_save_as)
         file_save_as.triggered.connect(self._disp_save_dialog)
         file_save_default = QtWidgets.QAction("Save Default",file_menu)
-        file_save_default.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_S))
+        file_save_default.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL | QtCore.Qt.Key_S))
         file_save_default.triggered.connect(lambda: self.save_file('default.guicfg'))
         file_menu.addAction(file_save_default)
         file_menu.addSeparator()
@@ -2141,7 +2161,7 @@ class ltc_lab_gui_main_window(QtWidgets.QMainWindow):
         file_menu.addAction(self.file_passive)
         self.file_passive.toggled.connect(self.set_passive_observer_mode) #Bool
         self.file_close = QtWidgets.QAction("Close",file_menu)
-        self.file_close.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_Q))
+        self.file_close.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL | QtCore.Qt.Key_Q))
         self.file_close.triggered.connect(self.close)
         file_menu.addAction(self.file_close)
 
@@ -2170,16 +2190,16 @@ class ltc_lab_gui_main_window(QtWidgets.QMainWindow):
         tab_menu.addAction(tab_no_flash_on_change)
         tab_menu.addSeparator()
         increase_font_size = QtWidgets.QAction("Increase Font Size",tab_menu)
-        increase_font_size.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_Plus))
+        increase_font_size.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL | QtCore.Qt.Key_Plus))
         increase_font_size.triggered.connect(lambda: self.SI_change_font_size.emit(1))
         tab_menu.addAction(increase_font_size)
         decrease_font_size = QtWidgets.QAction("Decrease Font Size",tab_menu)
-        decrease_font_size.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_Minus))
+        decrease_font_size.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL | QtCore.Qt.Key_Minus))
         decrease_font_size.triggered.connect(lambda: self.SI_change_font_size.emit(-1))
         tab_menu.addAction(decrease_font_size)
         tab_menu.addSeparator()
         read_all = QtWidgets.QAction("Read All",tab_menu)
-        read_all.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_R))
+        read_all.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL | QtCore.Qt.Key_R))
         read_all.triggered.connect(self._tg._active_tab.dig.request_read_all)
         tab_menu.addAction(read_all)
 
@@ -2197,7 +2217,7 @@ class ltc_lab_gui_main_window(QtWidgets.QMainWindow):
         logger_select_channels.triggered.connect(self._gui_logger.display_select_channels)
         logger_menu.addAction(logger_select_channels)
         logger_log = QtWidgets.QAction("Log Once",logger_menu)
-        logger_log.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_L))
+        logger_log.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL | QtCore.Qt.Key_L))
         logger_log.triggered.connect(self._gui_logger.log)
         logger_menu.addAction(logger_log)
         logger_menu.addSeparator()
@@ -2322,15 +2342,12 @@ class ltc_lab_gui_main_window(QtWidgets.QMainWindow):
         size['y'] = str(self.size().height())
     def set_passive_observer_mode(self, passive):
         if not passive:
-            self.file_passive.setChecked(False)
-            try:
+            if self.file_passive.isChecked():
                 self._tg.SI_request_read_channel_list.disconnect(self.show_passive_error)
                 self._tg.SI_request_write_channel_list.disconnect(self.show_passive_error)
                 self._gui_logger.SI_request_background_call.disconnect(self.show_passive_error)
                 self.SI_passive_observer_data.disconnect(self._tg.receive_passive_channel_data)
-            except:
-                pass
-
+            self.file_passive.setChecked(False)
             self._tg.SI_request_read_channel_list.connect(self.read_channel_list)
             self._tg.SI_request_write_channel_list.connect(self.write_channel_list)
             self.SI_channel_data_ready.connect(self._tg.receive_channel_data)
@@ -2338,14 +2355,12 @@ class ltc_lab_gui_main_window(QtWidgets.QMainWindow):
             self.setWindowTitle(self._channel_group.get_name())
         elif passive:
             self.disconnect(self.file_passive,SIGNAL("toggled(bool)"),self.set_passive_observer_mode)
-            self.file_passive.setChecked(True)
-            try:
+            if not self.file_passive.isChecked():
                 self._tg.SI_request_read_channel_list.disconnect(self.read_channel_list )
                 self._tg.SI_request_write_channel_list.disconnect(self.write_channel_list )
                 self.SI_channel_data_ready.disconnect(self._tg.receive_channel_data )
                 self.SI_request_background_call.disconnect(self.receive_background_call_request)
-            except:
-                pass
+            self.file_passive.setChecked(True)
             self.connect(self.file_passive,SIGNAL("toggled(bool)"),self.set_passive_observer_mode)
             self._tg.SI_request_read_channel_list.connect( self.show_passive_error )
             self._tg.SI_request_write_channel_list.connect(self.show_passive_error )
