@@ -8,7 +8,7 @@ build-backend = "hatchling.build"
 [project]
 name='PyICe-ADI'
 #packages=find_packages(include=['src'])
-requires-python = ">=3.10,<3.11"
+requires-python = ">=3.10"
 readme='README.md'
 authors=[
     {name='Dave Simmons', email='david.simmons@analog.com'},
@@ -24,7 +24,8 @@ dynamic = ["version"]
 
 dependencies=[
     "cairosvg",
-    "PySide2",
+    "PySide6; python_version >= \"3.11\"",
+    "PySide2; python_version < \"3.11\"",
     "bokeh",
     "deprecated==1.2.12",
     "graphviz",
@@ -55,7 +56,7 @@ dependencies=[
     "scipy>=1.7 ",
     "statsmodels",
     "svglib",
-    "windows-curses==2.3.1 ; platform_system == \"Windows\"",
+    "windows-curses==2.4.1 ; platform_system == \"Windows\"",
     "xlrd",
     "xlsxwriter",
 ]
