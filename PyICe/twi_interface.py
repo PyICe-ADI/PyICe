@@ -3038,7 +3038,7 @@ class mem_dict(twi_interface):
         try:
             return self._data_dict[commandCode]
         except KeyError as e:
-            print(e)
+            print(f'Data missing for commandCode {e}')
             return None
     def read_ack(self):
         raise Exception('Unimplemented')
