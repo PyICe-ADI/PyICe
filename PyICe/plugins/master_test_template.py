@@ -19,7 +19,15 @@ class Master_Test_Template():
         for (old, write_function, new) in self._channel_reconfiguration_settings:
             write_function(old)
     def build_a_bench(self):
-        '''Optional method to add instruments to a master and ignore the bench file of the machine.'''
+        '''
+        Optional method to add instruments to the plugin_manager's master and ignore the bench file of the machine.\\
+        e.g.\\
+                master = self.pm.master\\
+                from PyICe.lab_instruments.hameg_4040 import hameg_4040\\
+                hameg = hameg_4040(master.get_visa_serial_interface('COM18', baudrate=57600))\\
+                hameg.add_channel(channel_name='vmaina_force', num=1, ilim=5, delay=0.25)\\
+                master.add(hameg)
+        '''
         return 'Not used'
     def customize(self):
         '''Optional method to alter the logger before the test begins.'''
