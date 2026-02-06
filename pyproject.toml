@@ -27,6 +27,7 @@ dependencies=[
     "PySide2",
     "bokeh",
     "deprecated==1.2.12",
+    "GitPython",
     "graphviz",
     "jsonc-parser",
     "labcomm",

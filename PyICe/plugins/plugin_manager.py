@@ -26,6 +26,13 @@ class Callback_logger(logger):
 
 class Plugin_Manager():
     def __init__(self, scratch_folder='scratch', settings={}):
+        try:
+            from git import Repo
+            branch = Repo(__file__ + '\\..\\..\\..').active_branch.name
+            if branch!='main':
+                print(f"\nActive branch: {branch}")
+        except ImportError:
+            print("Missing GitPython from PyICe dependencies. Please Update.")
         self.tests = []
         self.operator = getpass.getuser().lower()
         self.thismachine = socket.gethostname().replace("-","_").split(".")[0]
