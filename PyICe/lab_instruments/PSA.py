@@ -311,7 +311,7 @@ class keysight_e4440a(scpi_SA):
             [:SENSe]:SWEep:FFT:SPAN:RATio?
             Example: SWE:FFT:SPAN:RAT 20
         '''
-        type_channel = channel(f'{channel_name}_sweep_type',write_function=lambda t: self.get_interface().write(f':SENSe:SWEep:TYPE {t}'))
+        type_channel = channel(f'{channel_name}',write_function=lambda t: self.get_interface().write(f':SENSe:SWEep:TYPE {t}'))
         type_channel._read = lambda: self.get_interface().ask(':SENSe:SWEep:TYPE?')
         type_channel.add_preset('AUTO')
         type_channel.add_preset('FFT')
@@ -426,7 +426,7 @@ determined as indicated in Table 2-1 on page 70'''
         
     def add_channel_VBW_auto(self, channel_name):
         '''Tracks the state of the AUTO setting for the video bandwidth and the RBW/VBW ratio channel.'''
-        auto_channel = integer_channel(name=f'{channel_name}_VBW_auto', size=1, write_function=lambda on: self.get_interface().write(f':SENSe:BANDwidth:VIDeo:AUTO {"ON" if on else "OFF"}'))
+        auto_channel = integer_channel(name=channel_name, size=1, write_function=lambda on: self.get_interface().write(f':SENSe:BANDwidth:VIDeo:AUTO {"ON" if on else "OFF"}'))
         auto_channel._read = lambda: int(self.get_interface().ask(':SENSe:BANDwidth:VIDeo:AUTO?'))
         auto_channel.set_attribute('channel_type', 'y_control')
         auto_channel.set_description(self.get_name() + ': ' + self.add_channel_VBW_auto.__doc__)
@@ -746,7 +746,7 @@ mixing.'''
         
         # return (peak_position_channel, amplitude_channel, search_position_channel, search_threshold_channel, search_excursion_channel)
         
-    def add_chanel_max_marker(self, channel_name, marker_number=1, trace_number=1):
+    def add_channel_max_marker(self, channel_name, marker_number=1, trace_number=1):
         '''Spot measurment scalar finds the maximum value on the screen.
         This instrument is very screen memory centric.'''
         self.get_interface().write(f':CALCulate:MARKer{marker_number}:STATe ON') # OFF|ON|0|1
@@ -774,17 +774,17 @@ mixing.'''
         
         frequency_channel = channel(f'{channel_name}_frequency', read_function=lambda marker_number=marker_number: self.get_interface().ask(f':CALCulate:MARKer{marker_number}:X?'))
         frequency_channel.set_attribute('channel_type', 'x_data')
-        frequency_channel.set_description(self.get_name() + ': ' + self.add_chanel_max_marker.__doc__)
+        frequency_channel.set_description(self.get_name() + ': ' + self.add_channel_max_marker.__doc__)
         self._add_channel(frequency_channel)
         
         amplitude_channel = channel(f'{channel_name}_amplitude', read_function=lambda marker_number=marker_number: float(self.get_interface().ask(f':CALCulate:MARKer{marker_number}:Y?')))
         amplitude_channel.set_attribute('channel_type', 'y_data')
-        amplitude_channel.set_description(self.get_name() + ': ' + self.add_chanel_max_marker.__doc__)
+        amplitude_channel.set_description(self.get_name() + ': ' + self.add_channel_max_marker.__doc__)
         self._add_channel(amplitude_channel)
         
         return (trigger_channel, frequency_channel, amplitude_channel)
         
-    def add_chanel_noise_marker(self, channel_name, marker_number=1, trace_number=1):
+    def add_channel_noise_marker(self, channel_name, marker_number=1, trace_number=1):
         '''spot measurmeent scalar at given frequency
         
             Activates a noise marker for the selected marker. If the selected marker is off it is turned on and located 
@@ -810,12 +810,12 @@ mixing.'''
         position_channel = channel(f'{channel_name}_frequency',write_function=lambda freq, marker_number=marker_number: self.get_interface().write(f':CALCulate:MARKer{marker_number}:X {freq}'))
         # todo - readback in case somebody touches front panel???
         position_channel.set_attribute('channel_type', 'meas_control')
-        position_channel.set_description(self.get_name() + ': ' + self.add_chanel_noise_marker.__doc__)
+        position_channel.set_description(self.get_name() + ': ' + self.add_channel_noise_marker.__doc__)
         self._add_channel(position_channel)
         
         amplitude_channel = channel(f'{channel_name}_amplitude',read_function=lambda marker_number=marker_number: float(self.get_interface().ask(f':CALCulate:MARKer{marker_number}:Y?')))
         amplitude_channel.set_attribute('channel_type', 'y_data')
-        amplitude_channel.set_description(self.get_name() + ': ' + self.add_chanel_noise_marker.__doc__)
+        amplitude_channel.set_description(self.get_name() + ': ' + self.add_channel_noise_marker.__doc__)
         self._add_channel(amplitude_channel)
         return (position_channel, amplitude_channel)
         
@@ -872,7 +872,7 @@ mixing.'''
             # print(f'{ch.get_name()} writtent to {v}')
             if v == 'Single':
                 ch._set_value('Stop')
-        mode_channel = channel(f'{channel_name}_trigger_mode',write_function=_single_abort_trigger_wait)
+        mode_channel = channel(f'{channel_name}_mode',write_function=_single_abort_trigger_wait)
         # mode_channel._read = lambda: None #Don't cache value that only has side-effect value
         mode_channel.add_preset('Single')
         mode_channel.add_preset('Continuous')
@@ -882,7 +882,7 @@ mixing.'''
         self._add_channel(mode_channel)
         
         
-        source_channel = channel(f'{channel_name}_trigger_source',write_function=lambda s: self.get_interface().write(':TRIGger:SEQuence:SOURce {s}')) # IMMediate|VIDeo|LINE|EXTernal[1]|EXTernal2|RFBurst
+        source_channel = channel(f'{channel_name}_source',write_function=lambda s: self.get_interface().write(':TRIGger:SEQuence:SOURce {s}')) # IMMediate|VIDeo|LINE|EXTernal[1]|EXTernal2|RFBurst
         source_channel._read = lambda: self.get_interface().ask(':TRIGger:SEQuence:SOURce?')
         source_channel.add_preset('IMMediate', 'Free Run triggering')
         source_channel.add_preset('VIDeo', '''Triggers on the video signal level
@@ -914,13 +914,13 @@ mixing.'''
         self._add_channel(source_channel)
         # Remote Command Notes: Other trigger-related commands are found in the INITiate and ABORt subsystems.
 
-        level_channel = channel(f'{channel_name}_video_trigger_level',write_function=lambda l: self.get_interface().write(':TRIGger:SEQuence:VIDeo:LEVel {l}'))
+        level_channel = channel(f'{channel_name}_video_level',write_function=lambda l: self.get_interface().write(':TRIGger:SEQuence:VIDeo:LEVel {l}'))
         level_channel._read = lambda: float(self.get_interface().ask(':TRIGger:SEQuence:VIDeo:LEVel?'))
         level_channel.set_attribute('channel_type', 'trig_control')
         level_channel.set_description(self.get_name() + ': ' + self.add_channel_trigger.__doc__)
         self._add_channel(level_channel)
         
-        slope_channel = channel(f'{channel_name}_trigger_slope',write_function=lambda s: self.get_interface().write(':TRIGger:SEQuence:SLOPe {s}'))
+        slope_channel = channel(f'{channel_name}_slope',write_function=lambda s: self.get_interface().write(':TRIGger:SEQuence:SLOPe {s}'))
         slope_channel._read = lambda: self.get_interface().ask(':TRIGger:SEQuence:SLOPe?')
         slope_channel.add_preset('POSitive')
         slope_channel.add_preset('NEGative')
@@ -1263,20 +1263,20 @@ input level to within 200 mV of 0 Vdc. In AC or DC coupling, limit the input RF 
         channels = []
         channels.append(self.add_channel_xdata(f'{channel_name}_xpoints'))
         channels.append(self.add_channel_ydata(f'{channel_name}_ypoints', trace_number=1))
-        channels.extend(self.add_channel_sweep_control(f'{channel_name}'))
-        channels.extend(self.add_channel_sweep_type(f'{channel_name}'))
-        channels.extend(self.add_channel_y_disp(f'{channel_name}'))
+        channels.extend(self.add_channel_sweep_control(f'{channel_name}')) # _start, _stop, _center, _span, _point_count
+        channels.extend(self.add_channel_sweep_type(f'{channel_name}_sweep_type'))
+        channels.extend(self.add_channel_y_disp(f'{channel_name}')) # _reference_level, _units, _spacing, _scale, _reference_level_offset
         channels.append(self.add_channel_RBW(f'{channel_name}_RBW'))
         channels.append(self.add_channel_RBW_auto(f'{channel_name}_RBW_auto'))
         channels.append(self.add_channel_VBW(f'{channel_name}_VBW'))
-        channels.extend(self.add_channel_VBW_auto(f'{channel_name}'))
+        channels.extend(self.add_channel_VBW_auto(f'{channel_name}_VBW_auto')) # '', _RBW_VBW_ratio, _RBW_VBW_auto
         channels.extend(self.add_channel_average(f'{channel_name}_average'))
         channels.append(self.add_channel_detector(f'{channel_name}_detector'))
         channels.append(self.add_channel_attenuator(f'{channel_name}_attenuator'))
         channels.append(self.add_channel_attenuator_auto(f'{channel_name}_attenuator_auto'))
         channels.append(self.add_channel_max_power(f'{channel_name}_max_power'))
         channels.append(self.add_channel_preamp(f'{channel_name}_preamp'))
-        channels.extend(self.add_channel_trigger(channel_name))
+        channels.extend(self.add_channel_trigger(f'{channel_name}_trigger')) # _mode, _source, _video_level, _slope
         channels.append(self.add_channel_sweep_time(f'{channel_name}_sweep_time'))
         channels.append(self.add_channel_sweep_time_auto(f'{channel_name}_sweep_time_auto'))
         channels.append(self.add_channel_message(f'{channel_name}_message'))
