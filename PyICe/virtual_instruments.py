@@ -1,5 +1,6 @@
 from .lab_core import *
 from PyICe.lab_utils.str2num import str2num
+from PyICe.lab_instruments.temperature_chamber import temperature_chamber
 import PyICe.lab_utils.delay_loop
 from PyICe.lab_utils.eng_string import eng_string
 from PyICe.lab_utils.threaded_writer import threaded_writer
@@ -50,6 +51,8 @@ aggregator
   Combines multiple, less capable channels into a single channel of great renown.
 dummy_quantum_twin
   Creates dummy channels that opportunistically mirror the state of their live counterparts. Useful for logging DUT state after shutdown, among other things
+virtual_oven
+  Creates shell of an oven-like instrument. Useful for tests that require oven channels but lack an oven.
 '''
 
 class dummy(instrument):
@@ -2744,3 +2747,15 @@ class dummy_quantum_twin(instrument):
         dummy_channel.set_write_access(True)
         dummy_channel.write(value)
         dummy_channel.set_write_access(False)
+
+class Virtual_Oven(temperature_chamber):
+    def __init__(self):
+        self._base_name = 'Virtual_Oven'
+        temperature_chamber.__init__(self)
+    def _write_temperature(self, value):
+        self.setpoint = value
+        self._wait_settle()
+    def _read_temperature_sense(self):
+        return self.setpoint
+    def _enable(self, enable):
+        pass
