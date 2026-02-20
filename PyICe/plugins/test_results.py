@@ -20,7 +20,7 @@ def freeze(o):
   try:
     hash(o)
   except TypeError as e:
-    raise TypeError("Something slipped through the freeze function. Contact support.") from e
+    raise TypeError(f"***P.I.E. TEST_RESULTS.PY FREEZE***\n Expecting a dictionary, set, list, or tuple. Was given {type(o)}.") from e
   else:
     return o
 
@@ -60,9 +60,15 @@ class generic_results():
     def _init(self, name, module):
         self._name = name
         self._module = module
+        self._traceability_info = collections.OrderedDict()
+        self._failure_override = False
     def get_name(self):
         return self._name
-
+    def get_traceability_info(self):
+        return self._traceability_info
+    def _set_traceability_info(self, **kwargs):
+        for k,v in kwargs.items():
+            self._traceability_info[k] = v
     def _json_report(self, declarations, results, ate_results=[]):
         class CustomJSONizer(json.JSONEncoder):
             def default(self, obj):
@@ -83,6 +89,7 @@ class generic_results():
         res_dict = {}
 
         res_dict['test_module'] = self.get_name()
+        res_dict['test_crashed'] = self._failure_override
         res_dict['report_date'] = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
         
         if self._module.get_name()+'_metadata' in self._module.get_database().get_table_names():
@@ -120,7 +127,7 @@ class generic_results():
                         res_dict['tests'][t_d]['results']['cases'].append(cond_dict)
                     res_dict['tests'][t_d]['results']['summary'] = {'min_data': results[t_d]._min(),
                                                                     'max_data': results[t_d]._max(),
-                                                                    'passes':   bool(results[t_d]),
+                                                                    'passes':   bool(results[t_d]) if not self._failure_override else False,
                                                                     }
                 elif isinstance(self, correlation_results):
                     res_dict['tests'][t_d]['results']['temperatures'] = []
@@ -149,8 +156,11 @@ class generic_results():
                                                                     'passes':    bool(results[t_d]),
                                                                    }
                 else:
-                    raise Exception("I'm lost.")
-        res_dict['summary'] = {'passes': bool(self)}
+                    raise Exception(f"*** P.I.E. TEST_RESULTS.PY ***\nExpected self to be either a Test_Results class or a Correlation_Results class. Was given a(n) {self}.")
+        if self._failure_override:
+            res_dict['summary'] = {'passes': False}
+        else:
+            res_dict['summary'] = {'passes': bool(self)}
         return json.dumps(res_dict, indent=2, ensure_ascii=False, cls=CustomJSONizer)
 
 class Test_Results(generic_results):
@@ -190,23 +200,27 @@ class Test_Results(generic_results):
             assert isinstance(other, type(self))
             assert self.test_name == other.test_name
             assert self.conditions == other.conditions
-            assert self.query == other.query, f"ERROR {self.test_name} grouping mismatch. Grouped results have unexpectedly disparate SQL queries. Consider adding conditions by selecting addtional columns or by keyword argument. If you think you've received this message in error, contact support." 
+            assert self.query == other.query, f"ERROR {self.test_name} grouping mismatch. Grouped results have unexpectedly disparate SQL queries. Consider adding conditions by selecting addtional columns or by keyword argument. If you think you've received this message in error, contact support."
+            failure_report = self.failure_reason
+            if other.failure_reason not in self.failure_reason:
+                failure_report = f'{self.failure_reason}{other.failure_reason}'
             return type(self)(test_name=self.test_name,
                               conditions=self.conditions,
                               min_data=none_min(self.min_data, other.min_data), #None creeps in from register_test_failure()
                               max_data=none_max(self.max_data, other.max_data), #None creeps in from register_test_failure()
                               passes=self.passes and other.passes,
-                              failure_reason=f'{self.failure_reason}{other.failure_reason}', #TODO cleanup format
+                              failure_reason=failure_report,
                               collected_data=self.collected_data + other.collected_data,
                               plot=self.plot + other.plot,
                               query=self.query
                              )
     class _test_results_list(list):
         '''add some helper methods for easy filtering and summary'''
-        def __init__(self, name, upper_limit, lower_limit):
+        def __init__(self, name, upper_limit, lower_limit, override):
             self.name = name
             self.upper_limit = upper_limit
             self.lower_limit = lower_limit
+            self.override = override
             super().__init__()
         def __bool__(self):
             if not len(self):
@@ -232,7 +246,10 @@ class Test_Results(generic_results):
             for cond_res in self.factored():
                 for line in str(cond_res).splitlines():
                     resp += f'\t\t{line}\n'
-            resp += f'{self.name} summary {"PASS" if self else "FAIL"}.\n\n'
+            if self.override:
+                resp += f'{self.name} summary FAIL (test script crashed).\n\n'
+            else:
+                resp += f'{self.name} summary {"PASS" if self else "FAIL"}.\n\n'
             return resp
         def _min(self):
             if not len(self):
@@ -245,7 +262,7 @@ class Test_Results(generic_results):
         def get_conditions(self):
             return {make_hash(data_group.conditions): data_group.conditions for data_group in self}
         def filter(self, condition_hash):
-            ret = type(self)(self.name, self.upper_limit, self.lower_limit)
+            ret = type(self)(self.name, self.upper_limit, self.lower_limit, self.override)
             for data_group in self:
                 if make_hash(data_group.conditions) == condition_hash:
                     ret.append(data_group)
@@ -253,7 +270,7 @@ class Test_Results(generic_results):
         def factored(self):
             '''returns new object; doesn't modifiy existing one in place
             merges all resutls from like conditions'''
-            ret = type(self)(self.name, self.upper_limit, self.lower_limit)
+            ret = type(self)(self.name, self.upper_limit, self.lower_limit, self.override)
             for cond_hash in self.get_conditions():
                 data_group = functools.reduce(lambda a,b: a+b, [data_group for data_group in self if make_hash(data_group.conditions)==cond_hash])
                 ret.append(data_group)
@@ -295,7 +312,8 @@ class Test_Results(generic_results):
 
     def _register_test_failure(self, name, reason, conditions, query=None):
         if name not in self._test_declarations:
-            raise Exception(f'Undeclared test results: {name}')
+            self._test_declarations.append(name)
+            self._test_results[name] = self._test_results_list(name=name, upper_limit=self.test_limits[name]['upper_limit'], lower_limit=self.test_limits[name]['lower_limit'], override=self._failure_override)
         failure_result = self._test_result(test_name=name,
                                            conditions=conditions,
                                            min_data=None,
@@ -331,7 +349,7 @@ class Test_Results(generic_results):
     def _evaluate_list(self, name, iter_data, conditions, query=None):
         if name not in self._test_declarations:
             self._test_declarations.append(name)
-            self._test_results[name] = self._test_results_list(name=name, upper_limit=self.test_limits[name]['upper_limit'], lower_limit=self.test_limits[name]['lower_limit'])
+            self._test_results[name] = self._test_results_list(name=name, upper_limit=self.test_limits[name]['upper_limit'], lower_limit=self.test_limits[name]['lower_limit'], override=self._failure_override)
         #############################################################
         # TODO deal with functional test pass/fail non-numeric data #
         #############################################################
@@ -370,11 +388,75 @@ class Test_Results(generic_results):
                                               conditions=conditions,
                                               min_data=min_data,
                                               max_data=max_data,
-                                              passes=passes,
-                                              failure_reason='',
+                                              passes=passes if not self._failure_override else False,
+                                              failure_reason=''if not self._failure_override else "Test Crashed.",
                                               collected_data=iter_data, #Give a chance to re-compute summary statistics if more data comes in later.
                                               plot=[], #Mutable; add later
                                               query=query,
                                               )
         self._test_results[name].append(new_result_record)
         return new_result_record
+
+    def _correlate_results(self, name, reference_values=[], test_values=[], spec=None, conditions=None):
+        if name not in self._test_declarations:
+            self._test_declarations.append(name)
+            self._test_results[name] = self._test_results_list(name=name, upper_limit=self.test_limits[name]['upper_limit'], lower_limit=self.test_limits[name]['lower_limit'], override=self._failure_override)
+        if len(reference_values) == 0:
+            return self._register_test_failure(name=name, reason=f"No reference values were submitted.", conditions=conditions)
+        if None in reference_values:
+            return self._register_test_failure(name=name, reason=f"None encountered in submitted reference values.", conditions=conditions)
+        if len(test_values) == 0:
+            return self._register_test_failure(name=name, reason=f"No test values were submitted.", conditions=conditions)
+        if None in test_values:
+            return self._register_test_failure(name=name, reason=f"None encountered in submitted test values.", conditions=conditions)
+        DataPoints = []
+        for x in reference_values:
+            for y in test_values:
+                if spec == '%':
+                    DataPoints.append((y-x)/x)
+                elif spec == '-' or spec == "\u0394": # Delta:
+                    DataPoints.append(y-x)
+                else:
+                    return self._register_test_failure(name=name, reason=f"Was expecting a spec of either '%' or '-' or 'Δ'. Received {spec}.", conditions=conditions, query=query)
+        self._evaluate_list(name=name, iter_data=DataPoints, conditions=conditions)
+
+class Test_Results_Reload(Test_Results):
+    '''Rereads a json file and converts it back to a Test_Results compatible schema.'''
+    def __init__(self, results_json='test_results.json'):
+        self._test_declarations = []
+        self.test_limits = {}
+        self._test_results = collections.OrderedDict()
+        with open(results_json, mode='r', encoding='utf-8') as f:
+            self._results = json.load(f)
+            f.close()
+        self._init(name=self._results['test_module'], module=None)
+        try:
+            if self._results['test_crashed']:
+                self._failure_override = True
+        except KeyError:
+            print("JSON came to be before we started tracking test crashes. Regenerating this json will remove this notice.")
+        self._set_traceability_info(datetime=self._results["collection_date"], **self._results["traceability"])
+        for test in self._results['tests']:
+            self._test_declarations.append(test)
+            self.test_limits[test] = self._results['tests'][test]['declaration']
+            self._test_results[test] = self._test_results_list(name=test, upper_limit=self.test_limits[test]['upper_limit'], lower_limit=self.test_limits[test]['lower_limit'], override=self._failure_override)
+            for case in self._results['tests'][test]['results']['cases']:
+                for trial in case['case_results']:
+                    self._test_results[test].append(self._test_result(test_name=test,
+                                                                      conditions=case['conditions'],
+                                                                      plot=[],
+                                                                      **trial
+                                                                      )
+                                                   )
+    def json_report(self, filename='test_results_rewrite.json'):
+        with open(filename, 'wb') as f:
+            f.write(super().json_report().encode('utf-8'))
+            f.close()
+
+class Failed_Eval(Test_Results):
+    def __init__(self, test):
+        self.test = test
+    def __str__(self):
+        return f'Evaluation method itself failed for {self.test.get_name()}.\n\n'
+    def __bool__(self):
+        return False

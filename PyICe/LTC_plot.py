@@ -1,9 +1,11 @@
 '''
-Marcom Compliant Plot Generator
+Linear Technology Compliant Plot Generator
 
 This program can be used to generate plots for general lab use or to
-generate Marcom specific plots that can be imported directly into the
-datasheet in SVG format.
+generate plots that can be imported directly into a datasheet in
+SVG format. The standards used herein were compliant with a now defunct
+analog semiconductor company called Linear Technology:
+https://en.wikipedia.org/wiki/Linear_Technology
 
 
 The objects that can be created with this program are:
@@ -12,37 +14,20 @@ The objects that can be created with this program are:
   3) Multipage_pdf
 
 The basic model is simple. You create one or more plots and add things to them
-like traces, histograms, legends, arrows, notes, etc. Once your plots are populated
+like traces, histograms, legends, arrows, notes, etc. Once your plots are populated,
 you create one or more pages and determine how you want the plots to arrange on
 each page. For instance you can create an 8.5x11 page and add 9 plots to it in
 a standard 3x3 grid. You can make one big page if you want. It doesn't have to be
 a standard size if you don't care what the printer does with it and it won't affect
-your SVG files to Marcom. If you want to have multiple pages of plots you can
+your SVG files to marketing. If you want to have multiple pages of plots you can
 create a Mulipage_pdf and add one or more pages to it.
 
 If you want larger plots with just one plot per page as in plot_tools.py you can
 create a page per plot, add a plot to each page and add all of the pages to a
 Multipage_pdf.
 
-So to start, you'll need to create a python work file and import this program:
-e.g.
-
 ::
-  
-   ----------- LTCXXXX_plots.py -------------- 
-  |import sys                                 |
-  |sys.path.append("../../../PyICe")          |
-  |import LTC_plot                            |
-  |    .                                      |
-  |    .                                      |
-  |    .                                      |
-   ------------------------------------------- 
 
-Next you want to create your plots. A generally preferable work flow would be to
-create all of your plots without regard to reference on a Page or Multipage_pdf.
-
-::
-  
   G0 = LTC_plot.plot(
                       plot_title      = "EN/FBIN Thresholds",
                       plot_name       = "8709 G0",
@@ -391,11 +376,11 @@ class plot(object):
                 self.styles.append( (style,color,) )
         self.current_style_index = 0
         
-    def add_trace(self, axis, data, color, marker=None, markersize=0, linestyle="-", legend="", stepped_style=False, vxline=False, hxline=False):
+    def add_trace(self, axis, data, color, marker=None, markersize=0, linestyle="-", linewidth=None, legend="", stepped_style=False, vxline=False, hxline=False):
         data = data if not isinstance(data,zip) else list(data)
         legend = legend.replace("-","−") if legend is not None else legend
         if not (vxline or hxline or len(data)):
-            print(f"\nLTC_plot WARNING: Attempt to add a trace on axis {axis} with no data has been rejected.\nNo trace will apear for this attempt.\nThe legend entry is '{legend}' if that helps. \nSorry, no more specific information is available.\n")
+            print(f"\nLTC_plot WARNING: Attempt to add a trace on axis {axis} with no data has been rejected.\nNo trace will apear for this attempt.\nThe legend entry is '{legend}' if that helps. \nSorry, more specific information is not available.\n")
             return
         trace_data = {  "axis"          : axis,
                         "data"          : data,
@@ -403,6 +388,7 @@ class plot(object):
                         "marker"        : marker,
                         "markersize"    : markersize,
                         "linestyle"     : linestyle,
+                        "linewidth"     : linewidth,
                         "legend"        : legend,
                         "stepped_style" : stepped_style,
                         "vxline"        : vxline,
@@ -415,8 +401,8 @@ class plot(object):
 
     def add_scatter(self, axis, data, color, marker='*', markersize=4, legend="", stepped_style=False, vxline=False, hxline=False):
         self.add_trace(axis=axis, data=data, color=color, marker=marker, markersize=markersize, linestyle="None", legend=legend, stepped_style=stepped_style, vxline=vxline, hxline=hxline)
-            
-    def add_horizontal_line(self, value, xrange=None, note=None, axis=1, color=[1,0,0]):
+
+    def add_horizontal_line(self, value, xrange=None, note=None, axis=1, color=[1,0,0], linestyle=None, linewidth=None):
         '''This can be useful for annotating limit lines. It can make dotted red lines for example.'''
         axis_params = self.y1_axis_params if axis==1 else self.y2_axis_params
         ylims = self.ylims if axis==1 else self.y2_axis_params["ylims"]
@@ -447,7 +433,7 @@ class plot(object):
             else:
                 if note is not None:
                     print("LTC_plot: Discarding horizontal line note, inability to locate on autoscale.")
-                    note = None          
+                    note = None
         else:#xlims is not None and xrange is not None:         # Presume the intent is to use the given xrange
             hxline = False
             xrange0 = xrange[0]
@@ -458,11 +444,11 @@ class plot(object):
                 if note is not None:
                     print("LTC_plot: Discarding horizontal line note, inability to locate on autoscale.")
                     note = None
-        self.add_trace(axis=axis, data=value if hxline else [(xrange0,value),(xrange1,value)], color=color, marker=None, markersize=0, linestyle="--", legend="", stepped_style=False, hxline=hxline)
+        self.add_trace(axis=axis, data=value if hxline else [(xrange0,value),(xrange1,value)], color=color, marker=None, markersize=0, linestyle="--", linewidth=linewidth, legend="", stepped_style=False, hxline=hxline)
         if note is not None:
             self.add_note(note=note, location=text_location, use_axes_scale=True, fontsize=3, axis=axis)
 
-    def add_vertical_line(self, value, yrange=None, note=None, axis=1, color=[1,0,0]):
+    def add_vertical_line(self, value, yrange=None, note=None, axis=1, color=[1,0,0], linestyle=None, linewidth=None):
         '''This can be useful for annotating limit lines. It can make dotted red lines for example.'''
         if axis not in [1,2]:
             raise Exception("\n\nLTC_plot ERROR: AXIS MUST BE 1 or 2\n")
@@ -505,7 +491,7 @@ class plot(object):
                 if note is not None:
                     print("LTC_plot: Discarding vertical line note, inability to locate on autoscale.")
                     note = None
-        self.add_trace(axis=axis, data=value if vxline else [(value,yrange0),(value,yrange1)], color=color, marker=None, markersize=0, linestyle="--", legend="", stepped_style=False, vxline=vxline)
+        self.add_trace(axis=axis, data=value if vxline else [(value,yrange0),(value,yrange1)], color=color, marker=None, markersize=0, linestyle="--", linewidth=linewidth, legend="", stepped_style=False, vxline=vxline)
         if note is not None:
             self.add_note(note=note, location=text_location, use_axes_scale=True, fontsize=3, axis=axis)
 
@@ -532,7 +518,7 @@ class plot(object):
         self.y2_axis_params["ydivs"]        = ydivs
         self.y2_axis_params["logy"]         = logy
     def add_legend(self, axis, location = (0,0), justification = 'lower left', use_axes_scale = False, fontsize=7):
-        '''PLace a legend on the graph. The legend labels were acquired from the legend argument in the add_trace call. Position supports data axes and absolute axes.'''
+        '''Place a legend on the graph. The legend labels were acquired from the legend argument in the add_trace call. Position supports data axes and absolute axes.'''
         if axis == 1:
             self.y1_axis_params["place_legend"]         = True
             self.y1_axis_params["legend_loc"]           = location
@@ -631,8 +617,8 @@ class scope_plot(plot):
             for color in MARCOM_COLORSfracRGB:
                 self.styles.append( (style,color,) )
         self.current_style_index = 0
-    def add_trace(self, data, color, marker = None, markersize = 0, linestyle = "-", legend = ""):
-        plot.add_trace(self, axis=1, data=data, color=color, marker=marker, markersize=markersize, linestyle=linestyle, legend=legend)
+    def add_trace(self, data, color, marker=None, markersize=0, linestyle="-", linewidth=None, legend=""):
+        plot.add_trace(self, axis=1, data=data, color=color, marker=marker, markersize=markersize, linestyle=linestyle, linewidth=linewidth, legend=legend)
     def add_legend(self, axis=1, location=(0,0), justification='lower left', use_axes_scale=False, fontsize=7):
         plot.add_legend(self, axis=axis, location=location, justification=justification, use_axes_scale=use_axes_scale, fontsize=fontsize)
     def make_second_y_axis(self, *args, **kwargs):
@@ -726,22 +712,16 @@ class Page():
         graph = self.Figure.add_subplot(self.rows_x_cols[0], self.rows_x_cols[1], self.next_position)
         self.plot_list.append(plot)
         rows, columns = self.rows_x_cols
-        if plot_sizex is None:
-            plot_sizex = 11.0/6.0 # Graphs are exactly 11 pica which is 1/6 of an inch
-        else:
-            plot_sizex =  float(plot_sizex)
+        plot_sizex = 11.0/6.0 if plot_sizex == None else float(plot_sizex) # Graphs are exactly 11 pica which is 1/6 of an inch
         if plot_sizey is None:
-            if plot.plot_type == "scope_plot":
-                plot_sizey  = float(8.8/6.0) # Graphs are exactly 11x8.8 pica which make perfect squares on a 10x8 grid. Bob Reay's tool uses 8.6667 pica. Not sure why.
-            else:
-                plot_sizey = 11.0/6.0 # Graphs are exactly 11 pica which is 1/6 of an inch
+            plot_sizey = float(8.8/6.0) if plot.plot_type == "scope_plot" else 11.0/6.0
+            # Graphs are exactly 11x8.8 pica which make perfect squares on a 10x8 grid.
+            # Bob Reay's tool uses 8.6667 pica. Not sure why.
+            # Graphs are exactly 11 pica which is 1/6 of an inch
         else:
             plot_sizey = float(plot_sizey)
         if trace_width is None:
-            if plot.plot_type == "scope_plot":
-                trace_width = 0.6
-            else:
-                trace_width = 1.2
+            trace_width = 0.6 if plot.plot_type == "scope_plot" else 1.2
         left_border     =  float(left_border)
         right_border    =  float(right_border)
         top_border      =  float(top_border)
@@ -760,14 +740,15 @@ class Page():
         else:
             x_total = left_border + right_border + plot_sizex * columns + x_gap * (columns - 1)
             y_total = bottom_border + top_border + plot_sizey * rows + y_gap * (rows - 1)
-        left        = left_border / x_total
-        right       = (x_total - right_border) / x_total
-        bottom      = bottom_border / y_total
-        top         = (y_total - top_border) / y_total
-        hspace      = y_gap / plot_sizey # hspace and wspace are percentages of a plot scale
-        wspace      = x_gap / plot_sizex # for example, wspace = 1 makes gaps the size of the x dimension of a plot
+        # https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.subplots_adjust.html
+        left    = left_border / x_total                 # The position of the left edge of the subplots, as a fraction of the figure width.
+        right   = (x_total - right_border) / x_total    # The position of the right edge of the subplots, as a fraction of the figure width.
+        bottom  = bottom_border / y_total               # The position of the bottom edge of the subplots, as a fraction of the figure height.
+        top     = (y_total - top_border) / y_total      # The position of the top edge of the subplots, as a fraction of the figure height.
+        hspace  = y_gap / plot_sizey                    # The width of the padding between subplots, as a fraction of the average Axes width.
+        wspace  = x_gap / plot_sizex                    # The height of the padding between subplots, as a fraction of the average Axes height. For example, wspace = 1 makes gaps the size of the x dimension of a plot
         self.Figure.set_size_inches(x_total, y_total)
-        graph.figure.subplots_adjust(left = left, right = right, bottom = bottom, top = top, wspace = wspace, hspace = hspace)
+        graph.figure.subplots_adjust(left=left, right=right, bottom=bottom, top=top, wspace=wspace, hspace=hspace)
         graph.set_axisbelow(True) # Puts data in front of axes
         try:
             graph.set_title(plot.plot_title, fontsize = 9.5, fontweight = "bold", color = 'black', loc = "left")
@@ -918,13 +899,13 @@ class Page():
                     if trace["vxline"]:
                         y_axis_params["axis"].axvline(  x           = trace["data"],
                                                         color       = trace["color"],
-                                                        linewidth   = trace_width,
+                                                        linewidth   = trace["linewidth"], # trace_width,
                                                         linestyle   = trace["linestyle"]
                                                         )
                     elif trace["hxline"]:
                         y_axis_params["axis"].axhline(  y           = trace["data"],
                                                         color       = trace["color"],
-                                                        linewidth   = trace_width,
+                                                        linewidth   = trace["linewidth"], # trace_width,
                                                         linestyle   = trace["linestyle"]
                                                         )
                     else:
@@ -938,7 +919,7 @@ class Page():
                             y_axis_params["axis"].step(     x,
                                                             y,
                                                 color       = trace["color"],
-                                                linewidth   = trace_width,
+                                                linewidth   = trace["linewidth"], # trace_width,
                                                 marker      = trace["marker"],
                                                 markersize  = trace["markersize"],
                                                 label       = trace["legend"],
@@ -951,7 +932,7 @@ class Page():
                             y_axis_params["axis"].plot(     x,
                                                             y,
                                                 color       = trace["color"],
-                                                linewidth   = trace_width,
+                                                linewidth   = trace["linewidth"], # trace_width,
                                                 marker      = trace["marker"],
                                                 markersize  = trace["markersize"],
                                                 label       = trace["legend"],
@@ -1164,9 +1145,13 @@ class Multipage_pdf():
     def add_page(self, page):
         FigureCanvasPdf(page.Figure)
         self.page_list.append(page)
-    def create_pdf(self, file_basename):
-        filepath = '.\\plots\\'
-        filename = filepath + "{}.pdf".format(file_basename).replace(" ", "_")
+    def create_pdf(self, file_basename, filepath=None):
+        filepath = './plots/' if filepath is None else os.path.join(filepath,'plots')
+        try:
+            os.makedirs(filepath)
+        except OSError:
+            pass
+        filename = os.path.join(filepath,"{}.pdf".format(file_basename).replace(" ", "_"))
         try:
             os.makedirs(filepath)
         except OSError:
@@ -1175,7 +1160,7 @@ class Multipage_pdf():
         for page in self.page_list:
             self.pdf_file.savefig(page.Figure)
         self.pdf_file.close()
-    def kit_datasheet(self, file_basename = "datasheet_kit"):
+    def kit_datasheet(self, file_basename="datasheet_kit"):
         filepath = 'datasheet_kit\\'
         try:
             os.makedirs('.\\plots\\' + filepath)
@@ -1188,7 +1173,7 @@ class Multipage_pdf():
                 DummyPage = Page(rows_x_cols = (1, 1))
                 DummyPage.add_plot(page.plot_list[plot])
                 DummyPage.create_svg(filepath + plot_name)
-        self.create_pdf("\\datasheet_kit\\PDFView")
+        self.create_pdf(file_basename, "\\datasheet_kit\\PDFView")
         shutil.make_archive('.\\plots\\{}'.format(file_basename), 'zip', '.\\plots\\' + filepath)
         shutil.rmtree('.\\plots\\datasheet_kit')
         print("\nWrote file: {}.zip\n".format(file_basename))

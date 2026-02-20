@@ -453,7 +453,10 @@ class twi_instrument(lab_core.instrument,lab_core.delegator):
                     else:
                         raise Exception(f'Register side effect {bf["write_side_effect"]} unknown. Contact PyICe developers.')
                 if len(reg["functionalgroups"]) != 0:
-                    register.set_category(str(reg["functionalgroups"][0]))
+                    if str(reg["functionalgroups"][0]) == '':
+                        register.set_category("BlankFunctionalGroup")
+                    else:
+                        register.set_category(str(reg["functionalgroups"][0]))
                 else:
                     register.set_category("NoFunctionalGroup")
                 if len(reg["functionalgroups"]) > 1:

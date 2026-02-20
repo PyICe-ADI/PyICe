@@ -1,4 +1,5 @@
 from ..lab_core import *
+from .modbus_instrument import modbus_register
 
 class modbus_relay(instrument):
     def __init__(self, serial_port, modbus_address):

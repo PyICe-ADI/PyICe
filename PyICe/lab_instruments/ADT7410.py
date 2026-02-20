@@ -10,7 +10,7 @@ class ADT7410(instrument):
         addr7 is the 7-bit I2C address of the ADT7410 set by pinstrapping.
         Choose addr7 from 0x48, 0x49, 0x4A, 0x4B
         '''
-        instrument.__init__(self, f'Analog Devices ADT7410 Silicon Temperature Sensor at {addr7:X}')
+        instrument.__init__(self, f'Analog Devices ADT7410 Silicon Temperature Sensor at 0x{addr7:X}')
         self._base_name = 'ADT7410'
         self.add_interface_twi(interface_twi)
         self.twi = interface_twi

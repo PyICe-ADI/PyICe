@@ -1,6 +1,7 @@
 from .lab_core import *
 from PyICe.lab_utils.str2num import str2num
-from PyICe.lab_utils.delay_loop import delay_loop
+from PyICe.lab_instruments.temperature_chamber import temperature_chamber
+import PyICe.lab_utils.delay_loop
 from PyICe.lab_utils.eng_string import eng_string
 from PyICe.lab_utils.threaded_writer import threaded_writer
 import random
@@ -50,6 +51,8 @@ aggregator
   Combines multiple, less capable channels into a single channel of great renown.
 dummy_quantum_twin
   Creates dummy channels that opportunistically mirror the state of their live counterparts. Useful for logging DUT state after shutdown, among other things
+virtual_oven
+  Creates shell of an oven-like instrument. Useful for tests that require oven channels but lack an oven.
 '''
 
 class dummy(instrument):
@@ -483,7 +486,7 @@ class ExpectUnderException(ExpectException):
     '''expect instrument comparison failures for measured < expect'''
     pass
 
-class delay_loop(delay_loop, instrument):
+class delay_loop(PyICe.lab_utils.delay_loop.delay_loop, instrument):
     '''instrument wrapper for lab_utils.delay_loop enables logging of delay diagnostic variables'''
     def __init__(self, strict=False, begin=True, no_drift=True):
         '''Set strict to True to raise an Exception if loop time is longer than requested delay.
@@ -495,7 +498,7 @@ class delay_loop(delay_loop, instrument):
           Set no_drift=False to ignore time over-runs when computing next delay time.
         '''
         instrument.__init__(self, "delay_loop instrument wrapper")
-        delay_loop.__init__(self, strict, begin, no_drift)
+        PyICe.lab_utils.delay_loop.delay_loop.__init__(self, strict, begin, no_drift)
         self._base_name = 'Precision Delay Loop Virtual Instrument Wrapper'
     def add_channel_count(self, channel_name):
         '''total number of times delay() method called'''
@@ -1663,9 +1666,9 @@ class threshold_finder(instrument,delegator):
         self.debug_print("Check polarity and output digitizer threshold.".format(self.tries))
 
         #get the polarity
-        low_test = self._test(self._minimum, measure_input=True, controlled=False)
+        low_test = self._test(self._integer_round(self._minimum), measure_input=True, controlled=False)
         self.debug_print("Measured low output: {} at input: {}".format(low_test['output_analog'], self._minimum))
-        high_test = self._test(self._maximum, measure_input=True, controlled=False)
+        high_test = self._test(self._integer_round(self._maximum), measure_input=True, controlled=False)
         self.debug_print("Measured high output: {} at input: {}".format(high_test['output_analog'], self._maximum))
         if high_test['output_analog'] == low_test['output_analog']:
             raise ThresholdUndetectableError(f'{self.get_name()}: Comparator output unchanged at max and min input forcing levels!')
@@ -1906,6 +1909,31 @@ class threshold_finder(instrument,delegator):
         self.debug_print("Searching for falling threshold")
         self._find_linear_threshold(self._minimum, self.rising_max, -1 * self._abstol) # find falling threshold starting just after rising hysteresis flip.
         self.search_algorithm = "linear search"
+        res = self._compute_outputs()
+        return res
+    def find_linear_no_hysteresis(self, rising_direction=True):
+        '''hysteresis-unaware linear sweep. Returns dictionary of results. Optionally sweep in downward direction.'''
+        #todo integer awareness
+        self._check_polarity()
+        self.tries = 0
+        if rising_direction:
+            self.debug_print("------------------------------")
+            self.debug_print("Searching for rising threshold")
+            self.rising_min = self._minimum
+            self.rising_max = self._maximum
+            self._find_linear_threshold(self._minimum, self._maximum, self._abstol) # find rising threshold
+            self.falling_min = self.rising_min
+            self.falling_max = self.rising_max
+            self.search_algorithm = "single linear search - rising"
+        else:
+            self.debug_print("-------------------------------")
+            self.debug_print("Searching for falling threshold")
+            self.falling_min = self._minimum
+            self.falling_max = self._maximum
+            self._find_linear_threshold(self._minimum, self._maximum, -1 * self._abstol) # find falling threshold starting just after rising hysteresis flip.
+            self.rising_min = self.falling_min
+            self.rising_max = self.falling_max
+            self.search_algorithm = "single linear search - falling"
         res = self._compute_outputs()
         return res
     def find_geometric(self, decades=None):
@@ -2719,3 +2747,15 @@ class dummy_quantum_twin(instrument):
         dummy_channel.set_write_access(True)
         dummy_channel.write(value)
         dummy_channel.set_write_access(False)
+
+class Virtual_Oven(temperature_chamber):
+    def __init__(self):
+        self._base_name = 'Virtual_Oven'
+        temperature_chamber.__init__(self)
+    def _write_temperature(self, value):
+        self.setpoint = value
+        self._wait_settle()
+    def _read_temperature_sense(self):
+        return self.setpoint
+    def _enable(self, enable):
+        pass

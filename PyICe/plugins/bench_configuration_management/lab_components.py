@@ -79,6 +79,11 @@ class BK8500(single_channel_electronic_load):
 class one_channel_power_supply(bench_config_component):
     def add_terminals(self):
         self.add_terminal("VOUT1", instrument=self)
+        
+class two_channel_power_supply(bench_config_component):        
+    def add_terminals(self):
+        self.add_terminal("CHANNELA", instrument=self)
+        self.add_terminal("CHANNELB", instrument=self)
 
 class four_channel_power_supply(bench_config_component):
     def add_terminals(self):
@@ -143,6 +148,10 @@ class ConfiguratorXT(bench_config_component):
         self.add_terminal("FORCE_F4", instrument=self)
         self.add_terminal("DZ", instrument=self)
         self.add_terminal("PCIEX", instrument=self)
+        self.add_terminal("UEXT", instrument=self)
+
+class Uext_Accelerator(bench_config_component):
+    def add_terminals(self):
         self.add_terminal("UEXT", instrument=self)
 
 class Rampinator(bench_config_component):
@@ -236,6 +245,14 @@ class E5061B_ENA(bench_config_component):
         self.add_terminal("LFOUT", instrument=self)
         self.add_terminal("PORT1", instrument=self)
         self.add_terminal("PORT2", instrument=self)
+        
+class HP8110A(bench_config_component):
+    def add_terminals(self):
+        self.add_terminal("OUTPUT1", instrument=self)
+        self.add_terminal("OUTPUT2", instrument=self)
+        self.add_terminal("STROBE_OUT", instrument=self)
+        self.add_terminal("EXT_INPUT", instrument=self)
+        self.add_terminal("TRIGGER_OUT", instrument=self)
         
 class PICOTEST_J2111B(bench_config_component):
     def add_terminals(self):

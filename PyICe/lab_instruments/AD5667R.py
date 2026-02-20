@@ -72,7 +72,7 @@ class AD5667R(instrument):
         FLOAT   1   0   7b0001110       0x0E
         GND     1   1   7b0001111       0x0F
         '''
-        instrument.__init__(self, f'Analog Devices AD5667R Digital to Ananlog Converter at {addr7:X}')
+        instrument.__init__(self, f'Analog Devices AD5667R Digital to Ananlog Converter at 0x{addr7:X}')
         self._base_name = 'AD5667R'
         self.add_interface_twi(interface_twi)
         self.twi = interface_twi

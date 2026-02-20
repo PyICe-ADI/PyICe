@@ -1,4 +1,5 @@
 from ..lab_core import *
+from .modbus_instrument import modbus_register
 
 class autonicstk(instrument):
     def __init__(self, interface_raw_serial, modbus_address):

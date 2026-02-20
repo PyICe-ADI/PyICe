@@ -1000,7 +1000,7 @@ class display_item_group(QtWidgets.QWidget):
         self.display_items.append(item)
     def sort(self):
         if self._tagged_sort:
-            key = lambda di: '{}{}'.format(di.get_tag(),di.get_name()).upper()
+            key = lambda di: '{}______{}'.format(di.get_tag(),di.get_name()).upper()
         else:
             key = lambda item: item.get_name().upper()
         self.display_items.sort(key = key)

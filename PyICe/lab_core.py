@@ -301,6 +301,27 @@ class channel(delegator):
                 callback(self,value)
         self.unlock_interfaces()
         return value
+    def write_confirm(self,value):
+        '''
+        Read back value after writing to make sure it "took".
+        This is only useful for register-type channels that model remote memory.
+        Basic writable channels pass this check trivially.
+        returns value
+        raises ChannelValueException
+        '''
+        v_w = self.write(value)
+        v_r = self.read()
+        try:
+            v_w = self.compute_expect_readback_data(value) # Only register channels do special access
+        except AttributeError as e:
+            if v_w != v_r:
+                raise ChannelValueException(f'Failed to set channel {self.get_name()} to value {v_w}. Read back {v_r}.')
+        else:
+            if v_w is None and value is not None:
+                pass
+            elif v_w != v_r:
+                raise ChannelValueException(f'Failed to write channel {self.get_name()} value {value}. Read back {v_r}.')
+        return v_w
     def add_preset(self, preset_value, preset_description=None):
         '''base channels only have unnamed presets (not enumerations)'''
         if not self.is_writeable():
@@ -392,7 +413,6 @@ class channel(delegator):
         return self._category
     def add_tag(self,tag):
         '''each channel may receive several tags for sorting purposes. The tag is usually a string.'''
-        print("*** Added tag {} to {}".format(tag, self.get_name()))
         self._tags.append(tag)
     def add_tags(self,tag_list):
         '''each channel may receive several tags for sorting purposes. This function adds a list of tags. The tags are usually strings.'''
@@ -694,6 +714,18 @@ class integer_channel(channel):
             units optionally appended to formatted (real) data when displayed by GUI
             xypoints optionally allows duplicates information from format/unformat function to allow reproduction of transform in SQL, etc'''
         self._formats[format_name] = {}
+        if format_function is None and unformat_function is None and len(xypoints)==2:
+            '''Auto straight-line formatter. Don't specify horizontal or vertical non-functinoal, non-reversible transforms.'''
+            # TODO document
+            # TODO support multi-segment operation. This shouldn't be a big lift, given PWL multi-segment support elsewhere in PyICe.
+            # TODO signed domain support?
+            x_pts, y_pts = zip(*xypoints)
+            assert len(x_pts) == len(set(x_pts)), f'ERROR: {self.get_name()} format {format_name} has non-reversible horizontal segment.'
+            assert len(y_pts) == len(set(y_pts)), f'ERROR: {self.get_name()} format {format_name} has non-functional vertical segment.'
+            m = (xypoints[1][1] - xypoints[0][1]) / (xypoints[1][0] - xypoints[0][0]) #(y2-y1)/(x2-x1)
+            b = xypoints[1][1] - m * xypoints[1][0]
+            format_function = lambda x: m*x+b
+            unformat_function = lambda y: int(round((y-b)/m))
         if signed:
             self._formats[format_name]['format_function'] = lambda x: format_function(self.twosComplementToSigned(x))
             self._formats[format_name]['unformat_function'] = lambda x: self.signedToTwosComplement(unformat_function(x))
@@ -1046,6 +1078,21 @@ class register(integer_channel):
             return 2**self.get_size()-1
         else:
             raise Exception(f'Register special access {self.get_attribute("special_access")} improperly implemented. Contact PyICe developers.')
+    def compute_expect_readback_data(self, data):
+        if self.get_attribute('special_access') is None:
+            return self.format_write(data)
+        elif self.get_attribute('special_access') in ('W1C',):
+            return 0 if data==1 else None #unknown
+        elif self.get_attribute('special_access') in ('W1S',):
+            return 1 if data==1 else None
+        elif self.get_attribute('special_access') in ('W0C',):
+            return 0 if data==0 else None
+        elif self.get_attribute('special_access') in ('W0S',):
+            return 1 if data==1 else None
+        elif access.upper in ("WSRC", "WCRS", "W1SRC", "W1CRS", "W0SRC", "W0CRS"):
+            raise Exception('Read/write side effect special register access unimplemented. Please contact PyICe developers.')
+        else:
+            raise Exception('Unknown register side effect special access.. Please contact PyICe developers.')
 
 class channel_group(object):
     def __init__(self, name='Unnamed Channel Group'):
@@ -1070,6 +1117,9 @@ class channel_group(object):
         copy_self._channel_dict = results_ord_dict()                #Replace the channel dictionary with an empty one
         copy_self._channel_dict.update(self._channel_dict)          #Populate the copy of the dictionary with copies of original channels
         ### How should _partial_delegation_results, _self_delegation_channels, _sub_channel_groups be handled by this copy routine?
+        if isinstance(self, delegator):
+            if self.get_delegator() is self:
+                copy_self.set_delegator(copy_self)
         return copy_self
     def get_name(self):
         return self._name
@@ -1132,8 +1182,8 @@ class channel_group(object):
         return list(self._sub_channel_groups)
     def read(self,channel_name):
         return self.read_channel(channel_name)
-    def write(self,channel_name,value):
-        return self.write_channel(channel_name,value)
+    def write(self,channel_name,value,confirm=False):
+        return self.write_channel(channel_name,value,confirm)
     def read_channel(self,channel_name):
         channel = self._resolve_channel(channel_name)
         if channel is None:
@@ -1143,8 +1193,11 @@ class channel_group(object):
         '''item list is a list of channel objects, names or channel_groups'''
         channel_list = self.resolve_channel_list(item_list)
         return self.read_channel_list(channel_list)
-    def write_channel(self,channel_name,value):
-        return self.get_channel(channel_name).write(value)
+    def write_channel(self,channel_name,value,confirm=False):
+        if confirm:
+            return self.get_channel(channel_name).write_confirm(value)
+        else:
+            return self.get_channel(channel_name).write(value)
     def write_channels(self, item_list):
         return [self.write_channel(ch_name, ch_value) for (ch_name, ch_value) in item_list]
     def get_channel(self,channel_name):
@@ -1958,10 +2011,10 @@ class channel_master(channel_group,delegator):
                 debug_logging.debug("Channel master running read callback %s.", function)
                 function(results)
         return results
-    def write_channel(self,channel_name,value):
+    def write_channel(self,channel_name,value,confirm=False):
         '''Delegates channel write to the appropriate registered instrument.'''
         debug_logging.debug("Writing Channel %s to %s", channel_name, value)
-        data =  channel_group.write_channel(self,channel_name,value)
+        data =  channel_group.write_channel(self,channel_name,value,confirm)
         debug_logging.debug("Channel %s write data unformatted to %s", channel_name, data)
         for function in self._write_callbacks:
             debug_logging.debug("Channel master running write callback %s.", function)

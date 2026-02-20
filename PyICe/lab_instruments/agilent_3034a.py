@@ -251,9 +251,10 @@ class agilent_3034a(oscilloscope):
         if self.force_trigger:
             self.trigger_force()
         results = results_ord_dict()
-        timeout = 10
+        timeout = 6
         last_remaining_time = timeout-1
         timeout_time = time.time() + timeout
+        helper_message_sent = False
         while(True):
             if self.scope_stopped():
                 self._read_scope_time_info()
@@ -266,6 +267,12 @@ class agilent_3034a(oscilloscope):
                 print()
                 return results
             else:
+                if not helper_message_sent:
+                    print_banner("***WARNING***",
+                                 "The Agilent 3034a must be in [STOP] mode to retrieve waveforms (RED light).",
+                                 "Try using [SINGLE] instead of [RUN][NORMAL] to capture the waveform.",
+                                 "Alternately try increasing the write delay (.set_write_delay()) on the event", "triggering channel.")
+                    helper_message_sent = True
                 remaining_time = int(timeout_time-time.time()) #round down
                 if remaining_time < last_remaining_time:
                     last_remaining_time = remaining_time
@@ -1011,9 +1018,31 @@ class agilent_3034a(oscilloscope):
         new_channel.set_attribute('dependent_physical_channels',(number,))
         return new_channel
 
-    def save_to_usb(self, file_name):
-        self.get_interface().write(":SAVE:IMAGe:FORMat BMP8bit")
-        self.get_interface().write(f':SAVE:IMAGe:STARt "{file_name}"')
+    def save_to_usb(self, file_name, format):
+        formats = ('setup', 'bmp8', 'bmp24', 'png', 'csv', 'asciixy', 'binary') # todo (, referenceh5, multichh5, analysiscsv)
+        assert format in formats, f'Format {format} not in set {formats}'
+        if format == 'setup':
+            self.get_interface().write(f':SAVE:SETup:STARt "{file_name}"')
+        elif format == 'bmp24':
+            self.get_interface().write(":SAVE:IMAGe:FORMat BMP24bit")
+            self.get_interface().write(f':SAVE:IMAGe:STARt "{file_name}"')
+        elif format == 'bmp8':
+            self.get_interface().write(":SAVE:IMAGe:FORMat BMP8bit")
+            self.get_interface().write(f':SAVE:IMAGe:STARt "{file_name}"')
+        elif format == 'png':
+            self.get_interface().write(":SAVE:IMAGe:FORMat PNG")
+            self.get_interface().write(f':SAVE:IMAGe:STARt "{file_name}"')
+        elif format == 'csv':
+            self.get_interface().write(":SAVE:WAVeform:FORMat CSV")
+            self.get_interface().write(f':SAVE:WAVeform:STARt "{file_name}"')
+        elif format == 'asciixy':
+            self.get_interface().write(":SAVE:WAVeform:FORMat ASCiixy")
+            self.get_interface().write(f':SAVE:WAVeform:STARt "{file_name}"')
+        elif format == 'binary':
+            self.get_interface().write(":SAVE:WAVeform:FORMat BINary")
+            self.get_interface().write(f':SAVE:WAVeform:STARt "{file_name}"')
+        else:
+            raise Exception("I'm lost.")
         self.delay()
         
 #############################################################################################################################

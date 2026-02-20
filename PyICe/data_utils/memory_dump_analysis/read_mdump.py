@@ -1,4 +1,5 @@
 from PyICe import lab_core
+import json
 import objutils
 import os
 
@@ -41,7 +42,7 @@ class memory_decoder():
         # print(f'READ data between addresses 0x{min(mem_data.keys()):X} and 0x{max(mem_data.keys()):X} ({max(mem_data.keys())-min(mem_data.keys())+1})')
         # return mem_data
     def _parse_bitfields(self):
-        #depends on twii memory dect having been previously populated!
+        #depends on twii memory dict having been previously populated!
         bf_data = {}
         for bf in self.twii:
             try:
@@ -64,7 +65,9 @@ class memory_decoder():
             pkey = bf_name # Name
             bf = self.twii[bf_name]
             fvalue = bf.format(data=bf_value, format=None, use_presets=True)
-            if fvalue == bf_value:
+            if fvalue is None:
+                pvalue = bf_value
+            elif fvalue == bf_value:
                 size = bf.get_size()
                 nsize = (size-1) // 4 + 1
                 nsizefstr = f'{bf_value:0{nsize}X}'
@@ -86,27 +89,45 @@ class memory_decoder():
             else:
                 raise Exception(f'Unknown file type {file_ext}. Contact PyICe-developers@analog.com for more information.')
             f.close()
+        return self.slice(reg_data)
+    def slice(self, reg_data):
+        '''expect dictionary of {addr_a: data_a, addr_b:, data_b, ...addr_n: data_n}'''
         self.twii.get_interface().set_data_source(reg_data)
         bf_data = self._parse_bitfields()
         self.prettyprint(bf_data)
         return bf_data
-
-if __name__ == '__main__':
-    # stowe_offset = -0x32534003C61
-    
-    #Example usage
-    from PyICe import twi_instrument
-    m = lab_core.master()
-    twi = m.get_twi_mdump_interface(data_source=None) #populate later
-    twii = twi_instrument.twi_instrument(twi) #, PEC = True, except_on_i2cCommError = True, retry_count = 1)
-    json_rel = '../../../../stowe_eval/stowe_eval_base/yoda/output/pyice'
-    json_root = os.path.abspath(json_rel)
-    YODA_JSON_FILE = os.path.join(json_root, 'stowe_pyice.json')
-    YODA_FUSE_JSON_FILE = os.path.join(json_root, 'stowe_pyice_fuse.json')
-    twii.populate_from_yoda_json_bridge(YODA_JSON_FILE, i2c_addr7 = None)
-    twii.populate_from_yoda_json_bridge(YODA_FUSE_JSON_FILE, i2c_addr7 = None)
-
-    bf_data = memory_decoder(twii).decode('aptiv_2022_03_31/FLR4p_PMIC_Reg_Dump_working.s19')
-
-    from stowe_eval.stowe_eval_base.modules import stowe_die_traceability
-    print(stowe_die_traceability.stowe_die_traceability.get_ATE_config(stowe_die_traceability.byte_ord_dict(bf_data)))
+    def read(self, ascii_dump_file):
+        '''Expects data already sliced to named bitfields. Applies enumerations and format transforms.'''
+        #Warning, this modifies the twii, making it incompatible with binary decode()
+        for bf in self.twii:
+            bf.set_delegator(bf)
+            bf._write = None
+            bf._read = None
+            bf.set_write_access(True)
+        file_ext = os.path.splitext(ascii_dump_file)[1]
+        with open(ascii_dump_file, 'r') as f:
+            if file_ext == ".txt":
+                # "KEY: VALUE\n" record, like PyICe GUI dump
+                for line in f:
+                    k,v = line.strip().split(":")
+                    try:
+                        twii[k].write(v)
+                    except lab_core.ChannelAccessException as e:
+                        print(e)
+                    except Exception as e:
+                        raise e
+            elif file_ext == ".json" or file_ext == ".jsonc":
+                for k,v in json.json.load(f).items():
+                    try:
+                        twii[k].write(v)
+                    except lab_core.ChannelAccessException as e:
+                        print(e)
+                    except Exception as e:
+                        raise e
+            else:
+                raise Exception(f'Unknown file type {file_ext}. Contact PyICe-developers@analog.com for more information.')
+            f.close()
+        bf_data = self.twii.read_all_channels()
+        self.prettyprint(bf_data)
+        return bf_data
+        
