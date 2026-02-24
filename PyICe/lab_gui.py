@@ -1928,15 +1928,17 @@ class background_worker(QtCore.QThread):
     SI_channel_data_ready = QtCore.Signal(object)
     SI_dump_data_ready = QtCore.Signal(object)
     #background worker thread, it is the only thing that read and writes registers
-    def __init__(self,channel_group):
+    def __init__(self,channel_group, log_history=False):
         QtCore.QThread.__init__(self)
         self._channel_group = channel_group
         self._calls = []
         self.queue = queue.Queue(5)
-        self.log = open('gui_cmd_history.log', 'a', buffering=1)
-        self.log.write("\n\n###############################\n")
-        self.log.write("# {} #\n".format(datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')))
-        self.log.write("###############################\n\n")
+        self.log_history = log_history
+        if self.log_history:
+            self.log = open('gui_cmd_history.log', 'a', buffering=1)
+            self.log.write("\n\n###############################\n")
+            self.log.write("# {} #\n".format(datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')))
+            self.log.write("###############################\n\n")
         self.running = True
         self.run_loop_has_quit = False
     def read_channel_list(self,read_list):
@@ -1946,11 +1948,13 @@ class background_worker(QtCore.QThread):
         #     if item[0] == 'read' and set(item[1]) == set(read_list):
         #         return
         # FIXME FL: self.log.write("master.read_channel_list({})\n".format(read_list))
-        self.log.write("master.read_channels({})\n".format(read_list))
+        if self.log_history:
+            self.log.write("master.read_channels({})\n".format(read_list))
         self.queue.put ( ('read',read_list) )
     def write_channel_list(self,write_list):
-        for e in write_list:
-            self.log.write("master.write('{}', {})\n".format(*e))
+        if self.log_history:
+            for e in write_list:
+                self.log.write("master.write('{}', {})\n".format(*e))
         self.queue.put ( ('write',write_list) )
     def dump_channel_list(self,dump_list):
         self.queue.put ( ('dump',dump_list) )
@@ -1958,7 +1962,8 @@ class background_worker(QtCore.QThread):
         self.queue.put ( ('call',call) )
     def stop(self):
         self.queue.put ( ('stop',None) )
-        self.log.close()
+        if self.log_history:
+            self.log.close()
         self.running = False
     def run(self):
         try:
@@ -2372,10 +2377,10 @@ QApp = QtWidgets.QApplication(sys.argv)   # QApplication is a singleton per Qt d
 class ltc_lab_gui_app(QObject):
     SI_queue_overflow = Signal()
     SI_passive_observer_data = Signal(object)
-    def __init__(self,channel_group,passive=False,cfg_file='default.guicfg'):
+    def __init__(self,channel_group,passive=False,cfg_file='default.guicfg',log_history=False):
         super().__init__()
         # Setup background_worker thread that does all channel I/O.
-        self.worker = background_worker(channel_group)
+        self.worker = background_worker(channel_group,log_history=log_history)
         self.worker.start()
         #need to clone in case there are remote objects; they wont play nice with qt threads
         self._channel_group = channel_group.clone(name="GUI flat channel group")

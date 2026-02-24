@@ -2054,8 +2054,8 @@ class channel_master(channel_group,delegator):
         return True
     def background_gui(self,cfg_file='default.guicfg'):
         _thread.start_new_thread( self._gui_launcher_passive, (cfg_file,) )
-    def gui(self,cfg_file='default.guicfg'):
-        self._gui_launcher(cfg_file)
+    def gui(self,cfg_file='default.guicfg', log_history=False):
+        self._gui_launcher(cfg_file, log_history=log_history)
     def add_read_callback(self,read_callback):
         '''Adds a read callback. This is a function that will be called any time a channel(s) is read. the callback function should accept one argument: the dictionary of results.
         If it is not important to group results by each batch read, consider adding a callback to an individual channel instead.'''
@@ -2074,9 +2074,9 @@ class channel_master(channel_group,delegator):
         self.add_read_callback(gui.passive_data)
         self.add_write_callback(gui.passive_data)
         gui.exec_()
-    def _gui_launcher(self,cfg_file):
+    def _gui_launcher(self,cfg_file,log_history):
         from . import lab_gui #this cannot be imported in the main thread
-        gui = lab_gui.ltc_lab_gui_app(self,passive=False,cfg_file=cfg_file)
+        gui = lab_gui.ltc_lab_gui_app(self,passive=False,cfg_file=cfg_file,log_history=log_history)
         gui.exec_()
     def get_dummy_clone(self):
         clone = channel_master()
