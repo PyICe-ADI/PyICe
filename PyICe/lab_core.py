@@ -2055,7 +2055,7 @@ class channel_master(channel_group,delegator):
     def background_gui(self,cfg_file='default.guicfg'):
         _thread.start_new_thread( self._gui_launcher_passive, (cfg_file,) )
     def gui(self,cfg_file='default.guicfg', log_history=False):
-        '''log_history - bool. Default False. If set to True, what channels are read and what values are set will be logged in gui_cmd_history.log.'''
+        '''log_history - bool. Default False. If set to True, channel read and write commands will be logged in gui_cmd_history.log.'''
         self._gui_launcher(cfg_file, log_history=log_history)
     def add_read_callback(self,read_callback):
         '''Adds a read callback. This is a function that will be called any time a channel(s) is read. the callback function should accept one argument: the dictionary of results.
