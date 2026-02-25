@@ -130,7 +130,7 @@ class generic_results():
                                                                     'passes':   bool(results[t_d]) if not self._failure_override else False,
                                                                     }
                 else:
-                    raise Exception(f"*** P.I.E. TEST_RESULTS.PY ***\nExpected self to be either a Test_Results class or a Correlation_Results class. Was given a(n) {self}.")
+                    raise Exception(f"*** P.I.E. TEST_RESULTS.PY ***\nExpected self to be a Test_Results class. Was given a(n) {self}.")
         if self._failure_override:
             res_dict['summary'] = {'passes': False}
         else:
@@ -141,7 +141,7 @@ class Test_Results(generic_results):
     class _test_result(collections.namedtuple('test_result', ['test_name', 'conditions', 'min_data', 'max_data', 'passes', 'failure_reason', 'collected_data', 'plot', 'query'])):
         '''add some helper moethods for easy summary'''
         def __new__(cls, **kwargs):
-            '''fix (allowed) missing fields. FOr instance, original JSON didn't retain SQL query string.'''
+            '''fix (allowed) missing fields. For instance, original JSON didn't retain SQL query string.'''
             if 'query' not in kwargs:
                 kwargs['query'] = None
             return super().__new__(cls, **kwargs)
