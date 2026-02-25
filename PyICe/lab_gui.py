@@ -1933,8 +1933,8 @@ class background_worker(QtCore.QThread):
         self._channel_group = channel_group
         self._calls = []
         self.queue = queue.Queue(5)
-        self.log_history = log_history
-        if self.log_history:
+        self._log_history = log_history
+        if self._log_history:
             self.log = open('gui_cmd_history.log', 'a', buffering=1)
             self.log.write("\n\n###############################\n")
             self.log.write("# {} #\n".format(datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')))
@@ -1948,11 +1948,11 @@ class background_worker(QtCore.QThread):
         #     if item[0] == 'read' and set(item[1]) == set(read_list):
         #         return
         # FIXME FL: self.log.write("master.read_channel_list({})\n".format(read_list))
-        if self.log_history:
+        if self._log_history:
             self.log.write("master.read_channels({})\n".format(read_list))
         self.queue.put ( ('read',read_list) )
     def write_channel_list(self,write_list):
-        if self.log_history:
+        if self._log_history:
             for e in write_list:
                 self.log.write("master.write('{}', {})\n".format(*e))
         self.queue.put ( ('write',write_list) )
@@ -1962,7 +1962,7 @@ class background_worker(QtCore.QThread):
         self.queue.put ( ('call',call) )
     def stop(self):
         self.queue.put ( ('stop',None) )
-        if self.log_history:
+        if self._log_history:
             self.log.close()
         self.running = False
     def run(self):
