@@ -107,9 +107,9 @@ class modbus_instrument(instrument, minimalmodbus.Instrument):
             else:
                 ch.set_write_access(False)
             for attr in reg_description._fields:
-                if attr is 'number_of_decimals' and getattr(reg_description, attr) is None:
+                if attr == 'number_of_decimals' and getattr(reg_description, attr) is None:
                     ch.set_attribute(attr, 0)
-                elif attr is 'signed' and getattr(reg_description, attr) is None:
+                elif attr == 'signed' and getattr(reg_description, attr) is None:
                     ch.set_attribute(attr, False)
                 else:
                     ch.set_attribute(attr, getattr(reg_description, attr))

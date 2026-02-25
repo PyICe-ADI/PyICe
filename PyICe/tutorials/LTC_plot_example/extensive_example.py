@@ -146,7 +146,7 @@ G18.add_histogram(  axis            = 1,
                     color           = LTC_plot.LT_BLUE_2_40PCT,
                     normed          = False,
                     legend          = "data1",
-                    edgecolor       = None,
+                    # edgecolor       = None,
                     linewidth       = 0.5,
                     alpha           = None)
 G18.add_note("194 PARTS SOLDERED DOWN", [-0.082, 74])
@@ -177,7 +177,6 @@ G02.add_histogram(  axis            = 1,
                     color           = LTC_plot.LT_RED_1,
                     normed          = False,
                     legend          = "data1",
-                    edgecolor       = LTC_plot.LT_RED_1,
                     linewidth       = 0.001,
                     alpha           = 1)
                         
@@ -272,15 +271,15 @@ for group in groups:
                         FROM {group[1]}'''
     database_charging.query(query_charging)
     database_discharging.query(query_discharging)
-    GX.add_trace(           axis            = 1,
-                            data            = database_charging.to_list(),
-                            color           = LTC_plot.LT_RED_1,
-                            legend          = "Charging")
+    GX.add_trace(axis   = 1,
+                 data   = database_charging.to_list(),
+                 color  = LTC_plot.LT_RED_1,
+                 legend = "Charging")
 
-    GX.add_trace(           axis            = 1,
-                            data            = database_discharging.to_list(),
-                            color           = LTC_plot.LT_BLUE_1,
-                            legend          = "Discharging")
+    GX.add_trace(axis   = 1,
+                 data   = database_discharging.to_list(),
+                 color  = LTC_plot.LT_BLUE_1,
+                 legend = "Discharging")
     GX.add_legend(axis = 1, location = (3.025, 10), use_axes_scale = True)
     GX.add_note(group[2], [4, 0])
     position += 1
@@ -308,6 +307,5 @@ Multipagefile = LTC_plot.Multipage_pdf()
 Multipagefile.add_page(Page1)
 Multipagefile.add_page(Page2)
 Multipagefile.add_page(Page3)
-Multipagefile.create_pdf("test")
-
-Multipagefile.kit_datasheet(file_basename = "Extensive Example")
+Multipagefile.create_pdf("Extensive Example")
+Multipagefile.kit_datasheet(file_basename="Extensive Example")

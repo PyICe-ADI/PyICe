@@ -148,6 +148,7 @@ class waveform(object):
         self._trigger_polarity   = 0
         self._trigger_index      = -1
         self._trigger_value      = 0
+        self.trigger_time        = None
 
     def trigger_10_90(self):
         ## This method determines if the waveform is a rising edge or a falling edge. Then 

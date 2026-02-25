@@ -78,7 +78,6 @@ class visualizer():
             except Exception as e:
                 print()
                 traceback.print_exc()
-                breakpoint()
                 print_banner("*** WARNING ***", "Graphviz dot.exe (potentially) not found. Have you installed Graphviz from graphviz.org?", "Ensure that you have a path to graphviz/bin/dot.exe in your environment.")
                 print()
                 return f

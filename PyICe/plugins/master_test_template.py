@@ -81,27 +81,45 @@ class Master_Test_Template():
         '''Optional evaluate_results method placeholder'''
     def correlate_results(self):
         '''Optional correlate_results method placeholder'''
+    def declare_test(self, name:str, decl:dict={}):
+        '''Optional means to manually set declarations apart from the evaluation methods.'''
+        established_declarations = self._test_results.test_limits
+        if len(decl.keys()) == 0:
+            if name not in established_declarations.keys():
+                established_declarations[name]=self.get_test_limits(name)
+            else:
+                assert established_declarations[name]==self.get_test_limits(name), f"***Master Test Template Error*** Trying to change {name}'s declarations from {established_declarations[name]} to {self.get_test_limits(name)}"
+        elif 'upper_limit' not in decl or 'lower_limit' not in decl:
+            raise Exception(f"Declarations must include at least an upper and a lower limit. Received {decl}")
+        else:
+            if name not in established_declarations.keys():
+                established_declarations[name]=decl
+            else:
+                assert established_declarations[name]==decl, f"***Master Test Template Error*** Trying to change {name}'s declarations from {established_declarations[name]} to {decl}"
     def evaluate_rawdata(self, name, data, conditions=None):
         '''This will compare submitted data to limits for the named test.
         args:
             name - string. The name of the test whose limits will be used.
             data - Boolean or iterable object. Each value will be compared to the limits (or boolean value) of the name argument.
             conditions - None or dictionary. A dictionary with channel names as keys and channel values as values. Used to report under what circumstances the data was taken. Default is None.'''
-        self._test_results.test_limits[name]=self.get_test_limits(name)
+        if name not in self._test_results.test_limits.keys():
+            self.declare_test(name)
         self._test_results._evaluate_list(name=name, iter_data=data, conditions=conditions)
     def evaluate_query(self, name, query):
         '''This will compare submitted data to limits for the named test.
         args:
             name - string. The name of the test whose limits will be used.
             database - SQLite database object. The first column will be compared to the limits of the named spec and the rest will be used for grouping.'''
-        self._test_results.test_limits[name]=self.get_test_limits(name)
+        if name not in self._test_results.test_limits.keys():
+            self.declare_test(name)
         self.get_database().query(query)
         self._test_results._evaluate_database(name=name, database=self.get_database())
     def evaluate_db(self, name):
         '''This method evaluates a pre-massaged SQLite database, self.get_database(), from the user. It returns a bit of flexibility on the sequel query to the user.
         args:
             name - string. The name of the test whose limits will be used.'''
-        self._test_results.test_limits[name]=self.get_test_limits(name)
+        if name not in self._test_results.test_limits.keys():
+            self.declare_test(name)
         self._test_results._evaluate_database(name=name, database=self.get_database())
     def evaluate(self, name, values, conditions=[], where_clause=''):
         '''This compares submitted data from a SQLite database to a named test in a more outlined fashion.
@@ -114,6 +132,35 @@ class Master_Test_Template():
             condition_str += f",{condition}"
         query_str = f'SELECT {values}{condition_str} FROM {self.get_table_name()} ' + ('WHERE ' + where_clause if where_clause else '')
         self.evaluate_query(name, query=query_str)
+    def register_test_failure(self, name, reason, conditions=None, query=None):
+        '''Submit a result for a test that is considered a FAIL so the test, regardless of other data submitted, will result in a FAIL overall.'''
+        self._test_results._register_test_failure(name=name, reason=reason, conditions=conditions, query=query)
+    def evaluate_test_conditions(self, name, expected_conditions= '', report_conditions = [], where_clause=''):
+        '''This queries the test's database and checks that the string provided in expected_conditions returns only True values. If a False is returned, a FAIL result is added to the provided test's submitted data.
+            name - string. The name of the test that will fail if the expected conditions are not met.
+            expected_conditions - string. A string that will be added to the SELECT portion of a sqlite query. Should return boolean statements, e.g. vout2 == 3, imaina_force < 5, etc.
+            report_conditions - list of strings. Column names of the database whose values will be included in the FAIL result.
+            where_clause - string. Portion of a sqlite query that goes after WHERE, limiting what rows the database is considering the expected conditions in.'''
+        select_string=expected_conditions
+        if report_conditions:
+            select_string += ', '
+            for more_channel_names in report_conditions:
+                select_string+=more_channel_names+', '
+            select_string = select_string[:-2]
+        query = f"SELECT {select_string} FROM {self.get_table_name()}"
+        if where_clause:
+            query+=f" WHERE {where_clause}"
+        results = self.get_database().query(query).fetchall()
+        for row in results:
+            for excon in row.keys():
+                if excon in report_conditions:
+                    continue
+                if row[excon] != 1:
+                    reported_condition = []
+                    for recon in report_conditions:
+                        reported_condition.append(row[recon])
+                    self.register_test_failure(name=name, reason=f"Channel {excon} was found to be False. ", conditions=reported_condition)
+        
     def correlate_data(self, name, reference_values=[], test_values=[], spec=None, conditions=None):
         '''Compares test values to reference values and compare the output to the limits of the named test.
         args:
