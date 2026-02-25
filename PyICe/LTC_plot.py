@@ -1,9 +1,11 @@
 '''
-Marcom Compliant Plot Generator
+Linear Technology Compliant Plot Generator
 
 This program can be used to generate plots for general lab use or to
-generate Marcom specific plots that can be imported directly into the
-datasheet in SVG format.
+generate plots that can be imported directly into a datasheet in
+SVG format. The standards used herein were compliant with a now defunct
+analog semiconductor company called Linear Technology:
+https://en.wikipedia.org/wiki/Linear_Technology
 
 
 The objects that can be created with this program are:
@@ -12,37 +14,20 @@ The objects that can be created with this program are:
   3) Multipage_pdf
 
 The basic model is simple. You create one or more plots and add things to them
-like traces, histograms, legends, arrows, notes, etc. Once your plots are populated
+like traces, histograms, legends, arrows, notes, etc. Once your plots are populated,
 you create one or more pages and determine how you want the plots to arrange on
 each page. For instance you can create an 8.5x11 page and add 9 plots to it in
 a standard 3x3 grid. You can make one big page if you want. It doesn't have to be
 a standard size if you don't care what the printer does with it and it won't affect
-your SVG files to Marcom. If you want to have multiple pages of plots you can
+your SVG files to marketing. If you want to have multiple pages of plots you can
 create a Mulipage_pdf and add one or more pages to it.
 
 If you want larger plots with just one plot per page as in plot_tools.py you can
 create a page per plot, add a plot to each page and add all of the pages to a
 Multipage_pdf.
 
-So to start, you'll need to create a python work file and import this program:
-e.g.
-
 ::
-  
-   ----------- LTCXXXX_plots.py -------------- 
-  |import sys                                 |
-  |sys.path.append("../../../PyICe")          |
-  |import LTC_plot                            |
-  |    .                                      |
-  |    .                                      |
-  |    .                                      |
-   ------------------------------------------- 
 
-Next you want to create your plots. A generally preferable work flow would be to
-create all of your plots without regard to reference on a Page or Multipage_pdf.
-
-::
-  
   G0 = LTC_plot.plot(
                       plot_title      = "EN/FBIN Thresholds",
                       plot_name       = "8709 G0",
@@ -391,11 +376,11 @@ class plot(object):
                 self.styles.append( (style,color,) )
         self.current_style_index = 0
         
-    def add_trace(self, axis, data, color, marker=None, markersize=0, linestyle="-", legend="", stepped_style=False, vxline=False, hxline=False):
+    def add_trace(self, axis, data, color, marker=None, markersize=0, linestyle="-", linewidth=None, legend="", stepped_style=False, vxline=False, hxline=False):
         data = data if not isinstance(data,zip) else list(data)
         legend = legend.replace("-","−") if legend is not None else legend
         if not (vxline or hxline or len(data)):
-            print(f"\nLTC_plot WARNING: Attempt to add a trace on axis {axis} with no data has been rejected.\nNo trace will apear for this attempt.\nThe legend entry is '{legend}' if that helps. \nSorry, no more specific information is available.\n")
+            print(f"\nLTC_plot WARNING: Attempt to add a trace on axis {axis} with no data has been rejected.\nNo trace will apear for this attempt.\nThe legend entry is '{legend}' if that helps. \nSorry, more specific information is not available.\n")
             return
         trace_data = {  "axis"          : axis,
                         "data"          : data,
@@ -403,6 +388,7 @@ class plot(object):
                         "marker"        : marker,
                         "markersize"    : markersize,
                         "linestyle"     : linestyle,
+                        "linewidth"     : linewidth,
                         "legend"        : legend,
                         "stepped_style" : stepped_style,
                         "vxline"        : vxline,
@@ -415,8 +401,8 @@ class plot(object):
 
     def add_scatter(self, axis, data, color, marker='*', markersize=4, legend="", stepped_style=False, vxline=False, hxline=False):
         self.add_trace(axis=axis, data=data, color=color, marker=marker, markersize=markersize, linestyle="None", legend=legend, stepped_style=stepped_style, vxline=vxline, hxline=hxline)
-            
-    def add_horizontal_line(self, value, xrange=None, note=None, axis=1, color=[1,0,0]):
+
+    def add_horizontal_line(self, value, xrange=None, note=None, axis=1, color=[1,0,0], linestyle=None, linewidth=None):
         '''This can be useful for annotating limit lines. It can make dotted red lines for example.'''
         axis_params = self.y1_axis_params if axis==1 else self.y2_axis_params
         ylims = self.ylims if axis==1 else self.y2_axis_params["ylims"]
@@ -447,7 +433,7 @@ class plot(object):
             else:
                 if note is not None:
                     print("LTC_plot: Discarding horizontal line note, inability to locate on autoscale.")
-                    note = None          
+                    note = None
         else:#xlims is not None and xrange is not None:         # Presume the intent is to use the given xrange
             hxline = False
             xrange0 = xrange[0]
@@ -458,11 +444,11 @@ class plot(object):
                 if note is not None:
                     print("LTC_plot: Discarding horizontal line note, inability to locate on autoscale.")
                     note = None
-        self.add_trace(axis=axis, data=value if hxline else [(xrange0,value),(xrange1,value)], color=color, marker=None, markersize=0, linestyle="--", legend="", stepped_style=False, hxline=hxline)
+        self.add_trace(axis=axis, data=value if hxline else [(xrange0,value),(xrange1,value)], color=color, marker=None, markersize=0, linestyle="--", linewidth=linewidth, legend="", stepped_style=False, hxline=hxline)
         if note is not None:
             self.add_note(note=note, location=text_location, use_axes_scale=True, fontsize=3, axis=axis)
 
-    def add_vertical_line(self, value, yrange=None, note=None, axis=1, color=[1,0,0]):
+    def add_vertical_line(self, value, yrange=None, note=None, axis=1, color=[1,0,0], linestyle=None, linewidth=None):
         '''This can be useful for annotating limit lines. It can make dotted red lines for example.'''
         if axis not in [1,2]:
             raise Exception("\n\nLTC_plot ERROR: AXIS MUST BE 1 or 2\n")
@@ -505,7 +491,7 @@ class plot(object):
                 if note is not None:
                     print("LTC_plot: Discarding vertical line note, inability to locate on autoscale.")
                     note = None
-        self.add_trace(axis=axis, data=value if vxline else [(value,yrange0),(value,yrange1)], color=color, marker=None, markersize=0, linestyle="--", legend="", stepped_style=False, vxline=vxline)
+        self.add_trace(axis=axis, data=value if vxline else [(value,yrange0),(value,yrange1)], color=color, marker=None, markersize=0, linestyle="--", linewidth=linewidth, legend="", stepped_style=False, vxline=vxline)
         if note is not None:
             self.add_note(note=note, location=text_location, use_axes_scale=True, fontsize=3, axis=axis)
 
@@ -532,7 +518,7 @@ class plot(object):
         self.y2_axis_params["ydivs"]        = ydivs
         self.y2_axis_params["logy"]         = logy
     def add_legend(self, axis, location = (0,0), justification = 'lower left', use_axes_scale = False, fontsize=7):
-        '''PLace a legend on the graph. The legend labels were acquired from the legend argument in the add_trace call. Position supports data axes and absolute axes.'''
+        '''Place a legend on the graph. The legend labels were acquired from the legend argument in the add_trace call. Position supports data axes and absolute axes.'''
         if axis == 1:
             self.y1_axis_params["place_legend"]         = True
             self.y1_axis_params["legend_loc"]           = location
@@ -631,8 +617,8 @@ class scope_plot(plot):
             for color in MARCOM_COLORSfracRGB:
                 self.styles.append( (style,color,) )
         self.current_style_index = 0
-    def add_trace(self, data, color, marker = None, markersize = 0, linestyle = "-", legend = ""):
-        plot.add_trace(self, axis=1, data=data, color=color, marker=marker, markersize=markersize, linestyle=linestyle, legend=legend)
+    def add_trace(self, data, color, marker=None, markersize=0, linestyle="-", linewidth=None, legend=""):
+        plot.add_trace(self, axis=1, data=data, color=color, marker=marker, markersize=markersize, linestyle=linestyle, linewidth=linewidth, legend=legend)
     def add_legend(self, axis=1, location=(0,0), justification='lower left', use_axes_scale=False, fontsize=7):
         plot.add_legend(self, axis=axis, location=location, justification=justification, use_axes_scale=use_axes_scale, fontsize=fontsize)
     def make_second_y_axis(self, *args, **kwargs):
@@ -913,13 +899,13 @@ class Page():
                     if trace["vxline"]:
                         y_axis_params["axis"].axvline(  x           = trace["data"],
                                                         color       = trace["color"],
-                                                        linewidth   = trace_width,
+                                                        linewidth   = trace["linewidth"], # trace_width,
                                                         linestyle   = trace["linestyle"]
                                                         )
                     elif trace["hxline"]:
                         y_axis_params["axis"].axhline(  y           = trace["data"],
                                                         color       = trace["color"],
-                                                        linewidth   = trace_width,
+                                                        linewidth   = trace["linewidth"], # trace_width,
                                                         linestyle   = trace["linestyle"]
                                                         )
                     else:
@@ -933,7 +919,7 @@ class Page():
                             y_axis_params["axis"].step(     x,
                                                             y,
                                                 color       = trace["color"],
-                                                linewidth   = trace_width,
+                                                linewidth   = trace["linewidth"], # trace_width,
                                                 marker      = trace["marker"],
                                                 markersize  = trace["markersize"],
                                                 label       = trace["legend"],
@@ -946,7 +932,7 @@ class Page():
                             y_axis_params["axis"].plot(     x,
                                                             y,
                                                 color       = trace["color"],
-                                                linewidth   = trace_width,
+                                                linewidth   = trace["linewidth"], # trace_width,
                                                 marker      = trace["marker"],
                                                 markersize  = trace["markersize"],
                                                 label       = trace["legend"],

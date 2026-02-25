@@ -141,6 +141,13 @@ class channel_wrapper(object):
                 return self._channel.get_format()
             elif len(self.get_formats()) > 4:
                 return self.get_formats()[4] #Default to first user (non-generic) format if not otherwise specified.
+            else:
+                try:
+                    signed = self.get_attribute('signed')
+                except lab_core.ChannelAttributeException as e:
+                    signed = False
+                if signed:
+                    return 'signed dec'
         return None
     def get_channel(self):
         return self._channel

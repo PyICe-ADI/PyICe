@@ -4,10 +4,10 @@ from .modbus_instrument import modbus_instrument, modbus_reg_type, register_desc
 
 class watlow_f4(temperature_chamber, modbus_instrument):
     REGISTERS = [
-        rd('SV1', 300, readable=True, writeable=True, signed=True),
-        rd('PV1', 100, readable=True, writeable=False, signed=True),
+        rd('SV1', 300, readable=True, writeable=True, number_of_decimals=1, signed=True),
+        rd('PV1', 100, readable=True, writeable=False, number_of_decimals=1, signed=True),
         rd('heat_power', 103, readable=True, writeable=False, number_of_decimals=2, signed=True),
-        rd('cool_power', 107, readable=True, writeable=False, number_of_decimals=2, signed=True),
+
         #308 Idle Set Point, Channel 1, Power Out Action
         #1206 Power-Out Action
         #2072 Power On
@@ -21,6 +21,7 @@ class watlow_f4(temperature_chamber, modbus_instrument):
                                    modbus_address=modbus_address,
                                    baudrate=baudrate,
                                    mode='rtu') #second to preserve self._interfaces
+        assert self.read_register(606) == 1, 'The decimal point register number must be set to one in order to use the watlow_f4 driver.'
         self.add_registers(type(self).REGISTERS)
         self._sv = self['SV1']
         self._pv = self['PV1']
