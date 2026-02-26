@@ -88,45 +88,39 @@ class Master_Test_Template():
             established_declarations[name]={'lower_limit':lower_limit, 'upper_limit':upper_limit, **kwargs}
         else:
             assert established_declarations[name]=={'lower_limit':lower_limit, 'upper_limit':upper_limit, **kwargs}, f"***Master Test Template Error*** Trying to change {name}'s declarations from {established_declarations[name]} to lower_limit:{lower_limit}, upper_limit:{upper_limit}, {kwargs}"
-    def evaluate_rawdata(self, name, data, conditions=None):
+    def evaluate_rawdata(self, name, data, conditions=None, limits:dict={}):
         '''This will compare submitted data to limits for the named test.
         args:
             name - string. The name of the test whose limits will be used.
             data - Boolean or iterable object. Each value will be compared to the limits (or boolean value) of the name argument.
             conditions - None or dictionary. A dictionary with channel names as keys and channel values as values. Used to report under what circumstances the data was taken. Default is None.
-            limits - Dictionary. A dictionary with the value limits to compare to the data. Must provide at least an upper or a lower limit as a key. If none are provided, the project's get_test_limits method will be used.'''
-        if len(limits) == 0:
+            limits - Dictionary. The keys are attributes associated with the named test, such as upper_limit or Description. This will overwrite the attributes obtained by manual declaration and the get_test_limits method.'''
+        if name not in self._test_results.test_limits.keys():
             self._test_results.test_limits[name]=self.get_test_limits(name)
-        elif 'upper_limit' in limits.keys() and 'lower_limit' in limits.keys():
-            self._test_results.test_limits[name]=limits
-        else:
-            raise KeyError(f"The limits argument for evaluate_rawdata requires an upper_limit and a lower_limit in its keys. Found {[x for x in limits.keys()]}.")
+        for overwrite in limits: 
+            self._test_results.test_limits[name][overwrite]=limits[overwrite]
         self._test_results._evaluate_list(name=name, iter_data=data, conditions=conditions)
     def evaluate_query(self, name, query, limits:dict={}):
         '''This will compare submitted data to limits for the named test.
         args:
             name - string. The name of the test whose limits will be used.
             database - SQLite database object. The first column will be compared to the limits of the named spec and the rest will be used for grouping.
-            limits - dictionary. A dictionary with the value limits to compare to the data obtained by the query. Must provide at least an upper and a lower limit as keys. If the parameter is left empty, the project's get_test_limits method will be used.'''
-        if len(limits) == 0:
+            limits - Dictionary. The keys are attributes associated with the named test, such as upper_limit or Description. This will overwrite the attributes obtained by manual declaration and the get_test_limits method.'''
+        if name not in self._test_results.test_limits.keys():
             self._test_results.test_limits[name]=self.get_test_limits(name)
-        elif 'upper_limit' in limits.keys() and 'lower_limit' in limits.keys():
-            self._test_results.test_limits[name]=limits
-        else:
-            raise KeyError(f"The limits argument for evaluate_query requires an upper_limit and a lower_limit in its keys. Found {[x for x in limits.keys()]}.")
+        for overwrite in limits: 
+            self._test_results.test_limits[name][overwrite]=limits[overwrite]
         self.get_database().query(query)
         self._test_results._evaluate_database(name=name, database=self.get_database())
     def evaluate_db(self, name, limits:dict={}):
         '''This method evaluates a pre-massaged SQLite database, self.get_database(), from the user. It returns a bit of flexibility on the sequel query to the user.
         args:
             name - string. The name of the test whose limits will be used.
-            limits - dictionary. A dictionary with the value limits to compare to the data obtained from the database. Must provide at least an upper and a lower limit as keys. If the parameter is left empty, the project's get_test_limits method will be used.'''
-        if len(limits) == 0:
+            limits - Dictionary. The keys are attributes associated with the named test, such as upper_limit or Description. This will overwrite the attributes obtained by manual declaration and the get_test_limits method.'''
+        if name not in self._test_results.test_limits.keys():
             self._test_results.test_limits[name]=self.get_test_limits(name)
-        elif 'upper_limit' in limits.keys() and 'lower_limit' in limits.keys():
-            self._test_results.test_limits[name]=limits
-        else:
-            raise KeyError(f"The limits argument for evaluate_db requires an upper_limit and a lower_limit in its keys. Found {[x for x in limits.keys()]}.")
+        for overwrite in limits: 
+            self._test_results.test_limits[name][overwrite]=limits[overwrite]
         self._test_results._evaluate_database(name=name, database=self.get_database())
     def evaluate(self, name, values, conditions=[], where_clause='', limits:dict={}):
         '''This compares submitted data from a SQLite database to a named test in a more outlined fashion.
@@ -134,7 +128,7 @@ class Master_Test_Template():
             name - string. The name of the test with limits to be used.
             value_column - string. The name of the channel that will be evaluated.
             grouping_columns - list. The values of the value_column will be grouped and evaluated by the permutations of the channels that are named in this list of strings.
-            limits - dictionary. A dictionary with the value limits to compare to the data obtained from the database. Must provide at least an upper and a lower limit as keys. If the parameter is left empty, the project's get_test_limits method will be used.'''
+            limits - Dictionary. The keys are attributes associated with the named test, such as upper_limit or Description. This will overwrite the attributes obtained by manual declaration and the get_test_limits method.'''
         condition_str = ''
         for condition in conditions:
             condition_str += f",{condition}"
@@ -177,13 +171,11 @@ class Master_Test_Template():
             test_values - iterable. The object values whose distance to the reference value will be calculated.
             spec - string. Either '%' or '-'. Determines whether the comparison is made by percentage or by difference.
             conditions - None or dictionary. A dictionary with channel names as keys and channel values as values. Used to report under what circumstances the data was taken. Default is None.
-            limits - dictionary. A dictionary with the value limits to compare to the two data sets. Must provide at least an upper and a lower limit as keys. If the parameter is left empty, the project's get_test_limits method will be used.'''
-        if len(limits) == 0:
+            limits - Dictionary. The keys are attributes associated with the named test, such as upper_limit or Description. This will overwrite the attributes obtained by manual declaration and the get_test_limits method.'''
+        if name not in self._corr_results.test_limits.keys():
             self._corr_results.test_limits[name]=self.get_test_limits(name)
-        elif 'upper_limit' in limits.keys() or 'lower_limit' in limits.keys():
-            self._corr_results.test_limits[name]=limits
-        else:
-            raise KeyError(f"The limits argument for correlate_data requires an upper_limit and a lower_limit in its keys. Found {[x for x in limits.keys()]}.")
+        for overwrite in limits: 
+            self._corr_results.test_limits[name][overwrite]=limits[overwrite]
         self._corr_results._correlate_results(name=name, reference_values=reference_values, test_values=test_values, spec=spec, conditions=conditions)
     def get_test_results(self):
         '''Returns a string that reports the Pass/Fail status for all the tests evaluated in the script and the test script as a whole.'''
