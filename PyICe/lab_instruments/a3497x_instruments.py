@@ -221,6 +221,17 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
         self._configure_channel_autozero(new_channel, disable_autozero)
         new_channel.set_description(self.get_name() + ': ' + self.add_channel_thermocouple.__doc__)
         return new_channel
+    def add_channel_rtd(self,channel_name,channel_num,rtd_type=85,ptype=4,nom_res=100,NPLC=1,disable_autozero=True):
+        '''Shortcut method to add rtd measurement channel and configure in one step.'''
+        new_channel = self.add_channel(channel_name,channel_num)
+        new_channel.set_attribute('34970_type','RTD')
+        new_channel.set_display_format_function(function = lambda float_data: eng_string(float_data, fmt=':3.6g',si=True) + '°C')
+        internal_address = new_channel.get_attribute('internal_address')
+        self._config_rtd(internal_address,rtd_type, ptype,nom_res)
+        self._configure_channel_nplc(new_channel,NPLC)
+        self._configure_channel_autozero(new_channel, disable_autozero)
+        new_channel.set_description(self.get_name() + ': ' + self.add_channel_rtd.__doc__)
+        return new_channel
     def _set_impedance_10GOhm(self, channel, high_z=True):
         '''set channel impedance to >1GOhm if high_z is True and voltage range allows, otherwise 10M
             impedance always 10M if argument is false'''
@@ -244,6 +255,17 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
         if thermocouple_type.upper() not in ['J','K','T']:
             raise Exception('Invalid thermocouple type, valid types are J,K,T')
         self.get_interface().write(f"CONFigure:TEMPerature TCouple,{thermocouple_type.upper()},(@{internal_address})")
+    def _config_rtd(self,internal_address,rtd_type, ptype, nom_res):
+        if rtd_type not in [85,91]:
+            raise Exception('Invalid RTD type. Acceptable values are 85 and 91')
+        if ptype == 4:
+            self.get_interface().write(f"CONFigure:TEMPerature FRTD,{rtd_type}, (@{internal_address})")
+            self.get_interface().write(f"SENS:TEMP:TRAN:FRTD:RES {nom_res}, (@{internal_address})")
+        elif ptype ==2:
+            self.get_interface().write(f"CONFigure:TEMPerature RTD,{rtd_type}, (@{internal_address})")
+            self.get_interface().write(f"SENS:TEMP:TRAN:RTD:RES {nom_res}, (@{internal_address})")
+        else:
+            raise Exception('Invalid probe type. Acceptable values are 2 for two wire and 4 for four wire')
     def _config_channel_delay(self,channel,delay):
         '''Delay specified number of seconds between closing relay and starting DMM measurement for channel.'''
         internal_address = channel.get_attribute('internal_address')
@@ -290,6 +312,8 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
         elif channel_type == 'current_dc':
             self.get_interface().write(f"CURRent:DC:NPLC {nplc},(@{internal_address})")
         elif channel_type == 'thermocouple':
+            self.get_interface().write(f"SENSe:TEMPerature:NPLC {nplc},(@{internal_address})")
+        elif channel_type == 'RTD':
             self.get_interface().write(f"SENSe:TEMPerature:NPLC {nplc},(@{internal_address})")
         else:
             raise Exception('Unkown 34970_type, cannot set NPLC for this type of channel')
@@ -410,10 +434,123 @@ class agilent_3497xa_20ch(agilent_3497xa_20ch_40ch):
     def config_res(self, channel_name):
         '''Deprecated'''
         raise ValueError('Agilent 3497x 20CH Plugin: Sorry, "config_res" has been deprectaed, please use "add_channel_res".')
-    def add_channel_res(self, channel_name):
-        '''DC resistance measurement'''
-        ch_list = f"(@{self._get_internal_address_by_name(channel_name)})"
-        self.get_interface().write("CONFigure:RESistance " + ch_list)
+    def add_channel_res(self, channel_name, channel_num, NPLC=1, res_range='AUTO', offset_compensated=True, delay=None, disable_autozero=True, add_extended_channels=True):
+        '''Two Wire DC resistance measurement
+        ####################################
+        # Related SCPI Commands            #
+        ####################################
+        CONFigure
+          :RESistance [{<range>|AUTO|MIN|MAX|DEF} [,<resolution>|MIN|MAX|DEF}],] (@<scan_list>)
+        CONFigure? [(@<ch_list>)]
+        [SENSe:] (implied)
+          RESistance:RANGe {<range>|MIN|MAX}[,(@<ch_list>)]
+          RESistance:RANGe? [{(@<ch_list>)|MIN|MAX}]
+          RESistance:RANGe:AUTO {OFF|ON}[,(@<ch_list>)]
+          RESistance:RANGe:AUTO? [(@<ch_list>)]
+          RESistance:RESolution {<resolution>|MIN|MAX}[,(@<ch_list>)]
+          RESistance:RESolution? [{(@<ch_list>)|MIN|MAX}]
+          RESistance:APERture {<time>|MIN|MAX}[,(@<ch_list>)]
+          RESistance:APERture? [{(@<ch_list>)|MIN|MAX}]
+          RESistance:NPLC {0.02|0.2|1|2|10|20|100|200|MIN|MAX}[,(@<ch_list>)]
+          RESistance:NPLC? [{(@<ch_list>)|MIN|MAX}]
+          RESistance:OCOMpensated {OFF|ON}[,(@<ch_list>)]
+          RESistance:OCOMpensated? [(@<ch_list>)]'''
+        ####################################
+        # Range Channel                    #
+        ####################################
+        def _set_range(value):
+            if value=="AUTO" or value==None:
+                self.get_interface().write(f'SENSe:RESistance:RANGe:AUTO ON, (@{channel_num + self.bay*100})')
+            else:
+                '''TODO set presets for MIN and MAX'''
+                '''Presumably AUTO OFF not needed if range being set to MIN, MAX or value.'''
+                self.get_interface().write(f'SENSe:RESistance:RANGe {value}, (@{channel_num + self.bay*100})')
+        def _get_range():
+            return float(self.get_interface().ask(f'SENSe:RESistance:RANGe? (@{channel_num + self.bay*100})'))
+        def _add_channel_range():
+            range_channel = channel(channel_name + '_range', write_function=_set_range)
+            range_channel._read = _get_range
+            range_channel.set_display_format_function(function = lambda float_data: eng_string(float_data, fmt=':0.5g', si=True) + 'Ω')
+            self._add_channel(range_channel)
+        ####################################
+        # NPLC Channel                     #
+        ####################################
+        '''Power Line Cycles'''
+        def _set_NPLC(value):
+            self.get_interface().write(f'SENSe:RESistance:NPLC {value}, (@{channel_num + self.bay*100})')
+        def _get_NPLC():
+            return float(self.get_interface().ask(f'SENSe:RESistance:NPLC? (@{channel_num + self.bay*100})'))
+        def _add_channel_NPLC():
+            NPLC_channel = channel(channel_name + '_NPLC', write_function=_set_NPLC)
+            NPLC_channel._read = _get_NPLC
+            NPLC_channel.set_display_format_function(function = lambda float_data: eng_string(float_data, fmt=':0.5g', si=True) + '')
+            self._add_channel(NPLC_channel)
+        ####################################
+        # Aperature Channel                #
+        ####################################
+        '''Integration Time, Linked with / Inverse of NPLC'''
+        def _set_aperature(value):
+             self.get_interface().write(f'SENSe:RESistance:APERture {value}, (@{channel_num + self.bay*100})')
+        def _get_aperature():
+            return float(self.get_interface().ask(f'SENSe:RESistance:APERture? (@{channel_num + self.bay*100})'))
+        def _add_channel_aperature():
+            aperature_channel = channel(channel_name + '_aperature', write_function=_set_aperature)
+            aperature_channel._read = _get_aperature
+            aperature_channel.set_display_format_function(function = lambda float_data: eng_string(float_data, fmt=':0.5g', si=True) + 's')
+            self._add_channel(aperature_channel)
+        ####################################
+        # Resolution Channel               #
+        ####################################
+        '''Linked with Aperature Time and NPLC'''
+        def _set_resolution(value):
+                self.get_interface().write(f'SENSe:RESistance:RANGe:AUTO OFF, (@{channel_num + self.bay*100})')
+                self.get_interface().write(f'SENSe:RESistance:RESolution {value}, (@{channel_num + self.bay*100})')
+        def _get_resolution():
+            return float(self.get_interface().ask(f'SENSe:RESistance:RESolution? (@{channel_num + self.bay*100})'))
+        def _add_channel_resolution():
+            resolution_channel = channel(channel_name + '_resolution', write_function=_set_resolution)
+            resolution_channel._read = _get_resolution
+            resolution_channel.set_display_format_function(function = lambda float_data: eng_string(float_data, fmt=':0.5g', si=True) + 'Ω')
+            self._add_channel(resolution_channel)
+        ####################################
+        # Offset Compensation Channel      #
+        ####################################
+        '''Enable Offset Compensation'''
+        def _set_offset_compensated(value):
+            self.get_interface().write(f'SENSe:RESistance:OCOMpensated {"ON" if value in [1,True,"ON"] else "OFF"}, (@{channel_num + self.bay*100})')
+        def _get_offset_compensated():
+            return True if int(self.get_interface().ask(f'SENSe:RESistance:OCOMpensated? (@{channel_num + self.bay*100})')) else False
+        def _add_channel_offset_compensated():
+            offset_compensated_channel = channel(channel_name + '_offscomp', write_function=_set_offset_compensated)
+            offset_compensated_channel._read = _get_offset_compensated
+            self._add_channel(offset_compensated_channel)
+        ####################################
+        # Create Main Channel              #
+        ####################################
+        main_channel = self.add_channel(channel_name, channel_num)
+        main_channel.set_description(self.get_name() + ': ' + self.add_channel_fres.__doc__)
+        main_channel.set_attribute('34970_type', 'Ohmmeter')
+        main_channel.set_display_format_function(function = lambda float_data: eng_string(float_data, fmt=':0.5g', si=True) + 'Ω')
+        self.get_interface().write("CONFigure:RESistance " + f"(@{channel_num + self.bay*100})")
+        if delay is not None:
+            self._config_channel_delay(main_channel, delay)
+        # self._configure_channel_autozero(main_channel, disable_autozero)
+        ####################################
+        # Set Defaults                     #
+        ####################################
+        _set_range(res_range)
+        _set_NPLC(NPLC)
+        _set_offset_compensated(offset_compensated)
+        ####################################
+        # Add Extended Channels (optional) #
+        ####################################
+        if add_extended_channels:
+            _add_channel_NPLC()
+            _add_channel_range()
+            _add_channel_offset_compensated()
+            _add_channel_resolution()
+            _add_channel_aperature()
+        return main_channel
     def add_channel_fres(self, channel_name, channel_num, NPLC=1, range='AUTO', offset_compensated=True, delay=None, disable_autozero=True, add_extended_channels=True):
         '''Four Wire DC resistance measurement
         ####################################

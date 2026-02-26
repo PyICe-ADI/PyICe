@@ -714,6 +714,18 @@ class integer_channel(channel):
             units optionally appended to formatted (real) data when displayed by GUI
             xypoints optionally allows duplicates information from format/unformat function to allow reproduction of transform in SQL, etc'''
         self._formats[format_name] = {}
+        if format_function is None and unformat_function is None and len(xypoints)==2:
+            '''Auto straight-line formatter. Don't specify horizontal or vertical non-functinoal, non-reversible transforms.'''
+            # TODO document
+            # TODO support multi-segment operation. This shouldn't be a big lift, given PWL multi-segment support elsewhere in PyICe.
+            # TODO signed domain support?
+            x_pts, y_pts = zip(*xypoints)
+            assert len(x_pts) == len(set(x_pts)), f'ERROR: {self.get_name()} format {format_name} has non-reversible horizontal segment.'
+            assert len(y_pts) == len(set(y_pts)), f'ERROR: {self.get_name()} format {format_name} has non-functional vertical segment.'
+            m = (xypoints[1][1] - xypoints[0][1]) / (xypoints[1][0] - xypoints[0][0]) #(y2-y1)/(x2-x1)
+            b = xypoints[1][1] - m * xypoints[1][0]
+            format_function = lambda x: m*x+b
+            unformat_function = lambda y: int(round((y-b)/m))
         if signed:
             self._formats[format_name]['format_function'] = lambda x: format_function(self.twosComplementToSigned(x))
             self._formats[format_name]['unformat_function'] = lambda x: self.signedToTwosComplement(unformat_function(x))
@@ -2042,8 +2054,9 @@ class channel_master(channel_group,delegator):
         return True
     def background_gui(self,cfg_file='default.guicfg'):
         _thread.start_new_thread( self._gui_launcher_passive, (cfg_file,) )
-    def gui(self,cfg_file='default.guicfg'):
-        self._gui_launcher(cfg_file)
+    def gui(self,cfg_file='default.guicfg', log_history=False):
+        '''log_history - bool. Default False. If set to True, channel read and write commands will be logged in gui_cmd_history.log.'''
+        self._gui_launcher(cfg_file, log_history=log_history)
     def add_read_callback(self,read_callback):
         '''Adds a read callback. This is a function that will be called any time a channel(s) is read. the callback function should accept one argument: the dictionary of results.
         If it is not important to group results by each batch read, consider adding a callback to an individual channel instead.'''
@@ -2062,9 +2075,9 @@ class channel_master(channel_group,delegator):
         self.add_read_callback(gui.passive_data)
         self.add_write_callback(gui.passive_data)
         gui.exec_()
-    def _gui_launcher(self,cfg_file):
+    def _gui_launcher(self,cfg_file,log_history):
         from . import lab_gui #this cannot be imported in the main thread
-        gui = lab_gui.ltc_lab_gui_app(self,passive=False,cfg_file=cfg_file)
+        gui = lab_gui.ltc_lab_gui_app(self,passive=False,cfg_file=cfg_file,log_history=log_history)
         gui.exec_()
     def get_dummy_clone(self):
         clone = channel_master()

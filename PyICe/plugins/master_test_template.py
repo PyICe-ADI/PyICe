@@ -81,7 +81,14 @@ class Master_Test_Template():
         '''Optional evaluate_results method placeholder'''
     def correlate_results(self):
         '''Optional correlate_results method placeholder'''
-    def evaluate_rawdata(self, name, data, conditions=None, limits:dict={}):
+    def declare_test(self, name:str, lower_limit=None, upper_limit=None, **kwargs):
+        '''Optional means to manually set declarations apart from the evaluation methods.'''
+        established_declarations = self._test_results.test_limits
+        if name not in established_declarations.keys():
+            established_declarations[name]={'lower_limit':lower_limit, 'upper_limit':upper_limit, **kwargs}
+        else:
+            assert established_declarations[name]=={'lower_limit':lower_limit, 'upper_limit':upper_limit, **kwargs}, f"***Master Test Template Error*** Trying to change {name}'s declarations from {established_declarations[name]} to lower_limit:{lower_limit}, upper_limit:{upper_limit}, {kwargs}"
+    def evaluate_rawdata(self, name, data, conditions=None):
         '''This will compare submitted data to limits for the named test.
         args:
             name - string. The name of the test whose limits will be used.
