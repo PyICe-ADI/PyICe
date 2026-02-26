@@ -1,22 +1,13 @@
+
 from .temperature_chamber import temperature_chamber
 from .modbus_instrument import modbus_instrument, modbus_reg_type, register_description as rd
- 
+
 class watlow_f4(temperature_chamber, modbus_instrument):
     REGISTERS = [
         rd('SV1', 300, readable=True, writeable=True, number_of_decimals=1, signed=True),
         rd('PV1', 100, readable=True, writeable=False, number_of_decimals=1, signed=True),
         rd('heat_power', 103, readable=True, writeable=False, number_of_decimals=2, signed=True),
-        rd('output_111', 111, readable=True, writeable=False, number_of_decimals=2, signed=True),
-        rd('cool_power', 107, readable=True, writeable=False, number_of_decimals=2, signed=True),
-        rd('cool_output', 717, readable=True, writeable=True, number_of_decimals=0, signed=True),
-        # rd('Sensor', 600, readable=True, writeable=True, number_of_decimals=1, signed=True),
-        rd('Sensor_Type', 601, readable=True, writeable=True, number_of_decimals=0, signed=True),
-        rd('PropBand', 500, readable=True, writeable=True, number_of_decimals=1, signed=True),
-        rd('PID_Integral', 501, readable=True, writeable=True, number_of_decimals=1, signed=True),
-        rd('PID_Reset', 502, readable=True, writeable=True, number_of_decimals=1, signed=True),
-        rd('PID_Deriv', 503, readable=True, writeable=True, number_of_decimals=1, signed=True),
-        rd('PID_Rate', 504, readable=True, writeable=True, number_of_decimals=1, signed=True),
- 
+
         #308 Idle Set Point, Channel 1, Power Out Action
         #1206 Power-Out Action
         #2072 Power On
@@ -58,3 +49,6 @@ class watlow_f4(temperature_chamber, modbus_instrument):
         otherwise, default to disable heating and cooling.
         '''
         self._enable(not shutdown)
+
+
+
