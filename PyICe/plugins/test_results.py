@@ -129,34 +129,8 @@ class generic_results():
                                                                     'max_data': results[t_d]._max(),
                                                                     'passes':   bool(results[t_d]) if not self._failure_override else False,
                                                                     }
-                elif isinstance(self, correlation_results):
-                    res_dict['tests'][t_d]['results']['temperatures'] = []
-                    for temperature in results[t_d].get_temperatures():
-                        temperature_dict = {'temperature': temperature,
-                                            'cases': [],
-                                           }
-                        res_dict['tests'][t_d]['results']['temperatures'].append(temperature_dict)
-                        temp_group = results[t_d].filter_temperature(temperature)
-                        for condition_hash, condition_orig in temp_group.get_conditions().items():
-                            cond_group = temp_group.filter_conditions(condition_hash)
-                            cond_dict =  {'conditions': condition_orig,
-                                          'case_results': [{k:v for k,v in cond._asdict().items() if k not in ['temperature', 'conditions']} for cond in cond_group],
-                                          'summary': {'min_error': cond_group._min_error(),
-                                                      'max_error': cond_group._max_error(),
-                                                      'passes':    bool(cond_group),
-                                                     },
-                                         }
-                            temperature_dict['cases'].append(cond_dict)
-                        temperature_dict['summary'] = {'min_error': temp_group._min_error(),
-                                                      'max_error': temp_group._max_error(),
-                                                      'passes':    bool(temp_group),
-                                                      }
-                    res_dict['tests'][t_d]['results']['summary'] = {'min_error': results[t_d]._min_error(),
-                                                                    'max_error': results[t_d]._max_error(),
-                                                                    'passes':    bool(results[t_d]),
-                                                                   }
                 else:
-                    raise Exception(f"*** P.I.E. TEST_RESULTS.PY ***\nExpected self to be either a Test_Results class or a Correlation_Results class. Was given a(n) {self}.")
+                    raise Exception(f"*** P.I.E. TEST_RESULTS.PY ***\nExpected self to be a Test_Results class. Was given a(n) {self}.")
         if self._failure_override:
             res_dict['summary'] = {'passes': False}
         else:
@@ -166,11 +140,13 @@ class generic_results():
 class Test_Results(generic_results):
     class _test_result(collections.namedtuple('test_result', ['test_name', 'conditions', 'min_data', 'max_data', 'passes', 'failure_reason', 'collected_data', 'plot', 'query'])):
         '''add some helper moethods for easy summary'''
-        def __new__(cls, **kwargs):
-            '''fix (allowed) missing fields. FOr instance, original JSON didn't retain SQL query string.'''
+        def __new__(cls, outerclass, **kwargs):
+            '''fix (allowed) missing fields. For instance, original JSON didn't retain SQL query string.'''
             if 'query' not in kwargs:
                 kwargs['query'] = None
             return super().__new__(cls, **kwargs)
+        def __init__(self, outerclass, **kwargs):
+            self.outerclass = outerclass
         def __bool__(self):
             return bool(self.passes)
         def _min(self):
@@ -183,7 +159,7 @@ class Test_Results(generic_results):
             return max(self.collected_data)
         def __str__(self):
             summary_str = ''
-            summary_str += f'{self.conditions}\tTRIALS:{len(self)}\tVERDICT:{"PASS" if self else "FAIL"}\n'.expandtabs()
+            summary_str += f'{self.__padded_str(self.conditions)}\tTRIALS:{len(self)}\tVERDICT:{"PASS" if self else "FAIL"}\n'.expandtabs()
             min = self._min()
             if self.failure_reason != '':
                 summary_str += f'\tFORCED_FAIL: {self.failure_reason}\n'
@@ -204,7 +180,9 @@ class Test_Results(generic_results):
             failure_report = self.failure_reason
             if other.failure_reason not in self.failure_reason:
                 failure_report = f'{self.failure_reason}{other.failure_reason}'
-            return type(self)(test_name=self.test_name,
+            return type(self)(
+                              outerclass = self.outerclass,
+                              test_name=self.test_name,
                               conditions=self.conditions,
                               min_data=none_min(self.min_data, other.min_data), #None creeps in from register_test_failure()
                               max_data=none_max(self.max_data, other.max_data), #None creeps in from register_test_failure()
@@ -214,6 +192,9 @@ class Test_Results(generic_results):
                               plot=self.plot + other.plot,
                               query=self.query
                              )
+        def __padded_str(self, conditions):
+            return str(conditions).ljust(self.outerclass.max_con_len)
+
     class _test_results_list(list):
         '''add some helper methods for easy filtering and summary'''
         def __init__(self, name, upper_limit, lower_limit, override):
@@ -283,6 +264,7 @@ class Test_Results(generic_results):
         self._init(name, module)
         self._test_declarations = []
         self.test_limits = {}
+        self.max_con_len = 0
     def json_report(self):
         return self._json_report(declarations=self._test_declarations, results=self._test_results, ate_results=self._ate_results)
     def get_test_declarations(self):
@@ -311,10 +293,14 @@ class Test_Results(generic_results):
         return self._test_results[key]
 
     def _register_test_failure(self, name, reason, conditions, query=None):
+        if conditions:
+            self.max_con_len = max([len(str(conditions)),self.max_con_len])
         if name not in self._test_declarations:
             self._test_declarations.append(name)
             self._test_results[name] = self._test_results_list(name=name, upper_limit=self.test_limits[name]['upper_limit'], lower_limit=self.test_limits[name]['lower_limit'], override=self._failure_override)
-        failure_result = self._test_result(test_name=name,
+        failure_result = self._test_result(
+                                           outerclass=self,
+                                           test_name=name,
                                            conditions=conditions,
                                            min_data=None,
                                            max_data=None,
@@ -342,6 +328,7 @@ class Test_Results(generic_results):
         rowcount = len(database)
         match_count = 0
         for condition in distincts:
+            self.max_con_len = max([len(str(condition._asdict())),self.max_con_len])
             data = [row[0] for row in database if freeze(row[1:]) == condition]
             self._evaluate_list(name=name, iter_data=data, conditions=condition._asdict() if len(conditions_columns) else None, query=query) #todo, consider reimplementing __str__ instead of dict conversion.
             match_count += len(data)
@@ -350,6 +337,8 @@ class Test_Results(generic_results):
         if name not in self._test_declarations:
             self._test_declarations.append(name)
             self._test_results[name] = self._test_results_list(name=name, upper_limit=self.test_limits[name]['upper_limit'], lower_limit=self.test_limits[name]['lower_limit'], override=self._failure_override)
+        if conditions:
+            self.max_con_len = max([len(str(conditions)),self.max_con_len])
         #############################################################
         # TODO deal with functional test pass/fail non-numeric data #
         #############################################################
@@ -368,7 +357,6 @@ class Test_Results(generic_results):
 
         self.test_limits[name]['upper_limit'] = self.test_limits[name]['upper_limit'] if self.test_limits[name]['upper_limit']==self.test_limits[name]['upper_limit'] else None
         self.test_limits[name]['lower_limit'] = self.test_limits[name]['lower_limit'] if self.test_limits[name]['lower_limit']==self.test_limits[name]['lower_limit'] else None
-        assert (self.test_limits[name]['upper_limit'] is not None or self.test_limits[name]['lower_limit'] is not None), f'Something is wrong with test limits for {name}. Contact support.'
         if self.test_limits[name]['upper_limit'] != self.test_limits[name]['lower_limit']:
             passes = functools.reduce(lambda x,y: x and y, [data_pt is not None \
                                                             and (self.test_limits[name]['upper_limit'] is None or data_pt <= self.test_limits[name]['upper_limit']) \
@@ -376,6 +364,8 @@ class Test_Results(generic_results):
                                                             for data_pt in iter_data
                                                             ]
                                       )
+        elif self.test_limits[name]['upper_limit'] is None:
+            passes = True 
         else:
             passes = functools.reduce(lambda x,y: x and y, [data_pt is not None \
                                                             and (data_pt == self.test_limits[name]['upper_limit']) #upper==lower \
@@ -384,7 +374,9 @@ class Test_Results(generic_results):
                                       )
         min_data = min(iter_data)
         max_data = max(iter_data)
-        new_result_record = self._test_result(test_name=name,
+        new_result_record = self._test_result(
+                                              outerclass=self,
+                                              test_name=name,
                                               conditions=conditions,
                                               min_data=min_data,
                                               max_data=max_data,
@@ -398,6 +390,8 @@ class Test_Results(generic_results):
         return new_result_record
 
     def _correlate_results(self, name, reference_values=[], test_values=[], spec=None, conditions=None):
+        if conditions:
+            self.max_con_len = max([len(str(conditions)),self.max_con_len])
         if name not in self._test_declarations:
             self._test_declarations.append(name)
             self._test_results[name] = self._test_results_list(name=name, upper_limit=self.test_limits[name]['upper_limit'], lower_limit=self.test_limits[name]['lower_limit'], override=self._failure_override)
@@ -417,7 +411,7 @@ class Test_Results(generic_results):
                 elif spec == '-' or spec == "\u0394": # Delta:
                     DataPoints.append(y-x)
                 else:
-                    return self._register_test_failure(name=name, reason=f"Was expecting a spec of either '%' or '-' or 'Δ'. Received {spec}.", conditions=conditions, query=query)
+                    return self._register_test_failure(name=name, reason=f"Was expecting a spec of either '%' or '-' or 'Δ'. Received {spec}.", conditions=conditions)
         self._evaluate_list(name=name, iter_data=DataPoints, conditions=conditions)
 
 class Test_Results_Reload(Test_Results):

@@ -422,8 +422,6 @@ class twi_instrument(lab_core.instrument,lab_core.delegator):
                 is_readable = "R" in bf['access']
                 is_writable = "W" in bf['access']
                 register = self.add_register(name,slave_addr,command_code,size,offset,word_size,is_readable,is_writable,overwrite_others)
-
-                
                 try:
                     bf['write_side_effect']
                 except KeyError as e:
@@ -452,6 +450,35 @@ class twi_instrument(lab_core.instrument,lab_core.delegator):
                         raise Exception(f'Register side effect {bf["write_side_effect"]} not implemented. Contact PyICe developers.')
                     else:
                         raise Exception(f'Register side effect {bf["write_side_effect"]} unknown. Contact PyICe developers.')
+                try:
+                    bf['data_format']
+                except KeyError as e:
+                    # Old schema
+                    pass
+                else:
+                    if bf['data_format'] == 'Unsigned':
+                        signed = False
+                    elif bf['data_format'] == 'Signed':
+                        signed = True
+                    else:
+                        raise Exception(f'Unknown format {bf["data_format"]}. Contact PyICe developers.')
+                    if signed and size > 1:
+                        register.set_format('signed dec')
+                        register.set_attribute('signed', True)
+                    elif signed:
+                        print(f'WARNING: bit field {name} nonsensically declared signed with size {size}.')
+                    try:
+                        bf['format']
+                    except KeyError as e:
+                        # Generic signed int  
+                        pass
+                    else:
+                        register.add_format('yoda_scaled',
+                                            format_function=lambda i,m=bf['format']['scale'],b=bf['format']['offset']: i*m+b,
+                                            unformat_function=lambda f,m=bf['format']['scale'],b=bf['format']['offset']: int(round((f-b)/m)),
+                                            signed=signed,
+                                            units=bf['format']['units'] if bf['format']['units'] is not None else '',
+                                            xypoints=[]) #todo xy; no test case
                 if len(reg["functionalgroups"]) != 0:
                     if str(reg["functionalgroups"][0]) == '':
                         register.set_category("BlankFunctionalGroup")
