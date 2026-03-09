@@ -292,7 +292,7 @@ class Plugin_Manager():
                 shutdown_successful=False
         if shutdown_successful:
             if len(self.shutdown_fns):
-                self.notify(msg="Successful Bench Shutdown")
+                self.notify(msg="Successful Bench Shutdown", subject="TESTING COMPLETE")
         else:
             self.notify(msg=shutdown_err_str, subject="SHUTDOWN CRASH")
 
