@@ -43,11 +43,14 @@ class Plugin_Manager():
             except Exception as e:
                 print_banner("*** PLUGIN MANAGER WARNING ****", "", "You elected to use the 'Notifications' Plugin.", "Unable to import cairosvg's Python package or compiled dll.", "Try installing the Glade/Gtk+ for Windows development environment.", "Otherwise suggest you opt out of the 'Notifications' plugin.", "Write to pyice-developers@analog.com for more information.", "", "*** Expect a crash when generating plots ****", "")
 
-    def add_test(self, test, debug=False, skip_plot=False, skip_eval=False):
+    def add_test(self, test, debug=False, skip_plot=False, skip_eval=False, test_obj=None):
         '''Adds a script to the list that will be operated on. If this is the first time a test is added to this instance of plugin manager, plugin manager also takes this opportunity to acquire the list of plugins used for the project.
         args: test - class object. A test that contains the methods necessary for data collection and processing in the project.
         args: debug - Boolean. This will be passed into all run tests to be used for abbreviating data collection loops. Default value is False.'''
-        a_test = test()
+        if test is None:
+            a_test = test_obj
+        else:
+            a_test = test()
         a_test._debug = debug
         if debug:
             self.debug=True
@@ -259,7 +262,7 @@ class Plugin_Manager():
                 traceback.print_exc()
                 print(func)
                 exit()
-        
+
     def cleanup(self):
         """Runs the functions found in cleanup_fns. Resets the intstruments to predetermined "safe" settings as given by the drivers. Does so in the reverse order in which the channels were created whereas startups go in forward order of which created."""
         self.cleanup_failure = False
@@ -373,7 +376,7 @@ class Plugin_Manager():
                 found_both+=1
                 if found_both==2:
                     break
-            if self.operator+'.py' in filenames: 
+            if self.operator+'.py' in filenames:
                 usernotificationpath = dirpath.replace(os.sep, '.')
                 usernotificationpath = usernotificationpath[usernotificationpath.index(project_path.split(os.sep)[-1]):]
                 module = importlib.import_module(name=usernotificationpath+f'.{self.operator}', package=None)
@@ -856,7 +859,7 @@ class Plugin_Manager():
 
     def evaluate(self, database=None, table_name=None, test_list=None):
         '''Run the evaluate method of each test in self.tests.
-        args:   
+        args:
             database - string. The location of the database with the data to evaluate If left blank, the evaluation will continue with the database in the same directory as the test script.
             table_name - string. The name of the table in the database with the relevant data. If left blank, the evaluation will continue with the table named after the test script.'''
         print_banner('Evaluating. . .')
@@ -910,7 +913,7 @@ class Plugin_Manager():
 
     def correlate(self, database=None, table_name=None, test_list=None):
         '''Run the correlate method of each test in self.tests.
-        args:   
+        args:
             database - string. The location of the database with the data to correlate. If left blank, the correlation will continue with the database in the same directory as the test script.
             table_name - string. The name of the table in the database with the relevant data. If left blank, the correlation will continue with the table named after the test script.'''
         print_banner('Correlating. . .')
