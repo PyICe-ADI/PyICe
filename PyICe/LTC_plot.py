@@ -899,13 +899,13 @@ class Page():
                     if trace["vxline"]:
                         y_axis_params["axis"].axvline(  x           = trace["data"],
                                                         color       = trace["color"],
-                                                        linewidth   = trace["linewidth"], # trace_width,
+                                                        linewidth   = trace["linewidth"] if trace["linewidth"] else trace_width,
                                                         linestyle   = trace["linestyle"]
                                                         )
                     elif trace["hxline"]:
                         y_axis_params["axis"].axhline(  y           = trace["data"],
                                                         color       = trace["color"],
-                                                        linewidth   = trace["linewidth"], # trace_width,
+                                                        linewidth   = trace["linewidth"] if trace["linewidth"] else trace_width,
                                                         linestyle   = trace["linestyle"]
                                                         )
                     else:
