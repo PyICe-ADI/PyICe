@@ -433,6 +433,7 @@ class Test_Results_Reload(Test_Results):
         self._test_declarations = []
         self.test_limits = {}
         self._test_results = collections.OrderedDict()
+        self.max_con_len = 0
         with open(results_json, mode='r', encoding='utf-8') as f:
             self._results = json.load(f)
             f.close()
