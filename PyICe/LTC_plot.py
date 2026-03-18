@@ -899,13 +899,13 @@ class Page():
                     if trace["vxline"]:
                         y_axis_params["axis"].axvline(  x           = trace["data"],
                                                         color       = trace["color"],
-                                                        linewidth   = trace["linewidth"] if trace["linewidth"] else trace_width,
+                                                        linewidth   = trace["linewidth"] if trace["linewidth"] is not None else trace_width,
                                                         linestyle   = trace["linestyle"]
                                                         )
                     elif trace["hxline"]:
                         y_axis_params["axis"].axhline(  y           = trace["data"],
                                                         color       = trace["color"],
-                                                        linewidth   = trace["linewidth"] if trace["linewidth"] else trace_width,
+                                                        linewidth   = trace["linewidth"] if trace["linewidth"] is not None else trace_width,
                                                         linestyle   = trace["linestyle"]
                                                         )
                     else:
@@ -919,7 +919,7 @@ class Page():
                             y_axis_params["axis"].step(     x,
                                                             y,
                                                 color       = trace["color"],
-                                                linewidth   = trace["linewidth"] if trace["linewidth"] else trace_width,
+                                                linewidth   = trace["linewidth"] if trace["linewidth"] is not None else trace_width,
                                                 marker      = trace["marker"],
                                                 markersize  = trace["markersize"],
                                                 label       = trace["legend"],
@@ -932,7 +932,7 @@ class Page():
                             y_axis_params["axis"].plot(     x,
                                                             y,
                                                 color       = trace["color"],
-                                                linewidth   = trace["linewidth"] if trace["linewidth"] else trace_width,
+                                                linewidth   = trace["linewidth"] if trace["linewidth"] is not None else trace_width,
                                                 marker      = trace["marker"],
                                                 markersize  = trace["markersize"],
                                                 label       = trace["legend"],
@@ -1038,7 +1038,7 @@ class Page():
                     coordinate_system = twin.transAxes
                 twin.text(x, y, note, fontsize=note_dict["fontsize"], transform=coordinate_system, horizontalalignment=note_dict["horizontalalignment"], verticalalignment=note_dict["verticalalignment"], bbox=note_props)
             else:
-                print(f"An LTC_plot error occured attempting to add a note to axis {axis}, please contact Steve Martin with this example.")
+                print(f"An LTC_plot error occured attempting to add a note to axis {note_dict['axis']}, please contact Steve Martin with this example.")
         #################################################################
         # Add the arrows (matplotlib "annotation")                      #
         #################################################################
