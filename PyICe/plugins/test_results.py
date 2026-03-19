@@ -392,9 +392,6 @@ class Test_Results(generic_results):
         return new_result_record
 
     def remove_result(self, result):
-        if result not in self.get_test_declarations():
-            print(f'{result} not found in results.')
-            return
         self._test_results.pop(result)
         self._test_declarations.remove(result)
 
