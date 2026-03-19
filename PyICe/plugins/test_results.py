@@ -391,9 +391,9 @@ class Test_Results(generic_results):
         self._test_results[name].append(new_result_record)
         return new_result_record
 
-    def remove_result(self, result):
-        self._test_results.pop(result)
-        self._test_declarations.remove(result)
+    def remove_result(self, key):
+        del self._test_results[key]
+        self._test_declarations.remove(key)
 
     def _correlate_results(self, name, reference_values=[], test_values=[], spec=None, conditions=None):
         if conditions:
