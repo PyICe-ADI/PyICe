@@ -401,6 +401,7 @@ class Test_Results(generic_results):
             print(f'{result} not found in results.')
             return
         self._test_results.pop(result)
+        self._test_declarations.remove(result)
 
     def _correlate_results(self, name, reference_values=[], test_values=[], spec=None, conditions=None):
         if conditions:
