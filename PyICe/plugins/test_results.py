@@ -147,11 +147,6 @@ class Test_Results(generic_results):
             if 'outerclass' in kwargs.keys():
                 cls.outerclass = kwargs.pop('outerclass')
             return super().__new__(cls, **kwargs)
-        # def __init__(self, **kwargs):
-        #     if 'outerclass' in kwargs.keys():
-        #         self.outerclass = kwargs['outerclass']
-        #     else:
-        #         self.outerclass.max_con_len = 0
         def __deepcopy__(self, _memo):
             return Test_Results._test_result(**self._asdict())
         def __bool__(self):
