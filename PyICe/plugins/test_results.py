@@ -140,13 +140,15 @@ class generic_results():
 class Test_Results(generic_results):
     class _test_result(collections.namedtuple('test_result', ['test_name', 'conditions', 'min_data', 'max_data', 'passes', 'failure_reason', 'collected_data', 'plot', 'query'])):
         '''add some helper moethods for easy summary'''
-        def __new__(cls, outerclass, **kwargs):
+        def __new__(cls, **kwargs):
             '''fix (allowed) missing fields. For instance, original JSON didn't retain SQL query string.'''
             if 'query' not in kwargs:
                 kwargs['query'] = None
+            if 'outerclass' in kwargs.keys():
+                cls.outerclass = kwargs.pop('outerclass')
             return super().__new__(cls, **kwargs)
-        def __init__(self, outerclass, **kwargs):
-            self.outerclass = outerclass
+        def __deepcopy__(self, _memo):
+            return Test_Results._test_result(**self._asdict())
         def __bool__(self):
             return bool(self.passes)
         def _min(self):
@@ -389,6 +391,10 @@ class Test_Results(generic_results):
         self._test_results[name].append(new_result_record)
         return new_result_record
 
+    def remove_result(self, key):
+        del self._test_results[key]
+        self._test_declarations.remove(key)
+
     def _correlate_results(self, name, reference_values=[], test_values=[], spec=None, conditions=None):
         if conditions:
             self.max_con_len = max([len(str(conditions)),self.max_con_len])
@@ -420,6 +426,7 @@ class Test_Results_Reload(Test_Results):
         self._test_declarations = []
         self.test_limits = {}
         self._test_results = collections.OrderedDict()
+        self.max_con_len = 0
         with open(results_json, mode='r', encoding='utf-8') as f:
             self._results = json.load(f)
             f.close()
@@ -436,7 +443,9 @@ class Test_Results_Reload(Test_Results):
             self._test_results[test] = self._test_results_list(name=test, upper_limit=self.test_limits[test]['upper_limit'], lower_limit=self.test_limits[test]['lower_limit'], override=self._failure_override)
             for case in self._results['tests'][test]['results']['cases']:
                 for trial in case['case_results']:
-                    self._test_results[test].append(self._test_result(test_name=test,
+                    self._test_results[test].append(self._test_result(
+                                                                      outerclass=self,
+                                                                      test_name=test,
                                                                       conditions=case['conditions'],
                                                                       plot=[],
                                                                       **trial
