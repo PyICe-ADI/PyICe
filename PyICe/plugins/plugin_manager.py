@@ -62,7 +62,7 @@ class Plugin_Manager():
         a_test._db_file = os.path.join(a_test._module_path, self.scratch_folder, 'data_log.sqlite')
         a_test._is_crashed = False
 
-    def run(self, temperatures=[]):
+    def run(self, temperatures=None):
         '''
         This method goes through the complete data collection process the project set out.
         Scripts will be run once per temperature or just once if no temperature is given.
@@ -71,6 +71,8 @@ class Plugin_Manager():
         The list consists of values that will be set to the 'temp_control_channel' assigned by the instrument drivers.
         Default value is an empty list.
         '''
+        if temperatures is None:
+            temperatures = []
         self._temperatures = temperatures
         self.far_enough = False
         self.collect(temperatures)
@@ -245,7 +247,7 @@ class Plugin_Manager():
             try:
                 func()
             except:
-                print("\n\PyICE Plugin Manager: One or more temperature startup functions not executable. See stack trace below.\n")
+                print("PyICE Plugin Manager: One or more temperature startup functions not executable. See stack trace below.\n")
                 traceback.print_exc()
                 print(func)
                 exit()
@@ -255,7 +257,7 @@ class Plugin_Manager():
             try:
                 func()
             except:
-                print("\n\PyICE Plugin Manager: One or more startup functions not executable. See stack trace below.\n")
+                print("PyICE Plugin Manager: One or more startup functions not executable. See stack trace below.\n")
                 traceback.print_exc()
                 print(func)
                 exit()
@@ -268,7 +270,7 @@ class Plugin_Manager():
             try:
                 func()
             except:
-                print("\n\PyICE Plugin Manager: One or more cleanup functions not executable. See stack trace below.\n")
+                print("PyICE Plugin Manager: One or more cleanup functions not executable. See stack trace below.\n")
                 traceback.print_exc()
                 print(func)
                 cleanup_err_str += traceback.format_exc()
@@ -284,7 +286,7 @@ class Plugin_Manager():
             try:
                 func()
             except:
-                print("\n\PyICE Plugin Manager: One or more shutdown functions not executable. See stack trace below.\n")
+                print("PyICE Plugin Manager: One or more shutdown functions not executable. See stack trace below.\n")
                 traceback.print_exc()
                 print(func)
                 shutdown_err_str += traceback.format_exc()
@@ -318,13 +320,17 @@ class Plugin_Manager():
     ###
     # NOTIFICATION METHODS
     ###
-    def notify(self, msg, subject=None, attachment_filenames=[], attachment_MIMEParts=[]):
+    def notify(self, msg, subject=None, attachment_filenames=None, attachment_MIMEParts=None):
         '''Sends the provided message to all emails and phone numbers found in the variable self.notification_targets.
         args:
             msg - str. The body of the email or the complete text.
             subject - str. Default None. The subject given to any email sent. No affect on texts.
             attachment filenames - list. Default empty list. A list of strings denoting the names of files that will be attached to any emails sent.
             attachment_MIMEParts - list. Default empty list. A list of MIME (Multipurpose Internet Mail Extensions) objects that will be added to the body of any email sent.'''
+        if attachment_filenames is None:
+            attachment_filenames = []
+        if attachment_MIMEParts is None:
+            attachment_MIMEParts = []
         if 'notifications' in self.plugins and not self.debug:
             for signal_type in self.notification_targets:
                 try:

@@ -10,8 +10,10 @@ class email(object):
         '''destination is the recipient's email address'''
         self.destination = destination
         self.sender = 'PyICe_noreply@analog.com'
-    def send_raw(self, body, subject=None, attachment_filenames=[], attachment_MIMEParts=[], _subtype='html'):
+    def send_raw(self, body, subject=None, attachment_filenames=None, attachment_MIMEParts=None, _subtype='html'):
         '''compose MIME message with proper headers and send'''
+        if attachment_filenames is None: attachment_filenames = []
+        if attachment_MIMEParts is None: attachment_MIMEParts = []
         if len(attachment_filenames) == 0 and len(attachment_MIMEParts) == 0:
             message = MIMEText(body, _subtype=_subtype, _charset="utf-8")
         else:
@@ -33,9 +35,11 @@ class email(object):
         server.ehlo()
         server.sendmail(self.sender, self.destination, message.as_string())
         server.quit()
-    def send(self, body, subject=None, attachment_filenames=[], attachment_MIMEParts=[]):
+    def send(self, body, subject=None, attachment_filenames=None, attachment_MIMEParts=None):
         self.send_html_monospace(body=body, subject=subject, attachment_filenames=attachment_filenames, attachment_MIMEParts=attachment_MIMEParts)
-    def send_html_monospace(self, body, subject=None, attachment_filenames=[], attachment_MIMEParts=[]):
+    def send_html_monospace(self, body, subject=None, attachment_filenames=None, attachment_MIMEParts=None):
+        if attachment_filenames is None: attachment_filenames = []
+        if attachment_MIMEParts is None: attachment_MIMEParts = []
         tag_pat = re.compile(pattern='(<[^<>]*?>)')
         html_body = '<html>\n'
         html_body += '<head>\n'

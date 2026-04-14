@@ -113,12 +113,14 @@ class Master_Test_Template():
         if name not in self._test_results.test_limits.keys():
             self.declare_test(name, **self.get_test_limits(name))
         self._test_results._evaluate_database(name=name, database=self.get_database())
-    def evaluate(self, name, values, conditions=[], where_clause=''):
+    def evaluate(self, name, values, conditions=None, where_clause=''):
         '''This compares submitted data from a SQLite database to a named test in a more outlined fashion.
         args:
             name - string. The name of the test with limits to be used.
             value_column - string. The name of the channel that will be evaluated.
             grouping_columns - list. The values of the value_column will be grouped and evaluated by the permutations of the channels that are named in this list of strings.'''
+        if conditions is None:
+            conditions = []
         condition_str = ''
         for condition in conditions:
             condition_str += f",{condition}"
@@ -153,7 +155,7 @@ class Master_Test_Template():
                         reported_condition.append(row[recon])
                     self.register_test_failure(name=name, reason=f"Channel {excon} was found to be False. ", conditions=reported_condition)
         
-    def correlate_data(self, name, reference_values=[], test_values=[], spec=None, conditions=None):
+    def correlate_data(self, name, reference_values=None, test_values=None, spec=None, conditions=None):
         '''Compares test values to reference values and compare the output to the limits of the named test.
         args:
             name - string. The name of the test whose limits will be used.
@@ -161,6 +163,10 @@ class Master_Test_Template():
             test_values - iterable. The object values whose distance to the reference value will be calculated.
             spec - string. Either '%' or '-'. Determines whether the comparison is made by percentage or by difference.
             conditions - None or dictionary. A dictionary with channel names as keys and channel values as values. Used to report under what circumstances the data was taken. Default is None.'''
+        if reference_values is None:
+            reference_values = []
+        if test_values is None:
+            test_values = []
         self._corr_results.test_limits[name]=self.get_test_limits(name)
         self._corr_results._correlate_results(name=name, reference_values=reference_values, test_values=test_values, spec=spec, conditions=conditions)
     def get_test_results(self):

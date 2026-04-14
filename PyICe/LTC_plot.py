@@ -308,7 +308,7 @@ Multipage_pdfs support the methods:
 
 To really get going and find more example see:
 
-\PyICe\Examples\LTC_plot_example\LTC_plot_example.py
+PyICe/Examples/LTC_plot_example/LTC_plot_example.py
 
 *** TIP ***
   If you get a warning about missing Linear fonts and you have them installed,
@@ -402,8 +402,10 @@ class plot(object):
     def add_scatter(self, axis, data, color, marker='*', markersize=4, legend="", stepped_style=False, vxline=False, hxline=False):
         self.add_trace(axis=axis, data=data, color=color, marker=marker, markersize=markersize, linestyle="None", legend=legend, stepped_style=stepped_style, vxline=vxline, hxline=hxline)
 
-    def add_horizontal_line(self, value, xrange=None, note=None, axis=1, color=[1,0,0], linestyle=None, linewidth=None):
+    def add_horizontal_line(self, value, xrange=None, note=None, axis=1, color=None, linestyle=None, linewidth=None):
         '''This can be useful for annotating limit lines. It can make dotted red lines for example.'''
+        if color is None:
+            color = [1, 0, 0]
         axis_params = self.y1_axis_params if axis==1 else self.y2_axis_params
         ylims = self.ylims if axis==1 else self.y2_axis_params["ylims"]
         if self.xlims in [None,"auto"] and xrange is None:
@@ -448,8 +450,10 @@ class plot(object):
         if note is not None:
             self.add_note(note=note, location=text_location, use_axes_scale=True, fontsize=3, axis=axis)
 
-    def add_vertical_line(self, value, yrange=None, note=None, axis=1, color=[1,0,0], linestyle=None, linewidth=None):
+    def add_vertical_line(self, value, yrange=None, note=None, axis=1, color=None, linestyle=None, linewidth=None):
         '''This can be useful for annotating limit lines. It can make dotted red lines for example.'''
+        if color is None:
+            color = [1, 0, 0]
         if axis not in [1,2]:
             raise Exception("\n\nLTC_plot ERROR: AXIS MUST BE 1 or 2\n")
         axis_params = self.y1_axis_params if axis==1 else self.y2_axis_params
@@ -531,8 +535,10 @@ class plot(object):
             self.y2_axis_params["legend_justification"] = justification
             self.y2_axis_params["legend_fontsize"]      = fontsize
             self.y2_axis_params["use_axes_scale"]       = use_axes_scale
-    def add_note(self, note, location=[0.05, 0.5], use_axes_scale=True, fontsize=7, axis=1, horizontalalignment="left", verticalalignment="bottom"):
+    def add_note(self, note, location=None, use_axes_scale=True, fontsize=7, axis=1, horizontalalignment="left", verticalalignment="bottom"):
         '''Add an arbitratry note anywhere on the graph. Position supports data axes and absolute axes.'''
+        if location is None:
+            location = [0.05, 0.5]
         self.notes.append({"note":note, "location":location, "axis":axis, "use_axes_scale":use_axes_scale, "fontsize":fontsize, "horizontalalignment":horizontalalignment, "verticalalignment":verticalalignment})
     def add_arrow(self, text, text_location, arrow_tip, use_axes_scale=True, fontsize=7):
         '''Adds a note and an arrow pointing to something. The arrow shaft emanates from the center of the note text and the arrow tip lands on the arrow top point. Both position follow either the data axes and absolute axes.'''
@@ -636,7 +642,9 @@ class scope_plot(plot):
     def add_all_time_refmarkers(self, xlocation_open, xlocation_closed):
         self.add_time_refmarker_open(xlocation_open)
         self.add_time_refmarker_closed(xlocation_closed)
-    def add_horizontal_line(self, value, xrange=None, note=None, color=[1,0,0]):
+    def add_horizontal_line(self, value, xrange=None, note=None, color=None):
+        if color is None:
+            color = [1, 0, 0]
         xrange0 = self.xlims[0] if xrange is None else xrange[0]
         xrange1 = self.xlims[1] if xrange is None else xrange[1]
         self.add_trace(data=[(xrange0,value),(xrange1,value)], color=color, marker=None, markersize=0, linestyle="--", legend="")
@@ -644,7 +652,9 @@ class scope_plot(plot):
             yrange0 = self.y1_axis_params['ylims'][0]
             yrange1 = self.y1_axis_params['ylims'][1]
             self.add_note(note=note, location=[xrange0 + 0.015*(xrange1-xrange0), value + 0.015*(yrange1 - yrange0)], use_axes_scale=True, fontsize=3, axis=1)
-    def add_vertical_line(self, value, yrange=None, note=None, color=[1,0,0]):
+    def add_vertical_line(self, value, yrange=None, note=None, color=None):
+        if color is None:
+            color = [1, 0, 0]
         yrange0 = self.y1_axis_params['ylims'][0] if yrange is None else yrange[0]
         yrange1 = self.y1_axis_params['ylims'][1] if yrange is None else yrange[1]
         self.add_trace(data=[(value,yrange0),(value,yrange1)], color=color, marker=None, markersize=0, linestyle="--", legend="")
