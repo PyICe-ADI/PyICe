@@ -745,6 +745,7 @@ class Plugin_Manager():
                             test._crash_info = sys.exc_info()
                             self.notify(self._crash_str(test), subject='CRASHED!!!')
                             test.crash_log={}
+                            test.crash_log['Stacktrace'] = traceback.format_exc()
                             for channel in test._logger.get_all_channel_names():
                                 try:
                                     test.crash_log[channel] = test._logger.read(channel)
