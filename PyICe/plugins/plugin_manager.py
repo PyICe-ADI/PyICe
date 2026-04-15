@@ -511,6 +511,9 @@ class Plugin_Manager():
                 archiver.copy_table(db_source_table=test.get_name()+'_metadata', db_dest_table=test.get_name()+'_metadata', db_dest_file=db_dest_file)
                 test._logger.copy_table(old_table=test.get_name()+'_metadata', new_table=test.get_name()+'_'+archive_folder+'_metadata')
             archived_tables.append((test, archived_table_name, db_dest_file))
+            if hasattr(test, 'crash_log'):
+                with open(os.path.join(test._module_path, 'archives', this_archive_folder, 'crash_log.json'), 'w') as f:
+                    json.dump(test.crash_log, f, indent=2)
         if len(archived_tables):
             arch_plot_scripts = []
             for (test, db_table, db_file) in archived_tables:
