@@ -741,6 +741,14 @@ class Plugin_Manager():
                             test._is_crashed = True
                             test._crash_info = sys.exc_info()
                             self.notify(self._crash_str(test), subject='CRASHED!!!')
+                            test.crash_log={}
+                            for channel in test._logger.get_all_channel_names():
+                                try:
+                                    test.crash_log[channel] = test._logger.read(channel)
+                                except Exception as e:
+                                    test.crash_log[channel] = str(e)
+                            with open(os.path.join(test._module_path, self.scratch_folder, 'crash_log.json'), 'w') as f:
+                                json.dump(test.crash_log, f, indent=2)
                         self.cleanup()
                         if self.cleanup_failure:
                             break
