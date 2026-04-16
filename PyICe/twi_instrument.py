@@ -452,10 +452,13 @@ class twi_instrument(lab_core.instrument,lab_core.delegator):
                         raise Exception(f'Register side effect {bf["write_side_effect"]} unknown. Contact PyICe developers.')
                 try:
                     bf['data_format']
-                except KeyError as e:
-                    # Old schema
+                except KeyError:
+                    # 'data_format' key absent: old register-map schema without type info.
+                    # Treat as unsigned; no scaled format is added.
                     pass
                 else:
+                    # New schema: 'data_format' declares whether the raw field is
+                    # 'Unsigned' or 'Signed' two's complement.
                     if bf['data_format'] == 'Unsigned':
                         signed = False
                     elif bf['data_format'] == 'Signed':
@@ -463,22 +466,33 @@ class twi_instrument(lab_core.instrument,lab_core.delegator):
                     else:
                         raise Exception(f'Unknown format {bf["data_format"]}. Contact PyICe developers.')
                     if signed and size > 1:
+                        # Register a human-readable signed-decimal display format and
+                        # tag the channel so that GUI / format helpers know the signedness.
                         register.set_format('signed dec')
                         register.set_attribute('signed', True)
                     elif signed:
+                        # A 1-bit field declared Signed is technically a sign bit with no
+                        # magnitude bits, which is nonsensical for most use-cases.
                         print(f'WARNING: bit field {name} nonsensically declared signed with size {size}.')
                     try:
                         bf['format']
-                    except KeyError as e:
-                        # Generic signed int  
+                    except KeyError:
+                        # No linear scaling defined — the raw (or signed-decimal) format is
+                        # the only display format for this field.
                         pass
                     else:
+                        # 'format' subkey provides a linear y = scale*x + offset transform
+                        # ('yoda' is the internal name for this schema family).
+                        # The 'yoda_scaled' format converts between raw integer and physical
+                        # units (e.g. raw LSBs → millivolts).
+                        # TODO: pass xypoints derived from the scale/offset so that SQL
+                        # reproduction of the transform works without re-parsing the schema.
                         register.add_format('yoda_scaled',
                                             format_function=lambda i,m=bf['format']['scale'],b=bf['format']['offset']: i*m+b,
                                             unformat_function=lambda f,m=bf['format']['scale'],b=bf['format']['offset']: int(round((f-b)/m)),
                                             signed=signed,
                                             units=bf['format']['units'] if bf['format']['units'] is not None else '',
-                                            xypoints=[]) #todo xy; no test case
+                                            xypoints=[])
                 if len(reg["functionalgroups"]) != 0:
                     if str(reg["functionalgroups"][0]) == '':
                         register.set_category("BlankFunctionalGroup")

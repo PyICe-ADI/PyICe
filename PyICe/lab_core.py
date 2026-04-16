@@ -703,29 +703,69 @@ class integer_channel(channel):
     def using_presets_write(self): # pragma: no cover
         '''return boolean denoting last setting of use_presets_write()'''
         return self._use_presets_write
-    def add_format(self, format_name, format_function, unformat_function, signed=False, units='', xypoints=[]): # pragma: no cover
-        '''Add a format to this register.  Formats convert a raw number into a more meaningful string and vice-versa
+    def add_format(self, format_name, format_function=None, unformat_function=None, signed=False, units='', xypoints=[]): # pragma: no cover
+        '''Add a format to this register.  Formats convert a raw number into a more meaningful string and vice-versa.
             Formats can be generic hex, bin, etc, or can be more complicated.
-            format_name is the name of the format
-            format_function transforms from integer data to real
-            unformat_function transforms from real data to integer
-            format_function and unformat_function should be reversible
-            signed treats integer data as two's complement with self.size bit width
-            units optionally appended to formatted (real) data when displayed by GUI
-            xypoints optionally allows duplicates information from format/unformat function to allow reproduction of transform in SQL, etc'''
+
+            format_name       - string key used to select this format in format() / unformat() calls.
+            format_function   - callable(raw_int) -> physical_value, or None to auto-derive from xypoints.
+            unformat_function - callable(physical_value) -> raw_int, or None to auto-derive from xypoints.
+            signed            - if True, raw integer is interpreted as two's complement before formatting.
+            units             - optional unit string appended to formatted values in the GUI.
+            xypoints          - list of (raw, physical) calibration pairs.
+
+            Auto piecewise-linear (PWL) mode:
+                When format_function and unformat_function are both None and xypoints contains
+                two or more calibration points, format/unformat are automatically derived as a
+                piecewise-linear function through those points.
+                  - For N=2 this is a simple slope-intercept (y = m*x + b).
+                  - For N>2 each consecutive pair of points defines one linear segment.
+                  - Values outside the calibrated range are extrapolated using the nearest
+                    endpoint segment.
+                Constraints enforced by assertion:
+                  - x-coordinates (register values) must be strictly unique.
+                  - y-coordinates (physical values) must be strictly unique and monotonically
+                    ordered so that the inverse mapping is uniquely defined.
+
+            Note on signed channels: when signed=True the raw integer is converted from two's
+            complement before being passed to format_function, so auto-PWL calibration points
+            should use the signed integer domain (e.g. -128..127 for an 8-bit signed channel).'''
         self._formats[format_name] = {}
-        if format_function is None and unformat_function is None and len(xypoints)==2:
-            '''Auto straight-line formatter. Don't specify horizontal or vertical non-functinoal, non-reversible transforms.'''
-            # TODO document
-            # TODO support multi-segment operation. This shouldn't be a big lift, given PWL multi-segment support elsewhere in PyICe.
-            # TODO signed domain support?
-            x_pts, y_pts = zip(*xypoints)
-            assert len(x_pts) == len(set(x_pts)), f'ERROR: {self.get_name()} format {format_name} has non-reversible horizontal segment.'
-            assert len(y_pts) == len(set(y_pts)), f'ERROR: {self.get_name()} format {format_name} has non-functional vertical segment.'
-            m = (xypoints[1][1] - xypoints[0][1]) / (xypoints[1][0] - xypoints[0][0]) #(y2-y1)/(x2-x1)
-            b = xypoints[1][1] - m * xypoints[1][0]
-            format_function = lambda x: m*x+b
-            unformat_function = lambda y: int(round((y-b)/m))
+        if format_function is None and unformat_function is None and len(xypoints) >= 2:
+            # Auto piecewise-linear (PWL) formatter.
+            # Sort calibration points by x (register / raw) value ascending so that
+            # segment lookup uses a consistent direction for the forward transform.
+            sorted_pts = sorted(xypoints, key=lambda p: p[0])
+            x_pts = [p[0] for p in sorted_pts]
+            y_pts = [p[1] for p in sorted_pts]
+            assert len(x_pts) == len(set(x_pts)), \
+                f'ERROR: {self.get_name()} format {format_name}: duplicate x-values — mapping is not invertible.'
+            assert len(y_pts) == len(set(y_pts)), \
+                f'ERROR: {self.get_name()} format {format_name}: duplicate y-values — physical transform is not unique.'
+            y_diffs = [y_pts[i+1] - y_pts[i] for i in range(len(y_pts) - 1)]
+            assert all(d > 0 for d in y_diffs) or all(d < 0 for d in y_diffs), \
+                f'ERROR: {self.get_name()} format {format_name}: y-values are not monotonic — inverse would be ambiguous.'
+
+            def _pwl_interp(val, in_pts, out_pts):
+                '''Piecewise-linear interpolation / extrapolation along N-point sequences.
+                Handles both ascending and descending in_pts. Values outside the range
+                are extrapolated from the nearest endpoint segment.'''
+                n = len(in_pts)
+                for i in range(n - 1):
+                    lo = min(in_pts[i], in_pts[i + 1])
+                    hi = max(in_pts[i], in_pts[i + 1])
+                    if lo <= val <= hi:
+                        break
+                else:
+                    # val is outside the calibrated range — extrapolate from the
+                    # nearest endpoint segment based on proximity to end-points.
+                    i = 0 if abs(val - in_pts[0]) < abs(val - in_pts[-1]) else n - 2
+                dx = in_pts[i + 1] - in_pts[i]
+                dy = out_pts[i + 1] - out_pts[i]
+                return out_pts[i] + dy * (val - in_pts[i]) / dx
+
+            format_function   = lambda x, xp=x_pts, yp=y_pts: _pwl_interp(x, xp, yp)
+            unformat_function = lambda y, xp=x_pts, yp=y_pts: int(round(_pwl_interp(y, yp, xp)))
         if signed:
             self._formats[format_name]['format_function'] = lambda x: format_function(self.twosComplementToSigned(x))
             self._formats[format_name]['unformat_function'] = lambda x: self.signedToTwosComplement(unformat_function(x))

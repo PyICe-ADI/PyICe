@@ -8,16 +8,22 @@ from xml.sax.saxutils import escape as escape
 import sys
 import os
 try:
+    # PySide2 supports Python <=3.10.  If PySide2 is not installed (Python >=3.11)
+    # or the import fails for any reason, fall through to PySide6.
     from PySide2 import QtGui
     from PySide2 import QtWidgets
     from PySide2 import QtCore
     from PySide2.QtCore import SIGNAL, SLOT, QObject, Signal, Slot
-except:
+except ImportError:
+    # PySide6 is required for Python >=3.11.
+    # QAction moved from QtWidgets to QtGui in Qt6; monkey-patch it back into
+    # QtWidgets so that all existing code that references QtWidgets.QAction keeps
+    # working without a wholesale rewrite.
     from PySide6 import QtGui
     from PySide6 import QtWidgets
     from PySide6 import QtCore
     from PySide6.QtCore import SIGNAL, SLOT, QObject, Signal, Slot
-    QtWidgets.QAction = QtGui.QAction # it moved in PySide6, move back until removing PySide2 support to avoid rewriting
+    QtWidgets.QAction = QtGui.QAction
 import queue
 import datetime
 import collections
@@ -139,7 +145,13 @@ class DataStoreException(Exception):
 
 class channel_wrapper(object):
     def __init__(self,channel=None):
-        # for some reason this is probably getting supered in Qt due to multiple inheritance, doing nothing when called without a channel is a workaround
+        # channel=None default is required because of Python's cooperative multiple-inheritance
+        # (MRO) behaviour with Qt classes.  When a subclass like display_item inherits from both
+        # QtWidgets.QLabel and channel_wrapper, calling QtWidgets.QLabel.__init__(self) causes
+        # Python's super() chain to eventually reach channel_wrapper.__init__ with no arguments.
+        # Accepting None and doing nothing in that case lets the explicit
+        #   channel_wrapper.__init__(self, channel_object)
+        # call in the subclass __init__ handle proper initialisation.
         if channel is not None:
             self._channel = channel
             self._name = self._channel.get_name()
@@ -798,7 +810,10 @@ class write_channel_dialog(QtWidgets.QDialog,channel_wrapper):
                 self.formats_combo.addItem(format)
             self.formats_combo.setCurrentIndex(self.formats_combo.findText("None" if self._format is None else self._format))
             layout.addWidget(self.formats_combo)
-            self.connect(self.formats_combo,SIGNAL("currentIndexChanged (QString)"),self.update_format)
+            # currentIndexChanged(QString) overload was removed in Qt6; use currentTextChanged instead.
+            # (The old SIGNAL string also had a spurious space before the '(' which is a Qt convention
+            # violation and would silently fail to connect even on Qt5.)
+            self.formats_combo.currentTextChanged.connect(self.update_format)
             self.link_format_checkbox = QtWidgets.QCheckBox('Link Format',self)
             layout.addWidget(self.link_format_checkbox)
         # presets
@@ -920,7 +935,9 @@ class write_channel_dialog(QtWidgets.QDialog,channel_wrapper):
         if format == "None":
             format = None
         try:
-            if hasattr(self,'link_format_checkbox') and self.link_format_checkbox.checkState():
+            # checkState() returns Qt.CheckState enum; in PySide6 Qt.CheckState.Unchecked is a
+            # non-None object and is therefore always truthy.  Use isChecked() for bool semantics.
+            if hasattr(self,'link_format_checkbox') and self.link_format_checkbox.isChecked():
                 old_value = self.unformat(self.get_value(),self._format,self._use_presets_write)
                 new_text = self.format(old_value,format,self._use_presets_write)
                 self.set_value(new_text)
@@ -935,7 +952,7 @@ class write_channel_dialog(QtWidgets.QDialog,channel_wrapper):
         dcwd_ds['use_presets_write'] = str(self._use_presets_write)
         if len(self.get_formats()):
             dcwd_ds['format'] = str(self._format)
-            if self.link_format_checkbox.checkState() == 2:
+            if self.link_format_checkbox.isChecked():
                 dcwd_ds['link'] = 'True'
         dcwd_ds['increment'] = str(self.get_increment())
         dcwd_ds['visible'] = str( self.isVisible() )
@@ -1162,17 +1179,19 @@ class display_item_group(QtWidgets.QWidget):
         self.connect(self.tagged_sort,SIGNAL('toggled(bool)'), self.set_tagged_sort)
         menu.addAction(self.tagged_sort)
         menu.exec_(self.mapToGlobal(point))
-        self.SI_change_font_size.connect(self.change_font_size)
-        #self.connect(self,SIGNAL("change_font_size(int)"),self.change_font_size)
+        # Removed: self.SI_change_font_size.connect(self.change_font_size)
+        # SI_change_font_size is never emitted on display_item_group — the context menu's font
+        # size actions use direct lambda→change_font_size() calls instead.  This connect() was
+        # dead code that silently accumulated a duplicate slot connection on every right-click.
     def wheelEvent(self, QWheelEvent):
         modifiers = QtWidgets.QApplication.keyboardModifiers()
         if modifiers == QtCore.Qt.ControlModifier:
             #15 degree physical steps * eight's of a degree resolution = +/-120 count typical single movement.
             #self.change_font_size(int(round(QWheelEvent.delta()/120.0)))
             try:
-                delta = QWheelEvent.delta() #qt5
-            except:
-                delta = QWheelEvent.angleDelta() #qt6
+                delta = QWheelEvent.delta() #qt5: returns int (degrees/8)
+            except AttributeError:
+                delta = QWheelEvent.angleDelta().y() #qt6: angleDelta() returns QPoint; .y() extracts vertical scroll component
             self.change_font_size(1 if delta > 0 else -1) #independent of mouse resolution, but doesn't support super-mega-rapid-zoom
         else:
             QWheelEvent.ignore() #allow signal to bubble up to scroll function (hold meta/alt with wheel)
@@ -1396,10 +1415,11 @@ class tab_view(QtWidgets.QWidget):
             #remap mouse wheel vertical scroll to horizontal scroll, since the only scroll bar is horizontal.
             scroll_bar = self.scroll_area.horizontalScrollBar()
             try:
-                delta = QWheelEvent.delta() #qt5
+                delta = QWheelEvent.delta() #qt5: returns int (degrees/8)
                 scroll_bar.triggerAction(scroll_bar.SliderSingleStepAdd if delta > 0 else scroll_bar.SliderSingleStepSub)
-            except:
-                delta = QWheelEvent.angleDelta().y() #qt6
+            except AttributeError:
+                delta = QWheelEvent.angleDelta().y() #qt6: angleDelta() returns QPoint; .y() is vertical component
+                # SliderSingleStepAdd/Sub must be accessed via class, not scroll_bar instance, in Qt6
                 scroll_bar.triggerAction(QtWidgets.QAbstractSlider.SliderSingleStepAdd if delta > 0 else QtWidgets.QAbstractSlider.SliderSingleStepSub)
         else:
             QWheelEvent.ignore()
@@ -2212,7 +2232,9 @@ class ltc_lab_gui_main_window(QtWidgets.QMainWindow):
         tab_menu.addSeparator()
         read_all = QtWidgets.QAction("Read All",tab_menu)
         read_all.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL | QtCore.Qt.Key_R))
-        read_all.triggered.connect(self._tg._active_tab.dig.request_read_all)
+        # Wrap in lambda so _active_tab is evaluated at trigger time, not at menu-bar creation time.
+        # Without the lambda, the action permanently targets whichever tab was active during __init__.
+        read_all.triggered.connect(lambda: self._tg._active_tab.dig.request_read_all())
         tab_menu.addAction(read_all)
 
         #logger menu
@@ -2366,14 +2388,18 @@ class ltc_lab_gui_main_window(QtWidgets.QMainWindow):
             self._gui_logger.SI_request_background_call.connect(self.receive_background_call_request)
             self.setWindowTitle(self._channel_group.get_name())
         elif passive:
-            self.disconnect(self.file_passive,SIGNAL("toggled(bool)"),self.set_passive_observer_mode)
+            # Temporarily disconnect to prevent re-entrant call from setChecked(True) below.
+            # Must use new-style .disconnect() to match the new-style .connect() at the call site
+            # (line 2187); old-style QObject.disconnect() cannot undo a new-style .connect() in
+            # PySide6, which would leave the connection live and cause infinite recursion.
+            self.file_passive.toggled.disconnect(self.set_passive_observer_mode)
             if not self.file_passive.isChecked():
                 self._tg.SI_request_read_channel_list.disconnect(self.read_channel_list )
                 self._tg.SI_request_write_channel_list.disconnect(self.write_channel_list )
                 self.SI_channel_data_ready.disconnect(self._tg.receive_channel_data )
                 self.SI_request_background_call.disconnect(self.receive_background_call_request)
             self.file_passive.setChecked(True)
-            self.connect(self.file_passive,SIGNAL("toggled(bool)"),self.set_passive_observer_mode)
+            self.file_passive.toggled.connect(self.set_passive_observer_mode)
             self._tg.SI_request_read_channel_list.connect( self.show_passive_error )
             self._tg.SI_request_write_channel_list.connect(self.show_passive_error )
             self._gui_logger.SI_request_background_call.connect(self.show_passive_error )
@@ -2438,7 +2464,7 @@ class ltc_lab_gui_app(QObject):
             if not self.q_is_full:
                 self.q_is_full = True
                 #print "Warning: Background GUI unable to keep up with main thread's data rate @ {}".format(datetime.datetime.now())
-            self.SI_queue_overflow().emit()
+            self.SI_queue_overflow.emit()  # was SI_queue_overflow().emit() — calling the signal as a function returns None, then .emit() on None raises AttributeError
             #self.emit(SIGNAL('queue_overflow()'))
     def exec_(self):
         return QApp.exec_()
