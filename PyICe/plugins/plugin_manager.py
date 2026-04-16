@@ -847,6 +847,7 @@ class Plugin_Manager():
                             print_banner(f'{test.get_name()} Collecting. . .')
                             self.startup()
                             test._reconfigure()
+                            test._capture_crash = lambda crash_source='test_collect', _ct=(temp if temp != "ambient" else None): self._build_crash_log(test, temp=_ct, crash_source=crash_source)
                             test.collect()
                             test._restore()
                         except Exception as e:
