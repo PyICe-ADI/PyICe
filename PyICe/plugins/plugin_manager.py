@@ -63,7 +63,7 @@ class Plugin_Manager():
         os.makedirs(os.path.join(a_test._module_path,self.scratch_folder), exist_ok=True)
         a_test._db_file = os.path.join(a_test._module_path, self.scratch_folder, 'data_log.sqlite')
         a_test._is_crashed = False
-        a_test._crash_log = None
+        a_test._crash_logs = None
 
     def run(self, temperatures=[]):
         '''
@@ -473,7 +473,7 @@ class Plugin_Manager():
         # outer-except guard (if test._crash_log is None) from re-calling this method with
         # a different, unrelated exception and misattributing the failure.
 
-        test._crash_log = {'build_error': 'crash log construction failed before completion'}
+        test._crash_logs = {'build_error': 'crash log construction failed before completion'}
         try:
             typ, value, tb = sys.exc_info()
             crash_log = {}
@@ -621,8 +621,8 @@ class Plugin_Manager():
                 archiver.copy_table(db_source_table=test.get_name()+'_metadata', db_dest_table=test.get_name()+'_metadata', db_dest_file=db_dest_file)
                 test._logger.copy_table(old_table=test.get_name()+'_metadata', new_table=test.get_name()+'_'+archive_folder+'_metadata')
             archived_tables.append((test, archived_table_name, db_dest_file))
-            if test._crash_log is not None: # Move crash_logs
-                for crash_file in test._crash_log.keys():
+            if test._crash_logs is not None: # Move crash_logs
+                for crash_file in test._crash_logs.keys():
                     scratch_json = os.path.join(test._module_path, self.scratch_folder, f'{crash_file}.json')
                     if os.path.exists(scratch_json):
                         shutil.copy(scratch_json, os.path.join(test._module_path, 'archives', this_archive_folder, f'{crash_file}.json'))
@@ -873,7 +873,7 @@ class Plugin_Manager():
             for test in self.tests:
                 test._is_crashed = True
                 test._crash_info = sys.exc_info()
-                if test._crash_log is None:
+                if test._crash_logs is None:
                     self._build_crash_log(test, crash_source='framework')
             try:
                 if self.far_enough:
