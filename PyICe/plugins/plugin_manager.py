@@ -453,7 +453,7 @@ class Plugin_Manager():
         crash_str += crash_sep
         return crash_str
 
-    def _build_crash_log(self, test, temp=None, crash_source='test_collect'):
+    def _build_crash_log(self, test, temp=None, crash_source='test_collect', file_name='crash_log'):
         '''Build and persist a crash log capturing the DUT channel state, stack frame locals,
         structured exception metadata, and temperature context at the time of the crash.
         Must be called from within an active except block so that sys.exc_info() is populated.
@@ -472,6 +472,7 @@ class Plugin_Manager():
         # returns, even if construction fails partway through. The sentinel prevents the
         # outer-except guard (if test._crash_log is None) from re-calling this method with
         # a different, unrelated exception and misattributing the failure.
+
         test._crash_log = {'build_error': 'crash log construction failed before completion'}
         try:
             typ, value, tb = sys.exc_info()
@@ -547,9 +548,9 @@ class Plugin_Manager():
                     except Exception as read_exc:
                         live_readings[channel] = f'READ ERROR: {read_exc}'
             crash_log['live_channel_readings'] = live_readings
-            test._crash_log = crash_log
+            test._crash_logs[file_name] = crash_log
             try:
-                scratch_path = os.path.join(test._module_path, self.scratch_folder, 'crash_log.json')
+                scratch_path = os.path.join(test._module_path, self.scratch_folder, f'{file_name}.json')
                 with open(scratch_path, 'w') as f:
                     json.dump(crash_log, f, indent=2, default=repr)
             except Exception as write_exc:
@@ -557,7 +558,8 @@ class Plugin_Manager():
         except Exception as build_exc:
             print_banner(f'WARNING: Exception while building crash log: {build_exc}')
             traceback.print_exc()
-        return test._crash_log
+        self.notify(json.dumps(crash_log, indent=2), subject=f'{test.get_name()} CRASH LOG')
+        return crash_log
 
     ###
     # TRACEABILITY METHODS
@@ -596,7 +598,6 @@ class Plugin_Manager():
                 break
             except Exception:
                 continue
-            archive_folder = datetime.datetime.utcnow().strftime("%Y_%m_%d_%H_%M")
         archived_tables = []
         for test in self.tests:
             if not hasattr(test, "_logger"):
@@ -620,10 +621,11 @@ class Plugin_Manager():
                 archiver.copy_table(db_source_table=test.get_name()+'_metadata', db_dest_table=test.get_name()+'_metadata', db_dest_file=db_dest_file)
                 test._logger.copy_table(old_table=test.get_name()+'_metadata', new_table=test.get_name()+'_'+archive_folder+'_metadata')
             archived_tables.append((test, archived_table_name, db_dest_file))
-            if test._crash_log is not None:
-                scratch_json = os.path.join(test._module_path, self.scratch_folder, 'crash_log.json')
-                if os.path.exists(scratch_json):
-                    shutil.copy(scratch_json, os.path.join(test._module_path, 'archives', this_archive_folder, 'crash_log.json'))
+            if test._crash_log is not None: # Move crash_logs
+                for crash_file in test._crash_log.keys():
+                    scratch_json = os.path.join(test._module_path, self.scratch_folder, f'{crash_file}.json')
+                    if os.path.exists(scratch_json):
+                        shutil.copy(scratch_json, os.path.join(test._module_path, 'archives', this_archive_folder, f'{crash_file}.json'))
         if len(archived_tables):
             arch_plot_scripts = []
             for (test, db_table, db_file) in archived_tables:
@@ -847,7 +849,7 @@ class Plugin_Manager():
                             print_banner(f'{test.get_name()} Collecting. . .')
                             self.startup()
                             test._reconfigure()
-                            test._capture_crash = lambda crash_source='test_collect', _ct=(temp if temp != "ambient" else None): self._build_crash_log(test, temp=_ct, crash_source=crash_source)
+                            test._capture_crash = lambda crash_source='test_collect', _ct=(temp if temp != "ambient" else None): self._build_crash_log(test, temp=_ct, crash_source=crash_source, file_name=f'crash_log_{datetime.datetime.now(datetime.timezone.utc).strftime("%Y_%m_%d_%H_%M")}')
                             test.collect()
                             test._restore()
                         except Exception as e:
