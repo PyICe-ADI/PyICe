@@ -170,12 +170,6 @@ class Plugin_Manager():
         The 'temp_control_channel' is a channel object. The values provided in the temperature list will be written to it.
         The special channel actions are functions that are run on each logging of data and the value is a dicionary with a channel object or the string name of a channel as key, and the value the function to be run. The function requires the arguments channel_name, readings, and test.'''
 
-        self.cleanup_fns = []
-        self.temp_run_fns = []
-        self.startup_fns = []
-        self.shutdown_fns = []
-        self.temperature_channel = None
-        self.special_channel_actions = {}
         for (dirpath1, dirnames, filenames) in os.walk(self.project_path):
             if 'benches' not in dirpath1 or self.project_path not in dirpath1: continue
             try:
@@ -221,10 +215,6 @@ class Plugin_Manager():
                             raise Exception(f'BENCH MAKER: Multiple actions have been declared for channel(s) {overwrite_check}.')
                         self.special_channel_actions.update(instrument_dict['special_channel_action'])
             break
-        if self.temperature_channel == None:
-            self.temperature_channel = self.master.add_channel_dummy("tdegc")
-        if not self._temperatures:
-            self.temperature_channel.write(25)
 
     def _add_components(self):
         for component in self.component_list:
@@ -682,7 +672,19 @@ class Plugin_Manager():
         try:
             self.far_enough = False
             self.master = master()
-            self.add_instrument_channels()
+            self.cleanup_fns = []
+            self.temp_run_fns = []
+            self.startup_fns = []
+            self.shutdown_fns = []
+            self.temperature_channel = None
+            self.special_channel_actions = {}
+            self_made_bench = self.tests[0].build_a_bench()
+            if self_made_bench == 'Not used':
+                self.add_instrument_channels()
+            if self.temperature_channel == None:
+                self.temperature_channel = self.master.add_channel_dummy("tdegc")
+            if not self._temperatures:
+                self.temperature_channel.write(25)
             if 'bench_config_management' in self.plugins:
                 self.test_components = component_collection()
                 self._add_components()
