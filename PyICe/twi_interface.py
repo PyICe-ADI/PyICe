@@ -163,6 +163,8 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         is the extension prefix (0xFE or 0xFF) and high_byte is the extended command index.
         Use with module constants: commandCode = (ext_cmd << 8) | PMBUS_COMMAND_EXTENSION
         '''
+        if commandCode is None:
+            return []
         if commandCode < 0:
             raise ValueError(f'Invalid command code {commandCode}: must be non-negative')
         if commandCode <= 0xFF:
