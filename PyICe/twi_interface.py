@@ -71,18 +71,40 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         return responses
     @classmethod
     def check_size(cls, data, bits):
-        '''make sure data fits within word of length  "bits"'''
+        '''make sure data fits within word of length  "bits"
+
+        >>> twi_interface.check_size(255, 8)
+        True
+        >>> twi_interface.check_size(0, 8)
+        True
+        >>> twi_interface.check_size(256, 8)
+        Traceback (most recent call last):
+            ...
+        AssertionError
+        '''
         assert data >= 0
         assert data < 2**bits
         return True
     @classmethod
     def read_addr(cls,addr7):
-        '''compute 8-bit read address from 7-bit address'''
+        '''compute 8-bit read address from 7-bit address
+
+        >>> hex(twi_interface.read_addr(0x48))
+        '0x91'
+        >>> hex(twi_interface.read_addr(0x50))
+        '0xa1'
+        '''
         cls.check_size(addr7, 7)
         return ((addr7 << 1) + 1)
     @classmethod
     def write_addr(cls, addr7):
-        '''compute 8-bit write address from 7-bit address'''
+        '''compute 8-bit write address from 7-bit address
+
+        >>> hex(twi_interface.write_addr(0x48))
+        '0x90'
+        >>> hex(twi_interface.write_addr(0x50))
+        '0xa0'
+        '''
         cls.check_size(addr7, 7)
         return (addr7 << 1)
     @classmethod
@@ -118,6 +140,13 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             while (value >> crc_length) != 0:
                 value ^= CRC_POLY << (len(bin(value)[2:]) - crc_length)
             return value >> 1
+
+        >>> twi_interface.pec([0x90, 0x01, 0x91, 0xAB, 0xCD])
+        147
+        >>> twi_interface.pec([0x00])
+        0
+        >>> twi_interface.pec([0x01])
+        7
         '''
         #byteList is an ordered list of every byte in the transaction including address, command code (subaddr) and data
         #http://en.wikipedia.org/wiki/Cyclic_redundancy_check
@@ -141,12 +170,28 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         return int(crc & 0xFF)
     @classmethod
     def get_byte(cls, data, bytenum):
-            '''Select specified byte from data of any size.  bytenum=0 returns the least-significant byte.'''
+            '''Select specified byte from data of any size.  bytenum=0 returns the least-significant byte.
+
+            >>> hex(twi_interface.get_byte(0xABCD, 0))
+            '0xcd'
+            >>> hex(twi_interface.get_byte(0xABCD, 1))
+            '0xab'
+            >>> twi_interface.get_byte(0x123456, 2)
+            18
+            '''
             return (data >> (bytenum*8)) & 0xFF
     @classmethod
     def word(cls, byteList):
         '''Return a word of arbitrary size assembled from bytes.
-            Must provide byteList assembled with least-significant byte first (little-endian), like SMBus'''
+            Must provide byteList assembled with least-significant byte first (little-endian), like SMBus
+
+        >>> hex(twi_interface.word([0xCD, 0xAB]))
+        '0xabcd'
+        >>> twi_interface.word([0x56, 0x34, 0x12])
+        1193046
+        >>> twi_interface.word([0xFF])
+        255
+        '''
         assert isinstance(byteList, (list, tuple))
         word_value = 0
         for i,byte in enumerate(byteList):
@@ -711,7 +756,15 @@ class twi_interface(object, metaclass=abc.ABCMeta):
                    "         Switch to hardware-accelerated/protocol-specific methods for best performance,\n"
                    "         if available.").format(op=operation, module=__name__))
 class i2c_dummy(twi_interface):
-    '''dummy interface for testing without any hardware.  No actual communication occurs.'''
+    '''dummy interface for testing without any hardware.  No actual communication occurs.
+
+    >>> dummy = i2c_dummy(delay=0, p_change=0)
+    >>> dummy.write_register(addr7=0x48, commandCode=0x01, data=0xAB, data_size=8, use_pec=False)
+    >>> dummy.read_register(addr7=0x48, commandCode=0x01, data_size=8, use_pec=False)
+    171
+    >>> dummy._cc_data[0x01]
+    171
+    '''
     def __init__(self,delay=0,p_change=0.005,verbose=False):
         self._delay = delay
         self._cc_size = 8

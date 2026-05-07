@@ -2,6 +2,17 @@ import re
 from .clean_ascii_code import clean_ascii_code
 
 def clean_sql(str):
+    '''Clean string for use as a SQL identifier. Raises on reserved words.
+
+    >>> clean_sql('my_channel')
+    'my_channel'
+    >>> clean_sql('voltage_1')
+    'voltage_1'
+    >>> clean_sql('SELECT')
+    Traceback (most recent call last):
+        ...
+    Exception: Found "SELECT" reserved keyword in c cleaned string: "SELECT"
+    '''
     str = clean_ascii_code(str)
 
     sql_reserved = [

@@ -38,7 +38,7 @@ class ADT7410(instrument):
             self.twi.write_register(addr7=self.addr7, commandCode=self.registers['config'], data=(0b1<<7), data_size=8, use_pec=False)
         else: #shutdown
             # self.twi.write_byte(addr7=self.addr7, self.registers['config'], (0b1<<7 + 0b11<<5))
-            self.twi.write_register(addr7=self.addr7, commandCode=self.registers['config'], data=(0b1<<7 + 0b11<<5), data_size=8, use_pec=False)
+            self.twi.write_register(addr7=self.addr7, commandCode=self.registers['config'], data=(0b1<<7) | (0b11<<5), data_size=8, use_pec=False)
     def read_temp(self):
         '''Return free-running temperature conversion result.
         16-bit conversion result scaled to signed degrees Celsius'''

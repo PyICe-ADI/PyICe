@@ -1,4 +1,17 @@
 def bounded(value, min_value=None, max_value=None, key=None):
+    '''Clamp value between min_value and max_value.
+
+    >>> bounded(5, min_value=0, max_value=10)
+    5
+    >>> bounded(-3, min_value=0, max_value=10)
+    0
+    >>> bounded(15, min_value=0, max_value=10)
+    10
+    >>> bounded(15, max_value=10)
+    10
+    >>> bounded(-3, min_value=0)
+    0
+    '''
     kwargs = {}
     if key is not None:
         kwargs['key'] = key

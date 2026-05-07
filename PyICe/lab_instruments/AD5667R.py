@@ -164,7 +164,7 @@ class AD5667R(instrument):
         return self._add_channel(int_output)
 
     def add_channel_code_DAC_B(self, channel_name):
-        int_output = integer_channel(channel_name, size=16, write_function=self._write_dac_A_code)
+        int_output = integer_channel(channel_name, size=16, write_function=self._write_dac_B_code)
         int_output.set_attribute('ch_type', 'code')
         int_output.add_write_callback(self._sync_channels)
         return self._add_channel(int_output)

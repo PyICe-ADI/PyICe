@@ -1,4 +1,5 @@
 import scipy
+from .vector_transform import vector_transform
 
 def _detrend(rec_array, **kwargs):
     '''http://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.detrend.html'''

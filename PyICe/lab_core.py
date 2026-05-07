@@ -60,7 +60,15 @@ if debug_logging.getEffectiveLevel() > print_logging_level:
     root_logging.addHandler(logging.StreamHandler())
 
 class results_ord_dict(collections.OrderedDict):
-    '''Ordered dictionary for channel results reporting with pretty print addition.'''
+    '''Ordered dictionary for channel results reporting with pretty print addition.
+
+    >>> from PyICe.lab_core import results_ord_dict
+    >>> d = results_ord_dict([('voltage', 3.3), ('current', 0.01)])
+    >>> print(d)
+    voltage:  3.3
+    current:  0.01
+    <BLANKLINE>
+    '''
     def __str__(self):
         s = ''
         max_channel_name_length = 0
@@ -190,7 +198,17 @@ class channel(delegator):
         '''return channel name'''
         return self.name
     def set_name(self,name):
-        '''rename channel'''
+        '''rename channel
+
+        >>> from PyICe.lab_core import channel
+        >>> ch = channel(name='my_chan')
+        >>> ch.set_name('new_name').get_name()
+        'new_name'
+        >>> ch.set_name('123bad')
+        Traceback (most recent call last):
+            ...
+        PyICe.lab_core.ChannelNameException: Bad Channel Name "123bad"
+        '''
         name = str(name)
         if not re.match("[_A-Za-z][_a-zA-Z0-9]*$",name):
             raise ChannelNameException('Bad Channel Name "{}"'.format(name))
@@ -214,7 +232,13 @@ class channel(delegator):
         '''return channel description string.'''
         return self._description
     def set_description(self,description):
-        '''sets the channel description. argument is string'''
+        '''sets the channel description. argument is string
+
+        >>> from PyICe.lab_core import channel
+        >>> ch = channel(name='vout')
+        >>> ch.set_description('Output voltage').get_description()
+        'Output voltage'
+        '''
         self._description = description
         return self
     def read(self):
@@ -391,7 +415,13 @@ class channel(delegator):
         return False
     def set_attribute(self,attribute_name,value):
         '''set attribute_name to value
-        value can be retrived later with get_attribute(attribute_name)'''
+        value can be retrived later with get_attribute(attribute_name)
+
+        >>> from PyICe.lab_core import channel
+        >>> ch = channel(name='temp')
+        >>> ch.set_attribute('units', 'degC').get_attribute('units')
+        'degC'
+        '''
         self._attributes[attribute_name] = value
         return self
     def get_attribute(self,attribute_name):
@@ -403,7 +433,17 @@ class channel(delegator):
         '''return dictionary of all channel attributes previously set with set_attribute(attribute_name, value)'''
         return results_ord_dict(sorted(list(self._attributes.items()), key=lambda t: t[0]))
     def set_category(self, category):
-        '''each channel may be a member of a single category for sorting purposes. category argument is usually a string'''
+        '''each channel may be a member of a single category for sorting purposes. category argument is usually a string
+
+        >>> from PyICe.lab_core import channel
+        >>> ch = channel(name='vout')
+        >>> ch.set_category('power').get_category()
+        'power'
+        >>> ch.set_category(123)
+        Traceback (most recent call last):
+            ...
+        TypeError: Category must be a string
+        '''
         if not isinstance(category,str):
             raise TypeError("Category must be a string")
         self._category = category
@@ -508,7 +548,14 @@ class channel(delegator):
         '''return min warngin channel value.'''
         return self._write_min_warning
     def format_display(self,data):
-        '''converts data to string according to string formatting rule set by self.set_display_format_str()'''
+        '''converts data to string according to string formatting rule set by self.set_display_format_str()
+
+        >>> from PyICe.lab_core import channel
+        >>> ch = channel(name='vout')
+        >>> _ = ch.set_display_format_str('3.2f', suffix=' V')
+        >>> ch.format_display(3.3)
+        '3.30 V'
+        '''
         return self._display_format_str.format(data)
     def set_display_format_str(self,fmt_str='',prefix='',suffix=''):
         '''format string to alter how data is displayed.
@@ -516,6 +563,12 @@ class channel(delegator):
         example '3.2f', '04X', '#06X', '#18b', '.2%'
         prefix will be displayed immediately before the channel data, example '0x'
         suffix will be displayed immediately after the channel data, example ' A' or ' V'
+
+        >>> from PyICe.lab_core import channel
+        >>> ch = channel(name='code')
+        >>> _ = ch.set_display_format_str('04X', prefix='0x')
+        >>> ch.format_display(255)
+        '0x00FF'
         '''
         self._display_format_str = '{prefix}{{:{fmt_str}}}{suffix}'.format(prefix=prefix,fmt_str=fmt_str,suffix=suffix)
         return self
@@ -606,7 +659,23 @@ class RegisterFormatException(ChannelException):
 class integer_channel(channel):
     '''Channel with integer value limitation.
 
-    Adds presets and formats but retains channel class's read/write restrictions.'''
+    Adds presets and formats but retains channel class's read/write restrictions.
+
+    >>> from PyICe.lab_core import integer_channel
+    >>> ic = integer_channel(name='dac_code', size=8, write_function=lambda v: v)
+    >>> ic.get_size()
+    8
+    >>> ic.get_min_write_limit()
+    0
+    >>> ic.get_max_write_limit()
+    255
+    >>> ic.format(0xAB, 'hex', use_presets=False)
+    '0xAB'
+    >>> ic.format(0b1100, 'bin', use_presets=False)
+    '0b00001100'
+    >>> ic.unformat('0xFF', 'hex', use_presets=False)
+    255
+    '''
     def __init__(self, name, size, read_function=None, write_function=None):
         channel.__init__(self,name,read_function=read_function,write_function=write_function)
         assert isinstance(size, numbers.Integral)
@@ -660,7 +729,17 @@ class integer_channel(channel):
         else:
             return int(self._write_min)
     def add_preset(self, preset_name, preset_value, preset_description=None):
-        '''Adds a preset named preset_name with value preset_value'''
+        '''Adds a preset named preset_name with value preset_value
+
+        >>> from PyICe.lab_core import integer_channel
+        >>> ic = integer_channel(name='mux', size=4, write_function=lambda v: v)
+        >>> _ = ic.add_preset('CH_A', 0)
+        >>> _ = ic.add_preset('CH_B', 1)
+        >>> ic.format(0, 'dec', use_presets=True)
+        'CH_A'
+        >>> ic.unformat('CH_B', 'dec', use_presets=True)
+        1
+        '''
         if self._size == 1 and len(list(self._presets.keys())) == 2 and 'True' in self._presets and 'False' in self._presets:
             #remove True/False presets if custom presets are added
             self._presets = results_ord_dict()
@@ -681,7 +760,15 @@ class integer_channel(channel):
         self._preset_descriptions[preset_name] = preset_description
     def set_format(self,format):
         '''set active transformation format. reads and writes happen in transformed (real) units instead of native integer.
-        Set to None to disable formatting.'''
+        Set to None to disable formatting.
+
+        >>> from PyICe.lab_core import integer_channel
+        >>> ic = integer_channel(name='reg', size=8, write_function=lambda v: v)
+        >>> ic.set_format('hex').get_format()
+        'hex'
+        >>> ic.set_format(None).get_format() is None
+        True
+        '''
         if format is not None and format not in self.get_formats():
             raise Exception('Invalid format "{}" for {}'.format(format,self.get_name()))
         self._format = format
@@ -994,6 +1081,13 @@ class register(integer_channel):
 
     Models remote (volatile) memory. IE, reads must check remote copy rather than use cache like ordinary integer channels.
     This behavior can be modified on a channel-by-channel basis to speed up communication with the enable_cached_read method.
+
+    >>> from PyICe.lab_core import register
+    >>> reg = register(name='STATUS', size=8, read_function=lambda: 0)
+    >>> reg.get_size()
+    8
+    >>> reg.is_readable()
+    True
     '''
     def __init__(self, name, size, read_function=None,write_function=None):
         '''if subclass overloads __init__, it should also call this one'''
@@ -1094,12 +1188,12 @@ class register(integer_channel):
             raise Exception('Unknown register side effect special access.. Please contact PyICe developers.')
     def compute_rmw_writeback_data(self, data):
         '''Bitfield level callback to modify writeback data for read-modify-write sub-atomic register access. This is useful primarily for bitfields with write side effects implemented.
-           
+
         Parameters
         ----------
         data : int
             Bitfield readback data, masked and shifted to LSB position.
-        
+
         Returns
         -------
         int
@@ -1109,6 +1203,19 @@ class register(integer_channel):
         -------
         Exception
             Unknown value contained in "special_access" channel attribute.
+
+        >>> from PyICe.lab_core import register
+        >>> reg = register(name='FLAGS', size=8, read_function=lambda: 0)
+        >>> reg.compute_rmw_writeback_data(0xAB)
+        171
+        >>> w1c = register(name='IRQ', size=8, read_function=lambda: 0)
+        >>> w1c.set_special_access('W1C')
+        >>> w1c.compute_rmw_writeback_data(0xAB)
+        0
+        >>> w0c = register(name='STAT', size=8, read_function=lambda: 0)
+        >>> w0c.set_special_access('W0C')
+        >>> w0c.compute_rmw_writeback_data(0xAB)
+        255
         '''
         if self.get_attribute('special_access') is None:
             return data
@@ -1135,6 +1242,18 @@ class register(integer_channel):
             raise Exception('Unknown register side effect special access.. Please contact PyICe developers.')
 
 class channel_group(object):
+    '''Collection of channels, optionally organized into sub-groups.
+
+    >>> from PyICe.lab_core import channel_group, channel
+    >>> g = channel_group('my_instrument')
+    >>> g.get_name()
+    'my_instrument'
+    >>> ch = channel(name='voltage', read_function=lambda: 3.3)
+    >>> g.add(ch).get_name()
+    'voltage'
+    >>> g.get_all_channel_names()
+    ['voltage']
+    '''
     def __init__(self, name='Unnamed Channel Group'):
         self.set_name(name)
         self._channel_dict = results_ord_dict()  # a dictionary of channel objects, keyed by name, contained by this channel_group
@@ -1914,7 +2033,20 @@ class channel_master(channel_group,delegator):
     '''Master channel collection. There is typically only one. It replaces the old lab_bench
     as the main point of interaction with channels.  Channels and channel_groups (instruments) may
     be added to it.  It also creates dummy and virtual channels and adds them to its collection.  It also
-    supports virtual_caching channels; these can use cached data if available during logging or other multiple channel read.'''
+    supports virtual_caching channels; these can use cached data if available during logging or other multiple channel read.
+
+    >>> from PyICe.lab_core import master
+    >>> m = master()
+    >>> ch = m.add_channel_dummy('test_voltage')
+    >>> ch.write(3.3)
+    3.3
+    >>> ch.read()
+    3.3
+    >>> m.add_channel_virtual('counter', read_function=lambda: 42).read()
+    42
+    >>> 'test_voltage' in m.get_all_channel_names()
+    True
+    '''
     def __init__(self,name=None):
         if name is None:
             name = object.__str__(self)[1:-1] #remove Python <> because Qt interpret's them as HTML tags
@@ -2148,6 +2280,25 @@ class channel_access_wrapper(object):
         return self.channels[channel_name].write(value)
 
 class logger(master):
+    '''SQLite-backed data logger for channel measurements.
+
+    >>> import tempfile, os
+    >>> from PyICe.lab_core import master, logger
+    >>> m = master()
+    >>> _ = m.add_channel_dummy('voltage')
+    >>> m['voltage'].write(3.3)
+    3.3
+    >>> db = tempfile.mktemp(suffix='.sqlite')
+    >>> lg = logger(m, database=db, use_threads=False)
+    >>> lg.new_table('measurements')
+    >>> data = lg.log()
+    >>> data['voltage']
+    3.3
+    >>> lg.get_table_name()
+    'measurements'
+    >>> lg.stop()
+    >>> os.unlink(db)
+    '''
     def __init__(self, channel_master_or_group=None, database="data_log.sqlite", use_threads=True):
         '''channel_group is a lab_bench object containing all instruments of interest for logging.
         database is the filename in which the sqlite database will be stored.
@@ -2191,7 +2342,20 @@ class logger(master):
         '''create a new table with columns matching channels known to logger instance
         if replace_table == 'copy', previously collected data to a new table with the date and time appended to the table name before overwriting
         if replace_table, allow previously collected data to be overwritten
-        if not replace_table, raise an exception (or print to screen instead if warn) rather than overwrite existing data'''
+        if not replace_table, raise an exception (or print to screen instead if warn) rather than overwrite existing data
+
+        >>> import tempfile, os
+        >>> from PyICe.lab_core import logger
+        >>> db = tempfile.mktemp(suffix='.sqlite')
+        >>> lg = logger(database=db, use_threads=False)
+        >>> _ = lg.add_channel_dummy('x')
+        >>> lg.new_table('test_data')
+        >>> lg.get_table_name()
+        'test_data'
+        >>> lg.new_table('test_data', replace_table=True)
+        >>> lg.stop()
+        >>> os.unlink(db)
+        '''
         self._table_name = table_name
         columns = {ch.get_name():ch.get_type_affinity() for ch in self}
         self._backend.new_table(table_name,columns,replace_table,warn)
@@ -2281,7 +2445,25 @@ class logger(master):
             channel_data['datetime'] = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
         return channel_data
     def log(self,exclusions=[]):
-        '''measure all non-excluded channels. Channels may be excluded by name, channel_group(instrument), or directly.  Returns a dictionary of what it logged.'''
+        '''measure all non-excluded channels. Channels may be excluded by name, channel_group(instrument), or directly.  Returns a dictionary of what it logged.
+
+        >>> import tempfile, os
+        >>> from PyICe.lab_core import master, logger
+        >>> m = master()
+        >>> _ = m.add_channel_dummy('sensor')
+        >>> m['sensor'].write(25.0)
+        25.0
+        >>> db = tempfile.mktemp(suffix='.sqlite')
+        >>> lg = logger(m, database=db, use_threads=False)
+        >>> lg.new_table('readings')
+        >>> data = lg.log()
+        >>> data['sensor']
+        25.0
+        >>> 'datetime' in data
+        True
+        >>> lg.stop()
+        >>> os.unlink(db)
+        '''
         self._backend.check_exception()
         data = self._fetch_channel_data(exclusions)
         self._backend.store(data)

@@ -19,6 +19,17 @@ def eng_string(x, fmt=':.3g', si=True, units=None):
     and with si=True:
           1230.0 => 1.23k
       -1230000.0 => -1.23M
+
+    >>> eng_string(0.001)
+    '1m'
+    >>> eng_string(1230000.0)
+    '1.23M'
+    >>> eng_string(0)
+    '0'
+    >>> eng_string(4700, units='V')
+    '4.7kV'
+    >>> eng_string(-0.000047)
+    '-47µ'
     '''
     assert isinstance(x,numbers.Number)
     if x == 0 or not math.isfinite(x):

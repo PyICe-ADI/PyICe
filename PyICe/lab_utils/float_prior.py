@@ -1,7 +1,15 @@
 import math, sys
 
 def float_prior(val):
-    '''return next Python double precision floating point nuber smaller than x.'''
+    '''return next Python double precision floating point number smaller than x.
+
+    >>> float_prior(1.0) < 1.0
+    True
+    >>> 1.0 - float_prior(1.0) < 1e-15
+    True
+    >>> float_prior(0.0) < 0.0
+    True
+    '''
     #algorithm copied from Boost: http://www.boost.org/doc/libs/1_45_0/boost/math/special_functions/next.hpp
     assert not math.isinf(val)
     assert not math.isnan(val)

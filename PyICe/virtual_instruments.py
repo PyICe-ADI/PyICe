@@ -56,7 +56,16 @@ virtual_oven
 '''
 
 class dummy(instrument):
-    '''Doesn't do anything. Use to replace missing equipment in a testbench, etc.'''
+    '''Doesn't do anything. Use to replace missing equipment in a testbench, etc.
+
+    >>> d = dummy()
+    >>> ch = d.add_channel_write('vout')
+    >>> _ = ch.write(3.3)
+    >>> d.set_random_read(False)
+    >>> rd = d.add_channel_read('vin')
+    >>> rd.read() is None
+    True
+    '''
     _add_channel_is_writeable_def = None
     def __init__(self, *args, **kwargs):
         '''Match calling convention of other instruments. Accept interface, etc type positional and keyword args.'''
@@ -175,6 +184,7 @@ class instrument_humanoid(instrument, delegator):
             self.add_notification_function(notification_function)
         self.enable_notifications = True
         self.set_write_block_function()
+        self.set_read_input_function()
     def add_notification_function(self, notification_function):
         '''Add additional notification function to instrument.  Ex email and SMS.
         Notification will be sent to notification_function when a write occurs to any channel in this instrument.  The function should take a single string argument and deliver it to the user as appropriate (sms, email, etc).
@@ -199,7 +209,25 @@ class instrument_humanoid(instrument, delegator):
         if fn is None:
             self._write_block = lambda: input('Then press any key to continue.')
         else:
-            self._write_block = fn 
+            self._write_block = fn
+    def set_read_input_function(self, fn=None):
+        '''replace input() prompt with alternative way to supply read values.
+        fn should accept a prompt string and return the user's response string.
+
+        >>> h = instrument_humanoid()
+        >>> h.set_write_block_function(lambda: None)
+        >>> values = iter(['3.3', '25.0'])
+        >>> h.set_read_input_function(lambda prompt: next(values))
+        >>> ch = h.add_channel_read('temperature')
+        >>> ch.read()
+        3.3
+        >>> ch.read()
+        25.0
+        '''
+        if fn is None:
+            self._read_input = input
+        else:
+            self._read_input = fn
     def _ch_block(self, ch):
         print(f'Then toggle {ch.get_name()} to continue.')
         while ch.read():
@@ -244,7 +272,7 @@ class instrument_humanoid(instrument, delegator):
         new_channel.set_description(self.get_name() + ': ' + self.add_channel_read.__doc__)
         return self._add_channel(new_channel)
     def _read(self, channel):
-        value = input('Please input read value for channel {}:  '.format(channel.get_name()))
+        value = self._read_input('Please input read value for channel {}:  '.format(channel.get_name()))
         if value == '':
             #probably a typo. Try again....
             value = self._read(channel)
@@ -266,7 +294,21 @@ class instrument_humanoid(instrument, delegator):
         return results_dict
 
 class expect(instrument):
-    '''Virtual instrument to check that reading is within specified tolerance of expected result.'''
+    '''Virtual instrument to check that reading is within specified tolerance of expected result.
+
+    >>> expect.compare_abs(measured=10.1, expect=10.0, tolerance=0.2)
+    True
+    >>> expect.compare_abs(measured=10.5, expect=10.0, tolerance=0.2)
+    False
+    >>> expect.compare_pct(measured=1.05, expect=1.0, tolerance=0.1)
+    True
+    >>> expect.compare_pct(measured=1.15, expect=1.0, tolerance=0.1)
+    False
+    >>> expect.compare_exact(measured=42, expect=42)
+    True
+    >>> expect.compare_exact(measured=42, expect=43)
+    False
+    '''
     def __init__(self, verbose_pass, err_msg_prefix=None, pass_msg_prefix=None):
         '''Expect instrument.
         Monitor slaved channel(s) for unexpected (out-of-spec) measurments.
@@ -586,7 +628,17 @@ class accumulator(instrument):
     '''Virtual accumulator instrument.
     Writable channel adds value to stored total.
     Readable channel returns accumulation total.
-    Can be used as a counter by writing accumulation value to +/-1'''
+    Can be used as a counter by writing accumulation value to +/-1
+
+    >>> acc = accumulator(init=0)
+    >>> acc.accumulate(5)
+    >>> acc.accumulate(3)
+    >>> acc.accumulation
+    8
+    >>> acc.accumulate(-2)
+    >>> acc.accumulation
+    6
+    '''
     def __init__(self, init=0):
         '''Init sets initial accumulation total.  Defaults to 0.'''
         self._base_name = "Accumulator Virtual Instrument"
@@ -887,7 +939,16 @@ class differencer(instrument):
     Read_difference channel is read-only and returns computed difference.
     A readable channel from a different instrument can be registered with this instrument
     so that any read of that channel causes its value to be differenced automatically
-    without requiring an explicit call to this instrument's difference method.'''
+    without requiring an explicit call to this instrument's difference method.
+
+    >>> d = differencer(init=0)
+    >>> d.difference(10)
+    10
+    >>> d.difference(25)
+    15
+    >>> d.difference(20)
+    -5
+    '''
     def __init__(self,init=None):
         '''Init sets initial value of previous value used to compute difference.  Defaults to None.'''
         self.last_value = init
@@ -1012,6 +1073,21 @@ class differentiator(timer,differencer):
 class ServoException(Exception):
     '''Special expcetion for the servo instrument'''
 class servo(instrument):
+    '''Single channel virtual servo instrument. Modifies a forcing channel until a
+    measurement channel reads within tolerance of a target value.
+
+    >>> from PyICe.lab_core import channel
+    >>> setting = [0.0]
+    >>> output = channel('force', write_function=lambda v: setting.__setitem__(0, v))
+    >>> output.write(0.0)
+    0.0
+    >>> feedback = channel('measure', read_function=lambda: setting[0] * 2.0)
+    >>> s = servo(feedback, output, minimum=0.0, maximum=5.0, abstol=0.01)
+    >>> s.servo(target=3.0)  # servo feedback to 3.0 by adjusting output
+    3
+    >>> abs(setting[0] - 1.5) < 0.01
+    True
+    '''
     def __init__(self, fb_channel, output_channel, minimum, maximum, abstol, reltol=0.001, verbose=False, abort_on_sat=True, max_tries=10, except_on_fail=True):
         '''Single channel virtual servo instrument.  Given a forcing channel object and a measurement channel object,
             modifies the forcing channel value until the measurement channel is within specified tolerance or
@@ -1171,6 +1247,16 @@ class ramp_to(instrument):
     '''Virtual instrument that changes channel setting incrementally.
     Useful to minimize impact of overshoot when trying to use power supply as a precision voltage source.
     This is a crutch. A better option would be to use an SMU if available.
+
+    >>> from PyICe.lab_core import channel
+    >>> supply = channel('vout', write_function=lambda v: v)
+    >>> supply.write(0.0)
+    0.0
+    >>> rt = ramp_to()
+    >>> ramp_ch = rt.add_channel_linear('vout_ramp', supply, step_size=1.0)
+    >>> _ = ramp_ch.write(3.3)
+    >>> supply.read()
+    3.3
     '''
     def __init__(self, verbose=False):
         instrument.__init__(self,"ramp_to virtual instrument")
@@ -1330,8 +1416,28 @@ class ThresholdFinderError(Exception):
 class ThresholdUndetectableError(ThresholdFinderError):
     '''Threshold finder unable to detect threshold. Perhaps the search range is wrong or perhaps the threshold doesn't exist. Not used for general configuration errors that should almost never be caught.'''
 class threshold_finder(instrument,delegator):
-    '''virtual instrument
+    '''virtual instrument that finds comparator thresholds via binary or linear search.
         Does not automatically find threshold unless auto_find is enabled from add_channel. Otherwise, you must call threshold_finder.find(), or .find_linear()
+
+        >>> from PyICe.lab_core import master
+        >>> from PyICe.models.comparator import comparator
+        >>> m = master()
+        >>> comp = comparator(falling_threshold=2.4, rising_threshold=2.6,
+        ...                   out_high=5.0, out_low=0.0)
+        >>> forcing = m.add_channel_dummy('vin')
+        >>> forcing.write(0.0)
+        0.0
+        >>> _ = forcing.add_write_callback(lambda ch, v: comp.write(v))
+        >>> output = m.add_channel_virtual('vout', read_function=comp.read)
+        >>> tf = threshold_finder(forcing, output, minimum=0.0, maximum=5.0,
+        ...                       abstol=0.01, verbose=False)
+        >>> results = tf.find_linear()
+        >>> 2.5 < results['rising'] < 2.7
+        True
+        >>> 2.3 < results['falling'] < 2.5
+        True
+        >>> results['hysteresis'] > 0
+        True
 
         The channels used with this instrument may want to be virtual instruments. For example the comparator_input_channel_force
         could be used to clear a latched output before a new value is set, or the comparator_output_sense_channel could interpret complex
@@ -2235,9 +2341,16 @@ class leakage_nuller(instrument):
         pass
 
 class calibrator(instrument):
-    '''
-    Calibrator virtual instrument. Corrects channel's read/write values based on either two-point gain/offset correction or full lookup table.
-    Requires Numpy for least squares computation during calibration measurement. Can be used without Numpy if gain/offset numbers are supplied from elsewhere.
+    '''Calibrator virtual instrument. Corrects channel's read/write values based on
+    either two-point gain/offset correction or full lookup table.
+
+    >>> from PyICe.lab_core import channel
+    >>> raw = channel('dac', write_function=lambda v: v)
+    >>> cal = calibrator()
+    >>> cal_ch = cal.add_channel_calibrated_2point('dac_cal', raw, gain=1.02, offset=0.01)
+    >>> _ = cal_ch.write(1.0)
+    >>> raw.read()
+    1.03
     '''
     def __init__(self, verbose=False):
         self._base_name = 'calibrator'
@@ -2437,7 +2550,17 @@ class digital_analog_io(instrument):
         return self._add_channel(digital_channel)
 
 class vector_to_scalar_converter(instrument):
-    '''reduce rank of channel data from iterable vector data to scalar data using arbitrary reduction function (average, sum, std. dev, etc)'''
+    '''reduce rank of channel data from iterable vector data to scalar data using arbitrary reduction function (average, sum, std. dev, etc)
+
+    >>> vector_to_scalar_converter.sum([1, 2, 3, 4])
+    10.0
+    >>> vector_to_scalar_converter.mean([2, 4, 6, 8])
+    5.0
+    >>> vector_to_scalar_converter.stdev([2, 4, 4, 4, 5, 5, 7, 9])  # doctest: +ELLIPSIS
+    2.138...
+    >>> vector_to_scalar_converter.sum(None) is None
+    True
+    '''
     def __init__(self):
         self._base_name = 'vector_scalar_converter'
         instrument.__init__(self,self._base_name)

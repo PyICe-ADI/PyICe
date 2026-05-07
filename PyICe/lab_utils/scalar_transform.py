@@ -1,3 +1,5 @@
+from .vector_transform import vector_transform
+
 def scalar_transform(rec_array, column_scalar_functions, column_names=None):
     '''Transform column data by processing through user-supplied function
     column_scalar_functions is a list of functions for each column and should have a length equal to the number of columns.

@@ -63,8 +63,8 @@ class CAT5140(instrument):
         # self.twi.write_byte(self.addr7, 0x08, 0x01)
         self.twi.write_register(addr7=self.addr7, commandCode=0x08, data=0x01, data_size=8, use_pec=False)
     def add_channel_select_nonvolatile_register(self, channel_name):
-        nvselect_channel = channel(channel_name, write_function = lambda x: _select_nonvolatile_register())
+        nvselect_channel = channel(channel_name, write_function = lambda x: self._select_nonvolatile_register())
         return self._add_channel(nvselect_channel)
     def add_channel_select_volatile_register(self, channel_name):
-        volselect_channel = channel(channel_name, write_function = lambda x: _select_volatile_register())
+        volselect_channel = channel(channel_name, write_function = lambda x: self._select_volatile_register())
         return self._add_channel(volselect_channel)

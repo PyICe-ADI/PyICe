@@ -91,3 +91,16 @@ exclude = [
     "/PyICe/examples/",
 #    "/PyICe/deps/"
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["Tests"]
+doctest_optionflags = ["NORMALIZE_WHITESPACE", "ELLIPSIS"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "threading: tests involving the thread pool",
+    "database: tests creating SQLite databases",
+]
+addopts = "--strict-markers -ra"
+filterwarnings = [
+    "ignore::DeprecationWarning:PyICe.*",
+]

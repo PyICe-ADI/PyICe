@@ -2,6 +2,17 @@ import re
 from .clean_unicode import clean_unicode
 
 def clean_ascii_code(ustr):
+    '''Convert string to a valid code identifier by replacing special characters.
+
+    >>> clean_ascii_code('hello world')
+    'hello_world'
+    >>> clean_ascii_code('a-b')
+    'a_MNS_b'
+    >>> clean_ascii_code('3volts')
+    '_3volts'
+    >>> clean_ascii_code('x+y')
+    'x_PLS_y'
+    '''
     astr = clean_unicode(ustr)
     astr = astr.replace("\t","_") #0x09
     astr = astr.replace(" ","_") #0x20

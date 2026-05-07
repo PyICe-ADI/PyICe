@@ -25,7 +25,22 @@ class interpolator(object):
     '''linear interpolator/extrapolator between/beyond defined points
         see also interpolating_spline and smooth_spline for other options with
         additional filtering/compression
-        '''
+
+    >>> interp = interpolator([[0, 0], [10, 100]])
+    >>> interp(5)
+    50.0
+    >>> interp(0)
+    0
+    >>> interp(10)
+    100
+    >>> interp(-2)
+    -20.0
+    >>> interp.get_x_val(50)
+    5.0
+    >>> multi = interpolator([[0, 0], [1, 10], [2, 40], [3, 90]])
+    >>> multi(1.5)
+    25.0
+    '''
     def __init__(self, points_list=None):
         self._points = []
         self._points_ysort = []

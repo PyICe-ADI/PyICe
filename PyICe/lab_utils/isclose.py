@@ -24,6 +24,17 @@ def isclose(a, b, rel_tol=1e-9, abs_tol=0.0):
     Complex
     Complex values are compared based on their absolute value.
     See PEP-0485 for a detailed description
+
+    >>> isclose(1.0, 1.0)
+    True
+    >>> isclose(1.0, 1.1)
+    False
+    >>> isclose(1.0, 1.0000000001)
+    True
+    >>> isclose(0.0, 0.001, abs_tol=0.01)
+    True
+    >>> isclose(float('inf'), float('inf'))
+    True
     """
 
     if a == b:  # short-circuit exact equality

@@ -1,10 +1,35 @@
 from PyICe import lab_core, lab_instruments
 
 class comparator(object):
+    '''Virtual comparator with programmable rising and falling input thresholds
+    and programmable output high and low logic levels. Also models forcing
+    instrument overshoot as a percentage of transition magnitude.
+
+    Set falling_threshold or rising_threshold to None to implement latching behaviour.
+
+    >>> comp = comparator(falling_threshold=1.0, rising_threshold=2.0,
+    ...                   out_high=5.0, out_low=0.0)
+    >>> comp.read()
+    0.0
+    >>> comp.write(2.5)
+    >>> comp.read()
+    5.0
+    >>> comp.write(1.5)
+    >>> comp.read()
+    5.0
+    >>> comp.write(0.5)
+    >>> comp.read()
+    0.0
+    '''
     def __init__(self, falling_threshold, rising_threshold, out_high=1, out_low=0, write_overshoot=0, verbose=False):
-        '''virtual comparator with programmable rising and falling input thresholds and programmable output high and low logic levels
-        also models forcing instrument overshoot as a percentage of transition magnitude
-        set falling threshold or rising threshold to None to implement latching behaviour
+        '''Create a comparator model.
+
+        >>> comp = comparator(falling_threshold=2.5, rising_threshold=2.5)
+        >>> comp.read()
+        0
+        >>> comp.write(3.0)
+        >>> comp.read()
+        1
         '''
         self.state = False
         self.input = None
@@ -19,6 +44,17 @@ class comparator(object):
         if self.verbose:
             print("*COMPARATOR*, {}".format(msg))
     def set_thresholds(self, falling_threshold, rising_threshold):
+        '''Change thresholds on an existing comparator.
+
+        >>> comp = comparator(falling_threshold=1.0, rising_threshold=2.0)
+        >>> comp.write(1.5)
+        >>> comp.read()
+        0
+        >>> comp.set_thresholds(falling_threshold=0.5, rising_threshold=1.0)
+        >>> comp.write(1.5)
+        >>> comp.read()
+        1
+        '''
         self.falling_threshold = falling_threshold
         self.rising_threshold = rising_threshold
     def write(self, value):
@@ -41,10 +77,39 @@ class comparator(object):
             self.debug_print("Comparator output transition high")
         self.input = value
     def reset(self):
+        '''Force comparator output low regardless of input.
+
+        >>> comp = comparator(falling_threshold=1.0, rising_threshold=2.0)
+        >>> comp.write(3.0)
+        >>> comp.read()
+        1
+        >>> comp.reset()
+        >>> comp.read()
+        0
+        '''
         self.state = False
         self.debug_print("Forcing comparator output low.")
     def set(self):
+        '''Force comparator output high regardless of input.
+
+        >>> comp = comparator(falling_threshold=1.0, rising_threshold=2.0)
+        >>> comp.read()
+        0
+        >>> comp.set()
+        >>> comp.read()
+        1
+        '''
         self.state = True
         self.debug_print("Forcing comparator output high.")
     def read(self):
+        '''Return current output level.
+
+        >>> comp = comparator(falling_threshold=1.0, rising_threshold=2.0,
+        ...                   out_high=3.3, out_low=0.0)
+        >>> comp.read()
+        0.0
+        >>> comp.write(2.5)
+        >>> comp.read()
+        3.3
+        '''
         return self.out_high if self.state else self.out_low

@@ -1,4 +1,19 @@
 def str2num(str_in, except_on_error=True):
+    '''Convert string to numeric type with automatic base detection.
+
+    >>> str2num('42')
+    42
+    >>> str2num('0xFF')
+    255
+    >>> str2num('3.14')
+    3.14
+    >>> str2num('True')
+    True
+    >>> str2num(None) is None
+    True
+    >>> str2num('hello', except_on_error=False)
+    'hello'
+    '''
     if isinstance(str_in,int) or isinstance(str_in,float) or str_in is None:
         return str_in
     if str_in == 'True':
