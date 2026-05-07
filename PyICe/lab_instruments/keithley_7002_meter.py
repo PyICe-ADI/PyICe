@@ -13,7 +13,7 @@ class keithley_7002_meter(keithley_7002):
         self._base_name = 'keithley_7002_meter'
         self.multimeter_channel = multimeter_channel
         self.open_all() #just to be sure...
-    def add_channel_meter(self,channel_name,bay,num,pre_calls=[],post_calls=[],multimeter_channel=None,delay=0):
+    def add_channel_meter(self,channel_name,bay,num,pre_calls=None,post_calls=None,multimeter_channel=None,delay=0):
         '''add named channel to instrument
             bay is the switch system plugin bay. Valid range [1-10]
             num valid range [1-40] for 7011S Quad 10 to 1 multiplexer card
@@ -21,6 +21,8 @@ class keithley_7002_meter(keithley_7002):
             post_calls is a list of functions taking exactly 0 arguments to call after triggering multimeter measurement but before opening channel relay
             multimeter_channel is a channel with the meter on it, if not specified the instrument meter is used
         '''
+        if pre_calls is None: pre_calls = []
+        if post_calls is None: post_calls = []
         meter_channel = channel(channel_name, read_function= lambda: self._read_meter(multimeter_channel,bay,num,pre_calls,post_calls,delay))
         return self._add_channel(meter_channel)
     def _read_meter(self, multimeter_channel, bay, num, pre_calls, post_calls,delay):

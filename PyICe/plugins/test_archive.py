@@ -26,13 +26,14 @@ class database_archive():
         else:
             return False
         
-    def copy_table(self, db_source_table, db_dest_table, db_dest_file, db_indices=[]):
+    def copy_table(self, db_source_table, db_dest_table, db_dest_file, db_indices=None):
         '''Copies a table from the given database to a different.
         args:
             db_source_table - str. The name of the table to be copied.
             db_dest_table - str. What the copy table will be called.
             db_dest_file - str. The path to the new database.
             db_indices - list. A list of lists consisting of column names in the database as strings. Each list will be used to create an index in the new database.'''
+        if db_indices is None: db_indices = []
         conn = sqlite3.connect(db_dest_file)
         attach_schema = '__source_db__'
         
@@ -174,7 +175,7 @@ class database_archive():
                         self.write_plot_script(test_module= import_file, test_class=os.path.basename(os.getcwd()), db_table=resp[0], db_file=resp[1])
             self.source_conn.commit()
         return copied_tables_files
-    def disposition_table(self, table_name, db_dest_file, db_indices=[]):
+    def disposition_table(self, table_name, db_dest_file, db_indices=None):
         '''This asks the user what action is to be performed on a given table, and executes that action immediately.
         args:
             table_name - str. Name of a table in the initially declared database.
@@ -182,6 +183,7 @@ class database_archive():
             db_indices - list. Default []. A list of lists comprising string names of columns. Each list becomes an index in the archived database.
         Returns:
             If the user elects to skip or delete a table, None is returned. If a copy is instead either copied or outright moved, a tuple is returned of the original name and the name given to the new archived table.'''
+        if db_indices is None: db_indices = []
         while True:
             action = input(f'{table_name} action? (s[kip], c[opy], m[ove], d[elete]) : ')
             if action.lower() == 's' or action.lower() == 'skip':
