@@ -1,5 +1,5 @@
 from PyICe.plugins.bench_configuration_management.bench_configuration_management import component_collection, connection_collection
-import os, inspect, importlib, datetime, socket, traceback, sys, json, getpass, contextlib, io
+import os, inspect, importlib, datetime, socket, traceback, sys, getpass, contextlib, io, threading, pdb
 from PyICe.plugins.bench_configuration_management import bench_visualizer
 from PyICe.plugins.traceability_items import Traceability_items
 from PyICe.plugins.test_results import Test_Results, Failed_Eval
@@ -681,6 +681,18 @@ class Plugin_Manager():
     ###
     # SCRIPT METHODS
     ###
+    def _timed_input(self, prompt, timeout):
+        '''Prompt the user for input, returning None if no response within timeout seconds.'''
+        response = [None]
+        def _get_input():
+            response[0] = input(prompt)
+        thread = threading.Thread(target=_get_input, daemon=True)
+        thread.start()
+        thread.join(timeout)
+        if thread.is_alive():
+            print(f"\nNo response received within {timeout}s. Continuing...")
+            return None
+        return response[0]
     def collect(self, temperatures):
         '''This method aggregates the channels that will be logged and calls the collect method in every test added via self.add_test.
         args:
@@ -747,6 +759,13 @@ class Plugin_Manager():
                             test._is_crashed = True
                             test._crash_info = sys.exc_info()
                             self.notify(self._crash_str(test), subject='CRASHED!!!')
+                            if test._debug or isinstance(e, KeyboardInterrupt):
+                                if temp in ("ambient", 25):
+                                    response = input("Debug [y/n]? ")
+                                else:
+                                    response = self._timed_input("Debug [y/n]? (60s to respond) ", timeout=60)
+                                if response is not None and response.lower() in ['y', 'yes']:
+                                    pdb.post_mortem()
                         self.cleanup()
                         if self.cleanup_failure:
                             break
