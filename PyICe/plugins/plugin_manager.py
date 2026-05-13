@@ -1,8 +1,9 @@
 from PyICe.plugins.bench_configuration_management.bench_configuration_management import component_collection, connection_collection
-import os, inspect, importlib, datetime, socket, traceback, sys, json, getpass, contextlib, io
+import os, inspect, importlib, datetime, socket, traceback, sys, getpass, contextlib, io, pdb
 from PyICe.plugins.bench_configuration_management import bench_visualizer
-from PyICe.plugins.traceability_items import Traceability_items
 from PyICe.plugins.test_results import Test_Results, Failed_Eval
+from PyICe.plugins.traceability_items import Traceability_items
+from PyICe.lab_utils.timed_response import timed_input
 from PyICe.lab_utils.communications import email, sms
 from PyICe.lab_utils.sqlite_data import sqlite_data
 from PyICe.lab_utils.banners import print_banner
@@ -62,7 +63,7 @@ class Plugin_Manager():
         a_test._db_file = os.path.join(a_test._module_path, self.scratch_folder, 'data_log.sqlite')
         a_test._is_crashed = False
 
-    def run(self, temperatures=[]):
+    def run(self, temperatures=None):
         '''
         This method goes through the complete data collection process the project set out.
         Scripts will be run once per temperature or just once if no temperature is given.
@@ -71,6 +72,8 @@ class Plugin_Manager():
         The list consists of values that will be set to the 'temp_control_channel' assigned by the instrument drivers.
         Default value is an empty list.
         '''
+        if temperatures is None:
+            temperatures = []
         self._temperatures = temperatures
         self.far_enough = False
         self.collect(temperatures)
@@ -175,6 +178,7 @@ class Plugin_Manager():
         self.startup_fns = []
         self.shutdown_fns = []
         self.temperature_channel = None
+        self._temperature_is_dummy = False
         self.special_channel_actions = {}
         for (dirpath1, dirnames, filenames) in os.walk(self.project_path):
             if 'benches' not in dirpath1 or self.project_path not in dirpath1: continue
@@ -223,6 +227,7 @@ class Plugin_Manager():
             break
         if self.temperature_channel == None:
             self.temperature_channel = self.master.add_channel_dummy("tdegc")
+            self._temperature_is_dummy = True
         if not self._temperatures:
             self.temperature_channel.write(25)
 
@@ -245,7 +250,7 @@ class Plugin_Manager():
             try:
                 func()
             except:
-                print("\n\PyICE Plugin Manager: One or more temperature startup functions not executable. See stack trace below.\n")
+                print("PyICE Plugin Manager: One or more temperature startup functions not executable. See stack trace below.\n")
                 traceback.print_exc()
                 print(func)
                 exit()
@@ -255,7 +260,7 @@ class Plugin_Manager():
             try:
                 func()
             except:
-                print("\n\PyICE Plugin Manager: One or more startup functions not executable. See stack trace below.\n")
+                print("PyICE Plugin Manager: One or more startup functions not executable. See stack trace below.\n")
                 traceback.print_exc()
                 print(func)
                 exit()
@@ -268,7 +273,7 @@ class Plugin_Manager():
             try:
                 func()
             except:
-                print("\n\PyICE Plugin Manager: One or more cleanup functions not executable. See stack trace below.\n")
+                print("PyICE Plugin Manager: One or more cleanup functions not executable. See stack trace below.\n")
                 traceback.print_exc()
                 print(func)
                 cleanup_err_str += traceback.format_exc()
@@ -284,7 +289,7 @@ class Plugin_Manager():
             try:
                 func()
             except:
-                print("\n\PyICE Plugin Manager: One or more shutdown functions not executable. See stack trace below.\n")
+                print("PyICE Plugin Manager: One or more shutdown functions not executable. See stack trace below.\n")
                 traceback.print_exc()
                 print(func)
                 shutdown_err_str += traceback.format_exc()
@@ -318,13 +323,17 @@ class Plugin_Manager():
     ###
     # NOTIFICATION METHODS
     ###
-    def notify(self, msg, subject=None, attachment_filenames=[], attachment_MIMEParts=[]):
+    def notify(self, msg, subject=None, attachment_filenames=None, attachment_MIMEParts=None):
         '''Sends the provided message to all emails and phone numbers found in the variable self.notification_targets.
         args:
             msg - str. The body of the email or the complete text.
             subject - str. Default None. The subject given to any email sent. No affect on texts.
             attachment filenames - list. Default empty list. A list of strings denoting the names of files that will be attached to any emails sent.
             attachment_MIMEParts - list. Default empty list. A list of MIME (Multipurpose Internet Mail Extensions) objects that will be added to the body of any email sent.'''
+        if attachment_filenames is None:
+            attachment_filenames = []
+        if attachment_MIMEParts is None:
+            attachment_MIMEParts = []
         if 'notifications' in self.plugins and not self.debug:
             for signal_type in self.notification_targets:
                 try:
@@ -675,6 +684,7 @@ class Plugin_Manager():
     ###
     # SCRIPT METHODS
     ###
+
     def collect(self, temperatures):
         '''This method aggregates the channels that will be logged and calls the collect method in every test added via self.add_test.
         args:
@@ -741,6 +751,13 @@ class Plugin_Manager():
                             test._is_crashed = True
                             test._crash_info = sys.exc_info()
                             self.notify(self._crash_str(test), subject='CRASHED!!!')
+                            if test._debug or isinstance(e, KeyboardInterrupt):
+                                if self._temperature_is_dummy:
+                                    response = input("Debug [y/n]? ")
+                                else:
+                                    response = timed_input("Debug [y/n]? (60s to respond) ", timeout=60)
+                                if response is not None and response.lower() in ['y', 'yes']:
+                                    pdb.post_mortem()
                         self.cleanup()
                         if self.cleanup_failure:
                             break
@@ -827,6 +844,10 @@ class Plugin_Manager():
                     # Don't stop other test's plotting or archiving because of a plotting error.
                     print(f"Plot method for {test.get_name()} crashed.")
                     traceback.print_exc()
+                    if test._debug or isinstance(e, KeyboardInterrupt):
+                        response = input("Debug [y/n]? ")
+                        if response is not None and response.lower() in ['y', 'yes']:
+                            pdb.post_mortem()
                     continue
                 if isinstance(test.plot_list, (LTC_plot.plot, LTC_plot.Page)):
                     test.plot_list = [self._convert_svg(test.plot_list)]
@@ -885,13 +906,18 @@ class Plugin_Manager():
                     test._db.set_table(test.get_table_name())
                 try:
                     test.evaluate_results()
-                except Exception:
+                except Exception as e:
                     traceback.print_exc()
+                    if test._debug or isinstance(e, KeyboardInterrupt):
+                        response = input("Debug [y/n]? ")
+                        if response is not None and response.lower() in ['y', 'yes']:
+                            pdb.post_mortem()
                     print_banner(f"*** ERROR ***", f"{test.get_name()} crashed during evaluation, skipping.")
                     print("\n")
                     database = None
                     table_name = None
                     test._test_results = Failed_Eval(test)
+
                     continue
                 if test._test_results._test_results:
                     print(test.get_test_results())
@@ -936,8 +962,12 @@ class Plugin_Manager():
                 test._db = sqlite_data(database_file=database, table_name=test.get_table_name())
                 try:
                     test.correlate_results()
-                except Exception:
+                except Exception as e:
                     traceback.print_exc()
+                    if test._debug or isinstance(e, KeyboardInterrupt):
+                        response = input("Debug [y/n]? ")
+                        if response is not None and response.lower() in ['y', 'yes']:
+                            pdb.post_mortem()
                     print_banner(f"*** ERROR ***", f"{test.get_name()} crashed during evaluation, skipping.")
                     print("\n")
                     database = None

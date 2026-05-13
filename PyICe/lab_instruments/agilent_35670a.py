@@ -8,7 +8,10 @@ class agilent_35670a(scpi_instrument):
         self._base_name = 'agilent_35670a'
         scpi_instrument.__init__(self,"a35670 @ " + str(interface_visa))
         self.add_interface_visa(interface_visa)
-    def add_channel_noise(self,channel_name,channel_num=1,freqs=[0,12.5,100,1000,10000,100000], res=[800,800,800,800,800], count=[150,600,600,600,600]):
+    def add_channel_noise(self,channel_name,channel_num=1,freqs=None, res=None, count=None):
+        if freqs is None: freqs = [0, 12.5, 100, 1000, 10000, 100000]
+        if res is None: res = [800, 800, 800, 800, 800]
+        if count is None: count = [150, 600, 600, 600, 600]
         self.freqs = freqs
         self.res = res
         self.count = count

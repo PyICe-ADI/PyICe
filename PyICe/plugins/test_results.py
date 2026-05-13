@@ -69,7 +69,8 @@ class generic_results():
     def _set_traceability_info(self, **kwargs):
         for k,v in kwargs.items():
             self._traceability_info[k] = v
-    def _json_report(self, declarations, results, ate_results=[]):
+    def _json_report(self, declarations, results, ate_results=None):
+        if ate_results is None: ate_results = []
         class CustomJSONizer(json.JSONEncoder):
             def default(self, obj):
                 if isinstance(obj, bool_):
@@ -395,7 +396,9 @@ class Test_Results(generic_results):
         del self._test_results[key]
         self._test_declarations.remove(key)
 
-    def _correlate_results(self, name, reference_values=[], test_values=[], spec=None, conditions=None):
+    def _correlate_results(self, name, reference_values=None, test_values=None, spec=None, conditions=None):
+        if reference_values is None: reference_values = []
+        if test_values is None: test_values = []
         if conditions:
             self.max_con_len = max([len(str(conditions)),self.max_con_len])
         if name not in self._test_declarations:

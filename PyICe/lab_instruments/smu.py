@@ -385,11 +385,11 @@ class keithley_2600(keithley_smu):
     def _vcompl(self, channel_number, value):
         self.get_interface().write(f'smu{self._channel_id(channel_number)}.source.limitv = {value}')
     def _vcomplq(self, channel_number):
-        return self.get_interface().ask(f'smu{self._channel_id(channel_number)}.source.limitv')
+        return self.get_interface().ask(f'print(smu{self._channel_id(channel_number)}.source.limitv)')
     def _icompl(self, channel_number, value):
         self.get_interface().write(f'smu{self._channel_id(channel_number)}.source.limiti = {value}')
     def _icomplq(self, channel_number):
-        return self.get_interface().ask(f'smu{self._channel_id(channel_number)}.source.limiti')
+        return self.get_interface().ask(f'print(smu{self._channel_id(channel_number)}.source.limiti)')
     def _add_channel_voltage_force(self, channel):
         '''voltage force. Mutually exclusive at any moment with current force.'''
         self.get_interface().write(f'smu{self._channel_id(channel.get_attribute("channel_number"))}.source.autorangev =  smu{self._channel_id(channel.get_attribute("channel_number"))}.AUTORANGE_ON')

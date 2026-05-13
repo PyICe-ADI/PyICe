@@ -790,7 +790,7 @@ class integer_channel(channel):
     def using_presets_write(self): # pragma: no cover
         '''return boolean denoting last setting of use_presets_write()'''
         return self._use_presets_write
-    def add_format(self, format_name, format_function=None, unformat_function=None, signed=False, units='', xypoints=[]): # pragma: no cover
+    def add_format(self, format_name, format_function=None, unformat_function=None, signed=False, units='', xypoints=None): # pragma: no cover
         '''Add a format to this register.  Formats convert a raw number into a more meaningful string and vice-versa.
             Formats can be generic hex, bin, etc, or can be more complicated.
 
@@ -817,6 +817,8 @@ class integer_channel(channel):
             Note on signed channels: when signed=True the raw integer is converted from two's
             complement before being passed to format_function, so auto-PWL calibration points
             should use the signed integer domain (e.g. -128..127 for an 8-bit signed channel).'''
+        if xypoints is None:
+            xypoints = []
         self._formats[format_name] = {}
         if format_function is None and unformat_function is None and len(xypoints) >= 2:
             # Auto piecewise-linear (PWL) formatter.
@@ -1545,8 +1547,10 @@ class channel_group(object):
             debug_logging.error("error out {}".format(len(results)))
             raise Exception
         return results
-    def read_all_channels(self, categories=None, exclusions=[]):
+    def read_all_channels(self, categories=None, exclusions=None):
         '''read all readable channels in channel group and return orderd dictionary of results. Optionally filter by list of categories.'''
+        if exclusions is None:
+            exclusions = []
         channels = [ channel for channel in self.get_all_channels_list() if channel.is_readable() and (categories is None or channel.get_category() in categories)]
         for channel in self.resolve_channel_list(exclusions):
             channels.remove(channel)
@@ -2444,7 +2448,7 @@ class logger(master):
         if 'datetime' not in channel_data:
             channel_data['datetime'] = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
         return channel_data
-    def log(self,exclusions=[]):
+    def log(self, exclusions=None):
         '''measure all non-excluded channels. Channels may be excluded by name, channel_group(instrument), or directly.  Returns a dictionary of what it logged.
 
         >>> import tempfile, os
@@ -2464,6 +2468,8 @@ class logger(master):
         >>> lg.stop()
         >>> os.unlink(db)
         '''
+        if exclusions is None:
+            exclusions = []
         self._backend.check_exception()
         data = self._fetch_channel_data(exclusions)
         self._backend.store(data)
@@ -2477,9 +2483,11 @@ class logger(master):
             debug_logging.debug("Logger running log callback %s.", callback)
             callback(data)
         return data
-    def check_data_changed(self, data, compare_exclusions=[]):
+    def check_data_changed(self, data, compare_exclusions=None):
         '''return True if data is different than self._previously_logged_data.
         Shared test between several log_if_changed methods.'''
+        if compare_exclusions is None:
+            compare_exclusions = []
         if self._previously_logged_data is None:
             return True
         else:
@@ -2501,12 +2509,16 @@ class logger(master):
                 else:
                     raise Exception('Unknown compare exclusion type: {} {}'.format(type(item),item))
             return old_data != new_data
-    def log_if_changed(self, log_exclusions=[], compare_exclusions=[]):
+    def log_if_changed(self, log_exclusions=None, compare_exclusions=None):
         '''like log(), but only stores data to database if data in at least on channel/column has changed.
         log_exclusions is a list of logger channels which will not be read nor stored in the database.
         compare_exclusions is a list of logger channels which will not be used to decide if data has changed but which will be read and stored in the databased if something else changed.
         rowid and datetime are automatically excluded from change comparison.
         returns channel data if logged, else None'''
+        if log_exclusions is None:
+            log_exclusions = []
+        if compare_exclusions is None:
+            compare_exclusions = []
         self._backend.check_exception()
         data = self._fetch_channel_data(log_exclusions)
         if self.check_data_changed(data, compare_exclusions):
@@ -2724,8 +2736,8 @@ class logger_backend(object):
                     function()
                 except Exception as e:
                     print((traceback.format_exc()))
-                    raise e
                     self._thread_exception = e
+                    raise e
                 finally:
                     self.storage_queue.task_done()
         self._stopped = True
@@ -2916,7 +2928,7 @@ class logger_backend(object):
         cursor = self.conn.cursor()
         cursor.execute("SELECT sql FROM sqlite_master WHERE tbl_name=='{}'".format(old_table))
         sql_create = cursor.fetchone()[0]
-        new_sql, count = re.subn("^CREATE TABLE {old_table} \( rowid INTEGER PRIMARY KEY, datetime DATETIME, ".format(old_table=old_table), "CREATE TABLE {new_table} ( rowid INTEGER PRIMARY KEY, datetime DATETIME, ".format(new_table=new_table), sql_create, flags=re.DOTALL)
+        new_sql, count = re.subn(r"^CREATE TABLE {old_table} \( rowid INTEGER PRIMARY KEY, datetime DATETIME, ".format(old_table=old_table), "CREATE TABLE {new_table} ( rowid INTEGER PRIMARY KEY, datetime DATETIME, ".format(new_table=new_table), sql_create, flags=re.DOTALL)
         assert count == 1
         self._execute(new_sql)
         self._execute("INSERT INTO {} SELECT * FROM {}".format(new_table, old_table))
@@ -2928,14 +2940,14 @@ class logger_backend(object):
             sql_txt, count = re.subn("^CREATE VIEW (.*?) AS SELECT\n  (.*)\nFROM (.*?)$", "CREATE VIEW {new_table}_formatted AS SELECT\n  \\2\nFROM {new_table}".format(new_table=new_table), sql_format[0], flags=re.DOTALL)
             assert count == 1
             #now rewrite datetime_sec view to point to new view name
-            sql_txt, count = re.subn("\(SELECT min\(datetime\) FROM (.*?)\)", "(SELECT min(datetime) FROM {new_table})".format(new_table=new_table), sql_txt, flags=re.DOTALL)
+            sql_txt, count = re.subn(r"\(SELECT min\(datetime\) FROM (.*?)\)", "(SELECT min(datetime) FROM {new_table})".format(new_table=new_table), sql_txt, flags=re.DOTALL)
             assert count == 3
             self._execute(sql_txt)
         #now look for the joined view to copy
         cursor.execute("SELECT sql FROM sqlite_master WHERE type=='view' AND tbl_name=='{}_all'".format(old_table))
         sql_format = cursor.fetchone()
         if sql_format is not None:
-            sql_txt, count = re.subn("^CREATE VIEW (.*?) AS SELECT \* FROM (.*?) JOIN (.*?) USING \(rowid\)$", "CREATE VIEW {new_table}_all AS SELECT * FROM {new_table} JOIN {new_table}_formatted USING (rowid)".format(new_table=new_table), sql_format[0], flags=re.DOTALL)
+            sql_txt, count = re.subn(r"^CREATE VIEW (.*?) AS SELECT \* FROM (.*?) JOIN (.*?) USING \(rowid\)$", "CREATE VIEW {new_table}_all AS SELECT * FROM {new_table} JOIN {new_table}_formatted USING (rowid)".format(new_table=new_table), sql_format[0], flags=re.DOTALL)
             assert count == 1
             self._execute(sql_txt)
     def _commit(self, retries=10):

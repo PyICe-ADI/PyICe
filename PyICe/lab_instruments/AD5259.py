@@ -1,4 +1,5 @@
 from ..lab_core import *
+from .. import twi_interface
 
 class AD5259(instrument):
     '''Analog Devices Nonvolatile, I2C-Compatible 256-Position, Digital Potentiometer
@@ -35,18 +36,19 @@ class AD5259(instrument):
         assert value >= 0 and value <= 2**8-1
         try:
             self.twi.write_register(addr7=self.addr7, commandCode=command, data=value, data_size=8, use_pec=False)
-        except Exception as e:
+        except twi_interface.i2cError as e:
+            traceback.print_exc()
             self.twi.resync_communication()
-            raise e
+            raise twi_interface.i2cIOError("AD5259 Write Communication Failed.") from e
 
     def _read_byte(self, subaddr):
         try:
             result = self.twi.read_register(addr7=self.addr7, commandCode=subaddr, data_size=8, use_pec=False)
             return result
-        except Exception as e:
-            raise e
+        except twi_interface.i2cError as e:
+            traceback.print_exc()
             self.twi.resync_communication()
-            raise Exception("AD5259 Read EEProm Comunication Failed.")
+            raise twi_interface.i2cIOError("AD5259 Read EEPROM Communication Failed.") from e
 
     def _write_rdac(self, value):
         self._write_word(self.WRITE_TO_RDAC, value)
