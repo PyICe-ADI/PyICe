@@ -1,12 +1,12 @@
 from PyICe.plugins.bench_configuration_management.bench_configuration_management import component_collection, connection_collection
 import os, inspect, importlib, datetime, socket, traceback, sys, getpass, contextlib, io, pdb
 from PyICe.plugins.bench_configuration_management import bench_visualizer
-from PyICe.plugins.traceability_items import Traceability_items
 from PyICe.plugins.test_results import Test_Results, Failed_Eval
+from PyICe.plugins.traceability_items import Traceability_items
+from PyICe.lab_utils.timed_response import timed_input
 from PyICe.lab_utils.communications import email, sms
 from PyICe.lab_utils.sqlite_data import sqlite_data
 from PyICe.lab_utils.banners import print_banner
-from PyICe.lab_utils.timed_response import timed_input
 from PyICe.lab_core import logger, master
 from PyICe.plugins import test_archive
 from email.mime.image import MIMEImage
@@ -908,15 +908,16 @@ class Plugin_Manager():
                     test.evaluate_results()
                 except Exception as e:
                     traceback.print_exc()
+                    if test._debug or isinstance(e, KeyboardInterrupt):
+                        response = input("Debug [y/n]? ")
+                        if response is not None and response.lower() in ['y', 'yes']:
+                            pdb.post_mortem()
                     print_banner(f"*** ERROR ***", f"{test.get_name()} crashed during evaluation, skipping.")
                     print("\n")
                     database = None
                     table_name = None
                     test._test_results = Failed_Eval(test)
-                    if test._debug or isinstance(e, KeyboardInterrupt):
-                        response = input("Debug [y/n]? ")
-                        if response is not None and response.lower() in ['y', 'yes']:
-                            pdb.post_mortem()
+
                     continue
                 if test._test_results._test_results:
                     print(test.get_test_results())
@@ -963,15 +964,15 @@ class Plugin_Manager():
                     test.correlate_results()
                 except Exception as e:
                     traceback.print_exc()
+                    if test._debug or isinstance(e, KeyboardInterrupt):
+                        response = input("Debug [y/n]? ")
+                        if response is not None and response.lower() in ['y', 'yes']:
+                            pdb.post_mortem()
                     print_banner(f"*** ERROR ***", f"{test.get_name()} crashed during evaluation, skipping.")
                     print("\n")
                     database = None
                     table_name = None
                     test._corr_results = Failed_Eval(test)
-                    if test._debug or isinstance(e, KeyboardInterrupt):
-                        response = input("Debug [y/n]? ")
-                        if response is not None and response.lower() in ['y', 'yes']:
-                            pdb.post_mortem()
                     continue
                 if len(test._corr_results._test_results):
                     print(test.get_corr_results())
