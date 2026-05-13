@@ -61,7 +61,7 @@ class TestChannelMasterFactoryMethods:
 
     def test_add_channel_delta_timer(self, master_instance):
         ch = master_instance.add_channel_delta_timer('dt')
-        first = ch.read()
+        ch.read()
         time.sleep(0.05)
         second = ch.read()
         assert second > 0
