@@ -24,7 +24,7 @@ debug_logging = logging.getLogger(__name__)
 
 class twi_instrument(lab_core.instrument,lab_core.delegator):
     def __init__(self,interface_twi,except_on_i2cInitError=True,except_on_i2cCommError=False,retry_count=5,PEC=False):
-        lab_core.instrument.__init__(self,name=None)
+        lab_core.instrument.__init__(self,name="twi_instrument")
         lab_core.delegator.__init__(self)
         self.add_interface_twi(interface_twi)
         self._interface = interface_twi
@@ -622,7 +622,7 @@ class pmbus_instrument(twi_instrument):
 class twi_instrument_dummy(twi_instrument):
     '''use for formatters, etc without having to set up a master and physical hardware.'''
     def __init__(self):
-        lab_core.instrument.__init__(self,name=None)
+        lab_core.instrument.__init__(self,name="twi_instrument_dummy")
         self._addr7 = None
         self.formatters = {}
         self._constants = {}
