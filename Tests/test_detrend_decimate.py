@@ -1,5 +1,4 @@
 import numpy as np
-import pytest
 from PyICe.lab_utils.detrend import detrend_constant, detrend_linear
 from PyICe.lab_utils.decimate import decimate
 
