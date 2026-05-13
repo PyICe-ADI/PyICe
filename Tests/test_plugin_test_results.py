@@ -715,7 +715,6 @@ class TestJSONRoundTrip:
 
         # Core fields must match
         for test_name in original._test_declarations:
-            orig_cases = None
             reload_cases = data_2['tests'][test_name]['results']['cases']
             # Verify collected_data in each case
             for case in reload_cases:
