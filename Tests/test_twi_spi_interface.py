@@ -46,7 +46,8 @@ class TestI2CDummy:
         assert dummy.stop() is True
 
     def test_write_returns_true(self, dummy):
-        assert dummy.write(0x55) is True
+        result = dummy.write(0x55)
+        assert result is True
 
     def test_write_register_stores_data(self, dummy):
         dummy.write_register(addr7=0x50, commandCode=0x00,
