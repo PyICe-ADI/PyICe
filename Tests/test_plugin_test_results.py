@@ -383,8 +383,8 @@ class TestEvaluateList:
 
     def test_none_in_list_registers_failure(self):
         self.declare_test('partial', lower=0, upper=10)
-        result = self.tr._evaluate_list('partial', [5, None, 7],
-                                        conditions=None)
+        self.tr._evaluate_list('partial', [5, None, 7],
+                               conditions=None)
         # First failure registered, then remaining data evaluated
         results_list = self.tr._test_results['partial']
         assert any(not r.passes for r in results_list)
