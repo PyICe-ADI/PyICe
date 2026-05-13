@@ -1,5 +1,5 @@
 import pytest
-from PyICe.lab_core import master, integer_channel
+from PyICe.lab_core import integer_channel
 from PyICe.virtual_instruments import (
     dummy, dummy_read, dummy_write,
     expect, ExpectException, ExpectOverException, ExpectUnderException,
