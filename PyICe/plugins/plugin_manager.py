@@ -1,11 +1,12 @@
 from PyICe.plugins.bench_configuration_management.bench_configuration_management import component_collection, connection_collection
-import os, inspect, importlib, datetime, socket, traceback, sys, getpass, contextlib, io, threading, pdb
+import os, inspect, importlib, datetime, socket, traceback, sys, getpass, contextlib, io, pdb
 from PyICe.plugins.bench_configuration_management import bench_visualizer
 from PyICe.plugins.traceability_items import Traceability_items
 from PyICe.plugins.test_results import Test_Results, Failed_Eval
 from PyICe.lab_utils.communications import email, sms
 from PyICe.lab_utils.sqlite_data import sqlite_data
 from PyICe.lab_utils.banners import print_banner
+from PyICe.lab_utils.timed_response import timed_input
 from PyICe.lab_core import logger, master
 from PyICe.plugins import test_archive
 from email.mime.image import MIMEImage
@@ -177,6 +178,7 @@ class Plugin_Manager():
         self.startup_fns = []
         self.shutdown_fns = []
         self.temperature_channel = None
+        self._temperature_is_dummy = False
         self.special_channel_actions = {}
         for (dirpath1, dirnames, filenames) in os.walk(self.project_path):
             if 'benches' not in dirpath1 or self.project_path not in dirpath1: continue
@@ -225,6 +227,7 @@ class Plugin_Manager():
             break
         if self.temperature_channel == None:
             self.temperature_channel = self.master.add_channel_dummy("tdegc")
+            self._temperature_is_dummy = True
         if not self._temperatures:
             self.temperature_channel.write(25)
 
@@ -681,18 +684,7 @@ class Plugin_Manager():
     ###
     # SCRIPT METHODS
     ###
-    def _timed_input(self, prompt, timeout):
-        '''Prompt the user for input, returning None if no response within timeout seconds.'''
-        response = [None]
-        def _get_input():
-            response[0] = input(prompt)
-        thread = threading.Thread(target=_get_input, daemon=True)
-        thread.start()
-        thread.join(timeout)
-        if thread.is_alive():
-            print(f"\nNo response received within {timeout}s. Continuing...")
-            return None
-        return response[0]
+
     def collect(self, temperatures):
         '''This method aggregates the channels that will be logged and calls the collect method in every test added via self.add_test.
         args:
@@ -760,10 +752,10 @@ class Plugin_Manager():
                             test._crash_info = sys.exc_info()
                             self.notify(self._crash_str(test), subject='CRASHED!!!')
                             if test._debug or isinstance(e, KeyboardInterrupt):
-                                if temp in ("ambient", 25):
+                                if self._temperature_is_dummy:
                                     response = input("Debug [y/n]? ")
                                 else:
-                                    response = self._timed_input("Debug [y/n]? (60s to respond) ", timeout=60)
+                                    response = timed_input("Debug [y/n]? (60s to respond) ", timeout=60)
                                 if response is not None and response.lower() in ['y', 'yes']:
                                     pdb.post_mortem()
                         self.cleanup()
