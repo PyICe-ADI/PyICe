@@ -6,7 +6,7 @@ hardware. I2C drivers use the i2c_dummy interface which stores register
 data in a plain Python dict. VISA/SCPI instruments use unittest.mock.
 """
 import pytest
-from unittest.mock import MagicMock, call
+from unittest.mock import MagicMock
 from PyICe.lab_core import master, instrument
 from PyICe.twi_interface import i2c_dummy
 from PyICe.lab_utils.swap_endian import swap_endian
