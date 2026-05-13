@@ -1,7 +1,7 @@
 import os
 import sqlite3
 import pytest
-from PyICe.lab_core import logger, master, channel
+from PyICe.lab_core import logger, master
 
 
 @pytest.fixture
