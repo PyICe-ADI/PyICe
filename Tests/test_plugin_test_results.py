@@ -444,7 +444,6 @@ class TestCustomJSONEncoder:
 
     def get_encoder(self):
         """Extract the CustomJSONizer class from _json_report."""
-        import json
         from numpy import bool_, ndarray
 
         class CustomJSONizer(json.JSONEncoder):
