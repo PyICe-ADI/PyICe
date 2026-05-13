@@ -844,6 +844,10 @@ class Plugin_Manager():
                     # Don't stop other test's plotting or archiving because of a plotting error.
                     print(f"Plot method for {test.get_name()} crashed.")
                     traceback.print_exc()
+                    if test._debug or isinstance(e, KeyboardInterrupt):
+                        response = input("Debug [y/n]? ")
+                        if response is not None and response.lower() in ['y', 'yes']:
+                            pdb.post_mortem()
                     continue
                 if isinstance(test.plot_list, (LTC_plot.plot, LTC_plot.Page)):
                     test.plot_list = [self._convert_svg(test.plot_list)]
@@ -902,13 +906,17 @@ class Plugin_Manager():
                     test._db.set_table(test.get_table_name())
                 try:
                     test.evaluate_results()
-                except Exception:
+                except Exception as e:
                     traceback.print_exc()
                     print_banner(f"*** ERROR ***", f"{test.get_name()} crashed during evaluation, skipping.")
                     print("\n")
                     database = None
                     table_name = None
                     test._test_results = Failed_Eval(test)
+                    if test._debug or isinstance(e, KeyboardInterrupt):
+                        response = input("Debug [y/n]? ")
+                        if response is not None and response.lower() in ['y', 'yes']:
+                            pdb.post_mortem()
                     continue
                 if test._test_results._test_results:
                     print(test.get_test_results())
@@ -953,13 +961,17 @@ class Plugin_Manager():
                 test._db = sqlite_data(database_file=database, table_name=test.get_table_name())
                 try:
                     test.correlate_results()
-                except Exception:
+                except Exception as e:
                     traceback.print_exc()
                     print_banner(f"*** ERROR ***", f"{test.get_name()} crashed during evaluation, skipping.")
                     print("\n")
                     database = None
                     table_name = None
                     test._corr_results = Failed_Eval(test)
+                    if test._debug or isinstance(e, KeyboardInterrupt):
+                        response = input("Debug [y/n]? ")
+                        if response is not None and response.lower() in ['y', 'yes']:
+                            pdb.post_mortem()
                     continue
                 if len(test._corr_results._test_results):
                     print(test.get_corr_results())
