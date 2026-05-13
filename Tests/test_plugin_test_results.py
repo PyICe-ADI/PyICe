@@ -8,7 +8,7 @@ import json
 import os
 import pytest
 import numpy as np
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 from PyICe.plugins.test_results import (
     freeze, make_hash, none_min, none_max, none_abs,
     Test_Results, Test_Results_Reload,
