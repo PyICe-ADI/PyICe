@@ -1,6 +1,6 @@
 import time
 import pytest
-from PyICe.lab_core import (master, channel_master, channel, integer_channel,
+from PyICe.lab_core import (channel_master, channel, integer_channel,
                             results_ord_dict)
 from PyICe.lab_interfaces import interface_factory
 
