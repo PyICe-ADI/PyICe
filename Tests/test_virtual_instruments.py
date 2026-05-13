@@ -1,4 +1,3 @@
-import time
 import pytest
 from PyICe.lab_core import master, integer_channel
 from PyICe.virtual_instruments import (
