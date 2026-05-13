@@ -1,4 +1,5 @@
 from ..lab_core import *
+from .. import twi_interface
 
 class CAT5140(instrument):
     '''ONSemi/Catalyst I2C 256 Tap Potentiometer'''
@@ -8,7 +9,7 @@ class CAT5140(instrument):
         self._base_name = 'CAT5140'
         self.add_interface_twi(interface_twi)
         self.twi = interface_twi
-        self.tries = 3
+        self.tries = 2
     def _write_byte(self, addr7, subaddr, data):
         tries = self.tries
         while tries:
@@ -17,11 +18,11 @@ class CAT5140(instrument):
                 # self.twi.write_byte(addr7, subaddr, data)
                 self.twi.write_register(addr7=addr7, commandCode=subaddr, data=data, data_size=8, use_pec=False)
                 return
-            except Exception as e:
-                print(e)
+            except twi_interface.i2cError as e:
+                traceback.print_exc()
                 self.twi.resync_communication()
                 if not tries:
-                    raise e
+                    raise twi_interface.i2cIOError("CAT5140 Communication Failed.") from e
     def set_output(self, value):
         assert value >= 0
         assert value <= 2**8-1
@@ -34,10 +35,11 @@ class CAT5140(instrument):
                 # value = self.twi.read_byte(self.addr7, 0x00)
                 value = self.twi.read_register(addr7=self.addr7, commandCode=0x00, data_size=8, use_pec=False)
                 return value
-            except Exception as e:
-                raise e
+            except twi_interface.i2cError as e:
+                traceback.print_exc()
                 self.twi.resync_communication()
-        raise Exception("CAT5140 Communication Failed.")
+                if not tries:
+                    raise twi_interface.i2cIOError("CAT5140 Communication Failed.") from e
     def _write_percent(self,percent):
         '''value is between 0 and 1. DAC is biased toward 0 so that full scale is not achievable'''
         assert percent >= 0

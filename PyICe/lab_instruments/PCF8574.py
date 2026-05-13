@@ -8,7 +8,7 @@ class PCF8574(instrument):
         self.twi = interface_twi
         self.add_interface_twi(interface_twi)
         if addr7 not in range(0x20, 0x27+1):
-            raise ValueError("\n\n\PCF8574 only supports addresses 0x20 - 0x27")
+            raise ValueError("PCF8574 only supports addresses 0x20 - 0x27")
         self.addr7 = addr7
         self.state = 0
     def add_channel_writepin(self, channel_name, pin):

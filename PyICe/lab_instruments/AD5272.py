@@ -1,4 +1,5 @@
 from ..lab_core import *
+from .. import twi_interface
 
 class AD5272(instrument):
     '''Analog Devices I2C Precision Potentiometer / Rheostat
@@ -15,7 +16,7 @@ class AD5272(instrument):
         if addr7 not in [0x2C, 0x2E, 0x2F]:
             raise ValueError("\n\n\nAD5272 only supports addresses 0x2C, 0x2E, 0x2F")
         self.addr7 = addr7
-        self.tries = 3
+        self.tries = 2
         self.enable()
         self.full_scale_ohms = full_scale_ohms
     def _write_byte(self, addr7, subaddr, data):
@@ -26,11 +27,11 @@ class AD5272(instrument):
                 # self.twi.write_byte(addr7, subaddr, data)
                 self.twi.write_register(addr7=addr7, commandCode=subaddr, data=data, data_size=8, use_pec=False)
                 return
-            except Exception as e:
-                print(e)
+            except twi_interface.i2cError as e:
+                traceback.print_exc()
                 self.twi.resync_communication()
                 if not tries:
-                    raise e
+                    raise twi_interface.i2cIOError("AD5272 Communication Failed.") from e
     def enable(self, enable = True):
         '''Place AD5272 into shutdown by writing enabled=False
         Re-enable by writing enabled=True'''
@@ -61,10 +62,11 @@ class AD5272(instrument):
                 lsbyte = self.twi.read_nack()
                 self.twi.stop()
                 return (msbyte & 0b11) << 8 | lsbyte
-            except Exception as e:
-                raise e
+            except twi_interface.i2cError as e:
+                traceback.print_exc()
                 self.twi.resync_communication()
-        raise Exception("AD5272 Comunication Failed.")
+                if not tries:
+                    raise twi_interface.i2cIOError("AD5272 Communication Failed.") from e
     def _write_percent(self,percent):
         '''value is between 0 and 1. DAC is biased toward 0 so that full scale is not achievable'''
         assert percent >= 0

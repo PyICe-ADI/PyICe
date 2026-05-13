@@ -24,7 +24,7 @@ debug_logging = logging.getLogger(__name__)
 
 class twi_instrument(lab_core.instrument,lab_core.delegator):
     def __init__(self,interface_twi,except_on_i2cInitError=True,except_on_i2cCommError=False,retry_count=5,PEC=False):
-        lab_core.instrument.__init__(self,name=None)
+        lab_core.instrument.__init__(self,name="twi_instrument")
         lab_core.delegator.__init__(self)
         self.add_interface_twi(interface_twi)
         self._interface = interface_twi
@@ -283,7 +283,7 @@ class twi_instrument(lab_core.instrument,lab_core.delegator):
             if register.is_writeable():
                 if not register.is_readable() or include_readable_registers:
                     register.enable_cached_read()
-    def populate_from_file(self ,xml_file, format_dict={}, access_list=[], use_case=None, channel_prefix="", channel_suffix=""):
+    def populate_from_file(self, xml_file, format_dict=None, access_list=None, use_case=None, channel_prefix="", channel_suffix=""):
         '''
         xml_register parsing accepts xml input complying with the following DTD (register_map.dtd):
 
@@ -316,6 +316,10 @@ class twi_instrument(lab_core.instrument,lab_core.delegator):
     <!ATTLIST format_definition name ID #REQUIRED signed (True | False | 1 | 0) #REQUIRED>
     <!ATTLIST point native CDATA #REQUIRED transformed CDATA #REQUIRED>
     '''
+        if format_dict is None:
+            format_dict = {}
+        if access_list is None:
+            access_list = []
         xml_reg_map = ET.parse(xml_file).getroot()
         chip = xml_reg_map.find("./chip")
         addr7 = str2num(chip.find("./address").attrib["address_7bit"])
@@ -506,7 +510,7 @@ class twi_instrument(lab_core.instrument,lab_core.delegator):
                 if len(bf["enums"]):
                     for name,value in list(bf["enums"].items()):
                         register.add_preset( name,value )
-    def create_format(self, format_name, format_function, unformat_function, signed=False, description=None, units='', xypoints=[]):
+    def create_format(self, format_name, format_function, unformat_function, signed=False, description=None, units='', xypoints=None):
         '''Create a new format definition or modify an existing definition.
 
         format_function should take a single argument of integer raw data from the register and return a version of the data scaled to appropriate units.
@@ -514,6 +518,8 @@ class twi_instrument(lab_core.instrument,lab_core.delegator):
         If the data is signed in two's-complement format, set signed=True.
         After creating format, use set_active_format method to make the new format active.
         '''
+        if xypoints is None:
+            xypoints = []
         self.formatters[format_name] = {'format': format_function, 'unformat': unformat_function, 'description': description, 'signed': signed, 'units': units, 'xypoints': xypoints}
     def set_constant(self, constant, value):
         '''Sets the constants found in the datasheet used by the formatters to convert from real world values to digital value and back.'''
@@ -630,7 +636,7 @@ class pmbus_instrument(twi_instrument):
 class twi_instrument_dummy(twi_instrument):
     '''use for formatters, etc without having to set up a master and physical hardware.'''
     def __init__(self):
-        lab_core.instrument.__init__(self,name=None)
+        lab_core.instrument.__init__(self,name="twi_instrument_dummy")
         self._addr7 = None
         self.formatters = {}
         self._constants = {}
