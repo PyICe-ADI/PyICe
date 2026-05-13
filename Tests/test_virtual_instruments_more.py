@@ -1,6 +1,6 @@
 import time
 import pytest
-from PyICe.lab_core import master, channel
+from PyICe.lab_core import master
 from PyICe.virtual_instruments import (
     timer, integrator, differentiator, ramp_to,
 )
