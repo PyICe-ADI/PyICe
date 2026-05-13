@@ -7,10 +7,23 @@ import xml.etree.ElementTree as ET
 from xml.sax.saxutils import escape as escape
 import sys
 import os
-from PySide2 import QtGui
-from PySide2 import QtWidgets
-from PySide2 import QtCore
-from PySide2.QtCore import SIGNAL, SLOT, QObject, Signal, Slot
+try:
+    # PySide2 supports Python <=3.10.  If PySide2 is not installed (Python >=3.11)
+    # or the import fails for any reason, fall through to PySide6.
+    from PySide2 import QtGui
+    from PySide2 import QtWidgets
+    from PySide2 import QtCore
+    from PySide2.QtCore import SIGNAL, SLOT, QObject, Signal, Slot
+except ImportError:
+    # PySide6 is required for Python >=3.11.
+    # QAction moved from QtWidgets to QtGui in Qt6; monkey-patch it back into
+    # QtWidgets so that all existing code that references QtWidgets.QAction keeps
+    # working without a wholesale rewrite.
+    from PySide6 import QtGui
+    from PySide6 import QtWidgets
+    from PySide6 import QtCore
+    from PySide6.QtCore import SIGNAL, SLOT, QObject, Signal, Slot
+    QtWidgets.QAction = QtGui.QAction
 import queue
 import datetime
 import collections
@@ -131,10 +144,18 @@ class DataStoreException(Exception):
     pass
 
 class channel_wrapper(object):
-    def __init__(self,channel):
-        self._channel = channel
-        self._name = self._channel.get_name()
-        self._tag = self._channel.get_category()
+    def __init__(self,channel=None):
+        # channel=None default is required because of Python's cooperative multiple-inheritance
+        # (MRO) behaviour with Qt classes.  When a subclass like display_item inherits from both
+        # QtWidgets.QLabel and channel_wrapper, calling QtWidgets.QLabel.__init__(self) causes
+        # Python's super() chain to eventually reach channel_wrapper.__init__ with no arguments.
+        # Accepting None and doing nothing in that case lets the explicit
+        #   channel_wrapper.__init__(self, channel_object)
+        # call in the subclass __init__ handle proper initialisation.
+        if channel is not None:
+            self._channel = channel
+            self._name = self._channel.get_name()
+            self._tag = self._channel.get_category()
     def get_default_format(self):
         if self.get_formats():
             if self._channel.get_format() is not None:
@@ -242,6 +263,7 @@ class display_item(QtWidgets.QLabel,channel_wrapper):
     SI_request_read_channel_list = QtCore.Signal(object)
     SI_request_write_channel_list = QtCore.Signal(object)
     def __init__(self,channel_object):
+        channel_wrapper.__init__(self,channel_object)
         QtWidgets.QLabel.__init__(self)
         self._alpha = 0
         #https://en.wikipedia.org/wiki/Web_colors
@@ -261,7 +283,7 @@ class display_item(QtWidgets.QLabel,channel_wrapper):
         self.highlight.setEasingCurve(QtCore.QEasingCurve.OutCirc)
         # self.highlight.setEndValue(80) # green
         self.highlight.setEndValue(40) # safety yellow is more visible, so can be faded further
-        channel_wrapper.__init__(self,channel_object)
+        
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.connect(self,SIGNAL("customContextMenuRequested(QPoint)"),self, SLOT("contextMenuRequested(QPoint)"))
         self._use_presets_read = True #False
@@ -788,7 +810,10 @@ class write_channel_dialog(QtWidgets.QDialog,channel_wrapper):
                 self.formats_combo.addItem(format)
             self.formats_combo.setCurrentIndex(self.formats_combo.findText("None" if self._format is None else self._format))
             layout.addWidget(self.formats_combo)
-            self.connect(self.formats_combo,SIGNAL("currentIndexChanged (QString)"),self.update_format)
+            # currentIndexChanged(QString) overload was removed in Qt6; use currentTextChanged instead.
+            # (The old SIGNAL string also had a spurious space before the '(' which is a Qt convention
+            # violation and would silently fail to connect even on Qt5.)
+            self.formats_combo.currentTextChanged.connect(self.update_format)
             self.link_format_checkbox = QtWidgets.QCheckBox('Link Format',self)
             layout.addWidget(self.link_format_checkbox)
         # presets
@@ -910,7 +935,9 @@ class write_channel_dialog(QtWidgets.QDialog,channel_wrapper):
         if format == "None":
             format = None
         try:
-            if hasattr(self,'link_format_checkbox') and self.link_format_checkbox.checkState():
+            # checkState() returns Qt.CheckState enum; in PySide6 Qt.CheckState.Unchecked is a
+            # non-None object and is therefore always truthy.  Use isChecked() for bool semantics.
+            if hasattr(self,'link_format_checkbox') and self.link_format_checkbox.isChecked():
                 old_value = self.unformat(self.get_value(),self._format,self._use_presets_write)
                 new_text = self.format(old_value,format,self._use_presets_write)
                 self.set_value(new_text)
@@ -925,7 +952,7 @@ class write_channel_dialog(QtWidgets.QDialog,channel_wrapper):
         dcwd_ds['use_presets_write'] = str(self._use_presets_write)
         if len(self.get_formats()):
             dcwd_ds['format'] = str(self._format)
-            if self.link_format_checkbox.checkState() == 2:
+            if self.link_format_checkbox.isChecked():
                 dcwd_ds['link'] = 'True'
         dcwd_ds['increment'] = str(self.get_increment())
         dcwd_ds['visible'] = str( self.isVisible() )
@@ -1109,7 +1136,7 @@ class display_item_group(QtWidgets.QWidget):
         menu = QtWidgets.QMenu()
         # write menu item
         action_read = QtWidgets.QAction("Read All",menu)
-        action_read.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_R)) #doesn't do anything out of context, but reminds user of hotkey
+        action_read.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL | QtCore.Qt.Key_R)) #doesn't do anything out of context, but reminds user of hotkey
         self.connect(action_read,SIGNAL("triggered()"),self.request_read_all)
         menu.addAction(action_read)
         # continuous read
@@ -1152,14 +1179,20 @@ class display_item_group(QtWidgets.QWidget):
         self.connect(self.tagged_sort,SIGNAL('toggled(bool)'), self.set_tagged_sort)
         menu.addAction(self.tagged_sort)
         menu.exec_(self.mapToGlobal(point))
-        self.SI_change_font_size.connect(self.change_font_size)
-        #self.connect(self,SIGNAL("change_font_size(int)"),self.change_font_size)
+        # Removed: self.SI_change_font_size.connect(self.change_font_size)
+        # SI_change_font_size is never emitted on display_item_group — the context menu's font
+        # size actions use direct lambda→change_font_size() calls instead.  This connect() was
+        # dead code that silently accumulated a duplicate slot connection on every right-click.
     def wheelEvent(self, QWheelEvent):
         modifiers = QtWidgets.QApplication.keyboardModifiers()
         if modifiers == QtCore.Qt.ControlModifier:
             #15 degree physical steps * eight's of a degree resolution = +/-120 count typical single movement.
             #self.change_font_size(int(round(QWheelEvent.delta()/120.0)))
-            self.change_font_size(1 if QWheelEvent.delta() > 0 else -1) #independent of mouse resolution, but doesn't support super-mega-rapid-zoom
+            try:
+                delta = QWheelEvent.delta() #qt5: returns int (degrees/8)
+            except AttributeError:
+                delta = QWheelEvent.angleDelta().y() #qt6: angleDelta() returns QPoint; .y() extracts vertical scroll component
+            self.change_font_size(1 if delta > 0 else -1) #independent of mouse resolution, but doesn't support super-mega-rapid-zoom
         else:
             QWheelEvent.ignore() #allow signal to bubble up to scroll function (hold meta/alt with wheel)
     def change_font_size(self, increment):
@@ -1245,7 +1278,7 @@ class display_tag_group(QtWidgets.QWidget):
     def get_selected_tags(self):
         selected_tags = []
         for (tag_name,check_box) in list(self._check_boxes.items()):
-            if check_box.checkState():
+            if check_box.isChecked():
                 selected_tags.append(tag_name)
         return selected_tags
     def _create_tag_list(self):
@@ -1283,6 +1316,7 @@ class display_tag_group(QtWidgets.QWidget):
             self._check_boxes[tag_name] = new_tag_check_box
             new_tag_check_box.setCheckState(QtCore.Qt.Unchecked)
             self.connect(new_tag_check_box, QtCore.SIGNAL("stateChanged(int)"), self._on_change)
+            #new_tag_check_box.checkStateChanged.connect(self._on_change)  # qt6
             y_pos += 1
             if y_pos >= MAX_TAG_ROWS:
                 x_pos += 1
@@ -1380,7 +1414,13 @@ class tab_view(QtWidgets.QWidget):
         if modifiers == QtCore.Qt.NoModifier:
             #remap mouse wheel vertical scroll to horizontal scroll, since the only scroll bar is horizontal.
             scroll_bar = self.scroll_area.horizontalScrollBar()
-            scroll_bar.triggerAction(scroll_bar.SliderSingleStepAdd if QWheelEvent.delta() < 0 else scroll_bar.SliderSingleStepSub)
+            try:
+                delta = QWheelEvent.delta() #qt5: returns int (degrees/8)
+                scroll_bar.triggerAction(scroll_bar.SliderSingleStepAdd if delta > 0 else scroll_bar.SliderSingleStepSub)
+            except AttributeError:
+                delta = QWheelEvent.angleDelta().y() #qt6: angleDelta() returns QPoint; .y() is vertical component
+                # SliderSingleStepAdd/Sub must be accessed via class, not scroll_bar instance, in Qt6
+                scroll_bar.triggerAction(QtWidgets.QAbstractSlider.SliderSingleStepAdd if delta > 0 else QtWidgets.QAbstractSlider.SliderSingleStepSub)
         else:
             QWheelEvent.ignore()
     def update_from_dict(self,data_dict):
@@ -2130,15 +2170,15 @@ class ltc_lab_gui_main_window(QtWidgets.QMainWindow):
         file_menu = QtWidgets.QMenu("File",menu_bar)
         menu_bar.addMenu(file_menu)
         file_open = QtWidgets.QAction("Open...",file_menu)
-        file_open.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_O))
+        file_open.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL | QtCore.Qt.Key_O))
         file_menu.addAction(file_open)
         file_open.triggered.connect(self._disp_open_dialog)
         file_save_as = QtWidgets.QAction("Save As...",file_menu)
-        file_save_as.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_S))
+        file_save_as.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL | QtCore.Qt.SHIFT | QtCore.Qt.Key_S))
         file_menu.addAction(file_save_as)
         file_save_as.triggered.connect(self._disp_save_dialog)
         file_save_default = QtWidgets.QAction("Save Default",file_menu)
-        file_save_default.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_S))
+        file_save_default.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL | QtCore.Qt.Key_S))
         file_save_default.triggered.connect(lambda: self.save_file('default.guicfg'))
         file_menu.addAction(file_save_default)
         file_menu.addSeparator()
@@ -2153,7 +2193,7 @@ class ltc_lab_gui_main_window(QtWidgets.QMainWindow):
         file_menu.addAction(self.file_passive)
         self.file_passive.toggled.connect(self.set_passive_observer_mode) #Bool
         self.file_close = QtWidgets.QAction("Close",file_menu)
-        self.file_close.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_Q))
+        self.file_close.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL | QtCore.Qt.Key_Q))
         self.file_close.triggered.connect(self.close)
         file_menu.addAction(self.file_close)
 
@@ -2182,17 +2222,19 @@ class ltc_lab_gui_main_window(QtWidgets.QMainWindow):
         tab_menu.addAction(tab_no_flash_on_change)
         tab_menu.addSeparator()
         increase_font_size = QtWidgets.QAction("Increase Font Size",tab_menu)
-        increase_font_size.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_Plus))
+        increase_font_size.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL | QtCore.Qt.Key_Plus))
         increase_font_size.triggered.connect(lambda: self.SI_change_font_size.emit(1))
         tab_menu.addAction(increase_font_size)
         decrease_font_size = QtWidgets.QAction("Decrease Font Size",tab_menu)
-        decrease_font_size.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_Minus))
+        decrease_font_size.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL | QtCore.Qt.Key_Minus))
         decrease_font_size.triggered.connect(lambda: self.SI_change_font_size.emit(-1))
         tab_menu.addAction(decrease_font_size)
         tab_menu.addSeparator()
         read_all = QtWidgets.QAction("Read All",tab_menu)
-        read_all.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_R))
-        read_all.triggered.connect(self._tg._active_tab.dig.request_read_all)
+        read_all.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL | QtCore.Qt.Key_R))
+        # Wrap in lambda so _active_tab is evaluated at trigger time, not at menu-bar creation time.
+        # Without the lambda, the action permanently targets whichever tab was active during __init__.
+        read_all.triggered.connect(lambda: self._tg._active_tab.dig.request_read_all())
         tab_menu.addAction(read_all)
 
         #logger menu
@@ -2209,7 +2251,7 @@ class ltc_lab_gui_main_window(QtWidgets.QMainWindow):
         logger_select_channels.triggered.connect(self._gui_logger.display_select_channels)
         logger_menu.addAction(logger_select_channels)
         logger_log = QtWidgets.QAction("Log Once",logger_menu)
-        logger_log.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_L))
+        logger_log.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL | QtCore.Qt.Key_L))
         logger_log.triggered.connect(self._gui_logger.log)
         logger_menu.addAction(logger_log)
         logger_menu.addSeparator()
@@ -2334,31 +2376,30 @@ class ltc_lab_gui_main_window(QtWidgets.QMainWindow):
         size['y'] = str(self.size().height())
     def set_passive_observer_mode(self, passive):
         if not passive:
-            self.file_passive.setChecked(False)
-            try:
+            if self.file_passive.isChecked():
                 self._tg.SI_request_read_channel_list.disconnect(self.show_passive_error)
                 self._tg.SI_request_write_channel_list.disconnect(self.show_passive_error)
                 self._gui_logger.SI_request_background_call.disconnect(self.show_passive_error)
                 self.SI_passive_observer_data.disconnect(self._tg.receive_passive_channel_data)
-            except:
-                pass
-
+            self.file_passive.setChecked(False)
             self._tg.SI_request_read_channel_list.connect(self.read_channel_list)
             self._tg.SI_request_write_channel_list.connect(self.write_channel_list)
             self.SI_channel_data_ready.connect(self._tg.receive_channel_data)
             self._gui_logger.SI_request_background_call.connect(self.receive_background_call_request)
             self.setWindowTitle(self._channel_group.get_name())
         elif passive:
-            self.disconnect(self.file_passive,SIGNAL("toggled(bool)"),self.set_passive_observer_mode)
-            self.file_passive.setChecked(True)
-            try:
+            # Temporarily disconnect to prevent re-entrant call from setChecked(True) below.
+            # Must use new-style .disconnect() to match the new-style .connect() at the call site
+            # (line 2187); old-style QObject.disconnect() cannot undo a new-style .connect() in
+            # PySide6, which would leave the connection live and cause infinite recursion.
+            self.file_passive.toggled.disconnect(self.set_passive_observer_mode)
+            if not self.file_passive.isChecked():
                 self._tg.SI_request_read_channel_list.disconnect(self.read_channel_list )
                 self._tg.SI_request_write_channel_list.disconnect(self.write_channel_list )
                 self.SI_channel_data_ready.disconnect(self._tg.receive_channel_data )
                 self.SI_request_background_call.disconnect(self.receive_background_call_request)
-            except:
-                pass
-            self.connect(self.file_passive,SIGNAL("toggled(bool)"),self.set_passive_observer_mode)
+            self.file_passive.setChecked(True)
+            self.file_passive.toggled.connect(self.set_passive_observer_mode)
             self._tg.SI_request_read_channel_list.connect( self.show_passive_error )
             self._tg.SI_request_write_channel_list.connect(self.show_passive_error )
             self._gui_logger.SI_request_background_call.connect(self.show_passive_error )
@@ -2423,7 +2464,7 @@ class ltc_lab_gui_app(QObject):
             if not self.q_is_full:
                 self.q_is_full = True
                 #print "Warning: Background GUI unable to keep up with main thread's data rate @ {}".format(datetime.datetime.now())
-            self.SI_queue_overflow().emit()
+            self.SI_queue_overflow.emit()  # was SI_queue_overflow().emit() — calling the signal as a function returns None, then .emit() on None raises AttributeError
             #self.emit(SIGNAL('queue_overflow()'))
     def exec_(self):
         return QApp.exec_()
