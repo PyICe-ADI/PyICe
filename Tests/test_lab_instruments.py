@@ -7,7 +7,7 @@ data in a plain Python dict. VISA/SCPI instruments use unittest.mock.
 """
 import pytest
 from unittest.mock import MagicMock
-from PyICe.lab_core import master, instrument
+from PyICe.lab_core import instrument
 from PyICe.lab_utils.swap_endian import swap_endian
 from PyICe.lab_instruments.TMP117 import TMP117
 from PyICe.lab_instruments.AD5259 import AD5259
