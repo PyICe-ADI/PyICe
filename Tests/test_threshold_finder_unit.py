@@ -1,5 +1,4 @@
 import pytest
-from PyICe.lab_core import master
 from PyICe.virtual_instruments import threshold_finder
 from PyICe.models.comparator import comparator
 
