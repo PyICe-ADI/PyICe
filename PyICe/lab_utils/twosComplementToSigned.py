@@ -8,8 +8,10 @@ def twosComplementToSigned(binary, bitCount):
     >>> twosComplementToSigned(128, 8)
     -128
     '''
-    assert binary < 2**bitCount
-    assert binary >= 0
+    if binary >= 2**bitCount:
+        raise ValueError(f'binary value {binary} exceeds {bitCount}-bit range (max {2**bitCount - 1})')
+    if binary < 0:
+        raise ValueError(f'binary value {binary} is negative; twos complement input must be unsigned')
     if binary >= 2**(bitCount-1):
         binary -= 2**bitCount
     return binary

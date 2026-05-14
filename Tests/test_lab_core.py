@@ -36,10 +36,9 @@ class TestChannelBaseFunctionality:
         with pytest.raises(ChannelNameException):
             chan.set_name('***')
 
-    @pytest.mark.xfail
-    def test_get_type_affinity(self, chan):  # should this have an exception?
-        with pytest.raises(TypeError):
-            chan._set_type_affinity('NOT_TYPE')
+    def test_get_type_affinity(self, chan):  # permissive by design: value is interpolated directly into SQLite CREATE TABLE, which accepts any affinity string (unknown types fall back to BLOB). PyICeBLOB is an intentional custom affinity used throughout the codebase.
+        chan._set_type_affinity('NOT_TYPE')
+        assert chan.get_type_affinity() == 'NOT_TYPE'
 
     def test_set_description(self, chan):
         assert chan is chan.set_description(
@@ -290,10 +289,13 @@ class TestIntegerReadChannel:
     def test_format(self, data, format, int_write_chan):
         print(int_write_chan.format(data, format, use_presets=True))
 
-    @pytest.mark.xfail
-    @pytest.mark.parametrize('data', [bin(1)])
+    @pytest.mark.parametrize('data', [1, 15, 16, 31])
     def test_format_signed_dec(self, data, int_write_chan):
         print(int_write_chan.format(data, 'signed dec', use_presets=True))
+
+    def test_format_signed_dec_overflow(self, int_write_chan):
+        with pytest.raises(ValueError):
+            int_write_chan.format(32, 'signed dec', use_presets=True)
 
     def test_sql_format(self, int_write_chan):
         int_write_chan.add_format('volts', lambda x: x * 0.01, lambda x: int(x / 0.01),
@@ -673,19 +675,22 @@ class TestChannelGroup:
         with pytest.raises(Exception):
             group.remove_channel(chan)
 
-    @pytest.mark.xfail  # This one does not work because if you remove a channel group
     def test_remove_channel_group(self, group):
         sub_group1 = channel_group('subg1')
         sub_group2 = channel_group('subg2')
 
-        sub_group1.add(c1 := channel(name=f'chan0',
-                                     write_function=write_function))
-        sub_group2.add(c2 := channel(name=f'chan1',
-                                     write_function=write_function))
-        group.add(sub_group1)
-        group.add(sub_group2)
+        sub_group1.add(c1 := channel(name='chan0', write_function=write_function))
+        sub_group2.add(c2 := channel(name='chan1', write_function=write_function))
+        group.merge_in_channel_group(sub_group1)
+        group.merge_in_channel_group(sub_group2)
+
+        assert c1 in group
+        assert c2 in group
 
         group.remove_channel_group(sub_group1)
+
+        assert c1 not in group
+        assert c2 in group
 
     # @pytest.mark.xfail  # This one does not work because if you remove a channel group
     def test_remove_channel_by_name(self, loaded_group):
