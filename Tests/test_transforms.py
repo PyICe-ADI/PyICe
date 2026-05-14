@@ -77,7 +77,7 @@ class TestVectorTransform:
     def test_cumulative_sum(self):
         arr = make_recarray()
         result = vector_transform(arr,
-                                  [None, lambda col: np.cumsum(col), None])
+                                  [None, np.cumsum, None])
         np.testing.assert_array_equal(result.y, [10, 30, 60, 100, 150])
 
     def test_rename_columns(self):
