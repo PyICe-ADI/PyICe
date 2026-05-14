@@ -97,7 +97,7 @@ class TestVectorTransform:
             names=['x', 'y']
         )
         result = vector_transform(arr,
-                                  [lambda c: c[:-1], lambda c: np.diff(c)])
+                                  [lambda c: c[:-1], np.diff])
         np.testing.assert_array_equal(result.y, [1, 3, 5])
         assert len(result) == 3
 
