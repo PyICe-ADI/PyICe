@@ -5,7 +5,6 @@ logic, and JSON round-trip serialization/deserialization.
 """
 import datetime
 import json
-import os
 import pytest
 import numpy as np
 from unittest.mock import MagicMock
