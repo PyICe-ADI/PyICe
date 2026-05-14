@@ -3010,7 +3010,8 @@ class logger_backend(object):
                 self.storage_queue.join()
         else:
             # non-threaded case
-            self._stop()
+            if not self._stopped:
+                self._stop()
     def _stop(self):
         try:
             self._commit()
@@ -3023,6 +3024,7 @@ class logger_backend(object):
         finally:
             self._close()
             self._run = False
+            self._stopped = True
 
 
 if __name__ == "__main__": # pragma: no cover
