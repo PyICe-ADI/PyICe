@@ -93,11 +93,11 @@ class TestTwosComplementToSigned:
         assert twosComplementToSigned(0xFFFF, 16) == -1
 
     def test_overflow_raises(self):
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             twosComplementToSigned(256, 8)
 
     def test_negative_input_raises(self):
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             twosComplementToSigned(-1, 8)
 
 
