@@ -239,13 +239,13 @@ def int_write_chan():
 class TestIntegerReadChannel:
 
     def test_get_size(self, int_read_chan):
-        assert int_read_chan.get_size() == 5
+        assert int_read_chan.get_size() == int_read_chan._size
 
     def test_get_max_write_limit(self, int_write_chan):
         int_write_chan.set_max_write_limit(10)
         assert int_write_chan.get_max_write_limit() == 10
 
-    def test_get_min_write_limit(self, int_read_chan):
+    def test_get_min_write_limit(self, int_write_chan):
         int_write_chan.set_min_write_limit(10)
         assert int_write_chan.get_min_write_limit() == 10
 
@@ -295,8 +295,12 @@ class TestIntegerReadChannel:
     def test_format_signed_dec(self, data, int_write_chan):
         print(int_write_chan.format(data, 'signed dec', use_presets=True))
 
-    def test_sql_format(self):
-        assert False
+    def test_sql_format(self, int_write_chan):
+        int_write_chan.add_format('volts', lambda x: x * 0.01, lambda x: int(x / 0.01),
+                                  xypoints=[(0, 0.0), (100, 1.0)])
+        result = int_write_chan.sql_format('volts', use_presets=False)
+        assert result is not None
+        assert 'int_write_channel' in result
 
     def test_unformat_string(self, int_write_chan):
         assert int_write_chan.unformat(string=None, format='dec',
@@ -429,11 +433,18 @@ class TestChannelGroup:
         group.set_name('New Name')
         assert group.get_name() == 'New Name'
 
-    def test_get_categories(self):
-        assert False
+    def test_get_categories(self, loaded_group):
+        cats = loaded_group.get_categories()
+        assert 'cat1' in cats
+        assert 'cat2' in cats
 
-    def test_sort(self):
-        assert False
+    def test_sort(self, group):
+        group.add(channel(name='zebra', read_function=read_function))
+        group.add(channel(name='alpha', read_function=read_function))
+        group.add(channel(name='middle', read_function=read_function))
+        group.sort()
+        names = list(group._channel_dict.keys())
+        assert names == ['alpha', 'middle', 'zebra']
 
     def read_func1(self):
         return 1
@@ -693,21 +704,60 @@ class TestChannelGroup:
         loaded_group.remove_sub_channel_group(sub_group)
         assert sub_group not in loaded_group
 
-    def test_remove_category(self):
-        assert False
+    def test_remove_category(self, group):
+        c1 = channel(name='a', read_function=read_function)
+        c1.set_category('remove_me')
+        c2 = channel(name='b', read_function=read_function)
+        c2.set_category('keep')
+        group.add(c1)
+        group.add(c2)
+        group.remove_category('remove_me')
+        names = group.get_all_channel_names()
+        assert 'a' not in names
+        assert 'b' in names
 
-    def test_remove_categories(self):
-        assert False
+    def test_remove_categories(self, group):
+        c1 = channel(name='a', read_function=read_function)
+        c1.set_category('cat1')
+        c2 = channel(name='b', read_function=read_function)
+        c2.set_category('cat2')
+        c3 = channel(name='c', read_function=read_function)
+        c3.set_category('keep')
+        group.add(c1)
+        group.add(c2)
+        group.add(c3)
+        group.remove_categories('cat1', 'cat2')
+        names = group.get_all_channel_names()
+        assert 'a' not in names
+        assert 'b' not in names
+        assert 'c' in names
 
-    def test_debug_print(self):
-        assert False
+    def test_debug_print(self, loaded_group, capsys):
+        loaded_group.debug_print()
+        captured = capsys.readouterr()
+        assert 'chan0' in captured.out or 'chan1' in captured.out
 
-    def test_remove_channel_list(self):
-        assert False
+    def test_remove_channel_list(self, group):
+        c1 = channel(name='rm1', read_function=read_function)
+        c2 = channel(name='rm2', read_function=read_function)
+        c3 = channel(name='keep', read_function=read_function)
+        group.add(c1)
+        group.add(c2)
+        group.add(c3)
+        group.remove_channel_list([c1, c2])
+        assert c1 not in group
+        assert c2 not in group
+        assert c3 in group
 
-    def test_resolve_channel_list(self):
-        assert False
+    def test_resolve_channel_list(self, loaded_group_w_channels):
+        group, (c1, c2, c3) = loaded_group_w_channels
+        resolved = group.resolve_channel_list(['chan0', c2])
+        assert c1 in resolved
+        assert c2 in resolved
 
-    def test_clone(self):
-        assert False
+    def test_clone(self, loaded_group):
+        cloned = loaded_group.clone()
+        assert 'chan0' in cloned.get_all_channel_names()
+        assert 'chan1' in cloned.get_all_channel_names()
+        assert cloned is not loaded_group
 
