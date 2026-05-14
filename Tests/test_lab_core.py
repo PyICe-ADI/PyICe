@@ -1,3 +1,4 @@
+import queue
 import pytest
 from unittest.mock import patch
 from PyICe.lab_core import channel, delegator, ChannelNameException, \
@@ -636,25 +637,59 @@ class TestChannelGroup:
         assert results['chan2'] == 'Reading'
         assert results['chan3'] == 'Reading'
 
-    @pytest.mark.skip  # these will be covered in channel_master tests
-    def test__read_channels_non_threaded(self):
-        assert False
+    def test__read_channels_non_threaded(self, thread_group):
+        group, channels = thread_group
+        readable = [c for c in channels if c.get_name() in ('chan0', 'chan1', 'chan3')]
+        results = group._read_channels_non_threaded(readable)
+        assert results['chan0'] == 'Reading'
+        assert results['chan1'] == 'Reading'
+        assert results['chan3'] == 'Reading'
 
-    @pytest.mark.skip  # these will be covered in channel_master tests
-    def test__read_channels_threaded(self):
-        assert False
+    def test__read_channels_threaded(self, thread_group):
+        # channel_group lacks group_com_nodes_for_threads_filter, so always falls back to non-threaded
+        group, channels = thread_group
+        readable = [c for c in channels if c.get_name() in ('chan0', 'chan3')]
+        results = group._read_channels_threaded(readable)
+        assert results['chan0'] == 'Reading'
+        assert results['chan3'] == 'Reading'
 
-    @pytest.mark.skip  # these will be covered in channel_master tests
-    def test_start_threads(self):
-        assert False
+    def test_start_threads(self, group):
+        assert group._threaded == False
+        group.start_threads(2)
+        assert group._threaded == True
+        assert group._threads == 2
+        assert hasattr(group, '_read_queue')
+        assert hasattr(group, '_read_results_queue')
+        with pytest.raises(Exception, match='Threads already started'):
+            group.start_threads(1)
+        group._threaded = False
+        for _ in range(2):
+            group._read_queue.put([])
 
-    @pytest.mark.skip  # these will be covered in channel_master tests
-    def test_threaded_read_function(self):
-        assert False
+    def test_threaded_read_function(self, thread_group):
+        group, channels = thread_group
+        group.start_threads(1)
+        readable = [c for c in channels if c.get_name() == 'chan0']
+        group._read_queue.put(readable)
+        result = group._read_results_queue.get(timeout=2)
+        assert result['chan0'] == 'Reading'
+        group._threaded = False
+        group._read_queue.put([])
 
-    @pytest.mark.skip  # these will be covered in channel_master tests
-    def test_get_threaded_results(self):
-        assert False
+    def test_get_threaded_results(self, group):
+        group._read_results_queue = queue.Queue()
+        r1 = results_ord_dict()
+        r1['ch_a'] = 1
+        r2 = results_ord_dict()
+        r2['ch_b'] = 2
+        group._read_results_queue.put(r1)
+        group._read_results_queue.put(r2)
+        results = group.get_threaded_results(2)
+        assert results['ch_a'] == 1
+        assert results['ch_b'] == 2
+        group._read_results_queue.put(Exception('read error'))
+        with pytest.raises(Exception):
+            group.get_threaded_results(1)
 
     def test_read_all_channels(self, thread_group):
         group, channels = thread_group
