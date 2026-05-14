@@ -1,5 +1,5 @@
 import pytest
-from PyICe.lab_core import register, integer_channel, ChannelAccessException
+from PyICe.lab_core import register, integer_channel
 
 
 def make_register(size=8, init_value=0):
