@@ -125,8 +125,7 @@ class htx9001a(htx9001):
     def add_channel_pwm(self, channel_name, pin):
         if pin not in self.pwm_pins:
             raise Exception(
-                f"Invalid HTX9001A PWM pin number {pin}. Must be one of: {
-                    self.pwm_pins}")
+                f"Invalid HTX9001A PWM pin number {pin}. Must be one of: {self.pwm_pins}")
         if self.pwm_pins[pin] in self.initialized_pins:
             print(
                 f"HTX9001A Warning: Non PWM pin {pin} being redefined as a PWM pin.")
@@ -217,8 +216,7 @@ class htx9001a(htx9001):
                 f"Invalid HTX9001A servo pin number {servo_number}.")
         if self.pwm_pins[servo_number] in self.initialized_pins:
             print(
-                f"HTX9001A Warning: Non Servo pin {
-                    self.pwm_pins[servo_number]} being redefined as a Servo pin.")
+                f"HTX9001A Warning: Non Servo pin {self.pwm_pins[servo_number]} being redefined as a Servo pin.")
             # raise Exception(f"HTX9001A servo number {servo_number} already used in another channel!")
         new_channel = channel(
             channel_name,
@@ -261,9 +259,7 @@ class htx9001a(htx9001):
         if value >= 1.51 or value <= -0.01:
             raise Exception(f'Bad value for HTX9001A servo: {value}.')
         self.get_interface().write(
-            f'PWM:COMPare ({
-                self.pwm_pins[servo_number]},{
-                value * 2000 + 2000})')
+            f'PWM:COMPare ({self.pwm_pins[servo_number]},{value * 2000 + 2000})')
 
     def set_all_relays(self, value):
         for relay in self.relay_pins:

@@ -341,8 +341,7 @@ class scpi_smu(scpi_instrument, smu):
         '''ignores channel number!!!!!!!!!!!!!!!!!!!'''
         # print(f'{value}, {type(value)}')
         self.get_interface().write(
-            f':SYSTem:RSENse {
-                "OFF" if not value or value == "False" else "ON"}')
+            f':SYSTem:RSENse {"OFF" if not value or value == "False" else "ON"}')
 
     def _remote_senseq(self, channel_number):
         '''ignores channel number!!!!!!!!!!!!!!!!!!!'''
@@ -384,14 +383,11 @@ class keithley_2400(scpi_smu, keithley_smu):
     def _add_channel_voltage_force(self, channel):
         '''voltage force. Mutually exclusive at any moment with current force.'''
         self.get_interface().write(
-            f':SOURce{
-                channel.get_attribute("channel_number")}:VOLTage:RANGe:AUTO ON')
+            f':SOURce{channel.get_attribute("channel_number")}:VOLTage:RANGe:AUTO ON')
         self.get_interface().write(
-            f':SOURce{
-                channel.get_attribute("channel_number")}:VOLTage:MODE FIXed')
+            f':SOURce{channel.get_attribute("channel_number")}:VOLTage:MODE FIXed')
         self.get_interface().write(
-            f':SOURce{
-                channel.get_attribute("channel_number")}:CLEar:AUTO OFF')
+            f':SOURce{channel.get_attribute("channel_number")}:CLEar:AUTO OFF')
         channel.set_min_write_limit(-200)
         channel.set_max_write_limit(200)
         # self.get_interface().write(f':SOURce{channel.get_attribute("channel_number")}:FUNCtion:SHAPe
@@ -400,14 +396,11 @@ class keithley_2400(scpi_smu, keithley_smu):
     def _add_channel_current_force(self, channel):
         '''current force. Mutually exclusive at any moment with voltage force.'''
         self.get_interface().write(
-            f':SOURce{
-                channel.get_attribute("channel_number")}:CURRent:RANGe:AUTO ON')
+            f':SOURce{channel.get_attribute("channel_number")}:CURRent:RANGe:AUTO ON')
         self.get_interface().write(
-            f':SOURce{
-                channel.get_attribute("channel_number")}:CURRent:MODE FIXed')
+            f':SOURce{channel.get_attribute("channel_number")}:CURRent:MODE FIXed')
         self.get_interface().write(
-            f':SOURce{
-                channel.get_attribute("channel_number")}:CLEar:AUTO OFF')
+            f':SOURce{channel.get_attribute("channel_number")}:CLEar:AUTO OFF')
         channel.set_min_write_limit(-1)
         channel.set_max_write_limit(1)
         # self.get_interface().write(f':SOURce{channel.get_attribute("channel_number")}:FUNCtion:SHAPe
@@ -485,10 +478,7 @@ class keithley_2600(keithley_smu):
 
     def _high_capacitance(self, channel_number, is_high_c):
         self.get_interface().write(
-            f'smu{
-                self._channel_id(channel_number)}.source.highc = smu{
-                self._channel_id(channel_number)}.{
-                "ENABLE" if is_high_c else "DISABLE"}')
+            f'smu{self._channel_id(channel_number)}.source.highc = smu{self._channel_id(channel_number)}.{"ENABLE" if is_high_c else "DISABLE"}')
 
     def _high_capacitanceq(self, channel_number):
         return self.get_interface().ask(
@@ -496,10 +486,7 @@ class keithley_2600(keithley_smu):
 
     def _remote_sense(self, channel_number, is_remote_sense):
         self.get_interface().write(
-            f'smu{
-                self._channel_id(channel_number)}.sense = smu{
-                self._channel_id(channel_number)}.{
-                "SENSE_REMOTE" if is_remote_sense else "SENSE_LOCAL"}')
+            f'smu{self._channel_id(channel_number)}.sense = smu{self._channel_id(channel_number)}.{"SENSE_REMOTE" if is_remote_sense else "SENSE_LOCAL"}')
 
     def _remote_senseq(self, channel_number):
         return self.get_interface().ask(
@@ -507,22 +494,16 @@ class keithley_2600(keithley_smu):
 
     def _output_off(self, channel_number):
         self.get_interface().write(
-            f'smu{
-                self._channel_id(channel_number)}.source.output = smu{
-                self._channel_id(channel_number)}.OUTPUT_HIGH_Z')
+            f'smu{self._channel_id(channel_number)}.source.output = smu{self._channel_id(channel_number)}.OUTPUT_HIGH_Z')
 
     def _vforce(self, channel_number, value):
         if value is not None:
             self.get_interface().write(
                 f'smu{self._channel_id(channel_number)}.source.levelv = {value}')
             self.get_interface().write(
-                f'smu{
-                    self._channel_id(channel_number)}.source.func = smu{
-                    self._channel_id(channel_number)}.OUTPUT_DCVOLTS')
+                f'smu{self._channel_id(channel_number)}.source.func = smu{self._channel_id(channel_number)}.OUTPUT_DCVOLTS')
             self.get_interface().write(
-                f'smu{
-                    self._channel_id(channel_number)}.source.output = smu{
-                    self._channel_id(channel_number)}.OUTPUT_ON')
+                f'smu{self._channel_id(channel_number)}.source.output = smu{self._channel_id(channel_number)}.OUTPUT_ON')
         else:
             pair_ch = self._configured_channels[channel_number]['i_force']
             if pair_ch is not None and pair_ch.read() is None:
@@ -533,13 +514,9 @@ class keithley_2600(keithley_smu):
             self.get_interface().write(
                 f'smu{self._channel_id(channel_number)}.source.leveli = {value}')
             self.get_interface().write(
-                f'smu{
-                    self._channel_id(channel_number)}.source.func = smu{
-                    self._channel_id(channel_number)}.OUTPUT_DCAMPS')
+                f'smu{self._channel_id(channel_number)}.source.func = smu{self._channel_id(channel_number)}.OUTPUT_DCAMPS')
             self.get_interface().write(
-                f'smu{
-                    self._channel_id(channel_number)}.source.output = smu{
-                    self._channel_id(channel_number)}.OUTPUT_ON')
+                f'smu{self._channel_id(channel_number)}.source.output = smu{self._channel_id(channel_number)}.OUTPUT_ON')
         else:
             pair_ch = self._configured_channels[channel_number]['v_force']
             if pair_ch is not None and pair_ch.read() is None:
@@ -574,21 +551,13 @@ class keithley_2600(keithley_smu):
     def _add_channel_voltage_force(self, channel):
         '''voltage force. Mutually exclusive at any moment with current force.'''
         self.get_interface().write(
-            f'smu{
-                self._channel_id(
-                    channel.get_attribute("channel_number"))}.source.autorangev =  smu{
-                self._channel_id(
-                    channel.get_attribute("channel_number"))}.AUTORANGE_ON')
+            f'smu{self._channel_id(channel.get_attribute("channel_number"))}.source.autorangev =  smu{self._channel_id(channel.get_attribute("channel_number"))}.AUTORANGE_ON')
         channel.set_min_write_limit(-200)
         channel.set_max_write_limit(200)
 
     def _add_channel_current_force(self, channel):
         '''current force. Mutually exclusive at any moment with voltage force.'''
         self.get_interface().write(
-            f'smu{
-                self._channel_id(
-                    channel.get_attribute("channel_number"))}.source.autorangei =  smu{
-                self._channel_id(
-                    channel.get_attribute("channel_number"))}.AUTORANGE_ON')
+            f'smu{self._channel_id(channel.get_attribute("channel_number"))}.source.autorangei =  smu{self._channel_id(channel.get_attribute("channel_number"))}.AUTORANGE_ON')
         channel.set_min_write_limit(-3)
         channel.set_max_write_limit(3)

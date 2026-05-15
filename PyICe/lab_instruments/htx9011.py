@@ -265,11 +265,7 @@ class htx9011(scpi_instrument):
             self.get_name() + ': ' + self.add_channel_isense_remapper.__doc__)
         readback_channel.set_category(vmeter_high_range_channel.get_category())
         readback_channel.set_display_format_function(
-            function=lambda float_data: f"{
-                eng_string(
-                    float_data,
-                    fmt=':3.6g',
-                    si=True)}A")
+            function=lambda float_data: f"{eng_string(float_data,fmt=':3.6g',si=True)}A")
         return meter_ch_group._add_channel(
             readback_channel)  # Move channel to 3497x thread
 
@@ -414,8 +410,7 @@ class htx9011(scpi_instrument):
     def _pin_response_valid(self, ret_str):
         if (len(ret_str) != 6):
             print(
-                f"HTX9011: Pin read or write response length incorrect. Should have been 6 characters, got {
-                    len(ret_str)} characters.")
+                f"HTX9011: Pin read or write response length incorrect. Should have been 6 characters, got {len(ret_str)} characters.")
             return False
         if (ret_str[4:] != '\r\n'):
             print(
@@ -639,8 +634,7 @@ class htx9011(scpi_instrument):
     def add_channel_pwm(self, channel_name, pin):
         if pin not in self.pwm_pins:
             raise Exception(
-                f"\n\nInvalid HTX9011 PWM pin number {pin}. Must be one of: {
-                    self.pwm_pins}\n\n")
+                f"\n\nInvalid HTX9011 PWM pin number {pin}. Must be one of: {self.pwm_pins}\n\n")
         if self.pwm_pins[pin] in self.initialized_pins:
             print(
                 f"\n\nHTX9011 Warning: Non PWM pin {pin} being redefined as a PWM pin.\n\n")
@@ -732,8 +726,7 @@ class htx9011(scpi_instrument):
                 f"\n\nInvalid HTX9011 servo pin number {servo_number}.\n\n")
         if self.pwm_pins[servo_number] in self.initialized_pins:
             print(
-                f"\n\nHTX9011 Warning: Non Servo pin {
-                    self.pwm_pins[servo_number]} being redefined as a Servo pin.\n\n")
+                f"\n\nHTX9011 Warning: Non Servo pin {self.pwm_pins[servo_number]} being redefined as a Servo pin.\n\n")
         new_channel = channel(
             channel_name,
             write_function=lambda value: self._write_servo(
@@ -760,13 +753,9 @@ class htx9011(scpi_instrument):
             command_list = ["DISABLE", "ANYEDGE", "RISING", "FALLING"]
             if value.upper() not in command_list:
                 raise Exception(
-                    f'\n\nBad value for HTX9011 interrupt channel {
-                        ch.get_attribute("INTERRUPT_NUMBER")}: {
-                        value.upper()}. Only {command_list} allowed.\n\n')
+                    f'\n\nBad value for HTX9011 interrupt channel {ch.get_attribute("INTERRUPT_NUMBER")}: {value.upper()}. Only {command_list} allowed.\n\n')
             self.get_interface().write(
-                f'INTErrupt:INT{
-                    ch.get_attribute("INTERRUPT_NUMBER")} {
-                    value.upper()}')
+                f'INTErrupt:INT{ch.get_attribute("INTERRUPT_NUMBER")} {value.upper()}')
             # Any mode change clears software accumulator. Should it?
             # Does mode change clear hardware accumulator? Should it? Should
             # Python do a sacrificial read here????
@@ -774,8 +763,7 @@ class htx9011(scpi_instrument):
         def _read_interrupt_count(ch):
             new_count = int(
                 self.get_interface().ask(
-                    f'INTErrupt:INT{
-                        ch.get_attribute("INTERRUPT_NUMBER")}:COUNt?'))
+                    f'INTErrupt:INT{ch.get_attribute("INTERRUPT_NUMBER")}:COUNt?'))
             ch.set_attribute(
                 'INTERRUPT_COUNT_ACCUM',
                 new_count +
@@ -789,8 +777,7 @@ class htx9011(scpi_instrument):
             ch.set_attribute('INTERRUPT_COUNT_ACCUM', value)
         if interrupt_number not in self.interrupts:
             raise Exception(
-                f"\n\nHTX9011 Invalid interrupt number {interrupt_number}. Only valid interrupts are: {
-                    self.interrupts}.\n\n")
+                f"\n\nHTX9011 Invalid interrupt number {interrupt_number}. Only valid interrupts are: {self.interrupts}.\n\n")
         control_channel = channel(
             channel_name,
             write_function=lambda value: None)  # temporary
@@ -829,11 +816,9 @@ class htx9011(scpi_instrument):
             command_list = ["DISABLE", "ANYEDGE"]
             if value.upper() not in command_list:
                 raise Exception(
-                    f'\n\nBad value for HTX9011 PCINT channel {pcint_number}: {
-                        value.upper()}. Only {command_list} allowed.\n\n')
+                    f'\n\nBad value for HTX9011 PCINT channel {pcint_number}: {value.upper()}. Only {command_list} allowed.\n\n')
             self.get_interface().write(
-                f'INTErrupt:PCINT{pcint_number} {
-                    value.upper()}')
+                f'INTErrupt:PCINT{pcint_number} {value.upper()}')
 
         def _read_pcint_count(ch):
             new_count = int(
@@ -874,8 +859,7 @@ class htx9011(scpi_instrument):
             return int(self.get_interface().ask('INTErrupt:PCINT:PCINTS?'))
         if pcint_number not in self.pcints:
             raise Exception(
-                f"\n\nHTX9011 Invalid interrupt number {pcint_number}. Only valid PCINTS are: {
-                    self.pcints}.\n\n")
+                f"\n\nHTX9011 Invalid interrupt number {pcint_number}. Only valid PCINTS are: {self.pcints}.\n\n")
         control_channel = channel(
             channel_name,
             write_function=lambda value: _write_pcint_channel(
@@ -944,9 +928,7 @@ class htx9011(scpi_instrument):
         if value >= 1.51 or value <= -0.01:
             raise Exception(f'\n\nBad value for HTX9011 servo: {value}.\n\n')
         self.get_interface().write(
-            f'PWM:COMPare ({
-                self.pwm_pins[servo_number]},{
-                value * 2000 + 2000})')
+            f'PWM:COMPare ({self.pwm_pins[servo_number]},{value * 2000 + 2000})')
 
     def get_system_version(self):
         '''This just returns the SCPI version:1999.0'''
@@ -994,8 +976,7 @@ class htx9011(scpi_instrument):
 
     def set_calibration_date(self, now):
         self.get_interface().write(
-            f"CALibration:DATE {
-                now.strftime('%Y-%m-%d')}")
+            f"CALibration:DATE {now.strftime('%Y-%m-%d')}")
 
     def get_calibration_date(self):
         # datetime.datetime.now().strftime("%Y-%m-%d")
@@ -1028,12 +1009,9 @@ class htx9011(scpi_instrument):
                 print(
                     f"Current sense resistor calibration required every {cal_duration} days.")
                 print(
-                    f"Calibration last performed {
-                        self.get_calibration_date()}.")
+                    f"Calibration last performed {self.get_calibration_date()}.")
                 print(
-                    f"Calibration overdue by {
-                        self.get_days_since_calibration() -
-                        cal_duration} days.")
+                    f"Calibration overdue by {self.get_days_since_calibration() -cal_duration} days.")
             resp = input("Continue anyway?")
             if not resp.lower().startswith('y'):
                 raise Exception(
@@ -1098,8 +1076,7 @@ class PCF8574_on_ConfiguratorXT(instrument):
         for pin_name, channel_name in zip(self.valid_pin_names, channel_names):
             if not isinstance(channel_name, str):
                 raise ValueError(
-                    f"Expected a list of channel names in add_one_readback_channel_per_pin() but got {
-                        repr(channel_name)}")
+                    f"Expected a list of channel names in add_one_readback_channel_per_pin() but got {repr(channel_name)}")
             new_channel = channel(
                 channel_name,
                 read_function=self.make_read_function(pin_name))
@@ -1133,8 +1110,7 @@ class PCF8574_on_ConfiguratorXT(instrument):
                 bit = bool(databit)
             if bit is None:
                 raise ValueError(
-                    f"Unable to write {
-                        repr(databit)} to ConfiguratorXT GPIO expander pin {pin_name}. Expected boolean.")
+                    f"Unable to write {repr(databit)} to ConfiguratorXT GPIO expander pin {pin_name}. Expected boolean.")
             # else bit is either True or False, so proceed to set or clear the
             # pin, respectively.
             if bit:

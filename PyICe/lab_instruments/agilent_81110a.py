@@ -22,6 +22,5 @@ class Agilent_81110a(Agilent_8110a):
         Set by add_channel_pulse_period()
         '''
         speeds = {"HP81111A": 6.06e-9, "HP81112A": 3.03e-9}  # Manual page 75
-        assert plugin in speeds, f'''Agilent 81110A doesn't takee a plugin called "{plugin}" try one of: {
-            speeds.keys()}'''
+        assert plugin in speeds, f'''Agilent 81110A doesn't takee a plugin called "{plugin}" try one of: {speeds.keys()}'''
         self.timestep = speeds[plugin]

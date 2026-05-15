@@ -99,9 +99,7 @@ class communication_node(object):
 
     def debug_com_nodes(self, indent=""):
         print(
-            f'{indent}{self}, child of {
-                self._parent}. Thread_safe: {
-                self._thread_safe}')
+            f'{indent}{self}, child of {self._parent}. Thread_safe: {self._thread_safe}')
         for child in self._children:
             child.debug_com_nodes(indent=f"{indent}    ")
 
@@ -484,8 +482,7 @@ class interface_raw_serial(interface, serial_from_name_or_url):
             # PyICe instrument/I2C stuff to use Py3 Unicode strings.
             msgbytes = msg
             print(
-                f"PyICe: lab_interfaces.interface_raw_serial.write() @{
-                    self.get_serial_port_name()} unexpectedly sending out byte array message: {msg}. Consider using write_raw() or contact PyICe-developers@analog.com for more information.")
+                f"PyICe: lab_interfaces.interface_raw_serial.write() @{self.get_serial_port_name()} unexpectedly sending out byte array message: {msg}. Consider using write_raw() or contact PyICe-developers@analog.com for more information.")
         else:
             debug_logging.error("*** lab_interfaces.interface_raw_serial.write() called with first argument that was "
                                 "neither str, bytes, nor bytearray:\n"
@@ -764,8 +761,7 @@ class interface_bobbytalk_raw_serial(interface_bobbytalk):
             interface_bobbytalk_raw_serial,
             self).__init__(
             name=(
-                f"bobbytalk Packet interface over {
-                    raw_serial_interface.get_serial_port_name()}"))
+                f"bobbytalk Packet interface over {raw_serial_interface.get_serial_port_name()}"))
         assert isinstance(fifo_size, int) and fifo_size > 0
         assert hasattr(junk_bytes_dump, "__call__") or junk_bytes_dump is None
         assert isinstance(debug, bool)
@@ -1409,9 +1405,7 @@ class interface_factory(communication_node):
             raw_serial_intf = serial_port_name
         else:
             raise ValueError(f"lab_interfaces.get_twi_bobbytalk_raw_serial() called with "
-                             f"first argument {
-                                 repr(serial_port_name)}{
-                                 type(serial_port_name)},\nwhich is neither "
+                             f"first argument {repr(serial_port_name)}{type(serial_port_name)},\nwhich is neither "
                              "a (Unicode string) name of a serial port, nor an interface object")
         lc_intf = interface_bobbytalk_raw_serial(
             raw_serial_intf, fifo_size=fifo_size, debug=debug)

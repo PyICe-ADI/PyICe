@@ -148,11 +148,9 @@ class scope_data():
             # else just get whatever wierdo unit it is
             trace_units = self.row[f'{trace_name}_units']
         if self.readbacks_available:
-            return f"{trace_name.replace('scope_', '') if display_name is None else display_name}\n{eng_string(self.row[f'{trace_name}_Yrange_readback'] / 8 / scale_factor, fmt=':.3g', si=True)}{
-                trace_units}/DIV"
+            return f"{trace_name.replace('scope_', '') if display_name is None else display_name}\n{eng_string(self.row[f'{trace_name}_Yrange_readback'] / 8 / scale_factor, fmt=':.3g', si=True)}{trace_units}/DIV"
         else:
-            return f"{trace_name.replace('scope_', '') if display_name is None else display_name}\n{eng_string(self.row[f'{trace_name}_Yrange'] / 8 / scale_factor, fmt=':.3g', si=True)}{
-                trace_units}/DIV"
+            return f"{trace_name.replace('scope_', '') if display_name is None else display_name}\n{eng_string(self.row[f'{trace_name}_Yrange'] / 8 / scale_factor, fmt=':.3g', si=True)}{trace_units}/DIV"
 
     def axis_info(self, xlimits=None):
         return {'xaxis_label': self.time_label(xlimits=xlimits),

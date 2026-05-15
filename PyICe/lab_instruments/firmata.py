@@ -173,11 +173,7 @@ class firmata(instrument):
     def _check_configure_pin(self, pin, channel):
         if pin in self._configured_pins[channel.get_attribute('pin_type')]:
             raise Exception(
-                f"Cannot configure {
-                    'Analog' if channel.get_attribute('pin_type') == self.firmata_board.ANALOG else 'Digital'} pin {pin} as type {
-                    channel.get_attribute('channel_type')}. Pin already configured as type {
-                    self._configured_pins[
-                        channel.get_attribute('pin_type')][pin].get_attribute('channel_type')}.")
+                f"Cannot configure {'Analog' if channel.get_attribute('pin_type') == self.firmata_board.ANALOG else 'Digital'} pin {pin} as type {channel.get_attribute('channel_type')}. Pin already configured as type {self._configured_pins[channel.get_attribute('pin_type')][pin].get_attribute('channel_type')}.")
         else:
             self._configured_pins[channel.get_attribute(
                 'pin_type')][pin] = channel

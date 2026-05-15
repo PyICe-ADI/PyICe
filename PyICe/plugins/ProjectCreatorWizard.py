@@ -15,12 +15,7 @@ if __name__ == '__main__':
     project_folder = ''
     while not len(project_folder):
         project_folder = input(
-            f'Enter project folder location (e.g. D:{
-                os.sep}users{
-                os.sep}{
-                os.getlogin().lower()}{
-                    os.sep}projects{
-                        os.sep}{project_name}): ')
+            f'Enter project folder location (e.g. D:{os.sep}users{os.sep}{os.getlogin().lower()}{os.sep}projects{os.sep}{project_name}): ')
         if not len(project_folder):
             print("Please enter a filepath to your project folder.")
             continue
@@ -31,8 +26,7 @@ if __name__ == '__main__':
                 f'{project_folder} already exists. Please pick another location.\n')
             project_folder = ''
     banners.print_banner(
-        "Project folder has been created at:", f"{
-            os.path.abspath(project_folder)}")
+        "Project folder has been created at:", f"{os.path.abspath(project_folder)}")
 
     script_creator_dict = {}
     dir_to_make = []

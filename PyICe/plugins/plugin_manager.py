@@ -43,9 +43,7 @@ class Plugin_Manager():
         self.tests = []
         self.operator = getpass.getuser().lower()
         self.thismachine = socket.gethostname().replace("-", "_").split(".")[0]
-        self.ident_header = f'Operator: {
-            self.operator}\n Machine: {
-            self.thismachine}\n\n'
+        self.ident_header = f'Operator: {self.operator}\n Machine: {self.thismachine}\n\n'
         self.scratch_folder = scratch_folder
         self.debug = False
         for attr in settings:
@@ -147,8 +145,7 @@ class Plugin_Manager():
                     for failed_test in self.failed_tests.keys():
                         self._test_results_str += f'    {failed_test}\n'
                         if len(self.failed_tests[failed_test]):
-                            self._test_results_str += f'{
-                                self.failed_tests[failed_test]}\n'
+                            self._test_results_str += f'{self.failed_tests[failed_test]}\n'
                 if self._test_results_str:
                     results_str += self._test_results_str
             if 'correlate_tests' in self.plugins and self._send_notifications:
@@ -175,8 +172,7 @@ class Plugin_Manager():
                     for failed_test in self.failed_corr_tests.keys():
                         self._corr_results_str += f'    {failed_test}\n'
                         if len(self.failed_corr_tests[failed_test]):
-                            self._corr_results_str += f'{
-                                self.failed_corr_tests[failed_test]}\n'
+                            self._corr_results_str += f'{self.failed_corr_tests[failed_test]}\n'
                 if self._corr_results_str:
                     results_str += self._corr_results_str
             if results_str:
@@ -234,8 +230,7 @@ class Plugin_Manager():
             except ImportError as e:
                 print(e)
                 raise Exception(
-                    f"Can't find bench file {
-                        self.thismachine}. Note that dashes must be replaced with underscores.")
+                    f"Can't find bench file {self.thismachine}. Note that dashes must be replaced with underscores.")
         self.interfaces = module.get_interfaces()
         for (dirpath, dirnames, filenames) in os.walk(self.project_path):
             if 'hardware_drivers' not in dirpath:
@@ -245,8 +240,7 @@ class Plugin_Manager():
                 self.project_path.split(os.sep)[-1]):]
             for driver in filenames:
                 driver_mod = importlib.import_module(
-                    name=f"{driverpath}.{
-                        driver.split('.')[0]}", package=None)
+                    name=f"{driverpath}.{driver.split('.')[0]}", package=None)
                 instrument_dict = driver_mod.populate(self)
                 if instrument_dict['instruments'] is not None:
                     for instrument in instrument_dict['instruments']:
@@ -266,8 +260,7 @@ class Plugin_Manager():
                             temp_instrument = instrument_dict['instruments']
                         else:
                             raise Exception(
-                                f'BENCH MAKER: Multiple channels have been declared the temperature control! One from {temp_instrument} and one from {
-                                    instrument_dict["instruments"]}.')
+                                f'BENCH MAKER: Multiple channels have been declared the temperature control! One from {temp_instrument} and one from {instrument_dict["instruments"]}.')
                     if 'shutdown_list' in instrument_dict:
                         for fn in instrument_dict['shutdown_list']:
                             self.shutdown_fns.append(fn)
@@ -304,11 +297,7 @@ class Plugin_Manager():
             test.customize()
         test._logger.new_table(table_name=test.get_name(), replace_table=True)
         test._logger.write_html(
-            file_name=f"{
-                test.get_module_path()}{
-                os.sep}scratch{
-                os.sep}{
-                    self.project_folder_name}.html")
+            file_name=f"{test.get_module_path()}{os.sep}scratch{os.sep}{self.project_folder_name}.html")
 
     def temperature_run_startup(self):
         for func in self.temp_run_fns:
@@ -507,8 +496,7 @@ class Plugin_Manager():
             return plot
         else:
             raise Exception(
-                f'Not sure what this plot is:\n{
-                    type(plot)}\n{plot}')
+                f'Not sure what this plot is:\n{type(plot)}\n{plot}')
 
     def email_plots(self, plot_svg_source):
         try:
@@ -607,16 +595,14 @@ class Plugin_Manager():
         for test in self.tests:
             if not hasattr(test, "_logger"):
                 print(
-                    f"No logger exists for {
-                        test.get_name()}. Skipping archive.")
+                    f"No logger exists for {test.get_name()}. Skipping archive.")
                 continue
             archiver = test_archive.database_archive(
                 test_script_file=test.get_module_path(),
                 db_source_file=test.get_db_file())
             if not archiver.has_data(tablename=test.get_name()):
                 print(
-                    f'No data logged for {
-                        test.get_name()}. Skipping archive.')
+                    f'No data logged for {test.get_name()}. Skipping archive.')
                 continue
             if test._is_crashed:
                 this_archive_folder = archive_folder + '__CRASHED'
@@ -658,8 +644,7 @@ class Plugin_Manager():
                         self.project_folder_name):].replace(os.sep, '.')
                     settings_path = self.project_settings_location.replace(os.sep, '.')[
                         1:-3]
-                    plot_script_src = f"from {
-                        self.project_folder_name}.{settings_path} import Project_Settings\n"
+                    plot_script_src = f"from {self.project_folder_name}.{settings_path} import Project_Settings\n"
                     plot_script_src += "from PyICe.plugins.plugin_manager import Plugin_Manager\n"
                     plot_script_src += f"from {import_str}.test import Test\n"
                     plot_script_src += "pm = Plugin_Manager(settings=Project_Settings)\n"
@@ -686,8 +671,7 @@ class Plugin_Manager():
                         self.project_folder_name):].replace(os.sep, '.')
                     settings_path = self.project_settings_location.replace(os.sep, '.')[
                         1:-3]
-                    plot_script_src = f"from {
-                        self.project_folder_name}.{settings_path} import Project_Settings\n"
+                    plot_script_src = f"from {self.project_folder_name}.{settings_path} import Project_Settings\n"
                     plot_script_src += "from PyICe.plugins.plugin_manager import Plugin_Manager\n"
                     plot_script_src += f"from {import_str}.test import Test\n"
                     plot_script_src += "pm = Plugin_Manager(settings=Project_Settings)\n"
@@ -713,8 +697,7 @@ class Plugin_Manager():
                         self.project_folder_name):].replace(os.sep, '.')
                     settings_path = self.project_settings_location.replace(os.sep, '.')[
                         1:-3]
-                    plot_script_src = f"from {
-                        self.project_folder_name}.{settings_path} import Project_Settings\n"
+                    plot_script_src = f"from {self.project_folder_name}.{settings_path} import Project_Settings\n"
                     plot_script_src += "from PyICe.plugins.plugin_manager import Plugin_Manager\n"
                     plot_script_src += f"from {import_str}.test import Test\n"
                     plot_script_src += "pm = Plugin_Manager(settings=Project_Settings)\n"
@@ -763,8 +746,7 @@ class Plugin_Manager():
                 db_source_file=test.get_db_file())
             if not archiver.has_data(tablename=test.get_name()):
                 print(
-                    f'No data logged for {
-                        test.get_name()}. Skipping archive.')
+                    f'No data logged for {test.get_name()}. Skipping archive.')
                 continue
             this_archive_folder = archive_folder
             if destination_file:
@@ -793,8 +775,7 @@ class Plugin_Manager():
                         self.project_folder_name):].replace(os.sep, '.')
                     settings_path = self.project_settings_location.replace(os.sep, '.')[
                         1:-3]
-                    plot_script_src = f"from {
-                        self.project_folder_name}.{settings_path} import Project_Settings\n"
+                    plot_script_src = f"from {self.project_folder_name}.{settings_path} import Project_Settings\n"
                     plot_script_src += "from PyICe.plugins.plugin_manager import Plugin_Manager\n"
                     plot_script_src += f"from {import_str}.test import Test\n"
                     plot_script_src += "pm = Plugin_Manager(settings=Project_Settings)\n"
@@ -821,8 +802,7 @@ class Plugin_Manager():
                         self.project_folder_name):].replace(os.sep, '.')
                     settings_path = self.project_settings_location.replace(os.sep, '.')[
                         1:-3]
-                    plot_script_src = f"from {
-                        self.project_folder_name}.{settings_path} import Project_Settings\n"
+                    plot_script_src = f"from {self.project_folder_name}.{settings_path} import Project_Settings\n"
                     plot_script_src += "from PyICe.plugins.plugin_manager import Plugin_Manager\n"
                     plot_script_src += f"from {import_str}.test import Test\n"
                     plot_script_src += "pm = Plugin_Manager(settings=Project_Settings)\n"
@@ -848,8 +828,7 @@ class Plugin_Manager():
                         self.project_folder_name):].replace(os.sep, '.')
                     settings_path = self.project_settings_location.replace(os.sep, '.')[
                         1:-3]
-                    plot_script_src = f"from {
-                        self.project_folder_name}.{settings_path} import Project_Settings\n"
+                    plot_script_src = f"from {self.project_folder_name}.{settings_path} import Project_Settings\n"
                     plot_script_src += "from PyICe.plugins.plugin_manager import Plugin_Manager\n"
                     plot_script_src += f"from {import_str}.test import Test\n"
                     plot_script_src += "pm = Plugin_Manager(settings=Project_Settings)\n"

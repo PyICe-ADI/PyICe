@@ -143,12 +143,9 @@ class htx9000(scpi_instrument):
             except Exception as e:
                 flush_chars = self.get_interface().resync()
                 print(
-                    f"{e} from inside HTX9000 {
-                        self._name} read_dropout. SCPI Error: {
-                        self.get_interface().ask('SYSTem:ERRor?')}")
+                    f"{e} from inside HTX9000 {self._name} read_dropout. SCPI Error: {self.get_interface().ask('SYSTem:ERRor?')}")
                 print(
-                    f"saw {
-                        len(flush_chars)} extra characters: {flush_chars}")
+                    f"saw {len(flush_chars)} extra characters: {flush_chars}")
                 flush_chars = self.get_interface().resync()
 
     def _readback_current(self):
@@ -161,12 +158,9 @@ class htx9000(scpi_instrument):
             except Exception as e:
                 flush_chars = self.get_interface().resync()
                 print(
-                    f"{e} from inside HTX9000 {
-                        self._name} read_current. SCPI Error: {
-                        self.get_interface().ask('SYSTem:ERRor?')}")
+                    f"{e} from inside HTX9000 {self._name} read_current. SCPI Error: {self.get_interface().ask('SYSTem:ERRor?')}")
                 print(
-                    f"saw {
-                        len(flush_chars)} extra characters: {flush_chars}")
+                    f"saw {len(flush_chars)} extra characters: {flush_chars}")
                 flush_chars = self.get_interface().resync()
 
     def _read_heatsink_temp(self):
@@ -187,8 +181,7 @@ class htx9000(scpi_instrument):
             print(f"{e} from inside HTX9000 {self._name} write_channel ")
             flush_chars = self.get_interface().resync()
             print(
-                f"saw {
-                    len(flush_chars)} extra characters: {flush_chars} during SYSTem:LOCK or SYSTem:LOCK:RELease")
+                f"saw {len(flush_chars)} extra characters: {flush_chars} during SYSTem:LOCK or SYSTem:LOCK:RELease")
 
     def get_serial_number(self):
         ident = self.get_interface().ask("*IDN?")

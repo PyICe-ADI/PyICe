@@ -22,8 +22,7 @@ class kikusui_pwr(scpi_instrument):
            ch is a ???'''
         self._base_name = 'kikusui_pwr'
         scpi_instrument.__init__(
-            self, f"kikusui_pwr800l {
-                self.kikusui_pwr_name} @ {interface_visa}:Node {node}: Ch{ch}")
+            self, f"kikusui_pwr800l {self.kikusui_pwr_name} @ {interface_visa}:Node {node}: Ch{ch}")
         self.add_interface_visa(interface_visa)
         self.node = node
         self.ch = ch
@@ -31,13 +30,9 @@ class kikusui_pwr(scpi_instrument):
         self.get_interface().write((f"NODE {self.node};CH {self.ch};*CLS"))
         self.get_interface().write((f"NODE {self.node};CH {self.ch};*RST"))
         self.get_interface().write(
-            (f"NODE {
-                self.node};CH {
-                self.ch};VSET 0.000"))
+            (f"NODE {self.node};CH {self.ch};VSET 0.000"))
         self.get_interface().write(
-            (f"NODE {
-                self.node};CH {
-                self.ch};ISET 0.000"))
+            (f"NODE {self.node};CH {self.ch};ISET 0.000"))
         self.get_interface().write(("OUT 1"))
 
     def add_channel(self, channel_name, ilim=1, delay=0.5,
@@ -83,15 +78,11 @@ class kikusui_pwr(scpi_instrument):
 
     def _write_voltage(self, voltage):
         self.get_interface().write(
-            (f"NODE {
-                self.node};CH {
-                self.ch};VSET {voltage}"))
+            (f"NODE {self.node};CH {self.ch};VSET {voltage}"))
 
     def _write_current(self, current):
         self.get_interface().write(
-            (f"NODE {
-                self.node};CH {
-                self.ch};ISET {current}"))
+            (f"NODE {self.node};CH {self.ch};ISET {current}"))
 
     def _enable(self, enable):
         if enable:

@@ -540,12 +540,10 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
                         register.set_special_access('W0S')
                     elif bf['write_side_effect'] in ('OneToToggle', 'ZeroToToggle', 'Clear', 'Set'):
                         raise Exception(
-                            f'Register side effect {
-                                bf["write_side_effect"]} not implemented. Contact PyICe developers.')
+                            f'Register side effect {bf["write_side_effect"]} not implemented. Contact PyICe developers.')
                     else:
                         raise Exception(
-                            f'Register side effect {
-                                bf["write_side_effect"]} unknown. Contact PyICe developers.')
+                            f'Register side effect {bf["write_side_effect"]} unknown. Contact PyICe developers.')
                 try:
                     bf['data_format']
                 except KeyError:
@@ -561,8 +559,7 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
                         signed = True
                     else:
                         raise Exception(
-                            f'Unknown format {
-                                bf["data_format"]}. Contact PyICe developers.')
+                            f'Unknown format {bf["data_format"]}. Contact PyICe developers.')
                     if signed and size > 1:
                         # Register a human-readable signed-decimal display format and
                         # tag the channel so that GUI / format helpers know the

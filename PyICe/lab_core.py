@@ -417,15 +417,13 @@ class channel(delegator):
         except AttributeError as e:
             if v_w != v_r:
                 raise ChannelValueException(
-                    f'Failed to set channel {
-                        self.get_name()} to value {v_w}. Read back {v_r}.')
+                    f'Failed to set channel {self.get_name()} to value {v_w}. Read back {v_r}.')
         else:
             if v_w is None and value is not None:
                 pass
             elif v_w != v_r:
                 raise ChannelValueException(
-                    f'Failed to write channel {
-                        self.get_name()} value {value}. Read back {v_r}.')
+                    f'Failed to write channel {self.get_name()} value {value}. Read back {v_r}.')
         return v_w
 
     def add_preset(self, preset_value, preset_description=None):
@@ -603,8 +601,7 @@ class channel(delegator):
         This decimal treatment might not be appropraite for all use cases. The same effect could be achieved with a more generalized function call if necessary (TBD/TODO).
         '''
         assert isinstance(
-            decimal_digits, (type(None), int)), f'decimal_digits argument must be None or Int type. Received: {decimal_digits}, {
-            type(decimal_digits)}.'
+            decimal_digits, (type(None), int)), f'decimal_digits argument must be None or Int type. Received: {decimal_digits}, {type(decimal_digits)}.'
         self._write_resolution = decimal_digits
 
     def set_max_write_limit(self, max):
@@ -1036,15 +1033,12 @@ class integer_channel(channel):
             x_pts = [p[0] for p in sorted_pts]
             y_pts = [p[1] for p in sorted_pts]
             assert len(x_pts) == len(set(x_pts)), \
-                f'ERROR: {
-                self.get_name()} format {format_name}: duplicate x-values — mapping is not invertible.'
+                f'ERROR: {self.get_name()} format {format_name}: duplicate x-values — mapping is not invertible.'
             assert len(y_pts) == len(set(y_pts)), \
-                f'ERROR: {
-                self.get_name()} format {format_name}: duplicate y-values — physical transform is not unique.'
+                f'ERROR: {self.get_name()} format {format_name}: duplicate y-values — physical transform is not unique.'
             y_diffs = [y_pts[i + 1] - y_pts[i] for i in range(len(y_pts) - 1)]
             assert all(d > 0 for d in y_diffs) or all(d < 0 for d in y_diffs), \
-                f'ERROR: {
-                self.get_name()} format {format_name}: y-values are not monotonic — inverse would be ambiguous.'
+                f'ERROR: {self.get_name()} format {format_name}: y-values are not monotonic — inverse would be ambiguous.'
 
             def _pwl_interp(val, in_pts, out_pts):
                 '''Piecewise-linear interpolation / extrapolation along N-point sequences.
@@ -1460,14 +1454,12 @@ class register(integer_channel):
         # special read behavior
         elif access.upper() in ("RC", "RS", "WRC", "WRS"):
             raise Exception(
-                f'Read side effect {
-                    access.upper()} special register access unimplemented. Please contact PyICe developers.')
+                f'Read side effect {access.upper()} special register access unimplemented. Please contact PyICe developers.')
 
         # special write behavior
         elif access.upper() in ("WC", "WS", "W1T", "W0T", "WOC", "WOS", "W1", "WO1"):
             raise Exception(
-                f'Limited write side effect special register access implemented. {
-                    access.upper()} not yet implemented. Please contact PyICe developers.')
+                f'Limited write side effect special register access implemented. {access.upper()} not yet implemented. Please contact PyICe developers.')
         elif access.upper() == "W1C":
             self.set_attribute('special_access', 'W1C')
             self.set_read_access(True)
@@ -1540,8 +1532,7 @@ class register(integer_channel):
             return 2**self.get_size() - 1
         else:
             raise Exception(
-                f'Register special access {
-                    self.get_attribute("special_access")} improperly implemented. Contact PyICe developers.')
+                f'Register special access {self.get_attribute("special_access")} improperly implemented. Contact PyICe developers.')
 
     def compute_expect_readback_data(self, data):
         if self.get_attribute('special_access') is None:
@@ -2105,8 +2096,7 @@ class channel_group(object):
                         txt += '''<label for="presets">PRESETS: </label>\n'''
                         txt += '<select name="presets" id="presets">\n'
                         for ps in channel.get_presets():
-                            txt += f'''<option value="{ps}">{ps}: {
-                                ps_dict[ps]}</option>\n'''
+                            txt += f'''<option value="{ps}">{ps}: {ps_dict[ps]}</option>\n'''
                         txt += '</select>\n'
                         txt += '</p>\n'
                         txt += '</form>\n'
@@ -2119,8 +2109,7 @@ class channel_group(object):
                     txt += '''<label for="attributes">ATTRIBUTES:</label>\n'''
                     txt += '<select name="attributes" id="attributes">\n'
                     for attrib in sorted(channel.get_attributes()):
-                        txt += f'''<option value="{attrib}">{attrib}: {
-                            channel.get_attribute(attrib)}</option>\n'''
+                        txt += f'''<option value="{attrib}">{attrib}: {channel.get_attribute(attrib)}</option>\n'''
                     txt += '</select>\n'
                     txt += '</p>\n'
                     txt += '</form>\n'
@@ -2266,8 +2255,7 @@ class scpi_instrument(instrument):
                 # first time
                 import types
                 print(
-                    f'Creating SCPI SYS:ERR checking interface for {
-                        self.get_name()}')
+                    f'Creating SCPI SYS:ERR checking interface for {self.get_name()}')
                 self._debug_if = super(
                     scpi_instrument,
                     self).get_interface(

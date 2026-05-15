@@ -70,37 +70,12 @@ G0.add_trace(axis=1,
 note = f"Sin Cyles: {eng_string(T * fsin)}"
 note += "\n" + f"N Samples: {eng_string(N)}"
 note += "\n" + \
-    f"Sigal RMS: {
-        eng_string(
-            np.sqrt(
-                np.mean(
-                    signal**2)),
-            fmt=':.3f',
-            units='Vrms')}"
+    f"Sigal RMS: {eng_string(np.sqrt(np.mean(signal**2)),fmt=':.3f',units='Vrms')}"
 note += "\n" + \
-    f"Sine Peak: {
-        eng_string(
-            np.sqrt(
-                np.mean(
-                    signal**2)) *
-            2**0.5,
-            fmt=':.3f',
-            units='Vpk')}"
+    f"Sine Peak: {eng_string(np.sqrt(np.mean(signal**2)) *2**0.5,fmt=':.3f',units='Vpk')}"
 note += "\n" + \
-    f"Noise RMS: {
-        eng_string(
-            np.sqrt(
-                np.mean(
-                    noise**2)),
-            fmt=':.3f',
-            units='Vrms')}"
-note += "\n" + f"Noise NSD: {
-    eng_string(
-        np.sqrt(
-            np.mean(
-                noise**2)) / BW**0.5,
-        fmt=':.3f',
-        units='Vrms/√Hz')}"
+    f"Noise RMS: {eng_string(np.sqrt(np.mean(noise**2)),fmt=':.3f',units='Vrms')}"
+note += "\n" + f"Noise NSD: {eng_string(np.sqrt(np.mean(noise**2)) / BW**0.5,fmt=':.3f',units='Vrms/√Hz')}"
 note += "\n" + f"Bandwidth: {eng_string(BW, units='Hz')}"
 note += "\n" + f"Res Bandw: {eng_string(RBW_both, units='Hz')}"
 note += "\n" + f"F Sample : {eng_string(Fs, units='S/s')}"

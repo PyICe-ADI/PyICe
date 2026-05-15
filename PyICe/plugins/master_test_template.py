@@ -55,8 +55,7 @@ class Master_Test_Template():
             return self._module_path
         else:
             print(
-                f"Attempted to access the module path for {
-                    self.get_name()}. It would be created upon adding a test to the plugin manager but you didn't get that far.")
+                f"Attempted to access the module path for {self.get_name()}. It would be created upon adding a test to the plugin manager but you didn't get that far.")
 
     def get_debug(self):
         return self._debug
@@ -69,32 +68,28 @@ class Master_Test_Template():
             return self._db_file
         else:
             print(
-                f"Attempted to access the database file for {
-                    self.get_name()}. It would be created upon adding a test to the plugin manager but you didn't get that far.")
+                f"Attempted to access the database file for {self.get_name()}. It would be created upon adding a test to the plugin manager but you didn't get that far.")
 
     def get_database(self):
         if hasattr(self, '_db'):
             return self._db
         else:
             print(
-                f"Attempted to access the database for {
-                    self.get_name()}. It's only intended to be accessible from inside the plot() or evaluate() methods.")
+                f"Attempted to access the database for {self.get_name()}. It's only intended to be accessible from inside the plot() or evaluate() methods.")
 
     def get_table_name(self):
         if hasattr(self, '_table_name'):
             return self._table_name
         else:
             print(
-                f'No table name has been assigned to {
-                    self.get_name()} at this time.')
+                f'No table name has been assigned to {self.get_name()} at this time.')
 
     def get_plot_filepath(self):
         if hasattr(self, '_plot_filepath'):
             return self._plot_filepath
         else:
             print(
-                f'No file path for plot locations has been assigned to {
-                    self.get_name()} at this time.')
+                f'No file path for plot locations has been assigned to {self.get_name()} at this time.')
 
     def get_bench_image_locations(self):
         if hasattr(self, 'bench_image_locations'):
@@ -166,8 +161,7 @@ class Master_Test_Template():
         condition_str = ''
         for condition in conditions:
             condition_str += f",{condition}"
-        query_str = f'SELECT {values}{condition_str} FROM {
-            self.get_table_name()} ' + (
+        query_str = f'SELECT {values}{condition_str} FROM {self.get_table_name()} ' + (
             'WHERE ' + where_clause if where_clause else '')
         self.evaluate_query(name, query=query_str)
 
@@ -233,9 +227,7 @@ class Master_Test_Template():
         all_pass = True
         res_str += f'*** Module {self.get_name()} ***\n'
         res_str += f'{self._test_results}'
-        res_str += f'*** Module {
-            self.get_name()} Summary {
-            "PASS" if self._test_results else "FAIL"}. ***\n\n'
+        res_str += f'*** Module {self.get_name()} Summary {"PASS" if self._test_results else "FAIL"}. ***\n\n'
         return res_str
 
     def get_corr_results(self):
@@ -244,9 +236,7 @@ class Master_Test_Template():
         all_pass = True
         res_str += f'*** Module {self.get_name()} ***\n'
         res_str += f'{self._corr_results}'
-        res_str += f'*** Module {
-            self.get_name()} Summary {
-            "PASS" if self._corr_results else "FAIL"}. ***\n\n'
+        res_str += f'*** Module {self.get_name()} Summary {"PASS" if self._corr_results else "FAIL"}. ***\n\n'
         return res_str
 
     def get_test_limits(self, name):

@@ -65,8 +65,7 @@ class bench_config_component():
     def add_terminal(self, name, instrument=None):
         if name in self._terminals:
             raise ValueError(
-                f"\n\n*** ERROR: Bad component definition in {
-                    self.type}. Duplicate terminal name: '{name}'.\n")
+                f"\n\n*** ERROR: Bad component definition in {self.type}. Duplicate terminal name: '{name}'.\n")
         self._terminals[name] = terminal(
             type=name, owner=self.name, instrument=instrument)
 
@@ -180,11 +179,7 @@ class connection_collection():
                 return
         else:
             print(
-                f'\n\n***\n* WARNING\n***\nPYICE BENCH CONFIG MANAGEMENT: Attempt to remove connection between terminals ({
-                    terminals[0].owner},{
-                    terminals[0].type}) and ({
-                    terminals[1].owner},{
-                    terminals[1].type}) failed. Such a connection does not exist in the list of connections.\n\n')
+                f'\n\n***\n* WARNING\n***\nPYICE BENCH CONFIG MANAGEMENT: Attempt to remove connection between terminals ({terminals[0].owner},{terminals[0].type}) and ({terminals[1].owner},{terminals[1].type}) failed. Such a connection does not exist in the list of connections.\n\n')
 
     def remove_connection(self, connextion):
         '''If the provided connections object exists in the connection list, it shall be removed.'''
@@ -192,11 +187,7 @@ class connection_collection():
             self.connections.remove(connextion)
         else:
             print(
-                f'\n\n***\n* WARNING\n***\nPYICE BENCH CONFIG MANAGEMENT: Attempt to remove connection between terminals ({
-                    connextion.get_terminals()[0].owner},{
-                    connextion.get_terminals()[0].type}) and ({
-                    connextion.get_terminals()[1].owner},{
-                    connextion.get_terminals()[1].type}) failed. Such a connection does not exist in the list of connections.\n\n')
+                f'\n\n***\n* WARNING\n***\nPYICE BENCH CONFIG MANAGEMENT: Attempt to remove connection between terminals ({connextion.get_terminals()[0].owner},{connextion.get_terminals()[0].type}) and ({connextion.get_terminals()[1].owner},{connextion.get_terminals()[1].type}) failed. Such a connection does not exist in the list of connections.\n\n')
 
     def get_connections(self):
         '''Returns itself.'''
@@ -236,13 +227,7 @@ class connection_collection():
                 continue
             connection_diagram += (
                 35 - len(
-                    f"{
-                        connextion.terminals[0].get_owner()}:{
-                        connextion.terminals[0].get_type()}")) * " " + f"{
-                connextion.terminals[0].get_owner()}:{
-                connextion.terminals[0].get_type()}" + " " + ARROW_STRING + " " + f"{
-                            connextion.terminals[1].get_owner()}:{
-                                connextion.terminals[1].get_type()}\n"
+                    f"{connextion.terminals[0].get_owner()}:{connextion.terminals[0].get_type()}")) * " " + f"{connextion.terminals[0].get_owner()}:{connextion.terminals[0].get_type()}" + " " + ARROW_STRING + " " + f"{connextion.terminals[1].get_owner()}:{connextion.terminals[1].get_type()}\n"
         for blocked_terminal in self.blocked_terminals:
             connection_diagram += (35 - len(f"{blocked_terminal.get_owner()}:{blocked_terminal.get_type()}")) * \
                 " " + f"{blocked_terminal.get_owner()}:{blocked_terminal.get_type()}" + \
@@ -306,9 +291,7 @@ class connection_collection():
     def check_consistency(self, connection_source):
         def raise_error(terminal1, terminal2a, terminal2b, script1, script2):
             print_banner("*** CONNECTION ERROR ***",
-                         f'"{
-                             terminal1.get_owner()}:{
-                             terminal1.get_type()}" is assigned differently in',
+                         f'"{terminal1.get_owner()}:{terminal1.get_type()}" is assigned differently in',
                          f'{script1}({terminal2a.get_owner()}:{terminal2a.get_type()})',
                          'and',
                          f'{script2}({terminal2b.get_owner()}:{terminal2b.get_type()}).')
@@ -436,9 +419,7 @@ class connection_collection():
                         f"{terminal.get_owner()}:{terminal.get_type()}" for terminal in connextion.get_terminals()]
                     print_banner(
                         "*** CONNECTION ERROR *** A Connection blocker blocks a requested connection.",
-                        f'"{
-                            terminal.get_owner()}:{
-                            terminal.get_type()}" blocks connection:',
+                        f'"{terminal.get_owner()}:{terminal.get_type()}" blocks connection:',
                         f'{terminals}')
                     raise bench_configuration_error()
 

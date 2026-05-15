@@ -58,9 +58,7 @@ class visualizer():
                        tooltip=instrument,
                        fontname="Arial",
                        image=self.locations[instrument]["image"],
-                       pos=f'{
-                           self.locations[instrument]["position"]["xpos"]},{
-                           self.locations[instrument]["position"]["ypos"]}',
+                       pos=f'{self.locations[instrument]["position"]["xpos"]},{self.locations[instrument]["position"]["ypos"]}',
                        labeldistance="100",
                        fontsize="30")
                 binary_fc = open(

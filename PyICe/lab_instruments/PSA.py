@@ -438,8 +438,7 @@ class keysight_e4440a(scpi_SA):
             name=channel_name,
             size=1,
             write_function=lambda on: self.get_interface().write(
-                f':SENSe:BANDwidth:RESolution:AUTO {
-                    "ON" if on else "OFF"}'))
+                f':SENSe:BANDwidth:RESolution:AUTO {"ON" if on else "OFF"}'))
         new_channel._read = lambda: int(
             self.get_interface().ask(':SENSe:BANDwidth:RESolution:AUTO?'))
         new_channel.set_attribute('channel_type', 'y_control')
@@ -504,8 +503,7 @@ determined as indicated in Table 2-1 on page 70'''
             name=channel_name,
             size=1,
             write_function=lambda on: self.get_interface().write(
-                f':SENSe:BANDwidth:VIDeo:AUTO {
-                    "ON" if on else "OFF"}'))
+                f':SENSe:BANDwidth:VIDeo:AUTO {"ON" if on else "OFF"}'))
         auto_channel._read = lambda: int(
             self.get_interface().ask(':SENSe:BANDwidth:VIDeo:AUTO?'))
         auto_channel.set_attribute('channel_type', 'y_control')
@@ -528,8 +526,7 @@ determined as indicated in Table 2-1 on page 70'''
             name=f'{channel_name}_RBW_VBW_auto',
             size=1,
             write_function=lambda on: self.get_interface().write(
-                f':SENSe:BANDwidth:VIDeo:RATio:AUTO {
-                    "ON" if on else "OFF"}'))
+                f':SENSe:BANDwidth:VIDeo:RATio:AUTO {"ON" if on else "OFF"}'))
         auto_ratio_channel._read = lambda: int(
             self.get_interface().ask(':SENSe:BANDwidth:VIDeo:RATio:AUTO?'))
         auto_ratio_channel.set_attribute('channel_type', 'y_control')
@@ -749,8 +746,7 @@ If the detector has been manually selected, a # appears next to it.'''
             name=channel_name,
             size=1,
             write_function=lambda on: self.get_interface().write(
-                f':SENSe:POWer:RF:ATTenuation:AUTO {
-                    "ON" if on else "OFF"}'))
+                f':SENSe:POWer:RF:ATTenuation:AUTO {"ON" if on else "OFF"}'))
         new_channel._read = lambda: int(
             self.get_interface().ask(':SENSe:POWer:RF:ATTenuation:AUTO?'))
         new_channel.set_attribute('channel_type', 'y_control')
@@ -780,8 +776,7 @@ If the detector has been manually selected, a # appears next to it.'''
         def pmax_of_freqs():
             if self.maximum_frequency > 50e12:
                 raise Exception(
-                    f"PSA: You said you wanted to run the PSA at {
-                        self.maximum_frequency}Hz. The PSA series signal analyzer isn't rated to go above 50GHz.")
+                    f"PSA: You said you wanted to run the PSA at {self.maximum_frequency}Hz. The PSA series signal analyzer isn't rated to go above 50GHz.")
             if self.preamp_channel is None:
                 raise Exception(
                     "Now what? Channel isn't necessarily defined! Should this just read the scpi setting directly????")
@@ -793,8 +788,7 @@ If the detector has been manually selected, a # appears next to it.'''
                     if self.minimum_frequency >= limit["MINFREQ"] and self.maximum_frequency < limit["MAXFREQ"]:
                         pmax = limit["POWER_dBm"]
             print(
-                f"Setting pmax to {pmax}. Preamp is {
-                    'ON' if self.preamp_channel.read() else 'OFF'}.")
+                f"Setting pmax to {pmax}. Preamp is {'ON' if self.preamp_channel.read() else 'OFF'}.")
             return pmax
 
         def nearest_even_value(value):
@@ -829,8 +823,7 @@ mixing.'''
             channel_name,
             size=1,
             write_function=lambda on: self.get_interface().write(
-                f':SENSe:POWer:RF:GAIN:STATe {
-                    "ON" if on else "OFF"}'))
+                f':SENSe:POWer:RF:GAIN:STATe {"ON" if on else "OFF"}'))
         self.preamp_channel._read = lambda: int(
             self.get_interface().ask(':SENSe:POWer:RF:GAIN:STATe?'))
         self.preamp_channel.set_attribute('channel_type', 'y_control')
@@ -1218,8 +1211,7 @@ mixing.'''
             name=channel_name,
             size=1,
             write_function=lambda on: self.get_interface().write(
-                f':SENSe:SWEep:TIME:AUTO {
-                    "ON" if on else "OFF"}'))
+                f':SENSe:SWEep:TIME:AUTO {"ON" if on else "OFF"}'))
         new_channel._read = lambda: int(
             self.get_interface().ask(':SENSe:SWEep:TIME:AUTO?'))
         new_channel.set_attribute('channel_type', 'y_control')
@@ -1239,9 +1231,7 @@ mixing.'''
         message_channel.set_description(
             self.get_name() + ': ' + self.add_channel_message.__doc__)
         # 64 characters max
-        message = f"*PLEASE DON'T TOUCH* In use by {
-            os.getlogin()} on {
-            socket.gethostname()}."
+        message = f"*PLEASE DON'T TOUCH* In use by {os.getlogin()} on {socket.gethostname()}."
         message_channel.write(message)
         return self._add_channel(message_channel)
 
@@ -1513,8 +1503,7 @@ input level to within 200 mV of 0 Vdc. In AC or DC coupling, limit the input RF 
             name=channel_name,
             size=1,
             write_function=lambda on: self.get_interface().write(
-                f':DISPlay:FSCReen:STATe {
-                    "ON" if on else "OFF"}'))
+                f':DISPlay:FSCReen:STATe {"ON" if on else "OFF"}'))
         new_channel._read = lambda: int(
             self.get_interface().ask(':DISPlay:FSCReen:STATe?'))
         new_channel.set_attribute('channel_type', 'y_control')

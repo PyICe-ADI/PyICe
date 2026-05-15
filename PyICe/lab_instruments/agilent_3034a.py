@@ -99,8 +99,7 @@ class agilent_3034a(oscilloscope):
                     enabled_channels.append(phych)
             except ChannelAttributeException as e:
                 raise Exception(
-                    f'stowe_oscilloscopes requires "dependent_physical_channels" attribute of all scope channnels. Scope driver not in compliance w.r.t {
-                        ch.get_name()}. Contact PyICe-developers@analog.com for more information.')
+                    f'stowe_oscilloscopes requires "dependent_physical_channels" attribute of all scope channnels. Scope driver not in compliance w.r.t {ch.get_name()}. Contact PyICe-developers@analog.com for more information.')
         enabled_unique = set(enabled_channels)
         self.disable_all_Ychannels()
         self.enable_channels(enabled_unique)
@@ -263,8 +262,7 @@ class agilent_3034a(oscilloscope):
         allowed_points.extend((8000000,))
         if points not in allowed_points:
             raise ValueError(
-                f"\nAgilent 3034a: {
-                    self.get_name()}: set_points: points argument muse be in: {allowed_points}")
+                f"\nAgilent 3034a: {self.get_name()}: set_points: points argument muse be in: {allowed_points}")
         self.get_interface().write(f":WAVeform:POINts {points}")
 
     def get_channel_enable_status(self, number):
@@ -374,8 +372,7 @@ class agilent_3034a(oscilloscope):
     def add_channel_BWLimit(self, name, number):
         def _set_BWLimit(number, value):
             self.get_interface().write(
-                f':CHANnel{number}:BWLimit {
-                    "ON" if value else "OFF"}')
+                f':CHANnel{number}:BWLimit {"ON" if value else "OFF"}')
         new_channel = integer_channel(
             name, size=1, write_function=lambda value: _set_BWLimit(
                 number, value))
@@ -388,8 +385,7 @@ class agilent_3034a(oscilloscope):
     def add_channel_trigger_HFReject(self, name):
         def _set_trigger_HFReject(value):
             self.get_interface().write(
-                f':TRIGger:HFReject {
-                    "ON" if value else "OFF"}')
+                f':TRIGger:HFReject {"ON" if value else "OFF"}')
         new_channel = integer_channel(
             name, size=1, write_function=_set_trigger_HFReject)
         new_channel._set_value(self.get_interface().ask(":TRIGger:HFReject?"))
@@ -399,8 +395,7 @@ class agilent_3034a(oscilloscope):
     def add_channel_invert(self, name, number):
         def _set_invert(number, value):
             self.get_interface().write(
-                f':CHANnel{number}:INVert {
-                    "ON" if value else "OFF"}')
+                f':CHANnel{number}:INVert {"ON" if value else "OFF"}')
         new_channel = integer_channel(
             name, size=1, write_function=lambda value: _set_invert(
                 number, value))
@@ -806,9 +801,7 @@ class agilent_3034a(oscilloscope):
     def add_channel_trigger_pattern_range(self, name):
         def _set_trigger_pattern_range(less_than, greater_than):
             self.get_interface().write(
-                f":TRIGger:PATTern:RANGe {
-                    less_than:e},{
-                    greater_than:e}")
+                f":TRIGger:PATTern:RANGe {less_than:e},{greater_than:e}")
             self.delay()
         new_channel = channel(
             name,
@@ -906,9 +899,7 @@ class agilent_3034a(oscilloscope):
     def add_channel_trigger_glitch_range(self, name):
         def _set_trigger_glitch_range(less_than, greater_than):
             self.get_interface().write(
-                f":TRIGger:GLITch:RANGe {
-                    less_than:e},{
-                    greater_than:e}")
+                f":TRIGger:GLITch:RANGe {less_than:e},{greater_than:e}")
             self.delay()
         new_channel = channel(
             name,
@@ -1154,8 +1145,7 @@ class agilent_3034a(oscilloscope):
 
     def channel_display(self, number, value):
         self.get_interface().write(
-            f':CHANnel{number}:DISPlay {
-                "ON" if value else "OFF"}')
+            f':CHANnel{number}:DISPlay {"ON" if value else "OFF"}')
         self.delay()
 
     def add_channel_display(self, name, number):
@@ -1190,8 +1180,7 @@ class agilent_3034a(oscilloscope):
         def _set_define_delay(edge_spec1):
             edge_spec = self.get_interface().ask(":MEASure:DEFine?").split(",")
             self.get_interface().write(
-                f":MEASure:DEFine DELay,{edge_spec1},{
-                    edge_spec[1]}")
+                f":MEASure:DEFine DELay,{edge_spec1},{edge_spec[1]}")
             self.delay()
         new_channel = channel(name, write_function=_set_define_delay)
         self._add_channel(new_channel)
@@ -1202,8 +1191,7 @@ class agilent_3034a(oscilloscope):
         def _set_define_delay(edge_spec2):
             edge_spec = self.get_interface().ask(":MEASure:DEFine?").split(",")
             self.get_interface().write(
-                f":MEASure:DEFine DELay,{
-                    edge_spec[0]},{edge_spec2}")
+                f":MEASure:DEFine DELay,{edge_spec[0]},{edge_spec2}")
             self.delay()
         new_channel = channel(name, write_function=_set_define_delay)
         self._add_channel(new_channel)
@@ -1213,9 +1201,7 @@ class agilent_3034a(oscilloscope):
     def add_channel_meas_define_abs_thresh(self, name, number):
         def _set_define_absolute_threshold(number, thresh):
             self.get_interface().write(
-                f":MEASure:DEFine THResholds,ABSolute,{
-                    1.8 * thresh},{thresh},{
-                    0.2 * thresh},CHANnel{number}")
+                f":MEASure:DEFine THResholds,ABSolute,{1.8 * thresh},{thresh},{0.2 * thresh},CHANnel{number}")
             self.delay()
         new_channel = channel(
             name, write_function=lambda thresh: _set_define_absolute_threshold(

@@ -60,6 +60,4 @@ MODULES_WITH_DOCTESTS = [
 def test_doctest(module):
     results = doctest.testmod(
         module, optionflags=doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS)
-    assert results.failed == 0, f"{
-        results.failed} doctest(s) failed in {
-        module.__name__}"
+    assert results.failed == 0, f"{results.failed} doctest(s) failed in {module.__name__}"

@@ -23,8 +23,7 @@ def freeze(o):
         hash(o)
     except TypeError as e:
         raise TypeError(
-            f"***P.I.E. TEST_RESULTS.PY FREEZE***\n Expecting a dictionary, set, list, or tuple. Was given {
-                type(o)}.") from e
+            f"***P.I.E. TEST_RESULTS.PY FREEZE***\n Expecting a dictionary, set, list, or tuple. Was given {type(o)}.") from e
     else:
         return o
 
@@ -103,8 +102,7 @@ class generic_results():
                         return super().default(obj)
                     except TypeError as e:
                         print(
-                            f'JSON Serialization error with object of type {
-                                type(obj)}:')
+                            f'JSON Serialization error with object of type {type(obj)}:')
                         print(obj)
                         breakpoint()
                         raise e
@@ -199,11 +197,7 @@ class Test_Results(generic_results):
 
         def __str__(self):
             summary_str = ''
-            summary_str += f'{
-                self.__padded_str(
-                    self.conditions)}\tTRIALS:{
-                len(self)}\tVERDICT:{
-                "PASS" if self else "FAIL"}\n'.expandtabs()
+            summary_str += f'{self.__padded_str(self.conditions)}\tTRIALS:{len(self)}\tVERDICT:{"PASS" if self else "FAIL"}\n'.expandtabs()
             min = self._min()
             if self.failure_reason != '':
                 summary_str += f'\tFORCED_FAIL: {self.failure_reason}\n'
@@ -225,8 +219,7 @@ class Test_Results(generic_results):
             assert isinstance(other, type(self))
             assert self.test_name == other.test_name
             assert self.conditions == other.conditions
-            assert self.query == other.query, f"ERROR {
-                self.test_name} grouping mismatch. Grouped results have unexpectedly disparate SQL queries. Consider adding conditions by selecting addtional columns or by keyword argument. If you think you've received this message in error, contact support."
+            assert self.query == other.query, f"ERROR {self.test_name} grouping mismatch. Grouped results have unexpectedly disparate SQL queries. Consider adding conditions by selecting addtional columns or by keyword argument. If you think you've received this message in error, contact support."
             failure_report = self.failure_reason
             if other.failure_reason not in self.failure_reason:
                 failure_report = f'{self.failure_reason}{other.failure_reason}'

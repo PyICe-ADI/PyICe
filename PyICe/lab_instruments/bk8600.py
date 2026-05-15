@@ -35,8 +35,7 @@ class bk8600(scpi_instrument):
         new_channel = channel(channel_name, write_function=self._write_voltage)
         new_channel.set_description(
             self.get_name() +
-            f': {
-                self.add_channel_voltage.__doc__}')
+            f': {self.add_channel_voltage.__doc__}')
         return self._add_channel(new_channel)
 
     def add_channel_vsense(self, channel_name):
@@ -44,8 +43,7 @@ class bk8600(scpi_instrument):
         new_channel = channel(channel_name, read_function=self._read_vsense)
         new_channel.set_description(
             self.get_name() +
-            f': {
-                self.add_channel_vsense.__doc__}')
+            f': {self.add_channel_vsense.__doc__}')
         return self._add_channel(new_channel)
 
     def add_channel_current(self, channel_name):
@@ -53,8 +51,7 @@ class bk8600(scpi_instrument):
         new_channel = channel(channel_name, write_function=self._write_current)
         new_channel.set_description(
             self.get_name() +
-            f': {
-                self.add_channel_current.__doc__}')
+            f': {self.add_channel_current.__doc__}')
         return self._add_channel(new_channel)
 
     def add_channel_isense(self, channel_name):
@@ -62,8 +59,7 @@ class bk8600(scpi_instrument):
         new_channel = channel(channel_name, read_function=self._read_isense)
         new_channel.set_description(
             self.get_name() +
-            f': {
-                self.add_channel_isense.__doc__}')
+            f': {self.add_channel_isense.__doc__}')
         return self._add_channel(new_channel)
 
     def add_channel_power(self, channel_name):
@@ -71,8 +67,7 @@ class bk8600(scpi_instrument):
         new_channel = channel(channel_name, write_function=self._write_power)
         new_channel.set_description(
             self.get_name() +
-            f': {
-                self.add_channel_power.__doc__}')
+            f': {self.add_channel_power.__doc__}')
         return self._add_channel(new_channel)
 
     def add_channel_psense(self, channel_name):
@@ -80,8 +75,7 @@ class bk8600(scpi_instrument):
         new_channel = channel(channel_name, read_function=self._read_psense)
         new_channel.set_description(
             self.get_name() +
-            f': {
-                self.add_channel_psense.__doc__}')
+            f': {self.add_channel_psense.__doc__}')
         return self._add_channel(new_channel)
 
     def add_channel_mode(self, channel_name):

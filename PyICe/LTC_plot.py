@@ -1462,8 +1462,7 @@ class Page():
                     bbox=note_props)
             else:
                 print(
-                    f"An LTC_plot error occured attempting to add a note to axis {
-                        note_dict['axis']}, please contact Steve Martin with this example.")
+                    f"An LTC_plot error occured attempting to add a note to axis {note_dict['axis']}, please contact Steve Martin with this example.")
         #################################################################
         # Add the arrows (matplotlib "annotation")                      #
         #################################################################

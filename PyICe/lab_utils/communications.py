@@ -89,8 +89,7 @@ class email(object):
                     # even indices are outside tags
                     nbspline += segment.replace(" ", "&nbsp;")
             if nbspline.startswith("\t"):
-                html_body += f'\t<span style="margin-left: 40px">{
-                    nbspline.lstrip()}</span><br/>\n'
+                html_body += f'\t<span style="margin-left: 40px">{nbspline.lstrip()}</span><br/>\n'
             else:
                 html_body += f'{nbspline}<br/>\n'
         html_body += '</p>\n'

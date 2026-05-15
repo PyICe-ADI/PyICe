@@ -10,9 +10,7 @@ except ModuleNotFoundError as e:
     # pystdf is needed for processing files, but not needed for audits, IVY
     # and other Linux PyICe usage.
     print(
-        f'WARNING: Import error with pystdf library. This is ok if not processing STDF dlogs directly, and temporarily expected in Linux because of Anaconda package issues.\n{
-            type(e)}: {
-            e.args}')
+        f'WARNING: Import error with pystdf library. This is ok if not processing STDF dlogs directly, and temporarily expected in Linux because of Anaconda package issues.\n{type(e)}: {e.args}')
 
 
 class record_order_parser:

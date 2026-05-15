@@ -31,8 +31,7 @@ class BR24H64(instrument):
         '''
         instrument.__init__(
             self,
-            f'64KBit, I²C BUS, High Speed Write Cycle, High Endurance, Serial EEPROM at {
-                hex(addr7)}')
+            f'64KBit, I²C BUS, High Speed Write Cycle, High Endurance, Serial EEPROM at {hex(addr7)}')
         self._base_name = 'BR24H64'
         self.add_interface_twi(interface_twi)
         self.twi = interface_twi
@@ -46,14 +45,10 @@ class BR24H64(instrument):
         tries = self.tries
         if location < 0 or location >= 8191:
             raise ChannelAccessException(
-                f"BR24H64 EEPROM write skipped at ADDR7:{
-                    hex(
-                        self.addr7)}: address {location} is outside physical media [0..8191].")
+                f"BR24H64 EEPROM write skipped at ADDR7:{hex(self.addr7)}: address {location} is outside physical media [0..8191].")
         if data < 0 or data > 255:
             raise ChannelValueException(
-                f"BR24H64 EEPROM write skipped at ADDR7:{
-                    hex(
-                        self.addr7)}: value {data} is outside the range [0..255].")
+                f"BR24H64 EEPROM write skipped at ADDR7:{hex(self.addr7)}: value {data} is outside the range [0..255].")
         while tries:
             try:
                 tries -= 1
@@ -99,9 +94,7 @@ class BR24H64(instrument):
         for location in range(8193):
             if location > 8191:
                 raise ChannelAccessException(
-                    f"BR24H64 EEPROM at ADDR7:{
-                        hex(
-                            self.addr7)} reached end of available media with no end of record found.")
+                    f"BR24H64 EEPROM at ADDR7:{hex(self.addr7)} reached end of available media with no end of record found.")
             byte = self.read_location(location)
             if bytes([byte]) == self.EOM:
                 break                       # Done! Outa here.
@@ -141,15 +134,11 @@ class BR24H64(instrument):
         file += self.EOM  # End of Medium
         if len(file) >= 8191:
             raise ChannelAccessException(
-                f"BR24H64 EEPROM at ADDR7:{
-                    hex(
-                        self.addr7)} write aborted: record too long, would overrun available space.")
+                f"BR24H64 EEPROM at ADDR7:{hex(self.addr7)} write aborted: record too long, would overrun available space.")
         for byte in file:
             if byte < 0 or byte > 255:
                 raise ChannelValueException(
-                    f"BR24H64 EEPROM at ADDR7:{
-                        hex(
-                            self.addr7)} write aborted: record contains value {byte} outside the range [0..255].")
+                    f"BR24H64 EEPROM at ADDR7:{hex(self.addr7)} write aborted: record contains value {byte} outside the range [0..255].")
         if verbose:
             print_banner(
                 f"Writing BR24H64 EEPROM media at ADDR7:{hex(self.addr7)}.", "Please Wait...")

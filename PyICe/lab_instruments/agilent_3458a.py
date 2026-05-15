@@ -115,9 +115,7 @@ class hp_3458a(instrument):
         if range is not None:
             self.meter_channel.set_attribute('range', range)
         self.get_interface().write(
-            (f"FUNC {
-                self.meter_channel.get_attribute('type')}, {
-                self.meter_channel.get_attribute('range')}"))
+            (f"FUNC {self.meter_channel.get_attribute('type')}, {self.meter_channel.get_attribute('range')}"))
         self.get_interface().write(
             (f"NPLC {self.meter_channel.get_attribute('NPLC')}"))
         self.get_interface().write(('TARM HOLD'))

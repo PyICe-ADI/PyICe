@@ -162,8 +162,7 @@ class touchstone_utils():
             capped_connections.append([(self.network,
                                         port_num - 1),
                                        (skrf.Circuit.Port(frequency=freqs,
-                                                          name=f"P{
-                                                              port_name_counter + 1}",
+                                                          name=f"P{port_name_counter + 1}",
                                                           z0=z0),
                                         0)])
             unused_port_nums.remove(port_num)
@@ -488,12 +487,7 @@ def _parallel(Ra, Rb):
                                                           np.inf, np.inf, np.inf, np.inf, np.inf]),
                                                   )
         print(
-            f"L0:{
-                params1[0]}, R1:{
-                params1[1]}, L1:{
-                params1[2]}, LL:{
-                    params1[3]}, RR:{
-                        params1[4]}")
+            f"L0:{params1[0]}, R1:{params1[1]}, L1:{params1[2]}, LL:{params1[3]}, RR:{params1[4]}")
         return (params1)
 
     def dev_curve_fit_2stage_ladder(self, fmax):
@@ -538,13 +532,7 @@ def _parallel(Ra, Rb):
                                                           np.inf, np.inf, np.inf, np.inf, np.inf, np.inf]),
                                                   )
         print(
-            f"L0:{
-                params3[0]}, R1:{
-                params3[1]}, L1:{
-                params3[2]}, R2:{
-                    params3[3]}, L2:{
-                        params3[4]}, R3:{
-                            params3[5]}")
+            f"L0:{params3[0]}, R1:{params3[1]}, L1:{params3[2]}, R2:{params3[3]}, L2:{params3[4]}, R3:{params3[5]}")
         return (params3)
 
     def dev_curve_fit_1stage_ladder(self, points):
@@ -574,11 +562,7 @@ def _parallel(Ra, Rb):
                                                           np.inf, np.inf, np.inf, np.inf]),
                                                   )
         print(
-            f"L0:{
-                params2[0]}, R1:{
-                params2[1]}, L1:{
-                params2[2]}, R2:{
-                    params2[3]}")
+            f"L0:{params2[0]}, R1:{params2[1]}, L1:{params2[2]}, R2:{params2[3]}")
         return (params2)
 
     def dev_minimize_2stage_ladder(self, fmax):

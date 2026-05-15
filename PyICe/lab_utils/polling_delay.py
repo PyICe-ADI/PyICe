@@ -71,9 +71,7 @@ class polling_delay(object):
                 break
         else:
             # timeout
-            err_str = f'{
-                self.timeout_str_prefix} polling delay timeout at time {
-                self.time_readback_fn()} after {timeout} timout.'
+            err_str = f'{self.timeout_str_prefix} polling delay timeout at time {self.time_readback_fn()} after {timeout} timout.'
             self._end(success=False)
             if self.except_on_timeout:
                 raise TimeoutError(err_str)  # todo specific exception class?

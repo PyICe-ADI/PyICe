@@ -75,13 +75,11 @@ class waveform(object):
 
             if self.stationarity_in < 1 - MAX_NONSTATIONARITY:
                 print_banner(
-                    f"Waveform Analyser ** WARNING **: Waveform is not stationary leading in, stationarity: {
-                        self.stationarity_in:0.5e}")
+                    f"Waveform Analyser ** WARNING **: Waveform is not stationary leading in, stationarity: {self.stationarity_in:0.5e}")
                 self.warning = -1
             if self.stationarity_out < 1 - MAX_NONSTATIONARITY:
                 print_banner(
-                    f"Waveform Analyser ** WARNING **: Waveform is not stationary leading out, stationarity: {
-                        self.stationarity_out:0.5e}")
+                    f"Waveform Analyser ** WARNING **: Waveform is not stationary leading out, stationarity: {self.stationarity_out:0.5e}")
                 self.warning = -1
         else:
             self.stationarity_in = None
@@ -585,10 +583,7 @@ class waveform(object):
                 "\nWaveform Analyser: input arg vlow has to be less than vhigh.\n")
         elif start_index < 0 or start_index > len(self.ydata) - 1:
             raise ValueError(
-                f"\nWaveform Analyser: start_index is outside the range of the waveform data. Enter a value between 0 and {
-                    len(
-                        self.ydata) -
-                    1}\n")
+                f"\nWaveform Analyser: start_index is outside the range of the waveform data. Enter a value between 0 and {len(self.ydata) -1}\n")
         vth = vlow + lvl * (vhigh - vlow)
         if self.ydata[0] > vth:
             start_index = self.find_less_than_or_equal_to(
@@ -619,10 +614,7 @@ class waveform(object):
                 "\nWaveform Analyser: input arg vlow has to be less than vhigh.\n")
         elif start_index < 0 or start_index > len(self.ydata) - 1:
             raise ValueError(
-                f"\nWaveform Analyser: start_index is outside the range of the waveform data. Enter a value between 0 and {
-                    len(
-                        self.ydata) -
-                    1}\n")
+                f"\nWaveform Analyser: start_index is outside the range of the waveform data. Enter a value between 0 and {len(self.ydata) -1}\n")
         vth = vlow + lvl * (vhigh - vlow)
         if self.ydata[0] < vth:
             start_index = self.find_grt_than_or_equal_to(
@@ -674,11 +666,7 @@ class waveform(object):
         if index_lo == -1 or index_lo == -2:
             print_banner(
                 "Waveform Analyser",
-                f"The {
-                    round(
-                        lo_lvl *
-                        100,
-                        1)}% level of the waveform was not found in the data record")
+                f"The {round(lo_lvl *100,1)}% level of the waveform was not found in the data record")
             return (-1, -1, -1)
 
         vth_hi = vlow + hi_lvl * amplitude
@@ -694,11 +682,7 @@ class waveform(object):
         if index_hi == -1 or index_hi == 0:
             print_banner(
                 "Waveform Analyser",
-                f"The {
-                    round(
-                        hi_lvl *
-                        100,
-                        1)}% level of the waveform was not found in the data record")
+                f"The {round(hi_lvl *100,1)}% level of the waveform was not found in the data record")
             return (-1, -1, -1)
 
         from bokeh.models import Span
@@ -756,11 +740,7 @@ class waveform(object):
         if index_lo == -1 or index_lo == 0:
             print_banner(
                 "Waveform Analyser",
-                f"The {
-                    round(
-                        lo_lvl *
-                        100,
-                        1)}% level of the waveform was not found in the data record")
+                f"The {round(lo_lvl *100,1)}% level of the waveform was not found in the data record")
             return (-1, -1, -1)
 
         vth_hi = vlow + hi_lvl * amplitude
@@ -776,11 +756,7 @@ class waveform(object):
         if index_hi == -1 or index_hi == -2:
             print_banner(
                 "Waveform Analyser",
-                f"The {
-                    round(
-                        hi_lvl *
-                        100,
-                        1)}% level of the waveform was not found in the data record")
+                f"The {round(hi_lvl *100,1)}% level of the waveform was not found in the data record")
             return (-1, -1, -1)
 
         from bokeh.models import Span

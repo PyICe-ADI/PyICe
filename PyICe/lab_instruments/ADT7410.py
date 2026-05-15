@@ -14,8 +14,7 @@ class ADT7410(instrument):
         '''
         instrument.__init__(
             self,
-            f'Analog Devices ADT7410 Silicon Temperature Sensor at 0x{
-                addr7:X}')
+            f'Analog Devices ADT7410 Silicon Temperature Sensor at 0x{addr7:X}')
         self._base_name = 'ADT7410'
         self.add_interface_twi(interface_twi)
         self.twi = interface_twi

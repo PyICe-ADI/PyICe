@@ -57,10 +57,7 @@ class krohnhite_526(instrument):
     def _set_irange(self, range):
         if range not in self._valid_iranges:
             raise Exception(
-                f'Current range {range} invalid for instrument {
-                    self.get_name()}. Valid ranges are {
-                    list(
-                        self._valid_iranges.keys())}')
+                f'Current range {range} invalid for instrument {self.get_name()}. Valid ranges are {list(self._valid_iranges.keys())}')
         self._irange = range
         if self.i_channel is not None:
             self.i_channel.set_max_write_limit(self._irange)
@@ -109,10 +106,7 @@ class krohnhite_526(instrument):
     def _set_vrange(self, range):
         if range not in self._valid_vranges:
             raise Exception(
-                f'Voltage range {range} invalid for instrument {
-                    self.get_name()}. Valid ranges are {
-                    list(
-                        self._valid_vranges.keys())}')
+                f'Voltage range {range} invalid for instrument {self.get_name()}. Valid ranges are {list(self._valid_vranges.keys())}')
         self._vrange = range
         if self.v_channel is not None:
             self.v_channel.set_max_write_limit(self._vrange)

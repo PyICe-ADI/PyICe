@@ -345,8 +345,7 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
         if thermocouple_type.upper() not in ['J', 'K', 'T']:
             raise Exception('Invalid thermocouple type, valid types are J,K,T')
         self.get_interface().write(
-            f"CONFigure:TEMPerature TCouple,{
-                thermocouple_type.upper()},(@{internal_address})")
+            f"CONFigure:TEMPerature TCouple,{thermocouple_type.upper()},(@{internal_address})")
 
     def _config_rtd(self, internal_address, rtd_type, ptype, nom_res):
         if rtd_type not in [85, 91]:
@@ -387,8 +386,7 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
         '''
         internal_address = channel.get_attribute('internal_address')
         self.get_interface().write(
-            f"SENSe:ZERO:AUTO {
-                'ONCE' if disable_autozero else 'ON'},(@{internal_address})")
+            f"SENSe:ZERO:AUTO {'ONCE' if disable_autozero else 'ON'},(@{internal_address})")
         channel.set_attribute('auto_zero', not (disable_autozero))
 
     def _config_channel_scaling(self, channel, gain=1, offset=0, unit=None):
@@ -764,10 +762,7 @@ class agilent_3497xa_20ch(agilent_3497xa_20ch_40ch):
         '''Enable Offset Compensation'''
         def _set_offset_compensated(value):
             self.get_interface().write(
-                f'SENSe:RESistance:OCOMpensated {
-                    "ON" if value in [
-                        1, True, "ON"] else "OFF"}, (@{
-                    channel_num + self.bay * 100})')
+                f'SENSe:RESistance:OCOMpensated {"ON" if value in [1, True, "ON"] else "OFF"}, (@{channel_num + self.bay * 100})')
 
         def _get_offset_compensated():
             return True if int(self.get_interface().ask(
@@ -930,10 +925,7 @@ class agilent_3497xa_20ch(agilent_3497xa_20ch_40ch):
         '''Enable Offset Compensation'''
         def _set_offset_compensated(value):
             self.get_interface().write(
-                f'SENSe:FRESistance:OCOMpensated {
-                    "ON" if value in [
-                        1, True, "ON"] else "OFF"}, (@{
-                    channel_num + self.bay * 100})')
+                f'SENSe:FRESistance:OCOMpensated {"ON" if value in [1, True, "ON"] else "OFF"}, (@{channel_num + self.bay * 100})')
 
         def _get_offset_compensated():
             return True if int(self.get_interface().ask(
@@ -1179,9 +1171,7 @@ class agilent_3497xa_dig_out8(a3497xa_instrument):
         mask = pow(2, size) - 1 << start
         if mask & self._defined_bit_mask:
             raise Exception(
-                f"{
-                    self.get_name()} {channel_name}: bit defined in multiple channels. Prev Mask: {
-                    self._defined_bit_mask}, Channel Mask: {mask} ")
+                f"{self.get_name()} {channel_name}: bit defined in multiple channels. Prev Mask: {self._defined_bit_mask}, Channel Mask: {mask} ")
         self._defined_bit_mask |= mask
         if (start + size) > 8 or start < 0 or size < 1:
             raise Exception(f"{self.get_name()}: only 8 bits allowed")
@@ -1234,9 +1224,7 @@ class agilent_3497xa_dig_in8(a3497xa_instrument):
         self.channel_number = ch
         self.internal_address = self.bay * 100 + self.channel_number
         a3497xa_instrument.__init__(
-            self, f'34970a_digital bay: {
-                self.bay},{
-                self.channel_number} @ {interface_visa}', automatic_monitor=False)
+            self, f'34970a_digital bay: {self.bay},{self.channel_number} @ {interface_visa}', automatic_monitor=False)
         self.add_interface_visa(interface_visa)
         self.get_interface().write(
             f'CONFigure:DIGital:BYTE (@{self.internal_address})')

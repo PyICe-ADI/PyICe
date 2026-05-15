@@ -234,9 +234,7 @@ class hameg_4040(scpi_instrument):
             raise ValueError(
                 "\n\nHameg ARB pattern error. Pattern: V,I,T,V,I,T... Volatge must be in [0,32.05], Currents must be in [0,10], Times must be in [0.01,60].\n")
         self.get_interface().write(
-            f"ARBitrary:DATA {
-                ','.join(
-                    str(val) for val in pattern)}")
+            f"ARBitrary:DATA {','.join(str(val) for val in pattern)}")
         time.sleep(self.hameg_suck_time)  # needed for hw serial on fast linux
         self.get_interface().ask("*OPC?")
         time.sleep(self.hameg_suck_time)  # needed for hw serial on fast linux
@@ -355,9 +353,7 @@ class hameg_4040(scpi_instrument):
                 this_error = e
                 print(e)
                 print(
-                    f"Resync {
-                        self.get_name()}: {
-                        self.get_interface().resync()}")
+                    f"Resync {self.get_name()}: {self.get_interface().resync()}")
                 retry += 1
         raise this_error
 
@@ -379,9 +375,7 @@ class hameg_4040(scpi_instrument):
                 this_error = e
                 print(e)
                 print(
-                    f"Resync {
-                        self.get_name()}: {
-                        self.get_interface().resync()}")
+                    f"Resync {self.get_name()}: {self.get_interface().resync()}")
                 retry += 1
         raise this_error
 
@@ -403,9 +397,7 @@ class hameg_4040(scpi_instrument):
                 this_error = e
                 print(e)
                 print(
-                    f"Resync {
-                        self.get_name()}: {
-                        self.get_interface().resync()}")
+                    f"Resync {self.get_name()}: {self.get_interface().resync()}")
                 retry += 1
         raise this_error
 
@@ -427,9 +419,7 @@ class hameg_4040(scpi_instrument):
                 this_error = e
                 print(e)
                 print(
-                    f"Resync {
-                        self.get_name()}: {
-                        self.get_interface().resync()}")
+                    f"Resync {self.get_name()}: {self.get_interface().resync()}")
                 retry += 1
         raise this_error
 
@@ -452,9 +442,7 @@ class hameg_4040(scpi_instrument):
                 this_error = e
                 print(e)
                 print(
-                    f"Resync {
-                        self.get_name()}: {
-                        self.get_interface().resync()}")
+                    f"Resync {self.get_name()}: {self.get_interface().resync()}")
                 retry += 1
         raise this_error
 
@@ -478,9 +466,7 @@ class hameg_4040(scpi_instrument):
                 this_error = e
                 print(e)
                 print(
-                    f"Resync {
-                        self.get_name()}: {
-                        self.get_interface().resync()}")
+                    f"Resync {self.get_name()}: {self.get_interface().resync()}")
                 retry += 1
         raise this_error
 
@@ -511,9 +497,7 @@ class hameg_4040(scpi_instrument):
                 this_error = e
                 print(e)
                 print(
-                    f"Resync {
-                        self.get_name()}: {
-                        self.get_interface().resync()}")
+                    f"Resync {self.get_name()}: {self.get_interface().resync()}")
                 retry += 1
         raise this_error
 

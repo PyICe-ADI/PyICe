@@ -258,10 +258,7 @@ class TWI_Pattern():
             self.SCL) == len(
             self.STB), "TWI Pattern Generator: SCL and STB records unequal length!"
         assert len(
-            self.SCL) <= self.max_record_size, f"TWI Pattern Generator: Record size of {
-            len(
-                self.SCL)} exceeds max record size of {
-                self.max_record_size}!"
+            self.SCL) <= self.max_record_size, f"TWI Pattern Generator: Record size of {len(self.SCL)} exceeds max record size of {self.max_record_size}!"
 
     def visualize(self, title=None, file_basename=None, offset_SCL=5,
                   offset_SDA=3, offset_STB=1, plot_sizex=5, plot_sizey=4):
@@ -301,9 +298,7 @@ class TWI_Pattern():
             use_axes_scale=False,
             fontsize=10)
         G0.add_note(
-            note=f"Pattern Length = {
-                len(
-                    self.SCL)}",
+            note=f"Pattern Length = {len(self.SCL)}",
             location=[
                 0.01,
                 0.99],

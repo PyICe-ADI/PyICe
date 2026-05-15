@@ -16,8 +16,7 @@ class vcd_reader():
     def get_raw_data(self, variable_name):
         if variable_name not in self.vcd.references_to_ids.keys():
             print(
-                f'{variable_name} was not found in the vcd file provided. Available variables are {
-                    self.vcd.get_signals()}')
+                f'{variable_name} was not found in the vcd file provided. Available variables are {self.vcd.get_signals()}')
             return
         return self.vcd[variable_name].tv
 
@@ -58,8 +57,7 @@ class vcd_reader():
                     xdata[i] * self.vcd.get_timescale()['timescale'])
         else:
             raise Exception(
-                f'Unexpected variable of type :{
-                    self.vcd[variable_name].var_type}')
+                f'Unexpected variable of type :{self.vcd[variable_name].var_type}')
         real_xdata = numpy.array(real_xdata)
         real_ydata = numpy.array(real_ydata)
         return [real_xdata, real_ydata]

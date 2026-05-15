@@ -292,12 +292,10 @@ for group in groups:
 
     daves_plots.append(GX)
     database_charging = sqlite_data(
-        table_name=f'{
-            group[0]}',
+        table_name=f'{group[0]}',
         database_file="./data/battery_data.sqlite")
     database_discharging = sqlite_data(
-        table_name=f'{
-            group[1]}',
+        table_name=f'{group[1]}',
         database_file="./data/battery_data.sqlite")
     query_charging = f'''SELECT  bat1_voltage,
                         integratedWH

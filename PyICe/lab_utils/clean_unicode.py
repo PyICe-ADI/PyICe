@@ -33,8 +33,5 @@ def clean_unicode(ustr):
     for c in ustr:
         if ord(c) > 0x7E:
             raise Exception(
-                f'Ascii non-alphanumeric character code point 0x{
-                    ord(c):X} ({
-                    unicodedata.name(c)}) found in: {
-                    ustr.encode("utf-8")}. Edit lab_utils.clean_unicode() translation rules to add this character.')
+                f'Ascii non-alphanumeric character code point 0x{ord(c):X} ({unicodedata.name(c)}) found in: {ustr.encode("utf-8")}. Edit lab_utils.clean_unicode() translation rules to add this character.')
     return str(ustr)  # force non-unicode type

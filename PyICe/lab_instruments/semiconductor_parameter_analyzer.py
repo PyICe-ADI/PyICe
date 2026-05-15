@@ -27,11 +27,7 @@ class semiconductor_parameter_analyzer(scpi_instrument):
         if 'v_output' in list(self._smu_configuration[smu_number].keys(
         )) and 'i_compliance' in list(self._smu_configuration[smu_number].keys()):
             self.get_interface().write(
-                (f"DV {
-                    self._smu_voltage_force_channels[smu_number]:G}, {
-                    self._smu_configuration[smu_number]['v_output_range']:G}, {
-                    self._smu_configuration[smu_number]['v_output']:G}, {
-                    self._smu_configuration[smu_number]['i_compliance']:G}"))
+                (f"DV {self._smu_voltage_force_channels[smu_number]:G}, {self._smu_configuration[smu_number]['v_output_range']:G}, {self._smu_configuration[smu_number]['v_output']:G}, {self._smu_configuration[smu_number]['i_compliance']:G}"))
         else:
             print(
                 f'SMU{smu_number} disabled.  Write both output_voltage and current_compliance channels to enable output')
@@ -57,11 +53,7 @@ class semiconductor_parameter_analyzer(scpi_instrument):
         if 'i_output' in list(self._smu_configuration[smu_number].keys(
         )) and 'v_compliance' in list(self._smu_configuration[smu_number].keys()):
             self.get_interface().write(
-                (f"DI {
-                    smu_number:G}, {
-                    self._smu_configuration[smu_number]['i_output_range']:G}, {
-                    self._smu_configuration[smu_number]['i_output']:G}, {
-                    self._smu_configuration[smu_number]['v_compliance']:G}"))
+                (f"DI {smu_number:G}, {self._smu_configuration[smu_number]['i_output_range']:G}, {self._smu_configuration[smu_number]['i_output']:G}, {self._smu_configuration[smu_number]['v_compliance']:G}"))
             # print 'writing these values to current SMU:'
             # print self._smu_configuration[smu_number]
         else:

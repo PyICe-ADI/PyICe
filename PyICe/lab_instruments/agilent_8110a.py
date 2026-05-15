@@ -21,8 +21,7 @@ class Agilent_8110a(scpi_instrument):
         Set by add_channel_pulse_period()
         '''
         speeds = {"HP81103A": 6.65e-9}
-        assert plugin in speeds, f'''Agilent 8110A doesn't take a plugin called "{plugin}" try one of: {
-            speeds.keys()}'''
+        assert plugin in speeds, f'''Agilent 8110A doesn't take a plugin called "{plugin}" try one of: {speeds.keys()}'''
         self.timestep = speeds[plugin]
 
     def add_channel_trigger_source(self, channel_name):
@@ -78,8 +77,7 @@ class Agilent_8110a(scpi_instrument):
                 raise Exception(
                     f"\n\nAgilent 8110A: Sorry don't know how to set EXT input impedance to: '{impedance}', try '50' or '10K'.\n\n")
             self.get_interface().write(
-                f":ARM:IMP {
-                    '50OHM' if impedance == 50 else '10KOHM'}")
+                f":ARM:IMP {'50OHM' if impedance == 50 else '10KOHM'}")
             self.operation_complete()
         new_channel = channel(channel_name,
                               write_function=set_trigger_impedance)
@@ -132,8 +130,7 @@ class Agilent_8110a(scpi_instrument):
                 raise Exception(
                     f"\n\nAgilent 8110A: Sorry don't know how to set ouput mode to: '{mode}', try 'VOLTAGE' or 'CURRENT'.\n\n")
             self.get_interface().write(
-                f":SOUR:HOLD {
-                    'VOLT' if mode == 'VOLTAGE' else 'CURR'}")
+                f":SOUR:HOLD {'VOLT' if mode == 'VOLTAGE' else 'CURR'}")
             self.operation_complete()
         new_channel = channel(channel_name, write_function=set_ouput_mode)
         new_channel.add_preset("VOLTAGE", "Voltage Mode Output")
@@ -151,8 +148,7 @@ class Agilent_8110a(scpi_instrument):
             state = "ON" if state is True else state
             state = "OFF" if state is False else state
             self.get_interface().write(
-                f":OUTP{number} {
-                    'ON' if state == 'ON' else 'OFF'}")
+                f":OUTP{number} {'ON' if state == 'ON' else 'OFF'}")
             self.operation_complete()
         new_channel = channel(channel_name, write_function=set_ouput_state)
         new_channel.add_preset("ON", "Enable Output")
@@ -169,8 +165,7 @@ class Agilent_8110a(scpi_instrument):
                 raise Exception(
                     f"\n\nAgilent 8110A: Sorry don't know how to set ouput polarity to: '{polarity}', try 'NORMAL' or 'INVERTED'.\n\n")
             self.get_interface().write(
-                f":OUTP{number}:POL {
-                    'NORM' if polarity == 'NORMAL' else 'INV'}")
+                f":OUTP{number}:POL {'NORM' if polarity == 'NORMAL' else 'INV'}")
             self.operation_complete()
         new_channel = channel(channel_name, write_function=set_ouput_polarity)
         new_channel.add_preset("NORMAL", "Normal Output Polarity")
@@ -189,8 +184,7 @@ class Agilent_8110a(scpi_instrument):
                 raise Exception(
                     f"\n\nAgilent 8110A: Sorry don't know how to set ouput impedance to: '{impedance}', try '50' or '1K'.\n\n")
             self.get_interface().write(
-                f":OUTP{number}:IMP:INT {
-                    '50OHM' if impedance == 50 else '1KOHM'}")
+                f":OUTP{number}:IMP:INT {'50OHM' if impedance == 50 else '1KOHM'}")
             self.operation_complete()
         new_channel = channel(channel_name, write_function=set_ouput_impedance)
         new_channel.add_preset(50, "50Ω Source impedance")
@@ -207,8 +201,7 @@ class Agilent_8110a(scpi_instrument):
         '''
         def set_external_impedance(impedance):
             self.get_interface().write(
-                f":OUTP{number}:IMP:EXT {
-                    impedance:0.4f}OHM")
+                f":OUTP{number}:IMP:EXT {impedance:0.4f}OHM")
             self.operation_complete()
         new_channel = channel(channel_name,
                               write_function=set_external_impedance)
@@ -224,8 +217,7 @@ class Agilent_8110a(scpi_instrument):
         '''
         def set_high_voltage_level(voltage):
             self.get_interface().write(
-                f":SOUR:VOLT{number}:LEV:IMM:HIGH {
-                    voltage * scale_factor}V")
+                f":SOUR:VOLT{number}:LEV:IMM:HIGH {voltage * scale_factor}V")
             self.operation_complete()
         new_channel = channel(channel_name,
                               write_function=set_high_voltage_level)
@@ -241,8 +233,7 @@ class Agilent_8110a(scpi_instrument):
         '''
         def set_low_voltage_level(voltage):
             self.get_interface().write(
-                f":SOUR:VOLT{number}:LEV:IMM:LOW {
-                    voltage * scale_factor:0.4f}V")
+                f":SOUR:VOLT{number}:LEV:IMM:LOW {voltage * scale_factor:0.4f}V")
             self.operation_complete()
         new_channel = channel(channel_name,
                               write_function=set_low_voltage_level)
@@ -256,8 +247,7 @@ class Agilent_8110a(scpi_instrument):
         '''
         def set_high_current_level(current):
             self.get_interface().write(
-                f":SOUR:CURR{number}:LEV:IMM:HIGH {
-                    current:0.5f}A")
+                f":SOUR:CURR{number}:LEV:IMM:HIGH {current:0.5f}A")
             self.operation_complete()
         new_channel = channel(channel_name,
                               write_function=set_high_current_level)
@@ -271,8 +261,7 @@ class Agilent_8110a(scpi_instrument):
         '''
         def set_low_current_level(current):
             self.get_interface().write(
-                f":SOUR:CURR{number}:LEV:IMM:LOW {
-                    current:0.5f}A")
+                f":SOUR:CURR{number}:LEV:IMM:LOW {current:0.5f}A")
             self.operation_complete()
         new_channel = channel(channel_name,
                               write_function=set_low_current_level)

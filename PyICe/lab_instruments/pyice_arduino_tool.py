@@ -221,8 +221,7 @@ class pyice_arduino_tool(instrument):
             channel_name, 'CHIP:USEPec')
         new_channel.set_description(
             self.get_name() +
-            f': {
-                self._add_channel_chip_uses_pec.__doc__}')
+            f': {self._add_channel_chip_uses_pec.__doc__}')
         new_channel.add_preset('True', 'I2C uses PEC.')
         new_channel.add_preset('False', 'I2C does not use PEC.')
         return new_channel
@@ -233,8 +232,7 @@ class pyice_arduino_tool(instrument):
             channel_name, 'CHIP:REGSize')
         new_channel.set_description(
             self.get_name() +
-            f': {
-                self._add_channel_chip_register_size.__doc__}')
+            f': {self._add_channel_chip_register_size.__doc__}')
         new_channel.add_preset('8', 'Registers are 8 bits.')
         new_channel.add_preset('16', 'Registers are 16 bits.')
         return new_channel
@@ -245,8 +243,7 @@ class pyice_arduino_tool(instrument):
             channel_name, 'CHIP:ADDRess')
         new_channel.set_description(
             self.get_name() +
-            f': {
-                self._add_channel_chip_address.__doc__}')
+            f': {self._add_channel_chip_address.__doc__}')
         return new_channel
 
     def _add_channel_chip_watchdog_q_command_code(self, channel_name):
@@ -255,8 +252,7 @@ class pyice_arduino_tool(instrument):
             channel_name, 'CHIP:WDQcc')
         new_channel.set_description(
             self.get_name() +
-            f': {
-                self._add_channel_chip_watchdog_q_command_code.__doc__}')
+            f': {self._add_channel_chip_watchdog_q_command_code.__doc__}')
         return new_channel
 
     def _add_channel_chip_watchdog_a_command_code(self, channel_name):
@@ -265,8 +261,7 @@ class pyice_arduino_tool(instrument):
             channel_name, 'CHIP:WDAcc')
         new_channel.set_description(
             self.get_name() +
-            f': {
-                self._add_channel_chip_watchdog_a_command_code.__doc__}')
+            f': {self._add_channel_chip_watchdog_a_command_code.__doc__}')
         return new_channel
 # CONTROL_SETTINGS CHANNEL DEFS ------------------------------------------
 
@@ -294,8 +289,7 @@ class pyice_arduino_tool(instrument):
             channel_name, 'CONTrol:COMMand:WRITe')
         new_channel.set_description(
             self.get_name() +
-            f': {
-                self._add_channel_control_command_write.__doc__}')
+            f': {self._add_channel_control_command_write.__doc__}')
         return new_channel
 
     def _add_channel_control_command_read(self, channel_name):
@@ -316,8 +310,7 @@ class pyice_arduino_tool(instrument):
             channel_name, 'CONTrol:PIN:EDGE')
         new_channel.set_description(
             self.get_name() +
-            f': {
-                self._add_channel_control_pin_edge.__doc__}')
+            f': {self._add_channel_control_pin_edge.__doc__}')
         new_channel.add_preset('LOW', 'Logic low.')
         new_channel.add_preset('CHANGE', 'Any edge.')
         new_channel.add_preset('FALLING', 'Falling edge.')
@@ -331,8 +324,7 @@ class pyice_arduino_tool(instrument):
             channel_name, 'CONTrol:PIN:WRITe')
         new_channel.set_description(
             self.get_name() +
-            f': {
-                self._add_channel_control_pin_write.__doc__}')
+            f': {self._add_channel_control_pin_write.__doc__}')
         return new_channel
 
     def _add_channel_control_pin_read(self, channel_name):
@@ -360,8 +352,7 @@ class pyice_arduino_tool(instrument):
             channel_name, 'TEST:ARM')
         new_channel.set_description(
             self.get_name() +
-            f': {
-                self._add_channel_test_arm.__doc__}')
+            f': {self._add_channel_test_arm.__doc__}')
         new_channel.add_preset(
             'T1->T2', 'Measure the time delta between the start and stop triggers.')
         new_channel.add_preset(
@@ -459,8 +450,7 @@ class pyice_arduino_tool(instrument):
             channel_name, 'TRIGger:PIN:EDGE')
         new_channel.set_description(
             self.get_name() +
-            f': {
-                self._add_channel_trigger_pin_edge.__doc__}')
+            f': {self._add_channel_trigger_pin_edge.__doc__}')
         new_channel.add_preset('LOW', 'Logic low.')
         new_channel.add_preset('CHANGE', 'Any edge.')
         new_channel.add_preset('FALLING', 'Falling edge.')
@@ -552,8 +542,7 @@ class pyice_arduino_tool(instrument):
             channel_name, 'ACTIon:PIN:EDGE')
         new_channel.set_description(
             self.get_name() +
-            f': {
-                self._add_channel_action_pin_edge.__doc__}')
+            f': {self._add_channel_action_pin_edge.__doc__}')
         new_channel.add_preset('LOW', 'Logic low.')
         new_channel.add_preset('HIGH', 'Logic high.')
         return new_channel

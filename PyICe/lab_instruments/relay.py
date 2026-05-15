@@ -40,10 +40,7 @@ class ftdi_relay(relay):
         if serial_number is not None:
             findargs['serial_number'] = self.serial_number
         devs = list(usb.core.find(**findargs))
-        assert len(devs) == 1, f'Device search returned {
-            len(devs)} results (1 expected). Check serial number for uniqe ID. {
-            [
-                dev.serial_number for dev in devs]}'
+        assert len(devs) == 1, f'Device search returned {len(devs)} results (1 expected). Check serial number for uniqe ID. {[dev.serial_number for dev in devs]}'
         dev = devs[0]
         self.rb.connect(dev)
         super().__init__(f"relay_board {serial_number}")
@@ -52,9 +49,7 @@ class ftdi_relay(relay):
 
     def add_channel(self, channel_name, channel_number):
         '''Adds a channel for a relay on the board'''
-        assert self.rb.RELAY_MIN <= channel_number and channel_number <= self.rb.RELAY_MAX, f'Channel number must correspond to a relay between {
-            self.rb.RELAY_MIN} and {
-            self.rb.RELAY_MAX}.'
+        assert self.rb.RELAY_MIN <= channel_number and channel_number <= self.rb.RELAY_MAX, f'Channel number must correspond to a relay between {self.rb.RELAY_MIN} and {self.rb.RELAY_MAX}.'
         new_channel = integer_channel(
             channel_name,
             size=2,

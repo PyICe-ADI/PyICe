@@ -106,8 +106,7 @@ class buck_power_loss(object):
                                          self.params["iout"]**2 * self.params["fsw"] * self.params["coreloss_k"]) * (1 + self.params["coreloss_tc"] * (self.params["tamb_die"] - self.params["tref"]))
             else:
                 print(
-                    f"PyICe Buck power Loss Model: Don't know how to use Core Loss Model: '{
-                        self.params['''corelossmodel''']}'.")
+                    f"PyICe Buck power Loss Model: Don't know how to use Core Loss Model: '{self.params['''corelossmodel''']}'.")
                 exit()
             ###################################################################
             # Cin and Cout loss

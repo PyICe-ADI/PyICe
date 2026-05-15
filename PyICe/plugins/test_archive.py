@@ -44,8 +44,7 @@ class database_archive():
         attach_schema = '__source_db__'
 
         conn.execute(
-            f"ATTACH DATABASE '{
-                self.db_source_file}' AS {attach_schema}")
+            f"ATTACH DATABASE '{self.db_source_file}' AS {attach_schema}")
         ##############
         # Main table #
         ##############

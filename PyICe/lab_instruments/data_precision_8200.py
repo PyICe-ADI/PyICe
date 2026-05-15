@@ -61,8 +61,7 @@ class data_precision_8200(instrument):
     def _write_voltage(self, voltage):
         if voltage > self._vrange or voltage < -1 * self._vrange:
             raise Exception(
-                f'Voltage setting {voltage}V invalid for instrument {
-                    self.get_name()} range {vrange}V')
+                f'Voltage setting {voltage}V invalid for instrument {self.get_name()} range {vrange}V')
         # always 7 digits of magnitude, decimal point ignored
         if self._vrange == 0.1:
             # seven digits after decimal
@@ -84,8 +83,7 @@ class data_precision_8200(instrument):
     def _write_current(self, current):
         if current > 0.1 or current < -0.1:
             raise Exception(
-                f'Current setting {current}A invalid for instrument {
-                    self.get_name()} (+/-100mA max)')
+                f'Current setting {current}A invalid for instrument {self.get_name()} (+/-100mA max)')
         # always 6 digits of magnitude, decimal point ignored
         cmd = f'A{current * 10**6:+07.0f}'
         self._voltage = None
@@ -98,9 +96,7 @@ class data_precision_8200(instrument):
             self._vrange = range
         else:
             raise Exception(
-                f'Voltage range {range} invalid for instrument {
-                    self.get_name()}. Valid ranges are {
-                    self._valid_vranges}')
+                f'Voltage range {range} invalid for instrument {self.get_name()}. Valid ranges are {self._valid_vranges}')
         if self._voltage is not None:
             self._write_voltage(self._voltage)
 

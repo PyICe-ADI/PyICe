@@ -249,8 +249,7 @@ class visa_wrapper_serial(visa_wrapper):
                 # input("Press ENTER to continue")
         else:
             raise Exception(
-                f"Unexpected visa_wrapper_serial.write message type: {
-                    type(message)}")
+                f"Unexpected visa_wrapper_serial.write message type: {type(message)}")
         if self.terminationCharacter is not None:
             message = message.rstrip() + self.terminationCharacter
         self.ser.write(message)

@@ -102,11 +102,9 @@ class tektronix_afg3022(scpi_instrument):
             self.get_interface().write(
                 f"OUTPut{channel_number}:IMPedance {value}")
             self.get_interface().write(
-                f"SOURce{channel_number}:VOLTage:LEVel:IMMediate:HIGH {
-                    self.high_voltage}")
+                f"SOURce{channel_number}:VOLTage:LEVel:IMMediate:HIGH {self.high_voltage}")
             self.get_interface().write(
-                f"SOURce{channel_number}:VOLTage:LEVel:IMMediate:LOW {
-                    self.low_voltage}")
+                f"SOURce{channel_number}:VOLTage:LEVel:IMMediate:LOW {self.low_voltage}")
             self.operation_complete()
         new_channel = channel(
             channel_name,

@@ -27,8 +27,7 @@ query2 = '''SELECT  bat1_voltage,
                     FROM discharge_bat1_2015_04_14_20_30_40'''
 
 database = sqlite_data(
-    table_name=f'{
-        group1[0]}',
+    table_name=f'{group1[0]}',
     database_file="./data/battery_data.sqlite")
 
 database.query(query1)
@@ -38,8 +37,7 @@ GX.add_trace(axis=1,
              legend="Charging")
 
 database = sqlite_data(
-    table_name=f'{
-        group1[1]}',
+    table_name=f'{group1[1]}',
     database_file="./data/battery_data.sqlite")
 
 database.query(query2)

@@ -1577,8 +1577,7 @@ class i2c_scpi(twi_interface):
                 "I2C Error: Long Response to read_word: {}".format(ret_str))
         if ret_str[2] != "1":
             raise i2cAcknowledgeError(
-                f"I2C Acknowledge Error reading command code:{commandCode} at addr7: {
-                    hex(addr7)}. Got: {ret_str}")
+                f"I2C Acknowledge Error reading command code:{commandCode} at addr7: {hex(addr7)}. Got: {ret_str}")
         return int(ret_str[4:8], 16)
 
     def read_word_pec(self, addr7, commandCode):
@@ -1597,8 +1596,7 @@ class i2c_scpi(twi_interface):
                 "I2C Error: Long Response to read_word: {}".format(ret_str))
         if ret_str[2] != "1":
             raise i2cAcknowledgeError(
-                f"I2C Acknowledge Error reading command code:{commandCode} at addr7: {
-                    hex(addr7)}. Got: {ret_str}")
+                f"I2C Acknowledge Error reading command code:{commandCode} at addr7: {hex(addr7)}. Got: {ret_str}")
         pec = int(ret_str[9:11], 16)
         lsb = int(ret_str[6:8], 16)
         msb = int(ret_str[4:6], 16)
@@ -1624,8 +1622,7 @@ class i2c_scpi(twi_interface):
                 "I2C Error: Long Response to read_byte: {}".format(ret_str))
         if ret_str[2] != "1":
             raise i2cAcknowledgeError(
-                f"I2C Acknowledge Error reading command code:{commandCode} at addr7: {
-                    hex(addr7)}. Got: {ret_str}")
+                f"I2C Acknowledge Error reading command code:{commandCode} at addr7: {hex(addr7)}. Got: {ret_str}")
         return int(ret_str[4:6], 16)
 
     def read_byte_pec(self, addr7, commandCode):
@@ -1644,8 +1641,7 @@ class i2c_scpi(twi_interface):
                 "I2C Error: Long Response to read_byte: {}".format(ret_str))
         if ret_str[2] != "1":
             raise i2cAcknowledgeError(
-                f"I2C Acknowledge Error reading command code:{commandCode} at addr7: {
-                    hex(addr7)}. Got: {ret_str}")
+                f"I2C Acknowledge Error reading command code:{commandCode} at addr7: {hex(addr7)}. Got: {ret_str}")
         data8 = int(ret_str[4:6], 16)
         pec = int(ret_str[7:9], 16)
         if self.pec([self.write_addr(addr7), commandCode,
@@ -1671,8 +1667,7 @@ class i2c_scpi(twi_interface):
                 f"I2C Error: Long Response to write_byte: {ret_str}")
         if ret_str[2] != "1":
             raise i2cAcknowledgeError(
-                f"I2C Acknowledge Error writing command code: {commandCode} at addr7: {
-                    hex(addr7)}. Got: {ret_str}")
+                f"I2C Acknowledge Error writing command code: {commandCode} at addr7: {hex(addr7)}. Got: {ret_str}")
         return True
 
     def write_byte_pec(self, addr7, commandCode, data8):
@@ -1695,8 +1690,7 @@ class i2c_scpi(twi_interface):
                 "I2C Error: Long Response to write_byte: {}".format(ret_str))
         if ret_str[2] != "1":
             raise i2cAcknowledgeError(
-                f"I2C Error in write_byte_pec (Possible PEC failure). Got:{ret_str} (at addr7:{
-                    hex(addr7)}, Commandcode:{commandCode}, data:{data8})")
+                f"I2C Error in write_byte_pec (Possible PEC failure). Got:{ret_str} (at addr7:{hex(addr7)}, Commandcode:{commandCode}, data:{data8})")
         return True
 
     def write_word(self, addr7, commandCode, data16):
@@ -1716,8 +1710,7 @@ class i2c_scpi(twi_interface):
                 "I2C Error: Long Response to write_word: {}".format(ret_str))
         if ret_str[2] != "1":
             raise i2cAcknowledgeError(
-                f"I2C Acknowledge Error writing command code: {commandCode} at addr7: {
-                    hex(addr7)}. Got: {ret_str}")
+                f"I2C Acknowledge Error writing command code: {commandCode} at addr7: {hex(addr7)}. Got: {ret_str}")
         return True
 
     def write_word_pec(self, addr7, commandCode, data16):
@@ -1740,8 +1733,7 @@ class i2c_scpi(twi_interface):
                 "I2C Error: Long Response to write_word: {}".format(ret_str))
         if ret_str[2] != "1":
             raise i2cAcknowledgeError(
-                f"I2C Error in write_byte_pec (Possible PEC failure). Got:{ret_str} (at addr7: {
-                    hex(addr7)}, Commandcode:{commandCode}, data:{data16})")
+                f"I2C Error in write_byte_pec (Possible PEC failure). Got:{ret_str} (at addr7: {hex(addr7)}, Commandcode:{commandCode}, data:{data16})")
         return True
 
     def alert_response(self):
@@ -1834,10 +1826,7 @@ class i2c_scpi(twi_interface):
             # response; they remain in data[0:1] with unsigned char format
             if data[0] != 0 or data[1] != 0:
                 raise i2cMasterError(
-                    f"I²C communication error at I²C addr7: 0x{
-                        addr7:02X}, command code:{
-                        data[2] << 8 | data[3]}. Error count:{
-                        data[0] << 8 | data[1]}")
+                    f"I²C communication error at I²C addr7: 0x{addr7:02X}, command code:{data[2] << 8 | data[3]}. Error count:{data[0] << 8 | data[1]}")
             data = data[2:]
         else:
             raise Exception("Implementation incomplete")
@@ -2065,8 +2054,7 @@ class i2c_scpi_sp(twi_interface):
                 "I2C Error: Long Response to read_byte: {}".format(ret_str))
         if ret_str[2] != "1":
             raise i2cAcknowledgeError(
-                f"I2C Acknowledge Error addr7: {
-                    hex(addr7)}. Got: {ret_str}")
+                f"I2C Acknowledge Error addr7: {hex(addr7)}. Got: {ret_str}")
         word = ret_str[4:6]
         data8 = int(word, 16)
         return data8
@@ -2097,8 +2085,7 @@ class i2c_scpi_sp(twi_interface):
                 f"I2C Error: Long Response to send_byte: {ret_str}")
         if ret_str[2] != "1":
             raise i2cAcknowledgeError(
-                f"I2C Acknowledge Error sending byte: {data8} to addr7: {
-                    hex(addr7)}. Got: {ret_str}")
+                f"I2C Acknowledge Error sending byte: {data8} to addr7: {hex(addr7)}. Got: {ret_str}")
         return True
 
     def send_byte_pec(self, addr7, data8):
@@ -2124,8 +2111,7 @@ class i2c_scpi_sp(twi_interface):
                 f"I2C Error: Long Response to send_byte PEC: {ret_str}")
         if ret_str[2] != "1":
             raise i2cAcknowledgeError(
-                f"I2C Acknowledge Error sending byte: {data8} at addr7: {
-                    hex(addr7)}. Got: {ret_str}")
+                f"I2C Acknowledge Error sending byte: {data8} at addr7: {hex(addr7)}. Got: {ret_str}")
         return True
 
     def read_word(self, addr7, commandCode):
@@ -2143,8 +2129,7 @@ class i2c_scpi_sp(twi_interface):
                 "I2C Error: Long Response to read_word: {}".format(ret_str))
         if ret_str[2] != "1":
             raise i2cAcknowledgeError(
-                f"I2C Acknowledge Error reading command code:{commandCode} at addr7: {
-                    hex(addr7)}. Got: {ret_str}")
+                f"I2C Acknowledge Error reading command code:{commandCode} at addr7: {hex(addr7)}. Got: {ret_str}")
         word = ret_str[4:8]
         data16 = int(word, 16)
         return data16
@@ -2164,8 +2149,7 @@ class i2c_scpi_sp(twi_interface):
                 "I2C Error: Long Response to read_byte: {}".format(ret_str))
         if ret_str[2] != "1":
             raise i2cAcknowledgeError(
-                f"I2C Acknowledge Error reading command code:{commandCode} at addr7: {
-                    hex(addr7)}. Resp={ret_str}")
+                f"I2C Acknowledge Error reading command code:{commandCode} at addr7: {hex(addr7)}. Resp={ret_str}")
         word = ret_str[4:6]
         data8 = int(word, 16)
         return data8
@@ -2187,8 +2171,7 @@ class i2c_scpi_sp(twi_interface):
                 "I2C Error: Long Response to write_byte: {}".format(ret_str))
         if ret_str[2] != "1":
             raise i2cAcknowledgeError(
-                f"I2C Acknowledge Error writing command code: {commandCode} at addr7: {
-                    hex(addr7)}. Got: {ret_str}")
+                f"I2C Acknowledge Error writing command code: {commandCode} at addr7: {hex(addr7)}. Got: {ret_str}")
         return True
 
     def write_word(self, addr7, commandCode, data16):
@@ -2208,8 +2191,7 @@ class i2c_scpi_sp(twi_interface):
                 f"I2C Error: Long Response to write_word: {ret_str}")
         if ret_str[2] != "1":
             raise i2cAcknowledgeError(
-                f"I2C Acknowledge Error writing command code: {commandCode} at addr7: {
-                    hex(addr7)}. Got: {ret_str}")
+                f"I2C Acknowledge Error writing command code: {commandCode} at addr7: {hex(addr7)}. Got: {ret_str}")
         return True
 
     def write_softport_speed(self, sclk_freq):

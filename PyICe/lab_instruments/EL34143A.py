@@ -238,8 +238,7 @@ class EL34143A(scpi_instrument):
         self.TurnLoadOn()  # Because it could be off
         if float(self.GetCCCurrent()) != current:
             print(
-                f"WARNING! Failed to set the current to {current}A.\n{
-                    self.error()}")
+                f"WARNING! Failed to set the current to {current}A.\n{self.error()}")
 
     def _SetCVVoltage(self, voltage):
         if voltage is None and self.GetMode() == 'VOLT':
@@ -269,8 +268,7 @@ class EL34143A(scpi_instrument):
         self.TurnLoadOn()  # Because it could be off
         if float(self.GetCVVoltage()) != voltage:
             print(
-                f"WARNING! Failed to set the voltage to {voltage}V.\n{
-                    self.error()}")
+                f"WARNING! Failed to set the voltage to {voltage}V.\n{self.error()}")
 
     def _SetCWPower(self, power):
         if power is None and self.GetMode() == 'POW':
@@ -366,8 +364,7 @@ class EL34143A(scpi_instrument):
         self.curr_range = curr_range
         if curr_range != 'AUTO':
             self.get_interface().write(
-                f'CURR:RANG {
-                    self.curr_ranges[curr_range][1]}')
+                f'CURR:RANG {self.curr_ranges[curr_range][1]}')
 
     def SetMaxCurrent(self, current):
         "Sets the maximum current the load will sink"
@@ -381,8 +378,7 @@ class EL34143A(scpi_instrument):
         self.volt_range = volt_range
         if volt_range != 'AUTO':
             self.get_interface().write(
-                f'VOLT:RANG {
-                    self.volt_ranges[volt_range][1]}')
+                f'VOLT:RANG {self.volt_ranges[volt_range][1]}')
 
     def SetMaxVoltage(self, voltage):
         "Sets the maximum voltage the load will allow"

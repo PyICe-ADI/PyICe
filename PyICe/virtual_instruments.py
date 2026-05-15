@@ -1515,13 +1515,7 @@ class servo(instrument):
         self.gain_est = change / (self.maximum - self.minimum)
         if self.verbose:
             print(
-                f"{
-                    self.get_name()} MAX:{
-                    max_readback:3.5e} @ {
-                    self.maximum} MIN:{
-                    min_readback:3.5e} @ {
-                        self.minimum} GAINEST:{
-                            self.gain_est:3.5e}")
+                f"{self.get_name()} MAX:{max_readback:3.5e} @ {self.maximum} MIN:{min_readback:3.5e} @ {self.minimum} GAINEST:{self.gain_est:3.5e}")
 
     def servo(self, target=None):
         '''Servo fb_channel to target by varying output_channel.
@@ -1545,11 +1539,7 @@ class servo(instrument):
             if cnt > self.tries:
                 if self.except_on_fail:
                     raise ServoException(
-                        f"Tried to find the answer {
-                            cnt -
-                            1} times, couldn't. Got {
-                            readback:0.3e} @ {
-                            self.setting:0.3e}")
+                        f"Tried to find the answer {cnt -1} times, couldn't. Got {readback:0.3e} @ {self.setting:0.3e}")
                 else:
                     return False
             error = readback - self.target
@@ -1583,18 +1573,11 @@ class servo(instrument):
                 self.gain_est = change / (new_setting - self.setting)
                 if cnt > 1 and oldgain * self.gain_est < 0:
                     raise ServoException(
-                        f"Gain flipped phase between cycles, first {
-                            oldgain:0.3e} then {
-                            self.gain_est:0.3e}")
+                        f"Gain flipped phase between cycles, first {oldgain:0.3e} then {self.gain_est:0.3e}")
             readback = new_readback
             if self.verbose:
                 print(
-                    f"   {cnt}: TGT:{
-                        self.target:3.5e} ERR:{
-                        error:3.5e} FRC:{
-                        new_setting:3.5e} RES:{
-                        new_readback:3.5e} GAIN:{gain} GAINEST:{
-                        self.gain_est:3.5e}")
+                    f"   {cnt}: TGT:{self.target:3.5e} ERR:{error:3.5e} FRC:{new_setting:3.5e} RES:{new_readback:3.5e} GAIN:{gain} GAINEST:{self.gain_est:3.5e}")
             self.setting = new_setting
             # Added following code to quit if two consecutive tries are within
             # reltol even though final target has not been achieved. This will
@@ -2385,9 +2368,7 @@ class threshold_finder(instrument, delegator):
             if self._digitize_output(high_test['output_analog']) == self._digitize_output(
                     low_test['output_analog']):
                 raise ThresholdUndetectableError(
-                    f'{
-                        self.get_name()}: Comparator digital output unchanged at max and min input forcing levels with specified threshold {
-                        self._output_threshold}!')
+                    f'{self.get_name()}: Comparator digital output unchanged at max and min input forcing levels with specified threshold {self._output_threshold}!')
         else:
             self._output_threshold_calc = (
                 high_test['output_analog'] + low_test['output_analog']) / 2.0
@@ -3612,12 +3593,8 @@ class aggregator(instrument):
         # TODO remove all the print warnings below in _write_sequential after
         # these limit checks are fully enforced.
         for ch in slave_channels:
-            assert ch.get_max_write_limit() is not None, f"ERROR: Aggregator channel {
-                ch.get_name()} from {channel_name} aggregated by {
-                self.get_name()} has no max write limit."
-            assert ch.get_min_write_limit() is not None, f"ERROR: Aggregator channel {
-                ch.get_name()} from {channel_name} aggregated by {
-                self.get_name()} has no min write limit."
+            assert ch.get_max_write_limit() is not None, f"ERROR: Aggregator channel {ch.get_name()} from {channel_name} aggregated by {self.get_name()} has no max write limit."
+            assert ch.get_min_write_limit() is not None, f"ERROR: Aggregator channel {ch.get_name()} from {channel_name} aggregated by {self.get_name()} has no min write limit."
 
     def _write_channel(self, value, channel):
         if channel.get_attribute("sequential_mode"):
@@ -3633,12 +3610,10 @@ class aggregator(instrument):
             if value != 0:
                 if servant_channels[0].get_max_write_limit() is None:
                     print(
-                        f"WARNING: Aggregator channel {
-                            servant_channels[0].get_name()} has no max write limit.")
+                        f"WARNING: Aggregator channel {servant_channels[0].get_name()} has no max write limit.")
                 if servant_channels[0].get_min_write_limit() is None:
                     print(
-                        f"WARNING: Aggregator channel {
-                            servant_channels[0].get_name()} has no min write limit.")
+                        f"WARNING: Aggregator channel {servant_channels[0].get_name()} has no min write limit.")
             try:
                 servant_channels[0].write(value)
             except ChannelValueException as e:
@@ -3658,12 +3633,10 @@ class aggregator(instrument):
             if value != 0:
                 if servant_channels[0].get_max_write_limit() is None:
                     print(
-                        f"WARNING: Aggregator channel {
-                            servant_channels[0].get_name()} has no max write limit.")
+                        f"WARNING: Aggregator channel {servant_channels[0].get_name()} has no max write limit.")
                 if servant_channels[0].get_min_write_limit() is None:
                     print(
-                        f"WARNING: Aggregator channel {
-                            servant_channels[0].get_name()} has no min write limit.")
+                        f"WARNING: Aggregator channel {servant_channels[0].get_name()} has no min write limit.")
             servant_channels[0].write(value)
             self._write_sequential(0, servant_channels[1:])
 
@@ -3763,8 +3736,7 @@ class simple_servo(instrument):
                     (self.maximum - self.minimum)
             else:
                 raise ServoException(
-                    f"Don't know the step method: {
-                        self.step_method}")
+                    f"Don't know the step method: {self.step_method}")
             self.output_channel.write(setting)
             if self.is_in_spec(target, setting):
                 print("\n".join([f"{pt[0]}\t{pt[1]}" for pt in self._history]))
@@ -3820,13 +3792,7 @@ class simple_servo(instrument):
             except TypeError as e:
                 spe = ' None' + ' ' * (10 - 4)
             print(
-                f'Target:{
-                    target:.4e}, Readback:{
-                    self.fb_read_val:.4e}, set:{
-                    setting:.4e}, prev err:{spe}, err:{
-                    self.error: 0.4e}, up_bound:{
-                        self.upper_bound:.4e}, lo_bound:{
-                            self.lower_bound:.4e}')
+                f'Target:{target:.4e}, Readback:{self.fb_read_val:.4e}, set:{setting:.4e}, prev err:{spe}, err:{self.error: 0.4e}, up_bound:{self.upper_bound:.4e}, lo_bound:{self.lower_bound:.4e}')
         self._history.append((setting, self.fb_read_val))
         if self.abstol is not None and abs(self.error) < self.abstol:
             return True
@@ -3860,13 +3826,11 @@ class dummy_quantum_twin(instrument):
         if skip_read:
             dummy_channel.write(cached_value)
         else:
-            assert cached_value is None, f'dummy_quantum_twin {
-                live_channel.get_name()}: Do not specify cached_value if not skip_read.'
+            assert cached_value is None, f'dummy_quantum_twin {live_channel.get_name()}: Do not specify cached_value if not skip_read.'
             dummy_channel.write(live_channel.read())
         dummy_channel.set_write_access(False)
         dummy_channel.set_description(
-            f'Quantum twin of: {
-                live_channel.get_description()}')
+            f'Quantum twin of: {live_channel.get_description()}')
         dummy_channel.set_attribute('live_channel', live_channel)
         live_channel.set_attribute('dummy_twin', dummy_channel)
         live_channel.add_read_callback(

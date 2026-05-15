@@ -100,8 +100,7 @@ class keithley_4200(semiconductor_parameter_analyzer):
                 print('Empty Slot')
             else:
                 raise Exception(
-                    f'Problem parsing Keithley 4200 slot {slot} configuration: {
-                        self.slot_conf}')
+                    f'Problem parsing Keithley 4200 slot {slot} configuration: {self.slot_conf}')
 
     def configure_slot_smu(self, slot_number, smu_number):
         '''reconfigure smu instrument in slot_number to act as an smu'''

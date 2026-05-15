@@ -23,8 +23,7 @@ def bind_to_base(self, base_func, *args, **kwargs):
 class LTCPlotBokehAdapter:
     def __init__(self, *args, **kwargs):
         print(
-            f"A call to undefined constructor of: '{
-                type(self)}' was made with arguments: {args}, {kwargs}.")
+            f"A call to undefined constructor of: '{type(self)}' was made with arguments: {args}, {kwargs}.")
         self._args = args
         self._kwargs = kwargs
 
@@ -310,8 +309,7 @@ class Page(LTCPlotBokehAdapter):
             except OSError:
                 pass
             file_basename = os.path.join(
-                filepath, f"{
-                    args_map['file_basename']}.html".replace(
+                filepath, f"{args_map['file_basename']}.html".replace(
                     " ", "_"))
             for cnt, plt in enumerate(self._plots):
                 output_file(filename=file_basename, title=plt._plot_name)

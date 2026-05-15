@@ -123,8 +123,7 @@ class modbus_instrument(instrument, minimalmodbus.Instrument):
                     'Currently unimplemented. Contact PyICe developers')
             else:
                 raise Exception(
-                    f'Unknown register type {
-                        reg_description.reg_type} not a member of {modbus_reg_type}')
+                    f'Unknown register type {reg_description.reg_type} not a member of {modbus_reg_type}')
             if reg_description.readable:
                 ch._read = lambda ch=ch: self._read_register(ch)
                 ch.set_read_access(True)

@@ -828,13 +828,9 @@ class u2300a_datalogger(u2300a_scope):
         ) if ch.get_attribute('u2300a_type') == 'ain_time']
         for idx_prime in idx_primes:
             self.logger.execute(
-                f'CREATE INDEX IF NOT EXISTS {
-                    self.table_name}_{idx_prime}_idx ON {
-                    self.table_name} ({idx_prime})')
+                f'CREATE INDEX IF NOT EXISTS {self.table_name}_{idx_prime}_idx ON {self.table_name} ({idx_prime})')
         self.logger.execute(
-            f'CREATE INDEX IF NOT EXISTS {
-                self.table_name}_datetime_idx ON {
-                self.table_name} (datetime)')
+            f'CREATE INDEX IF NOT EXISTS {self.table_name}_datetime_idx ON {self.table_name} (datetime)')
         self._setup()
         self.stopping = False
         self.stopped = False
@@ -876,8 +872,7 @@ class u2300a_datalogger(u2300a_scope):
             self.stopping = True
             self.stopped = True
             print(
-                f"Acquisition stopped. There are {
-                    len(databank)} row(s) in the log queue. Some still need processing. One moment please.")
+                f"Acquisition stopped. There are {len(databank)} row(s) in the log queue. Some still need processing. One moment please.")
             try:
                 while True:
                     data = self.read_all_channels()
@@ -887,22 +882,15 @@ class u2300a_datalogger(u2300a_scope):
                     databank.append(data)
             except u2300aBufferUnderflowError:
                 print(
-                    f'All channels processed. Logging the last {
-                        len(databank)} rows now.')
+                    f'All channels processed. Logging the last {len(databank)} rows now.')
                 self.logger.log_many(databank)
                 # This is passing mutable data pass the boundary, but we
                 # promise not to mutate it until it does what it needs to do.
                 print(
-                    f"All data has been sent to logger thread. It took {
-                        (
-                            datetime.datetime.utcnow() -
-                            start_time).total_seconds()} seconds to log {record_time} seconds from the start. Thank you for your patience.")
+                    f"All data has been sent to logger thread. It took {(datetime.datetime.utcnow() -start_time).total_seconds()} seconds to log {record_time} seconds from the start. Thank you for your patience.")
             self.logger.stop()
             print(
-                f'Logger thread complete. It took {
-                    (
-                        datetime.datetime.utcnow() -
-                        start_time).total_seconds()} seconds from the start.')
+                f'Logger thread complete. It took {(datetime.datetime.utcnow() -start_time).total_seconds()} seconds from the start.')
             databank.clear()  # We expect the threads to be joined by now.
             if unhandled_exception_occurred:
                 raise e
@@ -936,8 +924,7 @@ class u2300a_datalogger(u2300a_scope):
                             for ia in scan_internal_addresses}
         self._point_count = int(self.get_interface().ask('ACQuire:SRATe?'))
         self.get_interface().write(
-            f'WAVeform:POINts {
-                self._point_count}')  # Target ~1s update??
+            f'WAVeform:POINts {self._point_count}')  # Target ~1s update??
 
     def read_delegated_channel_list(self, channel_list):
         if self.stopped and not self.stopping:  # This is just flushing the python queue into the database without talking to the instrument anymore. RHM
