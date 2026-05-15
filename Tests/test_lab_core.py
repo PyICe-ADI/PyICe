@@ -844,7 +844,7 @@ class TestChannelGroup:
     def test_write_html_sort_categories(self, loaded_group_w_channels):
         from bs4 import BeautifulSoup
 
-        group, (c1, c2, c3) = loaded_group_w_channels
+        group, _ = loaded_group_w_channels
         html = group.write_html(sort_categories=True)
         soup = BeautifulSoup(html, 'html5lib')
         rows = soup.find('table').find_all('tr')[1:]  # skip header
