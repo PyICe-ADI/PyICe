@@ -1539,7 +1539,7 @@ class servo(instrument):
             if cnt > self.tries:
                 if self.except_on_fail:
                     raise ServoException(
-                        f"Tried to find the answer {cnt -1} times, couldn't. Got {readback:0.3e} @ {self.setting:0.3e}")
+                        f"Tried to find the answer {cnt - 1} times, couldn't. Got {readback:0.3e} @ {self.setting:0.3e}")
                 else:
                     return False
             error = readback - self.target

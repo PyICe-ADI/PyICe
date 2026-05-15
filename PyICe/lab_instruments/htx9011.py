@@ -265,7 +265,7 @@ class htx9011(scpi_instrument):
             self.get_name() + ': ' + self.add_channel_isense_remapper.__doc__)
         readback_channel.set_category(vmeter_high_range_channel.get_category())
         readback_channel.set_display_format_function(
-            function=lambda float_data: f"{eng_string(float_data,fmt=':3.6g',si=True)}A")
+            function=lambda float_data: f"{eng_string(float_data, fmt=':3.6g', si=True)}A")
         return meter_ch_group._add_channel(
             readback_channel)  # Move channel to 3497x thread
 
@@ -1011,7 +1011,7 @@ class htx9011(scpi_instrument):
                 print(
                     f"Calibration last performed {self.get_calibration_date()}.")
                 print(
-                    f"Calibration overdue by {self.get_days_since_calibration() -cal_duration} days.")
+                    f"Calibration overdue by {self.get_days_since_calibration() - cal_duration} days.")
             resp = input("Continue anyway?")
             if not resp.lower().startswith('y'):
                 raise Exception(

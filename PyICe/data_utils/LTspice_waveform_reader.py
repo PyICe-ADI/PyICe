@@ -64,9 +64,9 @@ class LTspice_wavereader():
         if verbose:
             print("Resampling Time Series, Please wait....")
             print(
-                f"Original size: {eng_string(x=len(native_times),fmt=':.2g',si=True,units=' Points')}")
+                f"Original size: {eng_string(x=len(native_times), fmt=':.2g', si=True, units=' Points')}")
             print(
-                f"New size:      {eng_string(x=len(new_times),fmt=':.2g',si=True,units=' Points')}")
+                f"New size:      {eng_string(x=len(new_times), fmt=':.2g', si=True, units=' Points')}")
 
         self.data[keys[0]] = new_times
         for data_series in keys[1:]:

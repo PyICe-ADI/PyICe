@@ -887,10 +887,10 @@ class u2300a_datalogger(u2300a_scope):
                 # This is passing mutable data pass the boundary, but we
                 # promise not to mutate it until it does what it needs to do.
                 print(
-                    f"All data has been sent to logger thread. It took {(datetime.datetime.utcnow() -start_time).total_seconds()} seconds to log {record_time} seconds from the start. Thank you for your patience.")
+                    f"All data has been sent to logger thread. It took {(datetime.datetime.utcnow() - start_time).total_seconds()} seconds to log {record_time} seconds from the start. Thank you for your patience.")
             self.logger.stop()
             print(
-                f'Logger thread complete. It took {(datetime.datetime.utcnow() -start_time).total_seconds()} seconds from the start.')
+                f'Logger thread complete. It took {(datetime.datetime.utcnow() - start_time).total_seconds()} seconds from the start.')
             databank.clear()  # We expect the threads to be joined by now.
             if unhandled_exception_occurred:
                 raise e

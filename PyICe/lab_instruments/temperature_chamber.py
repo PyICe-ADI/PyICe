@@ -140,7 +140,7 @@ class temperature_chamber(instrument, metaclass=ABCMeta):
             # newline
             sys.stdout.flush()  # print doesn't make it to screen in a timely fashion without newline; windows OEM codepage doesn't support UNICODE
             print(
-                f"\rSettling {settled}/{self.soak}s Current Temp:{temp_current:3.1f}C Target Temp:{self.setpoint:3.1f}+/-{self.window / 2.0:3.1f}C Total time this setting:{self.time:3d}s {progress_chars[self.time %len(progress_chars)]}", end=' ')  # comma supresses newline
+                f"\rSettling {settled}/{self.soak}s Current Temp:{temp_current:3.1f}C Target Temp:{self.setpoint:3.1f}+/-{self.window / 2.0:3.1f}C Total time this setting:{self.time:3d}s {progress_chars[self.time % len(progress_chars)]}", end=' ')  # comma supresses newline
             sys.stdout.flush()  # print doesn't make it to screen in a timely fashion without newline
             window_upper = float(self.setpoint) + float(self.window) / 2
             window_lower = float(self.setpoint) - float(self.window) / 2

@@ -363,7 +363,7 @@ class htx9001(scpi_instrument):
                 print(
                     f"Calibration last performed {self.get_calibration_date()}.")
                 print(
-                    f"Calibration overdue by {self.get_days_since_calibration() -cal_duration} days.")
+                    f"Calibration overdue by {self.get_days_since_calibration() - cal_duration} days.")
             resp = input("Continue anyway?")
             if not resp.lower().startswith('y'):
                 raise Exception(
