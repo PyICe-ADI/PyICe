@@ -1066,15 +1066,11 @@ class integer_channel(channel):
                 dy = out_pts[i + 1] - out_pts[i]
                 return out_pts[i] + dy * (val - in_pts[i]) / dx
 
-            def format_function(
-                x, xp=x_pts, yp=y_pts): return _pwl_interp(
-                x, xp, yp)
+            def format_function(x, xp=x_pts, yp=y_pts):
+                return _pwl_interp(x, xp, yp)
 
-            def unformat_function(
-                y, xp=x_pts, yp=y_pts): return int(
-                round(
-                    _pwl_interp(
-                        y, yp, xp)))
+            def unformat_function(y, xp=x_pts, yp=y_pts):
+                return int(round(_pwl_interp(y, yp, xp)))
         if signed:
             self._formats[format_name]['format_function'] = lambda x: format_function(
                 self.twosComplementToSigned(x))

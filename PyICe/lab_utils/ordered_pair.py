@@ -9,9 +9,11 @@ class ordered_pair(list):
            returns None, data changed in place
            not appropriate for filtering functions that require access to adjacent (in time or space) data point values'''
         if x_transform is None:
-            def x_transform(x): return x
+            def x_transform(x):
+                return x
         if y_transform is None:
-            def y_transform(y): return y
+            def y_transform(y):
+                return y
         for i in range(len(self)):
             self[i] = [x_transform(self[i][0]), y_transform(self[i][1])]
 

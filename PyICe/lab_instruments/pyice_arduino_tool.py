@@ -671,7 +671,8 @@ class pyice_arduino_tool(instrument):
         size = channel.get_attribute('size')
         word_size = channel.get_attribute('word_size')
         register_read_data = int(self.read_chip(command_code))
-        def size_to_bitmask(size): return 2**size - 1
+        def size_to_bitmask(size):
+            return 2**size - 1
         # bitmask the size of the register with relevant bits cleared
         bitmask = size_to_bitmask(word_size) - \
             (size_to_bitmask(size) << offset)

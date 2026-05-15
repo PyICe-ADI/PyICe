@@ -117,8 +117,9 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
             # if self._streaming_enabled:
             # start_streaming = True
 
-            def function(): return self._interface.read_register_list(
-                self._addr7, command_codes, data_size, self._PEC)
+            def function():
+                return self._interface.read_register_list(
+                    self._addr7, command_codes, data_size, self._PEC)
             debug_logging.debug(
                 "TWI instrument reading %s registers from %s",
                 len(command_codes),
@@ -248,8 +249,9 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
         elif data is None and word_size == -1:
             raise Exception('quick_cmd not yet fully implemented.')
         else:
-            def function(): return self._interface.read_register(
-                addr7, command_code, word_size, self._PEC)
+            def function():
+                return self._interface.read_register(
+                    addr7, command_code, word_size, self._PEC)
             # read the data
             if size == word_size:
                 old_data = 0

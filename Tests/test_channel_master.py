@@ -141,7 +141,10 @@ class TestChannelMasterCallbacks:
         m.add_channel_dummy('cb_ch')
         m['cb_ch'].write(1)
         received = []
-        def cb(data): return received.append(data)
+
+        def cb(data):
+            return received.append(data)
+
         m.add_read_callback(cb)
         m.read_channel('cb_ch')
         m.remove_read_callback(cb)
@@ -161,7 +164,10 @@ class TestChannelMasterCallbacks:
         m = master_instance
         m.add_channel_dummy('wch')
         received = []
-        def cb(data): return received.append(data)
+
+        def cb(data):
+            return received.append(data)
+
         m.add_write_callback(cb)
         m.write_channel('wch', 1)
         m.remove_write_callback(cb)

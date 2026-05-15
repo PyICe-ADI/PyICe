@@ -455,7 +455,8 @@ class spi_dc590(spiInterface):
             Also, SPI communication seems to be broken with PyICe DC590ListRead.ino sketch for unknown reasons. Stock DC590 sketch works. 'C' command in set_gpio conflicts with list read stream enable and doesn't seem to correspond to current or past Linduino/DC590 command set either!'''
         self.interface = interface_stream
         if ss_ctrl is None:
-            def ss_ctrl(ss): return self.set_cs(not ss)  # active low
+            def ss_ctrl(ss):
+                return self.set_cs(not ss)  # active low
         spiInterface.__init__(
             self,
             CPOL=0,

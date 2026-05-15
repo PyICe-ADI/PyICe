@@ -813,10 +813,12 @@ class agilent_a970a_dig_in8(daq970a_instrument):
         if (start + size) > 8:
             raise Exception(f"{self.get_name()}: only 8 bits allowed")
 
-        def conversion_function(
-            data): return self._read_bits(start, size, data)
-        def read_function(): return self.read_apply_function(
-            self.internal_address, conversion_function)
+        def conversion_function(data):
+            return self._read_bits(start, size, data)
+
+        def read_function():
+            return self.read_apply_function(
+                self.internal_address, conversion_function)
         new_channel = integer_channel(
             channel_name, size=size, read_function=read_function)
         new_channel.set_delegator(self)

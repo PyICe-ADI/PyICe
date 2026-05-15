@@ -36,7 +36,8 @@ class ticker(object):
     def tick(self, display_function=None,
              character_time=0.15, refresh_time=45):
         if display_function is None:
-            def display_function(msg): return self.disp(msg)
+            def display_function(msg):
+                return self.disp(msg)
         refresh_cycles = max(int(refresh_time / character_time), 1)
         while True:
             self.build_tape()

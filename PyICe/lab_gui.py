@@ -1318,10 +1318,12 @@ class display_item_group(QtWidgets.QWidget):
 
     def sort(self):
         if self._tagged_sort:
-            def key(di): return '{}______{}'.format(
-                di.get_tag(), di.get_name()).upper()
+            def key(di):
+                return '{}______{}'.format(
+                    di.get_tag(), di.get_name()).upper()
         else:
-            def key(item): return item.get_name().upper()
+            def key(item):
+                return item.get_name().upper()
         self.display_items.sort(key=key)
 
     def inclusive_filter(self, filter_list=None):
