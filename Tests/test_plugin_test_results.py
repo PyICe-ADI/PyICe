@@ -13,6 +13,10 @@ from PyICe.plugins.test_results import (
     Test_Results, Test_Results_Reload,
 )
 
+# Prevent pytest from trying to collect these imported classes as test classes
+Test_Results.__test__ = False
+Test_Results_Reload.__test__ = False
+
 
 # --- Utility Functions ---
 
