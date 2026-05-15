@@ -1,5 +1,4 @@
 from ..lab_core import *
-import time
 
 
 class htx9000(scpi_instrument):

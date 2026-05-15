@@ -1,4 +1,3 @@
-from PyICe import lab_instruments, lab_core
 from PyICe.lab_utils.banners import print_banner
 import os
 

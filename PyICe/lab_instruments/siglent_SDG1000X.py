@@ -3,7 +3,6 @@ from PyICe.lab_utils.banners import print_banner
 # Not needed in Python 3 but signals to us that order matters.
 from collections import OrderedDict
 from pyvisa.errors import VisaIOError
-import time
 
 
 class SiglentIOError(Exception):
@@ -501,7 +500,7 @@ class siglent_SDG1000X(scpi_instrument):
             if value.upper() not in ["INDEPENDENT", "PHASE-LOCKED"]:
                 raise Exception(
                     f"\nValid values for the Phase Mode channel are INDEPENDENT and PHASE-LOCKED, don't know what {value} is supposed to do.")
-            command = f"MODE"
+            command = "MODE"
             argument = f" {value}"
             self._try_command(command, argument)
         new_channel = channel(

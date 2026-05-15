@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from PyICe import lab_instruments, lab_core, twi_instrument
+from PyICe import lab_core, twi_instrument
 
 master = lab_core.master()
 twi_interface = master.get_twi_dummy_interface(verbose=True)

@@ -118,7 +118,6 @@ class database_archive():
                     print(e)
                     print('This is unexpected. Please contact support.')
                     breakpoint()
-                    pass
         ###########
         # Wrap up #
         ###########
@@ -241,7 +240,7 @@ class database_archive():
                 else:
                     return None
             elif action.lower() == 'd' or action.lower() == 'delete':
-                conf_resp = input(f'\tConfirm delete? [(yes/[no]]: ')
+                conf_resp = input('\tConfirm delete? [(yes/[no]]: ')
                 if conf_resp.lower() == 'yes':
                     self.delete_table(table_name, commit=False)
                     return None
@@ -252,12 +251,12 @@ class database_archive():
         args:
             import_str - str. Folder path from a PYTHONPATH to the directory containing the test script.'''
         (dest_folder, f) = os.path.split(os.path.abspath(db_file))
-        dest_file = os.path.join(dest_folder, f"replot_data.py")
+        dest_file = os.path.join(dest_folder, "replot_data.py")
         plot_script_src = "if __name__ == '__main__':\n"
-        plot_script_src += f"    from PyICe.plugins.plugin_manager import Plugin_Manager\n"
+        plot_script_src += "    from PyICe.plugins.plugin_manager import Plugin_Manager\n"
         plot_script_src += f"    from {import_str}.test import Test\n"
-        plot_script_src += f"    pm = Plugin_Manager()\n"
-        plot_script_src += f"    pm.add_test(Test)\n"
+        plot_script_src += "    pm = Plugin_Manager()\n"
+        plot_script_src += "    pm.add_test(Test)\n"
         plot_script_src += f"    pm.plot(database='data_log.sqlite', table_name='{db_table}')\n"
         try:
             with open(dest_file, 'a') as f:

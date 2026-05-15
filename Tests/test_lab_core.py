@@ -398,9 +398,9 @@ def loaded_group_w_channels(group):
     sub_group1 = channel_group('subg1')
     sub_group2 = channel_group('subg2')
 
-    sub_group1.add(c1 := channel(name=f'chan0',
+    sub_group1.add(c1 := channel(name='chan0',
                                  write_function=write_function))
-    sub_group2.add(c2 := channel(name=f'chan1',
+    sub_group2.add(c2 := channel(name='chan1',
                                  write_function=write_function))
     c1.set_category('cat1')
     c2.set_category('cat2')
@@ -582,9 +582,9 @@ class TestChannelGroup:
         sub_group1 = channel_group('subg1')
         sub_group2 = channel_group('subg2')
 
-        sub_group1.add(c1 := channel(name=f'chan0',
+        sub_group1.add(c1 := channel(name='chan0',
                                      write_function=write_function))
-        sub_group2.add(c2 := channel(name=f'chan1',
+        sub_group2.add(c2 := channel(name='chan1',
                                      write_function=write_function))
         group.add(sub_group1)
         group.add(sub_group2)
@@ -594,7 +594,7 @@ class TestChannelGroup:
 
     def test__resolve_channel(self, group):
         sub_group1 = channel_group('subg1')
-        sub_group1.add(c1 := channel(name=f'chan0',
+        sub_group1.add(c1 := channel(name='chan0',
                                      write_function=write_function))
         group.add(sub_group1)
         assert group._resolve_channel('chan0') is c1

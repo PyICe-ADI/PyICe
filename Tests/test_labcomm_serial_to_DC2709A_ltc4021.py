@@ -1,4 +1,3 @@
-from PyICe.labcomm import packet, SMBUS_module_id
 demoboard_connection = ("serial", "COM8")  # Use serial port
 # demoboard_connection = ("tcp", 4510)  # Use TCP socket with port number
 baudrate = 115200

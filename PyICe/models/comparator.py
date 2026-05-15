@@ -1,4 +1,3 @@
-from PyICe import lab_core, lab_instruments
 
 
 class comparator(object):

@@ -1,5 +1,5 @@
 
-from PyICe import lab_core, lab_instruments, lab_utils
+from PyICe import lab_core, lab_utils
 import random
 
 m = lab_core.master()

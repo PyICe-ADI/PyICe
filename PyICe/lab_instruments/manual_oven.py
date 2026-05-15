@@ -1,4 +1,3 @@
-from ..lab_core import *
 from ..virtual_instruments import instrument_humanoid
 from .temperature_chamber import temperature_chamber
 

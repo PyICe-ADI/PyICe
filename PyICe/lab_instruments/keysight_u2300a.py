@@ -725,7 +725,7 @@ class u2300a_scope(scpi_instrument, delegator):
         results = results_ord_dict()
         for ch in channel_list:
             if ch.get_attribute('u2300a_type') == 'ain_time':
-                trig_mode = self.get_interface().ask(f'TRIGger:TYPe?')
+                trig_mode = self.get_interface().ask('TRIGger:TYPe?')
                 if trig_mode == 'POST':
                     int_points = range(self._point_count)
                 elif trig_mode == 'MID':
@@ -1440,7 +1440,6 @@ class u2356a_base():
 
 
 if __name__ == '__main__':
-    from PyICe import lab_core
     m = master()
     # vif = m.get_visa_interface('USB0::0x0957::0x1518::TW55020037::0::INSTR', timeout=90)
     vif = m.get_visa_interface(

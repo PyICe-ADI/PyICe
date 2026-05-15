@@ -1,4 +1,3 @@
-from ..lab_core import *
 from .temperature_chamber import temperature_chamber
 from .autonicstk import autonicstk
 

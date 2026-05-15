@@ -1,4 +1,3 @@
-from PyICe.lab_core import *
 from .kikusui_plz import kikusui_plz
 
 

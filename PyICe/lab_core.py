@@ -7,7 +7,6 @@ changes to this file should be minimal!
 '''
 
 import logging
-import functools
 import copy
 import os
 import numbers
@@ -36,7 +35,7 @@ sys.path.append('..')
 logo.display()
 
 try:
-    from numpy import ndarray, insert
+    from numpy import ndarray
     numpy_missing = False
 except ImportError as e:
     numpy_missing = True

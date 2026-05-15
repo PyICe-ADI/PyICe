@@ -20,7 +20,6 @@ class sorensen_dlm_60_10(sorensen_generic_supply):
 
     def _enable_output(self):
         '''DLM 60 10 can only be enabled/disabled by physical output enable button - so just pass here'''
-        pass
 
     def _write_voltage(self, voltage):
         '''Set named channel to force voltage'''

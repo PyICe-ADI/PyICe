@@ -237,7 +237,6 @@ class touchstone_utils():
         '''
         TODO: Make an error checking network setter.
         '''
-        pass
 
     def test_make_Nport_Mport_reference_networks(self, N, M=None):
         '''
@@ -392,7 +391,7 @@ def _parallel(Ra, Rb):
 ###################################################################
 ###################################################################
 ###################################################################
-################## End of Supported Development ###################
+# End of Supported Development ###################
 ###################################################################
 ###################################################################
 ###################################################################
@@ -1203,7 +1202,7 @@ def _parallel(Ra, Rb):
         # mplt.xlabel('Frequency (log|Hz|)')
         # mplt.legend()
 
-    ### Below are some functions that could get implemented ###
+    # Below are some functions that could get implemented ###
 
     def plot_Sbode(self):
         if self.network is None:

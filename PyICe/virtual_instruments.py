@@ -700,17 +700,14 @@ class expect(instrument):
 
 class ExpectException(Exception):
     '''Base class for expect instrument comparison failures'''
-    pass
 
 
 class ExpectOverException(ExpectException):
     '''expect instrument comparison failures for measured > expect'''
-    pass
 
 
 class ExpectUnderException(ExpectException):
     '''expect instrument comparison failures for measured < expect'''
-    pass
 
 
 class delay_loop(PyICe.lab_utils.delay_loop.delay_loop, instrument):
@@ -3802,11 +3799,11 @@ class simple_servo(instrument):
                 elif forced_direction is True:
                     self.lower_bound = setting
                     if self.verbose:
-                        print(f'Search Direction Forced Upward by Override.')
+                        print('Search Direction Forced Upward by Override.')
                 elif forced_direction is False:
                     self.upper_bound = setting
                     if self.verbose:
-                        print(f'Search Direction Forced Downward by Override.')
+                        print('Search Direction Forced Downward by Override.')
                 else:
                     raise ServoException(
                         f"Incorrect value: {forced_direction} returned from search direction override function.  Expected None, True, or False")

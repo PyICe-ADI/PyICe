@@ -457,7 +457,6 @@ class waveform(object):
 
     def rise_time(self, low_percentage=0.1, high_percentage=0.9):
         from bokeh.models import Span
-        from bokeh.models import Label
         amplitude = self._average_out - self._average_in
         for idx, value in enumerate(self.ydata):
             if value > self._average_in + low_percentage * amplitude:

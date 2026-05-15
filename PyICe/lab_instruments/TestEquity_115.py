@@ -53,7 +53,6 @@ class TestEquity_115(temperature_chamber):
                 if self.__scriptDebug == True:
                     print("TE115A: get_temp communication error")
                 time.sleep(5)
-                pass
         return float(temp)
 
     def _write_temperature(self, value):

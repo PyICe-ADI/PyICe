@@ -284,7 +284,7 @@ class agilent_3034a(oscilloscope):
         if value in ["RUN", "SINGLE"]:
             # Wait until it arms
             # Not sure if this makes sense for run or not....
-            xrange = float(self.get_interface().ask(f":TIMebase:RANGe?"))
+            xrange = float(self.get_interface().ask(":TIMebase:RANGe?"))
             # timeout will be 10s for most captures but grows for long
             # captures. This allows AER to go high the first time RUN or SINGLE
             # is written.
@@ -304,7 +304,7 @@ class agilent_3034a(oscilloscope):
 
     def trigger_force(self):
         self._set_runmode('SINGLE')
-        xrange = float(self.get_interface().ask(f":TIMebase:RANGe?"))
+        xrange = float(self.get_interface().ask(":TIMebase:RANGe?"))
         self.delay(1.5 * xrange)
         self.get_interface().write(":TRIGger:FORCe")
         while (True):
@@ -519,7 +519,7 @@ class agilent_3034a(oscilloscope):
     def add_channel_Xposition(self, name):
         new_channel = channel(name, write_function=lambda value: self.get_interface(
         ).write(f":TIMebase:POSition {-value}"))
-        new_channel._set_value(-float(self.get_interface().ask(f":TIMebase:POSition?")))
+        new_channel._set_value(-float(self.get_interface().ask(":TIMebase:POSition?")))
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
@@ -543,7 +543,7 @@ class agilent_3034a(oscilloscope):
         new_channel.add_preset("RIGHT", "One Division from the right")
         new_channel._set_value(
             self.get_interface().ask(
-                f":TIMebase:REFerence?"))
+                ":TIMebase:REFerence?"))
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
@@ -552,7 +552,7 @@ class agilent_3034a(oscilloscope):
         new_channel = channel(
             name, read_function=lambda: float(
                 self.get_interface().ask(
-                    f":TIMebase:RANGe?")))
+                    ":TIMebase:RANGe?")))
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
@@ -563,7 +563,7 @@ class agilent_3034a(oscilloscope):
             read_function=lambda: -
             float(
                 self.get_interface().ask(
-                    f":TIMebase:POSition?")))
+                    ":TIMebase:POSition?")))
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
@@ -571,7 +571,7 @@ class agilent_3034a(oscilloscope):
     def add_channel_Xreference_readback(self, name):
         new_channel = channel(
             name, read_function=lambda: self.get_interface().ask(
-                f":TIMebase:REFerence?"))
+                ":TIMebase:REFerence?"))
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
@@ -590,7 +590,7 @@ class agilent_3034a(oscilloscope):
             self.get_interface().write(f":TRIGger:LEVel {value}")
             self.delay()
         new_channel = channel(name, write_function=_set_trigger_level)
-        new_channel._set_value(self.get_interface().ask(f":TRIGger:LEVel?"))
+        new_channel._set_value(self.get_interface().ask(":TRIGger:LEVel?"))
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
@@ -605,7 +605,7 @@ class agilent_3034a(oscilloscope):
         new_channel = channel(name, write_function=_set_triggermode)
         new_channel.add_preset("AUTO", "Find a trigger level")
         new_channel.add_preset("NORMAL", "Use defined trigger level")
-        new_channel._set_value(self.get_interface().ask(f":TRIGger:SWEep?"))
+        new_channel._set_value(self.get_interface().ask(":TRIGger:SWEep?"))
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
@@ -623,7 +623,7 @@ class agilent_3034a(oscilloscope):
         new_channel.add_preset("NEGATIVE", "Negative edges")
         new_channel.add_preset("EITHER", "Either edge")
         new_channel.add_preset("ALTERNATE", "Alternate between edges")
-        new_channel._set_value(self.get_interface().ask(f":TRIGger:SLOPe?"))
+        new_channel._set_value(self.get_interface().ask(":TRIGger:SLOPe?"))
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
@@ -651,7 +651,7 @@ class agilent_3034a(oscilloscope):
         new_channel.add_preset("CHANNEL2", "Channel 2")
         new_channel.add_preset("CHANNEL3", "Channel 3")
         new_channel.add_preset("CHANNEL4", "Channel 4")
-        new_channel._set_value(self.get_interface().ask(f":TRIGger:SOURce?"))
+        new_channel._set_value(self.get_interface().ask(":TRIGger:SOURce?"))
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
@@ -672,7 +672,7 @@ class agilent_3034a(oscilloscope):
         new_channel.add_preset(
             "PEAK",
             "sets the oscilloscope in the peak detect mode. In this mode, :ACQuire:COUNt has no meaning")
-        new_channel._set_value(self.get_interface().ask(f":ACQuire:TYPE?"))
+        new_channel._set_value(self.get_interface().ask(":ACQuire:TYPE?"))
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
@@ -688,7 +688,7 @@ class agilent_3034a(oscilloscope):
         ######################################################################
         # This line is questionable - it might try to read before a trigger  #
         ######################################################################
-        new_channel._set_value(self.get_interface().ask(f":ACQuire:COUNt?"))
+        new_channel._set_value(self.get_interface().ask(":ACQuire:COUNt?"))
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
@@ -728,7 +728,7 @@ class agilent_3034a(oscilloscope):
         new_channel.add_preset("SBUS1", "")
         new_channel.add_preset("SBUS2", "")
         new_channel.add_preset("USB", "")
-        new_channel._set_value(self.get_interface().ask(f":TRIGger:MODE?"))
+        new_channel._set_value(self.get_interface().ask(":TRIGger:MODE?"))
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel

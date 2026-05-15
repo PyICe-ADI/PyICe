@@ -375,7 +375,7 @@ class EL34143A(scpi_instrument):
 
     def GetMaxCurrent(self):
         "Returns the maximum current the load will sink"
-        return self.get_interface().ask(f"CURR:RANG?")
+        return self.get_interface().ask("CURR:RANG?")
 
     def _SetVoltRange(self, volt_range):
         self.volt_range = volt_range
@@ -390,7 +390,7 @@ class EL34143A(scpi_instrument):
 
     def GetMaxVoltage(self):
         "Gets the maximum voltage the load will allow"
-        return self.get_interface().ask(f"VOLT:RANG?")
+        return self.get_interface().ask("VOLT:RANG?")
 
     def _SetPowRange(self, pow_range):
         self.pow_range = pow_range
@@ -404,7 +404,7 @@ class EL34143A(scpi_instrument):
 
     def GetMaxPower(self):
         "Gets the maximum power the load will allow"
-        return self.get_interface().ask(f"POW:RANG?")
+        return self.get_interface().ask("POW:RANG?")
 
     def SetMode(self, mode):
         "Sets the mode (constant current, constant voltage, etc."
@@ -456,7 +456,7 @@ class EL34143A(scpi_instrument):
 
     def GetCRResistance(self):
         "Gets the constant resistance mode's resistance level"
-        return self.get_interface().ask(f"RES?")
+        return self.get_interface().ask("RES?")
 
     def SetRemoteSense(self, enabled=0):
         "Enable or disable remote sensing"

@@ -1,8 +1,4 @@
 from ..lab_core import *
-import atexit
-from functools import wraps
-import pyvisa.errors
-from abc import abstractmethod
 
 # todo measure autorange
 # todo range control channels???
@@ -316,13 +312,13 @@ class scpi_smu(scpi_instrument, smu):
         # todo better message parsing
         # todo explicitly set format of response included elements
         (voltage, current, resistance, timestamp, status) = self.get_interface().ask(
-            f':MEASure:VOLTage:DC?').split(',')
+            ':MEASure:VOLTage:DC?').split(',')
         return self._parse_float(voltage)
 
     def _isense(self, channel_number):
         # what about channel number parsing?!?!?!?
         (voltage, current, resistance, timestamp, status) = self.get_interface().ask(
-            f':MEASure:CURRent:DC?').split(',')
+            ':MEASure:CURRent:DC?').split(',')
         return self._parse_float(current)
 
     def _vcompl(self, channel_number, value):
@@ -351,7 +347,7 @@ class scpi_smu(scpi_instrument, smu):
     def _remote_senseq(self, channel_number):
         '''ignores channel number!!!!!!!!!!!!!!!!!!!'''
         # print(f'{value}, {type(value)}')
-        return self.get_interface().ask(f':SYSTem:RSENse?')
+        return self.get_interface().ask(':SYSTem:RSENse?')
 
     def _high_capacitance(self, channel_number, value):
         raise Exception('Unimplemented. Contact PyICe developers.')
@@ -365,7 +361,7 @@ class scpi_smu(scpi_instrument, smu):
         resp_subst = {"FRON": "Front",
                       "REAR": "Rear",
                       }
-        return resp_subst[self.get_interface().ask(f':ROUTe:TERMinals?')]
+        return resp_subst[self.get_interface().ask(':ROUTe:TERMinals?')]
 
 
 class keithley_2400(scpi_smu, keithley_smu):

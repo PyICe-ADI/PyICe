@@ -1,5 +1,4 @@
 from PyICe.lab_core import *
-import time
 
 
 class tektronix_4104b(scpi_instrument, delegator):
@@ -416,7 +415,7 @@ class tektronix_4104b(scpi_instrument, delegator):
     def add_channel_Xreference(self, channel_name):
         def _set_xreference(value):
             self.get_interface().write(
-                (f"HORizontal:DELay:MODe OFF").encode(
+                ("HORizontal:DELay:MODe OFF").encode(
                     self.str_encoding))
             if value.upper() in ["LEFT", "CENTER",
                                  "RIGHT"]:  # Agilent valid arguments
@@ -469,7 +468,7 @@ class tektronix_4104b(scpi_instrument, delegator):
     def add_channel_triggerlevel(self, channel_name):
         def _set_triggerlevel(value):
             trigger_source = self.get_interface().ask(
-                (f"TRIGger:A:EDGE:Source?").encode(self.str_encoding))
+                ("TRIGger:A:EDGE:Source?").encode(self.str_encoding))
             self.get_interface().write(
                 (f"TRIGger:A:LEVel:{trigger_source} {value}").encode(
                     self.str_encoding))

@@ -164,7 +164,7 @@ class communication_node(object):
             print("known interfaces:")
             for interface in com_node_list:
                 print(f"{interface} @ {interface.com_node_get_root()}")
-            raise Exception(f"Too many COM node parents")
+            raise Exception("Too many COM node parents")
         # get a list of lists for all interfaces
         in_sets = self.group_com_nodes_for_threads()
         out_sets = []

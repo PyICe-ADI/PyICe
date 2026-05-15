@@ -1,4 +1,4 @@
-from PyICe import lab_core, lab_instruments, lab_utils
+from PyICe import lab_core, lab_utils
 import time
 
 m = lab_core.master()

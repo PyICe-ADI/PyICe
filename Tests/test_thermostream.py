@@ -37,7 +37,6 @@ class temptronic_4310(instrument):
         self.instrumnet.write("FLOW 1")
         self.instrumnet.write("COOL 1")
         self.time = 0
-        pass
 
     def set_window(self, value):
         self.window = value

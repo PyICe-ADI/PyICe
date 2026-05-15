@@ -13,7 +13,7 @@ try:
     from PySide2 import QtGui
     from PySide2 import QtWidgets
     from PySide2 import QtCore
-    from PySide2.QtCore import SIGNAL, SLOT, QObject, Signal, Slot
+    from PySide2.QtCore import SIGNAL, SLOT, QObject, Signal
 except ImportError:
     # PySide6 is required for Python >=3.11.
     # QAction moved from QtWidgets to QtGui in Qt6; monkey-patch it back into
@@ -22,7 +22,7 @@ except ImportError:
     from PySide6 import QtGui
     from PySide6 import QtWidgets
     from PySide6 import QtCore
-    from PySide6.QtCore import SIGNAL, SLOT, QObject, Signal, Slot
+    from PySide6.QtCore import SIGNAL, SLOT, QObject, Signal
     QtWidgets.QAction = QtGui.QAction
 import queue
 import datetime
@@ -3188,7 +3188,6 @@ class ltc_lab_gui_app(QObject):
 if __name__ == '__main__':
     from . import lab_instruments
     from . import lab_core
-    from . import twi_instrument
     master = lab_core.master("Demonstration GUI")
     master.add_channel_delta_timer('time_d')
     timer = lab_instruments.timer()

@@ -37,17 +37,17 @@ if __name__ == '__main__':
     script_creator_dict = {}
     dir_to_make = []
 
-    project_test_folder = os.path.join(project_folder, f'tests')
+    project_test_folder = os.path.join(project_folder, 'tests')
     dir_to_make.append(project_test_folder)
-    test_example_folder = os.path.join(project_test_folder, f'example')
+    test_example_folder = os.path.join(project_test_folder, 'example')
     dir_to_make.append(test_example_folder)
-    infrastructure_folder = os.path.join(project_folder, f'infrastructure')
+    infrastructure_folder = os.path.join(project_folder, 'infrastructure')
     dir_to_make.append(infrastructure_folder)
-    bench_folder = os.path.join(infrastructure_folder, f'benches')
+    bench_folder = os.path.join(infrastructure_folder, 'benches')
     dir_to_make.append(bench_folder)
-    driver_folder = os.path.join(infrastructure_folder, f'hardware_drivers')
+    driver_folder = os.path.join(infrastructure_folder, 'hardware_drivers')
     dir_to_make.append(driver_folder)
-    plugin_folder = os.path.join(infrastructure_folder, f'plugin_dependencies')
+    plugin_folder = os.path.join(infrastructure_folder, 'plugin_dependencies')
     dir_to_make.append(plugin_folder)
 
     for folder in dir_to_make:
@@ -113,22 +113,22 @@ def get_traceability_items(test):
     if 'notifications' in plugins_to_add:
         os.mkdir(os.path.join(plugin_folder, 'user_notifications'))
         script_creator_dict[os.path.join(
-            plugin_folder, 'user_notifications', f"example_user.py")] = user_script_maker()
+            plugin_folder, 'user_notifications', "example_user.py")] = user_script_maker()
     if 'traceability' in plugins_to_add:
         script_creator_dict[os.path.join(
-            plugin_folder, f"traceability.py")] = traceability_script_maker()
+            plugin_folder, "traceability.py")] = traceability_script_maker()
     plugin_str = '['
     for x in plugins_to_add:
         plugin_str += f'"{x}",'
     plugin_str = plugin_str[:-1]
     plugin_str += ']'
     script_creator_dict[os.path.join(
-        plugin_folder, f"plugins.json")] = plugin_str
+        plugin_folder, "plugins.json")] = plugin_str
 
     ###
     # TEST TEMPLATE
     ###
-    new_test_template = f'from PyICe.plugins.master_test_template import Master_Test_Template'
+    new_test_template = 'from PyICe.plugins.master_test_template import Master_Test_Template'
     if 'traceability' in plugins_to_add:
         new_test_template += f'\nfrom {project_name}.infrastructure.plugin_dependencies.traceability import get_traceability_items'
     new_test_template += f'''
@@ -186,7 +186,7 @@ def populate(self):
         channel.set_category("supplies")
     return {'instruments':[hameg], "cleanup_list":hameg_cleanup_list}'''
     script_creator_dict[os.path.join(
-        driver_folder, f"example_HAMEG.py")] = new_sample_driver
+        driver_folder, "example_HAMEG.py")] = new_sample_driver
 
     ###
     # EXAMPLE SCRIPT
@@ -245,7 +245,7 @@ class Test(Test_Template):
         Page.create_pdf(file_basename=self.name, filepath=self.plot_filepath)
         return plotlist'''
     script_creator_dict[os.path.join(
-        test_example_folder, f"test.py")] = new_example_script
+        test_example_folder, "test.py")] = new_example_script
 
     ###
     # RUN SCRIPT
@@ -257,7 +257,7 @@ pm = Plugin_Manager()
 pm.add_test(Test)
 pm.run()'''
     script_creator_dict[os.path.join(
-        test_example_folder, f"run.py")] = new_run_script
+        test_example_folder, "run.py")] = new_run_script
 
     for (k, v) in script_creator_dict.items():
         try:
@@ -268,9 +268,8 @@ pm.run()'''
             print(type(e))
             print(e)
             breakpoint()
-            pass
 
     banners.print_banner("",
                          f"New project '{project_name}' structure set!", "Be sure the new folder is part of the PYTHONPATH in environment variables.", "Please go to the driver folder to make drivers for the instruments you need", "and the benches folder to add them to your bench,", "or go directly to:", f"{test_example_folder}", "to run an example of a test.", "")
     if len(plugins_to_add):
-        print(f"\nBe aware: some plugins may require additional project information in order to function.")
+        print("\nBe aware: some plugins may require additional project information in order to function.")

@@ -3,7 +3,6 @@ from ..lab_core import *
 import math
 import numpy as np
 import nifgen
-import sys
 import time
 
 

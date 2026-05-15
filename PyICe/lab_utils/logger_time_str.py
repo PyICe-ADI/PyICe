@@ -1,4 +1,3 @@
-import datetime
 
 
 def logger_time_str(datetime):

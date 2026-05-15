@@ -1,4 +1,4 @@
-from PyICe import lab_instruments, lab_core
+from PyICe import lab_instruments
 import time
 
 timer = lab_instruments.timer()

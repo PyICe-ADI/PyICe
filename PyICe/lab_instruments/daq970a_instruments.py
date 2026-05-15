@@ -623,12 +623,10 @@ class agilent_a970a_40ch(agilent_a970a_40ch):
 
 class agilent_a970a_908A_40ch(agilent_a970a_40ch):
     '''Extend base class to add module name to class name for compatibility.'''
-    pass
 
 
 class agilent_a970a_901A_20ch(agilent_a970a_20ch):
     '''Extend base class to add module name to class name for compatibility.'''
-    pass
 
 
 class agilent_a970a_dacs(daq970a_instrument):
@@ -842,4 +840,3 @@ class agilent_a970a_totalizer(daq970a_instrument):
     '''Implement this if you need it
         26-bit totalizer on physical channel s03 of the 34907A plugin module'''
     # self.plugin_type = "34907A"
-    pass

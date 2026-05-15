@@ -1033,22 +1033,18 @@ class agilent_34972a_40ch(agilent_3497xa_40ch):
 
 class agilent_34970a_34908A_40ch(agilent_3497xa_40ch):
     '''Extend base class to add module name to class name for compatibility.'''
-    pass
 
 
 class agilent_34972a_34908A_40ch(agilent_3497xa_40ch):
     '''Extend base class to add module name to class name for compatibility.'''
-    pass
 
 
 class agilent_34970a_34901A_20ch(agilent_3497xa_20ch):
     '''Extend base class to add module name to class name for compatibility.'''
-    pass
 
 
 class agilent_34972a_34901A_20ch(agilent_3497xa_20ch):
     '''Extend base class to add module name to class name for compatibility.'''
-    pass
 
 
 class agilent_3497xa_dacs(a3497xa_instrument):
@@ -1286,7 +1282,6 @@ class agilent_3497xa_totalizer(a3497xa_instrument):
     '''Implement this if you need it
         26-bit totalizer on physical channel s03 of the 34907A plugin module'''
     # self.plugin_type = "34907A"
-    pass
 
 
 class agilent_34970a_totalizer(agilent_3497xa_totalizer):

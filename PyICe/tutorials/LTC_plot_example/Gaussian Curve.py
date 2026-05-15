@@ -1,6 +1,6 @@
 from PyICe import LTC_plot
 from PyICe.lab_utils.ranges import floatRangeInc
-from numpy import e, pi
+from numpy import e
 
 u = 0
 s = 1

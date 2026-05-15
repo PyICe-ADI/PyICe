@@ -1,4 +1,3 @@
-from PyICe.lab_utils.sqlite_data import sqlite_data
 import collections
 import datetime
 import functools
@@ -268,7 +267,7 @@ class Test_Results(generic_results):
         def __str__(self):
             resp = ''
             resp += f'{self.name}\n'
-            resp += f'\tLIMITS:'
+            resp += '\tLIMITS:'
             if self.upper_limit == self.lower_limit:
                 # Exact test
                 try:
@@ -302,7 +301,7 @@ class Test_Results(generic_results):
             return functools.reduce(none_max, (r._max() for r in self))
 
         def get_conditions(self):
-            return {make_hash(data_group.conditions)                    : data_group.conditions for data_group in self}
+            return {make_hash(data_group.conditions): data_group.conditions for data_group in self}
 
         def filter(self, condition_hash):
             ret = type(self)(
@@ -407,7 +406,7 @@ class Test_Results(generic_results):
         query = (database.sql_query, database.params)
         if database.get_column_names() is None:
             print(
-                f'\nWARNING! The sql query returned nothing. Please double check the query parameters.')
+                '\nWARNING! The sql query returned nothing. Please double check the query parameters.')
             return self._register_test_failure(
                 name=name, reason="No submitted data.", conditions=None, query=query)
         conditions_columns = database.get_column_names()[1:]
@@ -525,16 +524,16 @@ class Test_Results(generic_results):
                 override=self._failure_override)
         if len(reference_values) == 0:
             return self._register_test_failure(
-                name=name, reason=f"No reference values were submitted.", conditions=conditions)
+                name=name, reason="No reference values were submitted.", conditions=conditions)
         if None in reference_values:
             return self._register_test_failure(
-                name=name, reason=f"None encountered in submitted reference values.", conditions=conditions)
+                name=name, reason="None encountered in submitted reference values.", conditions=conditions)
         if len(test_values) == 0:
             return self._register_test_failure(
-                name=name, reason=f"No test values were submitted.", conditions=conditions)
+                name=name, reason="No test values were submitted.", conditions=conditions)
         if None in test_values:
             return self._register_test_failure(
-                name=name, reason=f"None encountered in submitted test values.", conditions=conditions)
+                name=name, reason="None encountered in submitted test values.", conditions=conditions)
         DataPoints = []
         for x in reference_values:
             for y in test_values:

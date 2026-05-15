@@ -108,9 +108,9 @@ class keysight_e4440a(scpi_SA):
         return numpy.array([float(y) for y in resp])
 
     def _compute_x_axis(self):
-        start = float(self.get_interface().ask(f':SENSe:FREQuency:STARt?'))
-        stop = float(self.get_interface().ask(f':SENSe:FREQuency:STOP?'))
-        point_count = int(self.get_interface().ask(f':SENSe:SWEep:POINts?'))
+        start = float(self.get_interface().ask(':SENSe:FREQuency:STARt?'))
+        stop = float(self.get_interface().ask(':SENSe:FREQuency:STOP?'))
+        point_count = int(self.get_interface().ask(':SENSe:SWEep:POINts?'))
         if stop > start:
             freqs = numpy.linspace(
                 start=start,
@@ -234,7 +234,7 @@ class keysight_e4440a(scpi_SA):
         # doesn't quite fit 13 bit integer channel because of +1 offset.
         # point_count_channel._set_value(int(self.get_interface().ask(f':SENSe:SWEep:POINts?')))
         point_count_channel._read = lambda: int(
-            self.get_interface().ask(f':SENSe:SWEep:POINts?'))
+            self.get_interface().ask(':SENSe:SWEep:POINts?'))
         point_count_channel.set_attribute('channel_type', 'x_control')
         point_count_channel.set_description(
             self.get_name() + ': ' + self.add_channel_sweep_control.__doc__)
@@ -420,7 +420,7 @@ class keysight_e4440a(scpi_SA):
             required, the equivalent 3 dB RBW Filter would be 100 kHz/1.414 = 70.7 kHz. The
             closest RBW filter for the analyzer that would be used is 68 kHz.'''
         def _set_RBW(bw):
-            self.get_interface().write(f':SENSe:BANDwidth:RESolution:AUTO OFF')
+            self.get_interface().write(':SENSe:BANDwidth:RESolution:AUTO OFF')
             self.get_interface().write(f':SENSe:BANDwidth:RESolution {bw}')
         set_channel = channel(channel_name, write_function=_set_RBW)
         set_channel._set_value(
@@ -479,7 +479,7 @@ the VBW/RBW ratio will be rounded to the nearest 1, 3, or 10 response. Pressing 
 Auto Couple, Auto All sets the ratio to 1.000 X. When VBW/RBW (Auto) is selected, the ratio is
 determined as indicated in Table 2-1 on page 70'''
         def _set_vbw(bw):
-            self.get_interface().write(f':SENSe:BANDwidth:VIDeo:AUTO OFF')
+            self.get_interface().write(':SENSe:BANDwidth:VIDeo:AUTO OFF')
             self.get_interface().write(f':SENSe:BANDwidth:VIDeo {bw}')
         set_channel = channel(channel_name, write_function=_set_vbw)
         set_channel._set_value(
@@ -621,10 +621,10 @@ determined as indicated in Table 2-1 on page 70'''
         return (count_channel, type_channel)
 
     def all_markers_off(self):
-        self.get_interface().write(f':CALCulate:MARKer1:STATe OFF')
-        self.get_interface().write(f':CALCulate:MARKer2:STATe OFF')
-        self.get_interface().write(f':CALCulate:MARKer3:STATe OFF')
-        self.get_interface().write(f':CALCulate:MARKer4:STATe OFF')
+        self.get_interface().write(':CALCulate:MARKer1:STATe OFF')
+        self.get_interface().write(':CALCulate:MARKer2:STATe OFF')
+        self.get_interface().write(':CALCulate:MARKer3:STATe OFF')
+        self.get_interface().write(':CALCulate:MARKer4:STATe OFF')
 
     def flush_errors(self):
         while self.get_interface().ask(':SYSTem:ERROr?') != '+0,"No error"':
@@ -690,7 +690,7 @@ If the detector has been manually selected, a # appears next to it.'''
         new_channel.set_attribute('channel_type', 'y_control')
         new_channel._set_value(
             self.get_interface().ask(
-                f':SENSe:DETector:FUNCtion?'))
+                ':SENSe:DETector:FUNCtion?'))
         # new_channe._read = lambda: self.get_interface().ask(f':SENSe:DETector:FUNCtion?')
         new_channel.add_preset('NORMal', 'Normal')
         new_channel.add_preset('AVERage', 'Average')
@@ -738,9 +738,9 @@ If the detector has been manually selected, a # appears next to it.'''
         self.attenuator_channel.set_description(
             self.get_name() + ': ' + self.add_channel_attenuator.__doc__)
         self.attenuator_channel._set_value(
-            int(float(self.get_interface().ask(f':SENSe:POWer:RF:ATTenuation?'))))
+            int(float(self.get_interface().ask(':SENSe:POWer:RF:ATTenuation?'))))
         self.attenuator_channel._read = lambda: int(
-            float(self.get_interface().ask(f':SENSe:POWer:RF:ATTenuation?')))
+            float(self.get_interface().ask(':SENSe:POWer:RF:ATTenuation?')))
         return self._add_channel(self.attenuator_channel)
 
     def add_channel_attenuator_auto(self, channel_name):
@@ -1030,9 +1030,9 @@ mixing.'''
         ''''''
         def _single_abort_trigger_wait(run_mode):
             if run_mode == 'Single':
-                self.get_interface().write(f':INITiate:CONTinuous OFF')
+                self.get_interface().write(':INITiate:CONTinuous OFF')
             elif run_mode == 'Continuous':
-                self.get_interface().write(f':INITiate:CONTinuous ON')
+                self.get_interface().write(':INITiate:CONTinuous ON')
             else:
                 raise Exception(
                     f'Unknown trigger/run mode {run_mode}. Expected "Single" or "Continuous"')
@@ -1051,7 +1051,7 @@ mixing.'''
                 self.get_interface().ask(':SENSe:SWEep:TIME?'))
             # probably not right now that we have trigger source controls
             # coming....
-            self.get_interface().write(f':INITiate:IMMediate')
+            self.get_interface().write(':INITiate:IMMediate')
             print(f'{datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")} trigger time. Expected sweep time {expected_time}s.')
             if run_mode == 'Continuous':
                 return

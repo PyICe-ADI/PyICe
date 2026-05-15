@@ -447,7 +447,7 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
         r_z._read = lambda: int(
             float(
                 self.get_interface().ask(
-                    f':INPut:IMPedance:GPPort:R?')))
+                    ':INPut:IMPedance:GPPort:R?')))
         r_z.set_description(self.get_name() + ': ' +
                             self.add_channels_gp_control.__doc__)
         r_z.add_preset(50)
@@ -461,7 +461,7 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
         t_z._read = lambda: int(
             float(
                 self.get_interface().ask(
-                    f':INPut:IMPedance:GPPort:T?')))
+                    ':INPut:IMPedance:GPPort:T?')))
         t_z.set_description(self.get_name() + ': ' +
                             self.add_channels_gp_control.__doc__)
         t_z.add_preset(50)
@@ -475,7 +475,7 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
         r_a._read = lambda: int(
             float(
                 self.get_interface().ask(
-                    f':INPut:ATTenuation:GPPort:R?')))
+                    ':INPut:ATTenuation:GPPort:R?')))
         r_a.set_description(self.get_name() + ': ' +
                             self.add_channels_gp_control.__doc__)
         r_a.add_preset(0)
@@ -489,7 +489,7 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
         t_a._read = lambda: int(
             float(
                 self.get_interface().ask(
-                    f':INPut:ATTenuation:GPPort:T?')))
+                    ':INPut:ATTenuation:GPPort:T?')))
         t_a.set_description(self.get_name() + ': ' +
                             self.add_channels_gp_control.__doc__)
         t_a.add_preset(0)
@@ -659,13 +659,13 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
             if run_mode == 'Single':
                 expected_time = float(
                     self.get_interface().ask(':SENSe:SWEep:TIME?'))
-                self.get_interface().write(f':TRIGger:SOURce BUS')
-                self.get_interface().write(f':TRIGger:SINGle')
+                self.get_interface().write(':TRIGger:SOURce BUS')
+                self.get_interface().write(':TRIGger:SINGle')
                 datetime_now_str = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
                 print(
                     f'{datetime_now_str} trigger time. Expected sweep time {expected_time}s.')
             else:
-                self.get_interface().write(f':TRIGger:SOURce INTernal')
+                self.get_interface().write(':TRIGger:SOURce INTernal')
                 print('ENA Continuous sweep activated.')
                 return
             status = True
@@ -913,7 +913,7 @@ class keysight_e5061b(keysight_e5061b_base):
             self.get_name() + ': ' + self.add_channel_rlevel.__doc__)
         return self._add_channel(new_channel)
 
-    ##### Seems to just track RLEVEL?.... ####
+    # Seems to just track RLEVEL?.... ####
     # def add_channel_rposition(self, channel_name, channel_number, trace_number):
         # ''':DISPlay:WINDow{}:TRACe{}:Y:SCALe:RPOSition value
         # This command specifies the position of a reference division line with its number

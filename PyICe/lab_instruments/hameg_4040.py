@@ -263,15 +263,15 @@ class hameg_4040(scpi_instrument):
             # needed for hw serial on fast linux
             time.sleep(self.hameg_suck_time)
 
-           # much more to do here like determining if OPC and changing state of
-           # channel to STANDBY..... or writing stop or whatever.
+            # much more to do here like determining if OPC and changing state of
+            # channel to STANDBY..... or writing stop or whatever.
 
     def _start_arb(self, channel):
         self.get_interface().write(f"ARBitrary:STARt {channel}")
         time.sleep(self.hameg_suck_time)  # needed for hw serial on fast linux
         self.get_interface().ask("*OPC?")
         time.sleep(self.hameg_suck_time)  # needed for hw serial on fast linux
-        self.get_interface().write(f"OUTPut:STATe ON")
+        self.get_interface().write("OUTPut:STATe ON")
         time.sleep(self.hameg_suck_time)  # needed for hw serial on fast linux
         self.get_interface().ask("*OPC?")
         time.sleep(self.hameg_suck_time)  # needed for hw serial on fast linux

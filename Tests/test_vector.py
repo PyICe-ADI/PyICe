@@ -14,7 +14,6 @@ db = lab_utils.sqlite_data(database_file='data_log_LTC6363.sqlite')
 
 db.query('SELECT rowid,X,A FROM LTC6363_1_bandwidth_vs_freq00')
 ra = db.expand_vector_data(csv_filename='LTC6363_1_bandwidth_vs_freq.csv')
-pass
 
 
 ###

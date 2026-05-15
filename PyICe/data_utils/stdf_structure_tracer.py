@@ -1,11 +1,6 @@
 
-import functools
-import math
 import os
-import re
-import sqlite3
 import sys
-import time
 
 try:
     from pystdf.IO import Parser

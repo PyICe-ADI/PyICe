@@ -305,7 +305,7 @@ should work fine on Raspberry Pi (Debian) and Windows 10, etc.
 
 '''
 
-#!/usr/bin/env python
+#!/usr/bin/env python  # noqa: E265
 #
 # Copyright (c) 2016, Heinrich Schuchardt <xypron.glpk@gmx.de>
 # Copyright (c) 2018, Vince Patron <vince@patronweb.com>

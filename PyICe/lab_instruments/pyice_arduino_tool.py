@@ -1,6 +1,4 @@
-from PyICe import lab_instruments, lab_core
 from PyICe.lab_core import *
-import math
 
 '''
  --- PyICe Arduino Tool (PAT) USAGE ---
@@ -645,6 +643,7 @@ class pyice_arduino_tool(instrument):
 
 
 # GROUP FUNCTIONS --------------------------------------------------------
+
 
     def set_chip_settings(self, uses_pec='True', register_size='8',
                           address='0x00', wd_q_cc='0x00', wd_a_cc='0x00'):

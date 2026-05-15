@@ -14,7 +14,7 @@ def select_string_menu(header, items):
     The highlighted item upon hitting Return.
     """
     if len(items) == 0:
-        print(f'No items to select from. Returning None')
+        print('No items to select from. Returning None')
         return None
     if len(items) == 1:
         print(f'Only one item presented. Returning {items[0]}')
@@ -71,8 +71,8 @@ def select_string_menu(header, items):
         if key in [curses.KEY_ENTER, ord("\n")]:
             if len(pages) == 1:
                 return close_up_shop(active_list, position)
-            if (active_list != pages[-1]
-                    ) and (position == len(active_list) - 1):
+            if (active_list != pages[-1]) and (
+                    position == len(active_list) - 1):
                 page_idx += 1
                 position = 0
                 window.clear()

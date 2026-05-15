@@ -1,7 +1,5 @@
 from PyICe import lab_instruments, lab_core
-import time
 import random
-import pdb
 
 
 m = lab_core.master()

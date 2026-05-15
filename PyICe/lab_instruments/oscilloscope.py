@@ -1,5 +1,4 @@
 from ..lab_core import *
-import time
 import struct
 import abc
 

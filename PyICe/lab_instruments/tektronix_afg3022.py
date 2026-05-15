@@ -1,5 +1,4 @@
 from ..lab_core import *
-import time
 
 
 class tektronix_afg3022(scpi_instrument):
@@ -37,7 +36,7 @@ class tektronix_afg3022(scpi_instrument):
             channel_name + "_trigger", channel_number)
         self.get_interface().write(
             f"SOURce{channel_number}:BURSt:MODE TRIGgered")
-        self.get_interface().write(f"TRIGger:SEQuence:SOURce EXTernal")
+        self.get_interface().write("TRIGger:SEQuence:SOURce EXTernal")
         self.get_interface().write(f"SOURce{channel_number}:BURSt:STATe ON")
         return enable_channel
 

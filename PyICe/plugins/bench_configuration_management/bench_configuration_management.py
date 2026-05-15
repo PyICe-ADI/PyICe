@@ -1,4 +1,4 @@
-from PyICe.lab_utils.banners import print_banner, build_banner
+from PyICe.lab_utils.banners import print_banner
 import abc
 
 ARROW_STRING = "◄――――――――►"
@@ -21,7 +21,7 @@ class Diagram_Reconstructor():
             connection_diagram += (35 - len(f"{blocked_terminal[0]}:{blocked_terminal[1]}")) * \
                 " " + \
                 f"{blocked_terminal[0]}:{blocked_terminal[1]}" + \
-                " " + BLOCKED_STRING + f"\n"
+                " " + BLOCKED_STRING + "\n"
         return connection_diagram
 
 
@@ -249,7 +249,7 @@ class connection_collection():
         for blocked_terminal in self.blocked_terminals:
             connection_diagram += (35 - len(f"{blocked_terminal.get_owner()}:{blocked_terminal.get_type()}")) * \
                 " " + f"{blocked_terminal.get_owner()}:{blocked_terminal.get_type()}" + \
-                " " + BLOCKED_STRING + f"\n"
+                " " + BLOCKED_STRING + "\n"
         if exclude is not None:
             print_banner("Begin Bench Configuration Connections")
             print(connection_diagram)

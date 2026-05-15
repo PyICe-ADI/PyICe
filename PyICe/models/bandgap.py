@@ -33,7 +33,7 @@ class bandgap():
             print(f"\n\nDie too cold at {self.tdegc}, cracked and broken!\n\n")
             exit()
         if self.tdegc > 165:
-            print(f"\n\nDie too hot at (self.tdegc), Latched up!!\n\n")
+            print("\n\nDie too hot at (self.tdegc), Latched up!!\n\n")
             exit()
 
     def Tk(self):

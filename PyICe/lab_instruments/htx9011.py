@@ -419,7 +419,7 @@ class htx9011(scpi_instrument):
             return False
         if (ret_str[4:] != '\r\n'):
             print(
-                f"HTX9011: Pin read or write response improperly terminated. Should have ended with CRLF but didn't.")
+                "HTX9011: Pin read or write response improperly terminated. Should have ended with CRLF but didn't.")
             return False
         return True
 
@@ -493,7 +493,7 @@ class htx9011(scpi_instrument):
                 value = int(value)
             else:
                 raise Exception(
-                    f"HTX9011: Could not convert requested pin value to a proper integer.")
+                    "HTX9011: Could not convert requested pin value to a proper integer.")
         if isinstance(value, int):
             value = bin(value).lstrip('0b').rjust(out_length, '0')
         if isinstance(value, str):
@@ -511,7 +511,7 @@ class htx9011(scpi_instrument):
                         f"HTX9011: Bad value sent to pin list: {out_list}. All values must be one of [1,0,P,Z].")
         if out_list is None:
             raise Exception(
-                f"HTX9011: Nonexistent list (Python None) sent to Configurator pin list.")
+                "HTX9011: Nonexistent list (Python None) sent to Configurator pin list.")
         while len(out_list) < out_length:
             out_list.reverse()
             out_list.append(0)
@@ -838,7 +838,7 @@ class htx9011(scpi_instrument):
         def _read_pcint_count(ch):
             new_count = int(
                 self.get_interface().ask(
-                    f'INTErrupt:PCINT:COUNt?'))
+                    'INTErrupt:PCINT:COUNt?'))
             ch.set_attribute(
                 'INTERRUPT_COUNT_ACCUM',
                 new_count +
@@ -858,7 +858,7 @@ class htx9011(scpi_instrument):
             if value in ["ARM", ""]:
                 reading = self.get_interface().ask(
                     f'INTErrupt:PCINT:CAPTure? {value}')
-                print(f"Bit Pos : 76543210")
+                print("Bit Pos : 76543210")
                 print(f"reading = {int(reading):08b}")
                 print(
                     "The above is a debug output until PyICe-developers@analog.com can take a look at this.")
@@ -1169,7 +1169,6 @@ class PCF8574_on_ConfiguratorXT(instrument):
             print(
                 "\n\nShouldn't be here but for a wierd timeout. Try typing self.get_interface().ask(cmd_str)")
             breakpoint()
-            pass
 
     def validate_pin_list(self, pin_list):
         "Validates list of pin names. Raises ValueError if invalid pin(s) found."

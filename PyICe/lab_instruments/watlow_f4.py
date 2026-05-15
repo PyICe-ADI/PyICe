@@ -1,6 +1,6 @@
 
 from .temperature_chamber import temperature_chamber
-from .modbus_instrument import modbus_instrument, modbus_reg_type, register_description as rd
+from .modbus_instrument import modbus_instrument, register_description as rd
 
 
 class watlow_f4(temperature_chamber, modbus_instrument):

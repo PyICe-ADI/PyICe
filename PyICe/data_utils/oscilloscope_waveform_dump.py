@@ -4,10 +4,9 @@ from PyICe.lab_utils.sqlite_data import sqlite_data
 import numpy
 import json
 import re
-import time
 
 try:
-    from bokeh.models import Label, Toggle
+    from bokeh.models import Toggle
     from bokeh import colors
     # https://docs.bokeh.org/en/latest/docs/reference/colors.html#bokeh-colors-color
 
@@ -115,7 +114,7 @@ class oscilloscope_waveform_dump(oscilloscope):
                 ch._set_type_affinity('PyICeBLOB')
         db_tablename = ''
         while not len(db_tablename):
-            db_tablename = input(f"What would you like the table name to be: ")
+            db_tablename = input("What would you like the table name to be: ")
         logger.new_table(db_tablename)
         sd = logger.log_data(scope_data)
         logger.stop()

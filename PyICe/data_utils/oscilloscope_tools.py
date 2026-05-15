@@ -168,7 +168,7 @@ def plot_waveform(y_data_column_names, db_tablename,
     from bokeh import colors
     from bokeh.io import curdoc
     from bokeh.layouts import layout
-    from bokeh.models import Label, Toggle, Arrow, NormalHead
+    from bokeh.models import Toggle, NormalHead
     from bokeh.plotting import show, output_file, figure
 
     db = sqlite_data(

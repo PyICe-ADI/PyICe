@@ -382,7 +382,7 @@ class Agilent_8110a(scpi_instrument):
                     f"\n\nAgilent 8110A: Too many values ({length_of_data}) sent to the pattern. Maximum number possible is 4096.\n\n")
             if not all(value == '0' or value == '1' for value in pattern):
                 raise Exception(
-                    f"\n\nAgilent 8110A: Values other than 1 or 0 sent to the pattern. Stick to 1 and 0 for single channel pattern writes.\n\n")
+                    "\n\nAgilent 8110A: Values other than 1 or 0 sent to the pattern. Stick to 1 and 0 for single channel pattern writes.\n\n")
             self.get_interface().write(
                 f":DIG:STIM:PATT:DATA{number} #{len(str(length_of_data))}{length_of_data}{pattern}")
             self.operation_complete()
@@ -420,7 +420,7 @@ class Agilent_8110a(scpi_instrument):
             if not all(value in [str(val) for val in range(8)]
                        for value in pattern):
                 raise Exception(
-                    f"\n\nAgilent 8110A: Values other than 0 to 7 sent to the pattern. Stick to values from 0 to 7 for this 3-bit write.\n\n")
+                    "\n\nAgilent 8110A: Values other than 0 to 7 sent to the pattern. Stick to values from 0 to 7 for this 3-bit write.\n\n")
             self.get_interface().write(
                 f":DIG:STIM:PATT:DATA #{len(str(length_of_data))}{length_of_data}{pattern}")
             self.operation_complete()

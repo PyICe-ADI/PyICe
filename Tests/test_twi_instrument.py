@@ -1,6 +1,5 @@
 import pytest
 from PyICe.twi_instrument import twi_instrument
-from PyICe.lab_core import channel_master
 from PyICe.lab_interfaces import interface_factory
 
 

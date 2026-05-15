@@ -1,11 +1,7 @@
 import os
-import time
 import atexit
 import datetime
 import numpy
-import urllib.request
-import urllib.parse
-import urllib.error
 
 
 class sqlite_to_xlsx(object):

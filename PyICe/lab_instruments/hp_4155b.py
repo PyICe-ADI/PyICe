@@ -1,7 +1,5 @@
 from ..lab_core import *
-from .. import visa_wrappers
 from .semiconductor_parameter_analyzer import semiconductor_parameter_analyzer
-import time
 
 
 class hp_4155b(semiconductor_parameter_analyzer):

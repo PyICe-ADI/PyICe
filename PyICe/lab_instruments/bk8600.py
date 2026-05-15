@@ -154,4 +154,4 @@ class bk8600(scpi_instrument):
 
     def _read_mode(self):
         '''Returns instrument's mode.'''
-        return self.get_interface().ask(f"FUNC?")
+        return self.get_interface().ask("FUNC?")

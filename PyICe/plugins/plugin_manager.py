@@ -462,7 +462,7 @@ class Plugin_Manager():
                 globalnotificationpath = globalnotificationpath[globalnotificationpath.index(
                     project_path.split(os.sep)[-1]):]
                 module = importlib.import_module(
-                    name=globalnotificationpath + f'.always_notify', package=None)
+                    name=globalnotificationpath + '.always_notify', package=None)
                 for x in ['emails', 'texts']:
                     [self.notification_targets[x].append(
                         target) for target in module.get_notification_targets()[x]]
@@ -653,17 +653,17 @@ class Plugin_Manager():
             for (test, db_table, db_file) in archived_tables:
                 if hasattr(test, 'plot'):
                     dest_file = os.path.join(
-                        os.path.dirname(db_file), f"replot_data.py")
+                        os.path.dirname(db_file), "replot_data.py")
                     import_str = test._module_path[test._module_path.index(
                         self.project_folder_name):].replace(os.sep, '.')
                     settings_path = self.project_settings_location.replace(os.sep, '.')[
                         1:-3]
                     plot_script_src = f"from {
                         self.project_folder_name}.{settings_path} import Project_Settings\n"
-                    plot_script_src += f"from PyICe.plugins.plugin_manager import Plugin_Manager\n"
+                    plot_script_src += "from PyICe.plugins.plugin_manager import Plugin_Manager\n"
                     plot_script_src += f"from {import_str}.test import Test\n"
-                    plot_script_src += f"pm = Plugin_Manager(settings=Project_Settings)\n"
-                    plot_script_src += f"pm.add_test(Test)\n"
+                    plot_script_src += "pm = Plugin_Manager(settings=Project_Settings)\n"
+                    plot_script_src += "pm.add_test(Test)\n"
                     plot_script_src += f"pm.plot(database='data_log.sqlite', table_name='{db_table}')\n"
                     try:
                         with open(dest_file, 'a') as f:  # exists, overwrite, append?
@@ -681,17 +681,17 @@ class Plugin_Manager():
                                 skip_email_input=True)
                 if 'evaluate_tests' in self.plugins:
                     dest_file = os.path.join(
-                        os.path.dirname(db_file), f"reeval_data.py")
+                        os.path.dirname(db_file), "reeval_data.py")
                     import_str = test._module_path[test._module_path.index(
                         self.project_folder_name):].replace(os.sep, '.')
                     settings_path = self.project_settings_location.replace(os.sep, '.')[
                         1:-3]
                     plot_script_src = f"from {
                         self.project_folder_name}.{settings_path} import Project_Settings\n"
-                    plot_script_src += f"from PyICe.plugins.plugin_manager import Plugin_Manager\n"
+                    plot_script_src += "from PyICe.plugins.plugin_manager import Plugin_Manager\n"
                     plot_script_src += f"from {import_str}.test import Test\n"
-                    plot_script_src += f"pm = Plugin_Manager(settings=Project_Settings)\n"
-                    plot_script_src += f"pm.add_test(Test)\n"
+                    plot_script_src += "pm = Plugin_Manager(settings=Project_Settings)\n"
+                    plot_script_src += "pm.add_test(Test)\n"
                     plot_script_src += f"pm.evaluate(database='data_log.sqlite', table_name='{db_table}')\n"
                     try:
                         with open(dest_file, 'a') as f:  # exists, overwrite, append?
@@ -708,17 +708,17 @@ class Plugin_Manager():
                                 test_list=[test])
                 if 'correlate_tests' in self.plugins:
                     dest_file = os.path.join(
-                        os.path.dirname(db_file), f"recorr_data.py")
+                        os.path.dirname(db_file), "recorr_data.py")
                     import_str = test._module_path[test._module_path.index(
                         self.project_folder_name):].replace(os.sep, '.')
                     settings_path = self.project_settings_location.replace(os.sep, '.')[
                         1:-3]
                     plot_script_src = f"from {
                         self.project_folder_name}.{settings_path} import Project_Settings\n"
-                    plot_script_src += f"from PyICe.plugins.plugin_manager import Plugin_Manager\n"
+                    plot_script_src += "from PyICe.plugins.plugin_manager import Plugin_Manager\n"
                     plot_script_src += f"from {import_str}.test import Test\n"
-                    plot_script_src += f"pm = Plugin_Manager(settings=Project_Settings)\n"
-                    plot_script_src += f"pm.add_test(Test)\n"
+                    plot_script_src += "pm = Plugin_Manager(settings=Project_Settings)\n"
+                    plot_script_src += "pm.add_test(Test)\n"
                     plot_script_src += f"pm.correlate(database='data_log.sqlite', table_name='{db_table}')\n"
                     try:
                         with open(dest_file, 'a') as f:  # exists, overwrite, append?
@@ -788,17 +788,17 @@ class Plugin_Manager():
             for (test, db_table, db_file) in archived_tables:
                 if hasattr(test, 'plot'):
                     dest_file = os.path.join(
-                        os.path.dirname(db_file), f"replot_data.py")
+                        os.path.dirname(db_file), "replot_data.py")
                     import_str = test._module_path[test._module_path.index(
                         self.project_folder_name):].replace(os.sep, '.')
                     settings_path = self.project_settings_location.replace(os.sep, '.')[
                         1:-3]
                     plot_script_src = f"from {
                         self.project_folder_name}.{settings_path} import Project_Settings\n"
-                    plot_script_src += f"from PyICe.plugins.plugin_manager import Plugin_Manager\n"
+                    plot_script_src += "from PyICe.plugins.plugin_manager import Plugin_Manager\n"
                     plot_script_src += f"from {import_str}.test import Test\n"
-                    plot_script_src += f"pm = Plugin_Manager(settings=Project_Settings)\n"
-                    plot_script_src += f"pm.add_test(Test)\n"
+                    plot_script_src += "pm = Plugin_Manager(settings=Project_Settings)\n"
+                    plot_script_src += "pm.add_test(Test)\n"
                     plot_script_src += f"pm.plot(database='data_log.sqlite', table_name='{db_table}')\n"
                     try:
                         with open(dest_file, 'a') as f:  # exists, overwrite, append?
@@ -816,17 +816,17 @@ class Plugin_Manager():
                                 skip_email_input=True)
                 if 'evaluate_tests' in self.plugins:
                     dest_file = os.path.join(
-                        os.path.dirname(db_file), f"reeval_data.py")
+                        os.path.dirname(db_file), "reeval_data.py")
                     import_str = test._module_path[test._module_path.index(
                         self.project_folder_name):].replace(os.sep, '.')
                     settings_path = self.project_settings_location.replace(os.sep, '.')[
                         1:-3]
                     plot_script_src = f"from {
                         self.project_folder_name}.{settings_path} import Project_Settings\n"
-                    plot_script_src += f"from PyICe.plugins.plugin_manager import Plugin_Manager\n"
+                    plot_script_src += "from PyICe.plugins.plugin_manager import Plugin_Manager\n"
                     plot_script_src += f"from {import_str}.test import Test\n"
-                    plot_script_src += f"pm = Plugin_Manager(settings=Project_Settings)\n"
-                    plot_script_src += f"pm.add_test(Test)\n"
+                    plot_script_src += "pm = Plugin_Manager(settings=Project_Settings)\n"
+                    plot_script_src += "pm.add_test(Test)\n"
                     plot_script_src += f"pm.evaluate(database='data_log.sqlite', table_name='{db_table}')\n"
                     try:
                         with open(dest_file, 'a') as f:  # exists, overwrite, append?
@@ -843,17 +843,17 @@ class Plugin_Manager():
                                 test_list=[test])
                 if 'correlate_tests' in self.plugins:
                     dest_file = os.path.join(
-                        os.path.dirname(db_file), f"recorr_data.py")
+                        os.path.dirname(db_file), "recorr_data.py")
                     import_str = test._module_path[test._module_path.index(
                         self.project_folder_name):].replace(os.sep, '.')
                     settings_path = self.project_settings_location.replace(os.sep, '.')[
                         1:-3]
                     plot_script_src = f"from {
                         self.project_folder_name}.{settings_path} import Project_Settings\n"
-                    plot_script_src += f"from PyICe.plugins.plugin_manager import Plugin_Manager\n"
+                    plot_script_src += "from PyICe.plugins.plugin_manager import Plugin_Manager\n"
                     plot_script_src += f"from {import_str}.test import Test\n"
-                    plot_script_src += f"pm = Plugin_Manager(settings=Project_Settings)\n"
-                    plot_script_src += f"pm.add_test(Test)\n"
+                    plot_script_src += "pm = Plugin_Manager(settings=Project_Settings)\n"
+                    plot_script_src += "pm.add_test(Test)\n"
                     plot_script_src += f"pm.correlate(database='data_log.sqlite', table_name='{db_table}')\n"
                     try:
                         with open(dest_file, 'a') as f:  # exists, overwrite, append?
@@ -920,7 +920,7 @@ class Plugin_Manager():
             if 'bench_config_management' in self.plugins and self.verbose:
                 print(self.all_connections.print_connections())
                 if temperatures and input(
-                        f'Above are the required connections to run the added test(s). Are you ready? [y/n]: ').lower() in ['n', 'no']:
+                        'Above are the required connections to run the added test(s). Are you ready? [y/n]: ').lower() in ['n', 'no']:
                     return
             if 'bench_image_creation' in self.plugins:
                 self.visualizer = bench_visualizer.visualizer(
@@ -1140,7 +1140,7 @@ class Plugin_Manager():
                                 'y', 'yes']:
                             pdb.post_mortem()
                     print_banner(
-                        f"*** ERROR ***", f"{test.get_name()} crashed during evaluation, skipping.")
+                        "*** ERROR ***", f"{test.get_name()} crashed during evaluation, skipping.")
                     print("\n")
                     database = None
                     table_name = None
@@ -1151,7 +1151,7 @@ class Plugin_Manager():
                     print(test.get_test_results())
                 t_r = test._test_results.json_report()
                 dest_abs_filepath = os.path.join(
-                    os.path.dirname(database), f"test_results.json")
+                    os.path.dirname(database), "test_results.json")
                 if t_r is not None:
                     with open(dest_abs_filepath, 'wb') as f:
                         f.write(t_r.encode('utf-8'))
@@ -1201,7 +1201,7 @@ class Plugin_Manager():
                                 'y', 'yes']:
                             pdb.post_mortem()
                     print_banner(
-                        f"*** ERROR ***", f"{test.get_name()} crashed during evaluation, skipping.")
+                        "*** ERROR ***", f"{test.get_name()} crashed during evaluation, skipping.")
                     print("\n")
                     database = None
                     table_name = None
@@ -1217,7 +1217,7 @@ class Plugin_Manager():
                     continue
                 t_r = test._corr_results.json_report()
                 dest_abs_filepath = os.path.join(
-                    os.path.dirname(database), f"corr_results.json")
+                    os.path.dirname(database), "corr_results.json")
                 if t_r is not None:
                     with open(dest_abs_filepath, 'wb') as f:
                         f.write(t_r.encode('utf-8'))

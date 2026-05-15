@@ -322,16 +322,12 @@ import matplotlib.ticker
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.backends.backend_pdf import FigureCanvasPdf
 from matplotlib.backends.backend_svg import FigureCanvasSVG
-from matplotlib.font_manager import FontProperties
 from matplotlib.lines import Line2D
 from matplotlib.ticker import FormatStrFormatter
 import os
 import shutil
 import io
 import csv
-import sqlite3
-import math
-import itertools
 
 
 class PyICe_data_base():

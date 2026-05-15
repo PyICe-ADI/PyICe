@@ -8,7 +8,6 @@ between physical inrefaces and operating systems.
 '''
 
 import traceback
-import time
 import struct
 import re
 import logging
@@ -20,7 +19,6 @@ try:
 except BaseException:
     visaMissing = True
 try:
-    import ctypes
     ctypesMissing = False
 except BaseException:
     ctypesMissing = True
@@ -456,7 +454,6 @@ class visa_wrapper_vxi11(visa_wrapper):
 
     def resync(self):
         '''flush buffers to resync after communication fault - usb-serial problem'''
-        pass
 
     def close(self):
         self.vxi_interface.close()
@@ -516,7 +513,6 @@ class visa_wrapper_usbtmc(visa_wrapper):
 
     def resync(self):
         '''flush buffers to resync after communication fault - usb-serial problem'''
-        pass
 
     def close(self):
         self.usbtmc_interface.close()

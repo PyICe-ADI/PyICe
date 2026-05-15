@@ -1,16 +1,10 @@
 from bokeh.plotting import figure, output_file, show
 from bokeh.layouts import column, row
-from bokeh.models.scales import LinearScale, LogScale
 from bokeh.models import (CustomJS,
-                          LinearAxis,
-                          Range1d,
                           Select,
                           WheelZoomTool,
-                          ZoomInTool,
-                          ZoomOutTool,
                           Span,
                           Label,
-                          Toggle,
                           HoverTool,
                           )
 import inspect
@@ -353,7 +347,6 @@ class Page(LTCPlotBokehAdapter):
     #                 y_gap           = 1,        # in inches. LTC marcom uses 0.8 but places only individual plots anyway so this is not used for datasheet placement.
     #                 trace_width     = None      # in ???s
     #              ):
-        pass
 
 
 class Multipage_pdf(LTCPlotBokehAdapter):

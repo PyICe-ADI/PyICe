@@ -87,7 +87,7 @@ class visualizer():
                    edgetooltip=f"{instr1} : {term1} ↔ {instr2} : {term2}")
             # tailtooltip     = "{term2}",
             # tailURL         = "xxx")
-       # f.render()
+        # f.render()
         # os.remove(file_base_name + ".svg") # This one is junk, incorrect
         # settings. Use a real call to dot.exe.
         try:

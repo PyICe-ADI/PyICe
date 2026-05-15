@@ -73,7 +73,7 @@ class twi_interface(object, metaclass=abc.ABCMeta):
     def set_frequency(self, frequency):
         raise i2cUnimplementedError()
 
-    ### Utilities###
+    # Utilities###
     def scan(self):
         '''Find all devices on bus by checking acknowledge of each address in turn.'''
         responses = []
@@ -821,7 +821,7 @@ class twi_interface(object, metaclass=abc.ABCMeta):
                     self.pec(byteList), pec))
         return dataByteListRead
 
-    ### List reading aggregation commands###
+    # List reading aggregation commands###
     def _read_x_list(self, addr7, cc_list, rd_function):
         '''Return dictionary of read results.
         Reads each commandCode of cc_list in turn at chip address addr7 using rd_function protocol.
@@ -1499,7 +1499,7 @@ class i2c_scpi(twi_interface):
         assert TWBR <= 255 and TWBR >= 0
         self.interface.write(f':I2C:PORT:TWBR {TWBR};')
         self.reset_twi()
-    ### I2C Primitives###
+    # I2C Primitives###
 
     def start(self):
         self.interface.write(':S?;')
@@ -1559,7 +1559,7 @@ class i2c_scpi(twi_interface):
             raise i2cMasterError(
                 "I2C Error: Bad Response to read_nack: {}".format(ret_str))
         return int(ret_str[:2], 16)
-    ### SMBus Overloads###
+    # SMBus Overloads###
 
     def read_word(self, addr7, commandCode):
         '''faster way to do an smbus read word'''
@@ -1988,7 +1988,7 @@ class i2c_scpi_sp(twi_interface):
             self.interface.write('{}:PORT:PUEN;'.format(self.cmd))
         else:
             self.interface.write('{}:PORT:EN;'.format(self.cmd))
-    ### I2C Primitives###
+    # I2C Primitives###
 
     def start(self):
         self.interface.write('{}:S?;'.format(self.cmd))
@@ -2048,7 +2048,7 @@ class i2c_scpi_sp(twi_interface):
             raise i2cMasterError(
                 "I2C Error: Bad Response to read_nack: {}".format(ret_str))
         return int(ret_str[:2], 16)
-    ### SMBus Overloads###
+    # SMBus Overloads###
 
     def receive_byte(self, addr7):
         '''Sent data looks like: "I2CSPx:SMB:RECE?(@AA,00);"
@@ -2086,7 +2086,7 @@ class i2c_scpi_sp(twi_interface):
             while error != '+0,"No error"':
                 print(f"ConfigXT Error Buffer Purge: {error}")
                 error = self.interface.ask("SYST:ERR?")
-            print(f"\nYou are likely using deprecated Configurator firmware. Strongly consider upgrading your firmware. See Steve Martin. Old firmware will be supported until January 31, 2021.\n")
+            print("\nYou are likely using deprecated Configurator firmware. Strongly consider upgrading your firmware. See Steve Martin. Old firmware will be supported until January 31, 2021.\n")
             return twi_interface.write_register(
                 self, addr7, commandCode=data8, data=None, data_size=0, use_pec=False)
         if len(ret_str) < 4:
@@ -2113,7 +2113,7 @@ class i2c_scpi_sp(twi_interface):
             while error != '+0,"No error"':
                 print(f"ConfigXT Error Buffer Purge: {error}")
                 error = self.interface.ask("SYST:ERR?")
-            print(f"\nYou are likely using deprecated Configurator firmware. Strongly consider upgrading your firmware. See Steve Martin. Old firmware will be supported until January 31, 2021.\n")
+            print("\nYou are likely using deprecated Configurator firmware. Strongly consider upgrading your firmware. See Steve Martin. Old firmware will be supported until January 31, 2021.\n")
             return twi_interface.write_register(
                 self, addr7, commandCode=data8, data=None, data_size=0, use_pec=False)
         if len(ret_str) < 4:
@@ -2271,7 +2271,7 @@ class i2c_scpi_testhook(i2c_scpi):
         self.channels = {}
         # what is the str repr of a serial port object?
         self.name = "i2c_scpi_testhook at {}".format(serial_port)
-    ### lab.py instrument driver methods###
+    # lab.py instrument driver methods###
 
     def add_channel(self, channel_name, pin_name):
         '''Adds a channel of name channel_name, associated with physical pin pin_name.
@@ -2300,7 +2300,7 @@ class i2c_scpi_testhook(i2c_scpi):
         Where Z is high-z
         and P is weak pullup'''
         self.set_pin(self.channels[channel_name], value)
-    ### purple-board specific hardware driver methods###
+    # purple-board specific hardware driver methods###
 
     def set_dvcc(self, voltage):
         self.aux_start()
@@ -2372,7 +2372,7 @@ class i2c_scpi_testhook(i2c_scpi):
             return uname
         else:
             raise Exception('Invalid pin name {}'.format(name))
-    ### Secondary I2C Port Primitives###
+    # Secondary I2C Port Primitives###
 
     def aux_start(self):
         self.interface.write(':I2CAux:S?;')
@@ -2934,7 +2934,7 @@ class i2c_firmata(twi_interface):
             pin_type=None,
             clk_pin=0,
             data_pin=0)
-    ### I2C Primitives###
+    # I2C Primitives###
 
     def start(self):
         raise i2cUnimplementedError('Firmata I2C primitives not implemented')
@@ -2950,7 +2950,7 @@ class i2c_firmata(twi_interface):
 
     def read_nack(self):
         raise i2cUnimplementedError('Firmata I2C primitives not implemented')
-    ### SMBus Overloads###
+    # SMBus Overloads###
 
     def read_word(self, addr7, commandCode):
         '''smbus read word'''

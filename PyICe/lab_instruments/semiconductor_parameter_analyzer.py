@@ -1,5 +1,4 @@
 from ..lab_core import *
-import time
 
 
 class semiconductor_parameter_analyzer(scpi_instrument):

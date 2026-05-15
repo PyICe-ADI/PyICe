@@ -1,4 +1,4 @@
-from PyICe import lab_core, lab_instruments
+from PyICe import lab_core
 import random
 
 
