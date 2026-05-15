@@ -7,8 +7,11 @@ def dBV(voltageRMS):
     0.0
     >>> float(round(dBV(0.1), 1))
     -20.0
+    >>> float(dBV(0.0))
+    -inf
     '''
-    return 20 * numpy.log10(voltageRMS)
+    with numpy.errstate(divide='ignore'):
+        return 20 * numpy.log10(voltageRMS)
 
 def dBm(voltageRMS):
     '''Convert RMS voltage to dBm (50 ohm reference).
