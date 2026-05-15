@@ -4,7 +4,7 @@ from PyICe.lab_utils.decimate import decimate
 
 
 def make_recarray(x, y):
-    return np.core.records.fromarrays([x, y], names=['x', 'y'])
+    return np.rec.fromarrays([x, y], names=['x', 'y'])
 
 
 class TestDetrendConstant:

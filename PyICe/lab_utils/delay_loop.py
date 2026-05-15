@@ -27,19 +27,19 @@ class delay_loop(object):
         return self.count
     def get_total_time(self):
         '''returns total number of seconds since first delay'''
-        return (datetime.datetime.utcnow()-self.start_time).total_seconds()
+        return (datetime.datetime.now(datetime.UTC)-self.start_time).total_seconds()
     def begin(self, offset = 0):
         '''make note of begin time for loop measurement. Use offset to adjust the begin time in case of overrun on last cycle.'''
         if self.begin_time is None:
-            self.start_time = datetime.datetime.utcnow()
-        self.begin_time = datetime.datetime.utcnow() + datetime.timedelta(seconds = offset)
+            self.start_time = datetime.datetime.now(datetime.UTC)
+        self.begin_time = datetime.datetime.now(datetime.UTC) + datetime.timedelta(seconds = offset)
     def delay(self, seconds):
         '''delay extra time to make loop time constant
             returns actual delay time achieved'''
         if self.begin_time is None:
             raise Exception('Call begin() method before delay().')
         self.count += 1
-        elapsed_time = datetime.datetime.utcnow() - self.begin_time
+        elapsed_time = datetime.datetime.now(datetime.UTC) - self.begin_time
         self.delay_time = (datetime.timedelta(seconds = seconds) - elapsed_time).total_seconds()
         if (self.delay_time < 0):
             if (self.strict == True):
@@ -48,7 +48,7 @@ class delay_loop(object):
                 print('Warning! Loop processing longer than requested delay by {:3.3f} seconds at {}.'.format(-self.delay_time, datetime.datetime.now()))
         else:
             time.sleep(self.delay_time)
-        self.loop_time = (datetime.datetime.utcnow() - self.begin_time).total_seconds()
+        self.loop_time = (datetime.datetime.now(datetime.UTC) - self.begin_time).total_seconds()
         if self.no_drift:
             self.begin(offset = seconds - self.loop_time) # restart timer for next loop cycle, use offset to correct for over run.
         else:
@@ -58,7 +58,7 @@ class delay_loop(object):
         '''Use this in a while loop to perform another function for duration loop_time. Test the result for 0 or less.'''
         if self.begin_time is None:
             raise Exception('Call begin() method before time_remaining().')
-        remaining_time = loop_time - (datetime.datetime.utcnow() - self.begin_time).total_seconds()
+        remaining_time = loop_time - (datetime.datetime.now(datetime.UTC) - self.begin_time).total_seconds()
         if remaining_time <= 0:
             self.begin(offset = remaining_time) # restart timer for next loop cycle, use offset to correct for over run.
         return remaining_time

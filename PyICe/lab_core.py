@@ -625,7 +625,7 @@ class channel(delegator):
             import pdb; pdb.set_trace()
             preset_str = ""
         debug_logging.info("{}: {} changed from {} to {}{}"
-                           ".".format(datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+                           ".".format(datetime.datetime.now(datetime.UTC).strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
                            channel.get_name(), channel.previous_cached_value, value, preset_str))
     cached_value = property(lambda self: self._value, doc='Retrieve last read or written channel value')
     previous_cached_value = property(lambda self: self._previous_value, doc='Retrieve second last read or written channel value')
@@ -2106,9 +2106,9 @@ class channel_master(channel_group,delegator):
         class timer(object):
             def __init__(self, reciprocal):
                 self.reciprocal = reciprocal
-                self.last_time = datetime.datetime.utcnow()
+                self.last_time = datetime.datetime.now(datetime.UTC)
             def __call__(self):
-                self.this_time = datetime.datetime.utcnow()
+                self.this_time = datetime.datetime.now(datetime.UTC)
                 elapsed = self.this_time - self.last_time
                 self.last_time = self.this_time
                 if not reciprocal:
@@ -2130,8 +2130,8 @@ class channel_master(channel_group,delegator):
                 self.beginning = None
             def __call__(self):
                 if self.beginning is None:
-                    self.beginning = datetime.datetime.utcnow()
-                return (datetime.datetime.utcnow() - self.beginning).total_seconds() #return native dimedelta instead?
+                    self.beginning = datetime.datetime.now(datetime.UTC)
+                return (datetime.datetime.now(datetime.UTC) - self.beginning).total_seconds() #return native dimedelta instead?
         new_channel = channel(channel_name, read_function=timer())
         new_channel.set_description(self.get_name() + ': ' + self.add_channel_total_timer.__doc__)
         new_channel.set_category('Virtual')
@@ -2446,7 +2446,7 @@ class logger(master):
         #add additional database columns
         channel_data['rowid'] = None
         if 'datetime' not in channel_data:
-            channel_data['datetime'] = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+            channel_data['datetime'] = datetime.datetime.now(datetime.UTC).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
         return channel_data
     def log(self, exclusions=None):
         '''measure all non-excluded channels. Channels may be excluded by name, channel_group(instrument), or directly.  Returns a dictionary of what it logged.
@@ -2542,7 +2542,7 @@ class logger(master):
                 #compare_exclusions not currently supported
                 data_dictionary['rowid'] = None
                 if data_dictionary.get('datetime', None) is None:
-                    data_dictionary['datetime'] = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+                    data_dictionary['datetime'] = datetime.datetime.now(datetime.UTC).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
                 self._backend.store(data_dictionary)
                 self._previously_logged_data = data_dictionary
                 return data_dictionary
@@ -2559,7 +2559,7 @@ class logger(master):
     def log_many(self, data_iter_of_dictionaries):
         self._backend.check_exception()
         #walrus comprehension not yet available in Python 3.7
-        logtime=datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+        logtime=datetime.datetime.now(datetime.UTC).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
         for row in data_iter_of_dictionaries:
             row['rowid'] = None 
             if row.get('datetime', None) is None:
@@ -2709,7 +2709,7 @@ class logger_backend(object):
         self._stopped = False # redundant but defensive
         while self._run:
             dbconn = getattr(self, "conn", None)
-            if self.lock_time is not None and (datetime.datetime.utcnow()-self.lock_time) > self._max_lock_time:
+            if self.lock_time is not None and (datetime.datetime.now(datetime.UTC)-self.lock_time) > self._max_lock_time:
                 self._commit()
                 self.lock_time = None
                 #print 'max lock timed out'
@@ -2732,7 +2732,7 @@ class logger_backend(object):
             finally:
                 try:
                     if self.lock_time is None:
-                        self.lock_time = datetime.datetime.utcnow()
+                        self.lock_time = datetime.datetime.now(datetime.UTC)
                     function()
                 except Exception as e:
                     print((traceback.format_exc()))
@@ -2770,7 +2770,7 @@ class logger_backend(object):
                         table_date = datetime.datetime.strptime(table_date, '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%Y_%m_%dT%H_%M_%SZ')
                     except TypeError as e:
                         debug_logging.warning("WARNING: Failed to extract datetime information from table {}. Reverting to current time".format(self.table_name))
-                        table_date = datetime.datetime.utcnow().strftime('%Y_%m_%dT%H_%M_%SZ')
+                        table_date = datetime.datetime.now(datetime.UTC).strftime('%Y_%m_%dT%H_%M_%SZ')
                     self._copy_table(self.table_name, '{}_{}'.format(table_name, table_date))
                     self.conn.execute("DROP TABLE {}".format(self.table_name))
                     self._commit()

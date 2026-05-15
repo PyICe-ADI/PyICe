@@ -8,7 +8,7 @@ from PyICe.lab_utils.sqlite_data import sqlite_data
 
 def make_recarray():
     """Create a simple numpy recarray for testing."""
-    return np.core.records.fromarrays(
+    return np.rec.fromarrays(
         [[1.0, 2.0, 3.0, 4.0, 5.0],
          [10.0, 20.0, 30.0, 40.0, 50.0],
          [100.0, 200.0, 300.0, 400.0, 500.0]],
@@ -92,7 +92,7 @@ class TestVectorTransform:
             vector_transform(arr, [None, None])
 
     def test_diff_operation(self):
-        arr = np.core.records.fromarrays(
+        arr = np.rec.fromarrays(
             [[0, 1, 2, 3], [0, 1, 4, 9]],
             names=['x', 'y']
         )

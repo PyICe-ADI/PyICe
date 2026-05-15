@@ -28,4 +28,4 @@ def vector_transform(rec_array, column_vector_functions, column_names=None):
             filt_names.append(column_names[i])
         else:
             filt_names.append(column_name) #use old name
-    return numpy.core.records.fromarrays(filt_cols, names=filt_names)
+    return numpy.rec.fromarrays(filt_cols, names=filt_names)
