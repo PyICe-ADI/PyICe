@@ -65,8 +65,8 @@ class results_ord_dict(collections.OrderedDict):
     >>> from PyICe.lab_core import results_ord_dict
     >>> d = results_ord_dict([('voltage', 3.3), ('current', 0.01)])
     >>> print(d)
-    voltage:  3.3
-    current:  0.01
+    voltage: 3.3
+    current: 0.01
     <BLANKLINE>
     '''
     def __str__(self):

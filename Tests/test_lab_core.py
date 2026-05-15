@@ -426,8 +426,13 @@ def thread_group(group):
     return group, [c0, c1, c2, c3, c4]
 
 class TestChannelGroup:
-    # def test_copy(self):
-    #     assert False
+    def test_copy(self, loaded_group):
+        copied = loaded_group.copy()
+        assert copied is not loaded_group
+        assert copied.get_name() == loaded_group.get_name()
+        assert set(copied.get_all_channel_names()) == set(loaded_group.get_all_channel_names())
+        for name in loaded_group.get_all_channel_names():
+            assert copied[name] is loaded_group[name]
 
     def test_get_name(self, group):
         assert group.get_name() == 'New Group'
@@ -800,4 +805,93 @@ class TestChannelGroup:
         assert 'chan0' in cloned.get_all_channel_names()
         assert 'chan1' in cloned.get_all_channel_names()
         assert cloned is not loaded_group
+
+    def test_write_html(self, loaded_group, tmp_path):
+        import html5lib
+        from bs4 import BeautifulSoup
+
+        html = loaded_group.write_html()
+
+        # html5lib: parse and check for spec parse errors
+        parser = html5lib.HTMLParser()
+        doc = parser.parse(html)
+        assert doc is not None
+
+        # BeautifulSoup: structural DOM assertions
+        soup = BeautifulSoup(html, 'html5lib')
+        table = soup.find('table')
+        assert table is not None
+
+        headers = [th.get_text() for th in table.find_all('th')]
+        assert headers == ['Channel Name', 'Category', 'Description']
+
+        rows = table.find_all('tr')
+        # 1 header row + 1 row per channel
+        channel_names = loaded_group.get_all_channel_names()
+        assert len(rows) == 1 + len(channel_names)
+
+        # Every channel name appears in the table body
+        body_text = table.get_text()
+        for name in channel_names:
+            assert name in body_text
+
+        # File output round-trip
+        out_file = tmp_path / "channels.html"
+        html2 = loaded_group.write_html(file_name=str(out_file))
+        assert out_file.exists()
+        assert out_file.read_bytes() == html2.encode('utf-8')
+
+    def test_write_html_sort_categories(self, loaded_group_w_channels):
+        from bs4 import BeautifulSoup
+
+        group, (c1, c2, c3) = loaded_group_w_channels
+        html = group.write_html(sort_categories=True)
+        soup = BeautifulSoup(html, 'html5lib')
+        rows = soup.find('table').find_all('tr')[1:]  # skip header
+        cell_texts = [row.find_all('td')[1].get_text().strip() for row in rows]
+        # Categories should be sorted: cat1, cat2, then None/empty for chan2
+        assert cell_texts == sorted(cell_texts, key=str)
+
+    def test_write_html_verbose_presets_and_attributes(self, tmp_path):
+        from bs4 import BeautifulSoup
+
+        group = channel_group('verbose_group')
+        int_ch = integer_channel(name='int_chan', size=8,
+                                 write_function=write_function)
+        int_ch.add_preset('LOW', 0)
+        int_ch.add_preset('HIGH', 255)
+        int_ch.set_attribute('units', 'counts')
+        int_ch.set_description('An integer channel with presets')
+        group._add_channel(int_ch)
+
+        html = group.write_html(verbose=True)
+        soup = BeautifulSoup(html, 'html5lib')
+
+        # Presets rendered as <select> with correct options
+        presets_select = soup.find('select', {'name': 'presets'})
+        assert presets_select is not None
+        options = presets_select.find_all('option')
+        option_texts = [opt.get_text() for opt in options]
+        assert any('LOW' in t for t in option_texts)
+        assert any('HIGH' in t for t in option_texts)
+
+        # Attributes rendered as <select>
+        attrs_select = soup.find('select', {'name': 'attributes'})
+        assert attrs_select is not None
+        assert 'units' in attrs_select.get_text()
+
+    def test_write_html_not_verbose(self, tmp_path):
+        from bs4 import BeautifulSoup
+
+        group = channel_group('quiet_group')
+        int_ch = integer_channel(name='int_chan', size=8,
+                                 write_function=write_function)
+        int_ch.add_preset('LOW', 0)
+        int_ch.set_attribute('units', 'counts')
+        group._add_channel(int_ch)
+
+        html = group.write_html(verbose=False)
+        soup = BeautifulSoup(html, 'html5lib')
+        assert soup.find('select', {'name': 'presets'}) is None
+        assert soup.find('select', {'name': 'attributes'}) is None
 
