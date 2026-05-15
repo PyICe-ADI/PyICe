@@ -638,7 +638,7 @@ class agilent_a970a_dacs(daq970a_instrument):
         self.bay = bay
         self.plugin_type = "DAQM907A"
         daq970a_instrument.__init__(
-            self, f'a970a_dacs bay: {bay} @ {interface_visa} ')
+            self, f'a970a_dacs bay: {bay} @ {interface_visa} ', False)
         self.add_interface_visa(interface_visa)
 
     def add_channel(self, channel_name, channel_num):
