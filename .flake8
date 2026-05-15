@@ -1,5 +1,6 @@
 [flake8]
-max-line-length = 120
+max-line-length = 127
+max-complexity = 10
 per-file-ignores =
     PyICe/lab_instruments/*.py: F405
     PyICe/virtual_instruments.py: F405
