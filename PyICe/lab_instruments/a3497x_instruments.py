@@ -1056,7 +1056,7 @@ class agilent_3497xa_dacs(a3497xa_instrument):
         self.bay = bay
         self.plugin_type = "34907A"
         a3497xa_instrument.__init__(
-            self, f'34970a_dacs bay: {bay} @ {interface_visa} ')
+            self, f'34970a_dacs bay: {bay} @ {interface_visa} ', False)
         self.add_interface_visa(interface_visa)
 
     def add_channel(self, channel_name, channel_num):
