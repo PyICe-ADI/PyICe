@@ -794,10 +794,10 @@ class twi_instrument_dummy(twi_instrument):
 
 
 if __name__ == "__main__":
-    from . import lab_core
+    from . import lab_core  # noqa: F811
     m = lab_core.master()
-    twi_interface = m.get_twi_dummy_interface()
-    twi = twi_instrument(twi_interface)
+    twi_ifc = m.get_twi_dummy_interface()
+    twi = twi_instrument(twi_ifc)
     twi.populate_from_file(
         "./xml_registers/EXAMPLE/LTC3350.xml",
         format_dict={},

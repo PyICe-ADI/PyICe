@@ -2113,8 +2113,7 @@ class tab_group(QtWidgets.QTabWidget):
             # Case of no previous tab to disconnect.
             debug_logging.debug(
                 "  tab_group.active_changed({}), no previous tab to disconnect".format(
-                    index, self.find_widget_in_tabs(
-                        self._previous_tab)))
+                    index))
             self.connect_tab(new_tab)
         self._active_tab = new_tab
         self._previous_tab = old_tab
@@ -3189,7 +3188,7 @@ class ltc_lab_gui_app(QObject):
 
 if __name__ == '__main__':
     from . import lab_instruments
-    from . import lab_core
+    from . import lab_core  # noqa: F811
     master = lab_core.master("Demonstration GUI")
     master.add_channel_delta_timer('time_d')
     timer = lab_instruments.timer()

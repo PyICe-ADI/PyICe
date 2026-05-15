@@ -7,17 +7,15 @@ import time
 import random
 import array
 from collections import OrderedDict
-import traceback
 import logging
 import multiprocessing
 from . import visa_wrappers
 from . import spi_interface
 from . import twi_interface
 import labcomm
-import sys
 import abc
 try:
-    import pyvisa
+    import pyvisa  # noqa: F401
     visaMissing = False
 except BaseException:
     visaMissing = True
@@ -27,17 +25,17 @@ try:
 except BaseException:
     serialMissing = True
 try:
-    import vxi11
+    import vxi11  # noqa: F401
     vxi11Missing = False
 except BaseException:
     vxi11Missing = True
 try:
-    import usbtmc
+    import usbtmc  # noqa: F401
     usbtmcMissing = False
 except BaseException:
     usbtmcMissing = True
 try:
-    import telnetlib
+    import telnetlib  # noqa: F401
     telnetlibMissing = False
 except BaseException:
     telnetlibMissing = True
@@ -836,7 +834,7 @@ class interface_bobbytalk_raw_serial(interface_bobbytalk):
            Upon timeout, returns None.'''
         # Stuff we'll use from Python's standard library.
         from numbers import Real
-        from struct import unpack_from, unpack
+        from struct import unpack
         import time
         # Sanity check arguments.
         assert isinstance(dest_id, int) and dest_id >= 0 and dest_id < 2**16
@@ -1122,7 +1120,7 @@ class interface_factory(communication_node):
 
     def __init__(self):
         communication_node.__init__(self)
-        if self._instantiated == True:
+        if self._instantiated is True:
             raise Exception(
                 "PyICe lab_interfaces: It's only appropriate to create one instance of an interface_factory. There already seems to be at least one.")
         self._instantiated = True

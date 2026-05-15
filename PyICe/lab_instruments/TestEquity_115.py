@@ -1,4 +1,4 @@
-from ..lab_core import *
+from ..lab_core import *  # noqa: F403
 from .temperature_chamber import temperature_chamber
 
 
@@ -50,7 +50,7 @@ class TestEquity_115(temperature_chamber):
             try:
                 temp = self.modbus_pid.read_register(100, 1, 3, True)
             except (IOError, ValueError):
-                if self.__scriptDebug == True:
+                if self.__scriptDebug is True:
                     print("TE115A: get_temp communication error")
                 time.sleep(5)
         return float(temp)

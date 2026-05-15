@@ -1,4 +1,4 @@
-from ..lab_core import *
+from ..lab_core import *  # noqa: F403
 
 
 class EL34143A(scpi_instrument):

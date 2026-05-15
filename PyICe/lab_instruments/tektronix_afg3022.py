@@ -1,4 +1,4 @@
-from ..lab_core import *
+from ..lab_core import *  # noqa: F403
 
 
 class tektronix_afg3022(scpi_instrument):

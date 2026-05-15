@@ -1,4 +1,4 @@
-from PyICe.lab_core import *
+from PyICe.lab_core import *  # noqa: F403
 
 
 class kikusui_pbz(scpi_instrument):

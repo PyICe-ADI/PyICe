@@ -55,7 +55,7 @@ class delay_loop(object):
                 seconds=seconds) -
             elapsed_time).total_seconds()
         if (self.delay_time < 0):
-            if (self.strict == True):
+            if (self.strict is True):
                 raise Exception(
                     'Loop processing longer than requested delay by {:3.3f} seconds at {}.'.format(
                         -self.delay_time, datetime.datetime.now()))

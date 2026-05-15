@@ -30,13 +30,11 @@ The SPI interface is composed of two separate classes:
 
 
 try:
-    from Adafruit_BBIO.SPI import SPI
+    from Adafruit_BBIO.SPI import SPI  # noqa: F401
     SPI_BBIO_missing = False
 except ImportError as e:
     SPI_BBIO_missing = True
 
-import struct
-import array
 import time
 import numbers
 import collections
@@ -517,7 +515,7 @@ class spi_dc590(spiInterface):
             elif stream_resp[1] != 0:
                 raise SPIMasterError(
                     'Long response to SPI transceive: {} then {}'.format(
-                        stream_resp[0]), elf.interface.read(None)[0])
+                        stream_resp[0], self.interface.read(None)[0]))
             else:
                 resp.append(int(stream_resp[0], 16))
         return self.pack(resp, self.word_size)

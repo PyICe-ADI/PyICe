@@ -1,4 +1,4 @@
-from .lab_core import *
+from .lab_core import *  # noqa: F403
 from PyICe.lab_utils.str2num import str2num
 from PyICe.lab_instruments.temperature_chamber import temperature_chamber
 import PyICe.lab_utils.delay_loop
@@ -2352,8 +2352,7 @@ class threshold_finder(instrument, delegator):
 
         self.debug_print("------------------------------")
         self.debug_print(
-            "Check polarity and output digitizer threshold.".format(
-                self.tries))
+            "Check polarity and output digitizer threshold.")
 
         # get the polarity
         low_test = self._test(

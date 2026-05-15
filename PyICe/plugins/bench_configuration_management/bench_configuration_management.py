@@ -80,9 +80,6 @@ class bench_config_component():
     def get_name(self):
         return self.name
 
-    def get_terminals(self):
-        return self._terminals
-
     def __getitem__(self, item):
         return self._terminals[item]
 

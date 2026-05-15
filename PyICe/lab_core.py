@@ -1904,7 +1904,7 @@ class channel_group(object):
         return results
 
     def start_threads(self, number):
-        if self._threaded == False:
+        if self._threaded is False:
             self._threaded = True
             self._threads = number
             self._read_queue = queue.Queue()

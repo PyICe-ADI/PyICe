@@ -1,4 +1,4 @@
-from ..lab_core import *
+from ..lab_core import *  # noqa: F403
 
 
 class semiconductor_parameter_analyzer(scpi_instrument):

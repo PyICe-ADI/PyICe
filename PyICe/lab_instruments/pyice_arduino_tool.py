@@ -1,4 +1,4 @@
-from PyICe.lab_core import *
+from PyICe.lab_core import *  # noqa: F403
 
 '''
  --- PyICe Arduino Tool (PAT) USAGE ---
@@ -641,9 +641,7 @@ class pyice_arduino_tool(instrument):
         new_channel = self._add_read_channel(channel_name, 'PWM:FREQ?')
         return new_channel
 
-
-# GROUP FUNCTIONS --------------------------------------------------------
-
+    # GROUP FUNCTIONS --------------------------------------------------------
 
     def set_chip_settings(self, uses_pec='True', register_size='8',
                           address='0x00', wd_q_cc='0x00', wd_a_cc='0x00'):
@@ -671,6 +669,7 @@ class pyice_arduino_tool(instrument):
         size = channel.get_attribute('size')
         word_size = channel.get_attribute('word_size')
         register_read_data = int(self.read_chip(command_code))
+
         def size_to_bitmask(size):
             return 2**size - 1
         # bitmask the size of the register with relevant bits cleared

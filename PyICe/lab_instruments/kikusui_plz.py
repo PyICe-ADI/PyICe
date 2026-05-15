@@ -1,4 +1,4 @@
-from PyICe.lab_core import *
+from PyICe.lab_core import *  # noqa: F403
 import time
 
 
@@ -182,9 +182,9 @@ class kikusui_plz(scpi_instrument):
         self.get_interface().write((f"OUTPut:SHORt {short}"))
 
     def _write_enable(self, output):
-        if output == True or output == 1:
+        if output is True or output == 1:
             self.get_interface().write(("OUTPut 1"))
-        if output == False or output == 0:
+        if output is False or output == 0:
             self.get_interface().write(("OUTPut 0"))
         timeout1 = time.time() + .5
         while int(self._read_load()) != output:

@@ -193,7 +193,7 @@ class TestWriteChannel:
         simple_write.set_display_format_str(2, 1, 3)
         assert simple_write._display_format_str == '1{:2}3'
 
-    def test_get_min_write_warning(self, simple_write):
+    def test_get_min_write_warning_2(self, simple_write):
         simple_write.set_min_write_warning(30)
         assert simple_write.get_min_write_warning() == 30
 
@@ -670,9 +670,9 @@ class TestChannelGroup:
         assert results['chan3'] == 'Reading'
 
     def test_start_threads(self, group):
-        assert group._threaded == False
+        assert group._threaded is False
         group.start_threads(2)
-        assert group._threaded == True
+        assert group._threaded is True
         assert group._threads == 2
         assert hasattr(group, '_read_queue')
         assert hasattr(group, '_read_results_queue')

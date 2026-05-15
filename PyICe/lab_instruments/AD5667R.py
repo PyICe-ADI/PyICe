@@ -1,4 +1,4 @@
-from ..lab_core import *
+from ..lab_core import *  # noqa: F403
 
 #################################################
 # Immutable Commands (3 bit) Page 23 Datasheet  #

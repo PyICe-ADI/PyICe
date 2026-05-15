@@ -1,4 +1,4 @@
-from PyICe.lab_core import *
+from PyICe.lab_core import *  # noqa: F403
 
 
 class Agilent_8110a(scpi_instrument):
@@ -148,8 +148,8 @@ class Agilent_8110a(scpi_instrument):
             if state not in ["ON", "OFF", True, False]:
                 raise Exception(
                     f"\n\nAgilent 8110A: Sorry don't know how to set ouput state to: '{state}', try 'ON', 'OFF', True or False.\n\n")
-            state = "ON" if state == True else state
-            state = "OFF" if state == False else state
+            state = "ON" if state is True else state
+            state = "OFF" if state is False else state
             self.get_interface().write(
                 f":OUTP{number} {
                     'ON' if state == 'ON' else 'OFF'}")
@@ -435,8 +435,8 @@ class Agilent_8110a(scpi_instrument):
             if state not in ["ON", "OFF", True, False]:
                 raise Exception(
                     f"\n\nAgilent 8110A: Sorry don't know how to set pattern state to: '{state}', try 'ON', 'OFF', True or False.\n\n")
-            state = "ON" if state == True else state
-            state = "OFF" if state == False else state
+            state = "ON" if state is True else state
+            state = "OFF" if state is False else state
             self.get_interface().write(f"DIG:STIM:PATT:STATE {state}")
             self.operation_complete()
         new_channel = channel(channel_name, write_function=set_pattern_state)

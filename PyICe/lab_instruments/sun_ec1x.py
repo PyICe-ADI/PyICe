@@ -1,4 +1,4 @@
-from ..lab_core import *
+from ..lab_core import *  # noqa: F403
 from .sun_ecxx import sun_ecxx
 
 
@@ -46,13 +46,13 @@ class sun_ec1x(sun_ecxx):
 
     def _enable(self, enable):
         '''individually control heat/cool outputs. Usually used through channel framework'''
-        if enable == False or enable == 0:
+        if enable is False or enable == 0:
             time.sleep(0.5)
             self.get_interface().write('HOFF')
             time.sleep(0.5)
             self.get_interface().write('COFF')
             time.sleep(0.5)
-        elif enable == True or enable == 1:
+        elif enable is True or enable == 1:
             time.sleep(0.5)
             self.get_interface().write('HON')
             time.sleep(0.5)

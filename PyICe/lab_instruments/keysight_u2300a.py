@@ -3,7 +3,7 @@ from numpy import fromiter, dtype
 import struct
 import time
 import datetime
-from ..lab_core import *
+from ..lab_core import *  # noqa: F403
 
 
 class u2300aBufferOverflowError(Exception):

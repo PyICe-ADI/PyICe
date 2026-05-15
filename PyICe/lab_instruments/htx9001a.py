@@ -1,4 +1,4 @@
-from ..lab_core import *
+from ..lab_core import *  # noqa: F403
 from .htx9001 import htx9001
 str_encoding = 'latin-1'
 

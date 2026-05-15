@@ -1,4 +1,4 @@
-from PyICe.lab_core import *
+from PyICe.lab_core import *  # noqa: F403
 from .kikusui_pbz import kikusui_pbz
 
 

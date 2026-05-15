@@ -1,4 +1,4 @@
-from ..lab_core import *
+from ..lab_core import *  # noqa: F403
 from PyICe.lab_utils.banners import print_banner
 import math
 import numpy
@@ -1125,7 +1125,7 @@ mixing.'''
 
         level_channel = channel(
             f'{channel_name}_video_level',
-            write_function=lambda l: self.get_interface().write(':TRIGger:SEQuence:VIDeo:LEVel {l}'))
+            write_function=lambda level: self.get_interface().write(':TRIGger:SEQuence:VIDeo:LEVel {level}'))
         level_channel._read = lambda: float(
             self.get_interface().ask(':TRIGger:SEQuence:VIDeo:LEVel?'))
         level_channel.set_attribute('channel_type', 'trig_control')

@@ -1,5 +1,5 @@
 import collections
-from ..lab_core import *
+from ..lab_core import *  # noqa: F403
 from enum import Enum, auto
 import minimalmodbus
 

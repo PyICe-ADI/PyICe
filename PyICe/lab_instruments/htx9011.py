@@ -1,4 +1,4 @@
-from ..lab_core import *
+from ..lab_core import *  # noqa: F403
 from PyICe.lab_utils.banners import print_banner
 from PyICe.lab_utils.eng_string import eng_string
 import datetime
@@ -403,9 +403,9 @@ class htx9011(scpi_instrument):
         # self._twi.init_i2c()
 
     def _clean_value(self, value):
-        if (value == True or value == 1 or value == '1'):
+        if (value is True or value == 1 or value == '1'):
             value = 1
-        elif (value == False or value == 0 or value == '0'):
+        elif (value is False or value == 0 or value == '0'):
             value = 0
         else:
             raise Exception(f'\n\nCan not parse htx9011 input: {value}\n\n')

@@ -1,5 +1,5 @@
 from PyICe import lab_core
-from PyICe.lab_instruments import *
+from PyICe.lab_instruments.PSA import keysight_e4440a
 
 
 m = lab_core.master()

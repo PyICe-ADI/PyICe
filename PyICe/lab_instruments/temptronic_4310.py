@@ -1,4 +1,4 @@
-from ..lab_core import *
+from ..lab_core import *  # noqa: F403
 import time
 
 
@@ -145,7 +145,7 @@ class temptronic_4310(instrument):
     def _wait_settle(self):
         '''Block until temperature has been within window for soak time.'''
         settled = False
-        while (settled == False):
+        while (settled is False):
             time.sleep(5)
             self.time += 5
             print("Waiting To Settle to " + str(self.setpoint) +

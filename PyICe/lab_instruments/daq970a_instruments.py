@@ -1,4 +1,4 @@
-from ..lab_core import *
+from ..lab_core import *  # noqa: F403
 from PyICe.lab_utils.banners import print_banner
 from PyICe.lab_utils.eng_string import eng_string
 import math
@@ -266,7 +266,7 @@ class agilent_a970a_20ch_40ch(daq970a_instrument):
             impedance always 10M if argument is false'''
         internal_address = channel.get_attribute('internal_address')
         channel.set_attribute('input_impedance_hiz', high_z)
-        if (high_z == True):
+        if (high_z is True):
             self.get_interface().write(
                 f"INPut:IMPedance:AUTO ON , (@{internal_address})")
         else:

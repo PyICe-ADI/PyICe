@@ -1,7 +1,7 @@
 import platform
 import usb.util
 import usb.core
-from ..lab_core import *
+from ..lab_core import *  # noqa: F403
 import abc
 
 
@@ -568,7 +568,7 @@ class FT245R:
 if __name__ == '__main__':
     # ftdi_relay(serial_number='AB0NX7L7')
 
-    import usb.core
+    import usb.core  # noqa: F811
     import sys
     import time
     rb = FT245R()

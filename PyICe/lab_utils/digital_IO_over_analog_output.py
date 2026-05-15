@@ -32,7 +32,7 @@ class digital_IO_over_analog_output(object):
     def _write_callback(self, domain_channel, voltage):
         self.VOH = voltage
         if abs(self.channel.read() - voltage) > self.tolerance:
-            if self.output_state == True:
+            if self.output_state is True:
                 # Output is logic high or delta_Vhook above logic high,
                 # AND supply voltage is too different from the currently driven voltage,
                 # so change it to equal to the new supply voltage.

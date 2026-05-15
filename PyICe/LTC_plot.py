@@ -1014,7 +1014,7 @@ class Page():
             alpha=1)
         if plot.plot_type == "scope_plot":
             for trace_label in plot.trace_labels:
-                if trace_label["use_axes_scale"] == True:
+                if trace_label["use_axes_scale"] is True:
                     coordinate_system = graph.transData
                     x = plot.xlims[0] - 0.02 * (plot.xlims[1] - plot.xlims[0])
                     y = trace_label["ylocation"]

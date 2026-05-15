@@ -64,7 +64,7 @@ tf.add_channel_all('threshold', auto_find=True)
 m.add(tf)
 # m.background_gui()
 
-l = lab_core.logger(m, database="threshold_data.sqlite")
-l.new_table(table_name='thresholds', replace_table='copy')
+logger = lab_core.logger(m, database="threshold_data.sqlite")
+logger.new_table(table_name='thresholds', replace_table='copy')
 for i in range(10):
-    l.log()
+    logger.log()

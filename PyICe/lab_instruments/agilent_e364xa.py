@@ -1,4 +1,4 @@
-from PyICe.lab_core import *
+from PyICe.lab_core import *  # noqa: F403
 from .agilent_e36xxa import agilent_e36xxa
 
 

@@ -1,5 +1,5 @@
 from .agilent_8110a import Agilent_8110a
-from PyICe.lab_core import *
+from PyICe.lab_core import *  # noqa: F403
 
 
 class Agilent_81110a(Agilent_8110a):

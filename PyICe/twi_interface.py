@@ -8,7 +8,7 @@ import abc
 import itertools
 from PyICe import visa_wrappers
 try:
-    import serial
+    import serial  # noqa: F401
 except ImportError:
     pass
 import logging
@@ -2318,9 +2318,9 @@ class i2c_scpi_testhook(i2c_scpi):
         Where Z is high-z
         and P is weak pullup
         '''
-        if value == True or value == 1 or value == '1':
+        if value is True or value == 1 or value == '1':
             value = 1
-        elif value == False or value == 0 or value == '0':
+        elif value is False or value == 0 or value == '0':
             value = 0
         elif value == 'Z' or value == 'z' or value == 'P' or value == 'p':
             pass
@@ -3298,7 +3298,7 @@ class i2c_bobbytalk(twi_interface):
             uint8_t bitmap_success[(UINT8_MAX+1)/BITS_PER_BYTE];  // bitmap of success reading registers.
           } read_list_and_data_response_struct;
         """
-        if not (data_size == 16 and use_pec == True):
+        if not (data_size == 16 and use_pec is True):
             return super(i2c_bobbytalk, self).read_register_list(
                 addr7, command_codes, data_size, use_pec)
         # TODO: Implement all protocols. Only read word list with PEC is implemented right now.
