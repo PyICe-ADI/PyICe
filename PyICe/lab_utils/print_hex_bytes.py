@@ -1,5 +1,6 @@
 import collections
 
+
 def print_hex_bytes(the_bytes, number_of_bytes_per_line=16,
                     number_of_bytes_to_print=None, prefix='',
                     suffix='', show_offsets=False, write=None):
@@ -35,7 +36,7 @@ def print_hex_bytes(the_bytes, number_of_bytes_per_line=16,
     bytes_exhausted = False
     while (not bytes_exhausted and
             (bytes_printed < number_of_bytes_to_print
-            or number_of_bytes_to_print is None)):
+             or number_of_bytes_to_print is None)):
         bytelist = []  # List of bytes to print for this line.
         if number_of_bytes_per_line is None:
             # Print all the bytes on one line.

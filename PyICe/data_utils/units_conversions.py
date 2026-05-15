@@ -1,5 +1,6 @@
 import numpy
 
+
 def dBV(voltageRMS):
     '''Convert RMS voltage to dBV.
 
@@ -13,6 +14,7 @@ def dBV(voltageRMS):
     with numpy.errstate(divide='ignore'):
         return 20 * numpy.log10(voltageRMS)
 
+
 def dBm(voltageRMS):
     '''Convert RMS voltage to dBm (50 ohm reference).
 
@@ -21,7 +23,8 @@ def dBm(voltageRMS):
     >>> float(round(dBm(0.1), 2))
     -6.99
     '''
-    return 10 * numpy.log10(voltageRMS**2/50/0.001)
+    return 10 * numpy.log10(voltageRMS**2 / 50 / 0.001)
+
 
 def Vpp_to_VRMS(Vpp):
     '''Convert peak-to-peak voltage to RMS (sinusoidal).
@@ -31,7 +34,8 @@ def Vpp_to_VRMS(Vpp):
     >>> round(Vpp_to_VRMS(1.0), 4)
     0.3536
     '''
-    return Vpp/2/2**0.5
+    return Vpp / 2 / 2**0.5
+
 
 def VRMS_to_Vpp(VRMS):
     '''Convert RMS voltage to peak-to-peak (sinusoidal).
@@ -41,4 +45,4 @@ def VRMS_to_Vpp(VRMS):
     >>> round(VRMS_to_Vpp(1.0), 4)
     2.8284
     '''
-    return VRMS*2*2**0.5
+    return VRMS * 2 * 2**0.5

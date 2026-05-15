@@ -72,7 +72,8 @@ class TestI2CDummy:
     def test_read_register_list(self, dummy):
         dummy.write_register(0x50, 0x00, 10, 8, use_pec=False)
         dummy.write_register(0x50, 0x01, 20, 8, use_pec=False)
-        results = dummy.read_register_list(0x50, [0x00, 0x01], 8, use_pec=False)
+        results = dummy.read_register_list(
+            0x50, [0x00, 0x01], 8, use_pec=False)
         assert results[0x00] == 10
         assert results[0x01] == 20
 

@@ -37,7 +37,11 @@ class TestChannelBaseFunctionality:
         with pytest.raises(ChannelNameException):
             chan.set_name('***')
 
-    def test_get_type_affinity(self, chan):  # permissive by design: value is interpolated directly into SQLite CREATE TABLE, which accepts any affinity string (unknown types fall back to BLOB). PyICeBLOB is an intentional custom affinity used throughout the codebase.
+    # permissive by design: value is interpolated directly into SQLite CREATE
+    # TABLE, which accepts any affinity string (unknown types fall back to
+    # BLOB). PyICeBLOB is an intentional custom affinity used throughout the
+    # codebase.
+    def test_get_type_affinity(self, chan):
         chan._set_type_affinity('NOT_TYPE')
         assert chan.get_type_affinity() == 'NOT_TYPE'
 
@@ -322,11 +326,11 @@ class TestIntegerReadChannel:
 
     @pytest.mark.parametrize('out_format, in_val, out_val', [('dec', 10, 10),
                                                              (
-                                                                     'hex',
-                                                                     '0xA',
-                                                                     10),
-                                                             ('bin', '0b1010',
-                                                              10)])
+        'hex',
+        '0xA',
+        10),
+        ('bin', '0b1010',
+         10)])
     def test_unformat_specify_format(self, out_format, in_val, out_val,
                                      int_write_chan):
 
@@ -388,6 +392,7 @@ def group():
     c = channel_group(name='New Group')
     return c
 
+
 @pytest.fixture
 def loaded_group_w_channels(group):
     sub_group1 = channel_group('subg1')
@@ -404,10 +409,12 @@ def loaded_group_w_channels(group):
     group.add(c3 := channel(name='chan2', read_function=read_function))
     return group, [c1, c2, c3]
 
+
 @pytest.fixture
 def loaded_group(loaded_group_w_channels):
     g, chans = loaded_group_w_channels
     return g
+
 
 @pytest.fixture
 def thread_group(group):
@@ -425,12 +432,15 @@ def thread_group(group):
                             write_function=write_function))
     return group, [c0, c1, c2, c3, c4]
 
+
 class TestChannelGroup:
     def test_copy(self, loaded_group):
         copied = loaded_group.copy()
         assert copied is not loaded_group
         assert copied.get_name() == loaded_group.get_name()
-        assert set(copied.get_all_channel_names()) == set(loaded_group.get_all_channel_names())
+        assert set(
+            copied.get_all_channel_names()) == set(
+            loaded_group.get_all_channel_names())
         for name in loaded_group.get_all_channel_names():
             assert copied[name] is loaded_group[name]
 
@@ -542,7 +552,7 @@ class TestChannelGroup:
         for i in range(4):
             group.add(channel(name=f'chan{i}',
                               read_function=read_function))
-            chan_names.append(f'chan{i}');
+            chan_names.append(f'chan{i}')
         result = group.read_channels(chan_names)
         assert result == {
             'chan0': 'Reading',
@@ -589,7 +599,6 @@ class TestChannelGroup:
         group.add(sub_group1)
         assert group._resolve_channel('chan0') is c1
 
-
     def test_get_all_channels_dict(self, loaded_group):
         chans = loaded_group.get_all_channels_dict()
         assert 'chan0' in chans
@@ -632,7 +641,6 @@ class TestChannelGroup:
         assert c2 in chan_list
         assert c3 in chan_list
 
-
     def test_read_channel_list(self, thread_group):
         group, (c0, c1, c2, c3, c4) = thread_group
         results = group.read_channel_list([c0, c1, c2, c3])
@@ -644,14 +652,17 @@ class TestChannelGroup:
 
     def test__read_channels_non_threaded(self, thread_group):
         group, channels = thread_group
-        readable = [c for c in channels if c.get_name() in ('chan0', 'chan1', 'chan3')]
+        readable = [
+            c for c in channels if c.get_name() in (
+                'chan0', 'chan1', 'chan3')]
         results = group._read_channels_non_threaded(readable)
         assert results['chan0'] == 'Reading'
         assert results['chan1'] == 'Reading'
         assert results['chan3'] == 'Reading'
 
     def test__read_channels_threaded(self, thread_group):
-        # channel_group lacks group_com_nodes_for_threads_filter, so always falls back to non-threaded
+        # channel_group lacks group_com_nodes_for_threads_filter, so always
+        # falls back to non-threaded
         group, channels = thread_group
         readable = [c for c in channels if c.get_name() in ('chan0', 'chan3')]
         results = group._read_channels_threaded(readable)
@@ -719,8 +730,14 @@ class TestChannelGroup:
         sub_group1 = channel_group('subg1')
         sub_group2 = channel_group('subg2')
 
-        sub_group1.add(c1 := channel(name='chan0', write_function=write_function))
-        sub_group2.add(c2 := channel(name='chan1', write_function=write_function))
+        sub_group1.add(
+            c1 := channel(
+                name='chan0',
+                write_function=write_function))
+        sub_group2.add(
+            c2 := channel(
+                name='chan1',
+                write_function=write_function))
         group.merge_in_channel_group(sub_group1)
         group.merge_in_channel_group(sub_group2)
 
@@ -894,4 +911,3 @@ class TestChannelGroup:
         soup = BeautifulSoup(html, 'html5lib')
         assert soup.find('select', {'name': 'presets'}) is None
         assert soup.find('select', {'name': 'attributes'}) is None
-

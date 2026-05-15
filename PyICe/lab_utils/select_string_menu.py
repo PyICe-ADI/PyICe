@@ -16,7 +16,7 @@ def select_string_menu(header, items):
     if len(items) == 0:
         print(f'No items to select from. Returning None')
         return None
-    if len(items) ==1:
+    if len(items) == 1:
         print(f'Only one item presented. Returning {items[0]}')
         return items[0]
     stdscr = curses.initscr()
@@ -71,7 +71,8 @@ def select_string_menu(header, items):
         if key in [curses.KEY_ENTER, ord("\n")]:
             if len(pages) == 1:
                 return close_up_shop(active_list, position)
-            if (active_list != pages[-1]) and (position == len(active_list) - 1):
+            if (active_list != pages[-1]
+                    ) and (position == len(active_list) - 1):
                 page_idx += 1
                 position = 0
                 window.clear()
@@ -89,7 +90,47 @@ def select_string_menu(header, items):
         elif position >= len(active_list):
             position = len(active_list) - 1
 
+
 if __name__ == "__main__":
-    
-    x = select_string_menu('How ya doing, buddy?', ['Not too shabby.', 'Fine and dandy.', 'Fit as a fiddle and ready for love.', 3 ,4 ,5 ,6, 7, 8, 9,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2])
+
+    x = select_string_menu('How ya doing, buddy?',
+                           ['Not too shabby.',
+                            'Fine and dandy.',
+                            'Fit as a fiddle and ready for love.',
+                            3,
+                            4,
+                            5,
+                            6,
+                            7,
+                            8,
+                            9,
+                            1,
+                            1,
+                            1,
+                            1,
+                            1,
+                            1,
+                            1,
+                            1,
+                            2,
+                            2,
+                            2,
+                            2,
+                            2,
+                            2,
+                            2,
+                            2,
+                            2,
+                            2,
+                            2,
+                            2,
+                            2,
+                            2,
+                            2,
+                            2,
+                            2,
+                            2,
+                            2,
+                            2,
+                            2])
     breakpoint()

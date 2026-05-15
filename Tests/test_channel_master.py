@@ -142,7 +142,7 @@ class TestChannelMasterCallbacks:
         m.add_channel_dummy('cb_ch')
         m['cb_ch'].write(1)
         received = []
-        cb = lambda data: received.append(data)
+        def cb(data): return received.append(data)
         m.add_read_callback(cb)
         m.read_channel('cb_ch')
         m.remove_read_callback(cb)
@@ -162,7 +162,7 @@ class TestChannelMasterCallbacks:
         m = master_instance
         m.add_channel_dummy('wch')
         received = []
-        cb = lambda data: received.append(data)
+        def cb(data): return received.append(data)
         m.add_write_callback(cb)
         m.write_channel('wch', 1)
         m.remove_write_callback(cb)
@@ -221,7 +221,8 @@ class TestMaster:
         assert 'dummy_int' in clone_names
         assert 'dummy_plain' in clone_names
 
-    def test_read_all_channels_returns_results_ord_dict(self, master_with_dummies):
+    def test_read_all_channels_returns_results_ord_dict(
+            self, master_with_dummies):
         results = master_with_dummies.read_all_channels()
         assert isinstance(results, results_ord_dict)
         assert results['dummy_float'] == 3.14

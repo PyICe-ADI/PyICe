@@ -48,7 +48,8 @@ class TestTMP117:
 
     def test_read_temp_positive(self, twi, tmp117):
         # 25.0°C = 25.0 * 128 = 3200 = 0x0C80
-        # TMP117 returns MSB-first, so register holds swap_endian(0x0C80, 2) = 0x800C
+        # TMP117 returns MSB-first, so register holds swap_endian(0x0C80, 2) =
+        # 0x800C
         raw = swap_endian(3200, elementCount=2)
         twi._cc_data[0x00] = raw
         temp = tmp117.read_temp()
@@ -203,7 +204,8 @@ class TestADT7410:
         sensor.add_channel('temperature')
         master_instance.add(sensor)
         twi._cc_data[0x00] = swap_endian(3200, elementCount=2)
-        assert master_instance.read_channel('temperature') == pytest.approx(25.0)
+        assert master_instance.read_channel(
+            'temperature') == pytest.approx(25.0)
 
     def test_shutdown(self, twi, sensor):
         sensor.enable(False)
@@ -228,7 +230,8 @@ class TestAD5693R:
         assert twi._cc_data[0x30] == swap_endian(0x8000, elementCount=2)
 
     def test_set_voltage_midscale(self, twi, dac):
-        # Default gain=2, vref=2.5 → full scale=5.0V, midscale=2.5V → code=32768
+        # Default gain=2, vref=2.5 → full scale=5.0V, midscale=2.5V →
+        # code=32768
         dac._set_voltage(2.5)
         expected_code = int(2.5 / 2.0 / 2.5 * 65536)
         assert twi._cc_data[0x30] == swap_endian(expected_code, elementCount=2)
@@ -470,7 +473,8 @@ class TestBR24H64:
 
     def test_write_location(self, twi, eeprom):
         eeprom.write_location(0, 0xAB)
-        # commandCode = location >> 8 = 0, data = (location & 0xff) + (data << 8)
+        # commandCode = location >> 8 = 0, data = (location & 0xff) + (data <<
+        # 8)
         assert twi._cc_data[0x00] == (0x00) + (0xAB << 8)
 
     def test_write_location_high_address(self, twi, eeprom):

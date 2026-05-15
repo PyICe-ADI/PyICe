@@ -1,6 +1,7 @@
 import numpy
 from .ordered_pair import ordered_pair
 
+
 class oscilloscope_channel(ordered_pair):
     def __init__(self, time_points, channel_data):
         list.__init__(self)
@@ -13,6 +14,8 @@ class oscilloscope_channel(ordered_pair):
         xvalues = [float(x) for x in time_points]
         yvalues = [float(y) for y in channel_data]
         self.extend(list(zip(xvalues, yvalues)))
-        self.array = numpy.array(list(zip(xvalues, yvalues)), dtype=[('x', float), ('y', float)])
+        self.array = numpy.array(list(zip(xvalues, yvalues)), dtype=[
+                                 ('x', float), ('y', float)])
+
     def to_recarray(self):
         return self.array.view(numpy.recarray)

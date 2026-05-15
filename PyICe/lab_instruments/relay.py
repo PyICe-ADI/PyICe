@@ -1,16 +1,19 @@
+import platform
+import usb.util
+import usb.core
 from ..lab_core import *
 import abc
-    
-    
+
+
 class relay(instrument):
     @abc.abstractmethod
-    def add_channel(self,channel_name, channel_number):
+    def add_channel(self, channel_name, channel_number):
         '''placeholder'''
 
     @abc.abstractmethod
     def _set_relay(self, channel_number, state):
         '''placeholder'''
-    
+
     @abc.abstractmethod
     def _get_state(self, channel_number):
         '''placeholder'''
@@ -18,6 +21,7 @@ class relay(instrument):
     @abc.abstractmethod
     def _all_off(self):
         '''placeholder'''
+
 
 class ftdi_relay(relay):
     def __init__(self, serial_number=None):
@@ -32,21 +36,34 @@ class ftdi_relay(relay):
                     'idVendor': self.VID,
                     'idProduct': self.PID,
                     'product': self.PROD_STR,
-                   }
-        if serial_number is not None: findargs['serial_number'] = self.serial_number
+                    }
+        if serial_number is not None:
+            findargs['serial_number'] = self.serial_number
         devs = list(usb.core.find(**findargs))
-        assert len(devs) == 1, f'Device search returned {len(devs)} results (1 expected). Check serial number for uniqe ID. {[dev.serial_number for dev in devs]}'
+        assert len(devs) == 1, f'Device search returned {
+            len(devs)} results (1 expected). Check serial number for uniqe ID. {
+            [
+                dev.serial_number for dev in devs]}'
         dev = devs[0]
         self.rb.connect(dev)
         super().__init__(f"relay_board {serial_number}")
         self._all_off()
-        ## TODO : add exit cleanup method
+        # TODO : add exit cleanup method
 
-    def add_channel(self,channel_name, channel_number):
+    def add_channel(self, channel_name, channel_number):
         '''Adds a channel for a relay on the board'''
-        assert self.rb.RELAY_MIN <= channel_number and channel_number <= self.rb.RELAY_MAX, f'Channel number must correspond to a relay between {self.rb.RELAY_MIN} and {self.rb.RELAY_MAX}.'
-        new_channel = integer_channel(channel_name, size=2, write_function=lambda state, channel_number=channel_number: self._set_relay(channel_number,state))
-        new_channel.set_description(self.get_name() + ': ' + self.add_channel.__doc__)
+        assert self.rb.RELAY_MIN <= channel_number and channel_number <= self.rb.RELAY_MAX, f'Channel number must correspond to a relay between {
+            self.rb.RELAY_MIN} and {
+            self.rb.RELAY_MAX}.'
+        new_channel = integer_channel(
+            channel_name,
+            size=2,
+            write_function=lambda state,
+            channel_number=channel_number: self._set_relay(
+                channel_number,
+                state))
+        new_channel.set_description(
+            self.get_name() + ': ' + self.add_channel.__doc__)
         new_channel.add_preset('ON', True)
         new_channel.add_preset('OFF', False)
         return self._add_channel(new_channel)
@@ -56,26 +73,22 @@ class ftdi_relay(relay):
             self.rb.switchon(channel_number)
         else:
             self.rb.switchoff(channel_number)
-        
+
     def _get_state(self, channel_number):
         return self.rb.getstatus(channel_number)
 
     def _all_off(self):
-        [self._set_relay(i, False) for i in range(self.rb.RELAY_MIN,self.rb.RELAY_MAX+1)]
-
-
-
+        [self._set_relay(i, False) for i in range(
+            self.rb.RELAY_MIN, self.rb.RELAY_MAX + 1)]
 
 
 ################################################################
 # External Library
 ################################################################
-
-
 '''
 # relay_ft245r
 
-*relay_ft245r* is a Python module to control relay boards based on the 
+*relay_ft245r* is a Python module to control relay boards based on the
 FTDI FT245R chip. A popular example is the Sainsmart USB relay board.
 
 ![Sainsmart 4-channel USB relay board](sainsmart_usb_4relay.jpg)
@@ -96,7 +109,7 @@ dev_list = rb.list_dev()
 if len(dev_list) == 0:
     print('No FT245R devices found')
     sys.exit()
-    
+
 # Show their serial numbers
 for dev in dev_list:
     print(dev.serial_number)
@@ -107,10 +120,10 @@ print('Using device with serial number ' + str(dev.serial_number))
 
 # Connect and turn on relay 2 and 4, and turn off
 rb.connect(dev)
-rb.switchon(2)    
+rb.switchon(2)
 rb.switchon(4)
 time.sleep(1.0)
-rb.switchoff(2)    
+rb.switchoff(2)
 time.sleep(1.0)
 rb.switchoff(4)
 ```
@@ -120,12 +133,12 @@ rb.switchoff(4)
 There's no need to "install" *relay_ft245r.py*. Just put it in the same
 directory as the Python program that will call it.
 
-But it does need PyUSB and, for Linux, a udev rule to be added or 
+But it does need PyUSB and, for Linux, a udev rule to be added or
 Windows, the libusb-win32 driver to be installed and configured.
 
 ## Installing PyUSB
 
-relay_ft245r uses the PyUSB Python module to control USB devices. To add 
+relay_ft245r uses the PyUSB Python module to control USB devices. To add
 to your base Python installation, do:
 
 ```bash
@@ -134,8 +147,8 @@ sudo pip install pyusb
 
 ## Linux: Update udev rules
 
-To control USB devices without having to be the root user, two things 
-are required: 1) you must be part of the "plugdev" group, and 2) the 
+To control USB devices without having to be the root user, two things
+are required: 1) you must be part of the "plugdev" group, and 2) the
 FTDI device has to be part of the "plugdev" group.
 
 ### Adding user to plugdev
@@ -146,7 +159,7 @@ Check which groups your user login belongs to:
 groups
 ```
 
-If this list includes "plugdev", go on to the next step. Othewise, do 
+If this list includes "plugdev", go on to the next step. Othewise, do
 this command except replace <user> with your user name:
 
 ```bash
@@ -155,7 +168,7 @@ sudo addgroup <user> plugdev
 
 ### Adding a udev rule
 
-Add a file called */lib/udev/rules.d/60-relay_ft245r.rules* with the 
+Add a file called */lib/udev/rules.d/60-relay_ft245r.rules* with the
 contents below. This example uses nano editor:
 
 ```bash
@@ -168,17 +181,17 @@ Enter the text below as a single line:
 SUBSYSTEM=="usb", ATTR{idVendor}=="0403", ATTR{idProduct}=="6001", GROUP="plugdev", MODE="660", ENV{MODALIAS}="ignore"
 ```
 
-Unplug **All** FTDI devices from USB and reattach so that this new rule 
+Unplug **All** FTDI devices from USB and reattach so that this new rule
 is executed for each FTDI device.
 
 ## Windows: Add libusb-win32 and configure
 
-On Windows, PyUSB calls into the libusb-win32 driver. 
+On Windows, PyUSB calls into the libusb-win32 driver.
 
 ### Install Zadig
 
 Zadig is the easiest way in Windows to install libusb-win32 and select
-it as the driver assigned to the FT245R board. Go to 
+it as the driver assigned to the FT245R board. Go to
 http://zadig.akeo.ie/ and download and install Zadig.
 
 * Run the program
@@ -189,7 +202,7 @@ http://zadig.akeo.ie/ and download and install Zadig.
 * Click on the Replace Driver button
 * Answer any popup dialogs that show up
 
-This replaces WinUSB for libusb-win32 as the driver to control the board. The 
+This replaces WinUSB for libusb-win32 as the driver to control the board. The
 dialog should look like this before you press *Replace Driver*:
 
 ![Zadig dialog](images/Zadig_Replace_Driver.png)
@@ -198,23 +211,23 @@ dialog should look like this before you press *Replace Driver*:
 
 ## ValueError: The device has no langid
 
-This error happens in Linux when the program does not have permission to 
-access the port. (The error is a side effect and is misleading.) Fix the 
+This error happens in Linux when the program does not have permission to
+access the port. (The error is a side effect and is misleading.) Fix the
 udev rule as documented above.
 
-To confirm it is a user permission issue, try using *sudo* in front of 
-the command to run as superuser. If it works, then it is a permissions 
+To confirm it is a user permission issue, try using *sudo* in front of
+the command to run as superuser. If it works, then it is a permissions
 issue with the device.
 
-Sometimes, you need to reboot the computer; logging in and out doesn't 
+Sometimes, you need to reboot the computer; logging in and out doesn't
 seem to set the new user permissions.
 
 ## usb.core.USBError: [[Errno 16]] Resource busy
 
 Cannot take control of the USB device. Many possible causes:
 
-* The device is attached to another driver (for example, if you are 
-  running a virtual machine and the device is presently connected to that 
+* The device is attached to another driver (for example, if you are
+  running a virtual machine and the device is presently connected to that
   virtual machine)
 
 ## TypeError: unbound method ... must be called with...
@@ -240,7 +253,7 @@ authored by Heinrich Schuchardt.
 
 I made these changes:
 
-1. Cleaner implementation as object oriented code (didn't need to keep 
+1. Cleaner implementation as object oriented code (didn't need to keep
 passing the device handle)
 
 2. Made it compatible with Python on Windows
@@ -251,7 +264,7 @@ masking is not reliable (the USB readstatus() may be happening before
 the previous USB write happened) so I restructured the code to only
 read the relay state once on connect().
 
-This was tested on Linux Mint 18.3 (Debian) and Windows 7 Professional. It 
+This was tested on Linux Mint 18.3 (Debian) and Windows 7 Professional. It
 should work fine on Raspberry Pi (Debian) and Windows 10, etc.
 
 # License
@@ -362,9 +375,6 @@ Then reload the udev rules with
 PyRelayCtl is licensed under a modified BSD license.
 """
 
-import usb.core
-import usb.util
-import platform
 
 class FT245R:
     def __init__(self):
@@ -376,7 +386,6 @@ class FT245R:
         self.RELAY_MIN = 1
         self.RELAY_MAX = 8
         self.relay_state = 0                # 8 bits representing 8 relays
-
 
     def list_dev(self):
         """
@@ -392,7 +401,6 @@ class FT245R:
             if dev.product == self.PROD_STR:
                 ret.append(dev)
         return ret
-
 
     def disconnect(self):
         """
@@ -412,9 +420,8 @@ class FT245R:
         if platform.system() != 'Windows':
             try:
                 self.dev.attach_kernel_driver(0)
-            except:
-                print ("relayctl: could not attach kernel driver")
-
+            except BaseException:
+                print("relayctl: could not attach kernel driver")
 
     def connect(self, dev):
         """
@@ -430,8 +437,9 @@ class FT245R:
             if dev.is_kernel_driver_active(0):
                 try:
                     dev.detach_kernel_driver(0)
-                except:
-                    raise RuntimeError("relayctl: failure to detach kernel driver")
+                except BaseException:
+                    raise RuntimeError(
+                        "relayctl: failure to detach kernel driver")
 
         if not self.is_connected:
             # Set the active configuration. Windows errors if this is not done.
@@ -445,7 +453,6 @@ class FT245R:
             self.is_connected = True
             self.relay_state = self._getstatus_byte()
 
-
     def _getstatus_byte(self):
         """
         Gets a byte which represents the status of all 8 relays.
@@ -458,13 +465,12 @@ class FT245R:
             raise IOError('Must connect to device first')
 
         # Read status
-        buf = bytes([0x00]);
+        buf = bytes([0x00])
         buf = self.dev.ctrl_transfer(0xC0, 0x0c, 0x0000, 0x01, buf, 500)
         if len(buf) == 0:
             raise RuntimeError("relayctl: failure to read status")
 
         return buf[0]
-
 
     def getstatus(self, relay_num):
         """
@@ -483,7 +489,6 @@ class FT245R:
         if self.relay_state & (1 << (relay_num - 1)):
             return 1
         return 0
-
 
     def setstate(self):
         """
@@ -504,7 +509,6 @@ class FT245R:
         if ret < 0:
             raise RuntimeError("relayctl: failure to write status")
         return
-
 
     def switchoff(self, relay_num):
         """
@@ -532,7 +536,6 @@ class FT245R:
         # Save status
         self.relay_state = buf[0]
         return
-
 
     def switchon(self, relay_num):
         """
@@ -562,20 +565,6 @@ class FT245R:
         return
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 if __name__ == '__main__':
     # ftdi_relay(serial_number='AB0NX7L7')
 
@@ -585,7 +574,7 @@ if __name__ == '__main__':
     rb = FT245R()
 
     if len(sys.argv) == 1:
-        #no args. Search for device
+        # no args. Search for device
         dev_list = rb.list_dev()
         # list of FT245R devices are returned
         if len(dev_list) == 0:
@@ -609,9 +598,9 @@ if __name__ == '__main__':
 
     # Connect and turn on relay 2 and 4, and turn off
     rb.connect(dev)
-    [rb.switchoff(i) for i in range(1,9)]
+    [rb.switchoff(i) for i in range(1, 9)]
     for t in range(1):
-        for i in range(1,9):
+        for i in range(1, 9):
             print(f'Relay {i}')
             for j in range(i):
                 rb.switchon(i)
@@ -621,21 +610,21 @@ if __name__ == '__main__':
             time.sleep(0.5)
     try:
         while True:
-            for i in range(1,9):
-                [rb.switchoff(j) for j in range(1,9)]
+            for i in range(1, 9):
+                [rb.switchoff(j) for j in range(1, 9)]
                 rb.switchon(i)
                 time.sleep(0.02)
     except KeyboardInterrupt as e:
-        [rb.switchoff(i) for i in range(1,9)]
+        [rb.switchoff(i) for i in range(1, 9)]
     try:
         while True:
             print('Odd')
-            [rb.switchoff(i) for i in range(1,9)]
-            [rb.switchon(i) for i in range(1,9,2)]
+            [rb.switchoff(i) for i in range(1, 9)]
+            [rb.switchon(i) for i in range(1, 9, 2)]
             time.sleep(.1)
             print('Even')
-            [rb.switchoff(i) for i in range(1,9)]
-            [rb.switchon(i) for i in range(2,9,2)]
+            [rb.switchoff(i) for i in range(1, 9)]
+            [rb.switchon(i) for i in range(2, 9, 2)]
             time.sleep(.1)
     except KeyboardInterrupt as e:
-        [rb.switchoff(i) for i in range(1,9)]
+        [rb.switchoff(i) for i in range(1, 9)]

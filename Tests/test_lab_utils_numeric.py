@@ -7,7 +7,7 @@ from PyICe.lab_utils.float_distance import float_distance
 from PyICe.lab_utils.safe_divide import safe_divide
 from PyICe.lab_utils.interpolator import interpolator
 from PyICe.lab_utils.ranges import (floatRange, floatRangeInc,
-                                     logRange, logRangeInc, decadeListRange)
+                                    logRange, logRangeInc, decadeListRange)
 
 
 class TestFloatNext:

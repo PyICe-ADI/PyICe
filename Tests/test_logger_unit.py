@@ -150,7 +150,7 @@ class TestLoggerLogging:
     def test_remove_log_callback(self, simple_logger):
         simple_logger.new_table('rmcb_test')
         received = []
-        cb = lambda data: received.append(data)
+        def cb(data): return received.append(data)
         simple_logger.add_log_callback(cb)
         simple_logger.log()
         simple_logger.remove_log_callback(cb)

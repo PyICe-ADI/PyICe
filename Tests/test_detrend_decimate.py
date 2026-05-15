@@ -39,7 +39,8 @@ class TestDetrendLinear:
         y = 2.0 * x + 10.0
         arr = make_recarray(x, y)
         result = detrend_linear(arr)
-        np.testing.assert_array_almost_equal(result.y, np.zeros(100), decimal=10)
+        np.testing.assert_array_almost_equal(
+            result.y, np.zeros(100), decimal=10)
 
     def test_preserves_oscillation(self):
         x = np.linspace(0, 2 * np.pi, 100)

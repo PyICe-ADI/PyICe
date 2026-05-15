@@ -9,8 +9,8 @@ def safe_divide(a, b):
     True
     '''
     try:
-        return a/b
+        return a / b
     except (ZeroDivisionError, TypeError):
         return None
-    except:
+    except BaseException:
         raise

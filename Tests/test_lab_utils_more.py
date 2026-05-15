@@ -197,7 +197,8 @@ class TestParseList:
         assert parse_list("[[1, 2], [3, 4]]") == [[1, 2], [3, 4]]
 
     def test_mixed_types(self):
-        assert parse_list("[1, 'hello', 3.14, True]") == [1, 'hello', 3.14, True]
+        assert parse_list("[1, 'hello', 3.14, True]") == [
+            1, 'hello', 3.14, True]
 
     def test_empty_list(self):
         assert parse_list("[]") == []

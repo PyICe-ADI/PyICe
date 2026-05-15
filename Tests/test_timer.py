@@ -11,9 +11,10 @@ def sleep(sleep_time):
     print("Sleeping {}s".format(sleep_time))
     time.sleep(sleep_time)
 
+
 sleep(2)
 print("Unpause")
-timer.resume_timer() #resume to start
+timer.resume_timer()  # resume to start
 sleep(2)
 print("Pause")
 timer.pause_timer()
@@ -28,7 +29,7 @@ print("Expect 4t, 2d: {}".format(timer.read_all_channels()))
 print("Pause")
 timer.pause_timer()
 sleep(2)
-#print timer.read_all_channels()
+# print timer.read_all_channels()
 print("Unpause")
 timer.resume_timer()
 sleep(1)
@@ -61,5 +62,3 @@ print(integrator.read_all_channels())
 sleep(1)
 integrator['int_input'].write(1)
 print(integrator.read_all_channels())
-
-

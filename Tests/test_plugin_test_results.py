@@ -488,8 +488,10 @@ def build_populated_test_results():
 
     # Declare test limits
     tr.test_limits['vout_accuracy'] = {'upper_limit': 3.6, 'lower_limit': 3.0}
-    tr.test_limits['quiescent_current'] = {'upper_limit': 0.01, 'lower_limit': None}
-    tr.test_limits['register_readback'] = {'upper_limit': 0xAB, 'lower_limit': 0xAB}
+    tr.test_limits['quiescent_current'] = {
+        'upper_limit': 0.01, 'lower_limit': None}
+    tr.test_limits['register_readback'] = {
+        'upper_limit': 0xAB, 'lower_limit': 0xAB}
     tr.test_limits['info_only'] = {'upper_limit': None, 'lower_limit': None}
 
     # Evaluate with various scenarios
@@ -620,15 +622,17 @@ class TestJSONRoundTrip:
 
     def test_test_declarations_preserved(self, round_trip):
         original, reloaded, _ = round_trip
-        assert list(reloaded._test_declarations) == list(original._test_declarations)
+        assert list(
+            reloaded._test_declarations) == list(
+            original._test_declarations)
 
     def test_test_limits_preserved(self, round_trip):
         original, reloaded, _ = round_trip
         for test_name in original._test_declarations:
             assert reloaded.test_limits[test_name]['upper_limit'] == \
-                   original.test_limits[test_name]['upper_limit']
+                original.test_limits[test_name]['upper_limit']
             assert reloaded.test_limits[test_name]['lower_limit'] == \
-                   original.test_limits[test_name]['lower_limit']
+                original.test_limits[test_name]['lower_limit']
 
     def test_collected_data_preserved(self, round_trip):
         original, reloaded, _ = round_trip
@@ -647,7 +651,7 @@ class TestJSONRoundTrip:
         original, reloaded, _ = round_trip
         for test_name in original._test_declarations:
             assert bool(reloaded._test_results[test_name]) == \
-                   bool(original._test_results[test_name])
+                bool(original._test_results[test_name])
 
     def test_conditions_preserved(self, round_trip):
         original, reloaded, _ = round_trip

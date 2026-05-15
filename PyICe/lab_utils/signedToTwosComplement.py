@@ -8,9 +8,9 @@ def signedToTwosComplement(signed, bitCount):
     >>> signedToTwosComplement(-128, 8)
     128
     '''
-    assert signed < 2**(bitCount-1)
-    assert signed >= -1 * 2**(bitCount-1)
+    assert signed < 2**(bitCount - 1)
+    assert signed >= -1 * 2**(bitCount - 1)
     if signed < 0:
         signed += 2**bitCount
-        signed &= 2**bitCount-1
+        signed &= 2**bitCount - 1
     return signed
