@@ -242,6 +242,7 @@ class sqlite_data(
 
     def xlsx(self, output_file, elapsed_time_columns=False):
         '''write data to excel output_file.'''
+        from .sqlite_to_xlsx import sqlite_to_xlsx  # local import to avoid circular dependency
         with sqlite_to_xlsx(output_file) as writer:
             writer.add_worksheet(self, elapsed_time_columns)
             writer.close()

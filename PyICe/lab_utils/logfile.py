@@ -1,4 +1,5 @@
 import time
+from .print_to_screen import print_to_screen
 
 
 class logfile(object):

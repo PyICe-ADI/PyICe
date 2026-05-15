@@ -1,4 +1,6 @@
-from ..lab_core import scpi_instrument
+import sys
+import time
+from ..lab_core import scpi_instrument, channel
 
 
 class agilent_35670a(scpi_instrument):

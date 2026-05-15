@@ -1,7 +1,10 @@
 import os
 import atexit
 import datetime
+import sqlite3
 import numpy
+
+numpy_missing = False
 
 
 class sqlite_to_xlsx(object):
@@ -257,6 +260,7 @@ class sqlite_to_xlsx(object):
         returns a dictionary containing all worksheets with worksheet name keys
         See: http://xlsxwriter.readthedocs.io/worksheet.html
         '''
+        from .sqlite_data import sqlite_data  # local import to avoid circular dependency
         conn = sqlite3.connect(db_file_name)
         worksheets = {}
         for row in conn.execute(

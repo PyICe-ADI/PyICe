@@ -195,7 +195,7 @@ class database_archive():
                         import_file = os.path.realpath(os.path.relpath(
                             os.getcwd(), start=os.environ['PYTHONPATH']))
                         import_file = import_file[import_file.find(
-                            project_folder_name):]
+                            project_folder_name):]  # noqa: F821
                         import_file += os.sep
                         import_file = import_file.replace(os.sep, ".")
                         import_file += os.path.basename(os.getcwd())

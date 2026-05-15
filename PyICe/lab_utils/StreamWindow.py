@@ -1,4 +1,5 @@
 import sys
+from .print_hex_bytes import print_hex_bytes
 
 
 class StreamWindow(object):

@@ -12,6 +12,7 @@ import multiprocessing
 from . import visa_wrappers
 from . import spi_interface
 from . import twi_interface
+from .lab_utils.StreamWindow import StreamWindow
 import labcomm
 import abc
 try:
@@ -39,6 +40,10 @@ try:
     telnetlibMissing = False
 except BaseException:
     telnetlibMissing = True
+try:
+    from . import bobbytalk
+except ImportError:
+    pass
 '''
 Default str to bytes encoding to use. latin-1 is the simplest encoding -- it requires all characters of a string to
 be amongst Unicode code points 0x000000 - 0x0000ff inclusive, and converts each code point value to a byte. Hence
@@ -439,7 +444,7 @@ class interface_raw_serial(interface, serial_from_name_or_url):
             if self._has_PyICe_debug_capability:
                 # self is subclass of SpySerial, so reformat superclass init
                 # arg to "spy://" URL.
-                port_name_or_url = f"spy://{port}?file=log{serial_port_name}.txt"
+                port_name_or_url = f"spy://{serial_port_name}?file=log{serial_port_name}.txt"
         elif isinstance(port_name_or_url, None) or (isinstance(port_name_or_url, str) and not len(port_name_or_url)):
             serial_port_name = ""
         else:
@@ -1371,7 +1376,7 @@ class interface_factory(communication_node):
         return new_interface
 
     def get_twi_kernel_interface(self, bus_number):
-        new_interface = interface_twi_kernel(bus_number)
+        new_interface = interface_twi_kernel(bus_number)  # noqa: F821 - class defined externally or not yet implemented
         new_interface.set_com_node_parent(self)
         return new_interface
 

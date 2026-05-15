@@ -1,3 +1,4 @@
+from .time_zones import UTC
 
 
 def logger_time_str(datetime):

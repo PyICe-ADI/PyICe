@@ -329,7 +329,7 @@ def sweep_plots_to_pptx(ts_plots_dir, output_pptx_path, date_time_flag=1):
     pptx_output.slide_width = pptx.util.Inches(13.333)
 
     plot_paths_list = Path(
-        arctic_folder +
+        arctic_folder +  # noqa: F821
         '23_07_06__11_25_35_ltc3315_sparam_report/').glob('**/*.png')
     for plot_path in plot_paths_list:
         plot_file_name = str(plot_path)
@@ -362,7 +362,7 @@ def sweep_plots_to_pptx(ts_plots_dir, output_pptx_path, date_time_flag=1):
     curr_date_time = datetime.datetime.now()
     date_time_string = curr_date_time.strftime("%y_%m_%d__%H_%M_%S_")
     pptx_output.save(
-        arctic_folder +
+        arctic_folder +  # noqa: F821
         f'/pptx_outputs/{date_time_string}python_pptx_test.pptx')
 
 
@@ -658,13 +658,13 @@ def _parallel(Ra, Rb):
         z2 = 1e5
         p1 = 3.16e4
         z1 = 1e4
-        R2, R3, L1, L2 = symbols('R2,R3,L1,L2')
+        R2, R3, L1, L2 = sympy.symbols('R2,R3,L1,L2')
         eq1 = (R1 + R2) / (2 * np.pi * L1) - p2
         eq2 = R2 / (2 * np.pi * L1) - z2
         eq3 = (R2 + R3) / (2 * np.pi * L2) - p1
         eq4 = R3 / (2 * np.pi * L2) - z1
         eq5 = (1 / ((1 / R1) + (1 / R2) + (1 / R3))) - .01
-        res = solve((eq1, eq2, eq3, eq4, eq5))
+        res = sympy.solve((eq1, eq2, eq3, eq4, eq5))
         print(res)
 
     def dev_plot_series_LR_error(self, params):
@@ -960,11 +960,13 @@ def _parallel(Ra, Rb):
 
         # num = [y[0]*(s**4)+y[1]*(s**3)+y[2]*(s**2)+y[3]*s+y[4]]
         # den = [x[0]*(s**4)+x[1]*(s**3)+x[2]*(s**2)+x[3]*s+x[4]]
+        m11_numerator = 0  # noqa: F841
         for i in range(len(y)):
             m11_numerator += y[i] * (s**(len(y) - i - 1))
+        m11_denominator = 0  # noqa: F841
         for j in range(len(x)):
             m11_denominator += x[j] * (s**(len(x) - j - 1))
-        Z11 = np.divide(num, den)
+        Z11 = np.divide(m11_numerator, m11_denominator)  # noqa: F841
 
         freqs2 = np.reshape(freqs, (1, 51))
 
@@ -1254,7 +1256,7 @@ def _parallel(Ra, Rb):
         '''
         Returns the approximate DC resistance and the scaling coefficient for the sqrt(2*pi*freq) skin effect term.
         '''
-        return dc_res, ac_res_coefficient
+        return dc_res, ac_res_coefficient  # noqa: F821
 
     def get_series_LR(self):
         y_admittance = self.network.y[:, 0, 0]

@@ -1,4 +1,4 @@
-from ..lab_core import scpi_instrument
+from ..lab_core import scpi_instrument, channel
 
 
 class powermux(scpi_instrument):

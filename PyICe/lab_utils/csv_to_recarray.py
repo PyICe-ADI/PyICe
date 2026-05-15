@@ -1,6 +1,7 @@
 import csv
 import numpy
 from .str2num import str2num
+from .clean_c import clean_c
 
 
 # , force_float_dtype=False, data_types=None):

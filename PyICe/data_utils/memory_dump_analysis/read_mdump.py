@@ -125,7 +125,7 @@ class memory_decoder():
                 for line in f:
                     k, v = line.strip().split(":")
                     try:
-                        twii[k].write(v)
+                        self.twii[k].write(v)
                     except lab_core.ChannelAccessException as e:
                         print(e)
                     except Exception as e:
@@ -133,7 +133,7 @@ class memory_decoder():
             elif file_ext == ".json" or file_ext == ".jsonc":
                 for k, v in json.json.load(f).items():
                     try:
-                        twii[k].write(v)
+                        self.twii[k].write(v)
                     except lab_core.ChannelAccessException as e:
                         print(e)
                     except Exception as e:

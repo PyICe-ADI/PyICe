@@ -35,7 +35,7 @@ class vcd_reader():
                 else:
                     if add_staircase_points:
                         try:
-                            real_ydata.append(last_y)
+                            real_ydata.append(last_y)  # noqa: F821
                             real_xdata.append(
                                 xdata[i] * self.vcd.get_timescale()['timescale'])
                         except UnboundLocalError as e:

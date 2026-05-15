@@ -1554,7 +1554,7 @@ class register(integer_channel):
             return 0 if data == 0 else None
         elif self.get_attribute('special_access') in ('W0S',):
             return 1 if data == 1 else None
-        elif access.upper in ("WSRC", "WCRS", "W1SRC", "W1CRS", "W0SRC", "W0CRS"):
+        elif self.get_attribute('special_access').upper() in ("WSRC", "WCRS", "W1SRC", "W1CRS", "W0SRC", "W0CRS"):
             raise Exception(
                 'Read/write side effect special register access unimplemented. Please contact PyICe developers.')
         else:

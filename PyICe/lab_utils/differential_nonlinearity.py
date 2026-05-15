@@ -1,4 +1,6 @@
 import numpy
+from .scalar_transform import scalar_transform
+from .vector_transform import vector_transform
 
 
 def differential_nonlinearity(rec_array, lsb_size=1):

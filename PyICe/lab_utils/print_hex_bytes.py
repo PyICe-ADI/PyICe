@@ -1,4 +1,5 @@
 import collections
+from .print_to_screen import print_to_screen
 
 
 def print_hex_bytes(the_bytes, number_of_bytes_per_line=16,
