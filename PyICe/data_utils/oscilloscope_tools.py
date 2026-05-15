@@ -239,8 +239,7 @@ if __name__ == '__main__':
         db_table = first_table
     col_names = []
     while True:
-        col_name = input(f"Y{len(col_names) +
-                             1} data column name or Enter to continue? ")
+        col_name = input(f"Y{len(col_names) + 1} data column name or Enter to continue? ")
         if col_name == "":
             break
         else:

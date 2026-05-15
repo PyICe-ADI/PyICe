@@ -202,14 +202,14 @@ class Test_Results(generic_results):
             if self.failure_reason != '':
                 summary_str += f'\tFORCED_FAIL: {self.failure_reason}\n'
             elif len(self) > 1:
-                summary_str += f'\tMIN:{f"{min:g}" if type(
-                    min) is int else f"{min}" if min is not None else "None"}\n' if not self else ''
+                min_str = f"{min:g}" if type(min) is int else f"{min}" if min is not None else "None"
+                summary_str += f'\tMIN:{min_str}\n' if not self else ''
                 max = self._max()
-                summary_str += f'\tMAX:{f"{max:g}" if type(
-                    max) is int else f"{max}" if max is not None else "None"}\n' if not self else ''
+                max_str = f"{max:g}" if type(max) is int else f"{max}" if max is not None else "None"
+                summary_str += f'\tMAX:{max_str}\n' if not self else ''
             else:
-                summary_str += f'\tDATA:{f"{min:g}" if type(
-                    min) is int else f"{min}" if min is not None else "None"}\n' if not self else ''
+                data_str = f"{min:g}" if type(min) is int else f"{min}" if min is not None else "None"
+                summary_str += f'\tDATA:{data_str}\n' if not self else ''
             return summary_str
 
         def __len__(self):

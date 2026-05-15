@@ -115,9 +115,11 @@ class Master_Test_Template():
             established_declarations[name] = {
                 'lower_limit': lower_limit, 'upper_limit': upper_limit, **kwargs}
         else:
-            assert established_declarations[name] == {
-                'lower_limit': lower_limit, 'upper_limit': upper_limit, **kwargs}, f"***Master Test Template Error*** Trying to change {name}'s declarations from {
-                established_declarations[name]} to lower_limit:{lower_limit}, upper_limit:{upper_limit}, {kwargs}"
+            expected = {'lower_limit': lower_limit, 'upper_limit': upper_limit, **kwargs}
+            assert established_declarations[name] == expected, (
+                f"***Master Test Template Error*** Trying to change {name}'s declarations from"
+                f" {established_declarations[name]} to lower_limit:{lower_limit}, upper_limit:{upper_limit}, {kwargs}"
+            )
 
     def evaluate_rawdata(self, name, data, conditions=None):
         '''This will compare submitted data to limits for the named test.

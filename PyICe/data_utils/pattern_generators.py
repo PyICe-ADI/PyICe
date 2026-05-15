@@ -265,10 +265,7 @@ class TWI_Pattern():
         times = [index * self.tstep for index in range(len(self.SCL))]
         G0 = LTC_plot.scope_plot(plot_title="TWI Pattern" if title is None else title,
                                  plot_name=None,
-                                 xaxis_label=f"{eng_string(x=times[-1] / 10,
-                                                           fmt=':.3g',
-                                                           si=True,
-                                                           units='s')} / DIV",
+                                 xaxis_label=f"{eng_string(x=times[-1] / 10, fmt=':.3g', si=True, units='s')} / DIV",
                                  xlims=(times[0], times[-1]),
                                  ylims=(0, 8))
         SCL = [value + offset_SCL for value in self.SCL]

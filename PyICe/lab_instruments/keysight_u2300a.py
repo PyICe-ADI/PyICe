@@ -699,8 +699,7 @@ class u2300a_scope(scpi_instrument, delegator):
         resp = self.get_interface().ask('WAVeform:COMPlete?')
         while resp == 'NO' and (self._trigger_timeout is None or (
                 time.time() - arm_time) <= self._trigger_timeout):
-            print(f'{self.get_name()} Waiting for Trigger... {time.time() -
-                                                              arm_time:0.1f}s\r', end="")
+            print(f'{self.get_name()} Waiting for Trigger... {time.time() - arm_time:0.1f}s\r', end="")
             time.sleep(0.1)
             resp = self.get_interface().ask('WAVeform:COMPlete?')
         if resp == 'YES':
