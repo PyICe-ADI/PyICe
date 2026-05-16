@@ -58,7 +58,7 @@ dependencies=[
     "scipy>=1.7 ",
     "statsmodels",
     "svglib",
-    "windows-curses",
+    "windows-curses ; platform_system == \"Windows\"",
     "xlrd",
     "xlsxwriter",
 ]
