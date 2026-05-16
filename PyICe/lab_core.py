@@ -37,7 +37,7 @@ logo.display()
 try:
     from numpy import ndarray
     numpy_missing = False
-except ImportError :
+except ImportError:
     numpy_missing = True
 
 debug_logging = logging.getLogger(__name__)
@@ -414,7 +414,7 @@ class channel(delegator):
         try:
             # Only register channels do special access
             v_w = self.compute_expect_readback_data(value)
-        except AttributeError :
+        except AttributeError:
             if v_w != v_r:
                 raise ChannelValueException(
                     f'Failed to set channel {self.get_name()} to value {v_w}. Read back {v_r}.')
@@ -473,7 +473,7 @@ class channel(delegator):
         self._value = value
         try:
             changed = (self._value != self._previous_value)
-        except ValueError :
+        except ValueError:
             # if the before and after values aren't even sensibly comparable,
             # they're certainly not the same. Ex Numpy Arrays of dissimilar
             # length.
@@ -481,7 +481,7 @@ class channel(delegator):
         try:
             if changed:
                 self._change_detected = False
-        except ValueError :
+        except ValueError:
             # We don't really know what happened but we're assuming it is a
             # numpy.array. Needs revisiting.
             if changed.all():
@@ -492,7 +492,7 @@ class channel(delegator):
         '''returns boolean status of whether channel value is different from previously read/written value (once per change)'''
         try:
             changed = (self.cached_value != self.previous_cached_value)
-        except ValueError :
+        except ValueError:
             # if the before and after values aren't even sensibly comparable,
             # they're certainly not the same. Ex Numpy Arrays of dissimilar
             # length.
@@ -502,7 +502,7 @@ class channel(delegator):
                 if not self._change_detected:
                     self._change_detected = True
                     return True
-        except ValueError :
+        except ValueError:
             if changed.all():
                 # We don't really know what happened but we're assuming it is a
                 # numpy.array. Needs revisiting.
@@ -742,7 +742,7 @@ class channel(delegator):
             change_callback = self.default_print_callback
         try:
             self._change_callbacks.remove(change_callback)
-        except ValueError :
+        except ValueError:
             raise Exception(
                 "Failed to remove change callback {} because it was not registered.".format(change_callback))
 
@@ -1257,7 +1257,7 @@ class integer_channel(channel):
             raise IntegerChannelValueException(
                 'Floating point data {} passed to integer channel {} without unformat or preset match. Automatic rounding not allowed outside formats.'.format(
                     string, self.get_name()))
-        except TypeError :  # Probably float-type input.
+        except TypeError:  # Probably float-type input.
             if isinstance(string, float):
                 raise IntegerChannelValueException(
                     'Floating point data {} passed to integer channel {} without unformat or preset match. Automatic rounding not allowed outside formats.'.format(
@@ -2100,7 +2100,7 @@ class channel_group(object):
                         txt += '</select>\n'
                         txt += '</p>\n'
                         txt += '</form>\n'
-                except Exception :
+                except Exception:
                     print((traceback.format_exc()))
                     pass  # Only integer_channels and registers can have presets
                 if len(channel.get_attributes()):
@@ -3414,7 +3414,7 @@ class logger_backend(object):
                             debug_logging.warning(
                                 "{} raised exception {}".format(
                                     checkpoint_command, e))
-                    except sqlite3.OperationalError :
+                    except sqlite3.OperationalError:
                         debug_logging.warning(
                             "Opportunistic commit failed. Not retrying.")
                     else:
@@ -3466,7 +3466,7 @@ class logger_backend(object):
                             'SELECT DATETIME from {} ORDER BY DATETIME ASC LIMIT 1'.format(table_name)).fetchone()[0]
                         table_date = datetime.datetime.strptime(
                             table_date, '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%Y_%m_%dT%H_%M_%SZ')
-                    except TypeError :
+                    except TypeError:
                         debug_logging.warning(
                             "WARNING: Failed to extract datetime information from table {}. Reverting to current time".format(
                                 self.table_name))
@@ -3756,7 +3756,7 @@ class logger_backend(object):
                     "ALTER TABLE {} ADD {} NUMERIC".format(
                         self.table_name, column))
                 self._commit()
-            except sqlite3.OperationalError :
+            except sqlite3.OperationalError:
                 pass
             else:
                 debug_logging.info(

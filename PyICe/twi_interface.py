@@ -2068,7 +2068,7 @@ class i2c_scpi_sp(twi_interface):
         try:
             ret_str = self.interface.ask(
                 f'{self.cmd}:SMB:SEND?(@{hex(self.write_addr(addr7))[2:].rjust(2, "0")},00,{hex(int(data8) & 0xFF)[2:].rjust(2, "0")});')
-        except visa_wrappers.visaWrapperException :
+        except visa_wrappers.visaWrapperException:
             error = self.interface.ask("SYST:ERR?")
             while error != '+0,"No error"':
                 print(f"ConfigXT Error Buffer Purge: {error}")
@@ -2094,7 +2094,7 @@ class i2c_scpi_sp(twi_interface):
         try:
             ret_str = self.interface.ask(
                 f'{self.cmd}:SMB:SEND:PEC?(@{hex(self.write_addr(addr7))[2:].rjust(2, "0")},00,{hex(int(data8) & 0xFF)[2:].rjust(2, "0")});')
-        except visa_wrappers.visaWrapperException :
+        except visa_wrappers.visaWrapperException:
             error = self.interface.ask("SYST:ERR?")
             while error != '+0,"No error"':
                 print(f"ConfigXT Error Buffer Purge: {error}")

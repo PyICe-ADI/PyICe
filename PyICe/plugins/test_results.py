@@ -133,7 +133,7 @@ class generic_results():
                 k: v for k, v in self.test_limits[t_d].items() if k not in ['test_name']}
             try:
                 results[t_d]
-            except KeyError :
+            except KeyError:
                 res_dict['tests'][t_d]['passes'] = False
             else:
                 res_dict['tests'][t_d]['results'] = {}
@@ -265,7 +265,7 @@ class Test_Results(generic_results):
                 # Exact test
                 try:
                     resp += f'\t SL:{self.upper_limit:g}'
-                except (TypeError, ValueError) :
+                except (TypeError, ValueError):
                     resp += f'\t SL:{self.upper_limit}'
             else:
                 if self.lower_limit is not None:

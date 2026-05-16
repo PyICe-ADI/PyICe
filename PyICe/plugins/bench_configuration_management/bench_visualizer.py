@@ -6,7 +6,7 @@ import base64
 
 try:
     import graphviz
-except ImportError :
+except ImportError:
     graphviz_missing = True
 else:
     graphviz_missing = False
@@ -110,7 +110,7 @@ class visualizer():
                                    input=f.source,
                                    check=True,
                                    encoding='UTF-8')
-            except Exception :
+            except Exception:
                 print()
                 print_banner(
                     "*** WARNING ***",

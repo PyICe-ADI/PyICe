@@ -859,7 +859,7 @@ class u2300a_datalogger(u2300a_scope):
                     reset_clock = time_now
                     self.logger.log_many(databank.copy())
                     databank.clear()
-        except (KeyboardInterrupt, ) :
+        except (KeyboardInterrupt, ):
             print('Bye!')
         except u2300aBufferOverflowError as e:
             print(e)
@@ -1239,7 +1239,7 @@ class u2300a_DVM(scpi_instrument, delegator):
             # ch_data = (int_data[i] for i in range(ch_idx, len(int_data), len(self._last_scan_internal_addresses)))
             try:
                 g = ch.get_attribute('gain')
-            except ChannelAttributeException :
+            except ChannelAttributeException:
                 g = 1
             results[ch.get_name()] = g * \
                 data[idx] if data[idx] != 999.9 else None

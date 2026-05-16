@@ -5,7 +5,7 @@ import abc
 try:
     from numpy import fromiter, dtype
     numpy_missing = False
-except ImportError :
+except ImportError:
     numpy_missing = True
 
 

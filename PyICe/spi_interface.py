@@ -32,7 +32,7 @@ The SPI interface is composed of two separate classes:
 try:
     from Adafruit_BBIO.SPI import SPI  # noqa: F401
     SPI_BBIO_missing = False
-except ImportError :
+except ImportError:
     SPI_BBIO_missing = True
 
 import time

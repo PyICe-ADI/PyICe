@@ -13,7 +13,7 @@ try:
     from bokeh.plotting import show, output_file, figure
     from bokeh.io import curdoc
     from bokeh.layouts import layout
-except Exception :
+except Exception:
     import traceback
     traceback.print_exc()
     print("Broken Bokeh")

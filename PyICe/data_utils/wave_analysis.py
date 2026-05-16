@@ -49,7 +49,7 @@ class waveform(object):
                 # there's one corner case here, if the waveform data is exactly
                 # 2x2.
                 _zip(data)
-        except TypeError :
+        except TypeError:
             # zip objects (and maybe other generators) have no len
             _zip(data)
         # and then there was more nagging
@@ -419,7 +419,7 @@ class waveform(object):
         try:
             ramp = stats.linregress(
                 self.xdata[self.trigger_10_90_index:rampend_index], self.ydata[self.trigger_10_90_index:rampend_index])
-        except Exception :
+        except Exception:
             self.plot()
             raise
         self.ramp_slope = ramp.slope

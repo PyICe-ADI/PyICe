@@ -1141,7 +1141,7 @@ class PCF8574_on_ConfiguratorXT(instrument):
         cmd_str = f'GPIOX:SETP:L? (@{",".join(pin_list)})'
         try:
             _value = self.get_interface().ask(cmd_str)  # noqa: F841
-        except Exception :
+        except Exception:
             print(
                 "\n\nShouldn't be here but for a wierd timeout. Try typing self.get_interface().ask(cmd_str)")
             breakpoint()

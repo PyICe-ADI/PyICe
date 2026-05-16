@@ -18,7 +18,7 @@ def expand_tabs(string, *column_widths, **default_column_width):
     for idx, column in enumerate(columns):
         try:
             column_width = column_widths[idx]
-        except IndexError :
+        except IndexError:
             if "default_column_width" in default_column_width:
                 column_width = default_column_width["default_column_width"]
             else:

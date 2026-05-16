@@ -108,7 +108,7 @@ class dummy(instrument):
                 try:
                     return integer_channel.unformat(
                         self, string, format, use_presets)
-                except ValueError :
+                except ValueError:
                     # something not right with dummy setup. Probably missing
                     # preset!
                     enumerated_values = set(self.get_presets_dict().values())
@@ -119,7 +119,7 @@ class dummy(instrument):
                     available_values = possible_values - enumerated_values
                     try:
                         dummy_preset_val = available_values.pop()
-                    except KeyError :
+                    except KeyError:
                         # ran out of presets. Improvise...
                         dummy_preset_val = 0  # random.choice?
                     self.add_preset(
@@ -2312,7 +2312,7 @@ class threshold_finder(instrument, delegator):
         output_analog = self._read_comparator_output()
         try:
             output_digital = self._digitize_output(output_analog)
-        except AttributeError :
+        except AttributeError:
             # can't digitize output before threshold and polarity have been
             # determined
             output_digital = None
@@ -3067,9 +3067,9 @@ class servo_binary_search(instrument):  # todo delegator?!?!?
         try:
             self._fb_val = self.fb_channel.read()
             return self._fb_val > self._target_value
-        except TypeError :
+        except TypeError:
             raise  # ServoException from e #todo
-        except Exception :
+        except Exception:
             raise  # ThresholdFinderError?
 
 
@@ -3789,7 +3789,7 @@ class simple_servo(instrument):
         if self.verbose:
             try:
                 spe = f'{self.previous_error: 0.4e}'
-            except TypeError :
+            except TypeError:
                 spe = ' None' + ' ' * (10 - 4)
             print(
                 f'Target:{target:.4e}, Readback:{self.fb_read_val:.4e}, set:{setting:.4e}, prev err:{spe}, err:{self.error: 0.4e}, up_bound:{self.upper_bound:.4e}, lo_bound:{self.lower_bound:.4e}')

@@ -347,7 +347,7 @@ class sqlite_data(
         sql_query = sql_query[:-4]
         try:
             row_ids = list(zip(*self.conn.execute(sql_query)))[0]
-        except IndexError :
+        except IndexError:
             # no changes
             return first_row
         if preceding_row:

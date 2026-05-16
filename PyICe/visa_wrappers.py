@@ -372,7 +372,7 @@ class visa_wrapper_tcp(visa_wrapper_serial):
             while resp[-1:] == self.terminationCharacter:
                 resp = self.readline()
                 resp_all += resp
-        except visaWrapperException :
+        except visaWrapperException:
             pass
         except Exception as e:
             raise e  # what happened???

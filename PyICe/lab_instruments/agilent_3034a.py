@@ -97,7 +97,7 @@ class agilent_3034a(oscilloscope):
                     if phych is None:
                         continue
                     enabled_channels.append(phych)
-            except ChannelAttributeException :
+            except ChannelAttributeException:
                 raise Exception(
                     f'stowe_oscilloscopes requires "dependent_physical_channels" attribute of all scope channnels. Scope driver not in compliance w.r.t {ch.get_name()}. Contact PyICe-developers@analog.com for more information.')
         enabled_unique = set(enabled_channels)

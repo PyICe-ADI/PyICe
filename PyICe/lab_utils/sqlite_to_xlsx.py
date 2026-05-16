@@ -224,7 +224,7 @@ class sqlite_to_xlsx(object):
                                                          'x_scale': 0.5,
                                                          'y_scale': 0.5,
                                                          })
-        except Exception :
+        except Exception:
             print("INFO: Python logo insertion failed.")
             # print e
         # Keep column header line at top while scrolling
