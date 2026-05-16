@@ -54,7 +54,7 @@ class Plugin_Manager():
             try:
                 import cairosvg
                 self._cairosvg = cairosvg
-            except Exception as e:
+            except Exception :
                 print_banner(
                     "*** PLUGIN MANAGER WARNING ****",
                     "",
@@ -178,14 +178,14 @@ class Plugin_Manager():
             if results_str:
                 results_str += "*** END OF REPORT ***"
                 self.notify(results_str, subject='Results')
-        except Exception as e:
+        except Exception :
             traceback.print_exc()
             print(
                 '\n***PLUGIN MANAGER ERROR***\nError occurred while attempting to email results.\n')
         try:
             if len(self._plots) and self._send_notifications:  # Don't send empty emails
                 self.email_plots(self._plots)
-        except Exception as e:
+        except Exception :
             traceback.print_exc()
             print(
                 '\n***PLUGIN MANAGER ERROR***\nError occurred while attemptin to email plots.\n')
@@ -193,7 +193,7 @@ class Plugin_Manager():
             if len(
                     self._linked_plots) and self._send_notifications:  # Don't send empty emails
                 self.email_plot_dictionary(self._linked_plots)
-        except Exception as e:
+        except Exception :
             traceback.print_exc()
             print(
                 '\n***PLUGIN MANAGER ERROR***\nError occurred while attempting to email linked plots.\n')
@@ -373,9 +373,9 @@ class Plugin_Manager():
         for iface in interfaces:
             try:
                 iface.close()
-            except AttributeError as e:
+            except AttributeError :
                 pass
-            except Exception as e:
+            except Exception :
                 traceback.print_exc()
         else:
             print_banner('Bench cleaned!')
@@ -412,7 +412,7 @@ class Plugin_Manager():
                     else:
                         print(
                             f"Plugin Manager Warning: Unrecognized key {signal_type} found in the notification target dictionary. Please only use 'emails' and 'texts'.")
-                except Exception as e:
+                except Exception :
                     print(
                         f"\n\nPlugin Manager Warning: Unexpected error occurred in notification attempt. The message was:\n {msg}\n See stacktrace below.\n")
                     traceback.print_exc()
@@ -436,7 +436,7 @@ class Plugin_Manager():
                         # Don't let a notification crash a more-important
                         # cleanup/shutdown.
                         print(e)
-            except AttributeError as e:
+            except AttributeError :
                 if not len(attachment_filenames) and not len(
                         attachment_MIMEParts):
                     print(f"{self.ident_header}{msg}")
@@ -513,7 +513,7 @@ class Plugin_Manager():
                 msg_body,
                 subject='Plot Results',
                 attachment_MIMEParts=attachment_MIMEParts)
-        except AttributeError as e:
+        except AttributeError :
             print("*** ALERT *** Cairo SVG likely missing, skipping emailing of plots.")
             traceback.print_exc()
         except Exception:
@@ -766,7 +766,6 @@ class Plugin_Manager():
                     db_dest_file=db_dest_file)
             archived_tables.append((test, archived_table_name, db_dest_file))
         if len(archived_tables):
-            arch_plot_scripts = []
             for (test, db_table, db_file) in archived_tables:
                 if hasattr(test, 'plot'):
                     dest_file = os.path.join(
@@ -873,7 +872,7 @@ class Plugin_Manager():
                         name=test.get_name())
                     try:
                         test._declare_bench_connections()
-                    except Exception as e:
+                    except Exception :
                         raise ("TEST_MANAGER ERROR: This project indicated bench configuration data would be stored. Test template requires a _declare_bench_connections method that gathers the data.")
                     self.all_benches.append(self.test_connections)
             if 'bench_config_management' in self.plugins:
@@ -957,7 +956,7 @@ class Plugin_Manager():
                 if self.cleanup_failure:
                     break
             self.shutdown()
-        except Exception as e:
+        except Exception :
             traceback.print_exc()
             for test in self.tests:
                 test._is_crashed = True
@@ -966,15 +965,15 @@ class Plugin_Manager():
                 if self.far_enough:
                     self.cleanup()
                     self.shutdown()
-            except AttributeError as e:
+            except AttributeError :
                 # Didn't get far enough to populate the bench before crashing.
                 pass
-            except Exception as e:
+            except Exception :
                 traceback.print_exc()
         finally:
             try:
                 self.close_ports()
-            except AttributeError as e:
+            except AttributeError :
                 # Didn't get far enough to populate the bench before crashing.
                 pass
             except Exception as e:
@@ -1218,7 +1217,7 @@ class Plugin_Manager():
                     name=test.get_name())
                 try:
                     test._declare_bench_connections()
-                except Exception as e:
+                except Exception :
                     raise ("TEST_MANAGER ERROR: This project indicated bench configuration data would be stored. Test template requires a _declare_bench_connections method that gathers the data.")
                 self.all_benches.append(self.test_connections)
             self.all_connections = connection_collection.distill(

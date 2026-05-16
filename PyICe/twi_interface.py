@@ -1400,7 +1400,6 @@ class i2c_pic(twi_interface):
     def read_ack(self):
         self.ser.write("RK")
         ret_str = ""
-        num = 0
         ret_str = self.ser.read(3)
         if ret_str[2] != " " or len(ret_str) != 3:
             raise i2cMasterError(
@@ -1564,7 +1563,7 @@ class i2c_scpi(twi_interface):
     def read_word(self, addr7, commandCode):
         '''faster way to do an smbus read word'''
         addr_w = hex(self.write_addr(addr7))[2:].rjust(2, "0")
-        addr_r = hex(self.read_addr(addr7))[2:].rjust(2, "0")
+        _addr_r = hex(self.read_addr(addr7))[2:].rjust(2, "0")  # noqa: F841
         commandCode = hex(commandCode)[2:].rjust(2, "0")
         write_str = 'SMB:RW?(@{},{});'.format(addr_w, commandCode)
         self.interface.write(write_str)
@@ -1583,7 +1582,7 @@ class i2c_scpi(twi_interface):
     def read_word_pec(self, addr7, commandCode):
         '''faster way to do an smbus read word'''
         addr_w = hex(self.write_addr(addr7))[2:].rjust(2, "0")
-        addr_r = hex(self.read_addr(addr7))[2:].rjust(2, "0")
+        _addr_r = hex(self.read_addr(addr7))[2:].rjust(2, "0")  # noqa: F841
         commandCodeStr = hex(commandCode)[2:].rjust(2, "0")
         write_str = 'SMB:RW:PEC?(@{},{});'.format(addr_w, commandCodeStr)
         self.interface.write(write_str)
@@ -1609,7 +1608,7 @@ class i2c_scpi(twi_interface):
     def read_byte(self, addr7, commandCode):
         '''faster way to do an smbus read byte'''
         addr_w = hex(self.write_addr(addr7))[2:].rjust(2, "0")
-        addr_r = hex(self.read_addr(addr7))[2:].rjust(2, "0")
+        _addr_r = hex(self.read_addr(addr7))[2:].rjust(2, "0")  # noqa: F841
         commandCode = hex(commandCode)[2:].rjust(2, "0")
         write_str = ':SMB:RB?(@{},{});'.format(addr_w, commandCode)
         self.interface.write(write_str)
@@ -1628,7 +1627,7 @@ class i2c_scpi(twi_interface):
     def read_byte_pec(self, addr7, commandCode):
         '''faster way to do an smbus read byte'''
         addr_w = hex(self.write_addr(addr7))[2:].rjust(2, "0")
-        addr_r = hex(self.read_addr(addr7))[2:].rjust(2, "0")
+        _addr_r = hex(self.read_addr(addr7))[2:].rjust(2, "0")  # noqa: F841
         commandCodeStr = hex(commandCode)[2:].rjust(2, "0")
         write_str = ':SMB:RB:PEC?(@{},{});'.format(addr_w, commandCodeStr)
         self.interface.write(write_str)
@@ -2069,7 +2068,7 @@ class i2c_scpi_sp(twi_interface):
         try:
             ret_str = self.interface.ask(
                 f'{self.cmd}:SMB:SEND?(@{hex(self.write_addr(addr7))[2:].rjust(2, "0")},00,{hex(int(data8) & 0xFF)[2:].rjust(2, "0")});')
-        except visa_wrappers.visaWrapperException as e:
+        except visa_wrappers.visaWrapperException :
             error = self.interface.ask("SYST:ERR?")
             while error != '+0,"No error"':
                 print(f"ConfigXT Error Buffer Purge: {error}")
@@ -2095,7 +2094,7 @@ class i2c_scpi_sp(twi_interface):
         try:
             ret_str = self.interface.ask(
                 f'{self.cmd}:SMB:SEND:PEC?(@{hex(self.write_addr(addr7))[2:].rjust(2, "0")},00,{hex(int(data8) & 0xFF)[2:].rjust(2, "0")});')
-        except visa_wrappers.visaWrapperException as e:
+        except visa_wrappers.visaWrapperException :
             error = self.interface.ask("SYST:ERR?")
             while error != '+0,"No error"':
                 print(f"ConfigXT Error Buffer Purge: {error}")

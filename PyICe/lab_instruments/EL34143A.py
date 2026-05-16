@@ -415,7 +415,6 @@ class EL34143A(scpi_instrument):
 
     def GetMode(self):
         "Gets the mode (constant current, constant voltage, etc."
-        msg = "Get mode"
         return self.get_interface().ask("MODE?")
 
     def SetCCCurrent(self, current):

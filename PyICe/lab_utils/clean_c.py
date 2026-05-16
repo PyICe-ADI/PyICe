@@ -47,7 +47,7 @@ def clean_c(str):
     ]
 
     # YODA not yet checked.
-    yoda_reserved = [
+    _yoda_reserved = [  # noqa: F841
         # https://www.secad.analog.com/dek/sites/default/files/reservedWords_0.txt
         'ABS',
         'AND',

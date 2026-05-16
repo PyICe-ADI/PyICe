@@ -114,7 +114,7 @@ class saleae(instrument, delegator):
             num_channels = struct.unpack(
                 '<L', self._read_from_file(
                     logicdata, 4))[0]
-            sample_period = struct.unpack(
+            _sample_period = struct.unpack(  # noqa: F841
                 '<d', self._read_from_file(
                     logicdata, 8))[0]
             assert len(channels) == num_channels

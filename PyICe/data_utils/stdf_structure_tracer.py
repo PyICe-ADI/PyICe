@@ -54,9 +54,9 @@ class record_order_parser:
         self._record_count += 1
 
         openers = (pystdf.V4.Far, pystdf.V4.Pir,)  # pystdf.V4.Mir,
-        results = (pystdf.V4.Ptr, pystdf.V4.Mpr, pystdf.V4.Ftr,)
+        _results = (pystdf.V4.Ptr, pystdf.V4.Mpr, pystdf.V4.Ftr,)  # noqa: F841
         closers = (pystdf.V4.Prr, pystdf.V4.Mrr,)
-        summary = (pystdf.V4.Tsr, pystdf.V4.Hbr, pystdf.V4.Sbr, pystdf.V4.Pcr)
+        _summary = (pystdf.V4.Tsr, pystdf.V4.Hbr, pystdf.V4.Sbr, pystdf.V4.Pcr)  # noqa: F841
 
         no_summarize = (pystdf.V4.Atr,)
 

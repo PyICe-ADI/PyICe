@@ -58,9 +58,9 @@ class polling_delay(object):
     def _wait_for(self, poll_interval, timeout, test_initial, test_fn):
         self._begin()
         if test_initial:
-            test_pass = test_fn()
+            _test_pass = test_fn()  # noqa: F841
         else:
-            test_pass = False
+            _test_pass = False  # noqa: F841
         while (timeout is None or self.time_readback_fn()
                < self._initial_time + timeout):
             self._accumulated_dly += poll_interval  # wait time, not clk time

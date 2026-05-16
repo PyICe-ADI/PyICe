@@ -53,7 +53,7 @@ class memory_decoder():
         for bf in self.twii:
             try:
                 bf_data[bf.get_name()] = bf.read()
-            except lab_core.ChannelAccessException as e:
+            except lab_core.ChannelAccessException :
                 # Not all bit fields are readable
                 pass
         return bf_data
@@ -62,11 +62,11 @@ class memory_decoder():
         if self.twii is None:
             try:
                 pkey = f'0x{bf_name:X}'
-            except ValueError as e:
+            except ValueError :
                 pkey = bf_name
             try:
                 pvalue = f'0x{bf_value:02X}'
-            except ValueError as e:
+            except ValueError :
                 pvalue = bf_value
         else:
             pkey = bf_name  # Name

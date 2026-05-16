@@ -24,8 +24,8 @@ class TestChannelBaseFunctionality:
     def test_exception_read_write_defined(self):
         with pytest.raises(
                 Exception):  # Ideally this would be a more specific exception
-            c = channel(name='test', read_function=read_function,
-                        write_function=write_function)
+            _c = channel(name='test', read_function=read_function,  # noqa: F841
+                         write_function=write_function)
 
     def test_get_name(self, chan):
         assert chan.get_name() == "empty_channel"
@@ -518,12 +518,12 @@ class TestChannelGroup:
             group._add_sub_channel_group(0)
         group1 = channel_group('group1')
         group1.add([
-            c1 := channel(name='c1'),
-            c2 := channel(name='c2'),
+            channel(name='c1'),
+            channel(name='c2'),
         ])
         group2 = channel_group('group2')
         group2.add(
-            c2_repeat := channel(name='c2'),
+            channel(name='c2'),
         )
         group._add_sub_channel_group(group1)
         with pytest.raises(Exception):
@@ -536,15 +536,15 @@ class TestChannelGroup:
         assert groups == [g1, g2]
 
     def test_read(self, group):
-        group.add(c1 := channel(name='test_channel',
-                                read_function=read_function))
+        group.add(channel(name='test_channel',
+                          read_function=read_function))
         assert group.read('test_channel') == 'Reading'
         with pytest.raises(ChannelAccessException):
             group.read(None)
 
     def test_write(self, group):
-        group.add(c1 := channel(name='test_channel',
-                                write_function=write_function))
+        group.add(channel(name='test_channel',
+                          write_function=write_function))
         assert group.write('test_channel', 6) == 6
 
     def test_read_channels(self, group):

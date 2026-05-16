@@ -138,7 +138,7 @@ def test_labcomm():
     import random
     src_id = random.randint(1024, 2**16 - 1)  # Low numbers are reserved.
     print("Choosing random Labcomm Source ID = 0x{:04x}".format(src_id))
-    master = talk_to_demoboard(
+    _master = talk_to_demoboard(  # noqa: F841
         (connection_type,
          demoboard_port),
         src_id=src_id,

@@ -37,7 +37,7 @@ class vcd_reader():
                             real_ydata.append(last_y)  # noqa: F821
                             real_xdata.append(
                                 xdata[i] * self.vcd.get_timescale()['timescale'])
-                        except UnboundLocalError as e:
+                        except UnboundLocalError :
                             pass
                     real_ydata.append(int(value, 2))
                     last_y = int(value, 2)
@@ -50,7 +50,7 @@ class vcd_reader():
                         real_ydata.append(last_y)
                         real_xdata.append(
                             xdata[i] * self.vcd.get_timescale()['timescale'])
-                    except UnboundLocalError as e:
+                    except UnboundLocalError :
                         pass
                 real_ydata.append(float(value))
                 real_xdata.append(
@@ -98,6 +98,6 @@ class vcd_reader():
         plt2 = figure(title=title, frame_width=300, frame_height=300)
         try:
             plt2.line(x=data[0], y=data[1])
-        except TypeError as e:
+        except TypeError :
             plt2.line(x=data.xdata, y=data.ydata)
         show(plt2)

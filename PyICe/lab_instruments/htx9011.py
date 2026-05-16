@@ -772,7 +772,7 @@ class htx9011(scpi_instrument):
 
         def _write_interrupt_count(ch, value):
             # TODO Warn if count is written while enabled? No, for now....
-            previous_count = _read_interrupt_count(ch)  # Flush
+            _previous_count = _read_interrupt_count(ch)  # noqa: F841 Flush
             # Discard previous_count. Can't really return it from this context.
             ch.set_attribute('INTERRUPT_COUNT_ACCUM', value)
         if interrupt_number not in self.interrupts:
@@ -831,7 +831,7 @@ class htx9011(scpi_instrument):
             return ch.get_attribute('INTERRUPT_COUNT_ACCUM')
 
         def _write_pcint_count(ch, value):
-            previous_count = _read_pcint_count(ch)  # Flush
+            _previous_count = _read_pcint_count(ch)  # noqa: F841 Flush
             ch.set_attribute('INTERRUPT_COUNT_ACCUM', value)
 
         def _read_pcint_captured_value(ch):
@@ -1140,8 +1140,8 @@ class PCF8574_on_ConfiguratorXT(instrument):
         self.validate_pin_list(pin_list)
         cmd_str = f'GPIOX:SETP:L? (@{",".join(pin_list)})'
         try:
-            value = self.get_interface().ask(cmd_str)
-        except Exception as e:
+            _value = self.get_interface().ask(cmd_str)  # noqa: F841
+        except Exception :
             print(
                 "\n\nShouldn't be here but for a wierd timeout. Try typing self.get_interface().ask(cmd_str)")
             breakpoint()

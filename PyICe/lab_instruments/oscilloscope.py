@@ -5,7 +5,7 @@ import abc
 try:
     from numpy import fromiter, dtype
     numpy_missing = False
-except ImportError as e:
+except ImportError :
     numpy_missing = True
 
 
@@ -26,7 +26,7 @@ class oscilloscope(scpi_instrument, delegator):
         # both indexing and slicing will produce a string of length 1)
         assert raw_data[0:1] == b'#'
         raw_data_header_length = int(raw_data[1:2])
-        raw_data_length_bytes = int(raw_data[2:raw_data_header_length + 2])
+        _raw_data_length_bytes = int(raw_data[2:raw_data_header_length + 2])  # noqa: F841
         raw_data = raw_data[raw_data_header_length + 2:]  # remove header
 
         data_format = self.get_interface().ask(':WAVeform:FORMat?')

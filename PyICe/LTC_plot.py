@@ -425,7 +425,6 @@ class plot(object):
         '''This can be useful for annotating limit lines. It can make dotted red lines for example.'''
         if color is None:
             color = [1, 0, 0]
-        axis_params = self.y1_axis_params if axis == 1 else self.y2_axis_params
         ylims = self.ylims if axis == 1 else self.y2_axis_params["ylims"]
         if self.xlims in [None, "auto"] and xrange is None:
             hxline = True                                       # Use automatic placement mode
@@ -1107,10 +1106,7 @@ class Page():
         #################################################################
         # Deal with first axis limits                                   #
         #################################################################
-        if plot.xlims in [None, "auto"]:
-            autoscalex = True
-        else:
-            autoscalex = False
+        if plot.xlims not in [None, "auto"]:
             graph.axis(xmin=plot.xlims[0], xmax=plot.xlims[1])
         if plot.y1_axis_params["ylims"] in [None, "auto"]:
             plot.y1_axis_params["autoscaley"] = True

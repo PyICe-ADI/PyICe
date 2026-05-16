@@ -6,8 +6,8 @@ def egg_timer(timeout, message=None, length=30, display_callback=None):
     optionally, display a message on the line above the timer graphic
     optionally, specify a display_callback function to insert extra progress information after the timer display.
     display_callback function should accept a single dictionary argument and return a string.'''
-    light_shade = "▒"  # \u2592
-    dark_shade = "█"  # \u2588
+    _light_shade = "▒"  # noqa: F841 - \u2592
+    _dark_shade = "█"  # noqa: F841 - \u2588
     digits = len(str(int(timeout)))
     longest_line_len = 0
     status = {}

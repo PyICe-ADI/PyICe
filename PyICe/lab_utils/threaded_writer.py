@@ -122,7 +122,7 @@ class threaded_writer(object):
                         datetime.datetime.utcnow()))
             try:
                 function()
-            except StopIteration as e:
+            except StopIteration :
                 if self.verbose:
                     print(
                         "Thread {} terminating - reached end of sequence at time {}".format(

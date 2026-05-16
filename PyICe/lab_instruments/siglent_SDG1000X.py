@@ -36,7 +36,7 @@ class siglent_SDG1000X(scpi_instrument):
         try:
             self.instrument.write(command + argument)
             self.operation_complete()
-        except VisaIOError as e:
+        except VisaIOError :
             print_banner(
                 "Siglent SDG1000X Crashed!!!",
                 "Attempting to Recover Siglent....",

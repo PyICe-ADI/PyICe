@@ -94,7 +94,6 @@ class ordered_pair(list):
             'Decimating record from {} to {} points.'.format(
                 len(self), new_len))
         accumulator = 0
-        decimated_data = []
         incr = 1 - (1.0 * new_len / old_len)
         del_list = []
         for i in range(len(self)):

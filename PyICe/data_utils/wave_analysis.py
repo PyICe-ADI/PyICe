@@ -12,7 +12,7 @@ class waveform(object):
     # @profile
     def __init__(self, data, trigger_sigma=10, trigger_level=None,
                  leader_size=0.099, debug=False, stationarity_check=False):
-        MAX_POINTS = 10000
+        _MAX_POINTS = 10000  # noqa: F841
         LEADER_SIZE = leader_size
         MAX_NONSTATIONARITY = 1e-4
         global warned_2_already
@@ -49,7 +49,7 @@ class waveform(object):
                 # there's one corner case here, if the waveform data is exactly
                 # 2x2.
                 _zip(data)
-        except TypeError as e:
+        except TypeError :
             # zip objects (and maybe other generators) have no len
             _zip(data)
         # and then there was more nagging
@@ -419,7 +419,7 @@ class waveform(object):
         try:
             ramp = stats.linregress(
                 self.xdata[self.trigger_10_90_index:rampend_index], self.ydata[self.trigger_10_90_index:rampend_index])
-        except Exception as e:
+        except Exception :
             self.plot()
             raise
         self.ramp_slope = ramp.slope

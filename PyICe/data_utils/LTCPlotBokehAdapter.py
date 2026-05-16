@@ -286,7 +286,7 @@ class Page(LTCPlotBokehAdapter):
     '''bokeh Page adapter'''
 
     def __init__(self, *args, **kwargs):
-        args_map = bind_to_base(
+        _args_map = bind_to_base(  # noqa: F841
             self,
             original_classes['Page'].__init__,
             *args,

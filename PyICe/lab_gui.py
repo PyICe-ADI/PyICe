@@ -76,7 +76,7 @@ class data_store():
             raise DataStoreException('Bad Name {}'.format(name))
         try:
             self._check_value_ok(name)
-        except DataStoreException as e:
+        except DataStoreException :
             raise DataStoreException('Bad Name {}'.format(name))
 
     def set_name(self, name):
@@ -189,7 +189,7 @@ class channel_wrapper(object):
             else:
                 try:
                     signed = self.get_attribute('signed')
-                except lab_core.ChannelAttributeException as e:
+                except lab_core.ChannelAttributeException :
                     signed = False
                 if signed:
                     return 'signed dec'
@@ -291,7 +291,7 @@ class channel_wrapper(object):
                     try:
                         if data == int(data):
                             data = int(data)
-                    except (OverflowError, ValueError) as e:
+                    except (OverflowError, ValueError) :
                         # +/-Inf, Nan
                         pass
                 except ValueError:
@@ -1208,7 +1208,7 @@ class write_channel_dialog(QtWidgets.QDialog, channel_wrapper):
                 new_text = self.format(
                     old_value, format, self._use_presets_write)
                 self.set_value(new_text)
-        except ValueError as e:
+        except ValueError :
             pass
         self._format = format
         if hasattr(self, 'formats_combo'):
@@ -2621,7 +2621,6 @@ class background_worker(QtCore.QThread):
         for name in read_list:
             if self._channel_group[name].is_readable():
                 channels.append(self._channel_group[name])
-        output = {}
         try:
             results = self._channel_group.read_channel_list(channels)
         except Exception as e:
@@ -2653,7 +2652,7 @@ class background_worker(QtCore.QThread):
             debug_logging.info("Write {} to {}".format(channel_name, value))
             try:
                 self._channel_group[channel_name].write_unformatted(value)
-            except Exception as e:
+            except Exception :
                 debug_logging.warning(
                     "lab_gui.background_worker._write_channel_list() caught exception {}".format(e))
                 debug_logging.warning(
@@ -2945,7 +2944,7 @@ class ltc_lab_gui_main_window(QtWidgets.QMainWindow):
         try:
             self.enable_background_logging(False)
             self.enable_change_logging(False)
-        except Exception as e:
+        except Exception :
             pass  # on exit, logger may not be connected
         self._gui_logger.logger_disconnect()
 

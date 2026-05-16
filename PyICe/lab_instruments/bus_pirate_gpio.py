@@ -53,7 +53,7 @@ class bus_pirate_gpio(instrument):
         byte = chr(0xE0 | self.output_data)
         self.ser.write(byte)  # write bits
         time.sleep(0.01)
-        resp = self.ser.read(self.ser.inWaiting())
+        _resp = self.ser.read(self.ser.inWaiting())  # noqa: F841
         # print bin(ord(resp))
 
     def _get_mask(self, pin_name):

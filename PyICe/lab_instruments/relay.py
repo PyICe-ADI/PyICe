@@ -609,7 +609,7 @@ if __name__ == '__main__':
                 [rb.switchoff(j) for j in range(1, 9)]
                 rb.switchon(i)
                 time.sleep(0.02)
-    except KeyboardInterrupt as e:
+    except KeyboardInterrupt :
         [rb.switchoff(i) for i in range(1, 9)]
     try:
         while True:
@@ -621,5 +621,5 @@ if __name__ == '__main__':
             [rb.switchoff(i) for i in range(1, 9)]
             [rb.switchon(i) for i in range(2, 9, 2)]
             time.sleep(.1)
-    except KeyboardInterrupt as e:
+    except KeyboardInterrupt :
         [rb.switchoff(i) for i in range(1, 9)]

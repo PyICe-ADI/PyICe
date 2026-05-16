@@ -21,13 +21,14 @@ class bk8600(scpi_instrument):
         current_channel.set_description(
             self.get_name() + ': ' + self.add_channel.__doc__)
         if add_extended_channels:
-            voltage_sense_channel = self.add_channel_vsense(
+            _voltage_sense_channel = self.add_channel_vsense(  # noqa: F841
                 channel_name + "_vsense")
-            current_sense_channel = self.add_channel_isense(
+            _current_sense_channel = self.add_channel_isense(  # noqa: F841
                 channel_name + "_isense")
-            power_sense_channel = self.add_channel_psense(
+            _power_sense_channel = self.add_channel_psense(  # noqa: F841
                 channel_name + "_psense")
-            mode_channel = self.add_channel_mode(channel_name + "_mode")
+            _mode_channel = self.add_channel_mode(  # noqa: F841
+                channel_name + "_mode")
         return current_channel
 
     def add_channel_voltage(self, channel_name):

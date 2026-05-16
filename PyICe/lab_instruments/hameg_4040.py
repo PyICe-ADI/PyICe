@@ -314,7 +314,6 @@ class hameg_4040(scpi_instrument):
         time.sleep(self.hameg_suck_time)  # needed for hw serial on fast linux
         self.get_interface().ask("*OPC?")
         time.sleep(self.hameg_suck_time)  # needed for hw serial on fast linux
-        link_string = ""
         for supply in link_list:
             self.get_interface().write(f"FUSE:LINK {supply}")
             time.sleep(self.hameg_suck_time)

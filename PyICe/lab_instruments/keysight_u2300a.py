@@ -713,7 +713,7 @@ class u2300a_scope(scpi_instrument, delegator):
             raw_data = raw_data[10:]
             assert header[:2] == b'#8'
             resp_len = int(header[2:])
-            int_data_len = resp_len // 2  # Points from all channels
+            _int_data_len = resp_len // 2  # noqa: F841 Points from all channels
             fmt_str = '<' + 'h' * self._point_count * \
                 len(self._last_scan_internal_addresses)
             int_data = struct.unpack(fmt_str, raw_data)
@@ -859,7 +859,7 @@ class u2300a_datalogger(u2300a_scope):
                     reset_clock = time_now
                     self.logger.log_many(databank.copy())
                     databank.clear()
-        except (KeyboardInterrupt, ) as e:
+        except (KeyboardInterrupt, ) :
             print('Bye!')
         except u2300aBufferOverflowError as e:
             print(e)
@@ -1239,7 +1239,7 @@ class u2300a_DVM(scpi_instrument, delegator):
             # ch_data = (int_data[i] for i in range(ch_idx, len(int_data), len(self._last_scan_internal_addresses)))
             try:
                 g = ch.get_attribute('gain')
-            except ChannelAttributeException as e:
+            except ChannelAttributeException :
                 g = 1
             results[ch.get_name()] = g * \
                 data[idx] if data[idx] != 999.9 else None

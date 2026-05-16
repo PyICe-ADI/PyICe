@@ -226,7 +226,6 @@ class Master_Test_Template():
     def get_test_results(self):
         '''Returns a string that reports the Pass/Fail status for all the tests evaluated in the script and the test script as a whole.'''
         res_str = ''
-        all_pass = True
         res_str += f'*** Module {self.get_name()} ***\n'
         res_str += f'{self._test_results}'
         res_str += f'*** Module {self.get_name()} Summary {"PASS" if self._test_results else "FAIL"}. ***\n\n'
@@ -235,7 +234,6 @@ class Master_Test_Template():
     def get_corr_results(self):
         '''Returns a string that reports the Pass/Fail status for all the tests correlated in the script and the test script as a whole.'''
         res_str = ''
-        all_pass = True
         res_str += f'*** Module {self.get_name()} ***\n'
         res_str += f'{self._corr_results}'
         res_str += f'*** Module {self.get_name()} Summary {"PASS" if self._corr_results else "FAIL"}. ***\n\n'

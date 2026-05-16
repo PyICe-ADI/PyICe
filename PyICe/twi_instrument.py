@@ -276,7 +276,7 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
                     if each_channel.get_attribute(
                             'command_code') == command_code:
                         bitfields.append(each_channel)
-                except lab_core.ChannelAttributeException as e:
+                except lab_core.ChannelAttributeException :
                     # Not a real bitfield
                     pass
             for bf in bitfields:
@@ -516,7 +516,7 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
                     overwrite_others)
                 try:
                     bf['write_side_effect']
-                except KeyError as e:
+                except KeyError :
                     # Old schema
                     pass
                 else:

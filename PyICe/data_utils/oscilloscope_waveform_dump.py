@@ -13,7 +13,7 @@ try:
     from bokeh.plotting import show, output_file, figure
     from bokeh.io import curdoc
     from bokeh.layouts import layout
-except Exception as e:
+except Exception :
     import traceback
     traceback.print_exc()
     print("Broken Bokeh")
@@ -116,7 +116,7 @@ class oscilloscope_waveform_dump(oscilloscope):
         while not len(db_tablename):
             db_tablename = input("What would you like the table name to be: ")
         logger.new_table(db_tablename)
-        sd = logger.log_data(scope_data)
+        _sd = logger.log_data(scope_data)  # noqa: F841
         logger.stop()
         # return sd
         return db_tablename

@@ -312,7 +312,7 @@ class visa_wrapper_serial(visa_wrapper):
         header_len = int(self.ser.read(1))
         data_len = int(self.ser.read(header_len))
         data = self.ser.read(data_len).encode('latin-1')
-        term = self.ser.read(len(terminationCharacter))
+        _term = self.ser.read(len(terminationCharacter))  # noqa: F841
         format_len = struct.calcsize(format_str)
         fmt = byte_order + format_str * (data_len // format_len)
         dbgprint("^^^-- visa_wrapper_serial.read_values_binary({}) "
@@ -372,7 +372,7 @@ class visa_wrapper_tcp(visa_wrapper_serial):
             while resp[-1:] == self.terminationCharacter:
                 resp = self.readline()
                 resp_all += resp
-        except visaWrapperException as e:
+        except visaWrapperException :
             pass
         except Exception as e:
             raise e  # what happened???

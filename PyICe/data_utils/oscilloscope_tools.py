@@ -211,7 +211,7 @@ def plot_waveform(y_data_column_names, db_tablename,
                               line_color=channel_colors[j],
                               legend_label=f"{ch_neatname}",
                               alpha=.5)
-        nh = NormalHead(
+        _nh = NormalHead(  # noqa: F841
             fill_color=channel_colors[j],
             fill_alpha=0.5,
             line_color=channel_colors[j])

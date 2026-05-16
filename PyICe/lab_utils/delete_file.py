@@ -8,7 +8,7 @@ def delete_file(filename, max_tries=20, retry_delay=5):
     doesn't (yet) exist. Gives up after a number of retries and raises RuntimeError.
     Good for removing stale SQLite DBs and log files from old runs."""
     try:
-        f_stat = os.stat(filename)  # See if file already exists.
+        _f_stat = os.stat(filename)  # noqa: F841 - See if file already exists.
         # If not, an exception is thrown and we GOTO the "except OSError:" below.
         # All code from here to the "except OSError:"
         # is only executed if the file actually exists.

@@ -31,9 +31,9 @@ class kikusui_pbz(scpi_instrument):
                 channel_name + "_enable")
             output_enable_channel.write(True)
             output_enable_channel.set_write_delay(delay)
-            voltage_sense_channel = self.add_channel_vsense(
+            _voltage_sense_channel = self.add_channel_vsense(  # noqa: F841
                 channel_name + "_vsense")
-            current_sense_channel = self.add_channel_isense(
+            _current_sense_channel = self.add_channel_isense(  # noqa: F841
                 channel_name + "_isense")
             self.write_channel(channel_name + "_ilim_source", ilim)
             self.write_channel(channel_name + "_ilim_sink", -ilim)

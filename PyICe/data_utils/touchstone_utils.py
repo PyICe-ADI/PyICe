@@ -351,7 +351,7 @@ def sweep_plots_to_pptx(ts_plots_dir, output_pptx_path, date_time_flag=1):
         position_left = pptx.util.Inches(0)
         plot_width = pptx.util.Inches(11.16)
         plot_height = pptx.util.Inches(6.2)
-        pic = slide.shapes.add_picture(
+        _pic = slide.shapes.add_picture(  # noqa: F841
             plot_file_name,
             position_left,
             position_top,
@@ -496,9 +496,9 @@ def _parallel(Ra, Rb):
         zero_array = np.zeros(len(freqs))
 
         index_fmax = np.where(freqs >= fmax)[0][0] - 1
-        z11_thru_fmax = z11[:(index_fmax)]
-        freqs_thru_fmax = freqs[:(index_fmax)]
-        zero_array_sample = zero_array[0:index_fmax]
+        _z11_thru_fmax = z11[:(index_fmax)]  # noqa: F841
+        _freqs_thru_fmax = freqs[:(index_fmax)]  # noqa: F841
+        _zero_array_sample = zero_array[0:index_fmax]  # noqa: F841
 
         weight = 1 - np.log10(freqs - 1e3 + 1) / \
             np.log10(freqs[len(freqs) - 1])
@@ -566,7 +566,7 @@ def _parallel(Ra, Rb):
         return (params2)
 
     def dev_minimize_2stage_ladder(self, fmax):
-        z11 = self.network.z[:, 0, 0]
+        _z11 = self.network.z[:, 0, 0]  # noqa: F841
         # freqs = self.network.f
         # zero_array = np.zeros(len(freqs))
 
@@ -637,7 +637,7 @@ def _parallel(Ra, Rb):
 
     def dev_solve():  # Not used, imported SymPy for this but haven't needed it.
         R1 = .045
-        L0 = 7.16e-9
+        _L0 = 7.16e-9  # noqa: F841
         p2 = 3.16e5
         z2 = 1e5
         p1 = 3.16e4
@@ -944,13 +944,13 @@ def _parallel(Ra, Rb):
 
         # num = [y[0]*(s**4)+y[1]*(s**3)+y[2]*(s**2)+y[3]*s+y[4]]
         # den = [x[0]*(s**4)+x[1]*(s**3)+x[2]*(s**2)+x[3]*s+x[4]]
-        m11_numerator = 0  # noqa: F841
+        m11_numerator = 0   # noqa: F841
         for i in range(len(y)):
             m11_numerator += y[i] * (s**(len(y) - i - 1))
-        m11_denominator = 0  # noqa: F841
+        m11_denominator = 0   # noqa: F841
         for j in range(len(x)):
             m11_denominator += x[j] * (s**(len(x) - j - 1))
-        Z11 = np.divide(m11_numerator, m11_denominator)  # noqa: F841
+        Z11 = np.divide(m11_numerator, m11_denominator)   # noqa: F841
 
         freqs2 = np.reshape(freqs, (1, 51))
 
@@ -1149,7 +1149,7 @@ def _parallel(Ra, Rb):
 
     def dev_make_N_port_touchstone(self, output_file_name, num_ports):
         freq_obj = self.network.frequency
-        freqs = self.network.f
+        _freqs = self.network.f  # noqa: F841
 
         def make_port(name):
             return skrf.Circuit.Port(frequency=freq_obj, name=name, z0=50)
@@ -1211,8 +1211,8 @@ def _parallel(Ra, Rb):
         # complicated math with LL and RR ratios for ladder and constraints
         # like @DC R1||R2||..||Rn = Rdc
         input_network = skrf.Network(touchstone_file_name)
-        z0 = input_network.z0[0][0]  # per freq,port array
-        freqs = input_network.frequency
+        _z0 = input_network.z0[0][0]  # per freq,port array  # noqa: F841
+        _freqs = input_network.frequency  # noqa: F841
 
     def LR_modelfit(self, f_max=30e6):  # This is Dave's algorithm
         model_params = {}
