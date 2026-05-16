@@ -1,4 +1,6 @@
-import collections, scipy
+import collections
+import scipy
+
 
 def interpolating_spline(rec_array, **kwargs):
     '''uses http://scipy.github.io/devdocs/generated/scipy.interpolate.UnivariateSpline.html
@@ -15,7 +17,9 @@ def interpolating_spline(rec_array, **kwargs):
     else:
         s = 0
     splines = []
-    splines_data_t = collections.namedtuple('{}_splines'.format(rec_array.dtype.names[0]),rec_array.dtype.names[1:])
-    for i in range(1,len(rec_array.dtype)):
-        splines.append(scipy.interpolate.UnivariateSpline(x=rec_array[rec_array.dtype.names[0]],y=rec_array[rec_array.dtype.names[i]],s=s, **kwargs))
+    splines_data_t = collections.namedtuple('{}_splines'.format(
+        rec_array.dtype.names[0]), rec_array.dtype.names[1:])
+    for i in range(1, len(rec_array.dtype)):
+        splines.append(scipy.interpolate.UnivariateSpline(
+            x=rec_array[rec_array.dtype.names[0]], y=rec_array[rec_array.dtype.names[i]], s=s, **kwargs))
     return splines_data_t(*splines)
