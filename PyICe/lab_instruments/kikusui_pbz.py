@@ -6,6 +6,11 @@ class kikusui_pbz(scpi_instrument):
     """Single channel kikusui_pbz20-20, pbz40-10 bipolar power supply parent class."""
 
     def __init__(self, interface_visa):
+        """Initialize kikusui_pbz.
+
+        Args:
+            interface_visa: VISA interface instance.
+        """
         self.add_interface_visa(interface_visa)
         # initialize to instrument on, current 0
         self.clear_status()

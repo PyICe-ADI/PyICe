@@ -6,6 +6,12 @@ class bk8600(scpi_instrument):
     """Single channel BK PRECISION 8600."""
 
     def __init__(self, interface_visa, remote_sense):
+        """Initialize bk8600.
+
+        Args:
+            interface_visa: VISA interface instance.
+            remote_sense: Remote sense.
+        """
         self._base_name = 'bk8600'
         super(bk8600, self).__init__(f"BK8600 @ {interface_visa}")
         self.add_interface_visa(interface_visa)

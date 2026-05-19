@@ -15,6 +15,11 @@ class sun_ec0x(sun_ecxx):
     _soak - the programmed soak time
     """
     def __init__(self, interface_visa):
+        """Initialize sun_ec0x.
+
+        Args:
+            interface_visa: VISA interface instance.
+        """
         # instrument.__init__(self,f"sun_ec0x @ {interface_visa}")
         self._base_name = 'sun_ec0x'
         sun_ecxx.__init__(self, interface_visa)

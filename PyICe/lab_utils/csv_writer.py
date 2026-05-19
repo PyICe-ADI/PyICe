@@ -6,6 +6,7 @@ class csv_writer(object):
     """Shared functions for higher level interfaces."""
 
     def __init__(self):
+        """Initialize csv_writer."""
         self.column_data_t = collections.namedtuple(
             'column_setup', [
                 'query_name', 'display_name', 'transform', 'format', 'query_function'])

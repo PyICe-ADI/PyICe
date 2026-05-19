@@ -66,6 +66,13 @@ class data_store():
     each pair must have a name but a value is optional
     """
     def __init__(self, name=None, value=None, parent=None):
+        """Initialize data_store.
+
+        Args:
+            name: Name identifier.
+            parent: Parent.
+            value: Value to set.
+        """
         self._children = []
         self.set_name(name)
         self.set_value(value)
@@ -253,6 +260,11 @@ class DataStoreException(Exception):
 class channel_wrapper(object):
     """Channel_wrapper (object subclass)."""
     def __init__(self, channel=None):
+        """Initialize channel_wrapper.
+
+        Args:
+            channel: Channel object.
+        """
         # channel=None default is required because of Python's cooperative multiple-inheritance
         # (MRO) behaviour with Qt classes.  When a subclass like display_item inherits from both
         # QtWidgets.QLabel and channel_wrapper, calling QtWidgets.QLabel.__init__(self) causes
@@ -504,6 +516,11 @@ class display_item(QtWidgets.QLabel, channel_wrapper):
     SI_request_write_channel_list = QtCore.Signal(object)
 
     def __init__(self, channel_object):
+        """Initialize display_item.
+
+        Args:
+            channel_object: Channel object.
+        """
         channel_wrapper.__init__(self, channel_object)
         QtWidgets.QLabel.__init__(self)
         self._alpha = 0
@@ -1228,6 +1245,11 @@ class display_tag(QtWidgets.QLabel):
     SI_request_read_tag = QtCore.Signal(object)
 
     def __init__(self, tag_name):
+        """Initialize display_tag.
+
+        Args:
+            tag_name: Tag name.
+        """
         self.tag_name = tag_name
         QtWidgets.QLabel.__init__(
             self, "<center><u><b>{}</b></u></center>".format(self.tag_name))
@@ -1374,6 +1396,14 @@ class write_channel_dialog(QtWidgets.QDialog, channel_wrapper):
 
     def __init__(self, channel_object, current_raw_data,
                  format, use_presets_write):
+        """Initialize write_channel_dialog.
+
+        Args:
+            channel_object: Channel object.
+            current_raw_data: Current raw data.
+            format: Format name string.
+            use_presets_write: Use presets write.
+        """
         QtWidgets.QDialog.__init__(self)
         channel_wrapper.__init__(self, channel_object)
         self.setWindowTitle("Write {}".format(self.get_name()))
@@ -1674,6 +1704,11 @@ class display_item_group(QtWidgets.QWidget):
     SI_change_font_size = QtCore.Signal(int)
 
     def __init__(self, channel_group_object):
+        """Initialize display_item_group.
+
+        Args:
+            channel_group_object: Channel group object.
+        """
         QtWidgets.QWidget.__init__(self)
         self.display_items = []
         self._filter_list = []
@@ -2174,6 +2209,11 @@ class display_tag_group(QtWidgets.QWidget):
     SI_stateChanged = QtCore.Signal()
 
     def __init__(self, channel_group_object):
+        """Initialize display_tag_group.
+
+        Args:
+            channel_group_object: Channel group object.
+        """
         QtWidgets.QWidget.__init__(self)
         self.channel_group_object = channel_group_object
         self._tags = self._create_tag_list()
@@ -2350,6 +2390,12 @@ class tab_view(QtWidgets.QWidget):
     SI_tab_use_read_presets = QtCore.Signal(object)
 
     def __init__(self, channel_group_object, parent):
+        """Initialize tab_view.
+
+        Args:
+            channel_group_object: Channel group object.
+            parent: Parent.
+        """
         QtWidgets.QWidget.__init__(self, parent)
         self._name = "Empty"
         self._name_locked = False
@@ -2775,6 +2821,14 @@ class tab_group(QtWidgets.QTabWidget):
             class TabSwitchingAgent(object):
                 """Tab switching agent (object subclass)."""
                 def __init__(self, the_tab_group, old_tab, new_tab, retries=3):
+                    """Initialize tab switching agent.
+
+                    Args:
+                        new_tab: New tab.
+                        old_tab: Old tab.
+                        retries: Retries.
+                        the_tab_group: The tab group.
+                    """
                     self.tries_so_far = 0
                     self.the_tab_group = the_tab_group
                     self.old_tab = old_tab
@@ -2929,6 +2983,11 @@ class gui_logger(QtCore.QObject):
     SI_channel_data_ready = QtCore.Signal(object)
 
     def __init__(self, channel_group):
+        """Initialize gui_logger.
+
+        Args:
+            channel_group: Channel group.
+        """
         QtCore.QObject.__init__(self)
         self._logger = None
         self.connect_dialog = None
@@ -3114,6 +3173,11 @@ class gui_logger(QtCore.QObject):
 class logger_item(QtWidgets.QCheckBox, channel_wrapper):
     """Logger_item."""
     def __init__(self, channel_object):
+        """Initialize logger_item.
+
+        Args:
+            channel_object: Channel object.
+        """
         QtWidgets.QCheckBox.__init__(self)
         channel_wrapper.__init__(self, channel_object)
         self._displayed = False
@@ -3177,6 +3241,11 @@ class logger_item(QtWidgets.QCheckBox, channel_wrapper):
 class logger_item_group(QtWidgets.QWidget):
     """Logger_item_group (q widget subclass)."""
     def __init__(self, channel_group_object):
+        """Initialize logger_item_group.
+
+        Args:
+            channel_group_object: Channel group object.
+        """
         QtWidgets.QWidget.__init__(self)
         self.logger_items = []
         self.init_interface()
@@ -3347,6 +3416,12 @@ class logger_view(QtWidgets.QWidget):
     """Describes the view of the registers and the tag selection and interaction beteen."""
 
     def __init__(self, channel_group_object, parent):
+        """Initialize logger_view.
+
+        Args:
+            channel_group_object: Channel group object.
+            parent: Parent.
+        """
         QtWidgets.QWidget.__init__(self, parent)
         self.channel_group_object = channel_group_object
         self.lig = logger_item_group(self.channel_group_object)
@@ -3424,6 +3499,12 @@ class background_worker(QtCore.QThread):
     # registers
 
     def __init__(self, channel_group, log_history=False):
+        """Initialize background_worker.
+
+        Args:
+            channel_group: Channel group.
+            log_history: Log history.
+        """
         QtCore.QThread.__init__(self)
         self._channel_group = channel_group
         self._calls = []
@@ -4156,6 +4237,14 @@ class ltc_lab_gui_app(QObject):
 
     def __init__(self, channel_group, passive=False,
                  cfg_file='default.guicfg', log_history=False):
+        """Initialize ltc_lab_gui_app.
+
+        Args:
+            cfg_file: Cfg file.
+            channel_group: Channel group.
+            log_history: Log history.
+            passive: Passive.
+        """
         super().__init__()
         # Setup background_worker thread that does all channel I/O.
         self.worker = background_worker(channel_group, log_history=log_history)

@@ -64,6 +64,7 @@ PTR_TEST_FLG_TEST_FAILED = 2**7
 class FileReader:
     """File reader."""
     def __init__(self):
+        """Initialize file reader."""
         self.data = []
 
     def after_send(self, dataSource, data):

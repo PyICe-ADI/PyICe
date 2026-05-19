@@ -18,6 +18,13 @@ class modbus_register(channel):
     """Register in the sense of remote memory (read AND write functions), but without binary/2's comp features."""
 
     def __init__(self, name, read_function, write_function=None):
+        """Initialize modbus_register.
+
+        Args:
+            name: Name identifier.
+            read_function: Callable for reading the channel.
+            write_function: Callable for writing the channel.
+        """
         channel.__init__(self, name=name, read_function=read_function)
         if write_function is not None:
             self._write = write_function
@@ -57,6 +64,14 @@ class modbus_instrument(instrument, minimalmodbus.Instrument):
     """
     def __init__(self, interface_raw_serial,
                  modbus_address, baudrate, mode='rtu'):
+        """Initialize modbus_instrument.
+
+        Args:
+            baudrate: Baudrate.
+            interface_raw_serial: Interface raw serial.
+            modbus_address: Modbus address.
+            mode: Operating mode.
+        """
         minimalmodbus.BAUDRATE = baudrate
         self._base_name = 'Modbus Instrument'
         interface_raw_serial.write = interface_raw_serial.write_raw

@@ -9,6 +9,11 @@ class logfile(object):
     Optionally can also print what is written to the screen.
     """
     def __init__(self, filename=None):
+        """Initialize logfile.
+
+        Args:
+            filename: File path.
+        """
         self.filename = filename if filename is not None else time.strftime(
             "log-%Y-%m-%d-%H%M.txt")
         self.f = open(self.filename, "w")

@@ -6,6 +6,12 @@ from .ordered_pair import ordered_pair
 class oscilloscope_channel(ordered_pair):
     """Oscilloscope_channel (ordered_pair subclass)."""
     def __init__(self, time_points, channel_data):
+        """Initialize oscilloscope_channel.
+
+        Args:
+            channel_data: Channel data.
+            time_points: Time points.
+        """
         list.__init__(self)
         '''takes string data, likely from a two-column sql database query of an oscilloscope trace
        and returns a list of (x,y) ordered pairs of floats appropriate for plotting or further manipulation

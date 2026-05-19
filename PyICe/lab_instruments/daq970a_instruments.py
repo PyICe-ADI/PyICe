@@ -9,6 +9,12 @@ class daq970a_instrument(scpi_instrument, delegator):
     """Superclass of all Agilent DAQ 970a plugin instruments."""
 
     def __init__(self, name, automatic_monitor):
+        """Initialize daq970a_instrument.
+
+        Args:
+            automatic_monitor: Automatic monitor.
+            name: Name identifier.
+        """
         scpi_instrument.__init__(self, name)
         self._base_name = 'daq970a'
         delegator.__init__(self)
@@ -708,6 +714,12 @@ class agilent_a970a_20ch(agilent_a970a_20ch_40ch):
     and current measurement (external sense resistor).
     """
     def __init__(self, *args, **kwargs):
+        """Initialize agilent_a970a_20ch.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            *args: Additional positional arguments.
+        """
         agilent_a970a_20ch_40ch.__init__(self, *args, **kwargs)
         self.plugin_type = "34901A"
 
@@ -862,6 +874,12 @@ class agilent_a970a_40ch(agilent_a970a_20ch_40ch):
     """Implement any methods specific to the 40-channel mux here."""
 
     def __init__(self, *args, **kwargs):
+        """Initialize agilent_a970a_40ch.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            *args: Additional positional arguments.
+        """
         agilent_a970a_20ch_40ch.__init__(self, *args, **kwargs)
         self.plugin_type = "DAQM908A"
 

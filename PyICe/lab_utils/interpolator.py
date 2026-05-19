@@ -44,6 +44,11 @@ class interpolator(object):
     25.0
     """
     def __init__(self, points_list=None):
+        """Initialize interpolator.
+
+        Args:
+            points_list: Points list.
+        """
         self._points = []
         self._points_ysort = []
         self.y_slope = 0

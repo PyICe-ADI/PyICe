@@ -7,6 +7,11 @@ class sorensen_lhp_100_10(sorensen_generic_supply):
     """Single channel sorensen_lhp_100_10."""
 
     def __init__(self, interface_visa):
+        """Initialize sorensen_lhp_100_10.
+
+        Args:
+            interface_visa: VISA interface instance.
+        """
         self.sorensen_name = "sorensen_lhp_100_10"
         sorensen_generic_supply.__init__(self, interface_visa)
         self._base_name = 'sorensen_lhp_100_10'

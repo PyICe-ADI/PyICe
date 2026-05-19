@@ -2,6 +2,7 @@
 class Units_Parser():
     """Units_ parser."""
     def __init__(self):
+        """Initialize units_ parser."""
         self.symbols = {
             # ETS DLOG
             "DUT": {"scale": 1, "isunit": True, "DESCRIPTION": "Device Under Test"},

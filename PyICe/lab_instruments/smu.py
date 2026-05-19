@@ -615,6 +615,11 @@ class keithley_2600(keithley_smu):
     """Https://download.tek.com/manual/2600BS-901-01_C_Aug_2016_2.pdf."""
 
     def __init__(self, interface_visa):
+        """Initialize keithley_2600.
+
+        Args:
+            interface_visa: VISA interface instance.
+        """
         self._base_name = 'Keithley 2600'
         super(keithley_2600, self).__init__(
             f"{self._base_name} @ {interface_visa}")

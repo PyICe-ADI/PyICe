@@ -108,6 +108,11 @@ class generic_results():
     """Parent of Test_Results and correlation_results and keeper of any commonalities."""
 
     def __init__(self):
+        """Initialize generic_results.
+
+        Raises:
+            Exception: On error condition.
+        """
         raise Exception(
             "This class isn't supposed to be instantiated directly.")
         # TODO https://docs.python.org/3/library/abc.html ?
@@ -346,6 +351,14 @@ class Test_Results(generic_results):
         """Add some helper methods for easy filtering and summary."""
 
         def __init__(self, name, upper_limit, lower_limit, override):
+            """Initialize _test_results_list.
+
+            Args:
+                lower_limit: Lower limit.
+                name: Name identifier.
+                override: Override.
+                upper_limit: Upper limit.
+            """
             self.name = name
             self.upper_limit = upper_limit
             self.lower_limit = lower_limit
@@ -721,6 +734,11 @@ class Test_Results_Reload(Test_Results):
     """Rereads a json file and converts it back to a Test_Results compatible schema."""
 
     def __init__(self, results_json='test_results.json'):
+        """Initialize test_ results_ reload.
+
+        Args:
+            results_json: Results json.
+        """
         self._test_declarations = []
         self.test_limits = {}
         self._test_results = collections.OrderedDict()
@@ -770,6 +788,11 @@ class Test_Results_Reload(Test_Results):
 class Failed_Eval(Test_Results):
     """Failed_ eval (test_ results subclass)."""
     def __init__(self, test):
+        """Initialize failed_ eval.
+
+        Args:
+            test: Test.
+        """
         self.test = test
 
     def __str__(self):

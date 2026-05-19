@@ -8,6 +8,11 @@ class hp_3478a(instrument):
     defaults to dc voltage
     """
     def __init__(self, interface_visa):
+        """Initialize hp_3478a.
+
+        Args:
+            interface_visa: VISA interface instance.
+        """
         self._base_name = 'hp_3478a'
         instrument.__init__(self, "hp_3478a @ " + str(interface_visa))
         self.add_interface_visa(interface_visa)

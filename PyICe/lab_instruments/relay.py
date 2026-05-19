@@ -39,6 +39,11 @@ class relay(instrument):
 class ftdi_relay(relay):
     """Ftdi_relay."""
     def __init__(self, serial_number=None):
+        """Initialize ftdi_relay.
+
+        Args:
+            serial_number: Serial number.
+        """
         self.VID = 0x0403                   # USB Vendor ID of FT245R and FT232
         self.PID = 0x6001                   # USB Product ID of FT245R and FT232
         self.PROD_STR = u'FT245R USB FIFO'  # differentiate from FT232 USB UART
@@ -393,6 +398,7 @@ PyRelayCtl is licensed under a modified BSD license.
 class FT245R:
     """F t245 r."""
     def __init__(self):
+        """Initialize f t245 r."""
         self.VID = 0x0403                   # USB Vendor ID of FT245R and FT232
         self.PID = 0x6001                   # USB Product ID of FT245R and FT232
         self.PROD_STR = u'FT245R USB FIFO'  # differentiate from FT232 USB UART

@@ -15,6 +15,11 @@ import os
 class memory_decoder():
     """Memory_decoder."""
     def __init__(self, twii=None):
+        """Initialize memory_decoder.
+
+        Args:
+            twii: Twii.
+        """
         self.twii = twii
 
     def _parse_mdump(self, mem_str, fmt, offset=0):

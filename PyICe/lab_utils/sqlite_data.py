@@ -19,6 +19,13 @@ class sqlite_data(
 
     def __init__(self, table_name=None,
                  database_file='data_log.sqlite', timezone=None):
+        """Initialize sqlite_data.
+
+        Args:
+            database_file: Database file.
+            table_name: Database table name.
+            timezone: Timezone.
+        """
         if timezone is None:
             self.timezone = UTC()
         else:

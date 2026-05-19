@@ -7,6 +7,11 @@ import urllib.request
 class ticker(object):
     """Ticker (object subclass)."""
     def __init__(self, stock_list=None):
+        """Initialize ticker.
+
+        Args:
+            stock_list: Stock list.
+        """
         if stock_list is None:
             self.stock_list = ['LLTC', 'ADI', 'TXN', 'AAPL', 'GOOG']
         else:

@@ -14,6 +14,16 @@ class waveform(object):
     # @profile
     def __init__(self, data, trigger_sigma=10, trigger_level=None,
                  leader_size=0.099, debug=False, stationarity_check=False):
+        """Initialize waveform.
+
+        Args:
+            data: Data to write.
+            debug: If True, enable debug output.
+            leader_size: Leader size.
+            stationarity_check: Stationarity check.
+            trigger_level: Trigger level.
+            trigger_sigma: Trigger sigma.
+        """
         _MAX_POINTS = 10000  # noqa: F841
         LEADER_SIZE = leader_size
         MAX_NONSTATIONARITY = 1e-4

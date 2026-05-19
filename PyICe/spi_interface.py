@@ -545,6 +545,18 @@ class spi_bbone(spiInterface):
 class spi_cfgpro(spiInterface):
     """Spi_cfgpro (spi interface subclass)."""
     def __init__(self, visa_interface, CPOL, CPHA, baudrate=1e6, ss_ctrl=None):
+        """Initialize spi_cfgpro.
+
+        Args:
+            CPHA: Clock phase.
+            CPOL: Clock polarity.
+            baudrate: Baudrate.
+            ss_ctrl: Ss ctrl.
+            visa_interface: Visa interface.
+
+        Raises:
+            SPIMasterError: On error condition.
+        """
         self.interface = visa_interface
         if ss_ctrl is None:
             self.ss_ctrl = self.cs
@@ -723,6 +735,15 @@ class spi_buspirate(spiInterface):
     """Spi_buspirate (spi interface subclass)."""
     def __init__(self, interface_raw_serial, CPOL=0,
                  CPHA=0, baudrate=1e6, ss_ctrl=None):
+        """Initialize spi_buspirate.
+
+        Args:
+            CPHA: Clock phase.
+            CPOL: Clock polarity.
+            baudrate: Baudrate.
+            interface_raw_serial: Interface raw serial.
+            ss_ctrl: Ss ctrl.
+        """
         self.ser = interface_raw_serial
         if ss_ctrl is None:
             self.ss_ctrl = self.cs
@@ -983,6 +1004,12 @@ class spi_bitbang(spiInterface):
 class spi_dummy(spiInterface):
     """Spi_dummy (spi interface subclass)."""
     def __init__(self, delay=0, word_size=1):
+        """Initialize spi_dummy.
+
+        Args:
+            delay: Delay time in seconds.
+            word_size: Word size.
+        """
         self.delay = delay
         spiInterface.__init__(
             self,

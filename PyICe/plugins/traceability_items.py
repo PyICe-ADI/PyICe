@@ -6,6 +6,11 @@ import collections
 class Traceability_items():
     """Traceability_items."""
     def __init__(self, test):
+        """Initialize traceability_items.
+
+        Args:
+            test: Test.
+        """
         self.item_list = []
         self.test = test
         self.trace_data = collections.OrderedDict()

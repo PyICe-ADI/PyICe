@@ -1097,6 +1097,11 @@ class clipboard(instrument):
     """Virtual instrument to exchange data with Windows/Linux clipboard for interactive copy and paste with another application."""
 
     def __init__(self):
+        """Initialize clipboard.
+
+        Raises:
+            Exception: On error condition.
+        """
         instrument.__init__(self, 'Clipboard Exchange Virtual Instrument')
         self._base_name = 'Copy/Past Clipboard Virtual Instrument'
         try:
@@ -1269,6 +1274,11 @@ class timer(instrument, delegator):
     All channels operate from a common timebase.
     """
     def __init__(self, category='Timer Virtual Instrument'):
+        """Initialize timer.
+
+        Args:
+            category: Category.
+        """
         self._base_name = category
         delegator.__init__(self)
         instrument.__init__(self, self._base_name)
@@ -1912,6 +1922,7 @@ class differentiator(timer, differencer):
     without requiring an explicit call to this instrument's differentiate method or channel.
     """
     def __init__(self):
+        """Initialize differentiator."""
         timer.__init__(self)
         differencer.__init__(self)
         self._base_name = 'Differentiator Virtual Instrument'
@@ -2315,6 +2326,11 @@ class servo_group(object):
     all are in regulation or up to servo_group.tries times
     """
     def __init__(self, name):
+        """Initialize servo_group.
+
+        Args:
+            name: Name identifier.
+        """
         self.servos = []
         self.verbose = False
         self.max_tries = 5
@@ -2376,6 +2392,11 @@ class ramp_to(instrument):
     3.3
     """
     def __init__(self, verbose=False):
+        """Initialize ramp_to.
+
+        Args:
+            verbose: If True, print debug output.
+        """
         instrument.__init__(self, "ramp_to virtual instrument")
         self._base_name = "ramp_to"
         self.verbose = verbose
@@ -3997,6 +4018,17 @@ class servo_binary_search(instrument):  # todo delegator?!?!?
     """
     def __init__(self, fb_channel, output_channel, minimum_output,
                  maximum_output, abstol, output_readback_channel=None, verbose=False):
+        """Initialize servo_binary_search.
+
+        Args:
+            abstol: Absolute tolerance.
+            fb_channel: Fb channel.
+            maximum_output: Maximum output.
+            minimum_output: Minimum output.
+            output_channel: Output channel.
+            output_readback_channel: Output readback channel.
+            verbose: If True, print debug output.
+        """
         # reltol=0.001
         # abort_on_sat=True
         # except_on_fail=True
@@ -4138,6 +4170,18 @@ class leakage_nuller(instrument):
 
     def __init__(self, leakage_measurement_channel, leakage_forcing_channel, voltage_measurement_channel,
                  minimum_output, maximum_output, voltage_abstol, current_abstol, verbose=False):
+        """Initialize leakage_nuller.
+
+        Args:
+            current_abstol: Current abstol.
+            leakage_forcing_channel: Leakage forcing channel.
+            leakage_measurement_channel: Leakage measurement channel.
+            maximum_output: Maximum output.
+            minimum_output: Minimum output.
+            verbose: If True, print debug output.
+            voltage_abstol: Voltage abstol.
+            voltage_measurement_channel: Voltage measurement channel.
+        """
         self.verbose = verbose
         self.voltage_abstol = voltage_abstol
         self.current_abstol = current_abstol
@@ -4192,6 +4236,11 @@ class calibrator(instrument):
     1.03
     """
     def __init__(self, verbose=False):
+        """Initialize calibrator.
+
+        Args:
+            verbose: If True, print debug output.
+        """
         self._base_name = 'calibrator'
         instrument.__init__(self, "calibrator virtual instrument")
         self.verbose = verbose
@@ -4359,6 +4408,12 @@ class digital_analog_io(instrument):
     we're talking to, e.g. master['vin_supply'] or master['dvcc_supply'].
     """
     def __init__(self, domain_channel=None, verbose=False):
+        """Initialize digital_analog_io.
+
+        Args:
+            domain_channel: Domain channel.
+            verbose: If True, print debug output.
+        """
         self._base_name = 'digital_analog_io'
         instrument.__init__(self, "digital_analog_io virtual instrument")
         if domain_channel is None:
@@ -4601,6 +4656,7 @@ class vector_to_scalar_converter(instrument):
     True
     """
     def __init__(self):
+        """Initialize vector_to_scalar_converter."""
         self._base_name = 'vector_scalar_converter'
         instrument.__init__(self, self._base_name)
         # NB Python 3.4 adds useful statistics module:
@@ -4937,6 +4993,19 @@ class simple_servo(instrument):
     """
     def __init__(self, fb_channel, output_channel, minimum, maximum, reltol=0.001,
                  abstol=None, verbose=False, max_tries=10, step_method="BINARY"):
+        """Initialize simple_servo.
+
+        Args:
+            abstol: Absolute tolerance.
+            fb_channel: Fb channel.
+            max_tries: Max tries.
+            maximum: Maximum value.
+            minimum: Minimum value.
+            output_channel: Output channel.
+            reltol: Relative tolerance.
+            step_method: Step method.
+            verbose: If True, print debug output.
+        """
         self._base_name = 'servo'
         self.fb_channel = fb_channel
         self.output_channel = output_channel
@@ -5204,6 +5273,7 @@ class dummy_quantum_twin(instrument):
 class Virtual_Oven(temperature_chamber):
     """Virtual_ oven (temperature_chamber subclass)."""
     def __init__(self):
+        """Initialize virtual_ oven."""
         self._base_name = 'Virtual_Oven'
         temperature_chamber.__init__(self)
 

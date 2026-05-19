@@ -31,6 +31,13 @@ class StreamWindow(object):
     # but for whatever reason wasn't.  -- F. Lee 7/25/2017
 
     def __init__(self, stream, buffer_size=2**16, debug=False):
+        """Initialize stream window.
+
+        Args:
+            buffer_size: Buffer size.
+            debug: If True, enable debug output.
+            stream: Stream.
+        """
         assert hasattr(stream, "read"), ("stream argument provided to StreamWindow "
                                          "constructor must have a read() method.")
         assert isinstance(buffer_size, int) and buffer_size >= 1

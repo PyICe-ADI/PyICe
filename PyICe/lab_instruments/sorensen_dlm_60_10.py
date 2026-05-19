@@ -7,6 +7,11 @@ class sorensen_dlm_60_10(sorensen_generic_supply):
     """Single channel sorensen_dlm_60_10."""
 
     def __init__(self, interface_visa):
+        """Initialize sorensen_dlm_60_10.
+
+        Args:
+            interface_visa: VISA interface instance.
+        """
         self.sorensen_name = "sorensen_dlm_60_10"
         # for some reason the dlm_60_10 terminates with a carriage return and
         # no new-line...

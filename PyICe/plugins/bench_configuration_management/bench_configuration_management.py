@@ -9,6 +9,12 @@ BLOCKED_STRING = "◄――――――――■ [BLOCKED]"
 class Diagram_Reconstructor():
     """Diagram_ reconstructor."""
     def __init__(self, connections, blocked_terminals):
+        """Initialize diagram_ reconstructor.
+
+        Args:
+            blocked_terminals: Blocked terminals.
+            connections: Connections.
+        """
         self.connections = connections
         self.blocked_terminals = blocked_terminals
 
@@ -35,6 +41,13 @@ class terminal():
     """A terminal object represents a potential port of a component to which a single connection can be made. A component will typically have one or more terminals. Terminals will likely be paired with connections once the bench wiring is defined. A terminal can only have a single connection. Any more will cause an error. A terminal represents a single port, regardless of pin count."""
 
     def __init__(self, type, owner, instrument):
+        """Initialize terminal.
+
+        Args:
+            instrument: Instrument.
+            owner: Owner.
+            type: Type.
+        """
         self.type = type
         self.owner = owner
         self.instrument = instrument
@@ -78,6 +91,11 @@ class bench_config_component():
     A component represents a physical instrument on the bench that can have connections, like a piece of test equipment, circuit board with connectors, or probes.
     """
     def __init__(self, name):
+        """Initialize bench_config_component.
+
+        Args:
+            name: Name identifier.
+        """
         self.type = type(self)
         self.name = name
         self._terminals = {}
@@ -155,6 +173,7 @@ class component_collection():
     """A dictionary of all declared components on the bench. Keys are the assigned names provided at creation, and values are the component instances."""
 
     def __init__(self):
+        """Initialize component_collection."""
         self.components = {}
 
     def add_component(self, component):
@@ -199,6 +218,12 @@ class connection():
     """A connection represents the physical linking of two different terminals between bench components. The two terminals can be from the same component or between terminals of different components, but only one connection can be assigned to any given terminal. Once a connection is made to a terminal, that terminal is considered "blocked"."""
 
     def __init__(self, *terminals, owner=None):
+        """Initialize connection.
+
+        Args:
+            *terminals: Additional positional arguments.
+            owner: Owner.
+        """
         # Why is the indexing needed to prevent list of lists?
         self.terminals = terminals[0]
         self.owner = owner
@@ -246,6 +271,11 @@ class connection_collection():
     """An unindexed list of all connections made on a test bench. It has the ability to check consistency of all declared connections. If multiple connections are made to a single terminal or a connection is made to a terminal that has been declared "blocked", an error is raised."""
 
     def __init__(self, name):
+        """Initialize connection_collection.
+
+        Args:
+            name: Name identifier.
+        """
         self.connections = []
         self.blocked_terminals = []
         self.readable_list = []
@@ -617,6 +647,11 @@ class configuration_parser():
     This just returns a list of dictionaries from a bunched up string.
     """
     def __init__(self, config_string):
+        """Initialize configuration_parser.
+
+        Args:
+            config_string: Config string.
+        """
         self.config_string = config_string
 
     def parse(self):

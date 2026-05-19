@@ -12,6 +12,12 @@ class saleae(instrument, delegator):
     Digital channels not supported (yet). (Mixed analog/digital capture file binary unsupported.)
     """
     def __init__(self, host='localhost', port=10429):
+        """Initialize saleae.
+
+        Args:
+            host: Host.
+            port: Port.
+        """
         import saleae as saleae_lib
         instrument.__init__(self, f"Saleae Logic @ {host}:{port}")
         delegator.__init__(self)

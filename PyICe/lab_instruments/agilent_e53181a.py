@@ -11,6 +11,11 @@ class agilent_e53181a(scpi_instrument):
     defaults to 1Meg input R, 10x attenuation
     """
     def __init__(self, interface_visa):
+        """Initialize agilent_e53181a.
+
+        Args:
+            interface_visa: VISA interface instance.
+        """
         self._base_name = 'agilent_e53181a'
         # instrument.__init__(self,f"agilent_e53181a @ {interface_visa}")
         super(agilent_e53181a, self).__init__(

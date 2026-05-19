@@ -12,6 +12,11 @@ class hameg_4040(scpi_instrument):
     or measure voltage and current.
     """
     def __init__(self, interface_visa):
+        """Initialize hameg_4040.
+
+        Args:
+            interface_visa: VISA interface instance.
+        """
         self._base_name = 'hameg_4040'
         # instrument.__init__(self,f'HMP4040 @  {interface_visa}')
         super(hameg_4040, self).__init__(f'HMP4040 @  {interface_visa}')

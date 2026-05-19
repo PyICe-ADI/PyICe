@@ -10,6 +10,16 @@ class digital_IO_over_analog_output(object):
     """
     def __init__(self, channel, domain_channel, VOL=0.0,
                  delta_Vhook=1.5, tolerance=0.01, abs_max=None):
+        """Initialize digital_ i o_over_analog_output.
+
+        Args:
+            VOL: Vol.
+            abs_max: Abs max.
+            channel: Channel object.
+            delta_Vhook: Delta vhook.
+            domain_channel: Domain channel.
+            tolerance: Tolerance value.
+        """
         from . import lab_core
         assert isinstance(channel, lab_core.channel)
         assert isinstance(domain_channel, lab_core.channel)

@@ -30,6 +30,11 @@ class krohnhite_526(instrument):
     """
 
     def __init__(self, interface_visa):
+        """Initialize krohnhite_526.
+
+        Args:
+            interface_visa: VISA interface instance.
+        """
         self._base_name = 'Krohn-Hite 526'
         instrument.__init__(self, f"{self._base_name} @ {interface_visa}")
         self.add_interface_visa(interface_visa)

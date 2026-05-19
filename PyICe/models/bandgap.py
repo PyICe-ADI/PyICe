@@ -6,6 +6,7 @@ import numpy
 class bandgap():
     """Bandgap."""
     def __init__(self):
+        """Initialize bandgap."""
         self.vbe27 = random.gauss(mu=0.66, sigma=250e-6)
         self.Nemit = random.gauss(mu=12, sigma=0.1)
         self.dvbe_gain = random.gauss(mu=23 / 3., sigma=23 / 3. * 0.0025)

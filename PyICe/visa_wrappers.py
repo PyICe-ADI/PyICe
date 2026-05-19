@@ -254,6 +254,17 @@ class visa_wrapper_serial(visa_wrapper):
     """Visa_wrapper_serial."""
     def __init__(self, address_or_serial_obj,
                  timeout=5, baudrate=9600, **kwargs):
+        """Initialize visa_wrapper_serial.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            address_or_serial_obj: Address or serial obj.
+            baudrate: Baudrate.
+            timeout: Timeout in seconds.
+
+        Raises:
+            ValueError: On error condition.
+        """
         serial_port_name = "(nameless serial port)"
         if isinstance(address_or_serial_obj, serial.SerialBase):
             self.ser = address_or_serial_obj
@@ -513,6 +524,14 @@ class visa_wrapper_serial(visa_wrapper):
 class visa_wrapper_tcp(visa_wrapper_serial):
     """Visa_wrapper_tcp (visa_wrapper_serial subclass)."""
     def __init__(self, ip_address, port, timeout=5, **kwargs):
+        """Initialize visa_wrapper_tcp.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            ip_address: Ip address.
+            port: Port.
+            timeout: Timeout in seconds.
+        """
         port = serial.serial_for_url(
             'socket://{}:{}'.format(ip_address, port), timeout=timeout)
         visa_wrapper_serial.__init__(self, port, **kwargs)
@@ -553,6 +572,13 @@ class visa_wrapper_telnet(visa_wrapper_serial):
     # TODO?: migrate telnet library to use serial_for_url
     # rfc2217://<host>:<port>[?<option>[&<option>]] class rfc2217.Serial
     def __init__(self, ip_address, port, timeout=5):
+        """Initialize visa_wrapper_telnet.
+
+        Args:
+            ip_address: Ip address.
+            port: Port.
+            timeout: Timeout in seconds.
+        """
         port = telnetlib.Telnet(ip_address, port, timeout=timeout)
         self._timeout = timeout
         visa_wrapper_serial.__init__(self, port)
@@ -589,6 +615,12 @@ class visa_wrapper_telnet(visa_wrapper_serial):
 class visa_wrapper_vxi11(visa_wrapper):
     """Visa_wrapper_vxi11."""
     def __init__(self, address, timeout=5):
+        """Initialize visa_wrapper_vxi11.
+
+        Args:
+            address: Address.
+            timeout: Timeout in seconds.
+        """
         self.terminationCharacter = None
         self.vxi_interface = vxi11.Instrument(
             address, term_char=self.terminationCharacter, timeout=timeout)
@@ -685,6 +717,15 @@ class visa_wrapper_vxi11(visa_wrapper):
 class visa_wrapper_usbtmc(visa_wrapper):
     """Visa_wrapper_usbtmc."""
     def __init__(self, address, timeout=5):
+        """Initialize visa_wrapper_usbtmc.
+
+        Args:
+            address: Address.
+            timeout: Timeout in seconds.
+
+        Raises:
+            Exception: On error condition.
+        """
         if usbtmcMissing:
             raise Exception(
                 'USB Test and Measurment class init failed. Do you have PyUSB installed properly with a libusb (1.0 or 0.1) or OpenUSB backend?',
@@ -781,6 +822,15 @@ class visa_interface(visa_wrapper):
     """Agilent visa strips trailing termination character, but NI VISA seems to leave them in response."""
 
     def __init__(self, address, timeout=5):
+        """Initialize visa_interface.
+
+        Args:
+            address: Address.
+            timeout: Timeout in seconds.
+
+        Raises:
+            visaWrapperException: On error condition.
+        """
         if visaMissing:
             raise visaWrapperException('VISA library missing from this system')
         elif "instrument" in dir(visa):  # Old API from PyVISA rev < 1.5

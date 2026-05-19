@@ -5,6 +5,7 @@ import pathlib
 class component_locations:
     """Component_locations."""
     def __init__(self):
+        """Initialize component_locations."""
         path = pathlib.Path(__file__).parent.resolve(
         ).as_posix() + "/visualizer_images/"
         self.locations = {

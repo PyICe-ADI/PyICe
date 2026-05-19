@@ -7,6 +7,11 @@ class CAT5140(instrument):
     """ONSemi/Catalyst I2C 256 Tap Potentiometer."""
 
     def __init__(self, interface_twi):
+        """Initialize c a t5140.
+
+        Args:
+            interface_twi: TWI/I2C interface instance.
+        """
         self.addr7 = 0b0101000
         instrument.__init__(
             self, f'ONSemi/Catalyst I2C 8-bit Potentiometer at 0x{self.addr7:X}')

@@ -20,6 +20,14 @@ class u2300a_scope(scpi_instrument, delegator):
 
     def __init__(self, interface_visa, force_trigger=False,
                  timeout=1, trigger_timeout=15):
+        """Initialize u2300a_scope.
+
+        Args:
+            force_trigger: Force trigger.
+            interface_visa: VISA interface instance.
+            timeout: Timeout in seconds.
+            trigger_timeout: Trigger timeout.
+        """
         self._base_name = 'U2300A'
         scpi_instrument.__init__(self, f"{self._base_name} @ {interface_visa}")
         # Clears self._interfaces list, so must happen before
@@ -945,6 +953,14 @@ class u2300a_datalogger(u2300a_scope):
     """U2300a_datalogger (u2300a_scope subclass)."""
     def __init__(self, interface_visa, table_name,
                  database_file="data_log.sqlite", timeout=10):
+        """Initialize u2300a_datalogger.
+
+        Args:
+            database_file: Database file.
+            interface_visa: VISA interface instance.
+            table_name: Database table name.
+            timeout: Timeout in seconds.
+        """
         super().__init__(
             interface_visa=interface_visa,
             force_trigger=False,
@@ -1163,6 +1179,12 @@ class u2300a_DVM(scpi_instrument, delegator):
     """Superclass of all Keysight U2300A series instruments treated as DVM."""
 
     def __init__(self, interface_visa, timeout=1):
+        """Initialize u2300a_ d v m.
+
+        Args:
+            interface_visa: VISA interface instance.
+            timeout: Timeout in seconds.
+        """
         # self._base_name = str(type(self))
         self._base_name = 'u23xx_DVM_DAQ'
         scpi_instrument.__init__(self, f"{self._base_name} @ {interface_visa}")

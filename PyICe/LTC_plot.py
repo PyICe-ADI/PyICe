@@ -331,6 +331,12 @@ import csv
 class PyICe_data_base():
     """Py i ce_data_base."""
     def __init__(self, table_name, file_name="data_log.sqlite"):
+        """Initialize py i ce_data_base.
+
+        Args:
+            file_name: File name.
+            table_name: Database table name.
+        """
         print()
         print()
         print()  # PyICe_data_base() from inside LTC_plot is deprecated.      #
@@ -1849,6 +1855,7 @@ class Multipage_pdf():
     Multipage_pdf also support kit_datasheet().
     """
     def __init__(self):
+        """Initialize multipage_pdf."""
         self.page_list = []
 
     def add_page(self, page):

@@ -8,6 +8,11 @@ class sun_ecxx(temperature_chamber):
     implements all methods common to sun ec0x and ec1x ovens
     """
     def __init__(self, interface_visa):
+        """Initialize sun_ecxx.
+
+        Args:
+            interface_visa: VISA interface instance.
+        """
         temperature_chamber.__init__(self)
         self.add_interface_visa(interface_visa)
 

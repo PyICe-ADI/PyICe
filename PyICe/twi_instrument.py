@@ -27,6 +27,15 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
     """Twi_instrument."""
     def __init__(self, interface_twi, except_on_i2cInitError=True,
                  except_on_i2cCommError=False, retry_count=5, PEC=False):
+        """Initialize twi_instrument.
+
+        Args:
+            PEC: Pec.
+            except_on_i2cCommError: Except on i2ccommerror.
+            except_on_i2cInitError: Except on i2ciniterror.
+            interface_twi: TWI/I2C interface instance.
+            retry_count: Retry count.
+        """
         lab_core.instrument.__init__(self, name="twi_instrument")
         lab_core.delegator.__init__(self)
         self.add_interface_twi(interface_twi)
@@ -847,6 +856,15 @@ class pmbus_instrument(twi_instrument):
     """Pmbus_instrument (twi_instrument subclass)."""
     def __init__(self, interface_twi, except_on_i2cInitError=True,
                  except_on_i2cCommError=False, retry_count=5, PEC=False):
+        """Initialize pmbus_instrument.
+
+        Args:
+            PEC: Pec.
+            except_on_i2cCommError: Except on i2ccommerror.
+            except_on_i2cInitError: Except on i2ciniterror.
+            interface_twi: TWI/I2C interface instance.
+            retry_count: Retry count.
+        """
         twi_instrument.__init__(
             self,
             interface_twi,
@@ -951,6 +969,7 @@ class twi_instrument_dummy(twi_instrument):
     """Use for formatters, etc without having to set up a master and physical hardware."""
 
     def __init__(self):
+        """Initialize twi_instrument_dummy."""
         lab_core.instrument.__init__(self, name="twi_instrument_dummy")
         self._addr7 = None
         self.formatters = {}

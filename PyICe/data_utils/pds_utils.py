@@ -16,6 +16,11 @@ class pds_reader():
     Method get_test(test_number, subtest_number) may be used to tease out a specific test record.
     """
     def __init__(self, filename):
+        """Initialize pds_reader.
+
+        Args:
+            filename: File path.
+        """
         with open(filename) as file:
             lines = file.readlines()
             self.data = {}

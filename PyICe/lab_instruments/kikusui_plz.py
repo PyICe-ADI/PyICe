@@ -18,6 +18,11 @@ class kikusui_plz(scpi_instrument):
     # to resolve any operational/feature differences such as range selection
 
     def __init__(self, interface_visa):
+        """Initialize kikusui_plz.
+
+        Args:
+            interface_visa: VISA interface instance.
+        """
         self._base_name = 'kikusui_plz'
         scpi_instrument.__init__(
             self, f"{self.kikusui_plz_name} @ {interface_visa}")

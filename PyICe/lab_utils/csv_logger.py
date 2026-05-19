@@ -11,6 +11,12 @@ class csv_logger(csv_writer):
     """
 
     def __init__(self, output_file, encoding='utf-8'):
+        """Initialize csv_logger.
+
+        Args:
+            encoding: Encoding.
+            output_file: Output file.
+        """
         csv_writer.__init__(self)
         self.output_file = output_file
         self.encoding = encoding

@@ -308,6 +308,12 @@ class database_archive():
 class manual_archive():
     """Manual_archive."""
     def __init__(self, archive_location=None, db_location=None):
+        """Initialize manual_archive.
+
+        Args:
+            archive_location: Archive location.
+            db_location: Db location.
+        """
         if archive_location is None:
             archive_location = input(
                 'What is the filepath to the archive directory? ')

@@ -28,6 +28,13 @@ class Callback_logger(logger):
     """Wrapper for the standard logger. Used to perform special actions for specific channels on a per-log basis."""
 
     def __init__(self, database, special_channel_actions, test):
+        """Initialize callback_logger.
+
+        Args:
+            database: Database.
+            special_channel_actions: Special channel actions.
+            test: Test.
+        """
         super().__init__(database=database)
         self.sp_ch_actions = special_channel_actions
         self.test = test
@@ -47,6 +54,12 @@ class Callback_logger(logger):
 class Plugin_Manager():
     """Plugin_ manager."""
     def __init__(self, scratch_folder='scratch', settings={}):
+        """Initialize plugin_ manager.
+
+        Args:
+            scratch_folder: Scratch folder.
+            settings: Settings.
+        """
         self.tests = []
         self.operator = getpass.getuser().lower()
         self.thismachine = socket.gethostname().replace("-", "_").split(".")[0]

@@ -5,6 +5,11 @@
 class buck_power_loss(object):
     """Buck_power_loss (object subclass)."""
     def __init__(self, **kwargs):
+        """Initialize buck_power_loss.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+        """
         self.params = kwargs
         # Reference temperature for temperature dependent things
         self.params["tref"] = 25
@@ -221,6 +226,11 @@ class copper_resistor(object):
     """Copper_resistor (object subclass)."""
     # No self heating solver
     def __init__(self, **kwargs):
+        """Initialize copper_resistor.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+        """
         self.params = kwargs
         self.params["tref"] = 25
         self.params["tc"] = 3950e-6

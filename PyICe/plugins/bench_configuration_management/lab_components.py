@@ -24,6 +24,11 @@ class AGILENT_3034x(four_channel_oscilloscope):
     """AKO Two Channel Pulse Generator."""
 
     def __init__(self, name):
+        """Initialize a g i l e n t_3034x.
+
+        Args:
+            name: Name identifier.
+        """
         self.type = type(self)
         self.name = name
         self._terminals = {}
@@ -61,6 +66,11 @@ class SDG1032X(two_channel_pulse_generator):
     """AKO Two Channel Pulse Generator."""
 
     def __init__(self, name):
+        """Initialize s d g1032 x.
+
+        Args:
+            name: Name identifier.
+        """
         self.type = type(self)
         self.name = name
         self._terminals = {}
@@ -79,6 +89,11 @@ class single_channel_electronic_load(bench_config_component):
 class HTX9000(single_channel_electronic_load):
     """H t x9000 (single_channel_electronic_load subclass)."""
     def __init__(self, name):
+        """Initialize h t x9000.
+
+        Args:
+            name: Name identifier.
+        """
         self.type = type(self)
         self.name = name
         self._terminals = {}
@@ -89,6 +104,11 @@ class HTX9000(single_channel_electronic_load):
 class HTX9000_5AMP(single_channel_electronic_load):
     """H t x9000_5 a m p (single_channel_electronic_load subclass)."""
     def __init__(self, name):
+        """Initialize h t x9000_5 a m p.
+
+        Args:
+            name: Name identifier.
+        """
         self.type = type(self)
         self.name = name
         self._terminals = {}
@@ -99,6 +119,11 @@ class HTX9000_5AMP(single_channel_electronic_load):
 class BK8500(single_channel_electronic_load):
     """B k8500 (single_channel_electronic_load subclass)."""
     def __init__(self, name):
+        """Initialize b k8500.
+
+        Args:
+            name: Name identifier.
+        """
         self.type = type(self)
         self.name = name
         self._terminals = {}
@@ -304,6 +329,11 @@ class HTX9016(bench_config_component):
 class HTX9016_DC(HTX9016):
     """H t x9016_ d c."""
     def __init__(self, name):
+        """Initialize h t x9016_ d c.
+
+        Args:
+            name: Name identifier.
+        """
         self.type = type(self)
         self.name = name
         self._terminals = {}

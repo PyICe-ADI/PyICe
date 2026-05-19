@@ -35,6 +35,12 @@ def bind_to_base(self, base_func, *args, **kwargs):
 class LTCPlotBokehAdapter:
     """L t c plot bokeh adapter."""
     def __init__(self, *args, **kwargs):
+        """Initialize l t c plot bokeh adapter.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            *args: Additional positional arguments.
+        """
         print(
             f"A call to undefined constructor of: '{type(self)}' was made with arguments: {args}, {kwargs}.")
         self._args = args
@@ -72,6 +78,12 @@ class plot(LTCPlotBokehAdapter):
     """Bokeh plot adapter."""
 
     def __init__(self, *args, **kwargs):
+        """Initialize plot.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            *args: Additional positional arguments.
+        """
         args_map = bind_to_base(
             self,
             original_classes['plot'].__init__,
@@ -358,6 +370,12 @@ class Page(LTCPlotBokehAdapter):
     """Bokeh Page adapter."""
 
     def __init__(self, *args, **kwargs):
+        """Initialize page.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            *args: Additional positional arguments.
+        """
         _args_map = bind_to_base(  # noqa: F841
             self,
             original_classes['Page'].__init__,

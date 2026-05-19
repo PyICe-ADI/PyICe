@@ -7,6 +7,12 @@ class Franken_oven(autonicstk, temperature_chamber):
     """Autonics controlled temperature chamber."""
 
     def __init__(self, interface_raw_serial, power_up=True):
+        """Initialize franken_oven.
+
+        Args:
+            interface_raw_serial: Interface raw serial.
+            power_up: Power up.
+        """
         import minimalmodbus
         minimalmodbus.BAUDRATE = 9600
         minimalmodbus.TIMEOUT = 5

@@ -16,6 +16,12 @@ else:
 class visualizer():
     """Visualizer."""
     def __init__(self, connections, locations):
+        """Initialize visualizer.
+
+        Args:
+            connections: Connections.
+            locations: Locations.
+        """
         self.locations = locations
         self.connections = connections
 

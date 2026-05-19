@@ -7,6 +7,11 @@ class kikusui_pbz20_20(kikusui_pbz):
     """Kikusui single channel 20V/20A bipolar power supply."""
 
     def __init__(self, interface_visa):
+        """Initialize kikusui_pbz20_20.
+
+        Args:
+            interface_visa: VISA interface instance.
+        """
         self._base_name = 'kikusui_pbz20_20'
         scpi_instrument.__init__(self, f"kikusui_pbz20-20 @ {interface_visa}")
         kikusui_pbz.__init__(self, interface_visa)

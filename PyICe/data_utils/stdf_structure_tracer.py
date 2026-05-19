@@ -17,6 +17,7 @@ except ModuleNotFoundError as e:
 class record_order_parser:
     """Record_order_parser."""
     def __init__(self):
+        """Initialize record_order_parser."""
         self._indent = 0  # todo
         self._last_record_type = None
         self._record_count = 0

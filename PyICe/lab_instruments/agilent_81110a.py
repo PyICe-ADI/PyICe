@@ -10,6 +10,13 @@ class Agilent_81110a(Agilent_8110a):
     It also advises to turn the display off but there doesn't seem to be a speed issue turning off seems ill advised for debug reasons.
     """
     def __init__(self, interface_visa, plugin, debug_comms=False):
+        """Initialize agilent_81110a.
+
+        Args:
+            debug_comms: Debug comms.
+            interface_visa: VISA interface instance.
+            plugin: Plugin.
+        """
         self._debug_comms = debug_comms
         self._base_name = 'HP81110A'
         self.max_record_size = 16384

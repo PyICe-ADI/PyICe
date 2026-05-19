@@ -8,6 +8,11 @@ class htx9000(scpi_instrument):
     400nA < IL < 2.5A, up to 60V, 20W Max on fanless version.
     """
     def __init__(self, interface_visa):
+        """Initialize htx9000.
+
+        Args:
+            interface_visa: VISA interface instance.
+        """
         self._base_name = 'htx9000'
         scpi_instrument.__init__(self, f"HTX9000 {interface_visa}")
         self.add_interface_visa(interface_visa, timeout=0.5)
@@ -295,6 +300,11 @@ class htx9000SE_5A(htx9000):
     400nA < IL < 5A, up to 60V.
     """
     def __init__(self, interface_visa):
+        """Initialize htx9000 s e_5 a.
+
+        Args:
+            interface_visa: VISA interface instance.
+        """
         self._base_name = 'HTX9000_SE5A'
         scpi_instrument.__init__(self, f"HTX9000SE5A {interface_visa}")
         self.add_interface_visa(interface_visa, timeout=0.5)

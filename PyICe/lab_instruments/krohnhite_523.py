@@ -6,6 +6,11 @@ class krohnhite_523(instrument):
     """Krohn-Hite Model 523 Precision DC Source/Calibrator."""
 
     def __init__(self, interface_visa):
+        """Initialize krohnhite_523.
+
+        Args:
+            interface_visa: VISA interface instance.
+        """
         self._base_name = 'krohnhite_523'
         instrument.__init__(self, f"krohnhite_523 @ {interface_visa}")
         self.add_interface_visa(interface_visa)

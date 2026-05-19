@@ -10,6 +10,11 @@ class data_precision_8200(instrument):
     """
 
     def __init__(self, interface_visa):
+        """Initialize data_precision_8200.
+
+        Args:
+            interface_visa: VISA interface instance.
+        """
         self._base_name = 'Data Precision 8200'
         instrument.__init__(self, f"{self._base_name} @ {interface_visa}")
         self.add_interface_visa(interface_visa)

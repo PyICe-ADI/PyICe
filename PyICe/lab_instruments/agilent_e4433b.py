@@ -6,6 +6,11 @@ class agilent_e4433b(instrument):
     """Agilent E4433B Signal Generator."""
 
     def __init__(self, interface_visa):
+        """Initialize agilent_e4433b.
+
+        Args:
+            interface_visa: VISA interface instance.
+        """
         self._base_name = 'agilent_e4433b'
         instrument.__init__(self, f"agilent_e4433b @ {interface_visa}")
         self.add_interface_visa(interface_visa)

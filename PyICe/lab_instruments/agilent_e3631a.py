@@ -8,6 +8,11 @@ class agilent_e3631a(agilent_e36xxa):
     """Triple-channel programmable DC power supply."""
 
     def __init__(self, interface_visa):
+        """Initialize agilent_e3631a.
+
+        Args:
+            interface_visa: VISA interface instance.
+        """
         self._base_name = 'agilent_e3631a'
         self.name = f'{_base_name} @ {interface_visa}'
         # instrument.__init__(self,self.name)

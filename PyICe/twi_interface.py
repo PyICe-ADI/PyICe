@@ -1316,6 +1316,13 @@ class i2c_dummy(twi_interface):
     171
     """
     def __init__(self, delay=0, p_change=0.005, verbose=False):
+        """Initialize i2c_dummy.
+
+        Args:
+            delay: Delay time in seconds.
+            p_change: P change.
+            verbose: If True, print debug output.
+        """
         self._delay = delay
         self._cc_size = 8
         self._p_change = p_change
@@ -1498,6 +1505,11 @@ class i2c_buspirate(twi_interface):
     """Dangerous prototypes bus pirate communication board."""
 
     def __init__(self, interface_raw_serial):
+        """Initialize i2c_buspirate.
+
+        Args:
+            interface_raw_serial: Interface raw serial.
+        """
         self.ser = interface_raw_serial
         self.__init_i2c()
         self.commands = {}
@@ -1919,6 +1931,11 @@ class i2c_pic(twi_interface):
     requires pySerial
     """
     def __init__(self, interface_raw_serial):
+        """Initialize i2c_pic.
+
+        Args:
+            interface_raw_serial: Interface raw serial.
+        """
         self.ser = interface_raw_serial
         self.__init_i2c()
 
@@ -2095,6 +2112,12 @@ class i2c_scpi(twi_interface):
     """Communication class to simplify talking to atmega32u4 with Steve/Eric SCPI firmware requires pySerial."""
 
     def __init__(self, visa_interface, **kwargs):
+        """Initialize i2c_scpi.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            visa_interface: Visa interface.
+        """
         self.interface = visa_interface
         self._cc_list = None
         super().__init__(name="Configurator MCU native i2c port", **kwargs)
@@ -3333,6 +3356,11 @@ class i2c_scpi_sp(twi_interface):
 class i2c_scpi_testhook(i2c_scpi):
     """I2c_scpi_testhook."""
     def __init__(self, serial_port):
+        """Initialize i2c_scpi_testhook.
+
+        Args:
+            serial_port: Serial port.
+        """
         i2c_scpi.__init__(self, serial_port)
         self.channels = {}
         # what is the str repr of a serial port object?
@@ -3611,6 +3639,11 @@ class i2c_dc590(twi_interface):
     Linduino does not have above limitiation.
     """
     def __init__(self, interface_stream):
+        """Initialize i2c_dc590.
+
+        Args:
+            interface_stream: Interface stream.
+        """
         self.iface = interface_stream
         self.init_i2c()
         # Hi-Z with PyICe list read sketch; GPIO read not yet implemented...
@@ -5453,6 +5486,11 @@ class i2c_bobbytalk(twi_interface):
 class i2c_labcomm(twi_interface):
     """I2c_labcomm (twi_interface subclass)."""
     def __init__(self, raw_serial_interface):
+        """Initialize i2c_labcomm.
+
+        Args:
+            raw_serial_interface: Raw serial interface.
+        """
         self.interface = raw_serial_interface
         # Straight Through SMBus Transactions and Alternate Commands
         # ---------------------------------------------------------------
@@ -5789,6 +5827,11 @@ class i2c_labcomm(twi_interface):
 class mem_dict(twi_interface):
     """Mem_dict (twi_interface subclass)."""
     def __init__(self, data_source=None):
+        """Initialize mem_dict.
+
+        Args:
+            data_source: Data source.
+        """
         self.set_data_source(data_source)
 
     def set_data_source(self, data):
@@ -5866,6 +5909,11 @@ class i2cError(Exception):
     """I2C Error Superclass - Don't raise this exception.  Use more specific subclass."""
 
     def __init__(self, value=None):
+        """Initialize i2c error.
+
+        Args:
+            value: Value to set.
+        """
         self.value = value
 
     def __str__(self):

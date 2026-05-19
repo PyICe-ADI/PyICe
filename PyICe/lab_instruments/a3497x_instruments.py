@@ -13,6 +13,12 @@ class a3497xa_instrument(scpi_instrument, delegator):
     """Superclass of all Agilent 34970 plugin instruments."""
 
     def __init__(self, name, automatic_monitor):
+        """Initialize a3497xa_instrument.
+
+        Args:
+            automatic_monitor: Automatic monitor.
+            name: Name identifier.
+        """
         scpi_instrument.__init__(self, name)
         self._base_name = 'a3497xa'
         delegator.__init__(self)
@@ -809,6 +815,12 @@ class agilent_3497xa_20ch(agilent_3497xa_20ch_40ch):
     and current measurement (external sense resistor).
     """
     def __init__(self, *args, **kwargs):
+        """Initialize agilent_3497xa_20ch.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            *args: Additional positional arguments.
+        """
         agilent_3497xa_20ch_40ch.__init__(self, *args, **kwargs)
         self.plugin_type = "34901A"
 
@@ -1328,6 +1340,12 @@ class agilent_3497xa_40ch(agilent_3497xa_20ch_40ch):
     """Implement any methods specific to the 40-channel mux here."""
 
     def __init__(self, *args, **kwargs):
+        """Initialize agilent_3497xa_40ch.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            *args: Additional positional arguments.
+        """
         agilent_3497xa_20ch_40ch.__init__(self, *args, **kwargs)
         self.plugin_type = "34908A"
 

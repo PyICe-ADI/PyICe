@@ -7,6 +7,12 @@ class debug_log(object):
     # This class used in most of Frank's tests.
 
     def __init__(self, log_file_name=__name__ + ".log", debug=False):
+        """Initialize debug_log.
+
+        Args:
+            debug: If True, enable debug output.
+            log_file_name: Log file name.
+        """
         self.debug = debug
         self.f = open(log_file_name, "w")
         self.fileno = self.f.fileno

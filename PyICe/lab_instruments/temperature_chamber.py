@@ -7,6 +7,7 @@ class temperature_chamber(instrument, metaclass=ABCMeta):
     """Generic temperature chamber parent class to handle common tasks, like setting the soak time."""
 
     def __init__(self):
+        """Initialize temperature_chamber."""
         instrument.__init__(self, self._base_name)
         self.setpoint = None
         self.soak = 450

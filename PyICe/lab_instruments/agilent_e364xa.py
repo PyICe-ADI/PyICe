@@ -7,6 +7,12 @@ class agilent_e364xa(agilent_e36xxa):
     """Dual-channel programmable DC power supply."""
 
     def __init__(self, interface_visa, resetoutputs=True):
+        """Initialize agilent_e364xa.
+
+        Args:
+            interface_visa: VISA interface instance.
+            resetoutputs: Resetoutputs.
+        """
         self._base_name = 'agilent_e3648a'
         self.name = f'{self._base_name} @ {interface_visa}'
         # instrument.__init__(self,self.name)

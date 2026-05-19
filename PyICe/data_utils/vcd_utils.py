@@ -10,6 +10,11 @@ import numpy
 class vcd_reader():
     """Vcd_reader."""
     def __init__(self, file):
+        """Initialize vcd_reader.
+
+        Args:
+            file: File.
+        """
         self.vcd = VCDVCD(file)
 
     def get_signals(self):

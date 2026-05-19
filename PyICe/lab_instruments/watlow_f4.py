@@ -21,6 +21,13 @@ class watlow_f4(temperature_chamber, modbus_instrument):
     ]
 
     def __init__(self, interface_raw_serial, modbus_address, baudrate=19200):
+        """Initialize watlow_f4.
+
+        Args:
+            baudrate: Baudrate.
+            interface_raw_serial: Interface raw serial.
+            modbus_address: Modbus address.
+        """
         self._base_name = 'Watlow F4'
         temperature_chamber.__init__(self)
         modbus_instrument.__init__(self,

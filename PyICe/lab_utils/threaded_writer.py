@@ -13,6 +13,18 @@ class threaded_writer(object):
 
         def __init__(self, stop_event, stopped_event, queue,
                      group=None, target=None, name=None, args=(), kwargs={}):
+            """Initialize stop_thread.
+
+            Args:
+                args: Args.
+                group: Group.
+                kwargs: Kwargs.
+                name: Name identifier.
+                queue: Queue.
+                stop_event: Stop event.
+                stopped_event: Stopped event.
+                target: Target value.
+            """
             self.stop_event = stop_event  # command to stop thread
             # notification that thread has stopped itself.
             self.stopped_event = stopped_event
@@ -39,6 +51,11 @@ class threaded_writer(object):
             self.queue.put(("time_interval", time_interval))
 
     def __init__(self, verbose=False):
+        """Initialize threaded_writer.
+
+        Args:
+            verbose: If True, print debug output.
+        """
         self.verbose = verbose
         # check stopped_event whenever inspecting elements of this list to find
         # out which threads have already stopped.
@@ -86,6 +103,7 @@ class threaded_writer(object):
         else:
             class sequencer(object):
                 def __init__(self):
+                    """Initialize sequencer."""
                     self.sequence = self.generator(sequence)
 
                 def generator(self, sequence):

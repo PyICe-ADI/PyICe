@@ -51,6 +51,13 @@ class bk8500(instrument):
 
     """
     def __init__(self, interface_raw_serial, address=0, remote_sense=False):
+        """Initialize bk8500.
+
+        Args:
+            address: Address.
+            interface_raw_serial: Interface raw serial.
+            remote_sense: Remote sense.
+        """
         self._base_name = 'bk8500'
         instrument.__init__(self, f"BK8500 @ {interface_raw_serial}")
         self.add_interface_raw_serial(interface_raw_serial, timeout=1)

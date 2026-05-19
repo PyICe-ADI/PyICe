@@ -6,6 +6,12 @@ from .modbus_instrument import modbus_register
 class autonicstk(instrument):
     """Autonicstk (instrument subclass)."""
     def __init__(self, interface_raw_serial, modbus_address):
+        """Initialize autonicstk.
+
+        Args:
+            interface_raw_serial: Interface raw serial.
+            modbus_address: Modbus address.
+        """
         import minimalmodbus
         # minimalmodbus.BAUDRATE = 38400
         minimalmodbus.BAUDRATE = 9600

@@ -308,6 +308,12 @@ class interface(communication_node):
     """Base class all lab instruments should in some way talk to, all have a timeout whether or not it does anything."""
 
     def __init__(self, name, **kwargs):
+        """Initialize interface.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            name: Name identifier.
+        """
         assert isinstance(name, str)
         self._interface_name = name if len(name) else "nameless interface"
         # cannot use hasattr since its sometimes a property
@@ -345,6 +351,11 @@ class interface_bobbytalk(interface):
     and provide the bobbytalk API methods shown here.
     """
     def __init__(self, name):
+        """Initialize interface_bobbytalk.
+
+        Args:
+            name: Name identifier.
+        """
         super(interface_bobbytalk, self).__init__(name)
 
     def send_packet(self, src_id, dest_id, buffer):
@@ -524,6 +535,11 @@ class interface_stream_serial(interface_stream):
     """PySerial based stream wrapper."""
 
     def __init__(self, interface_raw_serial):
+        """Initialize interface_stream_serial.
+
+        Args:
+            interface_raw_serial: Interface raw serial.
+        """
         super().__init__('Serial Stream Communication Interface')
         self.ser = interface_raw_serial
 
@@ -564,6 +580,7 @@ class interface_ftdi_d2xx(interface_stream):
     https://pypi.python.org/pypi/pylibftdi
     """
     def __init__(self):  # need some kind of device descriptor....
+        """Initialize interface_ftdi_d2xx."""
         interface.__init__(self, 'FTDI D2XX Stream Communication Interface')
 
 
@@ -597,6 +614,18 @@ else:
 class interface_raw_serial(interface, serial_from_name_or_url):
     """Interface_raw_serial."""
     def __init__(self, port_name_or_url, baudrate, timeout, **kwargs):
+        """Initialize interface_raw_serial.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            baudrate: Baudrate.
+            port_name_or_url: Port name or url.
+            timeout: Timeout in seconds.
+
+        Raises:
+            TypeError: On error condition.
+            ValueError: On error condition.
+        """
         super().__init__(name=port_name_or_url, **kwargs)
         from urllib.parse import urlparse
         assert isinstance(port_name_or_url, str)
@@ -755,6 +784,12 @@ class interface_tcp_serial(interface):
     but it is meaningless to set things like baudrate or parity bits.
     """
     def __init__(self, dest_ip_address, dest_tcp_portnum):
+        """Initialize interface_tcp_serial.
+
+        Args:
+            dest_ip_address: Dest ip address.
+            dest_tcp_portnum: Dest tcp portnum.
+        """
         self.ser = serial.serial_for_url(
             f"socket://{dest_ip_address}:{dest_tcp_portnum}")
         super(interface_tcp_serial, self).__init__(self.ser.port)
@@ -854,6 +889,12 @@ class SerialTestHarness(object):
     TODO: The write() method currently implemented does nothing.
     """
     def __init__(self, bytestream, max_bytes_returned_per_read=None):
+        """Initialize serial test harness.
+
+        Args:
+            bytestream: Bytestream.
+            max_bytes_returned_per_read: Max bytes returned per read.
+        """
         self._timeout = 0.0
         self.bytestream = bytestream
         self._max_bytes_returned_per_read = max_bytes_returned_per_read
@@ -1025,6 +1066,13 @@ class interface_test_harness_serial(interface, SerialTestHarness):
     """Interface_test_harness_serial."""
     def __init__(self, serial_port_name, bytestream,
                  max_bytes_returned_per_read=4096):
+        """Initialize interface_test_harness_serial.
+
+        Args:
+            bytestream: Bytestream.
+            max_bytes_returned_per_read: Max bytes returned per read.
+            serial_port_name: Serial port name.
+        """
         SerialTestHarness.__init__(self, bytestream,
                                    max_bytes_returned_per_read=max_bytes_returned_per_read)
         interface.__init__(self, f'interface_raw_serial @ {serial_port_name}')
@@ -1045,6 +1093,14 @@ class interface_test_harness_serial(interface, SerialTestHarness):
 class interface_visa_tcp_ip(interface_visa, visa_wrappers.visa_wrapper_tcp):
     """Interface_visa_tcp_ip."""
     def __init__(self, host_address, port, timeout, **kwargs):
+        """Initialize interface_visa_tcp_ip.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            host_address: Host address.
+            port: Port.
+            timeout: Timeout in seconds.
+        """
         visa_wrappers.visa_wrapper_tcp.__init__(
             self, host_address, port, timeout, **kwargs)
         interface_visa.__init__(
@@ -1054,6 +1110,13 @@ class interface_visa_tcp_ip(interface_visa, visa_wrappers.visa_wrapper_tcp):
 class interface_visa_telnet(interface_visa, visa_wrappers.visa_wrapper_telnet):
     """Interface_visa_telnet."""
     def __init__(self, host_address, port, timeout):
+        """Initialize interface_visa_telnet.
+
+        Args:
+            host_address: Host address.
+            port: Port.
+            timeout: Timeout in seconds.
+        """
         visa_wrappers.visa_wrapper_telnet.__init__(
             self, host_address, port, timeout)
         interface_visa.__init__(
@@ -1063,6 +1126,11 @@ class interface_visa_telnet(interface_visa, visa_wrappers.visa_wrapper_telnet):
 class interface_visa_serial(visa_wrappers.visa_wrapper_serial, interface_visa):
     """Interface_visa_serial."""
     def __init__(self, interface_raw_serial_object):
+        """Initialize interface_visa_serial.
+
+        Args:
+            interface_raw_serial_object: Interface raw serial object.
+        """
         super().__init__(interface_raw_serial_object)
         # visa_wrappers.visa_wrapper_serial.__init__(self,interface_raw_serial_object)
         # interface_visa.__init__(self,'interface_visa_serial @ {}'.format(interface_raw_serial_object))
@@ -1071,6 +1139,12 @@ class interface_visa_serial(visa_wrappers.visa_wrapper_serial, interface_visa):
 class interface_visa_vxi11(interface_visa, visa_wrappers.visa_wrapper_vxi11):
     """Interface_visa_vxi11."""
     def __init__(self, address, timeout):
+        """Initialize interface_visa_vxi11.
+
+        Args:
+            address: Address.
+            timeout: Timeout in seconds.
+        """
         visa_wrappers.visa_wrapper_vxi11.__init__(self, address, timeout)
         interface_visa.__init__(self, f'interface_visa_vxi11 @ {address}')
 
@@ -1078,6 +1152,12 @@ class interface_visa_vxi11(interface_visa, visa_wrappers.visa_wrapper_vxi11):
 class interface_visa_usbtmc(interface_visa, visa_wrappers.visa_wrapper_usbtmc):
     """Interface_visa_usbtmc."""
     def __init__(self, address, timeout):
+        """Initialize interface_visa_usbtmc.
+
+        Args:
+            address: Address.
+            timeout: Timeout in seconds.
+        """
         visa_wrappers.visa_wrapper_usbtmc.__init__(self, address, timeout)
         interface_visa.__init__(self, f'interface_visa_usbtmc @ {address}')
 
@@ -1085,6 +1165,12 @@ class interface_visa_usbtmc(interface_visa, visa_wrappers.visa_wrapper_usbtmc):
 class interface_visa_direct(interface_visa, visa_wrappers.visa_interface):
     """Interface_visa_direct."""
     def __init__(self, visa_address_string, timeout):
+        """Initialize interface_visa_direct.
+
+        Args:
+            timeout: Timeout in seconds.
+            visa_address_string: Visa address string.
+        """
         super().__init__(
             visa_address_string,
             address=visa_address_string,
@@ -1351,6 +1437,12 @@ class interface_bobbytalk_raw_serial(interface_bobbytalk):
 class interface_twi_dummy(interface_twi, twi_interface.i2c_dummy):
     """Interface_twi_dummy."""
     def __init__(self, delay, **kwargs):
+        """Initialize interface_twi_dummy.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            delay: Delay time in seconds.
+        """
         twi_interface.i2c_dummy.__init__(self, delay, **kwargs)
         interface_twi.__init__(self, 'interface_twi_dummy @ fake')
 
@@ -1358,6 +1450,12 @@ class interface_twi_dummy(interface_twi, twi_interface.i2c_dummy):
 class interface_twi_mdump(interface_twi, twi_interface.mem_dict):
     """Interface_twi_mdump."""
     def __init__(self, data_source=None, **kwargs):
+        """Initialize interface_twi_mdump.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            data_source: Data source.
+        """
         # twi_interface.mem_dict.__init__(self,data_source,**kwargs) #happens
         # through super() below
         kwargs['data_source'] = data_source
@@ -1367,6 +1465,12 @@ class interface_twi_mdump(interface_twi, twi_interface.mem_dict):
 class interface_twi_scpi(twi_interface.i2c_scpi, interface_twi):
     """Interface_twi_scpi."""
     def __init__(self, interface_serial, timeout):
+        """Initialize interface_twi_scpi.
+
+        Args:
+            interface_serial: Interface serial.
+            timeout: Timeout in seconds.
+        """
         super().__init__(interface_serial)
         # twi_interface.i2c_scpi.__init__(self, interface_serial)
         # interface_twi.__init__(self,'interface_twi_scpi @ {}'.format(interface_serial))
@@ -1377,6 +1481,16 @@ class interface_twi_scpi_sp(twi_interface.i2c_scpi_sp, interface_twi):
     """Interface_twi_scpi_sp."""
     def __init__(self, interface_serial, portnum, sclpin,
                  sdapin, pullup_en=False, timeout=1):
+        """Initialize interface_twi_scpi_sp.
+
+        Args:
+            interface_serial: Interface serial.
+            portnum: Portnum.
+            pullup_en: Pullup en.
+            sclpin: Sclpin.
+            sdapin: Sdapin.
+            timeout: Timeout in seconds.
+        """
         super().__init__(interface_serial, portnum, sclpin, sdapin, pullup_en)
         # twi_interface.i2c_scpi_sp.__init__(self, interface_serial, portnum, sclpin, sdapin, pullup_en)
         # interface_twi.__init__(self,'interface_twi_scpi @ {}'.format(interface_serial))
@@ -1387,6 +1501,12 @@ class interface_twi_scpi_testhook(
         twi_interface.i2c_scpi_testhook, interface_twi):
     """Interface_twi_scpi_testhook."""
     def __init__(self, interface_serial, timeout):
+        """Initialize interface_twi_scpi_testhook.
+
+        Args:
+            interface_serial: Interface serial.
+            timeout: Timeout in seconds.
+        """
         twi_interface.i2c_scpi.__init__(self, interface_serial)
         interface_twi.__init__(
             self, f'interface_twi_scpi @ {interface_serial}')
@@ -1397,6 +1517,12 @@ class interface_twi_scpi_testhook(
 class interface_twi_dc590_serial(twi_interface.i2c_dc590, interface_twi):
     """Interface_twi_dc590_serial."""
     def __init__(self, interface_serial, timeout):
+        """Initialize interface_twi_dc590_serial.
+
+        Args:
+            interface_serial: Interface serial.
+            timeout: Timeout in seconds.
+        """
         # DJS TODO: fix interfaces to reconcile with DC590 cleanup
         twi_interface.i2c_dc590.__init__(self, interface_serial)
         interface_twi.__init__(
@@ -1407,6 +1533,12 @@ class interface_twi_dc590_serial(twi_interface.i2c_dc590, interface_twi):
 class interface_twi_buspirate(twi_interface.i2c_buspirate, interface_twi):
     """Interface_twi_buspirate."""
     def __init__(self, interface_serial, timeout):
+        """Initialize interface_twi_buspirate.
+
+        Args:
+            interface_serial: Interface serial.
+            timeout: Timeout in seconds.
+        """
         twi_interface.i2c_buspirate.__init__(self, interface_serial)
         interface_twi.__init__(
             self, f'interface_twi_buspirate @ {interface_serial}')
@@ -1417,6 +1549,11 @@ class interface_twi_firmata(twi_interface.i2c_firmata, interface_twi):
     """Interface_twi_firmata."""
     # Old. Consider Telemetrix instead.
     def __init__(self, firmata_instance):
+        """Initialize interface_twi_firmata.
+
+        Args:
+            firmata_instance: Firmata instance.
+        """
         twi_interface.i2c_firmata.__init__(self, firmata_instance)
         interface_twi.__init__(
             self, f'interface_twi_firmata @ {firmata_instance}')
@@ -1425,6 +1562,13 @@ class interface_twi_firmata(twi_interface.i2c_firmata, interface_twi):
 class interface_twi_bobbytalk(twi_interface.i2c_bobbytalk, interface_twi):
     """Interface_twi_bobbytalk."""
     def __init__(self, bobbytalk_interface, src_id, **kwargs):
+        """Initialize interface_twi_bobbytalk.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            bobbytalk_interface: Bobbytalk interface.
+            src_id: Source identifier.
+        """
         twi_interface.i2c_bobbytalk.__init__(
             self, bobbytalk_interface, src_id, **kwargs)
         interface_twi.__init__(self, name='interface_twi_bobytalk')
@@ -1435,6 +1579,14 @@ class interface_labcomm_raw_serial(interface):
 
     def __init__(self, raw_serial_interface,
                  serial_port_name, src_id, dest_id):
+        """Initialize interface_labcomm_raw_serial.
+
+        Args:
+            dest_id: Destination identifier.
+            raw_serial_interface: Raw serial interface.
+            serial_port_name: Serial port name.
+            src_id: Source identifier.
+        """
         interface.__init__(self, f'interface_raw_serial @ {serial_port_name}')
         self.interface = raw_serial_interface
         self.src_id = src_id
@@ -1482,6 +1634,14 @@ class interface_labcomm_raw_serial(interface):
 class interface_labcomm_twi_serial(twi_interface.i2c_labcomm, interface_twi):
     """Interface_labcomm_twi_serial."""
     def __init__(self, raw_serial_interface, comport_name, src_id, dest_id):
+        """Initialize interface_labcomm_twi_serial.
+
+        Args:
+            comport_name: Comport name.
+            dest_id: Destination identifier.
+            raw_serial_interface: Raw serial interface.
+            src_id: Source identifier.
+        """
         twi_interface.i2c_labcomm.__init__(self, raw_serial_interface)
         interface_twi.__init__(self, name='interface_labcomm_twi_port')
         self.interface = raw_serial_interface
@@ -1513,6 +1673,11 @@ class interface_labcomm_twi_serial(twi_interface.i2c_labcomm, interface_twi):
 class interface_spi_dummy(interface_spi, spi_interface.spi_dummy):
     """Interface_spi_dummy."""
     def __init__(self, delay=0):
+        """Initialize interface_spi_dummy.
+
+        Args:
+            delay: Delay time in seconds.
+        """
         spi_interface.spi_dummy.__init__(self, delay)
         interface_spi.__init__(self, 'interface_spi_dummy @ fake')
 
@@ -1520,6 +1685,12 @@ class interface_spi_dummy(interface_spi, spi_interface.spi_dummy):
 class interface_spi_dc590(interface_spi, spi_interface.spi_dc590):
     """Interface_spi_dc590."""
     def __init__(self, interface_stream, ss_ctrl=None):
+        """Initialize interface_spi_dc590.
+
+        Args:
+            interface_stream: Interface stream.
+            ss_ctrl: Ss ctrl.
+        """
         spi_interface.spi_dc590.__init__(self, interface_stream, ss_ctrl)
         interface_spi.__init__(
             self, f'interface_spi_dc590 @ {interface_stream}')
@@ -1528,6 +1699,15 @@ class interface_spi_dc590(interface_spi, spi_interface.spi_dc590):
 class interface_spi_cfgpro(interface_spi, spi_interface.spi_cfgpro):
     """Interface_spi_cfgpro."""
     def __init__(self, visa_interface, CPOL, CPHA, baudrate=1e6, ss_ctrl=None):
+        """Initialize interface_spi_cfgpro.
+
+        Args:
+            CPHA: Clock phase.
+            CPOL: Clock polarity.
+            baudrate: Baudrate.
+            ss_ctrl: Ss ctrl.
+            visa_interface: Visa interface.
+        """
         spi_interface.spi_cfgpro.__init__(
             self, visa_interface, CPOL, CPHA, baudrate, ss_ctrl)
         interface_spi.__init__(
@@ -1566,6 +1746,11 @@ class interface_factory(communication_node):
     _instantiated = False
 
     def __init__(self):
+        """Initialize interface_factory.
+
+        Raises:
+            Exception: On error condition.
+        """
         communication_node.__init__(self)
         if self._instantiated is True:
             raise Exception(

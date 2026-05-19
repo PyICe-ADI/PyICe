@@ -5,6 +5,7 @@ from scipy import interpolate
 class NTCS0402E3103FLT():
     """N t c s0402 e3103 f l t."""
     def __init__(self):
+        """Initialize n t c s0402 e3103 f l t."""
         self.temps = [-40, -34, -28, -21, -14, -6, 4, 33, 44, 53,
                       62, 70, 78, 86, 94, 102, 110, 118, 126, 134, 142, 150]
         self.values = [

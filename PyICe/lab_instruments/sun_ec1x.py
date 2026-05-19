@@ -17,6 +17,11 @@ class sun_ec1x(sun_ecxx):
     upper_temp_limit (default 165) and lower_temp_limit (default -65) can be modified as properties of the sun_ec1x object outside the PyICe channel framework
     """
     def __init__(self, interface_visa):
+        """Initialize sun_ec1x.
+
+        Args:
+            interface_visa: VISA interface instance.
+        """
         self._base_name = 'sun_ec1x'
         sun_ecxx.__init__(self, interface_visa)
         self.upper_temp_limit = 165

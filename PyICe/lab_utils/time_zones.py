@@ -76,6 +76,7 @@ class UTC(US_Time_Zone):
     """UTC / GMT / Zulu time zone."""
 
     def __init__(self):
+        """Initialize u t c."""
         self.tz_name = "UTC"
         self.tz_name_dst = "UTC"
         self.gmt_offset = +0
@@ -86,6 +87,7 @@ class US_Eastern_Time(US_Time_Zone):
     """US Eastern time zone. (NYC/BOS)."""
 
     def __init__(self):
+        """Initialize u s_ eastern_ time."""
         self.tz_name = "EST"
         self.tz_name_dst = "EDT"
         self.gmt_offset = -5
@@ -96,6 +98,7 @@ class US_Pacific_Time(US_Time_Zone):
     """US Pacific time zone. (LAX/SMF)."""
 
     def __init__(self):
+        """Initialize u s_ pacific_ time."""
         self.tz_name = "PST"
         self.tz_name_dst = "PDT"
         self.gmt_offset = -8

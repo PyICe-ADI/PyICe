@@ -11,6 +11,15 @@ class TWI_Pattern():
     """
     class Leader():
         def __init__(self, pattern, SCL, SDA, tleader, strobe=False):
+            """Initialize leader.
+
+            Args:
+                SCL: Scl.
+                SDA: Sda.
+                pattern: Pattern.
+                strobe: Strobe.
+                tleader: Tleader.
+            """
             self.pattern = pattern
             self.tleader = pattern.quantize(tleader)
             self.SCL = SCL
@@ -31,6 +40,13 @@ class TWI_Pattern():
 
     class Start():
         def __init__(self, pattern, thd_sta, strobe=False):
+            """Initialize start.
+
+            Args:
+                pattern: Pattern.
+                strobe: Strobe.
+                thd_sta: Thd sta.
+            """
             self.pattern = pattern
             self.thd_sta = pattern.quantize(thd_sta)
             self.STB = strobe
@@ -45,6 +61,14 @@ class TWI_Pattern():
 
     class Stop():
         def __init__(self, pattern, tsu_sto, tbuf, strobe=False):
+            """Initialize stop.
+
+            Args:
+                pattern: Pattern.
+                strobe: Strobe.
+                tbuf: Tbuf.
+                tsu_sto: Tsu sto.
+            """
             self.pattern = pattern
             self.tsu_sto = pattern.quantize(tsu_sto)
             self.tbuf = pattern.quantize(tbuf)
@@ -61,6 +85,13 @@ class TWI_Pattern():
 
     class Bitend():
         def __init__(self, pattern, tdwell, strobe=False):
+            """Initialize bitend.
+
+            Args:
+                pattern: Pattern.
+                strobe: Strobe.
+                tdwell: Tdwell.
+            """
             self.pattern = pattern
             self.STB = strobe
             self.tdwell = tdwell
@@ -84,6 +115,15 @@ class TWI_Pattern():
 
     class SDA_Spike():
         def __init__(self, pattern, value, tstart, twidth, strobe=False):
+            """Initialize s d a_ spike.
+
+            Args:
+                pattern: Pattern.
+                strobe: Strobe.
+                tstart: Tstart.
+                twidth: Twidth.
+                value: Value to set.
+            """
             self.pattern = pattern
             self.value = value
             self.tstart = pattern.quantize(tstart)
@@ -101,6 +141,15 @@ class TWI_Pattern():
 
     class SCL_Spike():
         def __init__(self, pattern, value, tstart, twidth, strobe=False):
+            """Initialize s c l_ spike.
+
+            Args:
+                pattern: Pattern.
+                strobe: Strobe.
+                tstart: Tstart.
+                twidth: Twidth.
+                value: Value to set.
+            """
             self.pattern = pattern
             self.value = value
             self.tstart = pattern.quantize(tstart)
@@ -140,6 +189,17 @@ class TWI_Pattern():
         """
         def __init__(self, pattern, value, tlow, thigh,
                      tsu_dat, thd_dat, strobe=False):
+            """Initialize bit.
+
+            Args:
+                pattern: Pattern.
+                strobe: Strobe.
+                thd_dat: Thd dat.
+                thigh: Thigh.
+                tlow: Tlow.
+                tsu_dat: Tsu dat.
+                value: Value to set.
+            """
             self.pattern = pattern
             self.value = value
             self.tlow = pattern.quantize(tlow)
@@ -202,6 +262,12 @@ class TWI_Pattern():
     Here's the start of the actual TWI pattern class.
     '''
     def __init__(self, tstep, max_record_size):
+        """Initialize t w i_ pattern.
+
+        Args:
+            max_record_size: Max record size.
+            tstep: Tstep.
+        """
         self.tstep = tstep
         self.max_record_size = max_record_size
 

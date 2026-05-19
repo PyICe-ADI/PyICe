@@ -15,6 +15,11 @@ class delta_9039(temperature_chamber):
     _soak - the programmed soak time
     """
     def __init__(self, interface_visa):
+        """Initialize delta_9039.
+
+        Args:
+            interface_visa: VISA interface instance.
+        """
         self._base_name = 'delta_9039'
         temperature_chamber.__init__(self)
         self.add_interface_visa(interface_visa)

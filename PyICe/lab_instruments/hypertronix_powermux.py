@@ -6,6 +6,11 @@ class powermux(scpi_instrument):
     """Boston Design Center 8x8 crosspoint relay mux + 4 aux channels, this needs an example of how to use AUX channels."""
 
     def __init__(self, interface_visa):
+        """Initialize powermux.
+
+        Args:
+            interface_visa: VISA interface instance.
+        """
         self._base_name = 'powermux'
         scpi_instrument.__init__(self, f"powermux @ {interface_visa}")
         self.add_interface_visa(interface_visa)

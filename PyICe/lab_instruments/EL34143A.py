@@ -8,6 +8,11 @@ class EL34143A(scpi_instrument):
     Single Input DC Electronic Load; 150 V, 60 A, 350 W
     """
     def __init__(self, interface_visa):
+        """Initialize e l34143 a.
+
+        Args:
+            interface_visa: VISA interface instance.
+        """
         self._base_name = 'EL34143A'
         super().__init__(f'EL34143A @  {interface_visa}')
         self.add_interface_visa(interface_visa)

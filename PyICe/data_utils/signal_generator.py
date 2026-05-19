@@ -16,6 +16,17 @@ class signal_generator():
     """
     def __init__(self, hi_value, lo_value, period, cyclecount,
                  timestep, phase=0.10, period_function=None):
+        """Initialize signal_generator.
+
+        Args:
+            cyclecount: Cyclecount.
+            hi_value: Hi value.
+            lo_value: Lo value.
+            period: Period.
+            period_function: Period function.
+            phase: Phase.
+            timestep: Timestep.
+        """
         self.period = period
         self.timestep = timestep
         self.hi_value = hi_value
@@ -103,6 +114,13 @@ class lfsr_period_generator():
     # taps: 16 15 13 4; feedback polynomial: x^16 + x^15 + x^13 + x^4 + 1
 
     def __init__(self, nbits, freq_center, freq_range_percent):
+        """Initialize lfsr_period_generator.
+
+        Args:
+            freq_center: Freq center.
+            freq_range_percent: Freq range percent.
+            nbits: Nbits.
+        """
         self.nbits = nbits
         # Subtract one from each to start register at 0 (vs Wikipedia starting
         # at 1)
