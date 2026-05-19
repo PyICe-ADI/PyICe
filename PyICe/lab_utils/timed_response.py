@@ -2,7 +2,7 @@ import threading
 
 
 def timed_input(prompt, timeout):
-    '''Prompt the user for input, returning None if no response within timeout seconds.
+    """Prompt the user for input, returning None if no response within timeout seconds.
 
     Args:
         prompt: Prompt.
@@ -10,7 +10,7 @@ def timed_input(prompt, timeout):
 
     Returns:
         Result value.
-    '''
+    """
     response = [None]
 
     def _get_input():

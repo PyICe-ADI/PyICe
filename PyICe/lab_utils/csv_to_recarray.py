@@ -6,7 +6,7 @@ from .clean_c import clean_c
 
 # , force_float_dtype=False, data_types=None):
 def csv_to_recarray(csv_input_file):
-    '''Return NumPy record array containing data from CSV input file.
+    """Return NumPy record array containing data from CSV input file.
 
     CSV data can be ASCII or UTF-8 encoded, but Unicode support inside Numpy is lacking.
     Rows can be accessed by index, ex arr[2].
@@ -24,7 +24,7 @@ def csv_to_recarray(csv_input_file):
 
     Raises:
         Exception: On error condition.
-    '''
+    """
     ##########################################################################
     # It's likely this whole thing should be replaced with numpy.genfromtxt, numpy.recfromcsv or numpy.recfromtxt.   #
     # https://docs.scipy.org/doc/numpy-1.10.1/user/basics.io.genfromtxt.html                                         #

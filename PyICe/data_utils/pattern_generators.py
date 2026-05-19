@@ -3,11 +3,12 @@ from PyICe import LTC_plot
 
 
 class TWI_Pattern():
-    '''
+    """
     This class can be used to construct a Two Wire Interface Pattern (I²C or SMBus or whatever) time-slice by time-slice.
+
     It's meant to feed into a pattern generator instrument such as the old HP8110A dual pattern generator or its modern equivalent.
     It has two channels, one for the I²C pins SDA and SCL as well as a strobe channel (which the HP811xx family supports) to trigger a scope.
-    '''
+    """
     class Leader():
         def __init__(self, pattern, SCL, SDA, tleader, strobe=False):
             self.pattern = pattern
@@ -86,8 +87,9 @@ class TWI_Pattern():
             self.pattern.scl_spikes.append(self)
 
     class Bit():
-        '''
+        """
         The data bit cycle starts by bringing SCL low.
+
         The previous data bit is held until its hold time (THD_DAT Prev) expires or is brought low immediately if the pervious bit's hold time is 0.
         It then dwells with SCL low until the setup time of this bit whereupon SDA goes to the value for this bit.
         It then dwells for the setup time for this bit and then SCL goes high.
@@ -106,7 +108,7 @@ class TWI_Pattern():
         <------------ TLOW --------------->|<--------- THIGH ----------->
                  |                 |       |
         █••••••••█•••••••••••••••••█•••••••█••••••••••••••••••••••••••••• <------ █ (Blocks) Denote where changes occur, • (Dots) denote time slices
-        '''
+        """
 
         def __init__(self, pattern, value, tlow, thigh,
                      tsu_dat, thd_dat, strobe=False):
@@ -172,8 +174,9 @@ class TWI_Pattern():
         self.max_record_size = max_record_size
 
     def initialize(self):
-        '''Call this whenever you want to start a new pattern or flush an existing pattern to change settings.
-           Otherwise the pattern will keep on growing if you keep adding items.'''
+        """Call this whenever you want to start a new pattern or flush an existing pattern to change settings.
+
+           Otherwise the pattern will keep on growing if you keep adding items."""
         self.items = []
         self.SDA = []
         self.SCL = []
@@ -233,8 +236,9 @@ class TWI_Pattern():
         return self.STB
 
     def get_ALL(self, SCL_channel, SDA_channel, STB_channel):
-        '''
+        """
         Build up the compound record of instrument Channels 1, 2 and 3 (Strobe).
+
         On the HP8110a, for example, the two output channels and the Strobe channel are binarily weighted so it takes values of 0-7 for 3 bits.
 
         Args:
@@ -244,7 +248,7 @@ class TWI_Pattern():
 
         Returns:
             Result value.
-        '''
+        """
         values = []
         for position in range(len(self.SCL)):
             values.append(self.SCL[position] *

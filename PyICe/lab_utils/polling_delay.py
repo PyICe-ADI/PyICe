@@ -2,18 +2,19 @@ import time
 
 
 class polling_delay(object):
-    '''poll for test condition iteratively before unblocking.
+    """poll for test condition iteratively before unblocking.
 
     Supports exact and range tests
     Supports abstracted notion of time and delay, or defaults to time.sleep()
     Optionally terminates search if exit criteria are not satisfied within a timeout interval.
     Optionally raises TimeoutErrror if timeout is exceeded.
-    '''
+    """
 
     def __init__(self, dly_fn=None, time_readback_fn=None,
                  except_on_timeout=True, timeout_str_prefix='*Error* '):
         """
-        Parameters
+        Parameters.
+
         ----------
         dly_fn : function, optional
             One argument function to advance time. Default time.sleep()
@@ -193,7 +194,7 @@ class polling_delay(object):
                               timeout=timeout, test_initial=test_initial, test_fn=_test)
 
     def get_previous_outcome(self):
-        """Gets detailed results of last wait_for_limit or wait_for_exact method call
+        """Gets detailed results of last wait_for_limit or wait_for_exact method call.
 
         Parameters
         ----------

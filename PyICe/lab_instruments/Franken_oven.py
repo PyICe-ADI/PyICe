@@ -3,7 +3,7 @@ from .autonicstk import autonicstk
 
 
 class Franken_oven(autonicstk, temperature_chamber):
-    '''Autonics controlled temperature chamber'''
+    """Autonics controlled temperature chamber."""
 
     def __init__(self, interface_raw_serial, power_up=True):
         import minimalmodbus

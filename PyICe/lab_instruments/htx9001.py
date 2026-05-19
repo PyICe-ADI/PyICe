@@ -3,23 +3,24 @@ import datetime
 
 
 class htx9001(scpi_instrument):
-    ''' HTX9001 Configurator Pro (Steve Martin)
+    """ HTX9001 Configurator Pro (Steve Martin).
+
         Breakout/Edge connector board for ATE Bench, with i2c
         Supports 4 types of channels:
         gpio - 10 Channels, Possible values are 0,1(5V),Z (HiZ), P (Weak Pull Up)
         test_hook - 5 channels, 1,0 pullup to 12V NO CURRENT LIMIT
         relay - Channels 1-4 and 9-12, correspond to supply numbers, 0 or 1 (1 is supply connected)
         dvcc - Controls I2C/SMBus DVCC voltage
-        '''
+        """
 
     def __init__(self, interface_visa, interface_twi, calibrating=False):
-        '''Creates a htx9001 object
+        """Creates a htx9001 object.
 
         Args:
             calibrating: Calibrating.
             interface_twi: TWI/I2C interface instance.
             interface_visa: VISA interface instance.
-        '''
+        """
         self._base_name = 'htx9001'
         # work with both serial port strings and pyserial objects
         scpi_instrument.__init__(self, f"HTX9001 {interface_visa}")
@@ -65,20 +66,21 @@ class htx9001(scpi_instrument):
         self.get_interface().write(write_str)
 
     def add_channel_dvcc(self, channel_name):
-        '''Adds a channel controlling the dvcc voltage
+        """Adds a channel controlling the dvcc voltage.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
             Result value.
-        '''
+        """
         dvcc = channel(channel_name, write_function=self._set_dvcc)
         dvcc.set_write_delay(0.2)
         return self._add_channel(dvcc)
 
     def add_channel_relay(self, channel_name, relay_number):
-        '''Adds a relay channel,
+        """Adds a relay channel,.
+
             channel_name is the name of the channel,
             relay_number is the number of the relay (same number as the supply being switched)
             valid relays are 1-4 and 9-12
@@ -92,7 +94,7 @@ class htx9001(scpi_instrument):
 
         Raises:
             Exception: On error condition.
-        '''
+        """
         if relay_number not in self.relay_pins:
             raise Exception(f"Invalid relay number {relay_number}")
         if self.relay_pins[relay_number] in self.initialized_pins:
@@ -110,7 +112,8 @@ class htx9001(scpi_instrument):
         return new_channel
 
     def add_channel_test_hook(self, channel_name, test_hook_number):
-        '''Adds a test hook channel,
+        """Adds a test hook channel,.
+
             channel_name is the name of the channel
             test_hook_number is the number of the test hook (valid test hooks are 1-5
 
@@ -123,7 +126,7 @@ class htx9001(scpi_instrument):
 
         Raises:
             Exception: On error condition.
-        '''
+        """
         if test_hook_number not in self.test_hook_pins:
             raise Exception(f"Invalid test hook number {test_hook_number}")
         if self.test_hook_pins[test_hook_number] in self.initialized_pins:
@@ -141,7 +144,8 @@ class htx9001(scpi_instrument):
 
     def add_channel_gpio(self, channel_name, gpio_list,
                          output=True, pin_state="Z"):
-        '''Adds a GPIO channel, can be a single bit or a bus of bits
+        """Adds a GPIO channel, can be a single bit or a bus of bits.
+
             channel_name is the name of the channel
             gpio pins is either a single integer for a single bit or a list of integers ordered msb to lsb
             valid gpio_numbers are 1-10,
@@ -158,7 +162,7 @@ class htx9001(scpi_instrument):
 
         Raises:
             Exception: On error condition.
-        '''
+        """
         if not isinstance(gpio_list, list):
             gpio_list = [gpio_list]
         for gpio_pin in gpio_list:
@@ -422,7 +426,8 @@ class htx9001(scpi_instrument):
             self._write_relay(relay, value)
 
     def _rip(self, write_list):
-        '''write_list format [(pin,value),(pin,value)....]
+        """write_list format [(pin,value),(pin,value)....].
+
         this function uses raw pin names and builds a single query sting without readback for maximum speed
         there is currently no way to connect this with channels so the pin is the raw pin name like PB1 etc
 
@@ -431,7 +436,7 @@ class htx9001(scpi_instrument):
 
         Raises:
             Exception: On error condition.
-        '''
+        """
         write_str = ''
         for pin, value in write_list:
             if value not in [0, 1, 'z', 'Z', 'p', 'P', 'H', 'L']:

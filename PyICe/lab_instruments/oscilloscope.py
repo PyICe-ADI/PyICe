@@ -140,85 +140,85 @@ class oscilloscope(scpi_instrument, delegator):
 
     @abc.abstractmethod
     def setup_channels(self, scope_channels):
-        '''Helper method to set up each specific waveform channel in scope_channels list and call add_all_timebase_trigger_aquisition_channels
+        """Helper method to set up each specific waveform channel in scope_channels list and call add_all_timebase_trigger_aquisition_channels.
 
         Args:
             scope_channels: Scope channels.
-        '''
+        """
 
     @abc.abstractmethod
     def enable_channels(self, channels):
-        '''Turn on Y channels in the channels list
+        """Turn on Y channels in the channels list.
 
         Args:
             channels: List of channel objects.
-        '''
+        """
 
     @abc.abstractmethod
     def disable_all_Ychannels(self):
-        '''Turn off all Y channels'''
+        """Turn off all Y channels."""
 
     @abc.abstractmethod
     def resync_scope():
-        '''Reset the scope and reconfigure physical instrument to desired used channels.'''
+        """Reset the scope and reconfigure physical instrument to desired used channels."""
 
     @abc.abstractmethod
     def add_Ychannel_waveform(self, name, number):
-        '''Add named waveform channel and add Ycontrol and Yreadback channels for that waveform channel
+        """Add named waveform channel and add Ycontrol and Yreadback channels for that waveform channel.
 
         Args:
             name: Name identifier.
             number: Channel or port number.
-        '''
+        """
 
     @abc.abstractmethod
     def add_Ycontrol_Yreadback_channels(self, name, number):
-        '''Add all control and readback channels for the specified Y waveform channel.
+        """Add all control and readback channels for the specified Y waveform channel.
 
         Args:
             name: Name identifier.
             number: Channel or port number.
-        '''
+        """
 
     @abc.abstractmethod
     def add_Xcontrol_Xreadback_channels(self, prefix):
-        '''Add all X control and readback channels
+        """Add all X control and readback channels.
 
         Args:
             prefix: Name prefix string.
-        '''
+        """
 
     @abc.abstractmethod
     def add_trigger_channels(self, prefix):
-        '''Add all trigger control channels.
+        """Add all trigger control channels.
 
         Args:
             prefix: Name prefix string.
-        '''
+        """
 
     @abc.abstractmethod
     def add_aquire_channels(self, prefix):
-        '''Add all channels the control the scope aquisition channel
+        """Add all channels the control the scope aquisition channel.
 
         Args:
             prefix: Name prefix string.
-        '''
+        """
 
     @abc.abstractmethod
     def add_channel_timebase(self, name):
-        '''Add time channel that stores the x-axis data points in seconds
+        """Add time channel that stores the x-axis data points in seconds.
 
         Args:
             name: Name identifier.
-        '''
+        """
 
     @abc.abstractmethod
     def add_all_timebase_trigger_aquisition_channels(self, prefix):
-        '''Helper method to easily add time base, X control, X readback, trigger, and aquisition channels
+        """Helper method to easily add time base, X control, X readback, trigger, and aquisition channels.
 
         Args:
             prefix: Name prefix string.
-        '''
+        """
 
     # SCPI syntax taken from DSOX3034T programmer manual. May differ from
     # other MSO/DSO Keysight scopes and different manufacturer scopes.

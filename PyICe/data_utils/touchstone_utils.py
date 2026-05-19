@@ -1,5 +1,6 @@
-'''
+"""
 This module is intended to be used in the workflow of analyzing PCB parasitics for power supplies.
+
 The industry standard file type for communicating these parasitics is a touchstone or ".snp" file.
 
 PCB parasitics are found using 3D electro-magnetic solvers, such as Keysight ADS's sub-tool, EM Pro.
@@ -31,7 +32,7 @@ reflected back to port 2, from port 2.
 Author: Ben Leverett
 Date Created: 2023-03-23
 Version 0.0
-'''
+"""
 
 import skrf
 import numpy as np
@@ -45,7 +46,7 @@ import sympy
 
 
 class touchstone_utils():
-    '''
+    """
     N-port touchstone.
 
     The purpose of this class is to simplify and manipulate touchstone files by turning them into
@@ -59,11 +60,12 @@ class touchstone_utils():
     :attr:`z0`             characteristic impedance of the touchstone (assuming uniform z0)
     :attr:`freqs`          frequency vector, numpy array
     =====================  =============================================
-    '''
+    """
 
     def __init__(self, file_name=None):
-        '''
+        """
             Creates a touchstone utils object.
+
         Takes in an N port touchstone file for manipulation and plotting.
         One of the main goals of the touchstone utils is to simplify networks from N port to M port.
         Touchstone utils can also plot bode plots and create networks and touchstones files.
@@ -75,22 +77,23 @@ class touchstone_utils():
 
         Args:
             file_name: File name.
-        '''
+        """
         self.network = None
 
         if file_name is not None:  # TODO: More error checking
             self.network = skrf.Network(file_name)
 
     def __del__(self):
-        '''
+        """
          Deconstructor. Called when the object is destroyed, usually when use script terminates.
+
          TODO: this did not work, maybe there is a better way to call mplt.show() when exiting scripts
-        '''
+        """
         mplt.show()
 
     def output_touchstone(self, output_file_name, output_file_dir,
                           input_network=None, start=None, stop=None, output_form='ri'):
-        '''
+        """
         Outputs a touchstone of a specified network. If none specified, the current touchstone_utils network is used.
 
         Parameters
@@ -116,7 +119,7 @@ class touchstone_utils():
             output_form: Output form.
             start: Start bit position.
             stop: If True, send stop condition.
-        '''
+        """
         # TODO: Add model type option to choose S, Y, or Z parameters.
         # TODO: Make the output file name automatic based on the current or input network
         # TODO: Look at touchstone from the LTC3315 customer and see if their touchstone form phase is in degrees or radians
@@ -137,7 +140,7 @@ class touchstone_utils():
                                         )
 
     def network_Nport_to_Mport(self, port_nums):
-        '''
+        """
         Converts current touchstone utils network to an M-port network of ports 'port_nums'.
 
         Parameters
@@ -153,7 +156,7 @@ class touchstone_utils():
 
         Returns:
             Result value.
-        '''
+        """
         # TODO: Add input network
         # TODO: Add error handling for port_nums outside of N-port port count
         def open_terminator(name):  # implicit freqs, z0
@@ -202,8 +205,9 @@ class touchstone_utils():
         return output_network
 
     def network_Nport_to_1port(self, source_port_num, load_port_num):
-        '''
+        """
         Converts current touchstone utils network to an 1-port network.
+
         The input port is the source_port_num and which port port is shorted to make the 1-port network is load_port_num.
 
         Parameters
@@ -219,7 +223,7 @@ class touchstone_utils():
 
         Returns:
             Result value.
-        '''
+        """
         # TODO: Add functionality for load_port_num to be multiple load ports
         # that get shorted.
         def short_terminator(name):  # implicit freqs
@@ -257,16 +261,17 @@ class touchstone_utils():
         return output_network
 
     def set_network(self, network):
-        '''
+        """
         TODO: Make an error checking network setter.
 
         Args:
             network: Network.
-        '''
+        """
 
     def test_make_Nport_Mport_reference_networks(self, N, M=None):
-        '''
+        """
         Converts current touchstone utils network to an 1-port network.
+
         The input port is the source_port_num and which port port is shorted to make the 1-port network is load_port_num.
 
         Parameters
@@ -282,7 +287,7 @@ class touchstone_utils():
 
         Returns:
             Result value.
-        '''
+        """
         # TODO: Complete the M-port portion of this function. Currently just made N-port and used Adice to verify the simplification.
         # TODO: Find a way to compare the networks locally without Adice
 
@@ -327,8 +332,9 @@ class touchstone_utils():
 
 
 def sweep_plots_to_pptx(ts_plots_dir, output_pptx_path, date_time_flag=1):
-    '''
-    Intended to collect plots from an archive folder and automatically add them to a Microsoft
+    """
+    Intended to collect plots from an archive folder and automatically add them to a Microsoft.
+
     PowerPoint presentation.
 
     Searches through a directory for PNG or SVG files, creates a PowerPoint and adds them to it.
@@ -356,7 +362,7 @@ def sweep_plots_to_pptx(ts_plots_dir, output_pptx_path, date_time_flag=1):
         date_time_flag: Date time flag.
         output_pptx_path: Output pptx path.
         ts_plots_dir: Ts plots dir.
-    '''
+    """
 
     # TODO: Check that ts_plots_dir exists and has an image
     # TODO: Check that output_pptx_path.parent exists, its okay for the file not to exist.
@@ -1093,8 +1099,9 @@ def _parallel(Ra, Rb):
         mplt.legend()
 
     def adice_rpc_to_impedance(a, b, k, z0, model_type=1):
-        '''
+        """
         Converts adiceRPC (root polynomial coefficient) file parameters, (a,b,k) to an impedance Z(s).
+
         RPC coefficients are of the form M(s) = k + n_Σ {a[n] / (1 - s/b[n])}
                                       or M(s) = k + n_Σ {r[n] / (s - p[n])}, where n is the degree.
         M(s) is generic model parameter, which can either be S(s) or Y(s) [S11 or admittance (Y11)].
@@ -1133,7 +1140,7 @@ def _parallel(Ra, Rb):
 
         Returns:
             Result value.
-        '''
+        """
         r = np.multiply(a, b) * (-1)
         y, x = signal.invres(r=r, p=b, k=k)
         s = sympy.symbols('s')  # Make variable s for j*omega
@@ -1162,8 +1169,9 @@ def _parallel(Ra, Rb):
         return z_num_coeff, z_num_coeff, r, p, k
 
     def adice_rpc_to_rational(a, b, k):
-        '''
-        Converts adiceRPC (root polynomial coefficient) file parameters, (a,b,k) to rational
+        """
+        Converts adiceRPC (root polynomial coefficient) file parameters, (a,b,k) to rational.
+
         coefficients of the form T(s) = y(s)/x(s), whwere y[0] corresponds to s**n and n=degree.
 
         RPC coefficients are of the form M(s) = k + n_Σ {a[n] / (1 - s/b[n])}
@@ -1192,7 +1200,7 @@ def _parallel(Ra, Rb):
 
         Returns:
             Result value.
-        '''
+        """
         r = np.multiply(a, b) * (-1)
         y, x = signal.invres(r=r, p=b, k=k)
         return y, x
@@ -1288,21 +1296,21 @@ def _parallel(Ra, Rb):
         print(model_params)
 
     def plot_smith_chart(self):
-        '''
+        """
         Plots a smith chart to investigate the complex impedance over frequency.
 
         Args:
             self: Self.
-        '''
+        """
         self.network.plot_s_smith()
 
     def get_resistor_skin_effect_model():
-        '''
+        """
         Returns the approximate DC resistance and the scaling coefficient for the sqrt(2*pi*freq) skin effect term.
 
         Returns:
             Result value.
-        '''
+        """
         return dc_res, ac_res_coefficient  # noqa: F821
 
     def get_series_LR(self):

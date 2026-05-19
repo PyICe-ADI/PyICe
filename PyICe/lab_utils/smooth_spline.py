@@ -3,7 +3,8 @@ import scipy
 
 
 def smooth_spline(rec_array, rms_error, verbose=True, **kwargs):
-    '''uses http://scipy.github.io/devdocs/generated/scipy.interpolate.UnivariateSpline.html with movable knots
+    """Uses http://scipy.github.io/devdocs/generated/scipy.interpolate.UnivariateSpline.html with movable knots.
+
     set rms_error to change number of knots to bound smoothed data rms deviation from original data points.
     Set rms_error to 0 to interpolate through all points.
     rec_array is modified in place
@@ -17,7 +18,7 @@ def smooth_spline(rec_array, rms_error, verbose=True, **kwargs):
 
     Returns:
         Result value.
-    '''
+    """
     point_count = len(rec_array)
     rss = rms_error * point_count**0.5
     spl = scipy.interpolate.UnivariateSpline(

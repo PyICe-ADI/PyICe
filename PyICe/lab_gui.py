@@ -1,4 +1,4 @@
-'''Graphical Interface to Channel Objects'''
+"""Graphical Interface to Channel Objects."""
 
 from . import lab_core
 from PyICe.lab_utils.column_formatter import column_formatter
@@ -50,8 +50,9 @@ MAX_TAG_ROWS = 4
 
 
 class data_store():
-    ''' this is a very simple hierarchy of key/value pairs. Each can have an ordered list of children. Only int/float/str should be stored
-    each pair must have a name but a value is optional'''
+    """ this is a very simple hierarchy of key/value pairs. Each can have an ordered list of children. Only int/float/str should be stored.
+
+    each pair must have a name but a value is optional"""
 
     def __init__(self, name=None, value=None, parent=None):
         self._children = []
@@ -1766,7 +1767,7 @@ class display_tag_group(QtWidgets.QWidget):
 
 
 class tab_view(QtWidgets.QWidget):
-    '''describes the view of the registers and the tag selection and interaction beteen'''
+    """Describes the view of the registers and the tag selection and interaction beteen."""
     SI_resize_main_window = QtCore.Signal()
     SI_channel_data_ready = QtCore.Signal(object)
     SI_passive_observer_data = QtCore.Signal(object)
@@ -1913,7 +1914,7 @@ class tab_view(QtWidgets.QWidget):
 
 
 class tab_group(QtWidgets.QTabWidget):
-    '''a group of tab_views'''
+    """A group of tab_views."""
     SI_passive_observer_data = QtCore.Signal(object)
     SI_channel_data_ready = QtCore.Signal(object)
     SI_tab_use_write_presets = QtCore.Signal(object)
@@ -1925,7 +1926,8 @@ class tab_group(QtWidgets.QTabWidget):
     SI_resize_main_window = QtCore.Signal()
 
     def __init__(self, channel_group, background_call=None):
-        '''Create a group of tabs in the Qt5 GUI given a PyICe channel_group.
+        """Create a group of tabs in the Qt5 GUI given a PyICe channel_group.
+
         background_call is an optional argument. If offered, it must be a function that takes
         a function of no arguments to be enqueued to run on another thread, such as
         the background_worker thread.
@@ -1933,7 +1935,7 @@ class tab_group(QtWidgets.QTabWidget):
         Args:
             background_call: Background call.
             channel_group: Channel group.
-        '''
+        """
         assert isinstance(channel_group, lab_core.channel_group)
         assert callable(background_call) or (background_call is None)
         QtWidgets.QTabWidget.__init__(self)
@@ -2484,7 +2486,7 @@ class logger_item_group(QtWidgets.QWidget):
 
 
 class logger_view(QtWidgets.QWidget):
-    '''describes the view of the registers and the tag selection and interaction beteen'''
+    """Describes the view of the registers and the tag selection and interaction beteen."""
 
     def __init__(self, channel_group_object, parent):
         QtWidgets.QWidget.__init__(self, parent)
@@ -2640,11 +2642,11 @@ class background_worker(QtCore.QThread):
         return results
 
     def _read_channel_list(self, read_list):
-        '''Called in background_worker thread to do the actual instrument/HW/DUT reading
+        """Called in background_worker thread to do the actual instrument/HW/DUT reading.
 
         Args:
             read_list: Read list.
-        '''
+        """
         results = self._read_channel_list_core(read_list)
         self.SI_channel_data_ready.emit(results)
         # self.emit(SIGNAL('channel_data_ready(PyQt_PyObject)'),results)
@@ -2696,7 +2698,8 @@ class ltc_lab_gui_main_window(QtWidgets.QMainWindow):
     SI_change_font_size = QtCore.Signal(int)
 
     def __init__(self, channel_group, background_call=None):
-        '''Create the GUI's main window given a PyICe channel_group.
+        """Create the GUI's main window given a PyICe channel_group.
+
         background_call is an optional argument. If offered, it must be a function that takes
         a function of no arguments to be enqueued to run on another thread, such as
         the background_worker thread.
@@ -2704,7 +2707,7 @@ class ltc_lab_gui_main_window(QtWidgets.QMainWindow):
         Args:
             background_call: Background call.
             channel_group: Channel group.
-        '''
+        """
         assert isinstance(channel_group, lab_core.channel_group)
         assert callable(background_call) or (background_call is None)
         QtWidgets.QMainWindow.__init__(self)

@@ -3,7 +3,7 @@ import sys
 
 
 def float_prior(val):
-    '''return next Python double precision floating point number smaller than x.
+    """Return next Python double precision floating point number smaller than x.
 
     >>> float_prior(1.0) < 1.0
     True
@@ -17,7 +17,7 @@ def float_prior(val):
 
     Returns:
         Result value.
-    '''
+    """
     # algorithm copied from Boost:
     # http://www.boost.org/doc/libs/1_45_0/boost/math/special_functions/next.hpp
     assert not math.isinf(val)

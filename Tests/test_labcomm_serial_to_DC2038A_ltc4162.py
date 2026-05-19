@@ -70,7 +70,8 @@ def talk_to_demoboard(connection, src_id, xml_file, debug=False):
 
 def test_labcomm():
     """
-    Main Test code for labcomm initialization
+    Main Test code for labcomm initialization.
+
     :return:
 
     Raises:

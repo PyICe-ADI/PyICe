@@ -9,7 +9,8 @@ def isclose(a, b, rel_tol=1e-9, abs_tol=0.0):
     # alternative tests here:
     # https://github.com/PythonCHB/close_pep/blob/master/is_close.py
     """
-    returns True if a is close in value to b. False otherwise
+    Returns True if a is close in value to b. False otherwise.
+
     :param a: one of the values to be tested
     :param b: the other value to be tested
     :param rel_tol=1e-9: The relative tolerance -- the amount of error

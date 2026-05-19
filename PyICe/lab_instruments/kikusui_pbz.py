@@ -2,7 +2,7 @@ from PyICe.lab_core import *  # noqa: F403
 
 
 class kikusui_pbz(scpi_instrument):
-    '''single channel kikusui_pbz20-20, pbz40-10 bipolar power supply parent class'''
+    """Single channel kikusui_pbz20-20, pbz40-10 bipolar power supply parent class."""
 
     def __init__(self, interface_visa):
         self.add_interface_visa(interface_visa)
@@ -15,7 +15,8 @@ class kikusui_pbz(scpi_instrument):
 
     def add_channel(self, channel_name, ilim=1, delay=0.5,
                     add_extended_channels=True):
-        '''Helper channel adds primary voltage forcing channel.
+        """Helper channel adds primary voltage forcing channel.
+
             Optionally specify channel current limit.  Valid range is [???-???]
             optionally also adds _ilim_source and _ilim_sink limit forcing channels
 
@@ -27,7 +28,7 @@ class kikusui_pbz(scpi_instrument):
 
         Returns:
             Result value.
-        '''
+        """
         voltage_channel = self.add_channel_voltage(channel_name)
         voltage_channel.set_write_delay(delay)
         if add_extended_channels:
@@ -92,44 +93,44 @@ class kikusui_pbz(scpi_instrument):
         self.get_interface().write((f"CURR:PROT:LOW {current}"))
 
     def _write_voltage(self, voltage):
-        '''set output voltage
+        """Set output voltage.
 
         Args:
             voltage: Voltage value.
-        '''
+        """
         self.get_interface().write((f"VOLTage {voltage}"))
 
     def _write_output_enable(self, enable):
-        '''set output enable
+        """Set output enable.
 
         Args:
             enable: Enable or disable.
-        '''
+        """
         if enable:
             self.get_interface().write(("OUTP 1"))
         else:
             self.get_interface().write(("OUTP 0"))
 
     def _read_voltage_readback(self):
-        '''Returns instrument's actual setopint.  May differ by commanded value by rounding/range error
+        """Returns instrument's actual setopint.  May differ by commanded value by rounding/range error.
 
         Returns:
             Result value.
-        '''
+        """
         return float(self.get_interface().ask("VOLT?"))
 
     def _read_vsense(self):
-        '''Returns instrument's measured output voltage.
+        """Returns instrument's measured output voltage.
 
         Returns:
             Result value.
-        '''
+        """
         return float(self.get_interface().ask("MEAS:VOLT?"))
 
     def _read_isense(self):
-        '''Returns instrument's measured current output.
+        """Returns instrument's measured current output.
 
         Returns:
             Result value.
-        '''
+        """
         return float(self.get_interface().ask("MEAS:CURR?"))

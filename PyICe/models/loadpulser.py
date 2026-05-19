@@ -6,7 +6,8 @@ except ImportError as e:
 
 
 def loadpulser():
-    '''This returns a function which can be called with any input voltage from 0 to 3V and will put out 0 to 3.2A.
+    """This returns a function which can be called with any input voltage from 0 to 3V and will put out 0 to 3.2A.
+
     There is a dead zoe up to about 1.3V which may make this difficult for a servo instrument to deal with.
     It's based on an LTSPICE simulation of an FMMT617 NPN and 100m Ohm resistor.
     The base is loaded with 50 Ohms and the source voltage is assumed to be on the upstream of 50 Ohms of source impedance or in other words the open circuit voltage.
@@ -14,7 +15,7 @@ def loadpulser():
 
     Returns:
         Result value.
-    '''
+    """
 
     xpoints = [
         0.000000000000000e+00,

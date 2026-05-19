@@ -3,11 +3,11 @@ from ..lab_core import *  # noqa: F403
 
 class sorensen_generic_supply(instrument):
     def __init__(self, interface_visa):
-        '''interface_visa
+        """interface_visa.
 
         Args:
             interface_visa: VISA interface instance.
-        '''
+        """
         self._base_name = 'sorensen_generic_supply'
         instrument.__init__(self, f"{self.sorensen_name} @ {interface_visa}")
         self.add_interface_visa(interface_visa)
@@ -20,7 +20,8 @@ class sorensen_generic_supply(instrument):
         self._enable_output()
 
     def add_channel(self, channel_name, ilim=1, add_extended_channels=True):
-        '''Helper method adds primary voltage forcing channel channe_name.
+        """Helper method adds primary voltage forcing channel channe_name.
+
         optionally also adds _ilim forcing channel and _vsense and _isense readback channels.
 
         Args:
@@ -30,7 +31,7 @@ class sorensen_generic_supply(instrument):
 
         Returns:
             Result value.
-        '''
+        """
         voltage_channel = self.add_channel_voltage(channel_name)
         if add_extended_channels:
             self.add_channel_current(channel_name + "_ilim")
@@ -58,43 +59,43 @@ class sorensen_generic_supply(instrument):
         self._add_channel(new_channel)
 
     def _enable_output(self):
-        '''Enable output'''
+        """Enable output."""
         self.get_interface().write(("OUT 1"))
 
     def _write_voltage(self, voltage):
-        '''Set named channel to force voltage, optionally with ilim compliance current
+        """Set named channel to force voltage, optionally with ilim compliance current.
 
         Args:
             voltage: Voltage value.
-        '''
+        """
         self.get_interface().write((f"VSET {voltage}"))
 
     def _write_current(self, ilim):
-        '''Set named channel's compliance current
+        """Set named channel's compliance current.
 
         Args:
             ilim: Current limit.
-        '''
+        """
         self.get_interface().write((f"ISET {ilim}"))
 
     def _read_vsense(self, channel_name):
-        '''Returns instrument's measured output voltage.
+        """Returns instrument's measured output voltage.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
             Result value.
-        '''
+        """
         return float(self.get_interface().ask("VOUT?").lstrip("VOUT "))
 
     def _read_isense(self, channel_name):
-        '''Returns instrument's measured output current.
+        """Returns instrument's measured output current.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
             Result value.
-        '''
+        """
         return float(self.get_interface().ask("IOUT? ").lstrip("IOUT "))

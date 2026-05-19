@@ -6,19 +6,20 @@ from pyvisa.errors import VisaIOError
 
 
 class SiglentIOError(Exception):
-    '''Unused at this time.'''
+    """Unused at this time."""
 
 
 class siglent_SDG1000X(scpi_instrument):
-    ''' Siglent Function Generator
-        Since it's a two channel instrument reset() needs to be called manually rather than upon creation of each driver object.'''
+    """ Siglent Function Generator.
+
+        Since it's a two channel instrument reset() needs to be called manually rather than upon creation of each driver object."""
 
     def __init__(self, instrument_visa):
-        '''instrument_visa
+        """instrument_visa.
 
         Args:
             instrument_visa: Instrument visa.
-        '''
+        """
         self._base_name = 'SDG1000X'
         scpi_instrument.__init__(self, f"SDG1000X @ {instrument_visa}")
         self.add_interface_visa(instrument_visa)

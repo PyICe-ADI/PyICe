@@ -1,5 +1,6 @@
 def present_menu(intro_msg, prompt_msg, item_list):
     """Command-line interface. Presents item_list as a menu to the user, and prompts for a choice.
+
     For example:
 
         sweep_dac = dac_type(name="AD5693R DAC", bits=16, input_channel_name="sweep_dac", output_meter_channel_name="sweep_dac_meter")

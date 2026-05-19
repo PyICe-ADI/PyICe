@@ -2,7 +2,8 @@ from PyICe.lab_core import *  # noqa: F403
 
 
 class kikusui_pwr(scpi_instrument):
-    '''Kikusui single channel unipolar power supply superclass
+    """Kikusui single channel unipolar power supply superclass.
+
         Instrument Family:
             PWR400L
             PWR400M
@@ -12,20 +13,21 @@ class kikusui_pwr(scpi_instrument):
             PWR800H
             PWR1600L
             PWR1600M
-            PWR1600H'''
+            PWR1600H"""
     # note that this superclass was developed and tested with only the PWR800l instrument
     # some methods may need to be duplicated and moved to the instrument-specific classes
     # to resolve any operational/feature differences such as range selection
 
     def __init__(self, interface_visa, node, ch):
-        '''node is a ???
+        """Node is a ???
+
            ch is a ???
 
         Args:
             ch: Ch.
             interface_visa: VISA interface instance.
             node: Node.
-        '''
+        """
         self._base_name = 'kikusui_pwr'
         scpi_instrument.__init__(
             self, f"kikusui_pwr800l {self.kikusui_pwr_name} @ {interface_visa}:Node {node}: Ch{ch}")
@@ -43,7 +45,8 @@ class kikusui_pwr(scpi_instrument):
 
     def add_channel(self, channel_name, ilim=1, delay=0.5,
                     add_extended_channels=True):
-        '''Helper function adds primary voltage forcing channel channel_name
+        """Helper function adds primary voltage forcing channel channel_name.
+
         optionally also adds _ilim forcing channel and _vsense and _isense readback channels.
 
         Args:
@@ -54,7 +57,7 @@ class kikusui_pwr(scpi_instrument):
 
         Returns:
             Result value.
-        '''
+        """
         voltage_channel = self.add_channel_voltage(channel_name)
         self.write_channel(channel_name, 0)
         voltage_channel.set_write_delay(delay)
@@ -109,28 +112,28 @@ class kikusui_pwr(scpi_instrument):
                 (f"NODE {self.node};CH {self.ch};OUT 0"))
 
     def _read_vsense(self):
-        '''Returns instrument's measured output voltage.
+        """Returns instrument's measured output voltage.
 
         Returns:
             Result value.
-        '''
+        """
         return float(self.get_interface().ask(
             f"NODE {self.node};CH {self.ch};VOUT?"))
 
     def _read_power(self):
-        '''Returns instrument's measured power output.
+        """Returns instrument's measured power output.
 
         Returns:
             Result value.
-        '''
+        """
         return float(self.get_interface().ask(
             f"NODE {self.node};CH {self.ch};POUT?"))
 
     def _read_isense(self):
-        '''Returns instrument's measured current output.
+        """Returns instrument's measured current output.
 
         Returns:
             Result value.
-        '''
+        """
         return float(self.get_interface().ask(
             f"NODE {self.node};CH {self.ch};IOUT?"))

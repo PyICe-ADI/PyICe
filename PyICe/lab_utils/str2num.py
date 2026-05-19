@@ -1,5 +1,5 @@
 def str2num(str_in, except_on_error=True):
-    '''Convert string to numeric type with automatic base detection.
+    """Convert string to numeric type with automatic base detection.
 
     >>> str2num('42')
     42
@@ -23,7 +23,7 @@ def str2num(str_in, except_on_error=True):
 
     Raises:
         ValueError: On error condition.
-    '''
+    """
     if isinstance(str_in, int) or isinstance(str_in, float) or str_in is None:
         return str_in
     if str_in == 'True':

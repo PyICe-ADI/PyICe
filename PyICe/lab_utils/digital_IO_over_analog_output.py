@@ -1,5 +1,6 @@
 class digital_IO_over_analog_output(object):
-    """###SCHEDULED FOR DELETION###
+    """###SCHEDULED FOR DELETION###.
+
     Use lab_instruments.digital_analog_io() virtual instrument instead.
 
     Wraps an analog output PyICe channel with a digital interface.
@@ -41,7 +42,8 @@ class digital_IO_over_analog_output(object):
                 self.channel.write(self._add_with_abs_max(voltage))
 
     def digital_write(self, value):
-        """Write any of (True, 1, 1.0) to set output to VOH,
+        """Write any of (True, 1, 1.0) to set output to VOH,.
+
         any of (False, 0, 0.0) to set output to VOL, and
         any of ("testhook", 2, 2.0) to set output to VOH+delta_Vhook.
         You can pass this method as the write_function argument

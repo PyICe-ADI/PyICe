@@ -1,5 +1,6 @@
-'''
-SPI Interface Hardware Drivers
+"""
+SPI Interface Hardware Drivers.
+
 ==============================
 
 Created on Feb 23, 2015
@@ -15,7 +16,7 @@ The SPI interface is composed of two separate classes:
 2) spiInterface: Defines the hardware interface including baudrate, mode (CPOL/CPHA), CS operation.
     Specific hardware implementations should overload this class and implement _shift_data method.
 
-'''
+"""
 
 # Notes:
 # 1) spiSlave removed.
@@ -43,38 +44,38 @@ from abc import ABCMeta, abstractmethod
 
 
 class shift_register(object):
-    '''helper class to assemble multiple bit-fields together into a single larger integer and to disassemble received data into individual bit-fields.'''
+    """Helper class to assemble multiple bit-fields together into a single larger integer and to disassemble received data into individual bit-fields."""
 
     def __init__(self, name=''):
-        '''Linear shift register model.
+        """Linear shift register model.
 
         Add bit_fields later in msb->lsb order using repeated calls to add_bit_field()
 
         Args:
             name: Name identifier.
-        '''
+        """
         self._bit_field_bit_counts = []
         self._bit_field_names = []
         self._bit_field_descriptions = []
         self.name = name
 
     def __len__(self):
-        '''support len() builtin to return total number of bits in shift register
+        """Support len() builtin to return total number of bits in shift register.
 
         Returns:
             Result value.
-        '''
+        """
         bit_count = 0
         for bfc in self._bit_field_bit_counts:
             bit_count += bfc
         return bit_count
 
     def __str__(self):
-        '''graphical view of register structure if object is printed
+        """Graphical view of register structure if object is printed.
 
         Returns:
             Result value.
-        '''
+        """
         hr = '--'
         line1 = ' |'
         line2 = ' |'
@@ -98,7 +99,7 @@ class shift_register(object):
         return 'SPI Shift Register Data Mapping Object\n' + hr + line1 + hr + line2 + hr
 
     def __add__(self, other):
-        '''support concatenation of multiple instances using '+' operator
+        """Support concatenation of multiple instances using '+' operator.
 
         Args:
             other: Other.
@@ -108,7 +109,7 @@ class shift_register(object):
 
         Raises:
             Exception: On error condition.
-        '''
+        """
         assert isinstance(other, shift_register)
         for bf in list(self.keys()):
             if bf in list(other.keys()):
@@ -124,15 +125,16 @@ class shift_register(object):
         return new_sr
 
     def __iter__(self):
-        '''iterate over bit field names ms field to ls field
+        """Iterate over bit field names ms field to ls field.
 
         Returns:
             Result value.
-        '''
+        """
         return iter(self._bit_field_names)
 
     def __getitem__(self, key):
-        '''return size (bit count) of named bit field.
+        """Return size (bit count) of named bit field.
+
         use with dictionary-style lookup: my_shift_register['my_key']
 
         Args:
@@ -140,12 +142,12 @@ class shift_register(object):
 
         Returns:
             Result value.
-        '''
+        """
         index = self._bit_field_names.index(key)
         return self._bit_field_bit_counts[index]
 
     def _check_size(self, data, clk_count):
-        '''make sure externally supplied data can fit within allocated bit field width
+        """Make sure externally supplied data can fit within allocated bit field width.
 
         Args:
             clk_count: Number of clock cycles.
@@ -153,7 +155,7 @@ class shift_register(object):
 
         Returns:
             Result value.
-        '''
+        """
         assert isinstance(data, numbers.Integral)
         assert isinstance(clk_count, numbers.Integral)
         assert data >= 0
@@ -162,7 +164,7 @@ class shift_register(object):
 
     def add_bit_field(self, bit_field_name,
                       bit_field_bit_count, description=''):
-        '''build SPI shift register data protocol sequentially MSB->LSB with repeated calls to add_bit_field
+        """Build SPI shift register data protocol sequentially MSB->LSB with repeated calls to add_bit_field.
 
         Args:
             bit_field_bit_count: Bit field bit count.
@@ -171,7 +173,7 @@ class shift_register(object):
 
         Raises:
             ValueError: On error condition.
-        '''
+        """
         assert isinstance(bit_field_name, str)
         assert isinstance(bit_field_bit_count, numbers.Integral)
         assert bit_field_bit_count > 0
@@ -187,39 +189,40 @@ class shift_register(object):
                     bit_field_name, dup_index))
 
     def keys(self):
-        '''return list of bit-field names registered with instance
+        """Return list of bit-field names registered with instance.
 
         Returns:
             Result value.
-        '''
+        """
         return self._bit_field_names[:]
 
     def display(self):
-        '''print ascii register structure graphic'''
+        """Print ascii register structure graphic."""
         print(str(self))
 
     def get_description(self, key):
-        '''return bit field description string
+        """Return bit field description string.
 
         Args:
             key: Key.
 
         Returns:
             Result value.
-        '''
+        """
         index = self._bit_field_names.index(key)
         return self._bit_field_descriptions[index]
 
     def get_name(self):
-        '''return shift register name
+        """Return shift register name.
 
         Returns:
             Result value.
-        '''
+        """
         return self.name
 
     def pack(self, bit_field_data_dict):
-        '''pack bit fields into single larger integer. also return accumulated clk_count.
+        """Pack bit fields into single larger integer. also return accumulated clk_count.
+
         Suitable for passing directly to spiInterface.transceive(*shift_register.pack(bit_field_data_dict))
         bit_field_data_dict should contain one key-value pair for each defined bit_field
 
@@ -228,7 +231,7 @@ class shift_register(object):
 
         Returns:
             Result value.
-        '''
+        """
         # don't check for extra entries in bit_field_data_dict that don't go
         # with this shift register. Any reason to???
         val = 0
@@ -241,7 +244,8 @@ class shift_register(object):
         return (val, offset)
 
     def unpack(self, data):
-        '''unpack single integer representing full-width shift register data into individual bit field values according to instance-defined boundaries.
+        """Unpack single integer representing full-width shift register data into individual bit field values according to instance-defined boundaries.
+
         return dictionary with key-value pairs for each defined bit_field_name and bit_field data.
 
         Args:
@@ -249,7 +253,7 @@ class shift_register(object):
 
         Returns:
             Result value.
-        '''
+        """
         bf_data = []
         # iterate backwards because accumulated shift offsets are not yet
         # known.
@@ -263,7 +267,7 @@ class shift_register(object):
         return res
 
     def copy(self, prepend_str='', append_str='', keep_name=False):
-        '''return new shift register with identical structure to self, but with bit field names augmented with prepend_str and append_str
+        """Return new shift register with identical structure to self, but with bit field names augmented with prepend_str and append_str.
 
         by default, shift register name will also be augmented with prepend_str and append_str. Suppress this behavior by setting keep_name=False.
 
@@ -274,7 +278,7 @@ class shift_register(object):
 
         Returns:
             Result value.
-        '''
+        """
         if keep_name:
             name = self.get_name()
         else:
@@ -294,7 +298,8 @@ class shift_register(object):
 
 class spiInterface(object, metaclass=ABCMeta):
     def __init__(self, CPOL, CPHA, ss_ctrl, word_size):
-        '''mode controls polarity and phase: 0 => CPOL=0, CPHA=0
+        """Mode controls polarity and phase: 0 => CPOL=0, CPHA=0.
+
                                              1 => CPOL=0, CPHA=1
                                              2 => CPOL=1, CPHA=0
                                              3 => CPOL=1, CPHA=1
@@ -312,7 +317,7 @@ class spiInterface(object, metaclass=ABCMeta):
 
         Raises:
             SPIMasterError: On error condition.
-        '''
+        """
         self.CPOL = CPOL
         self.CPHA = CPHA
         if self.CPOL == 0 and self.CPHA == 0:
@@ -330,29 +335,32 @@ class spiInterface(object, metaclass=ABCMeta):
         self.set_strict_alignment(True)
 
     def set_strict_alignment(self, strict):
-        '''If true, enforce that SPI master and slave hardware lengths match.
+        """If true, enforce that SPI master and slave hardware lengths match.
+
         If false, enable automatic padding to correct alignment.
 
         Args:
             strict: Strict.
-        '''
+        """
         self._strict_alignment = strict
         self._warned_once = False
 
     def set_ss_ctrl(self, ss_ctrl_function):
-        '''change ss_ctrl function after instantiation.
+        """Change ss_ctrl function after instantiation.
+
         function should take single boolean argument.
         If true, assert slave select. If false, deassert slave select.
         There will typically be a logic inversion inside ss_ctrl to achieve active low _cs.
 
         Args:
             ss_ctrl_function: Ss ctrl function.
-        '''
+        """
         self._ss_ctrl = ss_ctrl_function
 
     @abstractmethod
     def _shift_data(self, data_out, clk_count):
-        '''Hardware-specific Function that will shift data in/out of the SPI interface.
+        """Hardware-specific Function that will shift data in/out of the SPI interface.
+
         data_out is transmitted via MOSI
         return data received bia MISO
         data formats are as in integer, MSB (first clock) to LSB (last clock)
@@ -367,12 +375,12 @@ class spiInterface(object, metaclass=ABCMeta):
 
         Raises:
             SPIMasterError: On error condition.
-        '''
+        """
         raise SPIMasterError('Overload required.')
 
     @staticmethod
     def _check_size(data, bits):
-        '''make sure data fits within word of length  "bits"
+        """Make sure data fits within word of length  "bits".
 
         Args:
             bits: Bits.
@@ -380,7 +388,7 @@ class spiInterface(object, metaclass=ABCMeta):
 
         Returns:
             Result value.
-        '''
+        """
         assert isinstance(data, numbers.Integral)
         assert isinstance(bits, numbers.Integral)
         assert data >= 0
@@ -389,7 +397,8 @@ class spiInterface(object, metaclass=ABCMeta):
 
     @staticmethod
     def pack(data_list, word_size=8):
-        '''pack byte,word aligned pieces (list) from communication hardware into single integer comprising full shift register width.
+        """Pack byte,word aligned pieces (list) from communication hardware into single integer comprising full shift register width.
+
         integer can then be broken up by shift_register object into bit field aligned pieces.
 
         Args:
@@ -398,7 +407,7 @@ class spiInterface(object, metaclass=ABCMeta):
 
         Returns:
             Result value.
-        '''
+        """
         res = 0
         offset = 0
         for i in reversed(data_list):
@@ -407,7 +416,8 @@ class spiInterface(object, metaclass=ABCMeta):
         return res
 
     def unpack(self, data, bit_count, word_size=8):
-        '''break full shift register width integer into byte,word aligned pieces. Return list of pieces MS first, LS last.
+        """Break full shift register width integer into byte,word aligned pieces. Return list of pieces MS first, LS last.
+
         helper to send byte-aligned pieces to hardware even if bit fields span bytes (or 1-bit, 16-bit 32-bit, etc words for other hardware)
 
         Args:
@@ -417,7 +427,7 @@ class spiInterface(object, metaclass=ABCMeta):
 
         Returns:
             Result value.
-        '''
+        """
         assert bit_count % word_size == 0  # partially filled blocks create aligment ambiguity
         self._check_size(data, bit_count)
         res = []
@@ -428,7 +438,8 @@ class spiInterface(object, metaclass=ABCMeta):
         return res
 
     def transceive(self, data, clk_count):
-        '''send data word out MOSI with clk_count clocks.
+        """Send data word out MOSI with clk_count clocks.
+
         return word of same size read simultaneously on MISO.
         Frame entire transaction with slave select.
 
@@ -441,7 +452,7 @@ class spiInterface(object, metaclass=ABCMeta):
 
         Raises:
             SPIMasterError: On error condition.
-        '''
+        """
         self._check_size(data, clk_count)
         framing_excess = clk_count % self.word_size
         if framing_excess != 0:
@@ -481,10 +492,11 @@ class spiInterface(object, metaclass=ABCMeta):
 
 
 class spi_bbone(spiInterface):
-    '''The Beaglebone black will use the Adafruit BBIO,
+    """The Beaglebone black will use the Adafruit BBIO,.
+
     thus we can initialize this package for all purposes
     This instrument probably got a broken when the parent class interface was modified to support multiple interface hardware boards and more general SPI communication.
-    Needs testing/repair.'''
+    Needs testing/repair."""
     # def __init__(self,baudrate,timeout,device_num, mode=0, ss_ctrl=lambda ss: None):
     # '''device num is a tuple eg. (0,0)
     # '''
@@ -595,7 +607,8 @@ class spi_cfgpro(spiInterface):
 
 class spi_dc590(spiInterface):
     def __init__(self, interface_stream, ss_ctrl=None):
-        '''no remote computer control over CPOL/CPHA mode or baudrate using DC590 sketch...
+        """No remote computer control over CPOL/CPHA mode or baudrate using DC590 sketch...
+
             Atmega328P does support variable baudrates and clock polarity/phase. See datasheet section 23.4, pp219-222.
             DC590B Enhanced Linduino sketch supports this options, but PyICe doesn't yet. See 'M' command hierarchy new subcommands '0','1','2','3'.
             Also, SPI communication seems to be broken with PyICe DC590ListRead.ino sketch for unknown reasons. Stock DC590 sketch works. 'C' command in set_gpio conflicts with list read stream enable and doesn't seem to correspond to current or past Linduino/DC590 command set either!
@@ -603,7 +616,7 @@ class spi_dc590(spiInterface):
         Args:
             interface_stream: Interface stream.
             ss_ctrl: Ss ctrl.
-        '''
+        """
         self.interface = interface_stream
         if ss_ctrl is None:
             def ss_ctrl(ss):
@@ -617,24 +630,26 @@ class spi_dc590(spiInterface):
         self.init_spi()
 
     def set_cs(self, level):
-        '''control DC590 CS pin.
+        """Control DC590 CS pin.
+
         If true, pin high. No active low inversion here.
 
         Args:
             level: Level.
-        '''
+        """
         if level:
             self.interface.write('X')
         else:
             self.interface.write('x')
 
     def set_gpio(self, level):
-        '''control DC590 Pin 14 GPIO pin as output.
+        """Control DC590 Pin 14 GPIO pin as output.
+
         If true, pin high.
 
         Args:
             level: Level.
-        '''
+        """
         if level:
             self.interface.write('COG')
         else:
@@ -653,11 +668,11 @@ class spi_dc590(spiInterface):
             print(e)
 
     def spi_mode(self):
-        '''Switch DC590 I2C/SPI mux to SPI
+        """Switch DC590 I2C/SPI mux to SPI.
 
         Raises:
             SPIMasterError: On error condition.
-        '''
+        """
         self.interface.write('MS')  # Switch to isolated SPI Mode
         time.sleep(0.1)
         buffer = self.interface.read(None)[0]
@@ -793,14 +808,14 @@ class spi_buspirate(spiInterface):
                     self.mode, resp))
 
     def cs(self, select):
-        '''select is active low
+        """Select is active low.
 
         Args:
             select: Select.
 
         Raises:
             SPIMasterError: On error condition.
-        '''
+        """
         if select:
             self.ser.write('\x02')
         else:
@@ -843,7 +858,8 @@ class spi_buspirate(spiInterface):
 class spi_bitbang(spiInterface):
     def __init__(self, SCK_channel, MOSI_channel=None, MISO_channel=None,
                  SS_channel=None, CPOL=0, CPHA=0, SS_POL=0, low_level=0, high_level=1):
-        '''bit-bangable SPI port made of any writeable channels (power supply, gpio, etc).
+        """Bit-bangable SPI port made of any writeable channels (power supply, gpio, etc).
+
         SCK_channel, MOSI_channel and SS_channel are writable channel objects.
         MISO_channel is a readable channel object.
         MOSI_channel or MISO_channel may be set equal to None for unidirectinal communication.
@@ -863,7 +879,7 @@ class spi_bitbang(spiInterface):
             SS_channel: Ss channel.
             high_level: High level.
             low_level: Low level.
-        '''
+        """
         self.SCK_channel = SCK_channel
         self.MOSI_channel = MOSI_channel
         self.MISO_channel = MISO_channel
@@ -880,23 +896,24 @@ class spi_bitbang(spiInterface):
         assert CPHA == 0  # CHPA == 1 not implemented. https://en.wikipedia.org/wiki/Serial_Peripheral_Interface_Bus#Clock_polarity_and_phase
 
     def set_levels(self, low=0, high=1):
-        '''set values to write to SCK_channel, MOSI_channel and SS_channel.
+        """Set values to write to SCK_channel, MOSI_channel and SS_channel.
+
         values are also used to digitize MISO_channel readings.
         for example, to use a power supply at 5V logic levels set high=5
 
         Args:
             high: High.
             low: Low.
-        '''
+        """
         self.low = low
         self.high = high
 
     def cs(self, select):
-        '''select is active low
+        """Select is active low.
 
         Args:
             select: Select.
-        '''
+        """
         if self.SS_channel is not None:
             if select and not self.SS_POL:
                 self.SS_channel.write(self.low)

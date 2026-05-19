@@ -16,7 +16,7 @@ class four_channel_oscilloscope(bench_config_component):
 
 
 class AGILENT_3034x(four_channel_oscilloscope):
-    '''AKO Two Channel Pulse Generator'''
+    """AKO Two Channel Pulse Generator."""
 
     def __init__(self, name):
         self.type = type(self)
@@ -47,7 +47,7 @@ class two_channel_pulse_generator(bench_config_component):
 
 
 class SDG1032X(two_channel_pulse_generator):
-    '''AKO Two Channel Pulse Generator'''
+    """AKO Two Channel Pulse Generator."""
 
     def __init__(self, name):
         self.type = type(self)
@@ -191,7 +191,7 @@ class Agilent_3497x(bench_config_component):
 
 
 class Agilent_34901A(bench_config_component):
-    '''20 Channel Differential Plugin'''
+    """20 Channel Differential Plugin."""
 
     def add_terminals(self):
         self.add_terminal("BAY", instrument=self)
@@ -203,7 +203,7 @@ class Agilent_34901A(bench_config_component):
 
 
 class Agilent_34908A(bench_config_component):
-    '''40 Channel Single Ended Plugin'''
+    """40 Channel Single Ended Plugin."""
 
     def add_terminals(self):
         self.add_terminal("BAY", instrument=self)
@@ -216,7 +216,7 @@ class Agilent_34908A(bench_config_component):
 
 
 class Agilent_U2300_DAQ(bench_config_component):
-    '''40 Channel Differential Plugin'''
+    """40 Channel Differential Plugin."""
 
     def add_terminals(self):
         self.add_terminal("CONNECTOR1", instrument=self)

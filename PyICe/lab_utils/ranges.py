@@ -2,7 +2,8 @@ import numpy
 
 
 def floatRange(start, stop=None, step=None):
-    '''Returns a list of numbers similar to python range() builtin but supports floats.
+    """Returns a list of numbers similar to python range() builtin but supports floats.
+
         start is inclusive, stop is exclusive
         When called with a single argument, start=0 and the argument becomes stop.
 
@@ -18,12 +19,12 @@ def floatRange(start, stop=None, step=None):
 
     Returns:
         Result value.
-    '''
+    """
     return numpy.arange(start, stop, step).tolist()
 
 
 def floatRangeInc(start, stop=None, step=None):
-    '''Same as float range, however it is inclusive of the last value
+    """Same as float range, however it is inclusive of the last value.
 
     Args:
         start: Start bit position.
@@ -32,7 +33,7 @@ def floatRangeInc(start, stop=None, step=None):
 
     Returns:
         Result value.
-    '''
+    """
     fr = floatRange(start, stop, step)
     if fr[-1] != stop:
         # stopnumber: End of interval. The interval does not include this
@@ -43,7 +44,7 @@ def floatRangeInc(start, stop=None, step=None):
 
 
 def logRange(start, stop, stepsPerDecade=None, stepsPerOctave=None):
-    '''log step range function similar to python built-in range()
+    """Log step range function similar to python built-in range().
 
     >>> len(logRange(1, 100, stepsPerDecade=3))
     6
@@ -61,7 +62,7 @@ def logRange(start, stop, stepsPerDecade=None, stepsPerOctave=None):
 
     Raises:
         Exception: On error condition.
-    '''
+    """
     if (stepsPerDecade is not None and stepsPerOctave is None):
         stepsize = 10**(1.0 / stepsPerDecade)  # possible divide by zero!
     elif (stepsPerDecade is None and stepsPerOctave is not None):
@@ -89,7 +90,8 @@ def logRangeInc(start, stop, stepsPerDecade=None, stepsPerOctave=None):
 
 
 def decadeListRange(decadePoints, decades):
-    '''log step range function similar to python built-in range()
+    """Log step range function similar to python built-in range().
+
     accepts list input of points in a single decade and repeats
     these points over the specified number of decades
 
@@ -102,7 +104,7 @@ def decadeListRange(decadePoints, decades):
 
     Returns:
         Result value.
-    '''
+    """
     r = []
     exp = 0
     while (decades > 0):

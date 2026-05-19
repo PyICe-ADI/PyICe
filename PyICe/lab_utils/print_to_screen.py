@@ -2,7 +2,8 @@ import sys
 
 
 def print_to_screen(*args, **kwargs):
-    """Like Python 2's built-in print statement, but is a function instead of a statement
+    """Like Python 2's built-in print statement, but is a function instead of a statement.
+
     and so can be passed as an argument in a function call.
     Pass keyword argument 'linefeed=False' to suppress the default trailing linefeed.
 

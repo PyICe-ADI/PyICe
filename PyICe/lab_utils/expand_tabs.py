@@ -1,5 +1,6 @@
 def expand_tabs(string, *column_widths, **default_column_width):
-    '''like string.expandtabs, but works only on a single line and allows for varying column widths.
+    """Like string.expandtabs, but works only on a single line and allows for varying column widths.
+
     accepts variable number of positional arguments for each column width.
     accepts keyword argument "default_column_width" if not all column widths are specified.
     accepts keyword argument "verbose" to warn if column width is too narrow for contents.
@@ -19,7 +20,7 @@ def expand_tabs(string, *column_widths, **default_column_width):
 
     Raises:
         Exception: On error condition.
-    '''
+    """
     for key in default_column_width:
         if key != "default_column_width" and key != "verbose":
             raise Exception(

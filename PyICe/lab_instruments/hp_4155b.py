@@ -3,17 +3,18 @@ from .semiconductor_parameter_analyzer import semiconductor_parameter_analyzer
 
 
 class hp_4155b(semiconductor_parameter_analyzer):
-    '''Hewlett Packard Semiconductor Parameter Analyzer speaking HP4145 Command Set
+    """Hewlett Packard Semiconductor Parameter Analyzer speaking HP4145 Command Set.
+
     Set System->MISCELLANEOUS->COMMAND SET = HP4145
     Set System->MISCELLANEOUS->DELIMITER = COMMA
-    Set System->MISCELLANEOUS->EOI = ON'''
+    Set System->MISCELLANEOUS->EOI = ON"""
 
     def __init__(self, interface_visa):
-        '''interface_visa"
+        """interface_visa".
 
         Args:
             interface_visa: VISA interface instance.
-        '''
+        """
         self._base_name = 'hewlett_packard_4155B-scs'
         scpi_instrument.__init__(
             self, f"hewlett_packard_4155B-scs @ {interface_visa}")

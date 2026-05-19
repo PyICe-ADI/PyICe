@@ -3,7 +3,7 @@ from .kikusui_pbz import kikusui_pbz
 
 
 class kikusui_pbz20_20(kikusui_pbz):
-    '''Kikusui single channel 20V/20A bipolar power supply.'''
+    """Kikusui single channel 20V/20A bipolar power supply."""
 
     def __init__(self, interface_visa):
         self._base_name = 'kikusui_pbz20_20'

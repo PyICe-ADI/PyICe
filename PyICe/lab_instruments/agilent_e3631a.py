@@ -4,7 +4,7 @@ import time
 
 
 class agilent_e3631a(agilent_e36xxa):
-    '''Triple-channel programmable DC power supply'''
+    """Triple-channel programmable DC power supply."""
 
     def __init__(self, interface_visa):
         self._base_name = 'agilent_e3631a'
@@ -28,7 +28,8 @@ class agilent_e3631a(agilent_e36xxa):
         self.enable_output(True)
 
     def add_channel(self, channel_name, num, ilim=1, add_sense_channels=True):
-        '''Register a named channel with the instrument.
+        """Register a named channel with the instrument.
+
             channel_name is a user-supplied string
             num is "P6V", "P25V", "N25V", P50V has been removed, refer to virtual instrument
             optionally add _isense and _vsense readback channels
@@ -44,7 +45,7 @@ class agilent_e3631a(agilent_e36xxa):
 
         Raises:
             Exception: On error condition.
-        '''
+        """
         num = num.upper()
         if num not in ['P6V', 'P25V', 'N25V']:
             raise Exception(f'Invalid channel number "{num}"')

@@ -8,33 +8,33 @@ import abc
 class relay(instrument):
     @abc.abstractmethod
     def add_channel(self, channel_name, channel_number):
-        '''placeholder
+        """placeholder.
 
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
-        '''
+        """
 
     @abc.abstractmethod
     def _set_relay(self, channel_number, state):
-        '''placeholder
+        """placeholder.
 
         Args:
             channel_number: Physical channel number.
             state: State.
-        '''
+        """
 
     @abc.abstractmethod
     def _get_state(self, channel_number):
-        '''placeholder
+        """placeholder.
 
         Args:
             channel_number: Physical channel number.
-        '''
+        """
 
     @abc.abstractmethod
     def _all_off(self):
-        '''placeholder'''
+        """Placeholder."""
 
 
 class ftdi_relay(relay):
@@ -62,7 +62,7 @@ class ftdi_relay(relay):
         # TODO : add exit cleanup method
 
     def add_channel(self, channel_name, channel_number):
-        '''Adds a channel for a relay on the board
+        """Adds a channel for a relay on the board.
 
         Args:
             channel_name: Name for the new channel.
@@ -70,7 +70,7 @@ class ftdi_relay(relay):
 
         Returns:
             Result value.
-        '''
+        """
         assert self.rb.RELAY_MIN <= channel_number and channel_number <= self.rb.RELAY_MAX, f'Channel number must correspond to a relay between {self.rb.RELAY_MIN} and {self.rb.RELAY_MAX}.'
         new_channel = integer_channel(
             channel_name,
@@ -407,6 +407,7 @@ class FT245R:
     def list_dev(self):
         """
         Returns the list of FT245R devices.
+
         @return: device list
 
         Returns:

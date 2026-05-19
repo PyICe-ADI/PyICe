@@ -1,5 +1,5 @@
 def bounded(value, min_value=None, max_value=None, key=None):
-    '''Clamp value between min_value and max_value.
+    """Clamp value between min_value and max_value.
 
     >>> bounded(5, min_value=0, max_value=10)
     5
@@ -20,7 +20,7 @@ def bounded(value, min_value=None, max_value=None, key=None):
 
     Returns:
         Result value.
-    '''
+    """
     kwargs = {}
     if key is not None:
         kwargs['key'] = key

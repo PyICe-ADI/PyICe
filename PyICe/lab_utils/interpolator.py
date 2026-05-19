@@ -23,7 +23,8 @@ import operator
 
 
 class interpolator(object):
-    '''linear interpolator/extrapolator between/beyond defined points
+    """Linear interpolator/extrapolator between/beyond defined points.
+
         see also interpolating_spline and smooth_spline for other options with
         additional filtering/compression
 
@@ -41,7 +42,7 @@ class interpolator(object):
     >>> multi = interpolator([[0, 0], [1, 10], [2, 40], [3, 90]])
     >>> multi(1.5)
     25.0
-    '''
+    """
 
     def __init__(self, points_list=None):
         self._points = []
@@ -80,17 +81,19 @@ class interpolator(object):
         self.check_monotonicity()
 
     def add_points(self, point_list):
-        '''expects 2d list of the form [[x0,y0],[x1,y1],...[xn,yn]]
+        """Expects 2d list of the form [[x0,y0],[x1,y1],...[xn,yn]].
+
         the points must be strictly monotonic, but not necessarily sorted
 
         Args:
             point_list: Point list.
-        '''
+        """
         for point in point_list:
             self.add_point(point[0], point[1])
 
     def find(self, key, sorted_key_list, value_list):
-        '''function operates independent of object internal data
+        """Function operates independent of object internal data.
+
         expects sorted_key_list to increase strictly monotonically
         will return linear combination of two values from value list weighted
         by distance from two enclosing points of key in sorted_key_list
@@ -105,7 +108,7 @@ class interpolator(object):
 
         Raises:
             Exception: On error condition.
-        '''
+        """
         points = list(zip(sorted_key_list, value_list))
         if len(points) < 2:
             raise Exception('At least two points are required '
@@ -144,7 +147,7 @@ class interpolator(object):
 
 
 def cmp(a, b):
-    '''Returns -1, 0, +1 if a < b, a == b, or a > b, respectively. (was built-in in Python 2)
+    """Returns -1, 0, +1 if a < b, a == b, or a > b, respectively. (was built-in in Python 2).
 
     Args:
         a: A.
@@ -152,5 +155,5 @@ def cmp(a, b):
 
     Returns:
         Result value.
-    '''
+    """
     return (a > b) - (a < b)

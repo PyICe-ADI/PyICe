@@ -6,9 +6,9 @@ DEFAULT_AUTHKEY = b'ltc_lab'
 
 
 class threaded_writer(object):
-    '''helper to perform some task in parallel with test script at fixed rate'''
+    """Helper to perform some task in parallel with test script at fixed rate."""
     class stop_thread(threading.Thread):
-        '''Thread extended to have stop() method. Threads cannot be restarted after stopping. Make a new one to restart.'''
+        """Thread extended to have stop() method. Threads cannot be restarted after stopping. Make a new one to restart."""
 
         def __init__(self, stop_event, stopped_event, queue,
                      group=None, target=None, name=None, args=(), kwargs={}):
@@ -26,7 +26,7 @@ class threaded_writer(object):
             self.setDaemon(True)
 
         def stop(self):
-            '''stop thread. thread cannot be restarted.'''
+            """Stop thread. thread cannot be restarted."""
             self.stop_event.set()
 
         def set_time_interval(self, time_interval):
@@ -39,13 +39,13 @@ class threaded_writer(object):
         self._threads = []
 
     def _check_threads(self):
-        '''remove terminated threads from internal list'''
+        """Remove terminated threads from internal list."""
         for thread in self._threads[:]:
             if thread.stopped_event.is_set():
                 self._threads.remove(thread)
 
     def stop_all(self):
-        '''stop all threads. threads cannot be restarted.'''
+        """Stop all threads. threads cannot be restarted."""
         self._check_threads()
         for thread in self._threads[:]:
             thread.stop()
@@ -53,8 +53,9 @@ class threaded_writer(object):
 
     def connect_channel(self, channel_name, time_interval, sequence=None,
                         start=True, address='localhost', port=5001, authkey=DEFAULT_AUTHKEY):
-        '''
+        """
         Write each element of sequence in turn to channel_name, waiting time_interval between writes.
+
         If sequence is None, Periodically read and re-write channel as keepalive.
         Thread safety provided by remote channel server infrastructure.
         First thread must call master.serve() and test script should call master.attach().
@@ -70,7 +71,7 @@ class threaded_writer(object):
 
         Returns:
             Result value.
-        '''
+        """
         from PyICe import lab_core
         m = lab_core.master()
         m.attach(address, port, authkey)
@@ -91,8 +92,9 @@ class threaded_writer(object):
             return self.add_function(sequencer(), time_interval, start)
 
     def add_function(self, function, time_interval, start=True):
-        '''
+        """
         Periodically execute function.
+
         No thread safety. Use caution with shared interfaces or use separate remote channel clients with each function. See example above.
 
         Args:
@@ -102,7 +104,7 @@ class threaded_writer(object):
 
         Returns:
             Result value.
-        '''
+        """
         stop_event = threading.Event()
         stopped_event = threading.Event()
         qq = queue.Queue()
@@ -123,7 +125,7 @@ class threaded_writer(object):
         return thread
 
     def _task(self, function, time_interval, stop_event, stopped_event, qq):
-        '''thread handling loop. processes input Event to request thread termination and sends event back when thread terminates.
+        """Thread handling loop. processes input Event to request thread termination and sends event back when thread terminates.
 
         Args:
             function: Function.
@@ -131,7 +133,7 @@ class threaded_writer(object):
             stop_event: Stop event.
             stopped_event: Stopped event.
             time_interval: Time interval.
-        '''
+        """
         dly = delay_loop()
         params = {}
         params['time_interval'] = time_interval

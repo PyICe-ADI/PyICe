@@ -1,5 +1,5 @@
-'''
-Linear Technology Compliant Plot Generator
+"""
+Linear Technology Compliant Plot Generator.
 
 This program can be used to generate plots for general lab use or to
 generate plots that can be imported directly into a datasheet in
@@ -314,7 +314,7 @@ PyICe/Examples/LTC_plot_example/LTC_plot_example.py
   If you get a warning about missing Linear fonts and you have them installed,
   try deleting: "C:\\\\Users\\\\%username%\\\\.matplotlib\\\\fontList.cache and tex.cache"
 
-'''
+"""
 
 import numpy as np
 import matplotlib
@@ -345,7 +345,8 @@ class PyICe_data_base():
 class plot(object):
     def __init__(self, plot_title, plot_name, xaxis_label, yaxis_label,
                  xlims, ylims, xminor, xdivs, yminor, ydivs, logx, logy):
-        '''A plot is just a record of what you want to plot and how you want it to look.
+        """A plot is just a record of what you want to plot and how you want it to look.
+
         It must be added to a Page before it can be exported.
         Start by creating as many plots as you like and adding data and various annotations to them.
         Once you add your plot or plots to a Page you can generate an SVG or PDF of the Page.
@@ -363,7 +364,7 @@ class plot(object):
             ydivs: Ydivs.
             ylims: Ylims.
             yminor: Yminor.
-        '''
+        """
         self.plot_title = plot_title
         self.plot_name = plot_name
         self.xaxis_label = xaxis_label
@@ -437,7 +438,7 @@ class plot(object):
 
     def add_horizontal_line(self, value, xrange=None, note=None,
                             axis=1, color=None, linestyle=None, linewidth=None):
-        '''This can be useful for annotating limit lines. It can make dotted red lines for example.
+        """This can be useful for annotating limit lines. It can make dotted red lines for example.
 
         Args:
             axis: Axis.
@@ -447,7 +448,7 @@ class plot(object):
             note: Note.
             value: Value to set.
             xrange: Xrange.
-        '''
+        """
         if color is None:
             color = [1, 0, 0]
         ylims = self.ylims if axis == 1 else self.y2_axis_params["ylims"]
@@ -530,7 +531,7 @@ class plot(object):
 
     def add_vertical_line(self, value, yrange=None, note=None,
                           axis=1, color=None, linestyle=None, linewidth=None):
-        '''This can be useful for annotating limit lines. It can make dotted red lines for example.
+        """This can be useful for annotating limit lines. It can make dotted red lines for example.
 
         Args:
             axis: Axis.
@@ -543,7 +544,7 @@ class plot(object):
 
         Raises:
             Exception: On error condition.
-        '''
+        """
         if color is None:
             color = [1, 0, 0]
         if axis not in [1, 2]:
@@ -640,7 +641,8 @@ class plot(object):
             self.y2_axis_params["histo_data"].append(histo_data)
 
     def make_second_y_axis(self, yaxis_label, ylims, yminor, ydivs, logy):
-        '''A second (right side) y axis is useful if two very different data sets need to be plotted against the same indepdendent axis.
+        """A second (right side) y axis is useful if two very different data sets need to be plotted against the same indepdendent axis.
+
         Be sure to use the same number of divisions on each y-axis to have sensible (common) graticules.
 
         Args:
@@ -649,7 +651,7 @@ class plot(object):
             ydivs: Ydivs.
             ylims: Ylims.
             yminor: Yminor.
-        '''
+        """
         self.y2_axis_params["axis_is_used"] = True
         self.y2_axis_params["yaxis_label"] = yaxis_label
         self.y2_axis_params["ylims"] = ylims
@@ -659,7 +661,7 @@ class plot(object):
 
     def add_legend(self, axis, location=(
             0, 0), justification='lower left', use_axes_scale=False, fontsize=7):
-        '''Place a legend on the graph. The legend labels were acquired from the legend argument in the add_trace call. Position supports data axes and absolute axes.
+        """Place a legend on the graph. The legend labels were acquired from the legend argument in the add_trace call. Position supports data axes and absolute axes.
 
         Args:
             axis: Axis.
@@ -667,7 +669,7 @@ class plot(object):
             justification: Justification.
             location: Location.
             use_axes_scale: Use axes scale.
-        '''
+        """
         if axis == 1:
             self.y1_axis_params["place_legend"] = True
             self.y1_axis_params["legend_loc"] = location
@@ -683,7 +685,7 @@ class plot(object):
 
     def add_note(self, note, location=None, use_axes_scale=True, fontsize=7,
                  axis=1, horizontalalignment="left", verticalalignment="bottom"):
-        '''Add an arbitratry note anywhere on the graph. Position supports data axes and absolute axes.
+        """Add an arbitratry note anywhere on the graph. Position supports data axes and absolute axes.
 
         Args:
             axis: Axis.
@@ -693,7 +695,7 @@ class plot(object):
             note: Note.
             use_axes_scale: Use axes scale.
             verticalalignment: Verticalalignment.
-        '''
+        """
         if location is None:
             location = [0.05, 0.5]
         self.notes.append({"note": note,
@@ -706,7 +708,7 @@ class plot(object):
 
     def add_arrow(self, text, text_location, arrow_tip,
                   use_axes_scale=True, fontsize=7):
-        '''Adds a note and an arrow pointing to something. The arrow shaft emanates from the center of the note text and the arrow tip lands on the arrow top point. Both position follow either the data axes and absolute axes.
+        """Adds a note and an arrow pointing to something. The arrow shaft emanates from the center of the note text and the arrow tip lands on the arrow top point. Both position follow either the data axes and absolute axes.
 
         Args:
             arrow_tip: Arrow tip.
@@ -714,7 +716,7 @@ class plot(object):
             text: Text.
             text_location: Text location.
             use_axes_scale: Use axes scale.
-        '''
+        """
         self.arrows.append({"text": text,
                             "text_location": text_location,
                             "arrow_tip": arrow_tip,
@@ -723,14 +725,14 @@ class plot(object):
                             })
 
     def create_svg(self, file_basename):
-        '''shortcut to create SVG for a single plot without having to construct a Page.
+        """Shortcut to create SVG for a single plot without having to construct a Page.
 
         Args:
             file_basename: File basename.
 
         Returns:
             Result value.
-        '''
+        """
         page = Page(rows_x_cols=None, page_size=None, plot_count=1)
         page.add_plot(plot=self)
         return page.create_svg(file_basename)
@@ -777,7 +779,8 @@ class plot(object):
 
 class scope_plot(plot):
     def __init__(self, plot_title, plot_name, xaxis_label, xlims, ylims):
-        '''A plot is just a record of what you want to plot and how you want it to look.
+        """A plot is just a record of what you want to plot and how you want it to look.
+
         It must be added to a Page before it can be exported.
         Start by creating as many plots as you like and adding data and various annotations to them.
         Once you add your plot or plots to a Page you can generate an SVG or PDF of the Page.
@@ -790,7 +793,7 @@ class scope_plot(plot):
             xaxis_label: Xaxis label.
             xlims: Xlims.
             ylims: Ylims.
-        '''
+        """
         self.plot_title = plot_title
         self.plot_name = plot_name
         self.xaxis_label = xaxis_label
@@ -927,7 +930,8 @@ class scope_plot(plot):
 
 class Page():
     def __init__(self, rows_x_cols=None, page_size=None, plot_count=None):
-        '''A Page containing one or more plots can be exported as a PDF or SVG.
+        """A Page containing one or more plots can be exported as a PDF or SVG.
+
         Alternately you can kit the page for datasheet submission.
         This is where the plots are actually "constructed" from matplotlib objects.
 
@@ -938,7 +942,7 @@ class Page():
 
         Raises:
             Exception: On error condition.
-        '''
+        """
         #################################################################
         # Create the matplotlib Figure and do some datasheet setup      #
         #################################################################
@@ -1670,8 +1674,9 @@ class Page():
 
 
 class Multipage_pdf():
-    '''Add one or more Pages to a Multipage_pdf to keep your page sizes manageable (such as 8.5x11).
-    Multipage_pdf also support kit_datasheet().'''
+    """Add one or more Pages to a Multipage_pdf to keep your page sizes manageable (such as 8.5x11).
+
+    Multipage_pdf also support kit_datasheet()."""
 
     def __init__(self):
         self.page_list = []
@@ -1726,14 +1731,14 @@ class Multipage_pdf():
 
 
 class color_gen(object):
-    '''Color yielding generator. Returns a new color each time an instance is called'''
+    """Color yielding generator. Returns a new color each time an instance is called."""
 
     def __init__(self, rollover=True):
-        '''set rollover False to cause an IndexError exception when colors are exhausted
+        """Set rollover False to cause an IndexError exception when colors are exhausted.
 
         Args:
             rollover: Rollover.
-        '''
+        """
         self.colors = MARCOM_COLORSfracRGB[:]
         self.reset()
         self.rollover = rollover
@@ -1746,13 +1751,14 @@ class color_gen(object):
         return color
 
     def reset(self):
-        '''start color sequence over'''
+        """Start color sequence over."""
         self.index = 0
 
 
 def list_markers():
-    '''Valid linestyles are ['-' '--' '-.' ':' 'None' ' ' '']
-    Valid markers are [':' '.' ',' 'o' 'v' '^' '<' '>' '1' '2' '3' '4' '8' 's' 'p' '*' 'h' 'H' '+' 'x' 'D' 'd' '|' '_' TICKLEFT TICKRIGHT TICKUP TICKDOWN CARETLEFT CARETRIGHT CARETUP CARETDOWN]'''
+    """Valid linestyles are ['-' '--' '-.' ':' 'None' ' ' ''].
+
+    Valid markers are [':' '.' ',' 'o' 'v' '^' '<' '>' '1' '2' '3' '4' '8' 's' 'p' '*' 'h' 'H' '+' 'x' 'D' 'd' '|' '_' TICKLEFT TICKRIGHT TICKUP TICKDOWN CARETLEFT CARETRIGHT CARETUP CARETDOWN]"""
     print()
     print(
         "Valid markers are: " +

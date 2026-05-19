@@ -3,11 +3,13 @@ from .. import twi_interface
 
 
 class AD5259(instrument):
-    '''Analog Devices Nonvolatile, I2C-Compatible 256-Position, Digital Potentiometer
-    https://www.analog.com/media/en/technical-documentation/data-sheets/ad5259.pdf'''
+    """Analog Devices Nonvolatile, I2C-Compatible 256-Position, Digital Potentiometer.
+
+    https://www.analog.com/media/en/technical-documentation/data-sheets/ad5259.pdf"""
 
     def __init__(self, interface_twi, addr7, full_scale_ohms):
-        '''interface_twi is a PyICe interface_twi
+        """Interface_twi is a PyICe interface_twi.
+
         addr7 is the 7-bit I2C address of the AD5259 set by pinstrapping.
 
         Args:
@@ -17,7 +19,7 @@ class AD5259(instrument):
 
         Raises:
             ValueError: On error condition.
-        '''
+        """
         instrument.__init__(
             self, f'Analog Devices I2C-Compatible 256-Position, Digital Potentiometer at 0x{addr7:X}')
         self._base_name = 'AD5259'
@@ -86,11 +88,11 @@ class AD5259(instrument):
 
     def add_channel_wiper(self, channel_name):
         def _write_wiper(value):
-            '''value is between 0 and 1. DAC is biased toward 0 so that full scale is not achievable
+            """Value is between 0 and 1. DAC is biased toward 0 so that full scale is not achievable.
 
             Args:
                 value: Value to set.
-            '''
+            """
             assert value >= 0 and value <= 1
             self._write_rdac(min(int(round(value * 2**8)), 2**8 - 1))
         self.wiper_channel = channel(channel_name, write_function=_write_wiper)

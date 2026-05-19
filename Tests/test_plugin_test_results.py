@@ -1,4 +1,4 @@
-"""Unit tests for PyICe plugins/test_results.py
+"""Unit tests for PyICe plugins/test_results.py.
 
 Tests the pure-logic utility functions, data structures, evaluation
 logic, and JSON round-trip serialization/deserialization.

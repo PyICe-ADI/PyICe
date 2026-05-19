@@ -3,11 +3,13 @@ import datetime
 
 
 class delay_loop(object):
-    '''make constant loop delay independent of loop processing time by measuring time at beginning
-        and end of loop and adding extra delay as necessary'''
+    """Make constant loop delay independent of loop processing time by measuring time at beginning.
+
+        and end of loop and adding extra delay as necessary"""
 
     def __init__(self, strict=False, begin=True, no_drift=True):
-        '''Set strict to True to raise an Exception if loop time is longer than requested delay.
+        """Set strict to True to raise an Exception if loop time is longer than requested delay.
+
         Timer will automatically begin when the object is instantiated if begin=True.
           To start timer only when ready, set begin=False and call begin() method to start timer.
         If no_drift=True, delay loop will manage loop time over-runs by debiting extra time from next cycle.
@@ -19,7 +21,7 @@ class delay_loop(object):
             begin: Begin.
             no_drift: No drift.
             strict: Strict.
-        '''
+        """
         self.strict = strict
         self.no_drift = no_drift
         self.count = 0
@@ -33,35 +35,36 @@ class delay_loop(object):
         return self.delay(seconds)
 
     def get_count(self):
-        '''returns total number of times delay() method called
+        """Returns total number of times delay() method called.
 
         Returns:
             Result value.
-        '''
+        """
         return self.count
 
     def get_total_time(self):
-        '''returns total number of seconds since first delay
+        """Returns total number of seconds since first delay.
 
         Returns:
             Result value.
-        '''
+        """
         return (datetime.datetime.now(datetime.UTC) -
                 self.start_time).total_seconds()
 
     def begin(self, offset=0):
-        '''make note of begin time for loop measurement. Use offset to adjust the begin time in case of overrun on last cycle.
+        """Make note of begin time for loop measurement. Use offset to adjust the begin time in case of overrun on last cycle.
 
         Args:
             offset: Offset value.
-        '''
+        """
         if self.begin_time is None:
             self.start_time = datetime.datetime.now(datetime.UTC)
         self.begin_time = datetime.datetime.now(
             datetime.UTC) + datetime.timedelta(seconds=offset)
 
     def delay(self, seconds):
-        '''delay extra time to make loop time constant
+        """Delay extra time to make loop time constant.
+
             returns actual delay time achieved
 
         Args:
@@ -72,7 +75,7 @@ class delay_loop(object):
 
         Raises:
             Exception: On error condition.
-        '''
+        """
         if self.begin_time is None:
             raise Exception('Call begin() method before delay().')
         self.count += 1
@@ -106,7 +109,7 @@ class delay_loop(object):
         return self.delay_time
 
     def time_remaining(self, loop_time):
-        '''Use this in a while loop to perform another function for duration loop_time. Test the result for 0 or less.
+        """Use this in a while loop to perform another function for duration loop_time. Test the result for 0 or less.
 
         Args:
             loop_time: Loop time.
@@ -116,7 +119,7 @@ class delay_loop(object):
 
         Raises:
             Exception: On error condition.
-        '''
+        """
         if self.begin_time is None:
             raise Exception('Call begin() method before time_remaining().')
         remaining_time = loop_time - \
@@ -128,17 +131,17 @@ class delay_loop(object):
         return remaining_time
 
     def delay_margin(self):
-        '''Return extra time remaining (ie sleep time) before last call to delay().
+        """Return extra time remaining (ie sleep time) before last call to delay().
 
         Returns:
             Result value.
-        '''
+        """
         return self.delay_time
 
     def achieved_loop_time(self):
-        '''Return previous actual achieved loop time (including any overrun).
+        """Return previous actual achieved loop time (including any overrun).
 
         Returns:
             Result value.
-        '''
+        """
         return self.loop_time

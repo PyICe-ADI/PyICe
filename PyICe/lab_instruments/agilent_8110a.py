@@ -2,11 +2,12 @@ from PyICe.lab_core import *  # noqa: F403
 
 
 class Agilent_8110a(scpi_instrument):
-    '''
-    HP 150MHz Dual Channel Pattern Generator from the early 1990's
+    """
+    HP 150MHz Dual Channel Pattern Generator from the early 1990's.
+
     The manual advises to use the short form of SCPI commands to save communication time since this thing has a lousy GPIB port (Dare I say, even, "HPIB" port?).
     It also advises to turn the display off but there doesn't seem to be a speed issue turning off seems ill advised for debug reasons.
-    '''
+    """
 
     def __init__(self, interface_visa, plugin, debug_comms=False):
         self._debug_comms = debug_comms
@@ -25,7 +26,7 @@ class Agilent_8110a(scpi_instrument):
         self.timestep = speeds[plugin]
 
     def add_channel_trigger_source(self, channel_name):
-        '''
+        """
         Sets the trigger source of the instrument.
 
         Args:
@@ -33,7 +34,7 @@ class Agilent_8110a(scpi_instrument):
 
         Returns:
             Result value.
-        '''
+        """
         sources = {"IMMEDIATE": {"COMMAND": "IMM", "COMMENT": "Also known as CONTINUOUS through the front panel, makes it free-run."},
                    "INTERNAL": {"COMMAND": "INT", "COMMENT": "Unknown - Untested - gives SCPI errors. Please update if you know."},
                    "INTERNAL1": {"COMMAND": "INT1", "COMMENT": "Unknown - Untested - gives SCPI errors. Please update if you know."},
@@ -60,7 +61,7 @@ class Agilent_8110a(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_trigger_sense(self, channel_name):
-        '''
+        """
         Sets the trigger sense of the instrument to EDGE or LEVEL.
 
         Args:
@@ -68,7 +69,7 @@ class Agilent_8110a(scpi_instrument):
 
         Returns:
             Result value.
-        '''
+        """
         def set_trigger_sense(sense):
             if sense not in ["EDGE", "LEVEL"]:
                 raise Exception(
@@ -81,7 +82,7 @@ class Agilent_8110a(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_trigger_impedance(self, channel_name):
-        '''
+        """
         Sets the impedance of the EXT INPUT connector.
 
         Args:
@@ -89,7 +90,7 @@ class Agilent_8110a(scpi_instrument):
 
         Returns:
             Result value.
-        '''
+        """
         def set_trigger_impedance(impedance):
             if impedance not in [50, "10K"]:
                 raise Exception(
@@ -104,7 +105,7 @@ class Agilent_8110a(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_arm_level(self, channel_name):
-        '''
+        """
         Sets the trigger level of the front panel EXT INPUT trigger input.
 
         Args:
@@ -112,7 +113,7 @@ class Agilent_8110a(scpi_instrument):
 
         Returns:
             Result value.
-        '''
+        """
         def set_arm_level(voltage):
             self.get_interface().write(f":ARM:LEV {voltage:0.4f}V")
             self.operation_complete()
@@ -122,7 +123,7 @@ class Agilent_8110a(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_trigger_slope(self, channel_name):
-        '''
+        """
         Sets the trigger slope of the EXT INPUT connector.
 
         Args:
@@ -130,7 +131,7 @@ class Agilent_8110a(scpi_instrument):
 
         Returns:
             Result value.
-        '''
+        """
         slopes = {"POSITIVE": {"COMMAND": "POS", "COMMENT": "Positive Edge"},
                   "NEGATIVE": {"COMMAND": "NEG", "COMMENT": "Negative Edge"},
                   "EITHER": {"COMMAND": "EITH", "COMMENT": "Either Edge"},
@@ -151,8 +152,9 @@ class Agilent_8110a(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_ouput_mode(self, channel_name):
-        '''
+        """
         Sets the output of the two channels to be current mode or voltage mode (yes this instrumnt supports current mode - woot!).
+
         There is no independent mode control per channel, it's both or none.
 
         Args:
@@ -160,7 +162,7 @@ class Agilent_8110a(scpi_instrument):
 
         Returns:
             Result value.
-        '''
+        """
         def set_ouput_mode(mode):
             if mode not in ["VOLTAGE", "CURRENT"]:
                 raise Exception(
@@ -174,7 +176,7 @@ class Agilent_8110a(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_ouput_state(self, channel_name, number):
-        '''
+        """
         Sets the output state of each channel to on or off.
 
         Args:
@@ -183,7 +185,7 @@ class Agilent_8110a(scpi_instrument):
 
         Returns:
             Result value.
-        '''
+        """
         def set_ouput_state(state):
             if state not in ["ON", "OFF", True, False]:
                 raise Exception(
@@ -200,7 +202,7 @@ class Agilent_8110a(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_ouput_polarity(self, channel_name, number):
-        '''
+        """
         Sets the output polarity of each channel to NORMAL or INVERTED.
 
         Args:
@@ -209,7 +211,7 @@ class Agilent_8110a(scpi_instrument):
 
         Returns:
             Result value.
-        '''
+        """
         def set_ouput_polarity(polarity):
             if polarity not in ["NORMAL", "INVERTED"]:
                 raise Exception(
@@ -223,8 +225,9 @@ class Agilent_8110a(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_ouput_impedance(self, channel_name, number):
-        '''
+        """
         Sets the source impedance of the signal coming out of this instrument.
+
         Only 50Ω and 1kΩ are available.
         The instrument will round the requested value to the nearer of these but this driver only supports those two to prevent confusion.
         See also: add_channel_external_impedance() for the expected downstream impedance.
@@ -235,7 +238,7 @@ class Agilent_8110a(scpi_instrument):
 
         Returns:
             Result value.
-        '''
+        """
         def set_ouput_impedance(impedance):
             if impedance not in [50, "1K"]:
                 raise Exception(
@@ -249,8 +252,9 @@ class Agilent_8110a(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_external_impedance(self, channel_name, number):
-        '''
+        """
         Sets the expected external impedance of the downstream client.
+
         This presumably lets you tell the instrument what voltage to make downstream without having to work out the voltage divider ratio yourself.
         Values from 2.5Ω to 999kΩ are "Specified" (meaning "supported" or what?) but the instrument seems to take and hold values outside this range without error.
         This driver will only support the so-called "Specified" range.
@@ -262,7 +266,7 @@ class Agilent_8110a(scpi_instrument):
 
         Returns:
             Result value.
-        '''
+        """
         def set_external_impedance(impedance):
             self.get_interface().write(
                 f":OUTP{number}:IMP:EXT {impedance:0.4f}OHM")
@@ -275,8 +279,9 @@ class Agilent_8110a(scpi_instrument):
 
     def add_channel_high_voltage_level(
             self, channel_name, number, scale_factor=1):
-        '''
+        """
         Sets the high level of the voltage waveform while being aware of ratio of the downstream impedance and its own source imepdance.
+
         The scale_factor argument can be used to adjust for intentional impedance in the circuit such as termination and divider networks, etc.
 
         Args:
@@ -286,7 +291,7 @@ class Agilent_8110a(scpi_instrument):
 
         Returns:
             Result value.
-        '''
+        """
         def set_high_voltage_level(voltage):
             self.get_interface().write(
                 f":SOUR:VOLT{number}:LEV:IMM:HIGH {voltage * scale_factor}V")
@@ -299,8 +304,9 @@ class Agilent_8110a(scpi_instrument):
 
     def add_channel_low_voltage_level(
             self, channel_name, number, scale_factor=1):
-        '''
+        """
         Sets the Low level of the voltage waveform while being aware of ratio of the downstream impedance and its own source imepdance.
+
         The scale_factor argument can be used to adjust for intentional impedance in the circuit such as termination and divider networks, etc.
 
         Args:
@@ -310,7 +316,7 @@ class Agilent_8110a(scpi_instrument):
 
         Returns:
             Result value.
-        '''
+        """
         def set_low_voltage_level(voltage):
             self.get_interface().write(
                 f":SOUR:VOLT{number}:LEV:IMM:LOW {voltage * scale_factor:0.4f}V")
@@ -322,7 +328,7 @@ class Agilent_8110a(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_high_current_level(self, channel_name, number):
-        '''
+        """
         Sets the high level of the current waveform while being aware of ratio of the downstream impedance and its own source imepdance.
 
         Args:
@@ -331,7 +337,7 @@ class Agilent_8110a(scpi_instrument):
 
         Returns:
             Result value.
-        '''
+        """
         def set_high_current_level(current):
             self.get_interface().write(
                 f":SOUR:CURR{number}:LEV:IMM:HIGH {current:0.5f}A")
@@ -343,7 +349,7 @@ class Agilent_8110a(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_low_current_level(self, channel_name, number):
-        '''
+        """
         Sets the Low level of the current waveform while being aware of ratio of the downstream impedance and its own source imepdance.
 
         Args:
@@ -352,7 +358,7 @@ class Agilent_8110a(scpi_instrument):
 
         Returns:
             Result value.
-        '''
+        """
         def set_low_current_level(current):
             self.get_interface().write(
                 f":SOUR:CURR{number}:LEV:IMM:LOW {current:0.5f}A")
@@ -364,7 +370,7 @@ class Agilent_8110a(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_transition_leading(self, channel_name, number):
-        '''
+        """
         Sets the leading edge speed of the waveform.
 
         Args:
@@ -373,7 +379,7 @@ class Agilent_8110a(scpi_instrument):
 
         Returns:
             Result value.
-        '''
+        """
         def set_transition_leading(time):
             self.get_interface().write(f":SOUR:PULS:TRAN{number}:LEAD {time}S")
             self.operation_complete()
@@ -384,7 +390,7 @@ class Agilent_8110a(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_transition_trailing(self, channel_name, number):
-        '''
+        """
         Sets the trailing edge speed of the waveform.
 
         Args:
@@ -393,7 +399,7 @@ class Agilent_8110a(scpi_instrument):
 
         Returns:
             Result value.
-        '''
+        """
         def set_transition_trailing(time):
             self.get_interface().write(f":SOUR:PULS:TRAN{number}:TRA {time}S")
             self.operation_complete()
@@ -404,8 +410,9 @@ class Agilent_8110a(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_pulse_width(self, channel_name, number):
-        '''
+        """
         Sets the pulse width of a given channel?
+
         Unclear if this applies in Pattern mode.
 
         Args:
@@ -414,7 +421,7 @@ class Agilent_8110a(scpi_instrument):
 
         Returns:
             Result value.
-        '''
+        """
         def set_pulse_width(pulse_width):
             self.get_interface().write(
                 f":SOUR:PULS:WIDT{number} {pulse_width}S")
@@ -425,8 +432,9 @@ class Agilent_8110a(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_pulse_period(self, channel_name):
-        '''
+        """
         Sets the pulse period.
+
         In Pattern mode, this seems to set both the mark and space times of each pulse.
 
         Args:
@@ -434,7 +442,7 @@ class Agilent_8110a(scpi_instrument):
 
         Returns:
             Result value.
-        '''
+        """
         def set_pulse_period(pulse_period):
             self.get_interface().write(f":SOUR:PULS:PER {pulse_period}S")
             self.operation_complete()
@@ -444,8 +452,9 @@ class Agilent_8110a(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_delay(self, channel_name, number):
-        '''
+        """
         Sets the delay of a given channel.
+
         Adding a delay of 800ps anecdotally makes the two channels line perfectly. This may only be true when the edges are set to 2ns so caveat-emptor.
         **** WARNING ****
         Setting the delay of a channel that is in manual trigger pattern mode causes the pattern become to malformed and actually hangs the machine from accepting further trigger requests.
@@ -459,7 +468,7 @@ class Agilent_8110a(scpi_instrument):
 
         Returns:
             Result value.
-        '''
+        """
         def set_delay(delay):
             self.get_interface().write(f":SOUR:PULS:DEL{number} {delay}s")
             self.operation_complete()
@@ -469,7 +478,7 @@ class Agilent_8110a(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_trigger(self, channel_name):
-        '''
+        """
         Triggers the instrument (with SCPI *TRG) assuming it's in manual mode.
 
         Args:
@@ -477,7 +486,7 @@ class Agilent_8110a(scpi_instrument):
 
         Returns:
             Result value.
-        '''
+        """
         def trigger(value):
             self.trigger()
             self.operation_complete()
@@ -487,8 +496,9 @@ class Agilent_8110a(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_pattern(self, channel_name, number):
-        '''
+        """
         Sends a pattern of up to 4096 bits (1's and 0s) to the pattern memory of a given channel.
+
         Available channels are 1, 2 and 3 which is the strobe output on the front panel.
         Data types supported are:
             - CSV lists (no encompassing brackets of any kind). This is useful for use with the PyICe GUI.
@@ -500,7 +510,7 @@ class Agilent_8110a(scpi_instrument):
 
         Returns:
             Result value.
-        '''
+        """
         def set_pattern(pattern):
             if type(pattern) is str:
                 # Always a list of strings hereafter
@@ -520,8 +530,9 @@ class Agilent_8110a(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channels_pattern(self, channel_name):
-        '''
+        """
         Sends a patterns of up to 4096 bits (1's and 0s) to all three channels (1, 2 and Strobe out on the front panel) at the same time.
+
         The lower three bits of each byte control the channels, the upper 5 bits are ignored.
         The bits are as follows:
         Code   Dec  STROBE   OUT2    OUT1
@@ -543,7 +554,7 @@ class Agilent_8110a(scpi_instrument):
 
         Returns:
             Result value.
-        '''
+        """
         def set_patterns(pattern):
             if type(pattern) is str:
                 # Always a list of strings hereafter
@@ -564,7 +575,7 @@ class Agilent_8110a(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_pattern_state(self, channel_name):
-        '''
+        """
         Enables the outputs to follow the pattern generator vs just free running pulses.
 
         Args:
@@ -572,7 +583,7 @@ class Agilent_8110a(scpi_instrument):
 
         Returns:
             Result value.
-        '''
+        """
         def set_pattern_state(state):
             if state not in ["ON", "OFF", True, False]:
                 raise Exception(
@@ -587,7 +598,7 @@ class Agilent_8110a(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_pattern_format(self, channel_name, number):
-        '''
+        """
         Sets the per-channel output patterns to be RZ or NRZ (Return to Zero or Non Return to Zero).
 
         Args:
@@ -596,7 +607,7 @@ class Agilent_8110a(scpi_instrument):
 
         Returns:
             Result value.
-        '''
+        """
         def set_pattern_format(pulse_format):
             if pulse_format not in ["RZ", "NRZ"]:
                 raise Exception(
@@ -610,8 +621,9 @@ class Agilent_8110a(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_pattern_update(self, channel_name):
-        '''
+        """
         Enables or disables the automatic updating of the pattern as a new one is entered.
+
         Not sure if automatic causes automatic triggering of a pattern if set to manual or *TRG software mode but I think it does.
 
         Args:
@@ -619,7 +631,7 @@ class Agilent_8110a(scpi_instrument):
 
         Returns:
             Result value.
-        '''
+        """
         def set_pattern_update(update):
             if update not in ["ON", "OFF", "ONCE"]:
                 raise Exception(

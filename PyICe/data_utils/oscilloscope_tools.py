@@ -6,8 +6,9 @@ import numpy
 
 
 class scope_data():
-    '''This class can be used to convert data read from an oscilloscope's record into a more useful format once it has been logged into a PyICe SQLite database from a normal logger call.
-       It was mainly used with the Agilent/Keysight Infinivision Series MSO-X 3034A Oscilloscopes. It may work for your scope or at least provide a framework for creating your own.'''
+    """This class can be used to convert data read from an oscilloscope's record into a more useful format once it has been logged into a PyICe SQLite database from a normal logger call.
+
+       It was mainly used with the Agilent/Keysight Infinivision Series MSO-X 3034A Oscilloscopes. It may work for your scope or at least provide a framework for creating your own."""
 
     def __init__(self, database, table_name, where_clause=''):
         query = f'SELECT * FROM {table_name} {where_clause}'

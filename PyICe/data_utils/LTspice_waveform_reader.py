@@ -5,7 +5,8 @@ import numpy
 
 class LTspice_wavereader():
     def __init__(self, file_name):
-        '''LTspice has the ability to export waveforms from the waveform viewer.
+        """LTspice has the ability to export waveforms from the waveform viewer.
+
            To export a record of one or more waveforms in a waveform pane, right click in the plane, drop down to 'File' menu and select 'export data as text'.
 
            From the dialog box you should be able to select multiple traces by name and save to a new file.
@@ -20,16 +21,17 @@ class LTspice_wavereader():
 
         Args:
             file_name: File name.
-        '''
+        """
         self.file_name = file_name
 
     def read_file(self, floats=True):
-        '''As returned from the file, each data value would be a string.
+        """As returned from the file, each data value would be a string.
+
            The argument 'floats' (default True) converts all the values to floats presuming that was the intent of the LTCspice excercise.
 
         Args:
             floats: Floats.
-        '''
+        """
         rows = []
         file = open(self.file_name, "r")
         firstline = True
@@ -50,7 +52,8 @@ class LTspice_wavereader():
             column += 1
 
     def resample_timeseries(self, timestep, verbose=False):
-        '''This utility can be used to resample the data with a known fixed time step so that an FFT may be taken.
+        """This utility can be used to resample the data with a known fixed time step so that an FFT may be taken.
+
            LTspice, as with all versions of Spice, generates variable time steps as needed for covergence.
            The first column of data (first dictionary key) is presumed to be the indepdendent variable, or common indepedent variable, across all columns - almost invariably "time".
            The original series is destroyed and replaced with the resampled version.
@@ -58,7 +61,7 @@ class LTspice_wavereader():
         Args:
             timestep: Timestep.
             verbose: If True, print debug output.
-        '''
+        """
 
         keys = [key for key in self.data.keys()]
         native_times = self.data[keys[0]]

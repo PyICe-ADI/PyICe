@@ -5,13 +5,14 @@ COMMA_REPLACEMENT_STRING = hex(random.getrandbits(128))
 
 
 class pds_reader():
-    ''' Reads and parses an Eagle Test System's .pds "Datasheet" file into a reasonable datastructure.
+    """ Reads and parses an Eagle Test System's .pds "Datasheet" file into a reasonable datastructure.
+
         It may have errors, the Eagle schema is a complete C/F of made up nonesene making it difficult to interpret.
         Files structure is as follows:
             Result is a dictionary of test groups keyed by the group name.
                 Each dictionary of test groups is a dictionary of tests keys by the test NUMBER.SUBTESTNUMBER.
                     Each test is a dictionary of parameters keyed by Eagle columns as described by the file section "Datasheet Variable Map".
-        Method get_test(test_number, subtest_number) may be used to tease out a specific test record.'''
+        Method get_test(test_number, subtest_number) may be used to tease out a specific test record."""
 
     def __init__(self, filename):
         with open(filename) as file:

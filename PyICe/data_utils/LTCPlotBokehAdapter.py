@@ -39,7 +39,7 @@ class LTCPlotBokehAdapter:
 
 
 class plot(LTCPlotBokehAdapter):
-    '''bokeh plot adapter'''
+    """Bokeh plot adapter."""
 
     def __init__(self, *args, **kwargs):
         args_map = bind_to_base(
@@ -283,7 +283,7 @@ class plot(LTCPlotBokehAdapter):
 
 
 class Page(LTCPlotBokehAdapter):
-    '''bokeh Page adapter'''
+    """Bokeh Page adapter."""
 
     def __init__(self, *args, **kwargs):
         _args_map = bind_to_base(  # noqa: F841
@@ -348,7 +348,7 @@ class Page(LTCPlotBokehAdapter):
 
 
 class Multipage_pdf(LTCPlotBokehAdapter):
-    '''bokeh Multipage_pdf adapter'''
+    """Bokeh Multipage_pdf adapter."""
 
     def add_page(self, page):
         pass

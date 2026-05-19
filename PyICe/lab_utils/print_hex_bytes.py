@@ -5,7 +5,8 @@ from .print_to_screen import print_to_screen
 def print_hex_bytes(the_bytes, number_of_bytes_per_line=16,
                     number_of_bytes_to_print=None, prefix='',
                     suffix='', show_offsets=False, write=None):
-    '''Given a list of bytes (or other iterable of bytes),
+    """Given a list of bytes (or other iterable of bytes),.
+
     print them like this:
 
     0a 30 01 00 f0 ff 00 00 0a 30 01 00 f0 ff 00 00
@@ -31,7 +32,7 @@ def print_hex_bytes(the_bytes, number_of_bytes_per_line=16,
         suffix: Suffix.
         the_bytes: The bytes.
         write: Write.
-    '''
+    """
     # Validate arguments.
     assert isinstance(the_bytes, collections.Iterable)
     for v in (number_of_bytes_per_line, number_of_bytes_to_print):

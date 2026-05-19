@@ -2,21 +2,21 @@ from ..lab_core import *  # noqa: F403
 
 
 class semiconductor_parameter_analyzer(scpi_instrument):
-    '''Generic parameter analyzer speaking HP4145 Command Set in user mode (US page)'''
+    """Generic parameter analyzer speaking HP4145 Command Set in user mode (US page)."""
 
     def _set_user_mode(self):
         self.get_interface().write(('US'))
 
     def _set_smu_voltage(self, smu_number, v_output=None,
                          i_compliance=None, v_output_range=None):
-        '''set smu voltage and current compliance if enough arguments specified
+        """Set smu voltage and current compliance if enough arguments specified.
 
         Args:
             i_compliance: I compliance.
             smu_number: Smu number.
             v_output: V output.
             v_output_range: V output range.
-        '''
+        """
         if smu_number not in list(self._smu_configuration.keys()):
             self._smu_configuration[smu_number] = {
                 'v_output_range': 0, 'i_output_range': 0}
@@ -42,14 +42,14 @@ class semiconductor_parameter_analyzer(scpi_instrument):
 
     def _set_smu_current(self, smu_number, i_output=None,
                          v_compliance=None, i_output_range=None):
-        '''set smu current and voltage compliance if enough arguments specified
+        """Set smu current and voltage compliance if enough arguments specified.
 
         Args:
             i_output: I output.
             i_output_range: I output range.
             smu_number: Smu number.
             v_compliance: V compliance.
-        '''
+        """
         if smu_number not in list(self._smu_configuration.keys()):
             self._smu_configuration[smu_number] = {
                 'i_output_range': 0, 'v_output_range': 0}
@@ -88,12 +88,12 @@ class semiconductor_parameter_analyzer(scpi_instrument):
         return range_dict[ranges[index]]
 
     def _set_vsource_voltage(self, vsource_number, output):
-        '''set vsource voltage
+        """Set vsource voltage.
 
         Args:
             output: Output.
             vsource_number: Vsource number.
-        '''
+        """
         self.get_interface().write((f"DS {vsource_number:G}, {output:G}"))
 
     def _disable_vs(self, vs_number):

@@ -3,8 +3,9 @@ import numbers
 
 
 def eng_string(x, fmt=':.3g', si=True, units=None):
-    '''
-    Returns float/int value <x> formatted in a simplified engineering format -
+    """
+    Returns float/int value <x> formatted in a simplified engineering format -.
+
     using an exponent that is a multiple of 3.
 
     format: printf-style string used to format the value before the exponent.
@@ -41,7 +42,7 @@ def eng_string(x, fmt=':.3g', si=True, units=None):
 
     Returns:
         Result value.
-    '''
+    """
     assert isinstance(x, numbers.Number)
     if x == 0 or not math.isfinite(x):
         return '{{{}}}'.format(fmt).format(x)

@@ -2,14 +2,14 @@ from ..lab_core import *  # noqa: F403
 
 
 class tektronix_afg3022(scpi_instrument):
-    '''Arbitrary Function Generator - Tektronix AFG3022 '''
+    """Arbitrary Function Generator - Tektronix AFG3022."""
 
     def __init__(self, interface_visa):
-        '''interface_visa
+        """interface_visa.
 
         Args:
             interface_visa: VISA interface instance.
-        '''
+        """
         self._base_name = 'tektronix_afg3022'
         scpi_instrument.__init__(self, f"afg3022 @ {interface_visa}")
         self.add_interface_visa(interface_visa)
@@ -124,7 +124,8 @@ class tektronix_afg3022(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_burstwave_shape(self, channel_name, channel_number):
-        '''Instrument supports SINusoid|SQUare|PULSe|RAMP|DC|SINC|GAUSsian|LORentz|ERISe|EDECay|HAVersine|USER[1]|USER2|USER3|USER4|EMEMory[1]|EMEMory2|EFILe}
+        """Instrument supports SINusoid|SQUare|PULSe|RAMP|DC|SINC|GAUSsian|LORentz|ERISe|EDECay|HAVersine|USER[1]|USER2|USER3|USER4|EMEMory[1]|EMEMory2|EFILe}.
+
         Driver currently supports SINusoid|SQUare|PULSe|RAMP only
 
         Args:
@@ -133,7 +134,7 @@ class tektronix_afg3022(scpi_instrument):
 
         Returns:
             Result value.
-        '''
+        """
         def _write_burstwave_shape(channel_number, value):
             self.get_interface().write(
                 f"SOURce{channel_number}:FUNCtion:SHAPe {value}")
@@ -254,7 +255,7 @@ class tektronix_afg3022(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_burstwave_trigger(self, channel_name, channel_number):
-        '''Sends trigger for all active channels regardless of channel_name or channel_number
+        """Sends trigger for all active channels regardless of channel_name or channel_number.
 
         Args:
             channel_name: Name for the new channel.
@@ -262,7 +263,7 @@ class tektronix_afg3022(scpi_instrument):
 
         Returns:
             Result value.
-        '''
+        """
         def _send_burstwave_trigger(channel_number, value):
             if value.upper() == "TRIGGER":
                 self.trigger()
@@ -281,7 +282,8 @@ class tektronix_afg3022(scpi_instrument):
         return self._add_channel(self.trigger_channel)
 
     def add_channel_continuouswave_shape(self, channel_name, channel_number):
-        '''Instrument supports SINusoid|SQUare|PULSe|RAMP|PRNoise|DC|SINC|GAUSsian|LORentz|ERISe|EDECay|HAVersine|USER[1]|USER2|USER3|USER4|EMEMory[1]|EMEMory2|EFILe}
+        """Instrument supports SINusoid|SQUare|PULSe|RAMP|PRNoise|DC|SINC|GAUSsian|LORentz|ERISe|EDECay|HAVersine|USER[1]|USER2|USER3|USER4|EMEMory[1]|EMEMory2|EFILe}.
+
         Driver currently supports SINusoid|SQUare|PULSe|RAMP|PRNoise only
 
         Args:
@@ -290,7 +292,7 @@ class tektronix_afg3022(scpi_instrument):
 
         Returns:
             Result value.
-        '''
+        """
         def _write_continuouswave_shape(channel_number, value):
             self.get_interface().write(
                 f"SOURce{channel_number}:FUNCtion:SHAPe {value}")

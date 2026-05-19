@@ -2,13 +2,14 @@ from ..lab_core import *  # noqa: F403
 
 
 class hameg_4040(scpi_instrument):
-    '''Hameg Lab Supply, model HMP 4040
+    """Hameg Lab Supply, model HMP 4040.
+
         Four channel lab supply with GPIB interface.
 
         This instrument works by selecting the desired output with one command
         then sending "source" or "measure" commands to that output to set
         or measure voltage and current.
-    '''
+    """
 
     def __init__(self, interface_visa):
         self._base_name = 'hameg_4040'
@@ -25,7 +26,7 @@ class hameg_4040(scpi_instrument):
         self.hameg_suck_time = 0.03
 
     def __del__(self):
-        '''turn OFF all channels'''
+        """Turn OFF all channels."""
         for i in [1, 2, 3, 4]:
             self.get_interface().write(f"INSTRUMENT:SELECT OUTPUT{i}")
             # needed for hw serial on fast linux
@@ -35,16 +36,17 @@ class hameg_4040(scpi_instrument):
         self.get_interface().close()
 
     def set_retries(self, retries):
-        '''attempt to be robust to communication interface problems
+        """Attempt to be robust to communication interface problems.
 
         Args:
             retries: Retries.
-        '''
+        """
         self.retries = retries
 
     def add_channel(self, channel_name, num, ilim=1, delay=0.5,
                     add_extended_channels=True):
-        '''add voltage forcing channel
+        """Add voltage forcing channel.
+
             optionally add voltage force channel, current force channel "_ilim", enable "_enable", voltage sense "_vsense" and current sense "_isense"
             channel_name is channel name, ex: input_voltage
             num is channel number, allowed values are 1, 2, 3, 4
@@ -59,7 +61,7 @@ class hameg_4040(scpi_instrument):
 
         Returns:
             Result value.
-        '''
+        """
         voltage_channel = self.add_channel_voltage(channel_name, num)
         self.write_channel(channel_name, 0)
         voltage_channel.set_write_delay(delay)
@@ -296,7 +298,8 @@ class hameg_4040(scpi_instrument):
         time.sleep(self.hameg_suck_time)  # needed for hw serial on fast linux
 
     def _set_arb_reps(self, arb_cycles):
-        '''Defines the repetition rate of the defined arbitrary waveform for the previous selected channel.
+        """Defines the repetition rate of the defined arbitrary waveform for the previous selected channel.
+
         Up to 255 repetitions are possible. If the repetition rate "0" is selected the arbitrary waveform of
         the previous selected channel will be repeated infinitely.
 
@@ -305,7 +308,7 @@ class hameg_4040(scpi_instrument):
 
         Raises:
             ValueError: On error condition.
-        '''
+        """
         '''SLM: What constitutes a Previous Selected Channel'''
         arb_cycles = 0 if "INF" in ncycle.upper() else int(arb_cycles)
         if arb_cycles not in range(256):
@@ -357,7 +360,7 @@ class hameg_4040(scpi_instrument):
         time.sleep(self.hameg_suck_time)
 
     def _read_voltage_readback(self, num):
-        '''returns the voltage setting as known by the instrument
+        """Returns the voltage setting as known by the instrument.
 
         Args:
             num: Count or number.
@@ -367,7 +370,7 @@ class hameg_4040(scpi_instrument):
 
         Raises:
             this_error: On error condition.
-        '''
+        """
         retry = 0
         while (retry <= self.retries):
             try:
@@ -389,7 +392,7 @@ class hameg_4040(scpi_instrument):
         raise this_error
 
     def _read_current_readback(self, num):
-        '''returns the voltage setting as known by the instrument
+        """Returns the voltage setting as known by the instrument.
 
         Args:
             num: Count or number.
@@ -399,7 +402,7 @@ class hameg_4040(scpi_instrument):
 
         Raises:
             this_error: On error condition.
-        '''
+        """
         retry = 0
         while (retry <= self.retries):
             try:
@@ -421,7 +424,7 @@ class hameg_4040(scpi_instrument):
         raise this_error
 
     def _read_measured_voltage(self, num):
-        '''returns the voltage setting as known by the instrument
+        """Returns the voltage setting as known by the instrument.
 
         Args:
             num: Count or number.
@@ -431,7 +434,7 @@ class hameg_4040(scpi_instrument):
 
         Raises:
             this_error: On error condition.
-        '''
+        """
         retry = 0
         while (retry <= self.retries):
             try:
@@ -453,7 +456,7 @@ class hameg_4040(scpi_instrument):
         raise this_error
 
     def _read_measured_current(self, num):
-        '''returns the voltage setting as known by the instrument
+        """Returns the voltage setting as known by the instrument.
 
         Args:
             num: Count or number.
@@ -463,7 +466,7 @@ class hameg_4040(scpi_instrument):
 
         Raises:
             this_error: On error condition.
-        '''
+        """
         retry = 0
         while (retry <= self.retries):
             try:
@@ -485,7 +488,7 @@ class hameg_4040(scpi_instrument):
         raise this_error
 
     def _read_vsense(self, num):
-        '''returns the voltage measured by the instrument
+        """Returns the voltage measured by the instrument.
 
         Args:
             num: Count or number.
@@ -495,7 +498,7 @@ class hameg_4040(scpi_instrument):
 
         Raises:
             this_error: On error condition.
-        '''
+        """
         retry = 0
         while (retry <= self.retries):
             try:
@@ -518,7 +521,7 @@ class hameg_4040(scpi_instrument):
         raise this_error
 
     def _read_isense(self, num):
-        '''returns the current measured by the instrument
+        """Returns the current measured by the instrument.
 
         Args:
             num: Count or number.
@@ -528,7 +531,7 @@ class hameg_4040(scpi_instrument):
 
         Raises:
             this_error: On error condition.
-        '''
+        """
         retry = 0
         while (retry <= self.retries):
             try:
@@ -552,12 +555,12 @@ class hameg_4040(scpi_instrument):
         raise this_error
 
     def _write_ovp(self, num, voltage):
-        '''Set a channel OVP level
+        """Set a channel OVP level.
 
         Args:
             num: Count or number.
             voltage: Voltage value.
-        '''
+        """
         self.get_interface().write(f"INST:NSEL {num}")
         time.sleep(self.hameg_suck_time)  # needed for hw serial on fast linux
         self.get_interface().ask("*OPC?")
@@ -566,7 +569,7 @@ class hameg_4040(scpi_instrument):
         time.sleep(self.hameg_suck_time)  # needed for hw serial on fast linux
 
     def _read_ovp(self, num):
-        '''Read channel OVP level
+        """Read channel OVP level.
 
         Args:
             num: Count or number.
@@ -576,7 +579,7 @@ class hameg_4040(scpi_instrument):
 
         Raises:
             this_error: On error condition.
-        '''
+        """
         retry = 0
         while (retry <= self.retries):
             try:
@@ -598,14 +601,14 @@ class hameg_4040(scpi_instrument):
         raise this_error
 
     def _read_ovp_status(self, num):
-        '''Read channel OVP level
+        """Read channel OVP level.
 
         Args:
             num: Count or number.
 
         Returns:
             Result value.
-        '''
+        """
         self.get_interface().write(f"INST:NSEL {num}")
         time.sleep(self.hameg_suck_time)  # needed for hw serial on fast linux
         self.get_interface().ask("*OPC?")
@@ -615,14 +618,14 @@ class hameg_4040(scpi_instrument):
         return data
 
     def _read_fuse_status(self, num):
-        '''read if fuse is tripped
+        """Read if fuse is tripped.
 
         Args:
             num: Count or number.
 
         Returns:
             Result value.
-        '''
+        """
         self.get_interface().write(f"INST:NSEL {num}")
         time.sleep(self.hameg_suck_time)  # needed for hw serial on fast linux
         self.get_interface().ask("*OPC?")
@@ -645,11 +648,11 @@ class hameg_4040(scpi_instrument):
             time.sleep(self.hameg_suck_time)
 
     def _write_master_enable(self, state):
-        '''True -> turn on all enabled channels / False -> turn off all channels
+        """True -> turn on all enabled channels / False -> turn off all channels.
 
         Args:
             state: State.
-        '''
+        """
         if state:
             self.get_interface().write("OUTPut:GENeral ON")
             time.sleep(self.hameg_suck_time)

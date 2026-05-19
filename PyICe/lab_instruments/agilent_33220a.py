@@ -3,17 +3,18 @@ import time
 
 
 class agilent_33220a(scpi_instrument):
-    '''Function/Arbitrary Waveform Generator
+    """Function/Arbitrary Waveform Generator.
+
         intrument will default to pulse generation - this driver does not support other functions yet
         main channel controls sending of the trigger (write value = 1)to generate the pulse
-        extended channels will control othe pulse paramters (low voltage, high voltage, pulse width, period and slew rate'''
+        extended channels will control othe pulse paramters (low voltage, high voltage, pulse width, period and slew rate"""
 
     def __init__(self, interface_visa):
-        '''interface_visa
+        """interface_visa.
 
         Args:
             interface_visa: VISA interface instance.
-        '''
+        """
         self._base_name = 'agilent_33220a'
         scpi_instrument.__init__(self, f"33220a @ {interface_visa}")
         self.add_interface_visa(interface_visa)
@@ -27,7 +28,7 @@ class agilent_33220a(scpi_instrument):
 
     def _config_pulse_func(self, high_voltage=3.3, low_voltage=0,
                            period=1e-3, pulse_width=100e-6, cycle_count=1):
-        '''Set to instrument to output pulse.
+        """Set to instrument to output pulse.
 
         Args:
             cycle_count: Cycle count.
@@ -35,7 +36,7 @@ class agilent_33220a(scpi_instrument):
             low_voltage: Low voltage.
             period: Period.
             pulse_width: Pulse width.
-        '''
+        """
         self.get_interface().write("FUNCtion PULSe")
         self.get_interface().write("OUTPut:LOAD 50")
         self._write_high_voltage(high_voltage)
@@ -165,11 +166,11 @@ class agilent_33220a(scpi_instrument):
             self.trigger_channel.write("STANDBY")
 
     def _set_remote_mode(self, remote=True):
-        '''Required for RS-232 control.  Not allowed for GPIB control
+        """Required for RS-232 control.  Not allowed for GPIB control.
 
         Args:
             remote: Remote.
-        '''
+        """
         if remote:
             self.get_interface().write("SYSTem:REMote")
         else:

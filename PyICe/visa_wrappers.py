@@ -1,11 +1,12 @@
-'''
-VISA Emulation Layer
+"""
+VISA Emulation Layer.
+
 ====================
 
 Interface wrappers to use various interfaces as if they were VISA resources
 without requiring an installed VISA library. Facilitates seamless transition
 between physical inrefaces and operating systems.
-'''
+"""
 
 import traceback
 import struct
@@ -86,7 +87,8 @@ class visa_wrapper(object):
 
     def read_values_binary(self, format_str='=B',
                            byte_order='=', terminationCharacter=''):
-        '''Follows Definite Length Arbitrary Block format
+        """Follows Definite Length Arbitrary Block format.
+
         ie ASCII header '#<heder_bytes_following><data_bytes_following><data0>...<dataN>
         eg #40003<byte0><byte1><byte2><byte3>
         format_str and byte_order are passed to struct library for to set word boundaries for unpacking and conversion to numeric types
@@ -99,7 +101,7 @@ class visa_wrapper(object):
 
         Raises:
             NotImplementedError: On error condition.
-        '''
+        """
         raise NotImplementedError(
             'Interface Not Fully Implemented: read_values_binary()')
 
@@ -113,7 +115,8 @@ class visa_wrapper(object):
 
     def ask_for_values_binary(
             self, message, format_str='B', byte_order='=', terminationCharacter=''):
-        '''Follows Definite Length Arbitrary Block format
+        """Follows Definite Length Arbitrary Block format.
+
         ie ASCII header '#<heder_bytes_following><data_bytes_following><data0>...<dataN>
         eg #40003<byte0><byte1><byte2><byte3>
         format_str and byte_order are passed to struct library for to set word boundaries for unpacking and conversion to numeric types
@@ -127,7 +130,7 @@ class visa_wrapper(object):
 
         Returns:
             Result value.
-        '''
+        """
         assert isinstance(message, bytes)
         self.write_raw(message)
         return self.read_values_binary(
@@ -147,11 +150,11 @@ class visa_wrapper(object):
             'Interface Not Fully Implemented: read_raw()')
 
     def resync(self):
-        '''flush buffers to resync after communication fault - usb-serial problem
+        """Flush buffers to resync after communication fault - usb-serial problem.
 
         Returns:
             Result value.
-        '''
+        """
         return ''
 
     def close(self):
@@ -291,7 +294,8 @@ class visa_wrapper_serial(visa_wrapper):
 
     def read_values_binary(self, format_str='B',
                            byte_order='=', terminationCharacter=''):
-        '''Follows Definite Length Arbitrary Block format
+        """Follows Definite Length Arbitrary Block format.
+
         ie ASCII header '#<heder_bytes_following><data_bytes_following><data0>...<dataN>
         eg #40003<byte0><byte1><byte2><byte3>
 
@@ -330,7 +334,7 @@ class visa_wrapper_serial(visa_wrapper):
 
         Raises:
             visaWrapperException: On error condition.
-        '''
+        """
         dbgprint(
             "vvv-- visa_wrapper_serial.read_values_binary({}) entered".format(self.serial_port_name))
         hash = self.ser.read(1)
@@ -380,11 +384,11 @@ class visa_wrapper_serial(visa_wrapper):
         self.ser.close()
 
     def get_serial_port(self):
-        '''Returns the underlying serial port object.
+        """Returns the underlying serial port object.
 
         Returns:
             Result value.
-        '''
+        """
         return self.ser
 
     def __getTimeout(self):
@@ -490,7 +494,7 @@ class visa_wrapper_vxi11(visa_wrapper):
         self.vxi_interface.read_raw()
 
     def resync(self):
-        '''flush buffers to resync after communication fault - usb-serial problem'''
+        """Flush buffers to resync after communication fault - usb-serial problem."""
 
     def close(self):
         self.vxi_interface.close()
@@ -549,7 +553,7 @@ class visa_wrapper_usbtmc(visa_wrapper):
         self.usbtmc_interface.read_raw()
 
     def resync(self):
-        '''flush buffers to resync after communication fault - usb-serial problem'''
+        """Flush buffers to resync after communication fault - usb-serial problem."""
 
     def close(self):
         self.usbtmc_interface.close()
@@ -566,7 +570,7 @@ class visa_wrapper_usbtmc(visa_wrapper):
 
 
 class visa_interface(visa_wrapper):
-    '''agilent visa strips trailing termination character, but NI VISA seems to leave them in response.'''
+    """Agilent visa strips trailing termination character, but NI VISA seems to leave them in response."""
 
     def __init__(self, address, timeout=5):
         if visaMissing:

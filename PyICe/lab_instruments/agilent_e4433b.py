@@ -2,7 +2,7 @@ from ..lab_core import *  # noqa: F403
 
 
 class agilent_e4433b(instrument):
-    '''Agilent E4433B Signal Generator'''
+    """Agilent E4433B Signal Generator."""
 
     def __init__(self, interface_visa):
         self._base_name = 'agilent_e4433b'

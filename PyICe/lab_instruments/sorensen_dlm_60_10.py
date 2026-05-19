@@ -3,7 +3,7 @@ from .sorensen_generic_supply import *  # noqa: F403
 
 
 class sorensen_dlm_60_10(sorensen_generic_supply):
-    '''single channel sorensen_dlm_60_10'''
+    """Single channel sorensen_dlm_60_10."""
 
     def __init__(self, interface_visa):
         self.sorensen_name = "sorensen_dlm_60_10"
@@ -19,36 +19,36 @@ class sorensen_dlm_60_10(sorensen_generic_supply):
         time.sleep(1.0)
 
     def _enable_output(self):
-        '''DLM 60 10 can only be enabled/disabled by physical output enable button - so just pass here'''
+        """DLM 60 10 can only be enabled/disabled by physical output enable button - so just pass here."""
 
     def _write_voltage(self, voltage):
-        '''Set named channel to force voltage
+        """Set named channel to force voltage.
 
         Args:
             voltage: Voltage value.
-        '''
+        """
         self.get_interface().write((f"SOURce:VOLTage {voltage}"))
 
     def _write_current(self, ilim):
-        '''Set named channel's compliance current
+        """Set named channel's compliance current.
 
         Args:
             ilim: Current limit.
-        '''
+        """
         self.get_interface().write((f"SOURce:CURRent {ilim}"))
 
     def _read_vsense(self):
-        '''Returns instrument's measured output voltage.
+        """Returns instrument's measured output voltage.
 
         Returns:
             Result value.
-        '''
+        """
         return float(self.get_interface().ask("MEASure:VOLTage?"))
 
     def _read_isense(self):
-        '''Returns instrument's measured output current.
+        """Returns instrument's measured output current.
 
         Returns:
             Result value.
-        '''
+        """
         return float(self.get_interface().ask("MEASure:CURRent?"))

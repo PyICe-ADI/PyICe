@@ -2,7 +2,8 @@ from .vector_transform import vector_transform
 
 
 def scalar_transform(rec_array, column_scalar_functions, column_names=None):
-    '''Transform column data by processing through user-supplied function
+    """Transform column data by processing through user-supplied function.
+
     column_scalar_functions is a list of functions for each column and should have a length equal to the number of columns.
     To leave a column unchanged, set column scalar function to None.
     The column scalar function will be applied to each point in the column individually.
@@ -20,7 +21,7 @@ def scalar_transform(rec_array, column_scalar_functions, column_names=None):
 
     Returns:
         Result value.
-    '''
+    """
     column_vector_functions = []
     for csf in column_scalar_functions:
         if csf is None:

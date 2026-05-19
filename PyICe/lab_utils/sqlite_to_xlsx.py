@@ -8,14 +8,14 @@ numpy_missing = False
 
 
 class sqlite_to_xlsx(object):
-    '''dump whole/partial/multiple SQLite database(s) to Excel format'''
+    """Dump whole/partial/multiple SQLite database(s) to Excel format."""
 
     def __init__(self, output_file):
-        '''specify Excel output filename, with .xlsx extension
+        """Specify Excel output filename, with .xlsx extension.
 
         Args:
             output_file: Output file.
-        '''
+        """
         import xlsxwriter
         self.rowcol_to_cell = xlsxwriter.utility.xl_rowcol_to_cell
         self.output_file = output_file
@@ -43,17 +43,17 @@ class sqlite_to_xlsx(object):
 
     @property
     def workbook(self):
-        '''return xlsxwriter workbook object so that user script can add additioanl chartsheets, etc
+        """Return xlsxwriter workbook object so that user script can add additioanl chartsheets, etc.
 
         See: http://xlsxwriter.readthedocs.io/workbook.html
 
         Returns:
             Result value.
-        '''
+        """
         return self._workbook
 
     def add_worksheet(self, sqlite_data_obj, elapsed_time_columns=False):
-        '''add a single worksheet corresponding to a single sqlite table/view/query contained within a lab_utils.sqlite_data instance.
+        """Add a single worksheet corresponding to a single sqlite table/view/query contained within a lab_utils.sqlite_data instance.
 
         returns the newly created worksheet instance if creation was successful, or None in case the SQLite data was empty.
         See: http://xlsxwriter.readthedocs.io/worksheet.html
@@ -67,7 +67,7 @@ class sqlite_to_xlsx(object):
 
         Raises:
             Exception: On error condition.
-        '''
+        """
         if self._workbook is None:
             raise Exception(
                 'Attempted to add worksheet after closing workbook')
@@ -271,7 +271,7 @@ class sqlite_to_xlsx(object):
 
     def add_database(self, db_file_name='data_log.sqlite',
                      elapsed_time_columns=False):
-        '''add all tables and views found within a single SQLite database file to workbook.
+        """Add all tables and views found within a single SQLite database file to workbook.
 
         Each table/view will be added to a separate worksheet.
         returns a dictionary containing all worksheets with worksheet name keys
@@ -283,7 +283,7 @@ class sqlite_to_xlsx(object):
 
         Returns:
             Result value.
-        '''
+        """
         from .sqlite_data import sqlite_data  # local import to avoid circular dependency
         conn = sqlite3.connect(db_file_name)
         worksheets = {}
@@ -300,7 +300,8 @@ class sqlite_to_xlsx(object):
         return worksheets
 
     def add_xy_chart(self, subtype='straight_with_markers'):
-        '''Add xy (scatter) chart to workbook.
+        """Add xy (scatter) chart to workbook.
+
         Available subtypes are:
             straight_with_markers
             straight
@@ -322,7 +323,7 @@ class sqlite_to_xlsx(object):
 
         Returns:
             Result value.
-        '''
+        """
         return self._workbook.add_chart(
             {'type': 'scatter', 'subtype': subtype})
 
@@ -332,7 +333,7 @@ class sqlite_to_xlsx(object):
         return chartsheet
 
     def close(self):
-        '''Close Excel workbook and release file lock. No further writing is possible after close().'''
+        """Close Excel workbook and release file lock. No further writing is possible after close()."""
         if self._workbook is not None:
             self._workbook.close()
             self._workbook = None

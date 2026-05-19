@@ -1,5 +1,5 @@
 def ordinalize(num):
-    '''Convert positive integer to ordinal number.
+    """Convert positive integer to ordinal number.
 
     >>> ordinalize(1)
     '1st'
@@ -19,7 +19,7 @@ def ordinalize(num):
 
     Returns:
         Result value.
-    '''
+    """
     assert num >= 0 and isinstance(num, int)
     rem_10, rem_100 = num % 10, num % 100
     if rem_100 >= 20 or rem_100 <= 10:

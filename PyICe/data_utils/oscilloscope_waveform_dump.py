@@ -34,11 +34,11 @@ class dict_print(dict):
 
 class oscilloscope_waveform_dump(oscilloscope):
     def __init__(self, interface_visa):
-        '''interface_visa
+        """interface_visa.
 
         Args:
             interface_visa: VISA interface instance.
-        '''
+        """
         self._base_name = "agilent_3034a"
         lab_core.scpi_instrument.__init__(
             self, "agilent_3034a @ {}".format(interface_visa))
@@ -182,7 +182,7 @@ def write_waveform_data(
             scope_data[data_name] = ydata
 
     class NumpyEncoder(json.JSONEncoder):
-        """ Special json encoder for numpy types """
+        """Special json encoder for numpy types."""
 
         def default(self, obj):
             if isinstance(obj, numpy.integer):

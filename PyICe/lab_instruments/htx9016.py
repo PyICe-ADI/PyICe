@@ -3,9 +3,10 @@ import math
 
 
 class htx9016(scpi_instrument):
-    ''' 5 Channel RF MUX Hypertronix (Steve Martin) HTX9016
+    """ 5 Channel RF MUX Hypertronix (Steve Martin) HTX9016.
+
         DC Coupled or AC Coupled versions available.
-        Should be good from 100Hz (AC) or 0Hz (DC) to about 1GHz.'''
+        Should be good from 100Hz (AC) or 0Hz (DC) to about 1GHz."""
 
     def __init__(self, interface_visa):
         self._base_name = 'htx9016'
@@ -13,7 +14,7 @@ class htx9016(scpi_instrument):
         self.add_interface_visa(interface_visa, timeout=0.5)
 
     def __del__(self):
-        '''Close interface (serial) port on exit'''
+        """Close interface (serial) port on exit."""
         self.get_interface().close()
 
     def _decode_readback(self):

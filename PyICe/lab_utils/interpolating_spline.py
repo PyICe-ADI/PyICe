@@ -3,7 +3,8 @@ import scipy
 
 
 def interpolating_spline(rec_array, **kwargs):
-    '''uses http://scipy.github.io/devdocs/generated/scipy.interpolate.UnivariateSpline.html
+    """Uses http://scipy.github.io/devdocs/generated/scipy.interpolate.UnivariateSpline.html.
+
     provides interpolation function with original data points returning exact values (knots placed on x-values)
     x-axis data is assumed to be first column
     x-axis data must be increasing
@@ -17,7 +18,7 @@ def interpolating_spline(rec_array, **kwargs):
 
     Returns:
         Result value.
-    '''
+    """
     if 's' in kwargs:
         s = kwargs['s']
         del kwargs['s']

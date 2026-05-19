@@ -2,7 +2,8 @@ import numpy
 
 
 def vector_transform(rec_array, column_vector_functions, column_names=None):
-    '''Generic filter function.
+    """Generic filter function.
+
     column_vector_functions is a list of functions for each column and should have a length equal to the number of columns.
     To leave a column unchanged, set column vector function to None.
     Each column vector function will be applied to the whole column vector.
@@ -21,7 +22,7 @@ def vector_transform(rec_array, column_vector_functions, column_names=None):
 
     Returns:
         Result value.
-    '''
+    """
     assert len(rec_array.dtype.names) == len(column_vector_functions)
     if column_names is None:
         column_names = [None] * len(column_vector_functions)

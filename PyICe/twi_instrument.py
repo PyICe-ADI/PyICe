@@ -1,9 +1,10 @@
-'''
-Channel Wraper for SMBus Compliant Devices
+"""
+Channel Wraper for SMBus Compliant Devices.
+
 ==========================================
 
 Can automatically populate channels/reisters from XML description
-'''
+"""
 import logging
 from . import lab_core
 from . import twi_interface
@@ -91,7 +92,8 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
         return sorted(list(set(command_codes)))  # filter unique
 
     def get_readable_command_codes(self, register_list):
-        '''returns list of command codes required to read all readable registers within register_list
+        """Returns list of command codes required to read all readable registers within register_list.
+
         not used for normal delegated reads. helpful to construct command code list for use with other tools (Linduino streaming for example)
 
         Args:
@@ -99,7 +101,7 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
 
         Returns:
             Result value.
-        '''
+        """
         return self.get_command_codes([channel for channel in register_list if channel.is_readable(
         ) and 'command_code' in channel.get_attributes()])
 
@@ -216,7 +218,8 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
 
     def compute_rmw_writeback_data(self, data, addr7, command_code, size,
                                    offset, word_size, is_readable=True, overwrite_others=False):
-        '''Read whole (atmoic) register.
+        """Read whole (atmoic) register.
+
         Replace any slices unrelated to the write slice based on each constituent bitfield's RWM value preference
         Replace slice related to the write with the new data.
 
@@ -264,7 +267,7 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
 
         Raises:
             Exception: On error condition.
-        '''
+        """
         # Step 1: get existing data across whole register width
         if data is None and word_size == 0:
             # send_byte
@@ -345,12 +348,13 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
                                                                       use_pec=self._PEC))
 
     def enable_cached_read(self, include_readable_registers=False):
-        '''disable remote read of writable register and instead return cached previous write.
+        """Disable remote read of writable register and instead return cached previous write.
+
         only affects write-only register by default. include_readable_registers argument also includes read-write registers.
 
         Args:
             include_readable_registers: Include readable registers.
-        '''
+        """
         for register in self:
             if register.is_writeable():
                 if not register.is_readable() or include_readable_registers:
@@ -358,7 +362,7 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
 
     def populate_from_file(self, xml_file, format_dict=None, access_list=None,
                            use_case=None, channel_prefix="", channel_suffix=""):
-        '''Parse xml_register file complying with register_map.dtd and populate instrument channels.
+        """Parse xml_register file complying with register_map.dtd and populate instrument channels.
 
         Args:
             xml_file: Path to XML register map file.
@@ -370,7 +374,7 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
 
         Raises:
             Exception: On XML parsing or register configuration errors.
-        '''
+        """
         if format_dict is None:
             format_dict = {}
         if access_list is None:
@@ -618,7 +622,7 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
 
     def create_format(self, format_name, format_function, unformat_function,
                       signed=False, description=None, units='', xypoints=None):
-        '''Create a new format definition or modify an existing definition.
+        """Create a new format definition or modify an existing definition.
 
         format_function should take a single argument of integer raw data from the register and return a version of the data scaled to appropriate units.
         unformat_function should take a single argument of data in real units and return an integer version of the data scaled to the register LSB weight.
@@ -633,7 +637,7 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
             unformat_function: Unformat function.
             units: Unit string.
             xypoints: Xypoints.
-        '''
+        """
         if xypoints is None:
             xypoints = []
         self.formatters[format_name] = {
@@ -645,32 +649,32 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
             'xypoints': xypoints}
 
     def set_constant(self, constant, value):
-        '''Sets the constants found in the datasheet used by the formatters to convert from real world values to digital value and back.
+        """Sets the constants found in the datasheet used by the formatters to convert from real world values to digital value and back.
 
         Args:
             constant: Constant.
             value: Value to set.
-        '''
+        """
         self._constants[constant] = value
         self._update_xml_formatters()
 
     def get_constant(self, constant):
-        '''Sets the constants found in the datasheet used by the formatters to convert from real world values to digital value and back.
+        """Sets the constants found in the datasheet used by the formatters to convert from real world values to digital value and back.
 
         Args:
             constant: Constant.
 
         Returns:
             Result value.
-        '''
+        """
         return self._constants[constant]
 
     def list_constants(self):
-        '''Returns the list of constants found in the datasheet used by the formatters to convert from real world values to digital value and back.
+        """Returns the list of constants found in the datasheet used by the formatters to convert from real world values to digital value and back.
 
         Returns:
             Result value.
-        '''
+        """
         return self._constants
 
     def _update_xml_formatters(self):
@@ -694,7 +698,7 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
                                xypoints=xyevalpoints)
 
     def _transform_from_points(self, xyevalpoints, direction):
-        '''Used internally to convert from register values to real world values and back again.
+        """Used internally to convert from register values to real world values and back again.
 
         Args:
             direction: Direction.
@@ -705,7 +709,7 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
 
         Raises:
             Exception: On error condition.
-        '''
+        """
         if not SCIPY_MISSING:
             x_evaled, y_evaled = list(zip(*xyevalpoints))
             if direction == "format":
@@ -825,7 +829,7 @@ class pmbus_instrument(twi_instrument):
 
 
 class twi_instrument_dummy(twi_instrument):
-    '''use for formatters, etc without having to set up a master and physical hardware.'''
+    """Use for formatters, etc without having to set up a master and physical hardware."""
 
     def __init__(self):
         lab_core.instrument.__init__(self, name="twi_instrument_dummy")

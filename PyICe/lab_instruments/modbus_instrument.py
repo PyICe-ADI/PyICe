@@ -13,7 +13,7 @@ class modbus_reg_type(Enum):
 
 
 class modbus_register(channel):
-    '''register in the sense of remote memory (read AND write functions), but without binary/2's comp features'''
+    """Register in the sense of remote memory (read AND write functions), but without binary/2's comp features."""
 
     def __init__(self, name, read_function, write_function=None):
         channel.__init__(self, name=name, read_function=read_function)
@@ -40,8 +40,9 @@ register_description = collections.namedtuple('Register_description',
 
 
 class modbus_instrument(instrument, minimalmodbus.Instrument):
-    '''
-    https://en.wikipedia.org/wiki/Modbus
+    """
+    Https://en.wikipedia.org/wiki/Modbus.
+
     Modbus function codes
     01: Read coils
     02: Read discrete inputs
@@ -52,7 +53,7 @@ class modbus_instrument(instrument, minimalmodbus.Instrument):
     15: Write multiple coils
     16: Write multiple registers
     20: Read file record
-    '''
+    """
 
     def __init__(self, interface_raw_serial,
                  modbus_address, baudrate, mode='rtu'):

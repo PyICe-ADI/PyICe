@@ -8,7 +8,8 @@ str_encoding = 'latin-1'
 
 
 class htx9001a(htx9001):
-    ''' HTX9001 Configurator Pro A(Steve Martin)
+    """ HTX9001 Configurator Pro A(Steve Martin).
+
         Breakout/Edge connector board for ATE Bench, with i2c
         Supports 5 types of channels:
         gpio - 10 Channels, Possible values are 0,1(5V),Z (HiZ), P (Weak Pull Up)
@@ -16,15 +17,15 @@ class htx9001a(htx9001):
         relay - Channels 1-12, correspond to supply numbers, 0 or 1 (1 is supply connected)
         ammeter relay - Channels 5-8
         dvcc - Controls I2C/SMBus DVCC voltage
-        '''
+        """
 
     def __init__(self, interface_visa, calibrating=False):
-        '''Creates a htx9001a object
+        """Creates a htx9001a object.
 
         Args:
             calibrating: Calibrating.
             interface_visa: VISA interface instance.
-        '''
+        """
         self._base_name = 'htx9001a'
         scpi_instrument.__init__(self, f"HTX9001A {interface_visa}")
         self.add_interface_visa(interface_visa)
@@ -86,7 +87,8 @@ class htx9001a(htx9001):
             line = self.get_interface().readline()
 
     def add_channel_irelay(self, channel_name, irelay_number):
-        '''Adds an irelay channel,
+        """Adds an irelay channel,.
+
             channel_name is the name of the channel,
             irelay_number is the number of the irelay (same number as the supply being switched)
             valid irelays are 5-8
@@ -100,7 +102,7 @@ class htx9001a(htx9001):
 
         Raises:
             Exception: On error condition.
-        '''
+        """
         if irelay_number not in self.irelay_pins:
             raise Exception(f"Invalid irelay number {irelay_number}")
         if self.irelay_pins[irelay_number] in self.initialized_pins:

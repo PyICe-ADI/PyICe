@@ -63,12 +63,14 @@ DONT_CARE = 0
 
 
 class AD5667R(instrument):
-    '''Analog Devices Dual 16 bit DAC
-    http://www.analog.com/en/products/digital-to-analog-converters/da-converters/AD5667R.html'''
+    """Analog Devices Dual 16 bit DAC.
+
+    http://www.analog.com/en/products/digital-to-analog-converters/da-converters/AD5667R.html"""
 
     def __init__(self, interface_twi, addr7):
-        '''
-        addr7 is the 7-bit I²C address of the ADT5667R set by pin strapping.
+        """
+        Addr7 is the 7-bit I²C address of the ADT5667R set by pin strapping.
+
         ADDR    A1  A0  Full Address    ADDR7
         VDD     0   0   7b0001100       0x0C
         FLOAT   1   0   7b0001110       0x0E
@@ -77,7 +79,7 @@ class AD5667R(instrument):
         Args:
             addr7: 7-bit I2C device address.
             interface_twi: TWI/I2C interface instance.
-        '''
+        """
         instrument.__init__(
             self,
             f'Analog Devices AD5667R Digital to Ananlog Converter at 0x{addr7:X}')
@@ -209,7 +211,7 @@ class AD5667R(instrument):
         return self._add_channel(powerstate_channel)
 
     def _sync_channels(self, channel, value):
-        '''Sync's Voltages and Codes to match each other after changes to either.
+        """Sync's Voltages and Codes to match each other after changes to either.
 
         Args:
             channel: Channel object.
@@ -217,7 +219,7 @@ class AD5667R(instrument):
 
         Raises:
             Exception: On error condition.
-        '''
+        """
         if channel.get_attribute('ch_type') == 'voltage':
             voltage = value
             code = self._volts_to_code(voltage)

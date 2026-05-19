@@ -2,7 +2,7 @@ import ast
 
 
 def parse_list(string_list):
-    '''Parse a string representation of a list using ast.literal_eval.
+    """Parse a string representation of a list using ast.literal_eval.
 
     >>> parse_list('[1, 2, 3]')
     [1, 2, 3]
@@ -19,7 +19,7 @@ def parse_list(string_list):
 
     Raises:
         Exception: On error condition.
-    '''
+    """
     if type(string_list) is not type(""):
         raise Exception(
             f"\n\nlab_utils: Attempt to parse a list that isn't a string: {string_list}\n\n")

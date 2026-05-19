@@ -2,8 +2,8 @@ from ..lab_core import *  # noqa: F403
 
 
 class bk8500(instrument):
-    '''
-    The below license only applies to most of the code in the bk8500 instrument:
+    """
+    The below license only applies to most of the code in the bk8500 instrument:.
 
     Provides the interface to a 26 byte instrument along with utility
     functions.  This is based on provided drivers, minor style changes
@@ -49,7 +49,7 @@ class bk8500(instrument):
     $Date: 2008/05/17 15:57:15 $
     $Author:  Don Peterson $
 
-    '''
+    """
 
     def __init__(self, interface_raw_serial, address=0, remote_sense=False):
         self._base_name = 'bk8500'
@@ -81,7 +81,8 @@ class bk8500(instrument):
         self.out = sys.stdout.write
 
     def add_channel(self, channel_name, add_extended_channels=True):
-        '''Sortcut function adds CC force channel.
+        """Sortcut function adds CC force channel.
+
         if add_extended_channels, additionally add _isense,_vsense,_psense,_mode readback channels
         Add CV,CW,CR,remote_sense channels separately if you need them.
 
@@ -91,7 +92,7 @@ class bk8500(instrument):
 
         Returns:
             The newly created CC forcing channel object.
-        '''
+        """
         ch = self.add_channel_current(channel_name)
         ch.set_description(self.get_name() + ': ' + self.add_channel.__doc__)
         if add_extended_channels:
@@ -102,14 +103,14 @@ class bk8500(instrument):
         return ch
 
     def add_channel_current(self, channel_name):
-        '''add single CC forcing channel and force zero current.
+        """Add single CC forcing channel and force zero current.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
             The newly created channel object.
-        '''
+        """
         new_channel = channel(channel_name, write_function=self._SetCCCurrent)
         new_channel.set_description(
             self.get_name() + ': ' + self.add_channel_current.__doc__)
@@ -120,14 +121,14 @@ class bk8500(instrument):
         return new_channel
 
     def add_channel_isense(self, channel_name):
-        '''add single current readback channel.
+        """Add single current readback channel.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
             The newly created channel object.
-        '''
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._read_isense(channel_name))
@@ -136,14 +137,14 @@ class bk8500(instrument):
         return self._add_channel(new_channel)
 
     def add_channel_vsense(self, channel_name):
-        '''add single voltage readback channel.
+        """Add single voltage readback channel.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
             The newly created channel object.
-        '''
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._read_vsense(channel_name))
@@ -152,14 +153,14 @@ class bk8500(instrument):
         return self._add_channel(new_channel)
 
     def add_channel_psense(self, channel_name):
-        '''read back computed power dissipated in load.
+        """Read back computed power dissipated in load.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
             The newly created channel object.
-        '''
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._read_psense(channel_name))
@@ -168,61 +169,61 @@ class bk8500(instrument):
         return self._add_channel(new_channel)
 
     def add_channel_mode(self, channel_name):
-        '''read back operating mode (Off, Constant Current, Constant Voltage, Constant Power, Constant Resistance).
+        """Read back operating mode (Off, Constant Current, Constant Voltage, Constant Power, Constant Resistance).
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
             The newly created channel object.
-        '''
+        """
         new_channel = channel(channel_name, read_function=lambda: self.mode)
         new_channel.set_description(
             self.get_name() + ': ' + self.add_channel_mode.__doc__)
         return self._add_channel(new_channel)
 
     def _read_vsense(self, channel_name):
-        '''Return measured voltage float.
+        """Return measured voltage float.
 
         Args:
             channel_name: Name of the channel being read.
 
         Returns:
             Measured voltage in volts.
-        '''
+        """
         return self.GetInputValues()['voltage']
 
     def _read_isense(self, channel_name):
-        '''Return measured current float.
+        """Return measured current float.
 
         Args:
             channel_name: Name of the channel being read.
 
         Returns:
             Measured current in amps.
-        '''
+        """
         return self.GetInputValues()['current']
 
     def _read_psense(self, channel_name):
-        '''Return measured power float.
+        """Return measured power float.
 
         Args:
             channel_name: Name of the channel being read.
 
         Returns:
             Measured power in watts.
-        '''
+        """
         return self.GetInputValues()['power']
 
     def add_channel_remote_sense(self, channel_name):
-        '''Enable/disable remote voltage sense through rear panel connectors.
+        """Enable/disable remote voltage sense through rear panel connectors.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
             The newly created channel object.
-        '''
+        """
         new_channel = integer_channel(
             channel_name, size=1, write_function=self.SetRemoteSense)
         new_channel.set_description(
@@ -231,14 +232,14 @@ class bk8500(instrument):
         return self._add_channel(new_channel)
 
     def add_channel_voltage(self, channel_name):
-        '''add single CV forcing channel.
+        """Add single CV forcing channel.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
             The newly created channel object.
-        '''
+        """
         new_channel = channel(channel_name, write_function=self._SetCVVoltage)
         new_channel.set_description(
             self.get_name() + ': ' + self.add_channel_voltage.__doc__)
@@ -246,14 +247,14 @@ class bk8500(instrument):
         return self._add_channel(new_channel)
 
     def add_channel_power(self, channel_name):
-        '''add single CW forcing channel.
+        """Add single CW forcing channel.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
             The newly created channel object.
-        '''
+        """
         new_channel = channel(channel_name, write_function=self._SetCWPower)
         new_channel.set_description(
             self.get_name() + ': ' + self.add_channel_power.__doc__)
@@ -261,14 +262,14 @@ class bk8500(instrument):
         return self._add_channel(new_channel)
 
     def add_channel_resistance(self, channel_name):
-        '''add single CR forcing channel.
+        """Add single CR forcing channel.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
             The newly created channel object.
-        '''
+        """
         new_channel = channel(channel_name,
                               write_function=self._SetCRResistance)
         new_channel.set_description(
@@ -277,7 +278,8 @@ class bk8500(instrument):
         return self._add_channel(new_channel)
 
     def add_channel_battery_discharge(self, channel_name):
-        '''add battery discharge mode enable forcing channel.
+        """Add battery discharge mode enable forcing channel.
+
         requires current and minimum battery voltage channels to be configured before enabling mode.
         Note that instrument does not respond to commands during discharge test.
         _en channel must be set false before instrument responds normally.
@@ -287,7 +289,7 @@ class bk8500(instrument):
 
         Returns:
             The newly created enable channel object.
-        '''
+        """
         min_bat_channel = channel(
             f'{channel_name}_min_v',
             write_function=self.SetBatteryTestVoltage)
@@ -374,14 +376,15 @@ class bk8500(instrument):
 
     # below is mostly code from manufacturer
     def DumpCommand(self, bytestr):
-        '''Print out the contents of a 26 byte command.  Example:
+        """Print out the contents of a 26 byte command.  Example:.
+
             aa .. 20 01 ..   .. .. .. .. ..
             .. .. .. .. ..   .. .. .. .. ..
             .. .. .. .. ..   cb
 
         Args:
             bytestr: The 26-byte command as bytes or bytearray.
-        '''
+        """
         assert isinstance(bytestr, (bytes, bytearray))
         assert (len(bytestr) == self.length_packet)
         header = " " * 3
@@ -403,14 +406,14 @@ class bk8500(instrument):
         self.out(self.nl)
 
     def CommandProperlyFormed(self, cmd):
-        '''Return 1 if a command is properly formed; otherwise, return 0.
+        """Return 1 if a command is properly formed; otherwise, return 0.
 
         Args:
             cmd: The command bytes to validate.
 
         Returns:
             1 if the command is properly formed, 0 otherwise.
-        '''
+        """
         assert isinstance(cmd, (bytes, bytearray))
         commands = (
             0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29,
@@ -448,14 +451,14 @@ class bk8500(instrument):
         return 1
 
     def CalculateChecksum(self, cmd):
-        '''Return the sum of the bytes in cmd modulo 256.
+        """Return the sum of the bytes in cmd modulo 256.
 
         Args:
             cmd: The command bytes to calculate the checksum for.
 
         Returns:
             The checksum value as an integer.
-        '''
+        """
         assert isinstance(cmd, bytes)
         assert ((len(cmd) == self.length_packet - 1)
                 or (len(cmd) == self.length_packet))
@@ -470,7 +473,8 @@ class bk8500(instrument):
         return bytes((0xaa, self.address, byte))
 
     def SendCommand(self, command):
-        '''Sends the command to the serial stream and returns the 26 byte
+        """Sends the command to the serial stream and returns the 26 byte.
+
         response.
 
         Args:
@@ -478,7 +482,7 @@ class bk8500(instrument):
 
         Returns:
             The 26-byte response from the instrument.
-        '''
+        """
         assert isinstance(command, (bytes, bytearray))
         assert (len(command) == self.length_packet)
         for attempt in range(self.retries):
@@ -508,7 +512,8 @@ class bk8500(instrument):
         return response.encode("latin-1")
 
     def ResponseStatus(self, response):
-        '''Return a message string about what the response meant.  The
+        """Return a message string about what the response meant.  The.
+
         empty string means the response was OK.
 
         Args:
@@ -516,7 +521,7 @@ class bk8500(instrument):
 
         Returns:
             A string describing the response status, empty if OK.
-        '''
+        """
         assert isinstance(response, (bytes, bytearray))
         responses = {
             0x90: "Wrong checksum",
@@ -530,7 +535,8 @@ class bk8500(instrument):
         return responses[response[3]]
 
     def CodeInteger(self, value, num_bytes=4):
-        '''Construct a little endian string for the indicated value.  Two
+        """Construct a little endian string for the indicated value.  Two.
+
         and 4 byte integers are the only ones allowed.
 
         Args:
@@ -539,7 +545,7 @@ class bk8500(instrument):
 
         Returns:
             The value encoded as a little-endian bytes object.
-        '''
+        """
         assert (num_bytes == 1 or num_bytes == 2 or num_bytes == 4)
         value = int(value)  # Make sure it's an integer
         s = bytes((value & 0xff,))
@@ -552,7 +558,8 @@ class bk8500(instrument):
         return s
 
     def DecodeInteger(self, bytestr):
-        '''Construct an integer from the little endian string. 1, 2, and 4 byte
+        """Construct an integer from the little endian string. 1, 2, and 4 byte.
+
         strings are the only ones allowed.
 
         Args:
@@ -560,7 +567,7 @@ class bk8500(instrument):
 
         Returns:
             The decoded integer value.
-        '''
+        """
         assert isinstance(bytestr, (bytes, bytearray))
         assert (len(bytestr) == 1 or len(bytestr) == 2 or len(bytestr) == 4)
         n = bytestr[0]
@@ -572,7 +579,8 @@ class bk8500(instrument):
         return n
 
     def GetReserved(self, num_used):
-        '''Construct a string of nul characters of such length to pad a
+        """Construct a string of nul characters of such length to pad a.
+
         command to one less than the packet size (leaves room for the
         checksum byte.
 
@@ -581,19 +589,19 @@ class bk8500(instrument):
 
         Returns:
             A string of nul characters for padding.
-        '''
+        """
         num = self.length_packet - num_used - 1
         assert (num > 0)
         return chr(0) * num
 
     def PrintCommandAndResponse(self, cmd, response, cmd_name):
-        '''Print the command and its response if debugging is on.
+        """Print the command and its response if debugging is on.
 
         Args:
             cmd: The command bytes that were sent.
             response: The response bytes received.
             cmd_name: Name of the command for debug output.
-        '''
+        """
         assert (cmd_name)
         if self.debug:
             self.out(cmd_name + " command:" + self.nl)
@@ -602,7 +610,8 @@ class bk8500(instrument):
             self.DumpCommand(response)
 
     def GetCommand(self, command, value, num_bytes=4):
-        '''Construct the command with an integer value of 0, 1, 2, or
+        """Construct the command with an integer value of 0, 1, 2, or.
+
         4 bytes.
 
         Args:
@@ -612,7 +621,7 @@ class bk8500(instrument):
 
         Returns:
             The fully constructed command as bytes.
-        '''
+        """
         cmd = self.StartCommand(command)
         if num_bytes > 0:
             r = num_bytes + 3
@@ -624,7 +633,7 @@ class bk8500(instrument):
         return cmd
 
     def GetData(self, data, num_bytes=4):
-        '''Extract the little endian integer from the data and return it.
+        """Extract the little endian integer from the data and return it.
 
         Args:
             data: The 26-byte response data packet.
@@ -635,7 +644,7 @@ class bk8500(instrument):
 
         Raises:
             Exception: If num_bytes is not 1, 2, or 4.
-        '''
+        """
         assert (len(data) == self.length_packet)
         if num_bytes == 1:
             return ord(data[3])
@@ -651,7 +660,8 @@ class bk8500(instrument):
         return b'\x00' * (self.length_packet - num_used - 1)
 
     def SendIntegerToLoad(self, byte, value, msg, num_bytes=4):
-        '''Send the indicated command along with value encoded as an integer
+        """Send the indicated command along with value encoded as an integer.
+
         of the specified size.  Return the instrument's response status.
 
         Args:
@@ -662,14 +672,15 @@ class bk8500(instrument):
 
         Returns:
             The instrument response status string.
-        '''
+        """
         cmd = self.GetCommand(byte, value, num_bytes)
         response = self.SendCommand(cmd)
         self.PrintCommandAndResponse(cmd, response, msg)
         return self.ResponseStatus(response)
 
     def GetIntegerFromLoad(self, cmd_byte, msg, num_bytes=4):
-        '''Construct a command from the byte in cmd_byte, send it, get
+        """Construct a command from the byte in cmd_byte, send it, get.
+
         the response, then decode the response into an integer with the
         number of bytes in num_bytes.  msg is the debugging string for
         the printout.  Return the integer.
@@ -681,7 +692,7 @@ class bk8500(instrument):
 
         Returns:
             The decoded integer value from the instrument response.
-        '''
+        """
         assert (num_bytes == 1 or num_bytes == 2 or num_bytes == 4)
         cmd = self.StartCommand(cmd_byte)
         cmd += self.Reserved(3)
@@ -923,7 +934,8 @@ class bk8500(instrument):
 
     def SetTransient(self, mode, A, A_time_s, B, B_time_s,
                      operation="continuous"):
-        '''Sets up the transient operation mode.  mode is one of
+        """Sets up the transient operation mode.  mode is one of.
+
         "CC", "CV", "CW", or "CR".
 
         Args:
@@ -939,7 +951,7 @@ class bk8500(instrument):
 
         Raises:
             Exception: If the mode is not recognized.
-        '''
+        """
         if mode.lower() not in self.modes:
             raise Exception("Unknown mode")
         opcodes = {"cc": 0x32, "cv": 0x34, "cw": 0x36, "cr": 0x38}
@@ -1085,7 +1097,8 @@ class bk8500(instrument):
             return "enabled"
 
     def SetCommunicationAddress(self, address=0):
-        '''Sets the communication address.  Note:  this feature is
+        """Sets the communication address.  Note:  this feature is.
+
         not currently supported.  The communication address should always
         be set to 0.
 
@@ -1094,7 +1107,7 @@ class bk8500(instrument):
 
         Returns:
             The instrument response status string.
-        '''
+        """
         msg = "Set communication address"
         return self.SendIntegerToLoad(0x54, address, msg, num_bytes=1)
 
@@ -1140,7 +1153,8 @@ class bk8500(instrument):
         return self.GetIntegerFromLoad(0x57, msg, num_bytes=1)
 
     def SetTriggerSource(self, source="immediate"):
-        '''Set how the instrument will be triggered.
+        """Set how the instrument will be triggered.
+
         "immediate" means triggered from the front panel.
         "external" means triggered by a TTL signal on the rear panel.
         "bus" means a software trigger (see TriggerLoad()).
@@ -1153,7 +1167,7 @@ class bk8500(instrument):
 
         Raises:
             Exception: If the trigger source is not recognized.
-        '''
+        """
         trigger = {"immediate": 0, "external": 1, "bus": 2}
         if source not in trigger:
             raise Exception("Trigger type %s not recognized" % source)
@@ -1172,12 +1186,13 @@ class bk8500(instrument):
         return trigger_inv[t]
 
     def TriggerLoad(self):
-        '''Provide a software trigger.  This is only of use when the trigger
+        """Provide a software trigger.  This is only of use when the trigger.
+
         mode is set to "bus".
 
         Returns:
             The instrument response status string.
-        '''
+        """
         cmd = self.StartCommand(0x5A)
         cmd += self.Reserved(3)
         cmd += chr(self.CalculateChecksum(cmd))
@@ -1220,7 +1235,8 @@ class bk8500(instrument):
         return self.ResponseStatus(response)
 
     def SetFunction(self, function="fixed"):
-        '''Set the function (type of operation) of the load.
+        """Set the function (type of operation) of the load.
+
         function is one of "fixed", "short", "transient", or "battery".
         Note "list" is intentionally left out for now.
 
@@ -1229,7 +1245,7 @@ class bk8500(instrument):
 
         Returns:
             The instrument response status string.
-        '''
+        """
         msg = "Set function to %s" % function
         functions = {"fixed": 0, "short": 1, "transient": 2, "battery": 4}
         return self.SendIntegerToLoad(
@@ -1247,12 +1263,13 @@ class bk8500(instrument):
         return functions_inv[fn]
 
     def GetInputValues(self):
-        '''Returns voltage in V, current in A, and power in W, op_state byte,
+        """Returns voltage in V, current in A, and power in W, op_state byte,.
+
         and demand_state byte.
 
         Returns:
             Dict with "voltage", "current", and "power" keys.
-        '''
+        """
         cmd = self.StartCommand(0x5F)
         cmd += self.Reserved(3)
         cmd += bytes((self.CalculateChecksum(cmd),))
@@ -1287,11 +1304,11 @@ class bk8500(instrument):
         return res_str
 
     def GetDemandState(self):
-        '''Returns demand_state byte. Add DJS 2017/11/13 for Bat Discharge.
+        """Returns demand_state byte. Add DJS 2017/11/13 for Bat Discharge.
 
         Returns:
             The demand state integer value.
-        '''
+        """
         cmd = self.StartCommand(0x5F)
         cmd += self.Reserved(3)
         cmd += chr(self.CalculateChecksum(cmd))

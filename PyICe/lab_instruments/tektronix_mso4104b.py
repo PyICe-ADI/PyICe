@@ -2,16 +2,16 @@ from PyICe.lab_core import *  # noqa: F403
 
 
 class tektronix_4104b(scpi_instrument, delegator):
-    ''' Tektronix Oscilloscope - MDO/MSO/DPO4000/B '''
+    """Tektronix Oscilloscope - MDO/MSO/DPO4000/B."""
 
     def __init__(self, interface_visa, force_trigger=False, reset=False):
-        '''interface_visa"
+        """Interface_visa".
 
         Args:
             force_trigger: Force trigger.
             interface_visa: VISA interface instance.
             reset: Reset.
-        '''
+        """
         self.str_encoding = 'latin-1'
         self._base_name = 'tektronix_4104B'
         delegator.__init__(self)
@@ -25,7 +25,7 @@ class tektronix_4104b(scpi_instrument, delegator):
         self.force_trigger = force_trigger
 
     def add_Ychannel(self, channel_name, channel_number):
-        '''Add named vertical channel to instrument.  channel_number is 1-4.
+        """Add named vertical channel to instrument.  channel_number is 1-4.
 
         Args:
             channel_name: Name for the new channel.
@@ -33,7 +33,7 @@ class tektronix_4104b(scpi_instrument, delegator):
 
         Returns:
             Result value.
-        '''
+        """
         assert isinstance(channel_number, int)
         scope_channel = channel(
             channel_name,
@@ -131,7 +131,8 @@ class tektronix_4104b(scpi_instrument, delegator):
 
     def add_channel_time(self, channel_name):
         def _compute_x_points(self):
-            '''Data conversion:
+            """Data conversion:.
+
             voltage = [(data value - yreference) * yincrement] + yorigin
             time = [(data point number - xreference) * xincrement] + xorigin
 
@@ -140,7 +141,7 @@ class tektronix_4104b(scpi_instrument, delegator):
 
             Returns:
                 Result value.
-            '''
+            """
             xpoints = [
                 (x -
                  self.time_info["reference"]) *
@@ -163,12 +164,12 @@ class tektronix_4104b(scpi_instrument, delegator):
         return time_channel
 
     def set_points(self, stop, start=1):
-        ''' No. of acquired points: DATA:STOP value - DATA:STARt value should be less than time_info['points'] or WFMOutpre:NR_PT?
+        """ No. of acquired points: DATA:STOP value - DATA:STARt value should be less than time_info['points'] or WFMOutpre:NR_PT?
 
         Args:
             start: Start bit position.
             stop: If True, send stop condition.
-        '''
+        """
         self.get_interface().write(
             (f"DATA:STARt {start}").encode(
                 self.str_encoding))
@@ -186,7 +187,8 @@ class tektronix_4104b(scpi_instrument, delegator):
 
     def add_measurement_channel(
             self, channel_name, channel_number=1, measurement="FREQuency"):
-        '''Add named channel, channel_number: 1-4 and mesurement type:
+        """Add named channel, channel_number: 1-4 and mesurement type:.
+
             AMPlitude|AREa|BURst|CARea|CMEan|CRMs|DELay|FALL|FREQuency|HIGH|HITS|LOW|MAXimum|MEAN|MEDian|MINImum|NDUty|NEDGECountNOVershoot|NPULSECount|NWIdth|PEAKHits|PEDGECount|
             PDUty|PERIod|PHAse|PK2Pk|POVershoot|PPULSECount|PWIdth|RISe|RMSSIGMA1|SIGMA2|SIGMA3|STDdev|WAVEFORMS
 
@@ -197,7 +199,7 @@ class tektronix_4104b(scpi_instrument, delegator):
 
         Returns:
             Result value.
-        '''
+        """
         new_channel = channel(
             channel_name + f"_Meas_{measurement}",
             read_function=lambda: self._read_immediate_measurement(
@@ -206,7 +208,7 @@ class tektronix_4104b(scpi_instrument, delegator):
         return self._add_channel(new_channel)
 
     def trigger_force(self):
-        ''' Will only complete if TRIGger:STATE? is set to READy, otherwise ignored '''
+        """Will only complete if TRIGger:STATE? is set to READy, otherwise ignored."""
         self.get_interface().write(("TRIGger FORCe").encode(self.str_encoding))
         self.operation_complete()
 
@@ -238,7 +240,8 @@ class tektronix_4104b(scpi_instrument, delegator):
                         self.str_encoding)))
 
     def _read_scope_channel(self, channel_number):
-        '''return list of y-axis points for named channel
+        """Return list of y-axis points for named channel.
+
             list will be datalogged by logger as a string in a single cell in the table
             Data Conversion: yvalue = [(data value - yreference) * yincrement] + yorigin
 
@@ -247,7 +250,7 @@ class tektronix_4104b(scpi_instrument, delegator):
 
         Returns:
             Result value.
-        '''
+        """
         self.get_interface().write(
             (f'DATA:SOUrce CH{channel_number}').encode(
                 self.str_encoding))
@@ -298,7 +301,7 @@ class tektronix_4104b(scpi_instrument, delegator):
         return new_channel
 
     def add_channel_BWLimit(self, channel_name, channel_number):
-        ''' Available bandwidth limits vary by model and are also influenced by probes
+        """ Available bandwidth limits vary by model and are also influenced by probes.
 
         Args:
             channel_name: Name for the new channel.
@@ -306,7 +309,7 @@ class tektronix_4104b(scpi_instrument, delegator):
 
         Returns:
             Result value.
-        '''
+        """
         def _set_BWLimit(channel_number, value):
             if value in [
                     # Agilent valid arguments are ON (25MHZ) or OFF (Full)
@@ -330,7 +333,7 @@ class tektronix_4104b(scpi_instrument, delegator):
         return new_channel
 
     def add_channel_Yrange(self, channel_name, channel_number):
-        ''' Range = Scale x 8?
+        """ Range = Scale x 8?
 
         Args:
             channel_name: Name for the new channel.
@@ -338,7 +341,7 @@ class tektronix_4104b(scpi_instrument, delegator):
 
         Returns:
             Result value.
-        '''
+        """
         def _set_Yrange(channel_number, value):
             value = value / 8
             self.get_interface().write(
@@ -436,14 +439,14 @@ class tektronix_4104b(scpi_instrument, delegator):
         return new_channel
 
     def add_channel_Xrange(self, channel_name):
-        ''' Xrange = SCALE x 10
+        """ Xrange = SCALE x 10.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
             Result value.
-        '''
+        """
         def _set_Xrange(value):
             value = value / 10
             self.get_interface().write(
@@ -670,7 +673,7 @@ class tektronix_4104b(scpi_instrument, delegator):
         return new_channel
 
     def _read_immediate_measurement(self, channel_number, measurement):
-        '''Return float value of selected measurement corresponding to the named channel
+        """Return float value of selected measurement corresponding to the named channel.
 
         Args:
             channel_number: Physical channel number.
@@ -678,7 +681,7 @@ class tektronix_4104b(scpi_instrument, delegator):
 
         Returns:
             Result value.
-        '''
+        """
         self.get_interface().write(
             (f"MEASurement:IMMed:SOUrce1 CH{channel_number}; Type {measurement}").encode(
                 self.str_encoding))
@@ -701,12 +704,12 @@ class tektronix_4104b(scpi_instrument, delegator):
         return self.read()
 
     def set_channel_label_text(self, channel_number, label_text):
-        ''' Sets channel label
+        """ Sets channel label.
 
         Args:
             channel_number: Physical channel number.
             label_text: Label text.
-        '''
+        """
         self.get_interface().write(
             (f"CH{channel_number}:LABel '{label_text}'").encode(
                 self.str_encoding))

@@ -4,11 +4,13 @@ from PyICe.lab_utils.twosComplementToSigned import twosComplementToSigned
 
 
 class TMP117(instrument):
-    '''Analog Devices Silicon Temperature Sensor
-    https://www.ti.com/lit/gpn/tmp117'''
+    """Analog Devices Silicon Temperature Sensor.
+
+    https://www.ti.com/lit/gpn/tmp117"""
 
     def __init__(self, interface_twi, addr7):
-        '''interface_twi is a interface_twi
+        """interface_twi is a interface_twi.
+
         addr7 is the 7-bit I2C address of the TMP117 set by pinstrapping ADD0.
         Choose addr7 from:
         ADD0 = GND:    0x48
@@ -19,7 +21,7 @@ class TMP117(instrument):
         Args:
             addr7: 7-bit I2C device address.
             interface_twi: TWI/I2C interface instance.
-        '''
+        """
         instrument.__init__(
             self,
             f'Analog Devices TMP117 Silicon Temperature Sensor at 0x{addr7:X}')
@@ -41,12 +43,13 @@ class TMP117(instrument):
         self.enable()
 
     def enable(self, enable=True):
-        '''Place TMP117 into shutdown by writing enabled=False
+        """Place TMP117 into shutdown by writing enabled=False.
+
         Re-enable by writing enabled=True
 
         Args:
             enable: Enable or disable.
-        '''
+        """
         if enable:
             self.twi.write_register(
                 addr7=self.addr7,
@@ -63,12 +66,13 @@ class TMP117(instrument):
                 use_pec=False)
 
     def read_temp(self):
-        '''Return free-running temperature conversion result.
+        """Return free-running temperature conversion result.
+
         Temperature is the signed result at 7.8125m°C/lsb
 
         Returns:
             Result value.
-        '''
+        """
         data = self.twi.read_register(
             addr7=self.addr7,
             commandCode=self.registers['Temp_Result'],
@@ -80,11 +84,11 @@ class TMP117(instrument):
             data, bitCount=16) / 128.0      # LSB size adjustment
 
     def read_id(self):
-        '''Return REV ID and Device ID
+        """Return REV ID and Device ID.
 
         Returns:
             Result value.
-        '''
+        """
         data = self.twi.read_register(
             addr7=self.addr7,
             commandCode=self.registers['Device_ID'],

@@ -2,7 +2,7 @@ import numpy
 
 
 def modulate(data1, data2):
-    '''data1 and data2 are tuples of x and y data that may not have the same number of 'x' values. The result is interpolated up to the higher of the two.
+    """data1 and data2 are tuples of x and y data that may not have the same number of 'x' values. The result is interpolated up to the higher of the two.
 
     Args:
         data1: Data1.
@@ -10,7 +10,7 @@ def modulate(data1, data2):
 
     Returns:
         Result value.
-    '''
+    """
     independent = []
     product = []
     if len(data1) > len(data2):

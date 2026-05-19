@@ -3,7 +3,7 @@ from .agilent_e36xxa import agilent_e36xxa
 
 
 class agilent_e364xa(agilent_e36xxa):
-    '''Dual-channel programmable DC power supply'''
+    """Dual-channel programmable DC power supply."""
 
     def __init__(self, interface_visa, resetoutputs=True):
         self._base_name = 'agilent_e3648a'
@@ -25,7 +25,8 @@ class agilent_e364xa(agilent_e36xxa):
 
     def add_channel(self, channel_name, num, ilim=1,
                     add_extended_channels=True):
-        '''Register a named channel with the instrument.
+        """Register a named channel with the instrument.
+
             channel_name is a user-supplied string
             num must be either "OUT1" or "OUT2"
             optionally add _ilim, _isense and _vsense channels
@@ -38,7 +39,7 @@ class agilent_e364xa(agilent_e36xxa):
 
         Raises:
             Exception: On error condition.
-        '''
+        """
         num = num.upper()
         if num not in ['OUT1', 'OUT2']:
             raise Exception(f'Invalid channel number "{num}"')

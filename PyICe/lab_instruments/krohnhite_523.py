@@ -2,7 +2,7 @@ from ..lab_core import *  # noqa: F403
 
 
 class krohnhite_523(instrument):
-    '''Krohn-Hite Model 523 Precision DC Source/Calibrator'''
+    """Krohn-Hite Model 523 Precision DC Source/Calibrator."""
 
     def __init__(self, interface_visa):
         self._base_name = 'krohnhite_523'

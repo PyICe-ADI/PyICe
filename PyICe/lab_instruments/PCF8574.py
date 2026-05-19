@@ -3,7 +3,7 @@ from ..lab_core import *  # noqa: F403
 
 class PCF8574(instrument):
     def __init__(self, interface_twi, addr7):
-        '''Multi-vendor 8bit I2C GPIO on Configurator XT. http://www.ti.com/lit/ds/symlink/pcf8574.pdf
+        """Multi-vendor 8bit I2C GPIO on Configurator XT. http://www.ti.com/lit/ds/symlink/pcf8574.pdf.
 
         Args:
             addr7: 7-bit I2C device address.
@@ -11,7 +11,7 @@ class PCF8574(instrument):
 
         Raises:
             ValueError: On error condition.
-        '''
+        """
         instrument.__init__(self, f'PCF8574 GPIO expander at 0x{addr7:X}')
         self._base_name = 'PCF8574'
         self.twi = interface_twi
@@ -22,7 +22,7 @@ class PCF8574(instrument):
         self.state = 0
 
     def add_channel_writepin(self, channel_name, pin):
-        '''Adds a single output pin to control. State is held locally since the pins are hi Z up they can't be relied upon to hold state.
+        """Adds a single output pin to control. State is held locally since the pins are hi Z up they can't be relied upon to hold state.
 
         Args:
             channel_name: Name for the new channel.
@@ -30,7 +30,7 @@ class PCF8574(instrument):
 
         Returns:
             Result value.
-        '''
+        """
         new_channel = channel(
             channel_name,
             write_function=lambda value: self._writepin(
@@ -40,7 +40,7 @@ class PCF8574(instrument):
         return self._add_channel(new_channel)
 
     def add_channel_readpin(self, channel_name, pin):
-        '''Adds a single input pin to read back
+        """Adds a single input pin to read back.
 
         Args:
             channel_name: Name for the new channel.
@@ -48,7 +48,7 @@ class PCF8574(instrument):
 
         Returns:
             Result value.
-        '''
+        """
         new_channel = channel(channel_name,
                               read_function=lambda: self._readpin(pin))
         new_channel.set_description(

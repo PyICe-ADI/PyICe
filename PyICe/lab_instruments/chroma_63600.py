@@ -3,18 +3,19 @@ from PyICe.lab_core import *  # noqa: F403
 
 class chroma_63600(scpi_instrument):
     def __init__(self, interface_visa):
-        '''interface_visa
+        """interface_visa.
 
         Args:
             interface_visa: VISA interface instance.
-        '''
+        """
         self._base_name = 'chroma_63600'
         scpi_instrument.__init__(self, f"chroma_63600 @ {interface_visa}")
         self.add_interface_visa(interface_visa)
         self.get_interface().write(("*RL1"))
 
     def set_mode_and_range(self, num, mode, range):
-        '''Sets the mode and range.
+        """Sets the mode and range.
+
             Mode: a string of either CC, CR, CV, CP, or CZ
             Range: a string of either L, M, or H
 
@@ -22,12 +23,12 @@ class chroma_63600(scpi_instrument):
             mode: Operating mode.
             num: Count or number.
             range: Measurement or output range.
-        '''
+        """
         self._select_load_channel(num)
         self.get_interface().write(((f"MODE {mode}{range}").upper()))
 
     def _select_load_channel(self, num):
-        '''Selects which load channel will receive subsequent commands.
+        """Selects which load channel will receive subsequent commands.
 
             From the Chroma manual section 2.4.1:
 
@@ -41,7 +42,7 @@ class chroma_63600(scpi_instrument):
 
         Args:
             num: Count or number.
-        '''
+        """
         self.get_interface().write((f"CHAN {num}"))
     # def add_channel_enable(self, channel_name, num):
         # new_channel = integer_channel(channel_name, size=1, write_function= lambda state, num=num: self._write_enable(num,state))

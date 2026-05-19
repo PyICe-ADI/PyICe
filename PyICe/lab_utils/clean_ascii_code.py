@@ -3,7 +3,7 @@ from .clean_unicode import clean_unicode
 
 
 def clean_ascii_code(ustr):
-    '''Convert string to a valid code identifier by replacing special characters.
+    """Convert string to a valid code identifier by replacing special characters.
 
     >>> clean_ascii_code('hello world')
     'hello_world'
@@ -22,7 +22,7 @@ def clean_ascii_code(ustr):
 
     Raises:
         Exception: On error condition.
-    '''
+    """
     astr = clean_unicode(ustr)
     astr = astr.replace("\t", "_")  # 0x09
     astr = astr.replace(" ", "_")  # 0x20
