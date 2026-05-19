@@ -1378,7 +1378,7 @@ class integer_channel(channel):
             Result value.
         """
         if formatted:
-            return self.format(self._write_max, self._format)
+            return self.format(self._write_max, self._format, use_presets=False)
         else:
             return int(self._write_max)
 
@@ -1392,7 +1392,7 @@ class integer_channel(channel):
             Result value.
         """
         if formatted:
-            return self.format(self._write_min, self._format)
+            return self.format(self._write_min, self._format, use_presets=False)
         else:
             return int(self._write_min)
 
@@ -1604,20 +1604,10 @@ class integer_channel(channel):
                 dy = out_pts[i + 1] - out_pts[i]
                 return out_pts[i] + dy * (val - in_pts[i]) / dx
 
-            def format_function(x, xp=x_pts, yp=y_pts):
-                """Return format function result.
-
-                Args:
-                    x: X.
-                    xp: Xp.
-                    yp: Yp.
-
-                Returns:
-                    Result value.
-                """
+            def format_function(x, xp=x_pts, yp=y_pts):  # pylint: disable=function-redefined
                 return _pwl_interp(x, xp, yp)
 
-            def unformat_function(y, xp=x_pts, yp=y_pts):
+            def unformat_function(y, xp=x_pts, yp=y_pts):  # pylint: disable=function-redefined
                 """Return unformat function result.
 
                 Args:
