@@ -1,11 +1,13 @@
 import math
 
+
 def isclose(a, b, rel_tol=1e-9, abs_tol=0.0):
-    #backported from 3.5
-    #https://github.com/PythonCHB/close_pep/blob/master/isclose.py
-    #https://www.python.org/dev/peps/pep-0485/
-    #https://docs.python.org/3/library/math.html#math.isclose
-    #alternative tests here: https://github.com/PythonCHB/close_pep/blob/master/is_close.py
+    # backported from 3.5
+    # https://github.com/PythonCHB/close_pep/blob/master/isclose.py
+    # https://www.python.org/dev/peps/pep-0485/
+    # https://docs.python.org/3/library/math.html#math.isclose
+    # alternative tests here:
+    # https://github.com/PythonCHB/close_pep/blob/master/is_close.py
     """
     returns True if a is close in value to b. False otherwise
     :param a: one of the values to be tested
@@ -24,6 +26,17 @@ def isclose(a, b, rel_tol=1e-9, abs_tol=0.0):
     Complex
     Complex values are compared based on their absolute value.
     See PEP-0485 for a detailed description
+
+    >>> isclose(1.0, 1.0)
+    True
+    >>> isclose(1.0, 1.1)
+    False
+    >>> isclose(1.0, 1.0000000001)
+    True
+    >>> isclose(0.0, 0.001, abs_tol=0.01)
+    True
+    >>> isclose(float('inf'), float('inf'))
+    True
     """
 
     if a == b:  # short-circuit exact equality
@@ -40,6 +53,6 @@ def isclose(a, b, rel_tol=1e-9, abs_tol=0.0):
         return False
     diff = abs(b - a)
 
-    return (((diff <= abs(rel_tol * b)) and #DJS change from weak to strong symmetry so that argument order doesn't matter
+    return (((diff <= abs(rel_tol * b)) and  # DJS change from weak to strong symmetry so that argument order doesn't matter
              (diff <= abs(rel_tol * a))) or
             (diff <= abs_tol))

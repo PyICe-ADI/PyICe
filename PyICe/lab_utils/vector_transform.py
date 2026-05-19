@@ -1,5 +1,6 @@
 import numpy
 
+
 def vector_transform(rec_array, column_vector_functions, column_names=None):
     '''Generic filter function.
     column_vector_functions is a list of functions for each column and should have a length equal to the number of columns.
@@ -21,11 +22,13 @@ def vector_transform(rec_array, column_vector_functions, column_names=None):
     filt_names = []
     for i, column_name in enumerate(rec_array.dtype.names):
         if column_vector_functions[i] is not None:
-            filt_cols.append(column_vector_functions[i](rec_array[column_name]))
+            filt_cols.append(
+                column_vector_functions[i](
+                    rec_array[column_name]))
         else:
             filt_cols.append(rec_array[column_name])
         if column_names[i] is not None:
             filt_names.append(column_names[i])
         else:
-            filt_names.append(column_name) #use old name
-    return numpy.core.records.fromarrays(filt_cols, names=filt_names)
+            filt_names.append(column_name)  # use old name
+    return numpy.rec.fromarrays(filt_cols, names=filt_names)

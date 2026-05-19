@@ -1,32 +1,78 @@
 from pystdf.IO import Parser
-import pystdf.V4, time, math
+import pystdf.V4
+import time
+import math
 from ..lab_utils.banners import print_banner
 # ENUMS for fields by position within STDF record to make this code more readable.
 # See: http://www.kanwoda.com/wp-content/uploads/2015/05/std-spec.pdf
 # Return value is always in the form of the tuple: [RECORDTYPE, DATAOBJECT]
-RECORDTYPE=0; DATAOBJECT=1
+RECORDTYPE = 0
+DATAOBJECT = 1
 # Record?:
-PARTNUM=9; SETUPTIME=0; STARTTIME=1; DEVICENAME=9; XLOC=6; YLOC=7
-HEAD_NUM=0; SITE_NUM=1; SBIN_NUM=2; SBIN_CNT=3; SBIN_PF=4; SBIN_NAM=5                                                                           # SBR - Software Bin Record
-HEAD_NUM=0; SITE_NUM=1; PART_FLG=2; NUM_TEST=3; HARD_BIN=4; SOFT_BIN=5; X_COORD=6; Y_COORD=7; TEST_T=8; PART_ID=9; PART_TXT=10; PART_FIX=11     # PRR - Part Results Record
+PARTNUM = 9
+SETUPTIME = 0
+STARTTIME = 1
+DEVICENAME = 9
+XLOC = 6
+YLOC = 7
+HEAD_NUM = 0
+SITE_NUM = 1
+SBIN_NUM = 2
+SBIN_CNT = 3
+SBIN_PF = 4
+# SBR - Software Bin Record
+SBIN_NAM = 5
+HEAD_NUM = 0
+SITE_NUM = 1
+PART_FLG = 2
+NUM_TEST = 3
+HARD_BIN = 4
+SOFT_BIN = 5
+X_COORD = 6
+Y_COORD = 7
+TEST_T = 8
+PART_ID = 9
+PART_TXT = 10
+PART_FIX = 11     # PRR - Part Results Record
 # PRR Datatypes
 # PART_FLG - All bits want to be 0 for a good part
-PRR_PART_FLG_INCOMPLETE_BIT=2**2; PRR_PART_FLG_FAILED_BIT=2**3; PRR_PART_FLG_INVALID_BIT=2**4
+PRR_PART_FLG_INCOMPLETE_BIT = 2**2
+PRR_PART_FLG_FAILED_BIT = 2**3
+PRR_PART_FLG_INVALID_BIT = 2**4
 # PTR Fields by position
-PTR_TEST_NUM=0; PTR_HEAD_NUM=1; PTR_SITE_NUM=2; PTR_TEST_FLG=3; PTR_PARM_FLG=4; PTR_RESULT=5; PTR_TEST_TXT=6; PTR_ALARM_ID=7
+PTR_TEST_NUM = 0
+PTR_HEAD_NUM = 1
+PTR_SITE_NUM = 2
+PTR_TEST_FLG = 3
+PTR_PARM_FLG = 4
+PTR_RESULT = 5
+PTR_TEST_TXT = 6
+PTR_ALARM_ID = 7
 # PTR Datatypes
 # TEST_FLG - All bits want to be 0 for a good test
-PTR_TEST_FLG_ALARM=2**0; PTR_TEST_FLG_RESULT_INVALID=2**1; PTR_TEST_FLG_RESULT_RELIABLE=2**2; PTR_TEST_FLG_TIMEOUT=2**3; PTR_TEST_FLG_NOT_EXECUTED=2**4; PTR_TEST_FLG_TEST_ABORTED=2**5; PTR_TEST_FLG_FLAG_INVALID=2**6; PTR_TEST_FLG_TEST_FAILED=2**7;
+PTR_TEST_FLG_ALARM = 2**0
+PTR_TEST_FLG_RESULT_INVALID = 2**1
+PTR_TEST_FLG_RESULT_RELIABLE = 2**2
+PTR_TEST_FLG_TIMEOUT = 2**3
+PTR_TEST_FLG_NOT_EXECUTED = 2**4
+PTR_TEST_FLG_TEST_ABORTED = 2**5
+PTR_TEST_FLG_FLAG_INVALID = 2**6
+PTR_TEST_FLG_TEST_FAILED = 2**7
+
 
 class FileReader:
     def __init__(self):
         self.data = []
+
     def after_send(self, dataSource, data):
         self.data.append(data)
-    def write(self,line):
+
+    def write(self, line):
         self.data.append(line)
+
     def flush(self):
         pass
+
 
 class stdf_reader():
     def __init__(self, filename, exit_if_malformed=True):
@@ -40,6 +86,7 @@ class stdf_reader():
         '''
         self.exit_if_malformed = exit_if_malformed
         self.scan_file(filename)
+
     def scan_file(self, filename):
         with open(filename, 'rb') as file:
             p = Parser(inp=file, reopen_fn=None)
@@ -53,55 +100,99 @@ class stdf_reader():
                 record_type = type(line[RECORDTYPE])
                 if record_type is pystdf.V4.Sbr:
                     pass
-                    # self.metadata["BINCOUNT"][line[DATAOBJECT][SBIN_NUM]] = line[DATAOBJECT][SBIN_CNT] # Anyone care about this record, seems redundant?
+                    # self.metadata["BINCOUNT"][line[DATAOBJECT][SBIN_NUM]] =
+                    # line[DATAOBJECT][SBIN_CNT] # Anyone care about this
+                    # record, seems redundant?
                 if record_type is pystdf.V4.Mir:                        # Master information record
                     if state not in [None]:
-                        print_banner(f'Corrupted STDF File: {filename}!', f'Got an MIR but not as the first Field. Last record type is "{state}".', length=160)
+                        print_banner(
+                            f'Corrupted STDF File: {filename}!',
+                            f'Got an MIR but not as the first Field. Last record type is "{state}".',
+                            length=160)
                         if self.exit_if_malformed:
-                            raise Exception("\n\nSet exit_if_malformed to False if you want to push on.")
-                    self.metadata["SETUPTIME"] = {"UNIX": line[DATAOBJECT][SETUPTIME], "HUMAN": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(line[DATAOBJECT][SETUPTIME]))}
-                    self.metadata["STARTTIME"] = {"UNIX": line[DATAOBJECT][STARTTIME], "HUMAN": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(line[DATAOBJECT][STARTTIME]))}
+                            raise Exception(
+                                "\n\nSet exit_if_malformed to False if you want to push on.")
+                    self.metadata["SETUPTIME"] = {
+                        "UNIX": line[DATAOBJECT][SETUPTIME],
+                        "HUMAN": time.strftime(
+                            '%Y-%m-%d %H:%M:%S',
+                            time.localtime(
+                                line[DATAOBJECT][SETUPTIME]))}
+                    self.metadata["STARTTIME"] = {
+                        "UNIX": line[DATAOBJECT][STARTTIME],
+                        "HUMAN": time.strftime(
+                            '%Y-%m-%d %H:%M:%S',
+                            time.localtime(
+                                line[DATAOBJECT][STARTTIME]))}
                     state = "MIR"
                 if record_type is pystdf.V4.Pir:                        # Product Information record - New Part Found!
                     if state not in ["MIR", "PRR"]:
-                        print_banner(f'Corrupted STDF File: {filename}', f'Got a PIR but not after an MIR or after a PRR. Last record type is "{state}".', length=160)
+                        print_banner(
+                            f'Corrupted STDF File: {filename}',
+                            f'Got a PIR but not after an MIR or after a PRR. Last record type is "{state}".',
+                            length=160)
                         if self.exit_if_malformed:
-                            raise Exception("\n\nSet exit_if_malformed to False if you want to push on.")
-                    this_part = {}                                      # Each unit gets a fresh dictionary.
-                    this_part["HEADER"] = line[DATAOBJECT]              # Grab the header.
-                    this_part["TESTS"] = []                             # Start a new list of tests.
+                            raise Exception(
+                                "\n\nSet exit_if_malformed to False if you want to push on.")
+                    # Each unit gets a fresh dictionary.
+                    this_part = {}
+                    # Grab the header.
+                    this_part["HEADER"] = line[DATAOBJECT]
+                    # Start a new list of tests.
+                    this_part["TESTS"] = []
                     state = "PIR"
-                if record_type is pystdf.V4.Ptr:                        # Parametric Test Record - This is a test within this part.
+                # Parametric Test Record - This is a test within this part.
+                if record_type is pystdf.V4.Ptr:
                     if state not in ["PIR", "PTR"]:
-                        print_banner(f'Corrupted STDF File: {filename}', f'Got a PTR but not at after a PIR or another PTR. Last record type is "{state}".', length=160)
+                        print_banner(
+                            f'Corrupted STDF File: {filename}',
+                            f'Got a PTR but not at after a PIR or another PTR. Last record type is "{state}".',
+                            length=160)
                         if self.exit_if_malformed:
-                            raise Exception("\n\nSet exit_if_malformed to False if you want to push on.")
-                    this_part["TESTS"].append(line[DATAOBJECT])         # Grab the test data.
+                            raise Exception(
+                                "\n\nSet exit_if_malformed to False if you want to push on.")
+                    # Grab the test data.
+                    this_part["TESTS"].append(line[DATAOBJECT])
                     state = "PTR"
-                if record_type is pystdf.V4.Prr:                        # Product Results record - End of this part.
+                # Product Results record - End of this part.
+                if record_type is pystdf.V4.Prr:
                     if state not in ["PIR", "PTR"]:
-                        print_banner(f'Corrupted STDF File: {filename}', f'Got a PRR but not at after a PIR or a PTR. Last record type is "{state}".', length=160)
+                        print_banner(
+                            f'Corrupted STDF File: {filename}',
+                            f'Got a PRR but not at after a PIR or a PTR. Last record type is "{state}".',
+                            length=160)
                         if self.exit_if_malformed:
-                            raise Exception("\n\nSet exit_if_malformed to False if you want to push on.")
+                            raise Exception(
+                                "\n\nSet exit_if_malformed to False if you want to push on.")
                     this_part["XLOC"] = line[DATAOBJECT][XLOC]
                     this_part["YLOC"] = line[DATAOBJECT][YLOC]
                     this_part["SOFTBIN"] = line[DATAOBJECT][SOFT_BIN]
                     this_part["HARDBIN"] = line[DATAOBJECT][HARD_BIN]
                     flag = line[DATAOBJECT][PART_FLG]
-                    this_part["PASSING"] = (flag & PRR_PART_FLG_FAILED_BIT != PRR_PART_FLG_FAILED_BIT) and (flag & PRR_PART_FLG_INVALID_BIT != PRR_PART_FLG_INVALID_BIT) and (flag & PRR_PART_FLG_INCOMPLETE_BIT != PRR_PART_FLG_INCOMPLETE_BIT)
-                    self.parts[line[DATAOBJECT][PARTNUM]] = this_part   # Set the key to the device number and attach the data.
+                    this_part["PASSING"] = (
+                        flag & PRR_PART_FLG_FAILED_BIT != PRR_PART_FLG_FAILED_BIT) and (
+                        flag & PRR_PART_FLG_INVALID_BIT != PRR_PART_FLG_INVALID_BIT) and (
+                        flag & PRR_PART_FLG_INCOMPLETE_BIT != PRR_PART_FLG_INCOMPLETE_BIT)
+                    # Set the key to the device number and attach the data.
+                    self.parts[line[DATAOBJECT][PARTNUM]] = this_part
                     state = "PRR"
                 if record_type is pystdf.V4.Mrr:                        # Master information record
                     if state not in ["PRR"]:
-                        print_banner(f'Corrupted STDF File: {filename}', f'Got an MRR but not after a PRR. Last record type is "{state}".', length=160)
+                        print_banner(
+                            f'Corrupted STDF File: {filename}',
+                            f'Got an MRR but not after a PRR. Last record type is "{state}".',
+                            length=160)
                         if self.exit_if_malformed:
-                            raise Exception("\n\nSet exit_if_malformed to False if you want to push on.")
+                            raise Exception(
+                                "\n\nSet exit_if_malformed to False if you want to push on.")
                     state = "MRR"
             file.close()
+
     def test_passed(self, device, testnum):
         for test in self.parts[str(device)]["TESTS"]:
             if test[PTR_TEST_NUM] == testnum:
-                return test[PTR_TEST_FLG] == 0 # All bits must be 0 to pass
+                return test[PTR_TEST_FLG] == 0  # All bits must be 0 to pass
+
     def part_passed(self, device):
         '''
         Takes a part number <int> or <string>.
@@ -109,6 +200,7 @@ class stdf_reader():
         True is passing, False failing.
         '''
         return self.parts[str(device)]["PASSING"]
+
     def get_all_passing_parts(self):
         '''
         Returns a list of all parts with a Passing flag.
@@ -118,6 +210,7 @@ class stdf_reader():
             if self.parts[part]["PASSING"]:
                 passing_parts.append(part)
         return passing_parts
+
     def get_all_in_bins_list(self, bins_list):
         '''
         Takes a bin number list.
@@ -128,6 +221,7 @@ class stdf_reader():
             if self.parts[part]["SOFTBIN"] in bins_list:
                 parts_in_bins.append(part)
         return parts_in_bins
+
     def get_bin_numbers(self, device_list):
         '''
         Takes a part number list <int>s or <string>s.
@@ -135,15 +229,17 @@ class stdf_reader():
         '''
         results = []
         for part in device_list:
-            part = str(part) # All part numbers are strings
+            part = str(part)  # All part numbers are strings
             results.append({"PART": part, "BIN": self.parts[part]["SOFTBIN"]})
         return results
+
     def get_bin_number(self, device):
         '''
         Takes a part number <int> or <string>.
         Returns its bin number <int>.
         '''
         return self.get_bin_numbers(device_list=[str(device)])[0]["BIN"]
+
     def get_all_part_indices(self):
         '''
         Takes no arguments.
@@ -154,6 +250,7 @@ class stdf_reader():
         for part in self.parts:
             parts_list.append(part)
         return parts_list
+
     def get_all_of_testnum(self, testnum):
         '''
         The only argument is test number (testnum) which is an integer in the .stdf format which is a list of 10 digits like 104000041 which was stored as the U*4 or unsigned 4 byte format.
@@ -167,6 +264,7 @@ class stdf_reader():
                 if test[PTR_TEST_NUM] == testnum:
                     results[part] = test[PTR_RESULT]
         return results
+
     def get_value(self, devnum, testnum):
         '''
         Takes arguments devnum and testnum.
@@ -177,6 +275,7 @@ class stdf_reader():
         for test in self.parts[str(devnum)]["TESTS"]:
             if test[PTR_TEST_NUM] == testnum:
                 return test[PTR_RESULT]
+
     def get_setup_time(self):
         '''
         Returns the tester's setup time as a dictionary keyed by "UNIX" and "STRING".
@@ -186,6 +285,7 @@ class stdf_reader():
         The string version is converted to human readable as '%Y-%m-%d %H:%M:%S'.
         '''
         return self.metadata["SETUPTIME"]
+
     def get_starttime(self):
         '''
         Returns the test run's start time (start of first unit) as a dictionary keyed by "UNIX" and "STRING".
@@ -195,6 +295,7 @@ class stdf_reader():
         The string version is converted to human readable as '%Y-%m-%d %H:%M:%S'.
         '''
         return self.metadata["STARTTIME"]
+
     def get_xlocation(self, devnum):
         '''
         Takes the argument devnum and returns the x location on the wafer as an integer.
@@ -202,6 +303,7 @@ class stdf_reader():
         Returned value is an integer.
         '''
         return self.parts[str(devnum)]["XLOC"]
+
     def get_ylocation(self, devnum):
         '''
         Takes the argument devnum and returns the y location on the wafer as an integer.
@@ -210,13 +312,16 @@ class stdf_reader():
         '''
         return self.parts[str(devnum)]["YLOC"]
 
+
 def to_eagle_testnumber(test_number):
     '''
     Returns a dictionary with keys {"TESTNUM", "SUBTESTNUM"} from a natively stored test number which is a U*4 or unsigned 4 byte value.
     The test number is the left 5 digits shifted down to the decimal point and the subtest number is the 5 rightmost digits.
     '''
-    subtestnum, testnum = math.modf(test_number/1e5)
-    return {"TESTNUM": round(testnum), "SUBTESTNUM": round(subtestnum*1e5)}
+    subtestnum, testnum = math.modf(test_number / 1e5)
+    return {"TESTNUM": round(testnum), "SUBTESTNUM": round(subtestnum * 1e5)}
+
+
 def from_eagle_testnumber(test_number, subtest_number):
     '''
     Returns an integer comprised of the arguments test_number time 100,000 plus the argument subtest_number to get back to the natively stored value of the U*4, 32 bit number, in the stdf file.

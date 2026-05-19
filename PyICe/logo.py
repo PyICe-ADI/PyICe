@@ -103,10 +103,12 @@ sign = r'''
                               || ||
                              ooO Ooo'''
 
+
 def display():
-    #print logo,
-    #print isometric
+    # print logo,
+    # print isometric
     print(sign)
+
 
 if __name__ == '__main__':
     display()

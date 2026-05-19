@@ -31,10 +31,11 @@ def present_menu(intro_msg, prompt_msg, item_list):
         print(intro_msg)
         for item_num in range(len(item_list)):
             print(" {:>3d}: {}".format(item_num, item_list[item_num]))
-        prompt = prompt_msg if prompt_msg[-1]==" " else prompt_msg + " "
+        prompt = prompt_msg if prompt_msg[-1] == " " else prompt_msg + " "
         try:
             item_num = int(input(prompt))
             return item_list[item_num]
         except (IndexError, ValueError):
             print()
-            print("Please choose amongst the given choices, 0-{}.".format(len(item_list)-1))
+            print(
+                "Please choose amongst the given choices, 0-{}.".format(len(item_list) - 1))

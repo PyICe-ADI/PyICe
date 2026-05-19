@@ -1,4 +1,5 @@
-import datetime
+from .time_zones import UTC
+
 
 def logger_time_str(datetime):
     '''return time string in same format as used by lab_core.logger.
