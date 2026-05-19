@@ -176,7 +176,7 @@ class generic_results():
         res_dict['test_module'] = self.get_name()
         res_dict['test_crashed'] = self._failure_override
         res_dict['report_date'] = datetime.datetime.now(
-            datetime.UTC).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+            datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
 
         if self._module.get_name() + '_metadata' in self._module.get_database().get_table_names():
             trace_database = self._module.get_database()

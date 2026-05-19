@@ -8,6 +8,9 @@ on: [push, pull_request]
 permissions:
   contents: read
 
+env:
+  ACTIONS_STEP_DEBUG: true
+
 jobs:
   lint:
     name: Lint (Python 3.10)
@@ -21,12 +24,25 @@ jobs:
     - name: Install system dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y gcc pkg-config libcairo2-dev python3-dev
+        sudo apt-get install -y gcc pkg-config libcairo2-dev python3-dev libegl1
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install -e ".[dev]"
-    - name: Lint with flake8 (blocking)
+        python -m pip install --upgrade pip --verbose
+        pip install flake8 pytest --verbose
+        if [ -f requirements.txt ]; then pip install -r requirements.txt --verbose; fi
+        pip install -e ".[dev]" --verbose
+    - name: Debug environment
+      run: |
+        echo "=== Python Version ==="
+        python -c "import sys; print(sys.version)"
+        echo "=== Package Versions ==="
+        python -c "import numpy; print(f'numpy: {numpy.__version__}')" 2>/dev/null || echo "numpy: not available"
+        python -c "import scipy; print(f'scipy: {scipy.__version__}')" 2>/dev/null || echo "scipy: not available"
+        echo "=== All Installed Packages ==="
+        python -m pip list
+        echo "=== Dependency Check ==="
+        python -m pip check
+    - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
@@ -62,4 +78,4 @@ jobs:
       env:
         QT_QPA_PLATFORM: offscreen
       run: |
-        pytest
+        pytest -vvv --tb=long
