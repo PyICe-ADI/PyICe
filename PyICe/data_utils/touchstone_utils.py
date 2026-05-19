@@ -330,9 +330,7 @@ def sweep_plots_to_pptx(ts_plots_dir, output_pptx_path, date_time_flag=1):
     pptx_output.slide_height = pptx.util.Inches(7.5)
     pptx_output.slide_width = pptx.util.Inches(13.333)
 
-    plot_paths_list = Path(
-        arctic_folder +  # noqa: F821
-        '23_07_06__11_25_35_ltc3315_sparam_report/').glob('**/*.png')
+    plot_paths_list = Path(ts_plots_dir).glob('**/*.png')
     for plot_path in plot_paths_list:
         plot_file_name = str(plot_path)
 
@@ -363,9 +361,10 @@ def sweep_plots_to_pptx(ts_plots_dir, output_pptx_path, date_time_flag=1):
 
     curr_date_time = datetime.datetime.now()
     date_time_string = curr_date_time.strftime("%y_%m_%d__%H_%M_%S_")
-    pptx_output.save(
-        arctic_folder +  # noqa: F821
-        f'/pptx_outputs/{date_time_string}python_pptx_test.pptx')
+    output_path = Path(output_pptx_path)
+    if date_time_flag:
+        output_path = output_path.parent / f'{date_time_string}{output_path.name}'
+    pptx_output.save(str(output_path))
 
 
 def resistor_ladder_coefficient(r_dc, r_hf, num_stages):
