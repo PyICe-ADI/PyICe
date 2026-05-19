@@ -49,7 +49,7 @@ class record_order_parser:
                         dcopy[k] = f'0x{v:X}'
                     elif k in bin_fields:
                         dcopy[k] = f'0b{v:B}'
-                return super(type(self), dcopy).__str__()
+                return dict.__str__(dcopy)
         dmap = pretty_dict()
         for (k, v) in zip(record_type.fieldNames, data):
             dmap[k] = v
