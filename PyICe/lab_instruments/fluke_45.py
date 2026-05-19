@@ -2,15 +2,15 @@ from ..lab_core import *  # noqa: F403
 
 
 class fluke_45(scpi_instrument):
-    """single channel fluke_45 meter.
+    """Single channel fluke_45 meter.
 
-        defaults to dc voltage, note this instrument currently does not support using multiple measurement types at the same time"""
-
+    defaults to dc voltage, note this instrument currently does not support using multiple measurement types at the same time
+    """
     def __init__(self, interface_visa):
-        """interface_visa.
+        """Interface_visa.
 
         Args:
-            interface_visa: VISA interface instance.
+        interface_visa: VISA interface instance.
         """
         self._base_name = 'fluke_45'
         scpi_instrument.__init__(self, f"f25 @ {interface_visa}")
@@ -23,8 +23,8 @@ class fluke_45(scpi_instrument):
         Optionally set range and rate
 
         Args:
-            range: Measurement or output range.
-            rate: Rate.
+        range: Measurement or output range.
+        rate: Rate.
         """
         self._config("VDC ", range, rate)
 
@@ -34,8 +34,8 @@ class fluke_45(scpi_instrument):
         Optionally set range and rate
 
         Args:
-            range: Measurement or output range.
-            rate: Rate.
+        range: Measurement or output range.
+        rate: Rate.
         """
         self._config("ADC ", range, rate)
 
@@ -45,8 +45,8 @@ class fluke_45(scpi_instrument):
         Optionally set range and rate
 
         Args:
-            range: Measurement or output range.
-            rate: Rate.
+        range: Measurement or output range.
+        rate: Rate.
         """
         self._config("VAC ", range, rate)
 
@@ -56,8 +56,8 @@ class fluke_45(scpi_instrument):
         Optionally set range and rate
 
         Args:
-            range: Measurement or output range.
-            rate: Rate.
+        range: Measurement or output range.
+        rate: Rate.
         """
         self._config("AAC ", range, rate)
 
@@ -65,10 +65,10 @@ class fluke_45(scpi_instrument):
         """Add named channel to instrument without configuring measurement type.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         meter_channel = channel(channel_name, read_function=self.read_meter)
         return self._add_channel(meter_channel)
@@ -77,7 +77,7 @@ class fluke_45(scpi_instrument):
         """Return float representing meter measurement. Units are V,A,Ohm, etc depending on meter configuration.
 
         Returns:
-            Result value.
+        Result value.
         """
         return float(self.get_interface().ask("MEAS1?"))
 

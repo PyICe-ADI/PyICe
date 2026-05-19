@@ -10,32 +10,32 @@ def bit_is_set(value, bit):
     """Return bit is set result.
 
     Args:
-        bit: Bit.
-        value: Value to set.
+    bit: Bit.
+    value: Value to set.
 
     Returns:
-        Result value.
+    Result value.
     """
     return value & 2**bit == 2**bit
 
 
 class scpi_SA(scpi_instrument):
-    """"""
+    """TODO: Add docstring."""
     # todo abstract methods?
 
 
 class keysight_e4440a(scpi_SA):
-    """"""
+    """TODO: Add docstring."""
 
     def __init__(self, interface_visa, minimum_frequency,
                  maximum_frequency, reset=True):
         """Interface_visa.
 
         Args:
-            interface_visa: VISA interface instance.
-            maximum_frequency: Maximum frequency.
-            minimum_frequency: Minimum frequency.
-            reset: Reset.
+        interface_visa: VISA interface instance.
+        maximum_frequency: Maximum frequency.
+        minimum_frequency: Minimum frequency.
+        reset: Reset.
         """
         self._base_name = 'Keysight E4440a PSA signal analyzer'
         super(scpi_SA, self).__init__(f"Keysight E4440a @ {interface_visa}")
@@ -83,27 +83,27 @@ class keysight_e4440a(scpi_SA):
     def add_channel_system_preset(self, channel_name):
         """Remote Command Notes: The SYSTem:PRESet command immediately presets the instrument state.
 
-           to values dependent on the preset type that is currently selected (FACTory, USER, MODE).
-           SYSTem:PRESet does not reset "persistent" functions such as IP address, time/date
-           display style, or auto-alignment state to their factory defaults.
-           Use SYSTem:PRESet:PERSistent.
-           6.2.11 Reset
-           *RST
-           This command presets the instrument to a factory defined condition that is
-           appropriate for remote programming operation. In Spectrum Analysis Mode *RST
-           is equivalent to performing the commands
-           • :SYSTem:PRESet, with preset type set to MODE.
-           • *CLS which clears the STATus bits and error queue
-           *RST does not change the mode and only resets the parameters for the current
-           mode.
-           The :SYSTem:PRESet command is equivalent to a front panel Preset key.
+        to values dependent on the preset type that is currently selected (FACTory, USER, MODE).
+        SYSTem:PRESet does not reset "persistent" functions such as IP address, time/date
+        display style, or auto-alignment state to their factory defaults.
+        Use SYSTem:PRESet:PERSistent.
+        6.2.11 Reset
+        *RST
+        This command presets the instrument to a factory defined condition that is
+        appropriate for remote programming operation. In Spectrum Analysis Mode *RST
+        is equivalent to performing the commands
+        • :SYSTem:PRESet, with preset type set to MODE.
+        • *CLS which clears the STATus bits and error queue
+        *RST does not change the mode and only resets the parameters for the current
+        mode.
+        The :SYSTem:PRESet command is equivalent to a front panel Preset key.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
-           """
+        Result value.
+        """
         new_channel = channel(name=channel_name, write_function=lambda: self.get_interface(
         ).write(':SYSTem:PRESet:TYPE FACTory;:SYSTem:PRESet'))
         new_channel._read = lambda: self.get_interface().ask(':SYSTem:PRESet:TYPE?')
@@ -177,11 +177,11 @@ class keysight_e4440a(scpi_SA):
         """Trace data vector.
 
         Args:
-            channel_name: Name for the new channel.
-            trace_number: Trace number.
+        channel_name: Name for the new channel.
+        trace_number: Trace number.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(
             channel_name,
@@ -199,10 +199,10 @@ class keysight_e4440a(scpi_SA):
         """Frequency sweep data vector.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(channel_name, read_function=self._compute_x_axis)
         # self._configured_channels[trace_number]['v_sense'] = new_channel
@@ -214,13 +214,12 @@ class keysight_e4440a(scpi_SA):
         return self._add_channel(new_channel)
 
     def add_channel_sweep_control(self, channel_name):
-        """
+        """Args:.
 
-        Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         start_channel = channel(
             f'{channel_name}_start',
@@ -292,133 +291,133 @@ class keysight_e4440a(scpi_SA):
     def add_channel_sweep_type(self, channel_name):
         """2.2.2 FFT & Sweep.
 
-            Selects the FFT vs. Sweep key functions.
-            NOTE FFT “sweeps” should not be used when making EMI measurements. When an EMI
-            detector is selected, Manual:FFT is grayed out. If Manual:FFT is selected first, the EMI
-            detectors are grayed out.
-            Key Path: Auto Couple
-            Remote Command:
-            [:SENSe]:SWEep:TYPE AUTO|FFT|SWEep changes the sweep type to FFT or swept, or it lets the
-            analyzer automatically choose the type of analysis to use based on current instrument settings.
-            [:SENSe]:SWEep:TYPE?
-            Example: SWE:TYPE FFT
+        Selects the FFT vs. Sweep key functions.
+        NOTE FFT “sweeps” should not be used when making EMI measurements. When an EMI
+        detector is selected, Manual:FFT is grayed out. If Manual:FFT is selected first, the EMI
+        detectors are grayed out.
+        Key Path: Auto Couple
+        Remote Command:
+        [:SENSe]:SWEep:TYPE AUTO|FFT|SWEep changes the sweep type to FFT or swept, or it lets the
+        analyzer automatically choose the type of analysis to use based on current instrument settings.
+        [:SENSe]:SWEep:TYPE?
+        Example: SWE:TYPE FFT
 
-            2.2.2.1 Auto: Best Dynamic Range
-            This function is automatically activated when Auto All is selected. Selecting Auto: Best Dynamic
-            Range tells the analyzer to choose between swept and FFT analysis, with a primary goal of optimizing
-            the dynamic range. If the dynamic range is very close between swept and FFT, then it chooses the faster
-            one.
-            While Zero Span is selected, this key is grayed out. The status of the FFT & Swept selection is saved
-            when entering zero span and is restored when leaving zero span.
-            Key Path: Auto Couple, FFT & Sweep
-            Saved State: Saved in Instrument State
-            Remote Command:
-            [:SENSe]:SWEep:TYPE:AUTO:RULes SPEed|DRANge selects the rules to use when
-            SWE:TYPE AUTO is selected. This setting, combined with your current analyzer setup, is used to select
-            either FFT or swept mode.
-            [:SENSe]:SWEep:TYPE:AUTO:RULes?
-            Example: SWEep:TYPE AUTO selects the automatic mode.
-            SWE:TYPE:AUTO:RUL DRAN sets the rules for the auto mode to dynamic range.
-            2.2.2.2 Auto: Best Speed
-            Selecting Auto: Best Speed tells the analyzer to choose between FFT or swept analysis based on the
-            fastest analyzer speed. While Zero Span is selected, this key is grayed out. The auto-couple settings are
-            kept in memory and are restored whenever leaving Zero Span.
-            Key Path: Auto Couple, FFT & Sweep
-            Saved State: Saved in Instrument State
-            Remote Command:
-            [:SENSe]:SWEep:TYPE:AUTO:RULes SPEed|DRANge selects the rules to use when
-            SWE:TYPE AUTO is selected. This setting, combined with your current analyzer setup, is used to select
-            either FFT or swept mode.
-            See “Auto: Best Dynamic Range” on page 57.
-            Example: SWEep:TYPE AUTO selects the automatic mode.
-            SWE:TYPE:AUTO:RUL SPE sets the rules for the auto mode to speed
-            2.2.2.3 Manual: Swept
-            Manually selects swept analysis, so it cannot change automatically to FFT.
-            While Zero Span is selected, this key is grayed out. The status of the FFT & Swept selection is saved
-            when entering zero span and is restored when leaving zero span.
-            Key Path: Auto Couple, FFT & Sweep
-            Saved State: Saved in Instrument State
-            Remote Command:
-            Use [:SENSe]:SWEep:TYPE AUTO|FFT|SWEep
-            See “FFT & Sweep” on page 56.
-            Example: SWE:TYPE SWE
-            2.2.2.4 Manual: FFT
-            Manually selects FFT analysis, so it cannot change automatically to swept.
-            While Zero Span is selected, this key is grayed out. The status of the FFT & Swept selection is saved
-            when entering zero span and is restored when leaving zero span.
-            TIP Making Gated FFT Measurements With Your PSA
-            The process of making a spectrum measurement with FFTs is inherently a “gated”
-            process, in that the spectrum is computed from a time record of short duration, much like
-            a gate signal in swept-gated analysis.
-            The duration of the time record is 1.83 divided by the RBW, within a tolerance of about
-            3% for bandwidths up through 1 MHz. Therefore, unlike swept gated analysis, the
-            duration of the analysis is fixed by the RBW, not by the gate signal. Because FFT analysis
-            is inherently faster than swept analysis, the gated FFT measurements can have better
-            frequency resolution (a narrower RBW) than would swept analysis for a given duration of
-            the signal to be analyzed.
-            FFT analysis in the PSA usually involves making autoranged measurements, and the time
-            required to autorange the FFT can be both long and inconsistent. The PSA hardware
-            automatically sets the ADC Ranging to Bypass when any trigger, except Free Run is
-            selected.
-            To make a gated FFT measurement, set the analyzer as follows.
-            1. Press Auto Couple, FFT & Sweep to select ManuaL: FFT.
-            2. Set the resolution bandwidth to 1.83 divided by the required analysis time, or higher,
-            by pressing BW/Avg, Res BW.
-            3. Set the trigger source to the desired trigger, by pressing Trig.
-            4. Set the trigger delay to observe the signal starting at the required time relative to the
-            trigger. Negative delays are possible, by pressing Trig, Trig Delay.
-            Key Path: Auto Couple, FFT & Sweep
-            Remote Command:
-            Use [:SENSe]:SWEep:TYPE AUTO|FFT|SWEep
-            See “FFT & Sweep” on page 56.
-            Example: SWE:TYPE FFT
-            2.2.2.5 FFTs/Span
-            Displays and controls the number of FFT segments used to measure the entire Span. This key is
-            unavailable (grayed out) unless Sweep Type has been set to FFT. If Sweep Type is set to Auto and FFTs
-            are selected, FFTs/Span is still unavailable, and the number of FFTs automatically selected is shown. If
-            Sweep Type is set to Manual:FFT, FFTs/Span becomes available. Press FFTs/Span and an integer can
-            be entered. The analyzer will try to use the number entered, but it may need to use more due to hardware
-            or software limitations.
-            An FFT can only be performed over a limited span or segment (also known as the FFT width). Several
-            FFT widths may need to be combined to measure the entire span. The “FFT Width” is
-            (Span)/(FFTs/Span), and affects the ADC Dither function. (See Auto Couple).
-            FFT measurements require that the signal level driving the A/D converter in the IF be small enough to
-            avoid overloading, and that the gain that controls that signal level remain fixed during the measurement
-            of an entire FFT segment. This constraint can allow higher dynamic ranges in swept mode in some cases,
-            but increasing FFTs/Span can restore that dynamic range to FFT measurements, at the expense of losing
-            some of the speed advantages of the FFT.
-            For example, in pulsed-RF measurements such as radar, it is often possible to make high dynamic range
-            measurements with signal levels approaching the compression threshold of the analyzer in swept spans
-            (well over 0 dBm), while resolving the spectral components to levels below the maximum IF drive level
-            (about –8 dBm at the input mixer). But FFT processing experiences overloads at the maximum IF drive
-            level even if the RBW is small enough that no single spectral component exceeds the maximum IF drive
-            level. If the user reduces the width of an FFT using the FFTs/Span function, an analog filter is placed
-            before the ADC that is about 1.3 times as wide as the FFT segment width. This spreads out the pulsed RF
-            in time and reduces the maximum signal level seen by the ADC. Therefore, the input attenuation can be
-            reduced and the dynamic range increased without overloading the ADC.
-            Further improvement in the dynamic range is possible by changing the ADC gain. In swept analysis in
-            the PSA, the gain is normally autoranged such that it can track the signal power as the analyzer sweeps
-            through CW-like signals. Since FFT processing cannot autorange the gain within the measurement of a
-            single FFT segment, the autoranging advantage is lost for single FFT measurements. But if the segments
-            are reduced in width by using more FFTs/Span, then individual FFT segments can use higher gains,
-            improving the dynamic range.
-            Additional information about selecting FFTs/Span can be found in a product note, "PSA Series Swept
-            and FFT Analysis", literature number 5980-3081EN, available on-line:
-            http://www.agilent.com
-            Key Path: Auto Couple, FFT & Sweep
-            State Saved: Saved in Instrument State
-            Factory Preset: 1
-            Range: 1 to 400000
-            Remote Command:
-            [:SENSe]:SWEep:FFT:SPAN:RATio <integer>
-            [:SENSe]:SWEep:FFT:SPAN:RATio?
-            Example: SWE:FFT:SPAN:RAT 20
+        2.2.2.1 Auto: Best Dynamic Range
+        This function is automatically activated when Auto All is selected. Selecting Auto: Best Dynamic
+        Range tells the analyzer to choose between swept and FFT analysis, with a primary goal of optimizing
+        the dynamic range. If the dynamic range is very close between swept and FFT, then it chooses the faster
+        one.
+        While Zero Span is selected, this key is grayed out. The status of the FFT & Swept selection is saved
+        when entering zero span and is restored when leaving zero span.
+        Key Path: Auto Couple, FFT & Sweep
+        Saved State: Saved in Instrument State
+        Remote Command:
+        [:SENSe]:SWEep:TYPE:AUTO:RULes SPEed|DRANge selects the rules to use when
+        SWE:TYPE AUTO is selected. This setting, combined with your current analyzer setup, is used to select
+        either FFT or swept mode.
+        [:SENSe]:SWEep:TYPE:AUTO:RULes?
+        Example: SWEep:TYPE AUTO selects the automatic mode.
+        SWE:TYPE:AUTO:RUL DRAN sets the rules for the auto mode to dynamic range.
+        2.2.2.2 Auto: Best Speed
+        Selecting Auto: Best Speed tells the analyzer to choose between FFT or swept analysis based on the
+        fastest analyzer speed. While Zero Span is selected, this key is grayed out. The auto-couple settings are
+        kept in memory and are restored whenever leaving Zero Span.
+        Key Path: Auto Couple, FFT & Sweep
+        Saved State: Saved in Instrument State
+        Remote Command:
+        [:SENSe]:SWEep:TYPE:AUTO:RULes SPEed|DRANge selects the rules to use when
+        SWE:TYPE AUTO is selected. This setting, combined with your current analyzer setup, is used to select
+        either FFT or swept mode.
+        See “Auto: Best Dynamic Range” on page 57.
+        Example: SWEep:TYPE AUTO selects the automatic mode.
+        SWE:TYPE:AUTO:RUL SPE sets the rules for the auto mode to speed
+        2.2.2.3 Manual: Swept
+        Manually selects swept analysis, so it cannot change automatically to FFT.
+        While Zero Span is selected, this key is grayed out. The status of the FFT & Swept selection is saved
+        when entering zero span and is restored when leaving zero span.
+        Key Path: Auto Couple, FFT & Sweep
+        Saved State: Saved in Instrument State
+        Remote Command:
+        Use [:SENSe]:SWEep:TYPE AUTO|FFT|SWEep
+        See “FFT & Sweep” on page 56.
+        Example: SWE:TYPE SWE
+        2.2.2.4 Manual: FFT
+        Manually selects FFT analysis, so it cannot change automatically to swept.
+        While Zero Span is selected, this key is grayed out. The status of the FFT & Swept selection is saved
+        when entering zero span and is restored when leaving zero span.
+        TIP Making Gated FFT Measurements With Your PSA
+        The process of making a spectrum measurement with FFTs is inherently a “gated”
+        process, in that the spectrum is computed from a time record of short duration, much like
+        a gate signal in swept-gated analysis.
+        The duration of the time record is 1.83 divided by the RBW, within a tolerance of about
+        3% for bandwidths up through 1 MHz. Therefore, unlike swept gated analysis, the
+        duration of the analysis is fixed by the RBW, not by the gate signal. Because FFT analysis
+        is inherently faster than swept analysis, the gated FFT measurements can have better
+        frequency resolution (a narrower RBW) than would swept analysis for a given duration of
+        the signal to be analyzed.
+        FFT analysis in the PSA usually involves making autoranged measurements, and the time
+        required to autorange the FFT can be both long and inconsistent. The PSA hardware
+        automatically sets the ADC Ranging to Bypass when any trigger, except Free Run is
+        selected.
+        To make a gated FFT measurement, set the analyzer as follows.
+        1. Press Auto Couple, FFT & Sweep to select ManuaL: FFT.
+        2. Set the resolution bandwidth to 1.83 divided by the required analysis time, or higher,
+        by pressing BW/Avg, Res BW.
+        3. Set the trigger source to the desired trigger, by pressing Trig.
+        4. Set the trigger delay to observe the signal starting at the required time relative to the
+        trigger. Negative delays are possible, by pressing Trig, Trig Delay.
+        Key Path: Auto Couple, FFT & Sweep
+        Remote Command:
+        Use [:SENSe]:SWEep:TYPE AUTO|FFT|SWEep
+        See “FFT & Sweep” on page 56.
+        Example: SWE:TYPE FFT
+        2.2.2.5 FFTs/Span
+        Displays and controls the number of FFT segments used to measure the entire Span. This key is
+        unavailable (grayed out) unless Sweep Type has been set to FFT. If Sweep Type is set to Auto and FFTs
+        are selected, FFTs/Span is still unavailable, and the number of FFTs automatically selected is shown. If
+        Sweep Type is set to Manual:FFT, FFTs/Span becomes available. Press FFTs/Span and an integer can
+        be entered. The analyzer will try to use the number entered, but it may need to use more due to hardware
+        or software limitations.
+        An FFT can only be performed over a limited span or segment (also known as the FFT width). Several
+        FFT widths may need to be combined to measure the entire span. The “FFT Width” is
+        (Span)/(FFTs/Span), and affects the ADC Dither function. (See Auto Couple).
+        FFT measurements require that the signal level driving the A/D converter in the IF be small enough to
+        avoid overloading, and that the gain that controls that signal level remain fixed during the measurement
+        of an entire FFT segment. This constraint can allow higher dynamic ranges in swept mode in some cases,
+        but increasing FFTs/Span can restore that dynamic range to FFT measurements, at the expense of losing
+        some of the speed advantages of the FFT.
+        For example, in pulsed-RF measurements such as radar, it is often possible to make high dynamic range
+        measurements with signal levels approaching the compression threshold of the analyzer in swept spans
+        (well over 0 dBm), while resolving the spectral components to levels below the maximum IF drive level
+        (about –8 dBm at the input mixer). But FFT processing experiences overloads at the maximum IF drive
+        level even if the RBW is small enough that no single spectral component exceeds the maximum IF drive
+        level. If the user reduces the width of an FFT using the FFTs/Span function, an analog filter is placed
+        before the ADC that is about 1.3 times as wide as the FFT segment width. This spreads out the pulsed RF
+        in time and reduces the maximum signal level seen by the ADC. Therefore, the input attenuation can be
+        reduced and the dynamic range increased without overloading the ADC.
+        Further improvement in the dynamic range is possible by changing the ADC gain. In swept analysis in
+        the PSA, the gain is normally autoranged such that it can track the signal power as the analyzer sweeps
+        through CW-like signals. Since FFT processing cannot autorange the gain within the measurement of a
+        single FFT segment, the autoranging advantage is lost for single FFT measurements. But if the segments
+        are reduced in width by using more FFTs/Span, then individual FFT segments can use higher gains,
+        improving the dynamic range.
+        Additional information about selecting FFTs/Span can be found in a product note, "PSA Series Swept
+        and FFT Analysis", literature number 5980-3081EN, available on-line:
+        http://www.agilent.com
+        Key Path: Auto Couple, FFT & Sweep
+        State Saved: Saved in Instrument State
+        Factory Preset: 1
+        Range: 1 to 400000
+        Remote Command:
+        [:SENSe]:SWEep:FFT:SPAN:RATio <integer>
+        [:SENSe]:SWEep:FFT:SPAN:RATio?
+        Example: SWE:FFT:SPAN:RAT 20
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         type_channel = channel(
             f'{channel_name}',
@@ -442,42 +441,42 @@ class keysight_e4440a(scpi_SA):
     def add_channel_RBW(self, channel_name):
         """2.3.1 Res BW.
 
-            Enables you to select the 3.01 dB resolution bandwidth (RBW) of the analyzer in 10% steps from 1 Hz to
-            3 MHz, plus bandwidths of 4, 5, 6, or 8 MHz. If an unavailable bandwidth is entered with the numeric
-            keypad, the closest available bandwidth is selected.
-            Sweep time is coupled to RBW. As the RBW changes, the sweep time (if set to Auto) is changed to
-            maintain amplitude calibration.
-            Video bandwidth (VBW) is coupled to RBW. As the resolution bandwidth changes, the video bandwidth
-            (if set to Auto) changes to maintain the ratio set by VBW/RBW.
-            When Res BW is set to Auto, resolution bandwidth is autocoupled to span, except when using the
-            CISPR and MIL detectors (Quasi Peak, EMI Average EMI Peak and MIL Peak). For these detectors,
-            Auto RBW coupling is to the center frequency. The ratio of span to RBW is set by Span/RBW
-            (described on page 74). The factory default for this ratio is approximately 106:1 when auto coupled.
-            When Res BW is set to Man, bandwidths are entered by the user, and these bandwidths are used
-            regardless of other analyzer settings.
-            NOTE In zero span, the auto/manual function of this key is not applicable. When Res BW
-            (Auto) is selected in non-zero span, any changes to Res BW while in zero span will revert
-            to the Auto value when you return to non-zero span. When Res BW (Man) is selected in
-            non-zero span, any changes to Res BW while in zero span will be maintained when you
-            return to non-zero span.
-            NOTE When the Quasi Peak or one of the EMI detectors are selected, the resolution bandwidths
-            available are restricted to the set defined in Table 2-2 on page 83. When the MIL Peak
-            detector is selected, the resolution bandwidths available are restricted to the set defined in
-            Table 2-4 on page 85.
-            A # mark appears next to Res BW on the bottom of the analyzer display when it is not coupled. To
-            couple the resolution bandwidth, press Res BW (Auto) or Auto All.
-            NOTE For applications that require 6 dB resolution bandwidths, it is possible to use an
-            equivalent 3 dB resolution bandwidth. Because the analyzer has Gaussian RBW, the
-            equivalent 6 dB bandwidth of any RBW filter can be determined using the following
-            formula: 6 dB RBW = 3 dB RBW x 1.414. For example, if a 6 dB RBW of 100 kHz is
-            required, the equivalent 3 dB RBW Filter would be 100 kHz/1.414 = 70.7 kHz. The
-            closest RBW filter for the analyzer that would be used is 68 kHz.
+        Enables you to select the 3.01 dB resolution bandwidth (RBW) of the analyzer in 10% steps from 1 Hz to
+        3 MHz, plus bandwidths of 4, 5, 6, or 8 MHz. If an unavailable bandwidth is entered with the numeric
+        keypad, the closest available bandwidth is selected.
+        Sweep time is coupled to RBW. As the RBW changes, the sweep time (if set to Auto) is changed to
+        maintain amplitude calibration.
+        Video bandwidth (VBW) is coupled to RBW. As the resolution bandwidth changes, the video bandwidth
+        (if set to Auto) changes to maintain the ratio set by VBW/RBW.
+        When Res BW is set to Auto, resolution bandwidth is autocoupled to span, except when using the
+        CISPR and MIL detectors (Quasi Peak, EMI Average EMI Peak and MIL Peak). For these detectors,
+        Auto RBW coupling is to the center frequency. The ratio of span to RBW is set by Span/RBW
+        (described on page 74). The factory default for this ratio is approximately 106:1 when auto coupled.
+        When Res BW is set to Man, bandwidths are entered by the user, and these bandwidths are used
+        regardless of other analyzer settings.
+        NOTE In zero span, the auto/manual function of this key is not applicable. When Res BW
+        (Auto) is selected in non-zero span, any changes to Res BW while in zero span will revert
+        to the Auto value when you return to non-zero span. When Res BW (Man) is selected in
+        non-zero span, any changes to Res BW while in zero span will be maintained when you
+        return to non-zero span.
+        NOTE When the Quasi Peak or one of the EMI detectors are selected, the resolution bandwidths
+        available are restricted to the set defined in Table 2-2 on page 83. When the MIL Peak
+        detector is selected, the resolution bandwidths available are restricted to the set defined in
+        Table 2-4 on page 85.
+        A # mark appears next to Res BW on the bottom of the analyzer display when it is not coupled. To
+        couple the resolution bandwidth, press Res BW (Auto) or Auto All.
+        NOTE For applications that require 6 dB resolution bandwidths, it is possible to use an
+        equivalent 3 dB resolution bandwidth. Because the analyzer has Gaussian RBW, the
+        equivalent 6 dB bandwidth of any RBW filter can be determined using the following
+        formula: 6 dB RBW = 3 dB RBW x 1.414. For example, if a 6 dB RBW of 100 kHz is
+        required, the equivalent 3 dB RBW Filter would be 100 kHz/1.414 = 70.7 kHz. The
+        closest RBW filter for the analyzer that would be used is 68 kHz.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         def _set_RBW(bw):
             self.get_interface().write(':SENSe:BANDwidth:RESolution:AUTO OFF')
@@ -496,10 +495,10 @@ class keysight_e4440a(scpi_SA):
         """Tracks the state of the AUTO setting for the resolution bandwidth.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = integer_channel(
             name=channel_name,
@@ -516,41 +515,41 @@ class keysight_e4440a(scpi_SA):
     def add_channel_VBW(self, channel_name):
         """2.3.2 Video BW.
 
-            Enables you to change the analyzer post-detection filter from 1 Hz to 8 MHz in approximately 10% steps
-            between 1 Hz and 3 MHz plus the bandwidths of 4, 5, 6, and
-            8 MHz. In addition, a wide-open video filter bandwidth (VBW) may be chosen by selecting 50 MHz.
-            Video BW (Auto) selects automatic coupling of the Video BW filter to the resolution bandwidth filter
-            using the VBW/RBW ratio set by the VBW/RBW key.
-            NOTE Sweep Time is coupled to Video Bandwidth (VBW). As the VBW is changed, the sweep
-            time (when set to Auto) is changed to maintain amplitude calibration. This occurs
-            because of common hardware between the two circuits, even though the Video BW filter
-            is not actually “in-circuit” when the detector is set to Average. Because the purpose of the
-            average detector and the VBW filter are the same, either can be used to reduce the
-            variance of the result.
-            Although the VBW filter is not “in-circuit” when using the average detector, the Video
-            BW key can have an effect on (Auto) sweep time, and is not disabled. In this case,
-            reducing the VBW setting increases the sweep time, which increases the averaging time,
-            producing a lower-variance trace.
-            However, when the EMI Average detector is selected, the Video BW is restricted to 1 Hz
-            while the sweep time is set to Auto.
-            When using the average detector with either Sweep Time set to Man, or in zero span, the
-            VBW setting has no effect and is disabled (grayed out).
+        Enables you to change the analyzer post-detection filter from 1 Hz to 8 MHz in approximately 10% steps
+        between 1 Hz and 3 MHz plus the bandwidths of 4, 5, 6, and
+        8 MHz. In addition, a wide-open video filter bandwidth (VBW) may be chosen by selecting 50 MHz.
+        Video BW (Auto) selects automatic coupling of the Video BW filter to the resolution bandwidth filter
+        using the VBW/RBW ratio set by the VBW/RBW key.
+        NOTE Sweep Time is coupled to Video Bandwidth (VBW). As the VBW is changed, the sweep
+        time (when set to Auto) is changed to maintain amplitude calibration. This occurs
+        because of common hardware between the two circuits, even though the Video BW filter
+        is not actually “in-circuit” when the detector is set to Average. Because the purpose of the
+        average detector and the VBW filter are the same, either can be used to reduce the
+        variance of the result.
+        Although the VBW filter is not “in-circuit” when using the average detector, the Video
+        BW key can have an effect on (Auto) sweep time, and is not disabled. In this case,
+        reducing the VBW setting increases the sweep time, which increases the averaging time,
+        producing a lower-variance trace.
+        However, when the EMI Average detector is selected, the Video BW is restricted to 1 Hz
+        while the sweep time is set to Auto.
+        When using the average detector with either Sweep Time set to Man, or in zero span, the
+        VBW setting has no effect and is disabled (grayed out).
 
-            2.3.3 VBW/RBW
-            Selects the ratio between the video and resolution bandwidths in a 1, 3, 10 sequence. A Video bandwidth
-            wider than the resolution bandwidth (VBW/RBW ratio > 1.000), provides the best peak measurements of
-            signals such as wideband radar pulses. A VBW narrower than the RBW (VBW/RBW ratio < 1.000)
-            reduces the variance of noise-like signals and makes spectral components close to the noise floor easier
-            to view. The knob and step keys change the ratio in a 1, 3, 10 sequence. If the numbered keys are used,
-            the VBW/RBW ratio will be rounded to the nearest 1, 3, or 10 response. Pressing Preset or selecting
-            Auto Couple, Auto All sets the ratio to 1.000 X. When VBW/RBW (Auto) is selected, the ratio is
-            determined as indicated in Table 2-1 on page 70
+        2.3.3 VBW/RBW
+        Selects the ratio between the video and resolution bandwidths in a 1, 3, 10 sequence. A Video bandwidth
+        wider than the resolution bandwidth (VBW/RBW ratio > 1.000), provides the best peak measurements of
+        signals such as wideband radar pulses. A VBW narrower than the RBW (VBW/RBW ratio < 1.000)
+        reduces the variance of noise-like signals and makes spectral components close to the noise floor easier
+        to view. The knob and step keys change the ratio in a 1, 3, 10 sequence. If the numbered keys are used,
+        the VBW/RBW ratio will be rounded to the nearest 1, 3, or 10 response. Pressing Preset or selecting
+        Auto Couple, Auto All sets the ratio to 1.000 X. When VBW/RBW (Auto) is selected, the ratio is
+        determined as indicated in Table 2-1 on page 70
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         def _set_vbw(bw):
             self.get_interface().write(':SENSe:BANDwidth:VIDeo:AUTO OFF')
@@ -576,10 +575,10 @@ class keysight_e4440a(scpi_SA):
         """Tracks the state of the AUTO setting for the video bandwidth and the RBW/VBW ratio channel.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         auto_channel = integer_channel(
             name=channel_name,
@@ -621,45 +620,45 @@ class keysight_e4440a(scpi_SA):
     def add_channel_average(self, channel_name):
         """2.3.4 Average.
 
-            Initiates a digital averaging routine that averages the trace points in a number of successive sweeps,
-            resulting in trace “smoothing.” You can select the number of sweeps (average number) with the numeric
-            keypad (not the knob or step keys). Increasing the average number further smooths the trace. To select
-            the type of averaging used, press BW/Avg, Avg/VBW Type.
-            Averaging restarts when any of the following occurs:
-            • a new average number is entered.
-            • any measurement related parameter (for example, center frequency) is changed.
-            • Restart is pressed.
-            • Single Sweep is pressed.
-            In single sweep, the specified number of averages is taken, then the sweep stops. In continuous sweep,
-            the specified number of averages is taken, then the averaging continues, with each new sweep averaged
-            in with a weight of and the old average reduced by multiplying it by .
+        Initiates a digital averaging routine that averages the trace points in a number of successive sweeps,
+        resulting in trace “smoothing.” You can select the number of sweeps (average number) with the numeric
+        keypad (not the knob or step keys). Increasing the average number further smooths the trace. To select
+        the type of averaging used, press BW/Avg, Avg/VBW Type.
+        Averaging restarts when any of the following occurs:
+        • a new average number is entered.
+        • any measurement related parameter (for example, center frequency) is changed.
+        • Restart is pressed.
+        • Single Sweep is pressed.
+        In single sweep, the specified number of averages is taken, then the sweep stops. In continuous sweep,
+        the specified number of averages is taken, then the averaging continues, with each new sweep averaged
+        in with a weight of and the old average reduced by multiplying it by .
 
 
-            2.3.5 Avg/VBW Type
-                Displays the functions that enable you to automatically or manually choose one of the following
-                averaging scales: log-power (video), power (RMS), or voltage averaging.
-                NOTE When you select log-power averaging, the measurement results are the average of the
-                signal level in logarithmic units (decibels). When you select power average (RMS), all
-                measured results are converted into power units before averaging and filtering operations,
-                and converted back to decibels for displaying. Remember: there can be significant
-                differences between the average of the log of power and the log of the average power.
-                The following are the averaging processes within a spectrum analyzer, all of which are affected by this
-                setting:
-                • Trace averaging (see BW/Avg) averages signal amplitudes on a trace-to-trace basis.
-                • Average detector (see Detector, Average) averages signal amplitudes during the time or frequency
-                interval represented by a particular measurement point.
-                • Noise Marker (see Marker Noise) averages signal amplitudes across measurement points to reduce
-                variations for noisy signals.
-                • VBW filtering adds video filtering which is a form of averaging of the video signal.
-                When manual is selected, the type is shown on the left side of the display with a #. When auto is
-                selected, the analyzer chooses the type of averaging. When one of the average types is selected manually,
-                the analyzer uses that type regardless of other analyzer settings, and sets Avg/VBW Type to Man.
+        2.3.5 Avg/VBW Type
+        Displays the functions that enable you to automatically or manually choose one of the following
+        averaging scales: log-power (video), power (RMS), or voltage averaging.
+        NOTE When you select log-power averaging, the measurement results are the average of the
+        signal level in logarithmic units (decibels). When you select power average (RMS), all
+        measured results are converted into power units before averaging and filtering operations,
+        and converted back to decibels for displaying. Remember: there can be significant
+        differences between the average of the log of power and the log of the average power.
+        The following are the averaging processes within a spectrum analyzer, all of which are affected by this
+        setting:
+        • Trace averaging (see BW/Avg) averages signal amplitudes on a trace-to-trace basis.
+        • Average detector (see Detector, Average) averages signal amplitudes during the time or frequency
+        interval represented by a particular measurement point.
+        • Noise Marker (see Marker Noise) averages signal amplitudes across measurement points to reduce
+        variations for noisy signals.
+        • VBW filtering adds video filtering which is a form of averaging of the video signal.
+        When manual is selected, the type is shown on the left side of the display with a #. When auto is
+        selected, the analyzer chooses the type of averaging. When one of the average types is selected manually,
+        the analyzer uses that type regardless of other analyzer settings, and sets Avg/VBW Type to Man.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         def _write_avg(count):
             if count == 0:
@@ -722,59 +721,59 @@ class keysight_e4440a(scpi_SA):
     def add_channel_detector(self, channel_name):
         """2.4.1 Detector.
 
-            This menu allows you to select a specific type of detector, or choose Auto to let the instrument select the
-            appropriate detector for a particular measurement.
-            When discussing detectors, it is important to understand the concept of a trace “bucket.” For every trace
-            point displayed in swept and zero-span analysis, there is a finite time during which the data for that point
-            is collected. The analyzer has the ability to look at all of the data collected during that time and present a
-            single point of trace data based on the detector mode. We call the interval during which the data for that
-            trace point is being collected, the “bucket.” The data is sampled rapidly enough within a “bucket” that it
-            must be reduced in some fashion to yield a single data point for each bucket. There are a number of ways
-            to do this and which way is used depends on the detector selected. Details on how each detector does this
-            are presented below.
-            In FFT analysis, the bucket represents just a frequency interval. The detector in an FFT mode determines
-            the relationship between the spectrum computed by the FFT and the single data point displayed for the
-            bucket.
-            When the Detector choice is Auto, the detector selected depends on marker functions, trace functions,
-            and the trace averaging function.
-            See “Auto Rules For Detector Selection” on page 80 for information on the Auto detector selection.
-            When you manually select a detector (instead of selecting Auto), that detector is used regardless of other
-            analyzer settings.
-            The detector choices are:
-            • Normal − displays the peak of CW-like signals and maximums and minimums of noise-like signals.
-            • Average − displays the average of the signal within the bucket. The averaging method depends upon
-            Avg Type selection (voltage, power or log scales).
-            • Peak − displays the maximum of the signal within the bucket.
-            • Sample − displays the instantaneous level of the signal at the center of the bucket represented by
-            each display point.
-            • Negative Peak − displays the minimum of the signal within the bucket.
-            • Quasi Peak − a fast-rise, slow-fall detector used in making CISPR compliant EMI measurements.
-            • EMI Average − displays the instantaneous level of the signal at the center of the bucket, just like the
-            sample detector. It also changes the auto coupling of VBW, RBW and Avg/VBW Type and the set of
-            available RBWs. This detector is used in making CISPR-compliant measurements.
-            • EMI Peak − the same as the Peak detector but uses CISPR related bandwidths.
-            • MIL Peak − the same as the Peak detector but uses MIL related bandwidths.
-            Because they may not find the true peak of a spectral component, neither average nor sample detectors
-            measure amplitudes of CW signals as accurately as peak or normal, but they do measure noise without
-            the biases of peak detection.
-            The detector in use is indicated on the left side of the display, just below Reference level. The
-            designators are:
-            • Norm − Normal detector
-            • Avg − Average detector
-            • Peak − Peak detector
-            • Samp − Sample detector
-            • NPk − Negative Peak detector
-            • EmiQP − Quasi Peak detector
-            • EmiAv − ΕMI Average detector
-            • EmiPk − Peak detector with CISPR bandwidths
-            • MILPk − Peak detector with MIL bandwidths
-            If the detector has been manually selected, a # appears next to it.
+        This menu allows you to select a specific type of detector, or choose Auto to let the instrument select the
+        appropriate detector for a particular measurement.
+        When discussing detectors, it is important to understand the concept of a trace “bucket.” For every trace
+        point displayed in swept and zero-span analysis, there is a finite time during which the data for that point
+        is collected. The analyzer has the ability to look at all of the data collected during that time and present a
+        single point of trace data based on the detector mode. We call the interval during which the data for that
+        trace point is being collected, the “bucket.” The data is sampled rapidly enough within a “bucket” that it
+        must be reduced in some fashion to yield a single data point for each bucket. There are a number of ways
+        to do this and which way is used depends on the detector selected. Details on how each detector does this
+        are presented below.
+        In FFT analysis, the bucket represents just a frequency interval. The detector in an FFT mode determines
+        the relationship between the spectrum computed by the FFT and the single data point displayed for the
+        bucket.
+        When the Detector choice is Auto, the detector selected depends on marker functions, trace functions,
+        and the trace averaging function.
+        See “Auto Rules For Detector Selection” on page 80 for information on the Auto detector selection.
+        When you manually select a detector (instead of selecting Auto), that detector is used regardless of other
+        analyzer settings.
+        The detector choices are:
+        • Normal − displays the peak of CW-like signals and maximums and minimums of noise-like signals.
+        • Average − displays the average of the signal within the bucket. The averaging method depends upon
+        Avg Type selection (voltage, power or log scales).
+        • Peak − displays the maximum of the signal within the bucket.
+        • Sample − displays the instantaneous level of the signal at the center of the bucket represented by
+        each display point.
+        • Negative Peak − displays the minimum of the signal within the bucket.
+        • Quasi Peak − a fast-rise, slow-fall detector used in making CISPR compliant EMI measurements.
+        • EMI Average − displays the instantaneous level of the signal at the center of the bucket, just like the
+        sample detector. It also changes the auto coupling of VBW, RBW and Avg/VBW Type and the set of
+        available RBWs. This detector is used in making CISPR-compliant measurements.
+        • EMI Peak − the same as the Peak detector but uses CISPR related bandwidths.
+        • MIL Peak − the same as the Peak detector but uses MIL related bandwidths.
+        Because they may not find the true peak of a spectral component, neither average nor sample detectors
+        measure amplitudes of CW signals as accurately as peak or normal, but they do measure noise without
+        the biases of peak detection.
+        The detector in use is indicated on the left side of the display, just below Reference level. The
+        designators are:
+        • Norm − Normal detector
+        • Avg − Average detector
+        • Peak − Peak detector
+        • Samp − Sample detector
+        • NPk − Negative Peak detector
+        • EmiQP − Quasi Peak detector
+        • EmiAv − ΕMI Average detector
+        • EmiPk − Peak detector with CISPR bandwidths
+        • MILPk − Peak detector with MIL bandwidths
+        If the detector has been manually selected, a # appears next to it.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(
             channel_name,
@@ -820,10 +819,10 @@ class keysight_e4440a(scpi_SA):
         level results in a mixer level at or below −10 dBm
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         def _set_attenuator(value):
             if value in range(0, 72, 2):
@@ -848,10 +847,10 @@ class keysight_e4440a(scpi_SA):
         """Tracks the state of the AUTO setting for the front end attenuators.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = integer_channel(
             name=channel_name,
@@ -881,10 +880,10 @@ class keysight_e4440a(scpi_SA):
         ************************************************************************************************
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         limits = [
             {"MINFREQ": 6.6e12, "MAXFREQ": 50e12, "POWER_dBm": -2},
@@ -896,10 +895,10 @@ class keysight_e4440a(scpi_SA):
             """Return pmax of freqs result.
 
             Returns:
-                Result value.
+            Result value.
 
             Raises:
-                Exception: On error condition.
+            Exception: On error condition.
             """
             if self.maximum_frequency > 50e12:
                 raise Exception(
@@ -922,10 +921,10 @@ class keysight_e4440a(scpi_SA):
             """Return nearest even value result.
 
             Args:
-                value: Value to set.
+            value: Value to set.
 
             Returns:
-                Result value.
+            Result value.
             """
             return math.ceil(value / 2) * 2
 
@@ -933,11 +932,11 @@ class keysight_e4440a(scpi_SA):
             """Return attenuation level result.
 
             Args:
-                pmax: Pmax.
-                power_in: Power in.
+            pmax: Pmax.
+            power_in: Power in.
 
             Returns:
-                Result value.
+            Result value.
             """
             print(
                 f"Returning attenuation level of {nearest_even_value(max(min(power_in - pmax, 70), 0))}")
@@ -955,21 +954,21 @@ class keysight_e4440a(scpi_SA):
     def add_channel_preamp(self, channel_name):
         """(Options 1DS and 110 only.) Turns the internal preamp on and off. Option 1DS preamp functions over a.
 
-            frequency range of 100 kHz to 3 GHz. Option 110 preamp functions over a frequency range of 100 kHz
-            to 50 GHz. When the preamp is on, an automatic adjustment compensates for the gain of the preamp so
-            that the displayed amplitude readings still accurately reflect the value at the analyzer input connector.
-            The Option 1DS preamp is switched off for frequencies above 3 GHz, and the correction is not applied,
-            even though the PA annotation remains on screen. For signal frequencies below 100 kHz, the preamp is
-            not automatically switched out, but signal amplitude roll-off occurs even in the “DC” setting of the RF
-            Coupling control.
-            The gain of the preamp is nominally 30 dB. This functionality is not available when using external
-            mixing.
+        frequency range of 100 kHz to 3 GHz. Option 110 preamp functions over a frequency range of 100 kHz
+        to 50 GHz. When the preamp is on, an automatic adjustment compensates for the gain of the preamp so
+        that the displayed amplitude readings still accurately reflect the value at the analyzer input connector.
+        The Option 1DS preamp is switched off for frequencies above 3 GHz, and the correction is not applied,
+        even though the PA annotation remains on screen. For signal frequencies below 100 kHz, the preamp is
+        not automatically switched out, but signal amplitude roll-off occurs even in the “DC” setting of the RF
+        Coupling control.
+        The gain of the preamp is nominally 30 dB. This functionality is not available when using external
+        mixing.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         self.preamp_channel = integer_channel(
             channel_name,
@@ -987,8 +986,8 @@ class keysight_e4440a(scpi_SA):
             """Perform maxp atten cb operation.
 
             Args:
-                ch: Ch.
-                val: Val.
+            ch: Ch.
+            val: Val.
             """
             if self.max_power_ch is not None and self.max_power_ch.read() is not None:
                 self.max_power_ch.write(self.max_power_ch.read())
@@ -1050,12 +1049,12 @@ class keysight_e4440a(scpi_SA):
         This instrument is very screen memory centric.
 
         Args:
-            channel_name: Name for the new channel.
-            marker_number: Marker number.
-            trace_number: Trace number.
+        channel_name: Name for the new channel.
+        marker_number: Marker number.
+        trace_number: Trace number.
 
         Returns:
-            Result value.
+        Result value.
         """
         self.get_interface().write(
             f':CALCulate:MARKer{marker_number}:STATe ON')  # OFF|ON|0|1
@@ -1117,28 +1116,28 @@ class keysight_e4440a(scpi_SA):
             self, channel_name, marker_number=1, trace_number=1):
         """Spot measurmeent scalar at given frequency.
 
-            Activates a noise marker for the selected marker. If the selected marker is off it is turned on and located
-            at the center of the display. Reads out the average noise level, normalized to a 1 Hz noise power
-            bandwidth, around the active marker. The noise marker averages 5% of the trace data values, centered on
-            the location of the marker.
-            The data displayed (if the marker is in Normal mode) is the noise density around the marker. The value
-            readout is followed by “(1 Hz)” to remind you that display is normalized to a one Hz bandwidth.
+        Activates a noise marker for the selected marker. If the selected marker is off it is turned on and located
+        at the center of the display. Reads out the average noise level, normalized to a 1 Hz noise power
+        bandwidth, around the active marker. The noise marker averages 5% of the trace data values, centered on
+        the location of the marker.
+        The data displayed (if the marker is in Normal mode) is the noise density around the marker. The value
+        readout is followed by “(1 Hz)” to remind you that display is normalized to a one Hz bandwidth.
 
-            To guarantee accurate data for noise-like signals, a correction for equivalent noise bandwidth is made by
-            the analyzer. The Marker Noise function accuracy is best when the detector is set to Average or
-            Sample, because neither of these detectors will peak-bias the noise. The trade off between sweep time
-            and variance of the result is best when Avg/VBW Type is set to Power Averaging. Auto coupling,
-            therefore, normally chooses the Average detector and Power Averaging. Though the Marker Noise
-            function works with all settings of detector and Avg/VBW Type, using the positive or negative peak
-            detectors gives less accurate measurement results
+        To guarantee accurate data for noise-like signals, a correction for equivalent noise bandwidth is made by
+        the analyzer. The Marker Noise function accuracy is best when the detector is set to Average or
+        Sample, because neither of these detectors will peak-bias the noise. The trade off between sweep time
+        and variance of the result is best when Avg/VBW Type is set to Power Averaging. Auto coupling,
+        therefore, normally chooses the Average detector and Power Averaging. Though the Marker Noise
+        function works with all settings of detector and Avg/VBW Type, using the positive or negative peak
+        detectors gives less accurate measurement results
 
         Args:
-            channel_name: Name for the new channel.
-            marker_number: Marker number.
-            trace_number: Trace number.
+        channel_name: Name for the new channel.
+        marker_number: Marker number.
+        trace_number: Trace number.
 
         Returns:
-            Result value.
+        Result value.
         """
         # handling of marker mode is a little crude. TODO - keep track of
         # already used marker and trace numbers better.
@@ -1179,16 +1178,16 @@ class keysight_e4440a(scpi_SA):
     def add_channel_bandpower_marker(self, channel_name, marker_number=1):
         """3.2.3 Band/Intvl Power.
 
-            Measures the power in a bandwidth (non-zero span) or time interval (zero span) specified by the user. If
-            no marker is on, this key activates the delta pair marker mode. If the detector mode is set to Auto, the
-            average detector is selected. If the Avg/VBW type is set to Auto, Power Averaging is selected, other
-            choices of detector and Avg/VBW type will usually cause measurement inaccuracy. The active marker
-            pair indicate the edges of the band. Only Delta Pair and Span Pair marker control modes can be used
-            while in this function, selecting any other mode (for example, Normal or Delta) turns off this function
+        Measures the power in a bandwidth (non-zero span) or time interval (zero span) specified by the user. If
+        no marker is on, this key activates the delta pair marker mode. If the detector mode is set to Auto, the
+        average detector is selected. If the Avg/VBW type is set to Auto, Power Averaging is selected, other
+        choices of detector and Avg/VBW type will usually cause measurement inaccuracy. The active marker
+        pair indicate the edges of the band. Only Delta Pair and Span Pair marker control modes can be used
+        while in this function, selecting any other mode (for example, Normal or Delta) turns off this function
 
         Args:
-            channel_name: Name for the new channel.
-            marker_number: Marker number.
+        channel_name: Name for the new channel.
+        marker_number: Marker number.
         """
         # TODO
         # :CALCulate:MARKer[1]|2|3|4:FUNCtion BPOWer|NOISe|OFF
@@ -1202,13 +1201,12 @@ class keysight_e4440a(scpi_SA):
         # :CALCulate:MARKer[1]|2|3|4:STATe?
 
     def add_channel_trigger(self, channel_name):
-        """
+        """Args:.
 
-        Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         def _single_abort_trigger_wait(run_mode):
             if run_mode == 'Single':
@@ -1381,10 +1379,10 @@ class keysight_e4440a(scpi_SA):
         """Calculated time for single sweep, dependent on start/stop/points/rbw/etc.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         def _set_sweep_time(t):
             self.get_interface().write(':SENSe:SWEep:TIME:AUTO OFF')
@@ -1405,10 +1403,10 @@ class keysight_e4440a(scpi_SA):
         """Tracks the state of the AUTO setting for the sweep time.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = integer_channel(
             name=channel_name,
@@ -1426,10 +1424,10 @@ class keysight_e4440a(scpi_SA):
         """Write message to lower left corner of screen display.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         def _disp_msg(msg):
             if msg is None:
@@ -1448,8 +1446,8 @@ class keysight_e4440a(scpi_SA):
     def add_channel_y_disp(self, channel_name):
         """The settings of Y Axis Units and Scale Type, affect how the data is read over the.
 
-            remote interface. When using the remote interface no units are returned, so you must
-            know what the Y-Axis units are to interpret the results
+        remote interface. When using the remote interface no units are returned, so you must
+        know what the Y-Axis units are to interpret the results
 
         When Scale Type (Log) is selected, the vertical graticule divisions are scaled in logarithmic units. The
         top line of the graticule is the Reference Level and uses the scaling per division, Scale/Div to assign
@@ -1462,10 +1460,10 @@ class keysight_e4440a(scpi_SA):
         It will give 0.707•A.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
 """
         reference_level_channel = channel(
             f'{channel_name}_reference_level',
@@ -1590,23 +1588,23 @@ class keysight_e4440a(scpi_SA):
     def add_channel_coupling(self, channel_name):
         """Specifies alternating current (AC) or direct current (DC) coupling at the analyzer RF input port.
 
-            Selecting AC coupling switches in a blocking capacitor that blocks any DC voltage present at the
-            analyzer input. This decreases the input frequency range of the analyzer, but prevents damage to the
-            input circuitry of the analyzer if there is a DC voltage present at the RF input.
-            In AC coupling mode, signals less than 20 MHz are not calibrated. You must switch to DC coupling to
-            see calibrated frequencies of less than 20 MHz. Note that the message DC Coupled will be displayed
-            on the analyzer when DC is selected.
-            Some amplitude specifications apply only when coupling is set to DC. Refer to the appropriate
-            amplitude specifications and characteristics for your analyzer.
-            CAUTION When operating in DC coupled mode, ensure protection of the input mixer by limiting the
-            input level to within 200 mV of 0 Vdc. In AC or DC coupling, limit the input RF power to
-            +30 dBm
+        Selecting AC coupling switches in a blocking capacitor that blocks any DC voltage present at the
+        analyzer input. This decreases the input frequency range of the analyzer, but prevents damage to the
+        input circuitry of the analyzer if there is a DC voltage present at the RF input.
+        In AC coupling mode, signals less than 20 MHz are not calibrated. You must switch to DC coupling to
+        see calibrated frequencies of less than 20 MHz. Note that the message DC Coupled will be displayed
+        on the analyzer when DC is selected.
+        Some amplitude specifications apply only when coupling is set to DC. Refer to the appropriate
+        amplitude specifications and characteristics for your analyzer.
+        CAUTION When operating in DC coupled mode, ensure protection of the input mixer by limiting the
+        input level to within 200 mV of 0 Vdc. In AC or DC coupling, limit the input RF power to
+        +30 dBm
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         coupling_channel = channel(
             f'{channel_name}',
@@ -1628,10 +1626,10 @@ class keysight_e4440a(scpi_SA):
         Increase the declared power level or manually coerce the attenuation level up (not recommended).
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         scpi = ':STATus:QUEStionable:POWer:CONDition?'
         decode_bit = 6
@@ -1641,7 +1639,7 @@ class keysight_e4440a(scpi_SA):
             """Return the status.
 
             Returns:
-                Result value.
+            Result value.
             """
             error = bit_is_set(int(self.get_interface().ask(scpi)), decode_bit)
             if error:
@@ -1661,10 +1659,10 @@ class keysight_e4440a(scpi_SA):
         Increase the declared power level or manually coerce the attenuation level up (not recommended).
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         scpi = ':STATus:QUEStionable:INTegrity:CONDition?'
         decode_bit = 4
@@ -1674,7 +1672,7 @@ class keysight_e4440a(scpi_SA):
             """Return the status.
 
             Returns:
-                Result value.
+            Result value.
             """
             error = bit_is_set(int(self.get_interface().ask(scpi)), decode_bit)
             if error:
@@ -1694,10 +1692,10 @@ class keysight_e4440a(scpi_SA):
         Increase the declared power level or manually coerce the attenuation level up (not recommended).
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         scpi = ':STATus:QUEStionable:INTegrity:CONDition?'
         decode_bit = 3
@@ -1707,7 +1705,7 @@ class keysight_e4440a(scpi_SA):
             """Return the status.
 
             Returns:
-                Result value.
+            Result value.
             """
             error = bit_is_set(int(self.get_interface().ask(scpi)), decode_bit)
             if error:
@@ -1727,10 +1725,10 @@ class keysight_e4440a(scpi_SA):
         Increase the declared power level or manually coerce the attenuation level up (not recommended).
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         scpi = 'STATus:QUEStionable:INTegrity:UNCalibrated:CONDition?'
         decode_bit = 0
@@ -1740,7 +1738,7 @@ class keysight_e4440a(scpi_SA):
             """Return the status.
 
             Returns:
-                Result value.
+            Result value.
             """
             error = bit_is_set(int(self.get_interface().ask(scpi)), decode_bit)
             if error:
@@ -1761,10 +1759,10 @@ class keysight_e4440a(scpi_SA):
         https://swarm.adsdesign.analog.com/files/adi/equipment_info/north_chelmsford/TRUNK/Keysight/Signal%20Analyzer/PSA/Doc/E444x%20programmers%20manual%209018-01328.pdf).
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         scpi = 'STATus:QUEStionable:CONDition?'
         message1, message2, message3 = '*** ERROR ***', 'PSA indicates generally questionable data.', 'Correct the attenuation level!'
@@ -1773,7 +1771,7 @@ class keysight_e4440a(scpi_SA):
             """Return the status.
 
             Returns:
-                Result value.
+            Result value.
             """
             error = int(self.get_interface().ask(scpi))
             if error:
@@ -1791,10 +1789,10 @@ class keysight_e4440a(scpi_SA):
         """Turns off the screen buttons temporarily for more usful viewing. They will come back on if other user inputs require them.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = integer_channel(
             name=channel_name,
@@ -1812,10 +1810,10 @@ class keysight_e4440a(scpi_SA):
         """Returns the response to :SYSTem:ERROr? to see if there are any commands making the instrument angry. Perform repeated reads to get them all and clear the buffer.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(
             name=channel_name,
@@ -1835,13 +1833,12 @@ class keysight_e4440a(scpi_SA):
     # So what gives?
 
     def add_channels(self, channel_name):
-        """
+        """Args:.
 
-        Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         channels = []
         channels.append(self.add_channel_xdata(f'{channel_name}_xpoints'))

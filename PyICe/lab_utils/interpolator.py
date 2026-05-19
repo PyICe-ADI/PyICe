@@ -1,4 +1,4 @@
-"Linear interpolator implemented in pure Python"
+"""Linear interpolator implemented in pure Python."""
 # Copyright 2018 by Analog Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
@@ -43,7 +43,6 @@ class interpolator(object):
     >>> multi(1.5)
     25.0
     """
-
     def __init__(self, points_list=None):
         self._points = []
         self._points_ysort = []

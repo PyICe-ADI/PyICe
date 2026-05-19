@@ -40,8 +40,7 @@ register_description = collections.namedtuple('Register_description',
 
 
 class modbus_instrument(instrument, minimalmodbus.Instrument):
-    """
-    Https://en.wikipedia.org/wiki/Modbus.
+    """Https://en.wikipedia.org/wiki/Modbus.
 
     Modbus function codes
     01: Read coils
@@ -54,7 +53,6 @@ class modbus_instrument(instrument, minimalmodbus.Instrument):
     16: Write multiple registers
     20: Read file record
     """
-
     def __init__(self, interface_raw_serial,
                  modbus_address, baudrate, mode='rtu'):
         minimalmodbus.BAUDRATE = baudrate

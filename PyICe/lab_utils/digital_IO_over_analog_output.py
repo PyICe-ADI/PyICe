@@ -5,8 +5,8 @@ class digital_IO_over_analog_output(object):
 
     Wraps an analog output PyICe channel with a digital interface.
     domain_channel is the PyICe channel for the logic supply of the digital input
-    we're talking to, e.g. master['vin_supply'] or master['dvcc_supply']."""
-
+    we're talking to, e.g. master['vin_supply'] or master['dvcc_supply'].
+    """
     def __init__(self, channel, domain_channel, VOL=0.0,
                  delta_Vhook=1.5, tolerance=0.01, abs_max=None):
         from . import lab_core

@@ -33,7 +33,7 @@ class a3497xa_instrument(scpi_instrument, delegator):
         set False to force traditional scanlist behavior and manual monitor channel selection via set_monitor and get_monitor_data methods.
 
         Args:
-            enable: True to enable automatic monitor, False to disable.
+        enable: True to enable automatic monitor, False to disable.
         """
         self._automatic_monitor = enable
 
@@ -43,13 +43,13 @@ class a3497xa_instrument(scpi_instrument, delegator):
         """Return read delegated channel list result.
 
         Args:
-            channel_list: Channel list.
+        channel_list: Channel list.
 
         Returns:
-            Result value.
+        Result value.
 
         Raises:
-            Exception: On error condition.
+        Exception: On error condition.
         """
         results = results_ord_dict()
         # special case for reading the moniotor
@@ -135,10 +135,10 @@ class a3497xa_instrument(scpi_instrument, delegator):
         """Return read raw result.
 
         Args:
-            internal_address: Internal address.
+        internal_address: Internal address.
 
         Returns:
-            Result value.
+        Result value.
         """
         assert internal_address in self.resolve_delegator().scan_results
         return self.resolve_delegator().scan_results[internal_address]
@@ -147,11 +147,11 @@ class a3497xa_instrument(scpi_instrument, delegator):
         """Return read apply function result.
 
         Args:
-            function: Function.
-            internal_address: Internal address.
+        function: Function.
+        internal_address: Internal address.
 
         Returns:
-            Result value.
+        Result value.
         """
         return function(self.read_raw(internal_address))
 
@@ -168,7 +168,7 @@ class a3497xa_instrument(scpi_instrument, delegator):
         """View named channel measurement on the front panel whenever scan is idle.
 
         Args:
-            monitor_channel_name: Name of the channel to display on the front panel.
+        monitor_channel_name: Name of the channel to display on the front panel.
         """
         channel = self.get_channel(monitor_channel_name)
         channel_number = channel.get_attribute('internal_address')
@@ -183,10 +183,10 @@ class a3497xa_instrument(scpi_instrument, delegator):
         """Return data from last monitor reading.
 
         Args:
-            channel_name: Optional channel name to set as monitor before reading.
+        channel_name: Optional channel name to set as monitor before reading.
 
         Returns:
-            The floating-point monitor data value.
+        The floating-point monitor data value.
         """
         if channel_name is not None:
             self.set_monitor(channel_name)
@@ -200,13 +200,12 @@ class agilent_3497xa_chassis(a3497xa_instrument):
     the scanlist must be modified for each plugin to run separate scans on each individual plugin.
     This object will construct a composite scanlist, then appropriately parse the results back to the individual instruments.
     """
-
     def __init__(self, interface_visa, automatic_monitor=True):
         """Agilent 34970 collection object.
 
         Args:
-            interface_visa: VISA interface string for the instrument.
-            automatic_monitor: Enable automatic monitor channel switching.
+        interface_visa: VISA interface string for the instrument.
+        automatic_monitor: Enable automatic monitor channel switching.
         """
         self._base_name = '34970a_chasis'
         a3497xa_instrument.__init__(self,
@@ -218,10 +217,10 @@ class agilent_3497xa_chassis(a3497xa_instrument):
         """Only appropriate to add instantiated 34907 plugin instrument objects to this class (20ch, 40ch, dacs, dig-in, dig-out, etc).
 
         Args:
-            new_instrument: A 34970 plugin instrument instance to add.
+        new_instrument: A 34970 plugin instrument instance to add.
 
         Raises:
-            Exception: If the instrument is not an a3497xa_instrument instance.
+        Exception: If the instrument is not an a3497xa_instrument instance.
         """
         if not isinstance(new_instrument, a3497xa_instrument):
             raise Exception(
@@ -241,27 +240,26 @@ class agilent_34972a_chassis(agilent_3497xa_chassis):
 class agilent_3497xa_20ch_40ch(a3497xa_instrument):
     """Superclass for the 34901A, 34902A and 34908A input measurement multiplexers.
 
-        All functionality common to the 20Ch and 40Ch is implemented here and inherited
-        by the appropriate subclasses.
+    All functionality common to the 20Ch and 40Ch is implemented here and inherited
+    by the appropriate subclasses.
 
-        Capabilities:
-           34901A, 34902A: Scanning and direct measurement
-               of temperature, voltage, resistance, frequency,
-               and current (34901A only) using the internal DMM.
-           34908A: Scanning and direct measurement
-               of temperature, voltage, and resistance using
-               the internal DMM.
+    Capabilities:
+    34901A, 34902A: Scanning and direct measurement
+    of temperature, voltage, resistance, frequency,
+    and current (34901A only) using the internal DMM.
+    34908A: Scanning and direct measurement
+    of temperature, voltage, and resistance using
+    the internal DMM.
     """
-
     def __init__(self, interface_visa, bay, automatic_monitor=True):
         """"interface_visa".
 
-            bay is 1-3.  1 is top slot, 3 is bottom slot.
+        bay is 1-3.  1 is top slot, 3 is bottom slot.
 
         Args:
-            interface_visa: VISA interface string for the instrument.
-            bay: Expansion bay number (1-3). 1 is top slot, 3 is bottom slot.
-            automatic_monitor: Enable automatic monitor channel switching.
+        interface_visa: VISA interface string for the instrument.
+        bay: Expansion bay number (1-3). 1 is top slot, 3 is bottom slot.
+        automatic_monitor: Enable automatic monitor channel switching.
         """
         self._base_name = '34970a_mux'
         self.bay = bay
@@ -287,7 +285,7 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
         """Perform warn about relays operation.
 
         Args:
-            bay: Instrument bay number.
+        bay: Instrument bay number.
         """
         plugin_type = self.get_interface().ask(
             f"SYSTem:CTYPe? {bay * 100}").split(",")[1]
@@ -303,23 +301,23 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
         """Return the relay cycle counts.
 
         Returns:
-            Result value.
+        Result value.
         """
         return self.relay_cycle_counts
 
     def add_channel(self, channel_name, channel_num):
         """Register a named channel.  No configuration takes place.  When the channel is read directly,.
 
-            or through read_channels(), an appropriate scanlist will be written to the 34970.
-            channel_num is 1-22 for the 20Ch mux (1-20 no current, 21-22 current only)
-            channel_num is 1-40 for the 40Ch mux.
+        or through read_channels(), an appropriate scanlist will be written to the 34970.
+        channel_num is 1-22 for the 20Ch mux (1-20 no current, 21-22 current only)
+        channel_num is 1-40 for the 40Ch mux.
 
         Args:
-            channel_name: Name for the new channel.
-            channel_num: Physical channel number on the mux card.
+        channel_name: Name for the new channel.
+        channel_num: Physical channel number on the mux card.
 
         Returns:
-            The newly created channel object.
+        The newly created channel object.
         """
         internal_address = self.bay * 100 + channel_num
         new_channel = channel(
@@ -338,18 +336,18 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
         """Shortcut method to add voltage channel and configure in one step.
 
         Args:
-            channel_name: Name for the new voltage channel.
-            channel_num: Physical channel number on the mux card.
-            NPLC: Number of power line cycles for integration.
-            range: Voltage measurement range or "AUTO".
-            high_z: True for >10G input impedance, False for 10M.
-            delay: Settling delay in seconds, or None for default.
-            disable_autozero: True to disable autozero, False to enable.
-            Rsource: Source resistance in ohms for auto delay calculation.
-            fmt: Display format string.
+        channel_name: Name for the new voltage channel.
+        channel_num: Physical channel number on the mux card.
+        NPLC: Number of power line cycles for integration.
+        range: Voltage measurement range or "AUTO".
+        high_z: True for >10G input impedance, False for 10M.
+        delay: Settling delay in seconds, or None for default.
+        disable_autozero: True to disable autozero, False to enable.
+        Rsource: Source resistance in ohms for auto delay calculation.
+        fmt: Display format string.
 
         Returns:
-            The configured voltage channel object.
+        The configured voltage channel object.
         """
         # TODO: add_extended_channels argument to add nplc, delay, etc all at
         # once???
@@ -388,14 +386,14 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
         """Shortcut method to add thermistor measurement channel and configure in one step.
 
         Args:
-            channel_name: Name for the new thermocouple channel.
-            channel_num: Physical channel number on the mux card.
-            tcouple_type: Thermocouple type string (e.g. 'J', 'K', 'T').
-            NPLC: Number of power line cycles for integration.
-            disable_autozero: True to disable autozero, False to enable.
+        channel_name: Name for the new thermocouple channel.
+        channel_num: Physical channel number on the mux card.
+        tcouple_type: Thermocouple type string (e.g. 'J', 'K', 'T').
+        NPLC: Number of power line cycles for integration.
+        disable_autozero: True to disable autozero, False to enable.
 
         Returns:
-            The configured thermocouple channel object.
+        The configured thermocouple channel object.
         """
         new_channel = self.add_channel(channel_name, channel_num)
         new_channel.set_attribute('34970_type', 'thermocouple')
@@ -415,16 +413,16 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
         """Shortcut method to add rtd measurement channel and configure in one step.
 
         Args:
-            channel_name: Name for the new RTD channel.
-            channel_num: Physical channel number on the mux card.
-            rtd_type: RTD standard type (85 or 91).
-            ptype: Probe type (4 for four-wire, 2 for two-wire).
-            nom_res: Nominal resistance in ohms.
-            NPLC: Number of power line cycles for integration.
-            disable_autozero: True to disable autozero, False to enable.
+        channel_name: Name for the new RTD channel.
+        channel_num: Physical channel number on the mux card.
+        rtd_type: RTD standard type (85 or 91).
+        ptype: Probe type (4 for four-wire, 2 for two-wire).
+        nom_res: Nominal resistance in ohms.
+        NPLC: Number of power line cycles for integration.
+        disable_autozero: True to disable autozero, False to enable.
 
         Returns:
-            The configured RTD channel object.
+        The configured RTD channel object.
         """
         new_channel = self.add_channel(channel_name, channel_num)
         new_channel.set_attribute('34970_type', 'RTD')
@@ -442,11 +440,11 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
     def _set_impedance_10GOhm(self, channel, high_z=True):
         """Set channel impedance to >1GOhm if high_z is True and voltage range allows, otherwise 10M.
 
-            impedance always 10M if argument is false.
+        impedance always 10M if argument is false.
 
         Args:
-            channel: The channel object to configure.
-            high_z: True for >10G impedance, False for 10M.
+        channel: The channel object to configure.
+        high_z: True for >10G impedance, False for 10M.
         """
         internal_address = channel.get_attribute('internal_address')
         channel.set_attribute('input_impedance_hiz', high_z)
@@ -461,15 +459,15 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
                            high_z, delay, disable_autozero):
         """Reconfigure channel to measure DC voltage, with input impedance >10G if range allows.
 
-            Optionally specify number of powerline cycles integration period and attenuator range.
+        Optionally specify number of powerline cycles integration period and attenuator range.
 
         Args:
-            channel: The channel object to configure.
-            NPLC: Number of power line cycles for integration.
-            range: Voltage measurement range or "AUTO".
-            high_z: True for >10G input impedance, False for 10M.
-            delay: Settling delay in seconds, or None for default.
-            disable_autozero: True to disable autozero, False to enable.
+        channel: The channel object to configure.
+        NPLC: Number of power line cycles for integration.
+        range: Voltage measurement range or "AUTO".
+        high_z: True for >10G input impedance, False for 10M.
+        delay: Settling delay in seconds, or None for default.
+        disable_autozero: True to disable autozero, False to enable.
         """
         internal_address = channel.get_attribute('internal_address')
         self.get_interface().write(
@@ -508,8 +506,8 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
         """Delay specified number of seconds between closing relay and starting DMM measurement for channel.
 
         Args:
-            channel: The channel object to configure.
-            delay: Delay in seconds before measurement starts.
+        channel: The channel object to configure.
+        delay: Delay in seconds before measurement starts.
         """
         internal_address = channel.get_attribute('internal_address')
         channel.set_attribute('delay', delay)
@@ -530,8 +528,8 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
         and < 10 minutes, add 0.0002% range additional error + 5 μV.
 
         Args:
-            channel: The channel object to configure.
-            disable_autozero: True to disable autozero, False to enable.
+        channel: The channel object to configure.
+        disable_autozero: True to disable autozero, False to enable.
         """
         internal_address = channel.get_attribute('internal_address')
         self.get_interface().write(
@@ -542,10 +540,10 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
         """Perform y=mx+b scaling to channel inside instrument and change displayed units.
 
         Args:
-            channel: The channel object to configure.
-            gain: Scale factor (m in y=mx+b).
-            offset: Offset value (b in y=mx+b).
-            unit: Display unit string, or None to leave unchanged.
+        channel: The channel object to configure.
+        gain: Scale factor (m in y=mx+b).
+        offset: Offset value (b in y=mx+b).
+        unit: Display unit string, or None to leave unchanged.
         """
         internal_address = channel.get_attribute('internal_address')
         if gain is not None:
@@ -593,11 +591,11 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
         """Adds a secondary channel that can modify the nplc setting of an existing channel.
 
         Args:
-            channel_name: Name for the new NPLC control channel.
-            base_channel: The measurement channel whose NPLC to control.
+        channel_name: Name for the new NPLC control channel.
+        base_channel: The measurement channel whose NPLC to control.
 
         Returns:
-            The newly created NPLC control channel.
+        The newly created NPLC control channel.
         """
         new_channel = channel(
             channel_name,
@@ -616,11 +614,11 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
         """Adds a secondary channel that can modify the delay of an existing channel.
 
         Args:
-            channel_name: Name for the new delay control channel.
-            base_channel: The measurement channel whose delay to control.
+        channel_name: Name for the new delay control channel.
+        base_channel: The measurement channel whose delay to control.
 
         Returns:
-            The newly created delay control channel.
+        The newly created delay control channel.
         """
         new_channel = channel(
             channel_name,
@@ -644,11 +642,11 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
         Write channel to True for >10G mode (<~10V), False for 10Meg mode.
 
         Args:
-            channel_name: Name for the new impedance control channel.
-            base_channel: The measurement channel whose impedance to control.
+        channel_name: Name for the new impedance control channel.
+        base_channel: The measurement channel whose impedance to control.
 
         Returns:
-            The newly created impedance control channel.
+        The newly created impedance control channel.
         """
         new_channel = integer_channel(
             channel_name,
@@ -671,11 +669,11 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
         Write channel to True autozero every measurement (doubling measurement time), False for one-time autozero.
 
         Args:
-            channel_name: Name for the new autozero control channel.
-            base_channel: The measurement channel whose autozero to control.
+        channel_name: Name for the new autozero control channel.
+        base_channel: The measurement channel whose autozero to control.
 
         Returns:
-            The newly created autozero control channel.
+        The newly created autozero control channel.
         """
         new_channel = integer_channel(
             channel_name,
@@ -696,11 +694,11 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
         """Add a channel range readback.
 
         Args:
-            base_channel: Base channel object to extend.
-            channel_name: Name for the new channel.
+        base_channel: Base channel object to extend.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(channel_name, read_function=lambda bc=base_channel: float(
             self.get_interface().ask(f"SENSe:VOLTage:DC:RANGe? (@{bc.get_attribute('internal_address')})")))
@@ -710,11 +708,11 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
         """Adds a secondary channel that can modify the gain (span multiplier) of an existing channel.
 
         Args:
-            channel_name: Name for the new gain control channel.
-            base_channel: The measurement channel whose gain to control.
+        channel_name: Name for the new gain control channel.
+        base_channel: The measurement channel whose gain to control.
 
         Returns:
-            The newly created gain control channel.
+        The newly created gain control channel.
         """
         new_channel = channel(
             channel_name,
@@ -738,11 +736,11 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
         """Adds a secondary channel that can modify the offset of an existing channel.
 
         Args:
-            channel_name: Name for the new offset control channel.
-            base_channel: The measurement channel whose offset to control.
+        channel_name: Name for the new offset control channel.
+        base_channel: The measurement channel whose offset to control.
 
         Returns:
-            The newly created offset control channel.
+        The newly created offset control channel.
         """
         new_channel = channel(
             channel_name,
@@ -766,11 +764,11 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
         """Adds a secondary channel that can modify the displayed unit (V/A/etc) of an existing channel.
 
         Args:
-            channel_name: Name for the new unit control channel.
-            base_channel: The measurement channel whose display unit to control.
+        channel_name: Name for the new unit control channel.
+        base_channel: The measurement channel whose display unit to control.
 
         Returns:
-            The newly created unit control channel.
+        The newly created unit control channel.
         """
         new_channel = channel(
             channel_name,
@@ -804,9 +802,9 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
 class agilent_3497xa_20ch(agilent_3497xa_20ch_40ch):
     """Extends base class to add methods specific to the 20-channel mux that are.
 
-        not appropriate for the 40-channel mux such as frequency, current measurement (internal shunt),
-        and current measurement (external sense resistor)."""
-
+    not appropriate for the 40-channel mux such as frequency, current measurement (internal shunt),
+    and current measurement (external sense resistor).
+    """
     def __init__(self, *args, **kwargs):
         agilent_3497xa_20ch_40ch.__init__(self, *args, **kwargs)
         self.plugin_type = "34901A"
@@ -816,18 +814,18 @@ class agilent_3497xa_20ch(agilent_3497xa_20ch_40ch):
         """DC current measurement only allowed on 34901A channels 21 and 22.
 
         Args:
-            channel_name: Name for the new current channel.
-            channel_num: Physical channel number (must be 21 or 22).
-            NPLC: Number of power line cycles for integration.
-            range: Current measurement range or 'AUTO'.
-            delay: Settling delay in seconds, or None for default.
-            disable_autozero: True to disable autozero, False to enable.
+        channel_name: Name for the new current channel.
+        channel_num: Physical channel number (must be 21 or 22).
+        NPLC: Number of power line cycles for integration.
+        range: Current measurement range or 'AUTO'.
+        delay: Settling delay in seconds, or None for default.
+        disable_autozero: True to disable autozero, False to enable.
 
         Returns:
-            The configured current channel object.
+        The configured current channel object.
 
         Raises:
-            Exception: If channel_num is not 21 or 22.
+        Exception: If channel_num is not 21 or 22.
         """
         if channel_num not in [21, 22]:
             raise Exception(
@@ -850,8 +848,8 @@ class agilent_3497xa_20ch(agilent_3497xa_20ch_40ch):
         """DC current measurement only allowed on 34901A channels 21 and 22.
 
         Args:
-            channel: The channel object to configure.
-            range: Current measurement range or "AUTO".
+        channel: The channel object to configure.
+        range: Current measurement range or "AUTO".
         """
         internal_address = channel.get_attribute('internal_address')
         channel.set_attribute('range', range)
@@ -862,11 +860,11 @@ class agilent_3497xa_20ch(agilent_3497xa_20ch_40ch):
         """Modify ammeter current range shunt.
 
         Args:
-            channel_name: Name for the new range control channel.
-            base_channel: The current measurement channel whose range to control.
+        channel_name: Name for the new range control channel.
+        base_channel: The current measurement channel whose range to control.
 
         Returns:
-            The newly created ammeter range control channel.
+        The newly created ammeter range control channel.
         """
         assert base_channel.get_attribute(
             'number') == 21 or base_channel.get_attribute('number') == 22
@@ -887,7 +885,7 @@ class agilent_3497xa_20ch(agilent_3497xa_20ch_40ch):
         """Configure a channel to measure frequency.
 
         Args:
-            channel_name: Name of the channel to configure for frequency measurement.
+        channel_name: Name of the channel to configure for frequency measurement.
         """
         print('config_freq expect this to change and become an add_channel')
         internal_address = self._get_internal_address_by_name(channel_name)
@@ -898,10 +896,10 @@ class agilent_3497xa_20ch(agilent_3497xa_20ch_40ch):
         """Deprecated.
 
         Args:
-            channel_name: Name of the channel (unused, method is deprecated).
+        channel_name: Name of the channel (unused, method is deprecated).
 
         Raises:
-            ValueError: Always raised because this method is deprecated.
+        ValueError: Always raised because this method is deprecated.
         """
         raise ValueError(
             'Agilent 3497x 20CH Plugin: Sorry, "config_res" has been deprectaed, please use "add_channel_res".')
@@ -911,38 +909,39 @@ class agilent_3497xa_20ch(agilent_3497xa_20ch_40ch):
         """Two Wire DC resistance measurement.
 
         Args:
-            channel_name: Name for the new resistance channel.
-            channel_num: Physical channel number on the mux card.
-            NPLC: Number of power line cycles for integration.
-            res_range: Resistance measurement range or 'AUTO'.
-            offset_compensated: True to enable offset compensation.
-            delay: Settling delay in seconds, or None for default.
-            disable_autozero: True to disable autozero, False to enable.
-            add_extended_channels: True to add NPLC, range, and other control channels.
+        channel_name: Name for the new resistance channel.
+        channel_num: Physical channel number on the mux card.
+        NPLC: Number of power line cycles for integration.
+        res_range: Resistance measurement range or 'AUTO'.
+        offset_compensated: True to enable offset compensation.
+        delay: Settling delay in seconds, or None for default.
+        disable_autozero: True to disable autozero, False to enable.
+        add_extended_channels: True to add NPLC, range, and other control channels.
 
         Returns:
-            The configured resistance measurement channel object.
+        The configured resistance measurement channel object.
 
         .. rubric:: Related SCPI Commands
         ####################################
         # Related SCPI Commands            #
         ####################################
         CONFigure
-          :RESistance [{<range>|AUTO|MIN|MAX|DEF} [,<resolution>|MIN|MAX|DEF}],] (@<scan_list>)
+        :RESistance [{<range>|AUTO|MIN|MAX|DEF} [,<resolution>|MIN|MAX|DEF}],] (@<scan_list>)
         CONFigure? [(@<ch_list>)]
         [SENSe:] (implied)
-          RESistance:RANGe {<range>|MIN|MAX}[,(@<ch_list>)]
-          RESistance:RANGe? [{(@<ch_list>)|MIN|MAX}]
-          RESistance:RANGe:AUTO {OFF|ON}[,(@<ch_list>)]
-          RESistance:RANGe:AUTO? [(@<ch_list>)]
-          RESistance:RESolution {<resolution>|MIN|MAX}[,(@<ch_list>)]
-          RESistance:RESolution? [{(@<ch_list>)|MIN|MAX}]
-          RESistance:APERture {<time>|MIN|MAX}[,(@<ch_list>)]
-          RESistance:APERture? [{(@<ch_list>)|MIN|MAX}]
-          RESistance:NPLC {0.02|0.2|1|2|10|20|100|200|MIN|MAX}[,(@<ch_list>)]
-          RESistance:NPLC? [{(@<ch_list>)|MIN|MAX}]
-          RESistance:OCOMpensated {OFF|ON}[,(@<ch_list>)]
-          RESistance:OCOMpensated? [(@<ch_list>)]"""
+        RESistance:RANGe {<range>|MIN|MAX}[,(@<ch_list>)]
+        RESistance:RANGe? [{(@<ch_list>)|MIN|MAX}]
+        RESistance:RANGe:AUTO {OFF|ON}[,(@<ch_list>)]
+        RESistance:RANGe:AUTO? [(@<ch_list>)]
+        RESistance:RESolution {<resolution>|MIN|MAX}[,(@<ch_list>)]
+        RESistance:RESolution? [{(@<ch_list>)|MIN|MAX}]
+        RESistance:APERture {<time>|MIN|MAX}[,(@<ch_list>)]
+        RESistance:APERture? [{(@<ch_list>)|MIN|MAX}]
+        RESistance:NPLC {0.02|0.2|1|2|10|20|100|200|MIN|MAX}[,(@<ch_list>)]
+        RESistance:NPLC? [{(@<ch_list>)|MIN|MAX}]
+        RESistance:OCOMpensated {OFF|ON}[,(@<ch_list>)]
+        RESistance:OCOMpensated? [(@<ch_list>)]
+        """
         ####################################
         # Range Channel                    #
         ####################################
@@ -1089,38 +1088,39 @@ class agilent_3497xa_20ch(agilent_3497xa_20ch_40ch):
         """Four Wire DC resistance measurement.
 
         Args:
-            channel_name: Name for the new four-wire resistance channel.
-            channel_num: Physical channel number on the mux card.
-            NPLC: Number of power line cycles for integration.
-            range: Resistance measurement range or 'AUTO'.
-            offset_compensated: True to enable offset compensation.
-            delay: Settling delay in seconds, or None for default.
-            disable_autozero: True to disable autozero, False to enable.
-            add_extended_channels: True to add NPLC, range, and other control channels.
+        channel_name: Name for the new four-wire resistance channel.
+        channel_num: Physical channel number on the mux card.
+        NPLC: Number of power line cycles for integration.
+        range: Resistance measurement range or 'AUTO'.
+        offset_compensated: True to enable offset compensation.
+        delay: Settling delay in seconds, or None for default.
+        disable_autozero: True to disable autozero, False to enable.
+        add_extended_channels: True to add NPLC, range, and other control channels.
 
         Returns:
-            The configured four-wire resistance measurement channel object.
+        The configured four-wire resistance measurement channel object.
 
         .. rubric:: Related SCPI Commands
         ####################################
         # Related SCPI Commands            #
         ####################################
         CONFigure
-          :FRESistance [{<range>|AUTO|MIN|MAX|DEF} [,<resolution>|MIN|MAX|DEF}],] (@<scan_list>)
+        :FRESistance [{<range>|AUTO|MIN|MAX|DEF} [,<resolution>|MIN|MAX|DEF}],] (@<scan_list>)
         CONFigure? [(@<ch_list>)]
         [SENSe:] (implied)
-          FRESistance:RANGe {<range>|MIN|MAX}[,(@<ch_list>)]
-          FRESistance:RANGe? [{(@<ch_list>)|MIN|MAX}]
-          FRESistance:RANGe:AUTO {OFF|ON}[,(@<ch_list>)]
-          FRESistance:RANGe:AUTO? [(@<ch_list>)]
-          FRESistance:RESolution {<resolution>|MIN|MAX}[,(@<ch_list>)]
-          FRESistance:RESolution? [{(@<ch_list>)|MIN|MAX}]
-          FRESistance:APERture {<time>|MIN|MAX}[,(@<ch_list>)]
-          FRESistance:APERture? [{(@<ch_list>)|MIN|MAX}]
-          FRESistance:NPLC {0.02|0.2|1|2|10|20|100|200|MIN|MAX}[,(@<ch_list>)]
-          FRESistance:NPLC? [{(@<ch_list>)|MIN|MAX}]
-          FRESistance:OCOMpensated {OFF|ON}[,(@<ch_list>)]
-          FRESistance:OCOMpensated? [(@<ch_list>)]"""
+        FRESistance:RANGe {<range>|MIN|MAX}[,(@<ch_list>)]
+        FRESistance:RANGe? [{(@<ch_list>)|MIN|MAX}]
+        FRESistance:RANGe:AUTO {OFF|ON}[,(@<ch_list>)]
+        FRESistance:RANGe:AUTO? [(@<ch_list>)]
+        FRESistance:RESolution {<resolution>|MIN|MAX}[,(@<ch_list>)]
+        FRESistance:RESolution? [{(@<ch_list>)|MIN|MAX}]
+        FRESistance:APERture {<time>|MIN|MAX}[,(@<ch_list>)]
+        FRESistance:APERture? [{(@<ch_list>)|MIN|MAX}]
+        FRESistance:NPLC {0.02|0.2|1|2|10|20|100|200|MIN|MAX}[,(@<ch_list>)]
+        FRESistance:NPLC? [{(@<ch_list>)|MIN|MAX}]
+        FRESistance:OCOMpensated {OFF|ON}[,(@<ch_list>)]
+        FRESistance:OCOMpensated? [(@<ch_list>)]
+        """
         ####################################
         # Range Channel                    #
         ####################################
@@ -1266,24 +1266,24 @@ class agilent_3497xa_20ch(agilent_3497xa_20ch_40ch):
                                   range="AUTO", resistance=None, delay=None, disable_autozero=True, Rsource=None):
         """Configure channel to return current measurement by scaling voltage measured across.
 
-            user-supplied sense resistor.  Specify either gain or its reciprocal resistance.
+        user-supplied sense resistor.  Specify either gain or its reciprocal resistance.
 
         Args:
-            channel_name: Name for the new current sense channel.
-            channel_num: Physical channel number on the mux card.
-            gain: Scale factor for voltage-to-current conversion.
-            NPLC: Number of power line cycles for integration.
-            range: Voltage measurement range or "AUTO".
-            resistance: Sense resistor value in ohms (reciprocal of gain).
-            delay: Settling delay in seconds, or None for default.
-            disable_autozero: True to disable autozero, False to enable.
-            Rsource: Source resistance in ohms for auto delay calculation.
+        channel_name: Name for the new current sense channel.
+        channel_num: Physical channel number on the mux card.
+        gain: Scale factor for voltage-to-current conversion.
+        NPLC: Number of power line cycles for integration.
+        range: Voltage measurement range or "AUTO".
+        resistance: Sense resistor value in ohms (reciprocal of gain).
+        delay: Settling delay in seconds, or None for default.
+        disable_autozero: True to disable autozero, False to enable.
+        Rsource: Source resistance in ohms for auto delay calculation.
 
         Returns:
-            The configured current sense channel object.
+        The configured current sense channel object.
 
         Raises:
-            Exception: If both resistance and gain are specified.
+        Exception: If both resistance and gain are specified.
         """
         if Rsource is None:
             Rsource = resistance
@@ -1358,8 +1358,8 @@ class agilent_3497xa_dacs(a3497xa_instrument):
         """Bay is numbered (1,2,3).  1 is the upper bay.  3 is the lower bay.
 
         Args:
-            interface_visa: VISA interface string for the instrument.
-            bay: Expansion bay number (1-3).
+        interface_visa: VISA interface string for the instrument.
+        bay: Expansion bay number (1-3).
         """
         self._base_name = 'agilent_3497xa_dacs'
         self.bay = bay
@@ -1372,11 +1372,11 @@ class agilent_3497xa_dacs(a3497xa_instrument):
         """Add named DAC channel to instrument.  num is 1-2, mapping to physical channel 4-5.
 
         Args:
-            channel_name: Name for the new DAC channel.
-            channel_num: DAC number (1 or 2).
+        channel_name: Name for the new DAC channel.
+        channel_num: DAC number (1 or 2).
 
         Returns:
-            The newly created DAC channel object.
+        The newly created DAC channel object.
         """
         if ((channel_num != 1) & (channel_num != 2)):
             print(("ERROR invalid dac " + self.get_name() + ", " + channel_num))
@@ -1398,8 +1398,8 @@ class agilent_3497xa_dacs(a3497xa_instrument):
         """Set named DAC to voltage.  Range is +/-12V with 16bit (366uV) resolution.
 
         Args:
-            internal_address: Internal address of the DAC channel.
-            voltage: Voltage to set in volts.
+        internal_address: Internal address of the DAC channel.
+        voltage: Voltage to set in volts.
         """
         txt = "SOURCE:VOLT " + str(voltage) + \
             ", (@" + str(internal_address) + ")"
@@ -1417,17 +1417,17 @@ class agilent_34972a_dacs(agilent_3497xa_dacs):
 class agilent_3497xa_actuator(a3497xa_instrument):
     """Agilent_a34970a_actuator 20 channel general purpose actuator plugin module.
 
-        each channel is a relay which can be toggled from open to closed.
-        note that the physical open button on the unit switches the relay to the NC position."""
-
+    each channel is a relay which can be toggled from open to closed.
+    note that the physical open button on the unit switches the relay to the NC position.
+    """
     def __init__(self, interface_visa, bay):
         """Interface_visa is a interface_visa.
 
-            bay is 34970 plugin bay 1-3.
+        bay is 34970 plugin bay 1-3.
 
         Args:
-            interface_visa: VISA interface string for the instrument.
-            bay: Expansion bay number (1-3).
+        interface_visa: VISA interface string for the instrument.
+        bay: Expansion bay number (1-3).
         """
         self._base_name = 'agilent_3497xa_actuator'
         self.bay = bay
@@ -1442,11 +1442,11 @@ class agilent_3497xa_actuator(a3497xa_instrument):
         """Channel_num is 1-20.
 
         Args:
-            channel_name: Name for the new actuator channel.
-            channel_num: Physical relay channel number (1-20).
+        channel_name: Name for the new actuator channel.
+        channel_num: Physical relay channel number (1-20).
 
         Returns:
-            The newly created actuator channel object.
+        The newly created actuator channel object.
         """
         internal_address = channel_num + self.bay * 100
         new_channel = channel(
@@ -1471,8 +1471,8 @@ class agilent_3497xa_actuator(a3497xa_instrument):
         """Boolean True closes relay channel_name, boolean False opens relay channel_name.
 
         Args:
-            internal_address: Internal address of the relay channel.
-            state: True to close the relay, False to open it.
+        internal_address: Internal address of the relay channel.
+        state: True to close the relay, False to open it.
         """
         if state:
             self._close(internal_address)
@@ -1498,18 +1498,18 @@ class agilent_34972a_actuator(agilent_3497xa_actuator):
 class agilent_3497xa_dig_out8(a3497xa_instrument):
     """Agilent_a34970a_dig_out8 8 bit digital output of the 34907A plugin module.
 
-        each multifunction module has 2 8 bit digital ports or 1 16 bit port
-        each 8 bit port may be input or output but not both."""
-
+    each multifunction module has 2 8 bit digital ports or 1 16 bit port
+    each 8 bit port may be input or output but not both.
+    """
     def __init__(self, interface_visa, bay, ch):
         """Interface_visa.
 
-            bay is 34970 plugin bay 1-3.  ch is digital bank 1-2.
+        bay is 34970 plugin bay 1-3.  ch is digital bank 1-2.
 
         Args:
-            interface_visa: VISA interface string for the instrument.
-            bay: Expansion bay number (1-3).
-            ch: Digital bank number (1 or 2).
+        interface_visa: VISA interface string for the instrument.
+        bay: Expansion bay number (1-3).
+        ch: Digital bank number (1 or 2).
         """
         self._base_name = 'agilent_3497xa_dig_out8'
         self.bay = bay
@@ -1527,18 +1527,18 @@ class agilent_3497xa_dig_out8(a3497xa_instrument):
     def add_channel(self, channel_name, start=0, size=8):
         """Add channel by channel_name, shifted left by start bits and masked to size bits.
 
-            ie to create a 3 bit digital channel on bits 1,2,3 add_channel("channel_name",1,3).
+        ie to create a 3 bit digital channel on bits 1,2,3 add_channel("channel_name",1,3).
 
         Args:
-            channel_name: Name for the new digital output channel.
-            start: Bit position offset within the byte.
-            size: Number of bits for this channel.
+        channel_name: Name for the new digital output channel.
+        start: Bit position offset within the byte.
+        size: Number of bits for this channel.
 
         Returns:
-            The newly created digital output channel object.
+        The newly created digital output channel object.
 
         Raises:
-            Exception: If bits overlap with previously defined channels or exceed 8 bits.
+        Exception: If bits overlap with previously defined channels or exceed 8 bits.
         """
         mask = pow(2, size) - 1 << start
         if mask & self._defined_bit_mask:
@@ -1565,13 +1565,13 @@ class agilent_3497xa_dig_out8(a3497xa_instrument):
     def _write_bits(self, start, size, value):
         """Write named channel to value.  Value is an integer which counts by "1".
 
-            The value is automatically truncated and shifted according to the location information
-            provided to add_channel().  The remainder of the digital word not included in the channel remains unchanged.
+        The value is automatically truncated and shifted according to the location information
+        provided to add_channel().  The remainder of the digital word not included in the channel remains unchanged.
 
         Args:
-            start: Bit position offset within the byte.
-            size: Number of bits for this channel.
-            value: Integer value to write.
+        start: Bit position offset within the byte.
+        size: Number of bits for this channel.
+        value: Integer value to write.
         """
         # construct mask
         mask = pow(2, size) - 1 << start
@@ -1592,18 +1592,18 @@ class agilent_34972a_dig_out8(agilent_3497xa_dig_out8):
 class agilent_3497xa_dig_in8(a3497xa_instrument):
     """Agilent_a34970a_dig_in8  8 bit digital input of the 34907A plugin module.
 
-        each multifunction module has 2 8 bit digital ports or 1 16 bit port
-        each 8 bit port may be input or output but not both"""
-
+    each multifunction module has 2 8 bit digital ports or 1 16 bit port
+    each 8 bit port may be input or output but not both
+    """
     def __init__(self, interface_visa, bay, ch):
         """Interface_visa.
 
-            bay is 34970 plugin bay 1-3.  ch is digital bank 1-2.
+        bay is 34970 plugin bay 1-3.  ch is digital bank 1-2.
 
         Args:
-            interface_visa: VISA interface string for the instrument.
-            bay: Expansion bay number (1-3).
-            ch: Digital bank number (1 or 2).
+        interface_visa: VISA interface string for the instrument.
+        bay: Expansion bay number (1-3).
+        ch: Digital bank number (1 or 2).
         """
         self._base_name = 'agilent_3497xa_dig_in8'
         self.bay = bay
@@ -1619,18 +1619,18 @@ class agilent_3497xa_dig_in8(a3497xa_instrument):
     def add_channel(self, channel_name, start=0, size=8):
         """Add channel by name, shifted left by start bits and masked to size bits.
 
-            ie to create a 3 bit digital channel on bits 1,2,3 add_channel("channel_name",1,3).
+        ie to create a 3 bit digital channel on bits 1,2,3 add_channel("channel_name",1,3).
 
         Args:
-            channel_name: Name for the new digital input channel.
-            start: Bit position offset within the byte.
-            size: Number of bits for this channel.
+        channel_name: Name for the new digital input channel.
+        start: Bit position offset within the byte.
+        size: Number of bits for this channel.
 
         Returns:
-            The newly created digital input channel object.
+        The newly created digital input channel object.
 
         Raises:
-            Exception: If the bit range exceeds 8 bits.
+        Exception: If the bit range exceeds 8 bits.
         """
         if (start + size) > 8:
             raise Exception(f"{self.get_name()}: only 8 bits allowed")
@@ -1639,10 +1639,10 @@ class agilent_3497xa_dig_in8(a3497xa_instrument):
             """Return conversion function result.
 
             Args:
-                data: Data to write.
+            data: Data to write.
 
             Returns:
-                Result value.
+            Result value.
             """
             return self._read_bits(start, size, data)
 
@@ -1650,7 +1650,7 @@ class agilent_3497xa_dig_in8(a3497xa_instrument):
             """Return read function result.
 
             Returns:
-                Result value.
+            Result value.
             """
             return self.read_apply_function(
                 self.internal_address, conversion_function)
@@ -1667,15 +1667,15 @@ class agilent_3497xa_dig_in8(a3497xa_instrument):
     def _read_bits(self, start, size, data):
         """Return the measured value for the named channel.  Value is shifted right to count by "1" independent of.
 
-            the actual location of the channel within the physical byte.
+        the actual location of the channel within the physical byte.
 
         Args:
-            start: Bit position offset within the byte.
-            size: Number of bits for this channel.
-            data: Raw data string from the instrument.
+        start: Bit position offset within the byte.
+        size: Number of bits for this channel.
+        data: Raw data string from the instrument.
 
         Returns:
-            The integer value of the extracted bits.
+        The integer value of the extracted bits.
         """
         mask = pow(2, size) - 1 << start
         # data string from instrument is f.p. (ex '+2.55E+02')
@@ -1694,7 +1694,8 @@ class agilent_34972a_dig_in8(agilent_3497xa_dig_in8):
 class agilent_3497xa_totalizer(a3497xa_instrument):
     """Implement this if you need it.
 
-        26-bit totalizer on physical channel s03 of the 34907A plugin module"""
+    26-bit totalizer on physical channel s03 of the 34907A plugin module
+    """
     # self.plugin_type = "34907A"
 
 

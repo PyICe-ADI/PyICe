@@ -58,8 +58,7 @@ class threaded_writer(object):
 
     def connect_channel(self, channel_name, time_interval, sequence=None,
                         start=True, address='localhost', port=5001, authkey=DEFAULT_AUTHKEY):
-        """
-        Write each element of sequence in turn to channel_name, waiting time_interval between writes.
+        """Write each element of sequence in turn to channel_name, waiting time_interval between writes.
 
         If sequence is None, Periodically read and re-write channel as keepalive.
         Thread safety provided by remote channel server infrastructure.
@@ -106,8 +105,7 @@ class threaded_writer(object):
             return self.add_function(sequencer(), time_interval, start)
 
     def add_function(self, function, time_interval, start=True):
-        """
-        Periodically execute function.
+        """Periodically execute function.
 
         No thread safety. Use caution with shared interfaces or use separate remote channel clients with each function. See example above.
 

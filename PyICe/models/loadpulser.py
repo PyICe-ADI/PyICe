@@ -16,7 +16,6 @@ def loadpulser():
     Returns:
         Result value.
     """
-
     xpoints = [
         0.000000000000000e+00,
         5.000000000000000e-02,

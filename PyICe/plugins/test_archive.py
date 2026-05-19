@@ -7,7 +7,7 @@ class database_archive():
     def __init__(self, test_script_file, db_source_file):
         """This class is part of the archive plugin for the PyICe Infrastructure Extensions and manipulates tables in a given SQlite database. Specifically, it can copy, move, or delete a table.
 
-        args:
+        Args:
             test_script_file - str. File location of the test that collected the data.
             db_source_file - str. Path to the database that will be manipulated.
 
@@ -43,7 +43,7 @@ class database_archive():
                    db_dest_file, db_indices=None):
         """Copies a table from the given database to a different.
 
-        args:
+        Args:
             db_source_table - str. The name of the table to be copied.
             db_dest_table - str. What the copy table will be called.
             db_dest_file - str. The path to the new database.
@@ -144,7 +144,7 @@ class database_archive():
     def delete_table(self, db_source_table, commit=True):
         """Deletes the given table from the database.
 
-        args:
+        Args:
             db_source_table - str. Name of the table to be deleted.
 
         Args:
@@ -287,7 +287,7 @@ class database_archive():
     def write_plot_script(cls, import_str, db_table, db_file):
         """This creates a file that can be run to replot data in an adjacent database using a given test's plot method.
 
-        args:
+        Args:
             import_str - str. Folder path from a PYTHONPATH to the directory containing the test script.
 
         Args:

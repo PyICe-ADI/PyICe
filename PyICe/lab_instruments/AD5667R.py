@@ -65,11 +65,10 @@ DONT_CARE = 0
 class AD5667R(instrument):
     """Analog Devices Dual 16 bit DAC.
 
-    http://www.analog.com/en/products/digital-to-analog-converters/da-converters/AD5667R.html"""
-
+    http://www.analog.com/en/products/digital-to-analog-converters/da-converters/AD5667R.html
+    """
     def __init__(self, interface_twi, addr7):
-        """
-        Addr7 is the 7-bit I²C address of the ADT5667R set by pin strapping.
+        """Addr7 is the 7-bit I²C address of the ADT5667R set by pin strapping.
 
         ADDR    A1  A0  Full Address    ADDR7
         VDD     0   0   7b0001100       0x0C

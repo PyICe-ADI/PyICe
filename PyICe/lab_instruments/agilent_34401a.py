@@ -2,15 +2,15 @@ from ..lab_core import *  # noqa: F403
 
 
 class agilent_34401a(scpi_instrument):
-    """single channel agilent_34401a meter.
+    """Single channel agilent_34401a meter.
 
-        defaults to dc voltage, note this instrument currently does not support using multiple measurement types at the same time"""
-
+    defaults to dc voltage, note this instrument currently does not support using multiple measurement types at the same time
+    """
     def __init__(self, interface_visa):
-        """interface_visa.
+        """Interface_visa.
 
         Args:
-            interface_visa: VISA interface instance.
+        interface_visa: VISA interface instance.
         """
         self._base_name = 'agilent_34401a'
         scpi_instrument.__init__(self, f"a34401 @ {interface_visa}")
@@ -25,15 +25,15 @@ class agilent_34401a(scpi_instrument):
     def config_dc_voltage(self, NPLC=1, range="AUTO", BW=20):
         """Set meter to measure DC volts.  Optionally set number of powerline cycles for integration to.
 
-            [.02,.2,1,10,100] and set range to [0.1, 1, 10, 100, 1000]
+        [.02,.2,1,10,100] and set range to [0.1, 1, 10, 100, 1000]
 
         Args:
-            BW: Bw.
-            NPLC: Number of power line cycles for integration.
-            range: Measurement or output range.
+        BW: Bw.
+        NPLC: Number of power line cycles for integration.
+        range: Measurement or output range.
 
         Raises:
-            Exception: On error condition.
+        Exception: On error condition.
         """
         # DJS Todo: Move this stuff to channel wrappers like 34970
         if NPLC not in [.02, .2, 1, 10, 100]:
@@ -54,7 +54,7 @@ class agilent_34401a(scpi_instrument):
         """[SENSe:]ZERO:AUTO {OFF|ONCE|ON}.
 
         Args:
-            mode: Operating mode.
+        mode: Operating mode.
         """
         if mode.upper() not in ["ON", "OFF", "AUTO"]:
             print(
@@ -65,18 +65,18 @@ class agilent_34401a(scpi_instrument):
     def config_dc_current(self, NPLC=1, range=None, BW=20):
         """Configure meter for DC current measurement.
 
-            NPLC is an optional number of integration powerline cycles
-                Valid values are: [.02,.2,1,10,100]
-            range is optional string value that is the manual range the meter should operate in.
-                Valid values are in amps: [0.01, 0.1, 1, 3]
+        NPLC is an optional number of integration powerline cycles
+        Valid values are: [.02,.2,1,10,100]
+        range is optional string value that is the manual range the meter should operate in.
+        Valid values are in amps: [0.01, 0.1, 1, 3]
 
         Args:
-            BW: Bw.
-            NPLC: Number of power line cycles for integration.
-            range: Measurement or output range.
+        BW: Bw.
+        NPLC: Number of power line cycles for integration.
+        range: Measurement or output range.
 
         Raises:
-            Exception: On error condition.
+        Exception: On error condition.
         """
         if NPLC not in [.02, .2, 1, 10, 100]:
             raise Exception(
@@ -91,10 +91,10 @@ class agilent_34401a(scpi_instrument):
         """Configure meter for AC voltage measurement.
 
         Args:
-            BW: Bw.
+        BW: Bw.
 
         Raises:
-            Exception: On error condition.
+        Exception: On error condition.
         """
         if BW not in [3, 20, 200]:
             raise Exception(
@@ -111,10 +111,10 @@ class agilent_34401a(scpi_instrument):
         """Add named channel to instrument without configuring measurement type.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         meter_channel = channel(channel_name, read_function=self.read_meter)
         return self._add_channel(meter_channel)
@@ -123,7 +123,7 @@ class agilent_34401a(scpi_instrument):
         """Return float representing meter measurement.  Units are V,A,Ohm, etc depending on meter configuration.
 
         Returns:
-            Result value.
+        Result value.
         """
         return float(self.get_interface().ask("READ?"))
 
@@ -131,7 +131,7 @@ class agilent_34401a(scpi_instrument):
         """Required for RS-232 control.  Not allowed for GPIB control.
 
         Args:
-            remote: Remote.
+        remote: Remote.
         """
         if remote:
             self.get_interface().write("SYSTem:REMote")

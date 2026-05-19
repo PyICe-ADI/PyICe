@@ -4,13 +4,12 @@ from ..lab_core import *  # noqa: F403
 class hameg_4040(scpi_instrument):
     """Hameg Lab Supply, model HMP 4040.
 
-        Four channel lab supply with GPIB interface.
+    Four channel lab supply with GPIB interface.
 
-        This instrument works by selecting the desired output with one command
-        then sending "source" or "measure" commands to that output to set
-        or measure voltage and current.
+    This instrument works by selecting the desired output with one command
+    then sending "source" or "measure" commands to that output to set
+    or measure voltage and current.
     """
-
     def __init__(self, interface_visa):
         self._base_name = 'hameg_4040'
         # instrument.__init__(self,f'HMP4040 @  {interface_visa}')
@@ -39,7 +38,7 @@ class hameg_4040(scpi_instrument):
         """Attempt to be robust to communication interface problems.
 
         Args:
-            retries: Retries.
+        retries: Retries.
         """
         self.retries = retries
 
@@ -47,20 +46,20 @@ class hameg_4040(scpi_instrument):
                     add_extended_channels=True):
         """Add voltage forcing channel.
 
-            optionally add voltage force channel, current force channel "_ilim", enable "_enable", voltage sense "_vsense" and current sense "_isense"
-            channel_name is channel name, ex: input_voltage
-            num is channel number, allowed values are 1, 2, 3, 4
-            ilim is optional current limit for this output, defaults to 1 amp.
+        optionally add voltage force channel, current force channel "_ilim", enable "_enable", voltage sense "_vsense" and current sense "_isense"
+        channel_name is channel name, ex: input_voltage
+        num is channel number, allowed values are 1, 2, 3, 4
+        ilim is optional current limit for this output, defaults to 1 amp.
 
         Args:
-            add_extended_channels: If True, add sense and mode channels.
-            channel_name: Name for the new channel.
-            delay: Delay time in seconds.
-            ilim: Current limit.
-            num: Count or number.
+        add_extended_channels: If True, add sense and mode channels.
+        channel_name: Name for the new channel.
+        delay: Delay time in seconds.
+        ilim: Current limit.
+        num: Count or number.
 
         Returns:
-            Result value.
+        Result value.
         """
         voltage_channel = self.add_channel_voltage(channel_name, num)
         self.write_channel(channel_name, 0)
@@ -85,11 +84,11 @@ class hameg_4040(scpi_instrument):
         """Add a channel voltage.
 
         Args:
-            channel_name: Name for the new channel.
-            num: Count or number.
+        channel_name: Name for the new channel.
+        num: Count or number.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(
             channel_name,
@@ -106,11 +105,11 @@ class hameg_4040(scpi_instrument):
         """Add a channel current.
 
         Args:
-            channel_name: Name for the new channel.
-            num: Count or number.
+        channel_name: Name for the new channel.
+        num: Count or number.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(
             channel_name,
@@ -127,11 +126,11 @@ class hameg_4040(scpi_instrument):
         """Add a channel vsense.
 
         Args:
-            channel_name: Name for the new channel.
-            num: Count or number.
+        channel_name: Name for the new channel.
+        num: Count or number.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(channel_name,
                               read_function=lambda: self._read_vsense(num))
@@ -142,11 +141,11 @@ class hameg_4040(scpi_instrument):
         """Add a channel isense.
 
         Args:
-            channel_name: Name for the new channel.
-            num: Count or number.
+        channel_name: Name for the new channel.
+        num: Count or number.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(channel_name,
                               read_function=lambda: self._read_isense(num))
@@ -157,11 +156,11 @@ class hameg_4040(scpi_instrument):
         """Add a channel voltage readback.
 
         Args:
-            channel_name: Name for the new channel.
-            num: Count or number.
+        channel_name: Name for the new channel.
+        num: Count or number.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(
             channel_name,
@@ -173,11 +172,11 @@ class hameg_4040(scpi_instrument):
         """Add a channel current readback.
 
         Args:
-            channel_name: Name for the new channel.
-            num: Count or number.
+        channel_name: Name for the new channel.
+        num: Count or number.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(
             channel_name,
@@ -189,11 +188,11 @@ class hameg_4040(scpi_instrument):
         """Add a channel measured voltage.
 
         Args:
-            channel_name: Name for the new channel.
-            num: Count or number.
+        channel_name: Name for the new channel.
+        num: Count or number.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(
             channel_name,
@@ -205,11 +204,11 @@ class hameg_4040(scpi_instrument):
         """Add a channel measured current.
 
         Args:
-            channel_name: Name for the new channel.
-            num: Count or number.
+        channel_name: Name for the new channel.
+        num: Count or number.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(
             channel_name,
@@ -221,11 +220,11 @@ class hameg_4040(scpi_instrument):
         """Add a channel ovp.
 
         Args:
-            channel_name: Name for the new channel.
-            num: Count or number.
+        channel_name: Name for the new channel.
+        num: Count or number.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(
             channel_name,
@@ -239,11 +238,11 @@ class hameg_4040(scpi_instrument):
         """Add a channel ovp status.
 
         Args:
-            channel_name: Name for the new channel.
-            num: Count or number.
+        channel_name: Name for the new channel.
+        num: Count or number.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = integer_channel(
             channel_name,
@@ -256,11 +255,11 @@ class hameg_4040(scpi_instrument):
         """Add a channel fuse status.
 
         Args:
-            channel_name: Name for the new channel.
-            num: Count or number.
+        channel_name: Name for the new channel.
+        num: Count or number.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = integer_channel(
             channel_name,
@@ -273,11 +272,11 @@ class hameg_4040(scpi_instrument):
         """Add a channel enable.
 
         Args:
-            channel_name: Name for the new channel.
-            num: Count or number.
+        channel_name: Name for the new channel.
+        num: Count or number.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = integer_channel(
             channel_name,
@@ -292,12 +291,12 @@ class hameg_4040(scpi_instrument):
         """Add a channel fuse enable.
 
         Args:
-            channel_name: Name for the new channel.
-            fuse_delay: Fuse delay.
-            num: Count or number.
+        channel_name: Name for the new channel.
+        fuse_delay: Fuse delay.
+        num: Count or number.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = integer_channel(
             channel_name,
@@ -314,11 +313,11 @@ class hameg_4040(scpi_instrument):
         """Add a channel fuse link.
 
         Args:
-            channel_name: Name for the new channel.
-            num: Count or number.
+        channel_name: Name for the new channel.
+        num: Count or number.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(
             channel_name,
@@ -333,10 +332,10 @@ class hameg_4040(scpi_instrument):
         """Add a channel master enable.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = integer_channel(
             channel_name, size=1, write_function=self._write_master_enable)
@@ -347,11 +346,11 @@ class hameg_4040(scpi_instrument):
         """Add a channel AWG.
 
         Args:
-            channel_name: Name for the new channel.
-            num: Count or number.
+        channel_name: Name for the new channel.
+        num: Count or number.
 
         Returns:
-            Result value.
+        Result value.
         """
         trigger_channel = channel(
             channel_name + "_trigger",
@@ -448,10 +447,10 @@ class hameg_4040(scpi_instrument):
         the previous selected channel will be repeated infinitely.
 
         Args:
-            arb_cycles: Arb cycles.
+        arb_cycles: Arb cycles.
 
         Raises:
-            ValueError: On error condition.
+        ValueError: On error condition.
         """
         '''SLM: What constitutes a Previous Selected Channel'''
         arb_cycles = 0 if "INF" in ncycle.upper() else int(arb_cycles)
@@ -507,13 +506,13 @@ class hameg_4040(scpi_instrument):
         """Returns the voltage setting as known by the instrument.
 
         Args:
-            num: Count or number.
+        num: Count or number.
 
         Returns:
-            Result value.
+        Result value.
 
         Raises:
-            this_error: On error condition.
+        this_error: On error condition.
         """
         retry = 0
         while (retry <= self.retries):
@@ -539,13 +538,13 @@ class hameg_4040(scpi_instrument):
         """Returns the voltage setting as known by the instrument.
 
         Args:
-            num: Count or number.
+        num: Count or number.
 
         Returns:
-            Result value.
+        Result value.
 
         Raises:
-            this_error: On error condition.
+        this_error: On error condition.
         """
         retry = 0
         while (retry <= self.retries):
@@ -571,13 +570,13 @@ class hameg_4040(scpi_instrument):
         """Returns the voltage setting as known by the instrument.
 
         Args:
-            num: Count or number.
+        num: Count or number.
 
         Returns:
-            Result value.
+        Result value.
 
         Raises:
-            this_error: On error condition.
+        this_error: On error condition.
         """
         retry = 0
         while (retry <= self.retries):
@@ -603,13 +602,13 @@ class hameg_4040(scpi_instrument):
         """Returns the voltage setting as known by the instrument.
 
         Args:
-            num: Count or number.
+        num: Count or number.
 
         Returns:
-            Result value.
+        Result value.
 
         Raises:
-            this_error: On error condition.
+        this_error: On error condition.
         """
         retry = 0
         while (retry <= self.retries):
@@ -635,13 +634,13 @@ class hameg_4040(scpi_instrument):
         """Returns the voltage measured by the instrument.
 
         Args:
-            num: Count or number.
+        num: Count or number.
 
         Returns:
-            Result value.
+        Result value.
 
         Raises:
-            this_error: On error condition.
+        this_error: On error condition.
         """
         retry = 0
         while (retry <= self.retries):
@@ -668,13 +667,13 @@ class hameg_4040(scpi_instrument):
         """Returns the current measured by the instrument.
 
         Args:
-            num: Count or number.
+        num: Count or number.
 
         Returns:
-            Result value.
+        Result value.
 
         Raises:
-            this_error: On error condition.
+        this_error: On error condition.
         """
         retry = 0
         while (retry <= self.retries):
@@ -702,8 +701,8 @@ class hameg_4040(scpi_instrument):
         """Set a channel OVP level.
 
         Args:
-            num: Count or number.
-            voltage: Voltage value.
+        num: Count or number.
+        voltage: Voltage value.
         """
         self.get_interface().write(f"INST:NSEL {num}")
         time.sleep(self.hameg_suck_time)  # needed for hw serial on fast linux
@@ -716,13 +715,13 @@ class hameg_4040(scpi_instrument):
         """Read channel OVP level.
 
         Args:
-            num: Count or number.
+        num: Count or number.
 
         Returns:
-            Result value.
+        Result value.
 
         Raises:
-            this_error: On error condition.
+        this_error: On error condition.
         """
         retry = 0
         while (retry <= self.retries):
@@ -748,10 +747,10 @@ class hameg_4040(scpi_instrument):
         """Read channel OVP level.
 
         Args:
-            num: Count or number.
+        num: Count or number.
 
         Returns:
-            Result value.
+        Result value.
         """
         self.get_interface().write(f"INST:NSEL {num}")
         time.sleep(self.hameg_suck_time)  # needed for hw serial on fast linux
@@ -765,10 +764,10 @@ class hameg_4040(scpi_instrument):
         """Read if fuse is tripped.
 
         Args:
-            num: Count or number.
+        num: Count or number.
 
         Returns:
-            Result value.
+        Result value.
         """
         self.get_interface().write(f"INST:NSEL {num}")
         time.sleep(self.hameg_suck_time)  # needed for hw serial on fast linux
@@ -795,7 +794,7 @@ class hameg_4040(scpi_instrument):
         """True -> turn on all enabled channels / False -> turn off all channels.
 
         Args:
-            state: State.
+        state: State.
         """
         if state:
             self.get_interface().write("OUTPut:GENeral ON")

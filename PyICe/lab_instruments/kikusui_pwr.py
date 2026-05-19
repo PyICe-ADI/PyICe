@@ -4,16 +4,17 @@ from PyICe.lab_core import *  # noqa: F403
 class kikusui_pwr(scpi_instrument):
     """Kikusui single channel unipolar power supply superclass.
 
-        Instrument Family:
-            PWR400L
-            PWR400M
-            PWR400H
-            PWR800L
-            PWR800M
-            PWR800H
-            PWR1600L
-            PWR1600M
-            PWR1600H"""
+    Instrument Family:
+    PWR400L
+    PWR400M
+    PWR400H
+    PWR800L
+    PWR800M
+    PWR800H
+    PWR1600L
+    PWR1600M
+    PWR1600H
+    """
     # note that this superclass was developed and tested with only the PWR800l instrument
     # some methods may need to be duplicated and moved to the instrument-specific classes
     # to resolve any operational/feature differences such as range selection
@@ -21,12 +22,12 @@ class kikusui_pwr(scpi_instrument):
     def __init__(self, interface_visa, node, ch):
         """Node is a ???
 
-           ch is a ???
+        ch is a ???
 
         Args:
-            ch: Ch.
-            interface_visa: VISA interface instance.
-            node: Node.
+        ch: Ch.
+        interface_visa: VISA interface instance.
+        node: Node.
         """
         self._base_name = 'kikusui_pwr'
         scpi_instrument.__init__(
@@ -50,13 +51,13 @@ class kikusui_pwr(scpi_instrument):
         optionally also adds _ilim forcing channel and _vsense and _isense readback channels.
 
         Args:
-            add_extended_channels: If True, add sense and mode channels.
-            channel_name: Name for the new channel.
-            delay: Delay time in seconds.
-            ilim: Current limit.
+        add_extended_channels: If True, add sense and mode channels.
+        channel_name: Name for the new channel.
+        delay: Delay time in seconds.
+        ilim: Current limit.
 
         Returns:
-            Result value.
+        Result value.
         """
         voltage_channel = self.add_channel_voltage(channel_name)
         self.write_channel(channel_name, 0)
@@ -75,10 +76,10 @@ class kikusui_pwr(scpi_instrument):
         """Add a channel voltage.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(channel_name, write_function=self._write_voltage)
         return self._add_channel(new_channel)
@@ -87,10 +88,10 @@ class kikusui_pwr(scpi_instrument):
         """Add a channel current.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(channel_name, write_function=self._write_current)
         return self._add_channel(new_channel)
@@ -99,10 +100,10 @@ class kikusui_pwr(scpi_instrument):
         """Add a channel vsense.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(channel_name, read_function=self._read_vsense)
         return self._add_channel(new_channel)
@@ -111,10 +112,10 @@ class kikusui_pwr(scpi_instrument):
         """Add a channel isense.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(channel_name, read_function=self._read_isense)
         return self._add_channel(new_channel)
@@ -123,10 +124,10 @@ class kikusui_pwr(scpi_instrument):
         """Add a channel power.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(channel_name, read_function=self._read_power)
         return self._add_channel(new_channel)
@@ -135,10 +136,10 @@ class kikusui_pwr(scpi_instrument):
         """Add a channel enable.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(channel_name, write_function=self._enable)
         return self._add_channel(new_channel)
@@ -163,7 +164,7 @@ class kikusui_pwr(scpi_instrument):
         """Returns instrument's measured output voltage.
 
         Returns:
-            Result value.
+        Result value.
         """
         return float(self.get_interface().ask(
             f"NODE {self.node};CH {self.ch};VOUT?"))
@@ -172,7 +173,7 @@ class kikusui_pwr(scpi_instrument):
         """Returns instrument's measured power output.
 
         Returns:
-            Result value.
+        Result value.
         """
         return float(self.get_interface().ask(
             f"NODE {self.node};CH {self.ch};POUT?"))
@@ -181,7 +182,7 @@ class kikusui_pwr(scpi_instrument):
         """Returns instrument's measured current output.
 
         Returns:
-            Result value.
+        Result value.
         """
         return float(self.get_interface().ask(
             f"NODE {self.node};CH {self.ch};IOUT?"))

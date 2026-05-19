@@ -1,5 +1,4 @@
-"""
-SPI Interface Hardware Drivers.
+"""SPI Interface Hardware Drivers.
 
 ==============================
 
@@ -17,7 +16,6 @@ The SPI interface is composed of two separate classes:
     Specific hardware implementations should overload this class and implement _shift_data method.
 
 """
-
 # Notes:
 # 1) spiSlave removed.
 # Generically, SPI data does not represent registers or addresses memory.
@@ -300,9 +298,9 @@ class spiInterface(object, metaclass=ABCMeta):
     def __init__(self, CPOL, CPHA, ss_ctrl, word_size):
         """Mode controls polarity and phase: 0 => CPOL=0, CPHA=0.
 
-                                             1 => CPOL=0, CPHA=1
-                                             2 => CPOL=1, CPHA=0
-                                             3 => CPOL=1, CPHA=1
+            1 => CPOL=0, CPHA=1
+            2 => CPOL=1, CPHA=0
+            3 => CPOL=1, CPHA=1
            ss_ctrl function takes boolean argument to control SS/_CS if necessary for hardware.
             Select slave if argument evaluates to True.
           word size defines SPI master shirt register length. ex 1,8,16 bits. Transactions must be (automatically) padded by modulo word_size. to align correctly.
@@ -496,7 +494,8 @@ class spi_bbone(spiInterface):
 
     thus we can initialize this package for all purposes
     This instrument probably got a broken when the parent class interface was modified to support multiple interface hardware boards and more general SPI communication.
-    Needs testing/repair."""
+    Needs testing/repair.
+    """
     # def __init__(self,baudrate,timeout,device_num, mode=0, ss_ctrl=lambda ss: None):
     # '''device num is a tuple eg. (0,0)
     # '''

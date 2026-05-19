@@ -7,13 +7,13 @@ COMMA_REPLACEMENT_STRING = hex(random.getrandbits(128))
 class pds_reader():
     """ Reads and parses an Eagle Test System's .pds "Datasheet" file into a reasonable datastructure.
 
-        It may have errors, the Eagle schema is a complete C/F of made up nonesene making it difficult to interpret.
-        Files structure is as follows:
-            Result is a dictionary of test groups keyed by the group name.
-                Each dictionary of test groups is a dictionary of tests keys by the test NUMBER.SUBTESTNUMBER.
-                    Each test is a dictionary of parameters keyed by Eagle columns as described by the file section "Datasheet Variable Map".
-        Method get_test(test_number, subtest_number) may be used to tease out a specific test record."""
-
+    It may have errors, the Eagle schema is a complete C/F of made up nonesene making it difficult to interpret.
+    Files structure is as follows:
+    Result is a dictionary of test groups keyed by the group name.
+    Each dictionary of test groups is a dictionary of tests keys by the test NUMBER.SUBTESTNUMBER.
+    Each test is a dictionary of parameters keyed by Eagle columns as described by the file section "Datasheet Variable Map".
+    Method get_test(test_number, subtest_number) may be used to tease out a specific test record.
+    """
     def __init__(self, filename):
         with open(filename) as file:
             lines = file.readlines()
@@ -68,11 +68,11 @@ class pds_reader():
         """Return the test.
 
         Args:
-            subtest_number: Subtest number.
-            test_number: Test number.
+        subtest_number: Subtest number.
+        test_number: Test number.
 
         Returns:
-            Result value.
+        Result value.
         """
         for test_group in self.results:
             if f"{test_number}.{subtest_number}" in self.results[test_group].keys(
@@ -85,7 +85,7 @@ class pds_reader():
         """Perform generate excel report operation.
 
         Args:
-            file_name: File name.
+        file_name: File name.
         """
         columns = ["TestNmbr", "SubTestNmbr", "DLogDesc", "LoFTRm", "HiFTRm", "LoFTTrim", "HiFTTrim", "LoFTCold", "HiFTCold", "LoFTHot", "HiFTHot", "LoQARm", "HiQARm", "LoQACold", "HiQACold", "LoQACold1", "HiQACold1", "LoQAHot", "HiQAHot", "LoQAHot1", "HiQAHot1", "LoWS", "HiWS", "LoWS1", "HiWS1",
                    "LoWS2", "HiWS2", "LoWSEng", "HiWSEng", "LoEng1", "HiEng1", "LoEng2", "HiEng2", "Units"]

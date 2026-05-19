@@ -62,7 +62,6 @@ class LTspice_wavereader():
             timestep: Timestep.
             verbose: If True, print debug output.
         """
-
         keys = [key for key in self.data.keys()]
         native_times = self.data[keys[0]]
         start = native_times[0]

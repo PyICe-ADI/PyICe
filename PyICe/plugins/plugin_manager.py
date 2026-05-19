@@ -108,8 +108,7 @@ class Plugin_Manager():
         a_test._is_crashed = False
 
     def run(self, temperatures=None):
-        """
-        This method goes through the complete data collection process the project set out.
+        """This method goes through the complete data collection process the project set out.
 
         Scripts will be run once per temperature or just once if no temperature is given.
         Debug will be passed on to the script to be used at the script's discretion.
@@ -231,7 +230,6 @@ class Plugin_Manager():
         Raises:
             Exception: On error condition.
         """
-
         self.cleanup_fns = []
         self.temp_run_fns = []
         self.startup_fns = []
@@ -416,7 +414,7 @@ class Plugin_Manager():
                attachment_MIMEParts=None):
         """Sends the provided message to all emails and phone numbers found in the variable self.notification_targets.
 
-        args:
+        Args:
             msg - str. The body of the email or the complete text.
             subject - str. Default None. The subject given to any email sent. No affect on texts.
             attachment filenames - list. Default empty list. A list of strings denoting the names of files that will be attached to any emails sent.
@@ -634,8 +632,7 @@ class Plugin_Manager():
     # ARCHIVE METHODS
     ###
     def _archive(self):
-        """
-        Makes a copy of the data just collected and puts it and the associated metadata table (if there is one) in an archive folder.
+        """Makes a copy of the data just collected and puts it and the associated metadata table (if there is one) in an archive folder.
 
         Also adds a copy of the table (and metatable) to the database with the time of collection to the test's generic database, so it will not be overwritten when the test is next run.
         Will also generate scripts to rerun plotting (if the script has a plot method) and evaluation (if the evaluation feature is used).
@@ -1147,7 +1144,7 @@ class Plugin_Manager():
     def evaluate(self, database=None, table_name=None, test_list=None):
         """Run the evaluate method of each test in self.tests.
 
-        args:
+        Args:
             database - string. The location of the database with the data to evaluate If left blank, the evaluation will continue with the database in the same directory as the test script.
             table_name - string. The name of the table in the database with the relevant data. If left blank, the evaluation will continue with the table named after the test script.
 
@@ -1219,7 +1216,7 @@ class Plugin_Manager():
     def correlate(self, database=None, table_name=None, test_list=None):
         """Run the correlate method of each test in self.tests.
 
-        args:
+        Args:
             database - string. The location of the database with the data to correlate. If left blank, the correlation will continue with the database in the same directory as the test script.
             table_name - string. The name of the table in the database with the relevant data. If left blank, the correlation will continue with the table named after the test script.
 

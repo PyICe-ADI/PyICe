@@ -6,8 +6,8 @@ from PyICe.lab_utils.banners import print_banner
 class BR24H64(instrument):
     """Rhom 64kb (8kbyte) EEPROM.
 
-    https://fscdn.rohm.com/en/products/databook/datasheet/ic/memory/eeprom/br24h64xxx-5ac-e.pdf"""
-
+    https://fscdn.rohm.com/en/products/databook/datasheet/ic/memory/eeprom/br24h64xxx-5ac-e.pdf
+    """
     # Proposed Dictionary Like Structure
     # https://en.wikipedia.org/wiki/C0_and_C1_control_codes
     # [STX] (0x02) ..........	Start of an Entry
@@ -25,7 +25,7 @@ class BR24H64(instrument):
     EOM = b'\x19'     # End of All Entries  (End of Media)
 
     def __init__(self, interface_twi, addr7):
-        """interface_twi is a interface_twi.
+        """Interface_twi is a interface_twi.
 
         addr7 is the 7-bit I2C address of the BR24H64 set by pinstrapping.
         Choose addr7 from 0x50 - 0x57 only.

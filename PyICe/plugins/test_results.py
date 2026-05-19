@@ -40,9 +40,7 @@ def freeze(o):
 
 
 def make_hash(o):
-    """
-    Makes a hash out of anything that contains only list,dict and hashable types including string and numeric types.
-
+    """Makes a hash out of anything that contains only list,dict and hashable types including string and numeric types.
     Args:
         o: O.
 
@@ -457,7 +455,6 @@ class Test_Results(generic_results):
             module: Module.
             name: Name identifier.
         """
-
         self._test_results = collections.OrderedDict()
         self._ate_results = collections.OrderedDict()
         self._init(name, module)

@@ -5,15 +5,15 @@ import time
 class agilent_33220a(scpi_instrument):
     """Function/Arbitrary Waveform Generator.
 
-        intrument will default to pulse generation - this driver does not support other functions yet
-        main channel controls sending of the trigger (write value = 1)to generate the pulse
-        extended channels will control othe pulse paramters (low voltage, high voltage, pulse width, period and slew rate"""
-
+    intrument will default to pulse generation - this driver does not support other functions yet
+    main channel controls sending of the trigger (write value = 1)to generate the pulse
+    extended channels will control othe pulse paramters (low voltage, high voltage, pulse width, period and slew rate
+    """
     def __init__(self, interface_visa):
-        """interface_visa.
+        """Interface_visa.
 
         Args:
-            interface_visa: VISA interface instance.
+        interface_visa: VISA interface instance.
         """
         self._base_name = 'agilent_33220a'
         scpi_instrument.__init__(self, f"33220a @ {interface_visa}")
@@ -31,11 +31,11 @@ class agilent_33220a(scpi_instrument):
         """Set to instrument to output pulse.
 
         Args:
-            cycle_count: Cycle count.
-            high_voltage: High voltage.
-            low_voltage: Low voltage.
-            period: Period.
-            pulse_width: Pulse width.
+        cycle_count: Cycle count.
+        high_voltage: High voltage.
+        low_voltage: Low voltage.
+        period: Period.
+        pulse_width: Pulse width.
         """
         self.get_interface().write("FUNCtion PULSe")
         self.get_interface().write("OUTPut:LOAD 50")
@@ -78,11 +78,11 @@ class agilent_33220a(scpi_instrument):
         """Add a channel.
 
         Args:
-            add_extended_channels: If True, add sense and mode channels.
-            channel_name: Name for the new channel.
+        add_extended_channels: If True, add sense and mode channels.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         trigger_channel = self.add_channel_trigger(channel_name)
         # self.write_channel(channel_name,0)
@@ -102,10 +102,10 @@ class agilent_33220a(scpi_instrument):
         """Add a channel low voltage.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(
             channel_name,
@@ -117,10 +117,10 @@ class agilent_33220a(scpi_instrument):
         """Add a channel high voltage.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(
             channel_name,
@@ -132,10 +132,10 @@ class agilent_33220a(scpi_instrument):
         """Add a channel pulse width.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(
             channel_name,
@@ -149,10 +149,10 @@ class agilent_33220a(scpi_instrument):
         """Add a channel pulse period.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(
             channel_name,
@@ -166,10 +166,10 @@ class agilent_33220a(scpi_instrument):
         """Add a channel slew rate.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(
             channel_name,
@@ -183,10 +183,10 @@ class agilent_33220a(scpi_instrument):
         """Add a channel trigger.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         self.trigger_channel = channel(
             channel_name, write_function=lambda trigger: self._send_trigger(trigger))
@@ -198,10 +198,10 @@ class agilent_33220a(scpi_instrument):
         """Add a channel cycle count.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(
             channel_name,
@@ -240,7 +240,7 @@ class agilent_33220a(scpi_instrument):
         """Required for RS-232 control.  Not allowed for GPIB control.
 
         Args:
-            remote: Remote.
+        remote: Remote.
         """
         if remote:
             self.get_interface().write("SYSTem:REMote")

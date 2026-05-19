@@ -107,14 +107,14 @@ screen_configs = '''
 
 
 class scpi_NA(scpi_instrument, abc.ABC):
-    """"""
+    """TODO: Add docstring."""
     # todo abstract methods?
 # class keysight_e5061b_base(scpi_NA, abc.ABC):
 
 
 class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
     # class keysight_e5061b_base(abc.ABC):
-    """"""
+    """TODO: Add docstring."""
 
     def __init__(self, interface_visa):
         """Initialize Keysight E5061B ENA network analyzer.
@@ -768,8 +768,7 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
         channel_number = 1
 
         def _single_abort_trigger_wait(run_mode):
-            """
-            channels.write function for the {ENA}_trigger_mode channel.
+            """Channels.write function for the {ENA}_trigger_mode channel.
 
             Configures the ENA to run a continuous measurement sweep or
             triggers a single measurement sweep.

@@ -10,21 +10,20 @@ str_encoding = 'latin-1'
 class htx9001a(htx9001):
     """ HTX9001 Configurator Pro A(Steve Martin).
 
-        Breakout/Edge connector board for ATE Bench, with i2c
-        Supports 5 types of channels:
-        gpio - 10 Channels, Possible values are 0,1(5V),Z (HiZ), P (Weak Pull Up)
-        test_hook - 5 channels, 1,0 pullup to 12V NO CURRENT LIMIT
-        relay - Channels 1-12, correspond to supply numbers, 0 or 1 (1 is supply connected)
-        ammeter relay - Channels 5-8
-        dvcc - Controls I2C/SMBus DVCC voltage
-        """
-
+    Breakout/Edge connector board for ATE Bench, with i2c
+    Supports 5 types of channels:
+    gpio - 10 Channels, Possible values are 0,1(5V),Z (HiZ), P (Weak Pull Up)
+    test_hook - 5 channels, 1,0 pullup to 12V NO CURRENT LIMIT
+    relay - Channels 1-12, correspond to supply numbers, 0 or 1 (1 is supply connected)
+    ammeter relay - Channels 5-8
+    dvcc - Controls I2C/SMBus DVCC voltage
+    """
     def __init__(self, interface_visa, calibrating=False):
         """Creates a htx9001a object.
 
         Args:
-            calibrating: Calibrating.
-            interface_visa: VISA interface instance.
+        calibrating: Calibrating.
+        interface_visa: VISA interface instance.
         """
         self._base_name = 'htx9001a'
         scpi_instrument.__init__(self, f"HTX9001A {interface_visa}")
@@ -90,19 +89,19 @@ class htx9001a(htx9001):
     def add_channel_irelay(self, channel_name, irelay_number):
         """Adds an irelay channel,.
 
-            channel_name is the name of the channel,
-            irelay_number is the number of the irelay (same number as the supply being switched)
-            valid irelays are 5-8
+        channel_name is the name of the channel,
+        irelay_number is the number of the irelay (same number as the supply being switched)
+        valid irelays are 5-8
 
         Args:
-            channel_name: Name for the new channel.
-            irelay_number: Irelay number.
+        channel_name: Name for the new channel.
+        irelay_number: Irelay number.
 
         Returns:
-            Result value.
+        Result value.
 
         Raises:
-            Exception: On error condition.
+        Exception: On error condition.
         """
         if irelay_number not in self.irelay_pins:
             raise Exception(f"Invalid irelay number {irelay_number}")
@@ -123,7 +122,7 @@ class htx9001a(htx9001):
         """Set the all irelays.
 
         Args:
-            value: Value to set.
+        value: Value to set.
         """
         for irelay in self.irelay_pins:
             self._write_irelay(irelay, value)
@@ -132,10 +131,10 @@ class htx9001a(htx9001):
         """Return the resistor calibration.
 
         Args:
-            resistor_number: Resistor number.
+        resistor_number: Resistor number.
 
         Returns:
-            Result value.
+        Result value.
         """
         read_str = f"CAL:DATA? {resistor_number};"
         self.get_interface().write(read_str)
@@ -158,11 +157,11 @@ class htx9001a(htx9001):
         """Add a channel pwm.
 
         Args:
-            channel_name: Name for the new channel.
-            pin: Pin number.
+        channel_name: Name for the new channel.
+        pin: Pin number.
 
         Raises:
-            Exception: On error condition.
+        Exception: On error condition.
         """
         if pin not in self.pwm_pins:
             raise Exception(
@@ -188,10 +187,10 @@ class htx9001a(htx9001):
             """Set the pwm frequency.
 
             Args:
-                value: Value to set.
+            value: Value to set.
 
             Raises:
-                Exception: On error condition.
+            Exception: On error condition.
             """
             flow = 16e6 / 1024 / 65536
             fhigh = 8e6  # datasheet, fmax = fclkio / 2
@@ -208,7 +207,7 @@ class htx9001a(htx9001):
             """Set the pwm duty cycle.
 
             Args:
-                value: Value to set.
+            value: Value to set.
             """
             self.pwm_duty_cycle[pin] = value
             self._update_pwm_channel(pin)
@@ -220,10 +219,10 @@ class htx9001a(htx9001):
             """Set the pwm enable.
 
             Args:
-                value: Value to set.
+            value: Value to set.
 
             Raises:
-                Exception: On error condition.
+            Exception: On error condition.
             """
             value = self._clean_value(value)
             if value not in [0, 1]:
@@ -239,10 +238,10 @@ class htx9001a(htx9001):
             """Return compute f result.
 
             Args:
-                pin: Pin number.
+            pin: Pin number.
 
             Returns:
-                Result value.
+            Result value.
             """
             return self.FCLK / \
                 float(self.prescale[pin]) / float(1 + self.top[pin])
@@ -284,14 +283,14 @@ class htx9001a(htx9001):
         """Add a channel servo.
 
         Args:
-            channel_name: Name for the new channel.
-            servo_number: Servo number.
+        channel_name: Name for the new channel.
+        servo_number: Servo number.
 
         Returns:
-            Result value.
+        Result value.
 
         Raises:
-            Exception: On error condition.
+        Exception: On error condition.
         """
         if servo_number not in self.pwm_pins:
             raise Exception(
@@ -314,14 +313,14 @@ class htx9001a(htx9001):
         """Add a channel servo enable.
 
         Args:
-            channel_name: Name for the new channel.
-            servo_number: Servo number.
+        channel_name: Name for the new channel.
+        servo_number: Servo number.
 
         Returns:
-            Result value.
+        Result value.
 
         Raises:
-            Exception: On error condition.
+        Exception: On error condition.
         """
         if servo_number not in self.pwm_pins:
             raise Exception(
@@ -359,7 +358,7 @@ class htx9001a(htx9001):
         """Set the all relays.
 
         Args:
-            value: Value to set.
+        value: Value to set.
         """
         for relay in self.relay_pins:
             self._write_relay(relay, value)

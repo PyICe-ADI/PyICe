@@ -5,16 +5,16 @@ from .sun_ecxx import sun_ecxx
 class sun_ec1x(sun_ecxx):
     """Sun ec1x oven.
 
-        use wait_settle to wait for the soak to complete
-        defaults to window = 1, soak=90
-        extra data
-           _sense - the sensed temperature
-           _window - the temperature window
-           _time - the total settling time (including soak)
-           _soak - the programmed soak time
+    use wait_settle to wait for the soak to complete
+    defaults to window = 1, soak=90
+    extra data
+    _sense - the sensed temperature
+    _window - the temperature window
+    _time - the total settling time (including soak)
+    _soak - the programmed soak time
 
-        upper_temp_limit (default 165) and lower_temp_limit (default -65) can be modified as properties of the sun_ec1x object outside the PyICe channel framework"""
-
+    upper_temp_limit (default 165) and lower_temp_limit (default -65) can be modified as properties of the sun_ec1x object outside the PyICe channel framework
+    """
     def __init__(self, interface_visa):
         self._base_name = 'sun_ec1x'
         sun_ecxx.__init__(self, interface_visa)
@@ -31,10 +31,10 @@ class sun_ec1x(sun_ecxx):
         """Channel_name represents secondary non-control thermocouple readback.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(
             channel_name, read_function=lambda: float(
@@ -47,7 +47,7 @@ class sun_ec1x(sun_ecxx):
         """Set named channel to new temperature "value".
 
         Args:
-            value: Value to set.
+        value: Value to set.
         """
         self.setpoint = value
         time.sleep(1)
@@ -60,10 +60,10 @@ class sun_ec1x(sun_ecxx):
         """Individually control heat/cool outputs. Usually used through channel framework.
 
         Args:
-            enable: Enable or disable.
+        enable: Enable or disable.
 
         Raises:
-            Exception: On error condition.
+        Exception: On error condition.
         """
         if enable is False or enable == 0:
             time.sleep(0.5)
@@ -98,7 +98,7 @@ class sun_ec1x(sun_ecxx):
         """Turn entire temp controller on or off. This is different than enabling/disabling the heat and cool outputs.
 
         Args:
-            shutdown: Shutdown.
+        shutdown: Shutdown.
         """
         if shutdown:
             time.sleep(0.5)

@@ -6,10 +6,10 @@ from PyICe.lab_utils.twosComplementToSigned import twosComplementToSigned
 class ADT7410(instrument):
     """Analog Devices Silicon Temperature Sensor.
 
-    http://www.analog.com/static/imported-files/data_sheets/ADT7410.pdf"""
-
+    http://www.analog.com/static/imported-files/data_sheets/ADT7410.pdf
+    """
     def __init__(self, interface_twi, addr7):
-        """interface_twi is a interface_twi.
+        """Interface_twi is a interface_twi.
 
         addr7 is the 7-bit I2C address of the ADT7410 set by pinstrapping.
         Choose addr7 from 0x48, 0x49, 0x4A, 0x4B

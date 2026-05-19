@@ -325,64 +325,54 @@ class smu(instrument):
         Args:
             channel: Channel object.
         """
-
     def _add_channel_current_force(self, channel):
         """Current force. Mutually exclusive at any moment with voltage force.
 
         Args:
             channel: Channel object.
         """
-
     def _add_channel_voltage_sense(self, channel):
         """Voltage readback.
 
         Args:
             channel: Channel object.
         """
-
     def _add_channel_current_sense(self, channel):
         """Current readback.
 
         Args:
             channel: Channel object.
         """
-
     def _add_channel_voltage_compliance(self, channel):
         """Max voltage in current forcing modes.
 
         Args:
             channel: Channel object.
         """
-
     def _add_channel_current_compliance(self, channel):
         """Max current in voltage forcing modes.
 
         Args:
             channel: Channel object.
         """
-
     def _add_channel_remote_sense(self, channel):
         """Remote (4-wire) sense enable control.
 
         Args:
             channel: Channel object.
         """
-
     def _add_channel_high_capacitance(self, channel):
         """Stabilize forcing source for higher DUT capacitance, typically tens of uF.
 
         Args:
             channel: Channel object.
         """
-
     def _add_channel_terminal_select(self, channel):
         """Select front vs rear panel connection mux.
 
         Args:
             channel: Channel object.
         """
-
-
 class keithley_smu(smu):
     def _parse_float(self, val):
         f = float(val)
@@ -392,7 +382,7 @@ class keithley_smu(smu):
 
 
 class scpi_smu(scpi_instrument, smu):
-    """"""
+    """TODO: Add docstring."""
     # todo abstract methods?
 
     def _output_off(self, channel_number):
@@ -512,7 +502,7 @@ class scpi_smu(scpi_instrument, smu):
 
 
 class keithley_2400(scpi_smu, keithley_smu):
-    """"""
+    """TODO: Add docstring."""
     # todo NPLC config?
     # todo trigger source, pulse, sweep? Other instrument driver?
     # todo atexit cleanup?
@@ -613,8 +603,6 @@ class keithley_2400(scpi_smu, keithley_smu):
         Args:
             channel: Channel object.
         """
-
-
 class keithley_2400_front_rear(keithley_2400):
     """Make single 2400 instrument behave like muxed instrument via front and rear panel selection."""
     # WIP

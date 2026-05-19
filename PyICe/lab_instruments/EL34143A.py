@@ -4,9 +4,8 @@ from ..lab_core import *  # noqa: F403
 class EL34143A(scpi_instrument):
     """Electronic Load, model HMP 34143A.
 
-        Single Input DC Electronic Load; 150 V, 60 A, 350 W
+    Single Input DC Electronic Load; 150 V, 60 A, 350 W
     """
-
     def __init__(self, interface_visa):
         self._base_name = 'EL34143A'
         super().__init__(f'EL34143A @  {interface_visa}')
@@ -37,12 +36,12 @@ class EL34143A(scpi_instrument):
         Add CV,CW,CR,remote_sense channels separately if you need them.
 
         Args:
-            add_extended_channels: If True, add sense and mode channels.
-            channel_name: Name for the new channel.
-            set_range: Set range.
+        add_extended_channels: If True, add sense and mode channels.
+        channel_name: Name for the new channel.
+        set_range: Set range.
 
         Returns:
-            Result value.
+        Result value.
         """
         ch = self.add_channel_current(channel_name, curr_range=set_range)
         ch.set_description(self.get_name() + ': ' + self.add_channel.__doc__)
@@ -57,11 +56,11 @@ class EL34143A(scpi_instrument):
         """Add single CC forcing channel and force zero current.
 
         Args:
-            channel_name: Name for the new channel.
-            curr_range: Curr range.
+        channel_name: Name for the new channel.
+        curr_range: Curr range.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(channel_name, write_function=self._SetCCCurrent)
         new_channel.set_description(
@@ -78,11 +77,11 @@ class EL34143A(scpi_instrument):
         """Add single range manipulation channel.
 
         Args:
-            channel_name: Name for the new channel.
-            curr_range: Curr range.
+        channel_name: Name for the new channel.
+        curr_range: Curr range.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(
             channel_name + '_range',
@@ -102,10 +101,10 @@ class EL34143A(scpi_instrument):
         """Add single current readback channel.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(
             channel_name,
@@ -118,10 +117,10 @@ class EL34143A(scpi_instrument):
         """Add single voltage readback channel.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(
             channel_name,
@@ -134,10 +133,10 @@ class EL34143A(scpi_instrument):
         """Read back computed power dissipated in load.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(
             channel_name,
@@ -150,10 +149,10 @@ class EL34143A(scpi_instrument):
         """Read back operating mode (Off, Constant Current, Constant Voltage, Constant Power, Constant Resistance).
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(channel_name,
                               read_function=lambda: self.GetMode())
@@ -165,10 +164,10 @@ class EL34143A(scpi_instrument):
         """Return measured voltage float.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         return self.get_interface().ask("MEAS:VOLT?")
 
@@ -176,10 +175,10 @@ class EL34143A(scpi_instrument):
         """Return measured current float.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         return self.get_interface().ask("MEAS:CURR?")
 
@@ -187,10 +186,10 @@ class EL34143A(scpi_instrument):
         """Return measured power float.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         return self.get_interface().ask("MEAS:POW?")
 
@@ -198,10 +197,10 @@ class EL34143A(scpi_instrument):
         """Enable/disable remote voltage sense through panel connectors.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = integer_channel(
             channel_name, size=1, write_function=self.SetRemoteSense)
@@ -214,11 +213,11 @@ class EL34143A(scpi_instrument):
         """Add single CV forcing channel.
 
         Args:
-            channel_name: Name for the new channel.
-            volt_range: Volt range.
+        channel_name: Name for the new channel.
+        volt_range: Volt range.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(channel_name, write_function=self._SetCVVoltage)
         new_channel.set_description(
@@ -232,11 +231,11 @@ class EL34143A(scpi_instrument):
         """Add single range manipulation channel.
 
         Args:
-            channel_name: Name for the new channel.
-            volt_range: Volt range.
+        channel_name: Name for the new channel.
+        volt_range: Volt range.
 
         Returns:
-            Result value.
+        Result value.
         """
         self.volt_range = volt_range
         assert volt_range in [
@@ -257,11 +256,11 @@ class EL34143A(scpi_instrument):
         """Add single CW forcing channel.
 
         Args:
-            channel_name: Name for the new channel.
-            pow_range: Pow range.
+        channel_name: Name for the new channel.
+        pow_range: Pow range.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(channel_name, write_function=self._SetCWPower)
         new_channel.set_description(
@@ -275,11 +274,11 @@ class EL34143A(scpi_instrument):
         """Add single range manipulation channel.
 
         Args:
-            channel_name: Name for the new channel.
-            pow_range: Pow range.
+        channel_name: Name for the new channel.
+        pow_range: Pow range.
 
         Returns:
-            Result value.
+        Result value.
         """
         self.pow_range = pow_range
         assert pow_range in [
@@ -301,10 +300,10 @@ class EL34143A(scpi_instrument):
         """Add single CR forcing channel.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(channel_name,
                               write_function=self._SetCRResistance)
@@ -318,10 +317,10 @@ class EL34143A(scpi_instrument):
         """Add single range manipulation channel.
 
         Args:
-            res_range: Res range.
+        res_range: Res range.
 
         Returns:
-            Result value.
+        Result value.
         """
         self.res_range = res_range
         assert res_range in [
@@ -440,18 +439,18 @@ class EL34143A(scpi_instrument):
         self.TurnLoadOn()  # Because it could be off
 
     def TurnLoadOn(self):
-        "Turns the load on"
+        """Turn the load on."""
         self.get_interface().write("INP 1")
 
     def TurnLoadOff(self):
-        "Turns the load off"
+        """Turn the load off."""
         self.get_interface().write("INP 0")
 
     def SetRemoteControl(self):
         """Set the load to remote control.
 
         Returns:
-            str: Write response.
+        str: Write response.
         """
         return self.get_interface().write("SYST:COMM:RLST REM")
 
@@ -459,7 +458,7 @@ class EL34143A(scpi_instrument):
         """Set the load to local control.
 
         Returns:
-            str: Write response.
+        str: Write response.
         """
         return self.get_interface().write("SYST:COMM:RLST LOC")
 
@@ -507,7 +506,7 @@ class EL34143A(scpi_instrument):
         """Set the maximum current the load will sink.
 
         Args:
-            current: Maximum current value.
+        current: Maximum current value.
         """
         self.get_interface().write(f"CURR:RANG {current}")
 
@@ -515,7 +514,7 @@ class EL34143A(scpi_instrument):
         """Return the maximum current the load will sink.
 
         Returns:
-            str: Maximum current value.
+        str: Maximum current value.
         """
         return self.get_interface().ask("CURR:RANG?")
 
@@ -529,7 +528,7 @@ class EL34143A(scpi_instrument):
         """Set the maximum voltage the load will allow.
 
         Args:
-            voltage: Maximum voltage value.
+        voltage: Maximum voltage value.
         """
         self.get_interface().write(f"VOLT:RANG {voltage}")
 
@@ -537,7 +536,7 @@ class EL34143A(scpi_instrument):
         """Get the maximum voltage the load will allow.
 
         Returns:
-            str: Maximum voltage value.
+        str: Maximum voltage value.
         """
         return self.get_interface().ask("VOLT:RANG?")
 
@@ -551,7 +550,7 @@ class EL34143A(scpi_instrument):
         """Set the maximum power the load will allow.
 
         Args:
-            power: Maximum power value.
+        power: Maximum power value.
         """
         self.get_interface().write(f"POW:RANG {power}")
 
@@ -559,7 +558,7 @@ class EL34143A(scpi_instrument):
         """Get the maximum power the load will allow.
 
         Returns:
-            str: Maximum power value.
+        str: Maximum power value.
         """
         return self.get_interface().ask("POW:RANG?")
 
@@ -567,13 +566,13 @@ class EL34143A(scpi_instrument):
         """Set the mode (constant current, constant voltage, etc.).
 
         Args:
-            mode: Operating mode (CURR, VOLT, POW, or RES).
+        mode: Operating mode (CURR, VOLT, POW, or RES).
 
         Returns:
-            str: Write response.
+        str: Write response.
 
         Raises:
-            Exception: If mode is not a recognized value.
+        Exception: If mode is not a recognized value.
         """
         if mode not in self.modes:
             raise Exception(
@@ -588,7 +587,7 @@ class EL34143A(scpi_instrument):
         """Get the mode (constant current, constant voltage, etc.).
 
         Returns:
-            str: Current operating mode.
+        str: Current operating mode.
         """
         return self.get_interface().ask("MODE?")
 
@@ -596,7 +595,7 @@ class EL34143A(scpi_instrument):
         """Set the constant current mode's current level.
 
         Args:
-            current: Current level to set.
+        current: Current level to set.
         """
         self.get_interface().write(f"CURR {current}")
 
@@ -604,7 +603,7 @@ class EL34143A(scpi_instrument):
         """Get the constant current mode's current level.
 
         Returns:
-            str: Current level.
+        str: Current level.
         """
         return self.get_interface().ask("CURR?")
 
@@ -612,7 +611,7 @@ class EL34143A(scpi_instrument):
         """Set the constant voltage mode's voltage level.
 
         Args:
-            voltage: Voltage level to set.
+        voltage: Voltage level to set.
         """
         self.get_interface().write(f"VOLT {voltage}")
 
@@ -620,7 +619,7 @@ class EL34143A(scpi_instrument):
         """Get the constant voltage mode's voltage level.
 
         Returns:
-            str: Voltage level.
+        str: Voltage level.
         """
         return self.get_interface().ask("VOLT?")
 
@@ -628,7 +627,7 @@ class EL34143A(scpi_instrument):
         """Set the constant power mode's power level.
 
         Args:
-            power: Power level to set.
+        power: Power level to set.
         """
         self.get_interface().write(f"POW {power}")
 
@@ -636,7 +635,7 @@ class EL34143A(scpi_instrument):
         """Get the constant power mode's power level.
 
         Returns:
-            str: Power level.
+        str: Power level.
         """
         return self.get_interface().ask("POW?")
 
@@ -648,7 +647,7 @@ class EL34143A(scpi_instrument):
         """Set the constant resistance mode's resistance level.
 
         Args:
-            resistance: Resistance level to set.
+        resistance: Resistance level to set.
         """
         self.get_interface().write(f"RES {resistance}")
 
@@ -656,7 +655,7 @@ class EL34143A(scpi_instrument):
         """Get the constant resistance mode's resistance level.
 
         Returns:
-            str: Resistance level.
+        str: Resistance level.
         """
         return self.get_interface().ask("RES?")
 
@@ -664,7 +663,7 @@ class EL34143A(scpi_instrument):
         """Enable or disable remote sensing.
 
         Args:
-            enabled: Enable (1/True/'EXT') or disable (0/False/'INT') remote sensing.
+        enabled: Enable (1/True/'EXT') or disable (0/False/'INT') remote sensing.
         """
         ernal = {
             0: 'INT',
@@ -679,6 +678,6 @@ class EL34143A(scpi_instrument):
         """Get the state of remote sensing.
 
         Returns:
-            str: Remote sensing state.
+        str: Remote sensing state.
         """
         return self.get_interface().ask("VOLT:SENS?")

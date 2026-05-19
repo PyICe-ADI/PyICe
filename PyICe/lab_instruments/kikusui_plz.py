@@ -5,12 +5,13 @@ import time
 class kikusui_plz(scpi_instrument):
     """Kikusui single channel electronic load superclass.
 
-        Instrument Family:
-            PLZ 164W
-            PLZ 164WA
-            PLZ 334W
-            PLZ 664WA
-            PLZ1004W"""
+    Instrument Family:
+    PLZ 164W
+    PLZ 164WA
+    PLZ 334W
+    PLZ 664WA
+    PLZ1004W
+    """
     # note that this superclass was developed and tested with only the PLZ 334W instrument
     # some methods may need to be duplicated and moved to the instrument-specific classes
     # to resolve any operational/feature differences such as range selection
@@ -39,8 +40,8 @@ class kikusui_plz(scpi_instrument):
         """Helper function adds primary current forcing channel of channel_name plus _vsense and _isense readback channels.
 
         Args:
-            add_sense_channels: Add sense channels.
-            channel_name: Name for the new channel.
+        add_sense_channels: Add sense channels.
+        channel_name: Name for the new channel.
         """
         self.add_channel_current(channel_name)
         if add_sense_channels:
@@ -54,7 +55,7 @@ class kikusui_plz(scpi_instrument):
         """Add a channel current.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
         """
         new_channel = channel(channel_name, write_function=self._write_current)
         self._add_channel(new_channel)
@@ -63,7 +64,7 @@ class kikusui_plz(scpi_instrument):
         """Add a channel voltage.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
         """
         new_channel = channel(channel_name, write_function=self._write_voltage)
         self._add_channel(new_channel)
@@ -72,7 +73,7 @@ class kikusui_plz(scpi_instrument):
         """Add a channel vsense.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
         """
         new_channel = channel(channel_name, read_function=self._read_vsense)
         self._add_channel(new_channel)
@@ -81,7 +82,7 @@ class kikusui_plz(scpi_instrument):
         """Add a channel isense.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
         """
         new_channel = channel(channel_name, read_function=self._read_isense)
         self._add_channel(new_channel)
@@ -90,7 +91,7 @@ class kikusui_plz(scpi_instrument):
         """Add a channel power.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
         """
         new_channel = channel(channel_name, read_function=self._read_power)
         self._add_channel(new_channel)
@@ -99,7 +100,7 @@ class kikusui_plz(scpi_instrument):
         """Add a channel range readback.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
         """
         new_channel = channel(channel_name, read_function=self._read_range)
         self._add_channel(new_channel)
@@ -108,7 +109,7 @@ class kikusui_plz(scpi_instrument):
         """Add a channel range.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
         """
         new_channel = channel(channel_name, write_function=self._write_range)
         self._add_channel(new_channel)
@@ -117,7 +118,7 @@ class kikusui_plz(scpi_instrument):
         """Add a channel slew rate.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
         """
         new_channel = channel(channel_name,
                               write_function=self._write_slew_rate)
@@ -127,7 +128,7 @@ class kikusui_plz(scpi_instrument):
         """Add a channel pulse on.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
         """
         new_channel = channel(
             channel_name,
@@ -139,7 +140,7 @@ class kikusui_plz(scpi_instrument):
         """Add a channel duty cycle.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
         """
         new_channel = channel(channel_name,
                               write_function=self._write_duty_cycle)
@@ -149,7 +150,7 @@ class kikusui_plz(scpi_instrument):
         """Add a channel frequency.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
         """
         new_channel = channel(channel_name,
                               write_function=self._write_frequency)
@@ -159,7 +160,7 @@ class kikusui_plz(scpi_instrument):
         """Add a channel current level.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
         """
         new_channel = channel(channel_name,
                               write_function=self._write_current_level)
@@ -173,7 +174,7 @@ class kikusui_plz(scpi_instrument):
         """Add a channel short.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
         """
         new_channel = channel(channel_name, write_function=self._write_short)
         self._add_channel(new_channel)
@@ -182,7 +183,7 @@ class kikusui_plz(scpi_instrument):
         """Add a channel enable.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
         """
         new_channel = channel(channel_name, write_function=self._write_enable)
         self._add_channel(new_channel)
@@ -191,7 +192,7 @@ class kikusui_plz(scpi_instrument):
         """Return channel measured voltage float.
 
         Returns:
-            Result value.
+        Result value.
         """
         return float(self.get_interface().ask("MEAS:VOLT?"))
 
@@ -199,7 +200,7 @@ class kikusui_plz(scpi_instrument):
         """Return channel measured power float.
 
         Returns:
-            Result value.
+        Result value.
         """
         return float(self.get_interface().ask("MEAS:POW?"))
 
@@ -207,7 +208,7 @@ class kikusui_plz(scpi_instrument):
         """Return channel measured current float.
 
         Returns:
-            Result value.
+        Result value.
         """
         return float(self.get_interface().ask("MEAS:CURR?"))
 
@@ -215,7 +216,7 @@ class kikusui_plz(scpi_instrument):
         """Return channel range string.
 
         Returns:
-            Result value.
+        Result value.
         """
         return self.get_interface().ask(("CURRent:RANGe?"))
 
@@ -223,7 +224,7 @@ class kikusui_plz(scpi_instrument):
         """Return load state (1 -> "On", 0 -> "Off").
 
         Returns:
-            Result value.
+        Result value.
         """
         return self.get_interface().ask(("OUTPut?"))
 
@@ -231,18 +232,18 @@ class kikusui_plz(scpi_instrument):
         """Return operation mode ( CC, CV, etc).
 
         Returns:
-            Result value.
+        Result value.
         """
         return self.get_interface().ask(("SOURce:FUNCtion:MODE?"))
 
     def _write_current(self, current, autorange=False):
         """Write channel to force value current.  Optionally set range manually.
 
-            Valid ranges are "HIGH", "MED", and "LOW"
+        Valid ranges are "HIGH", "MED", and "LOW"
 
         Args:
-            autorange: Autorange.
-            current: Current value.
+        autorange: Autorange.
+        current: Current value.
         """
         self._write_mode("CC")
         self._mode = "CC"

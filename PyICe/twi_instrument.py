@@ -1,5 +1,4 @@
-"""
-Channel Wraper for SMBus Compliant Devices.
+"""Channel Wraper for SMBus Compliant Devices.
 
 ==========================================
 

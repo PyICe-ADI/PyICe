@@ -1,5 +1,4 @@
-"""
-Representative lab_instruments unit tests using i2c_dummy and VISA mocks.
+"""Representative lab_instruments unit tests using i2c_dummy and VISA mocks.
 
 This file demonstrates the pattern for testing instrument drivers without
 hardware. I2C drivers use the i2c_dummy interface which stores register

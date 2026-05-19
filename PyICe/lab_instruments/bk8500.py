@@ -2,8 +2,7 @@ from ..lab_core import *  # noqa: F403
 
 
 class bk8500(instrument):
-    """
-    The below license only applies to most of the code in the bk8500 instrument:.
+    """The below license only applies to most of the code in the bk8500 instrument:.
 
     Provides the interface to a 26 byte instrument along with utility
     functions.  This is based on provided drivers, minor style changes
@@ -50,7 +49,6 @@ class bk8500(instrument):
     $Author:  Don Peterson $
 
     """
-
     def __init__(self, interface_raw_serial, address=0, remote_sense=False):
         self._base_name = 'bk8500'
         instrument.__init__(self, f"BK8500 @ {interface_raw_serial}")

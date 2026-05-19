@@ -7,20 +7,19 @@ import datetime
 class htx9011(scpi_instrument):
     """ HTX9011 ConfiguratorXT (Steve Martin).
 
-        Breakout/Edge connector board for ATE Bench, with i2c
-        Supports 4 types of channels:
-        gpio - 10 Channels, Possible values are 0,1(5V),Z (HiZ), P (Weak Pull Up)
-        relay - Channels 1-4 and 9-12, correspond to supply numbers, 0 or 1 (1 is supply connected)
-        dvcc - Controls I2C/SMBus DVCC voltage
-        """
-
+    Breakout/Edge connector board for ATE Bench, with i2c
+    Supports 4 types of channels:
+    gpio - 10 Channels, Possible values are 0,1(5V),Z (HiZ), P (Weak Pull Up)
+    relay - Channels 1-4 and 9-12, correspond to supply numbers, 0 or 1 (1 is supply connected)
+    dvcc - Controls I2C/SMBus DVCC voltage
+    """
     def __init__(self, interface_visa, calibrating=False, serializing=False):
         """Creates a htx9011 object.
 
         Args:
-            calibrating: Calibrating.
-            interface_visa: VISA interface instance.
-            serializing: Serializing.
+        calibrating: Calibrating.
+        interface_visa: VISA interface instance.
+        serializing: Serializing.
         """
         self._base_name = 'htx9011'
         scpi_instrument.__init__(self, f"HTX9011 {interface_visa}")
@@ -119,10 +118,10 @@ class htx9011(scpi_instrument):
         """Adds a channel controlling the dvcc voltage.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         dvcc = channel(channel_name, write_function=self._set_dvcc)
         dvcc.set_write_delay(0.2)
@@ -131,19 +130,19 @@ class htx9011(scpi_instrument):
     def add_channel_relay_bypass(self, channel_name, relay_number):
         """Adds a relay bypass channel,.
 
-            channel_name is the name of the channel,
-            relay_number is the number of the relay
-            valid bypass relays are 1-8
+        channel_name is the name of the channel,
+        relay_number is the number of the relay
+        valid bypass relays are 1-8
 
         Args:
-            channel_name: Name for the new channel.
-            relay_number: Relay number.
+        channel_name: Name for the new channel.
+        relay_number: Relay number.
 
         Returns:
-            Result value.
+        Result value.
 
         Raises:
-            Exception: On error condition.
+        Exception: On error condition.
         """
         if relay_number not in self.relay_pins_bypass:
             raise Exception(f'Invalid relay number {relay_number}')
@@ -173,10 +172,10 @@ class htx9011(scpi_instrument):
         """Adds a Master Relay Arm Channel.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = integer_channel(
             channel_name,
@@ -190,19 +189,19 @@ class htx9011(scpi_instrument):
     def add_channel_relay_connect(self, channel_name, relay_number):
         """Adds a relay connect channel,.
 
-            channel_name is the name of the channel,
-            relay_number is the number of the relay
-            valid connect relays are 1-8
+        channel_name is the name of the channel,
+        relay_number is the number of the relay
+        valid connect relays are 1-8
 
         Args:
-            channel_name: Name for the new channel.
-            relay_number: Relay number.
+        channel_name: Name for the new channel.
+        relay_number: Relay number.
 
         Returns:
-            Result value.
+        Result value.
 
         Raises:
-            Exception: On error condition.
+        Exception: On error condition.
         """
         if relay_number not in self.relay_pins_connect:
             raise Exception(f'Invalid relay number {relay_number}')
@@ -223,19 +222,19 @@ class htx9011(scpi_instrument):
     def add_channel_relay_range_H(self, channel_name, relay_number):
         """Adds a relay range_H channel,.
 
-            channel_name is the name of the channel,
-            relay_number is the number of the relay
-            valid range relays are 1-8
+        channel_name is the name of the channel,
+        relay_number is the number of the relay
+        valid range relays are 1-8
 
         Args:
-            channel_name: Name for the new channel.
-            relay_number: Relay number.
+        channel_name: Name for the new channel.
+        relay_number: Relay number.
 
         Returns:
-            Result value.
+        Result value.
 
         Raises:
-            Exception: On error condition.
+        Exception: On error condition.
         """
         if relay_number not in self.relay_pins_range_H:
             raise Exception(f'Invalid relay range_H{relay_number}')
@@ -256,19 +255,19 @@ class htx9011(scpi_instrument):
     def add_channel_relay_range_M_LB(self, channel_name, relay_number):
         """Adds a relay range_M_LB channel,.
 
-            channel_name is the name of the channel,
-            relay_number is the number of the relay
-            valid range relays are 1-8
+        channel_name is the name of the channel,
+        relay_number is the number of the relay
+        valid range relays are 1-8
 
         Args:
-            channel_name: Name for the new channel.
-            relay_number: Relay number.
+        channel_name: Name for the new channel.
+        relay_number: Relay number.
 
         Returns:
-            Result value.
+        Result value.
 
         Raises:
-            Exception: On error condition.
+        Exception: On error condition.
         """
         if relay_number not in self.relay_pins_range_M_LB:
             raise Exception(f'Invalid relay range_M_LB{relay_number}')
@@ -290,14 +289,14 @@ class htx9011(scpi_instrument):
         """Add a channel range.
 
         Args:
-            channel_name: Name for the new channel.
-            channel_number: Physical channel number.
+        channel_name: Name for the new channel.
+        channel_number: Physical channel number.
 
         Returns:
-            Result value.
+        Result value.
 
         Raises:
-            Exception: On error condition.
+        Exception: On error condition.
         """
         if channel_number not in [1, 2, 3, 4, 5, 6, 7, 8]:
             raise Exception(
@@ -324,15 +323,15 @@ class htx9011(scpi_instrument):
         """Facilitates remapping current sense channels based on range selected on ConfiguratorXT.
 
         Args:
-            channel_name: Name for the new channel.
-            channel_number: Physical channel number.
-            meter_ch_group: Meter ch group.
-            vmeter_high_range_channel: Vmeter high range channel.
-            vmeter_low_range_channel: Vmeter low range channel.
-            vmeter_med_range_channel: Vmeter med range channel.
+        channel_name: Name for the new channel.
+        channel_number: Physical channel number.
+        meter_ch_group: Meter ch group.
+        vmeter_high_range_channel: Vmeter high range channel.
+        vmeter_low_range_channel: Vmeter low range channel.
+        vmeter_med_range_channel: Vmeter med range channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         readback_channel = channel(
             channel_name,
@@ -384,11 +383,11 @@ class htx9011(scpi_instrument):
         Upon a range change the relays are switched such that the circuit remains closed using the bypass relay
 
         Args:
-            irange: Irange.
-            relay: Relay.
+        irange: Irange.
+        relay: Relay.
 
         Raises:
-            Exception: On error condition.
+        Exception: On error condition.
         """
         if relay not in range(1, 8 + 1):
             raise Exception(
@@ -447,24 +446,24 @@ class htx9011(scpi_instrument):
                          output=True, pin_state="Z", integer=False):
         """Adds a GPIO channel, can be a single bit or a bus of bits.
 
-            channel_name is the name of the channel
-            gpio pins is either a single integer for a single bit or a list of integers ordered msb to lsb
-            valid gpio_numbers are 1-10,
-            valid settings are [{integer},'z','Z','p','P','H','L']
-            if integer channel (bus), ZPHL won't work.
+        channel_name is the name of the channel
+        gpio pins is either a single integer for a single bit or a list of integers ordered msb to lsb
+        valid gpio_numbers are 1-10,
+        valid settings are [{integer},'z','Z','p','P','H','L']
+        if integer channel (bus), ZPHL won't work.
 
         Args:
-            channel_name: Name for the new channel.
-            gpio_list: Gpio list.
-            integer: Integer.
-            output: Output.
-            pin_state: Pin state.
+        channel_name: Name for the new channel.
+        gpio_list: Gpio list.
+        integer: Integer.
+        output: Output.
+        pin_state: Pin state.
 
         Returns:
-            Result value.
+        Result value.
 
         Raises:
-            Exception: On error condition.
+        Exception: On error condition.
         """
         gpio_list = gpio_list if isinstance(gpio_list, list) else [gpio_list]
         for gpio_pin in gpio_list:
@@ -717,7 +716,7 @@ class htx9011(scpi_instrument):
         """Set the all relays bypass.
 
         Args:
-            value: Value to set.
+        value: Value to set.
         """
         for relay in self.relay_pins_bypass:
             self._write_relay_bypass(relay, value)
@@ -726,7 +725,7 @@ class htx9011(scpi_instrument):
         """Set the all relays connect.
 
         Args:
-            value: Value to set.
+        value: Value to set.
         """
         for relay in self.relay_pins_connect:
             self._write_relay_connect(relay, value)
@@ -735,7 +734,7 @@ class htx9011(scpi_instrument):
         """Set the all relays range H.
 
         Args:
-            value: Value to set.
+        value: Value to set.
         """
         for relay in self.relay_pins_range_H:
             self._write_relay_range_H(relay, value)
@@ -744,7 +743,7 @@ class htx9011(scpi_instrument):
         """Set the all relays range M LB.
 
         Args:
-            value: Value to set.
+        value: Value to set.
         """
         for relay in self.relay_pins_range_M_LB:
             self._write_relay_range_M_LB(relay, value)
@@ -756,10 +755,10 @@ class htx9011(scpi_instrument):
         there is currently no way to connect this with channels so the pin is the raw pin name like PB1 etc
 
         Args:
-            write_list: Write list.
+        write_list: Write list.
 
         Raises:
-            Exception: On error condition.
+        Exception: On error condition.
         """
         write_str = ''
         for pin, value in write_list:
@@ -779,11 +778,11 @@ class htx9011(scpi_instrument):
         """Add a channel pwm.
 
         Args:
-            channel_name: Name for the new channel.
-            pin: Pin number.
+        channel_name: Name for the new channel.
+        pin: Pin number.
 
         Raises:
-            Exception: On error condition.
+        Exception: On error condition.
         """
         if pin not in self.pwm_pins:
             raise Exception(
@@ -808,10 +807,10 @@ class htx9011(scpi_instrument):
             """Set the pwm frequency.
 
             Args:
-                value: Value to set.
+            value: Value to set.
 
             Raises:
-                Exception: On error condition.
+            Exception: On error condition.
             """
             flow = 16e6 / 1024 / 65536
             fhigh = 8e6  # datasheet, fmax = fclkio / 2
@@ -828,7 +827,7 @@ class htx9011(scpi_instrument):
             """Set the pwm duty cycle.
 
             Args:
-                value: Value to set.
+            value: Value to set.
             """
             self.pwm_duty_cycle[pin] = value
             self._update_pwm_channel(pin)
@@ -840,10 +839,10 @@ class htx9011(scpi_instrument):
             """Set the pwm enable.
 
             Args:
-                value: Value to set.
+            value: Value to set.
 
             Raises:
-                Exception: On error condition.
+            Exception: On error condition.
             """
             value = self._clean_value(value)
             if value not in [0, 1]:
@@ -861,10 +860,10 @@ class htx9011(scpi_instrument):
             """Return compute f result.
 
             Args:
-                pin: Pin number.
+            pin: Pin number.
 
             Returns:
-                Result value.
+            Result value.
             """
             return self.FCLK / \
                 float(self.prescale[pin]) / float(1 + self.top[pin])
@@ -906,14 +905,14 @@ class htx9011(scpi_instrument):
         """Add a channel servo.
 
         Args:
-            channel_name: Name for the new channel.
-            servo_number: Servo number.
+        channel_name: Name for the new channel.
+        servo_number: Servo number.
 
         Returns:
-            Result value.
+        Result value.
 
         Raises:
-            Exception: On error condition.
+        Exception: On error condition.
         """
         if servo_number not in self.pwm_pins:
             raise Exception(
@@ -935,14 +934,14 @@ class htx9011(scpi_instrument):
         """Add a channel servo enable.
 
         Args:
-            channel_name: Name for the new channel.
-            servo_number: Servo number.
+        channel_name: Name for the new channel.
+        servo_number: Servo number.
 
         Returns:
-            Result value.
+        Result value.
 
         Raises:
-            Exception: On error condition.
+        Exception: On error condition.
         """
         if servo_number not in self.pwm_pins:
             raise Exception(
@@ -958,14 +957,14 @@ class htx9011(scpi_instrument):
         """Add a channel interrupt.
 
         Args:
-            channel_name: Name for the new channel.
-            interrupt_number: Interrupt number.
+        channel_name: Name for the new channel.
+        interrupt_number: Interrupt number.
 
         Returns:
-            Result value.
+        Result value.
 
         Raises:
-            Exception: On error condition.
+        Exception: On error condition.
         """
         def _write_interrupt_control_channel(ch, value):
             command_list = ["DISABLE", "ANYEDGE", "RISING", "FALLING"]
@@ -1032,14 +1031,14 @@ class htx9011(scpi_instrument):
         """Control channel for each PCINT. Silently creates captured value channel.
 
         Args:
-            channel_name: Name for the new channel.
-            pcint_number: Pcint number.
+        channel_name: Name for the new channel.
+        pcint_number: Pcint number.
 
         Returns:
-            Result value.
+        Result value.
 
         Raises:
-            Exception: On error condition.
+        Exception: On error condition.
         """
         def _write_pcint_control_channel(pcint_number, value):
             command_list = ["DISABLE", "ANYEDGE"]
@@ -1163,7 +1162,7 @@ class htx9011(scpi_instrument):
         """This just returns the SCPI version:1999.0.
 
         Returns:
-            Result value.
+        Result value.
         """
         return self.get_interface().ask("SYSTem:VERSion?")
 
@@ -1171,7 +1170,7 @@ class htx9011(scpi_instrument):
         """Return the firmware version.
 
         Returns:
-            Result value.
+        Result value.
         """
         idnstr = self.get_interface().ask("*IDN?")
         return idnstr.split(",")[3]
@@ -1180,7 +1179,7 @@ class htx9011(scpi_instrument):
         """Return whether the channel is calibrateable.
 
         Returns:
-            Result value.
+        Result value.
         """
         year, month, day = [int(value)
                             for value in self.get_firmware_version().split(".")]
@@ -1191,7 +1190,7 @@ class htx9011(scpi_instrument):
         """Set the serial number.
 
         Args:
-            serialnum: Serialnum.
+        serialnum: Serialnum.
         """
         self.get_interface().write(f"CALibration:BOArdrev {serialnum}")
 
@@ -1199,7 +1198,7 @@ class htx9011(scpi_instrument):
         """Return the serialnum.
 
         Returns:
-            Result value.
+        Result value.
         """
         return self.get_interface().ask("CALibration:BOArdrev?")
 
@@ -1207,7 +1206,7 @@ class htx9011(scpi_instrument):
         """Return valid serialnum result.
 
         Returns:
-            Result value.
+        Result value.
         """
         serialnum = self.get_serialnum()
         return len(serialnum) == 10 and serialnum.isdigit()
@@ -1216,7 +1215,7 @@ class htx9011(scpi_instrument):
         """Return the idn.
 
         Returns:
-            Result value.
+        Result value.
         """
         return self.get_interface().ask("*IDN?")
 
@@ -1224,7 +1223,7 @@ class htx9011(scpi_instrument):
         """Return the error.
 
         Returns:
-            Result value.
+        Result value.
         """
         return self.get_interface().ask("SYStem:ERRor?")
 
@@ -1232,11 +1231,11 @@ class htx9011(scpi_instrument):
         """Set the resistor calibration.
 
         Args:
-            resistor_number: Resistor number.
-            value: Value to set.
+        resistor_number: Resistor number.
+        value: Value to set.
 
         Raises:
-            Exception: On error condition.
+        Exception: On error condition.
         """
         try:
             float(value)
@@ -1251,10 +1250,10 @@ class htx9011(scpi_instrument):
         """Return the resistor calibration.
 
         Args:
-            resistor_number: Resistor number.
+        resistor_number: Resistor number.
 
         Returns:
-            Result value.
+        Result value.
         """
         return float(self.get_interface().ask(
             f"CALibration:DATA? {resistor_number};"))
@@ -1263,7 +1262,7 @@ class htx9011(scpi_instrument):
         """Set the calibration date.
 
         Args:
-            now: Now.
+        now: Now.
         """
         self.get_interface().write(
             f"CALibration:DATE {now.strftime('%Y-%m-%d')}")
@@ -1273,7 +1272,7 @@ class htx9011(scpi_instrument):
         """Return the calibration date.
 
         Returns:
-            Result value.
+        Result value.
         """
         datestr = self.get_interface().ask('CALibration:DATE?')
         try:
@@ -1288,7 +1287,7 @@ class htx9011(scpi_instrument):
         """Return the days since calibration.
 
         Returns:
-            Result value.
+        Result value.
         """
         cal_date = self.get_calibration_date()
         if cal_date is not None:
@@ -1302,10 +1301,10 @@ class htx9011(scpi_instrument):
         """Perform check calibration valid operation.
 
         Args:
-            calibrating: Calibrating.
+        calibrating: Calibrating.
 
         Raises:
-            Exception: On error condition.
+        Exception: On error condition.
         """
         cal_duration = 365  # days
         days = self.get_days_since_calibration()
@@ -1330,15 +1329,15 @@ class htx9011(scpi_instrument):
 class PCF8574_on_ConfiguratorXT(instrument):
     """Multi-vendor 8bit I2C GPIO on Configurator XT.
 
-    http://www.ti.com/lit/ds/symlink/pcf8574.pdf"""
-
+    http://www.ti.com/lit/ds/symlink/pcf8574.pdf
+    """
     def __init__(self, interface_visa):
         """Talks to the PCF8574 GPIO expander IC on the ConfiguratorXT via the ConfiguratorXT's VISA interface.
 
         ConfiguratorXT firmware rev 2019.12.18 or better required.
 
         Args:
-            interface_visa: VISA interface instance.
+        interface_visa: VISA interface instance.
         """
         instrument.__init__(
             self, 'PCF8574 GPIO expander IC on the ConfiguratorXT')
@@ -1352,10 +1351,10 @@ class PCF8574_on_ConfiguratorXT(instrument):
         """Add a channel covering all pins.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(channel_name, write_function=self.write_port)
         new_channel.set_description("Write a byte value to the 8 GPIO pins of ConfiguratorXT GPIO expander."
@@ -1367,7 +1366,7 @@ class PCF8574_on_ConfiguratorXT(instrument):
         """Add a readback channel covering all pins.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
         """
         new_channel = channel(channel_name, read_function=self.read_port)
         new_channel.set_description("Reads the state of the 8 GPIO pins of the ConfiguratorXT GPIO expander. "
@@ -1381,7 +1380,7 @@ class PCF8574_on_ConfiguratorXT(instrument):
         If no channel names list given, defaults to creating channels NS1 thru NS8.
 
         Args:
-            channel_names: Channel names.
+        channel_names: Channel names.
         """
         if channel_names is None:
             channel_names = self.valid_pin_names
@@ -1403,10 +1402,10 @@ class PCF8574_on_ConfiguratorXT(instrument):
         If no channel names list is given, defaults to creating channels NS1_readback thru NS8_readback.
 
         Args:
-            channel_names: Channel names.
+        channel_names: Channel names.
 
         Raises:
-            ValueError: On error condition.
+        ValueError: On error condition.
         """
         if channel_names is None:
             channel_names = [
@@ -1429,7 +1428,7 @@ class PCF8574_on_ConfiguratorXT(instrument):
         """Return integer representing a byte value, the bits of which correspond to the logic states of NS1 (lsb) through NS8 (msb).
 
         Returns:
-            Result value.
+        Result value.
         """
         resp_str = self.get_interface().ask(b"GPIOX:READ?")
         return int(resp_str, base=16)
@@ -1438,13 +1437,13 @@ class PCF8574_on_ConfiguratorXT(instrument):
         """Return write port result.
 
         Args:
-            data8: 8-bit data value.
+        data8: 8-bit data value.
 
         Returns:
-            Result value.
+        Result value.
 
         Raises:
-            ValueError: On error condition.
+        ValueError: On error condition.
         """
         if isinstance(data8, int) and data8 > 0 and data8 <= 255:
             return self.get_interface().write(f"GPIOX:WRI {data8:02x}")
@@ -1456,10 +1455,10 @@ class PCF8574_on_ConfiguratorXT(instrument):
         """Return make write function result.
 
         Args:
-            pin_name: Pin name.
+        pin_name: Pin name.
 
         Returns:
-            Result value.
+        Result value.
         """
         assert pin_name in self.valid_pin_names_set
 
@@ -1487,10 +1486,10 @@ class PCF8574_on_ConfiguratorXT(instrument):
         """Return make read function result.
 
         Args:
-            pin_name: Pin name.
+        pin_name: Pin name.
 
         Returns:
-            Result value.
+        Result value.
         """
         assert pin_name in self.valid_pin_names_set
         pin_num = int(pin_name[2]) - 1  # 0: NS1, 1: NS2, ..., 7: NS8
@@ -1505,7 +1504,7 @@ class PCF8574_on_ConfiguratorXT(instrument):
         """Force the listed pins logic high. Valid pin names are NS1 through NS8.
 
         Args:
-            pin_list: Pin list.
+        pin_list: Pin list.
         """
         self.validate_pin_list(pin_list)
         cmd_str = f'GPIOX:SETP:H? (@{",".join(pin_list)})'
@@ -1515,7 +1514,7 @@ class PCF8574_on_ConfiguratorXT(instrument):
         """Force the listed pins logic low. Valid pin names are NS1 through NS8.
 
         Args:
-            pin_list: Pin list.
+        pin_list: Pin list.
         """
         self.validate_pin_list(pin_list)
         cmd_str = f'GPIOX:SETP:L? (@{",".join(pin_list)})'
@@ -1530,13 +1529,13 @@ class PCF8574_on_ConfiguratorXT(instrument):
         """Validates list of pin names. Raises ValueError if invalid pin(s) found.
 
         Args:
-            pin_list: Pin list.
+        pin_list: Pin list.
 
         Returns:
-            Result value.
+        Result value.
 
         Raises:
-            ValueError: On error condition.
+        ValueError: On error condition.
         """
         unknown_pins = set(pin_list) - self.valid_pin_names_set
         if unknown_pins:

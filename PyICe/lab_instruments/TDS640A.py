@@ -56,12 +56,12 @@ class TDS640A(scpi_instrument, delegator):
     def trigger_force(self):
         """Creates a trigger event. If TRIGger:STATE is set to READy, the acquisition.
 
-        will complete. Otherwise, this command will be ignored."""
+        will complete. Otherwise, this command will be ignored.
+        """
         self.get_interface().write(('TRIGger FORCe'))
 
     def _read_scope_time(self):
-        """
-        Data conversion:.
+        """Data conversion:.
 
         voltage = [(data value - yreference) * yincrement] + yorigin
         time = [(data point number - xreference) * xincrement] + xorigin

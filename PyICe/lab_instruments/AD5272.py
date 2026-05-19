@@ -5,8 +5,8 @@ from .. import twi_interface
 class AD5272(instrument):
     """Analog Devices I2C Precision Potentiometer / Rheostat.
 
-    http://www.analog.com/static/imported-files/data_sheets/AD5272_5274.pdf"""
-
+    http://www.analog.com/static/imported-files/data_sheets/AD5272_5274.pdf
+    """
     def __init__(self, interface_twi, addr7, full_scale_ohms=100000):
         """Interface_twi is a interface_twi.
 

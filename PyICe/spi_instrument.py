@@ -1,5 +1,4 @@
-"""
-Channel Wrapper for SPI Devices.
+"""Channel Wrapper for SPI Devices.
 
 ===============================
 """
@@ -11,8 +10,8 @@ class spiInstrument(instrument, delegator):
     """Instrument wrapper for basic linear shift register SPI port.
 
     Not appropriate for context-sensitive (sub addressed) memory directly.
-    Instead, use multiple spiInstrument copies with appropriate preamble_clk_cnt and preamble_data settings."""
-
+    Instead, use multiple spiInstrument copies with appropriate preamble_clk_cnt and preamble_data settings.
+    """
     def __init__(self, name, spiInterface, write_shift_register=None,
                  read_shift_register=None, preamble_clk_cnt=0, preamble_data=0):
         """Specify at lease one of (write_shift_register, read_shift_register arguments).
@@ -161,7 +160,7 @@ class spiInstrument(instrument, delegator):
         raise Exception("Shouldn't ever get here...")
 
     def read_delegated_channel_list(self, channels):
-        """private.
+        """Private.
 
         Args:
             channels: List of channel objects.

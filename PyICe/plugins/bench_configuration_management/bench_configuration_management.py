@@ -14,7 +14,7 @@ class Diagram_Reconstructor():
         """'Returns a presentable diagram centrally aligned. Becomes difficult to read if not enough window width is provided.
 
         Returns:
-            Result value.
+        Result value.
         """
         connection_diagram = ""
         for connection in self.connections:
@@ -41,7 +41,7 @@ class terminal():
         """Return the type.
 
         Returns:
-            Result value.
+        Result value.
         """
         return self.type
 
@@ -49,7 +49,7 @@ class terminal():
         """Return the owner.
 
         Returns:
-            Result value.
+        Result value.
         """
         return self.owner
 
@@ -57,7 +57,7 @@ class terminal():
         """Return the ownerclass.
 
         Returns:
-            Result value.
+        Result value.
         """
         return self.instrument
 
@@ -73,8 +73,8 @@ class generic_instrument_class():
 class bench_config_component():
     """Parent of all components.
 
-    A component represents a physical instrument on the bench that can have connections, like a piece of test equipment, circuit board with connectors, or probes."""
-
+    A component represents a physical instrument on the bench that can have connections, like a piece of test equipment, circuit board with connectors, or probes.
+    """
     def __init__(self, name):
         self.type = type(self)
         self.name = name
@@ -86,11 +86,11 @@ class bench_config_component():
         """Add a terminal.
 
         Args:
-            instrument: Instrument.
-            name: Name identifier.
+        instrument: Instrument.
+        name: Name identifier.
 
         Raises:
-            ValueError: On error condition.
+        ValueError: On error condition.
         """
         if name in self._terminals:
             raise ValueError(
@@ -106,7 +106,7 @@ class bench_config_component():
         """Return the terminals.
 
         Returns:
-            Result value.
+        Result value.
         """
         return self._terminals
 
@@ -114,7 +114,7 @@ class bench_config_component():
         """Return the name.
 
         Returns:
-            Result value.
+        Result value.
         """
         return self.name
 
@@ -122,10 +122,10 @@ class bench_config_component():
         """Get item by key or index.
 
         Args:
-            item: Item.
+        item: Item.
 
         Returns:
-            Result value.
+        Result value.
         """
         return self._terminals[item]
 
@@ -133,10 +133,10 @@ class bench_config_component():
         """Check if item is contained.
 
         Args:
-            item: Item.
+        item: Item.
 
         Returns:
-            Result value.
+        Result value.
         """
         return item in self._terminals
 
@@ -144,7 +144,7 @@ class bench_config_component():
         """Return iterator over items.
 
         Returns:
-            Result value.
+        Result value.
         """
         return self._terminals.keys()
 
@@ -159,7 +159,7 @@ class component_collection():
         """Add a component.
 
         Args:
-            component: Component.
+        component: Component.
         """
         self.components[component.get_name()] = component
 
@@ -167,7 +167,7 @@ class component_collection():
         """Return the components.
 
         Returns:
-            Result value.
+        Result value.
         """
         return self.components
 
@@ -183,7 +183,7 @@ class component_collection():
         """Return print terminals by component result.
 
         Returns:
-            Result value.
+        Result value.
         """
         text = ''
         for component in self.components:
@@ -205,7 +205,7 @@ class connection():
         """Return the terminals.
 
         Returns:
-            Result value.
+        Result value.
         """
         return self.terminals
 
@@ -213,7 +213,7 @@ class connection():
         """Return the script name.
 
         Returns:
-            Result value.
+        Result value.
         """
         return self.owner
 
@@ -221,10 +221,10 @@ class connection():
         """Return whether terminals exists.
 
         Args:
-            terminal_list: Terminal list.
+        terminal_list: Terminal list.
 
         Returns:
-            Result value.
+        Result value.
         """
         return terminal_list[0] in self.terminals and terminal_list[1] in self.terminals
 
@@ -232,10 +232,10 @@ class connection():
         """Return whether terminal exists.
 
         Args:
-            terminal: Terminal.
+        terminal: Terminal.
 
         Returns:
-            Result value.
+        Result value.
         """
         return terminal in self.terminals
 
@@ -259,7 +259,7 @@ class connection_collection():
         """Perform block connection operation.
 
         Args:
-            terminal: Terminal.
+        terminal: Terminal.
         """
         if terminal not in self.blocked_terminals:
             self.blocked_terminals.append(terminal)
@@ -268,7 +268,7 @@ class connection_collection():
         """Perform unblock connection operation.
 
         Args:
-            terminal: Terminal.
+        terminal: Terminal.
         """
         if terminal in self.blocked_terminals:
             self.blocked_terminals.remove(terminal)
@@ -277,10 +277,10 @@ class connection_collection():
         """Add a connection.
 
         Args:
-            *terminals: Additional positional arguments.
+        *terminals: Additional positional arguments.
 
         Raises:
-            ValueError: On error condition.
+        ValueError: On error condition.
         """
         if len(terminals) != 2:
             raise ValueError(
@@ -296,7 +296,7 @@ class connection_collection():
         """If a connection exists between the given terminal objects, that connection is removed from the list of connections.
 
         Args:
-            *terminals: Additional positional arguments.
+        *terminals: Additional positional arguments.
         """
         for connextion in self.connections:
             if connextion.has_terminals([terminals[0], terminals[1]]):
@@ -310,7 +310,7 @@ class connection_collection():
         """If the provided connections object exists in the connection list, it shall be removed.
 
         Args:
-            connextion: Connextion.
+        connextion: Connextion.
         """
         if connextion in self.connections:
             self.connections.remove(connextion)
@@ -322,7 +322,7 @@ class connection_collection():
         """Returns itself.
 
         Returns:
-            Result value.
+        Result value.
         """
         return self
 
@@ -330,7 +330,7 @@ class connection_collection():
         """Returns a parsable list of instrument terminal connections that is also human readable.
 
         Returns:
-            Result value.
+        Result value.
         """
         if not self.readable_list:
             for connection in self.connections:
@@ -342,7 +342,7 @@ class connection_collection():
         """Returns a parsable list of instrument terminal connections that is also human readable.
 
         Returns:
-            Result value.
+        Result value.
         """
         if not self.readable_blocked:
             for blocked in self.blocked_terminals:
@@ -353,10 +353,10 @@ class connection_collection():
         """'Returns a presentable diagram centrally aligned. Becomes difficult to read if not enough window width is provided.
 
         Args:
-            exclude: Exclude.
+        exclude: Exclude.
 
         Returns:
-            Result value.
+        Result value.
         """
         connection_diagram = ""
         for connextion in self.connections:
@@ -391,10 +391,10 @@ class connection_collection():
         """Checks compatibility, assert if conflicts. Vacuums down duplicates.
 
         Args:
-            connection_collections: Connection collections.
+        connection_collections: Connection collections.
 
         Returns:
-            Result value.
+        Result value.
         """
         aggregate_collection = connection_collection("aggregate_collection")
         # Make a dictionary whose keys are the connections, and whose values
@@ -431,11 +431,11 @@ class connection_collection():
         """Recreates the visualizer from the bench_configuration string that is logged in the database.
 
         Args:
-            components: Components.
-            string: String data.
+        components: Components.
+        string: String data.
 
         Returns:
-            Result value.
+        Result value.
         """
         logged_connections = connection_collection("logged_connections")
         connection_list_w_arrow = string.strip().split('\n')
@@ -455,23 +455,23 @@ class connection_collection():
         """Perform check consistency operation.
 
         Args:
-            connection_source: Connection source.
+        connection_source: Connection source.
 
         Raises:
-            bench_configuration_error: On error condition.
+        bench_configuration_error: On error condition.
         """
         def raise_error(terminal1, terminal2a, terminal2b, script1, script2):
             """Perform raise error operation.
 
             Args:
-                script1: Script1.
-                script2: Script2.
-                terminal1: Terminal1.
-                terminal2a: Terminal2a.
-                terminal2b: Terminal2b.
+            script1: Script1.
+            script2: Script2.
+            terminal1: Terminal1.
+            terminal2a: Terminal2a.
+            terminal2b: Terminal2b.
 
             Raises:
-                bench_configuration_error: On error condition.
+            bench_configuration_error: On error condition.
             """
             print_banner("*** CONNECTION ERROR ***",
                          f'"{terminal1.get_owner()}:{terminal1.get_type()}" is assigned differently in',
@@ -610,10 +610,10 @@ class connection_collection():
 class configuration_parser():
     """Can be used to reconstitute an equipment connection and terminal list from a displayable string.
 
-       Not sure what the use model will be.
-       Note that the original instrument type is lost as we did not store the actual Python datastructure in sqlite.
-       This just returns a list of dictionaries from a bunched up string."""
-
+    Not sure what the use model will be.
+    Note that the original instrument type is lost as we did not store the actual Python datastructure in sqlite.
+    This just returns a list of dictionaries from a bunched up string.
+    """
     def __init__(self, config_string):
         self.config_string = config_string
 
@@ -621,7 +621,7 @@ class configuration_parser():
         """Return parse result.
 
         Returns:
-            Result value.
+        Result value.
         """
         connections = []
         for conn in self.config_string.split(

@@ -2,15 +2,15 @@ from ..lab_core import *  # noqa: F403
 
 
 class fluke_8845(scpi_instrument):
-    """single channel fluke 8845 meter.
+    """Single channel fluke 8845 meter.
 
-        defaults to dc voltage, note this instrument currently does not support using multiple measurement types at the same time"""
-
+    defaults to dc voltage, note this instrument currently does not support using multiple measurement types at the same time
+    """
     def __init__(self, interface_visa):
-        """interface_visa.
+        """Interface_visa.
 
         Args:
-            interface_visa: VISA interface instance.
+        interface_visa: VISA interface instance.
         """
         self._base_name = 'fluke_8845'
         scpi_instrument.__init__(self, f"fluke_8845 @ {interface_visa}")
@@ -41,7 +41,7 @@ class fluke_8845(scpi_instrument):
         """[SENSe:]ZERO:AUTO {OFF|ONCE|ON}.
 
         Args:
-            mode: Operating mode.
+        mode: Operating mode.
         """
         if mode.upper() not in ["ON", "OFF", "AUTO"]:
             print(
@@ -52,18 +52,18 @@ class fluke_8845(scpi_instrument):
     def config_dc_current(self, NPLC=1, range=None, BW=20):
         """Configure meter for DC current measurement.
 
-            NPLC is an optional number of integration powerline cycles
-                Valid values are: [.02,.2,1,10,100]
-            range is optional string value that is the manual range the meter should operate in.
-                Valid values are in amps: [0.01, 0.1, 1, 3]
+        NPLC is an optional number of integration powerline cycles
+        Valid values are: [.02,.2,1,10,100]
+        range is optional string value that is the manual range the meter should operate in.
+        Valid values are in amps: [0.01, 0.1, 1, 3]
 
         Args:
-            BW: Bw.
-            NPLC: Number of power line cycles for integration.
-            range: Measurement or output range.
+        BW: Bw.
+        NPLC: Number of power line cycles for integration.
+        range: Measurement or output range.
 
         Raises:
-            Exception: On error condition.
+        Exception: On error condition.
         """
         if NPLC not in [.02, .2, 1, 10, 100]:
             raise Exception(
@@ -88,10 +88,10 @@ class fluke_8845(scpi_instrument):
         """Add named channel to instrument without configuring measurement type.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         meter_channel = channel(channel_name, read_function=self.read_meter)
         return self._add_channel(meter_channel)
@@ -100,7 +100,7 @@ class fluke_8845(scpi_instrument):
         """Return float representing meter measurement.  Units are V,A,Ohm, etc depending on meter configuration.
 
         Returns:
-            Result value.
+        Result value.
         """
         return float(self.get_interface().ask("READ?"))
 
@@ -108,7 +108,7 @@ class fluke_8845(scpi_instrument):
         """Required for RS-232 control.  Not allowed for GPIB control.
 
         Args:
-            remote: Remote.
+        remote: Remote.
         """
         if remote:
             self.get_interface().write("SYSTem:REMote")

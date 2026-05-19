@@ -3,8 +3,7 @@ import numbers
 
 
 def eng_string(x, fmt=':.3g', si=True, units=None):
-    """
-    Returns float/int value <x> formatted in a simplified engineering format -.
+    """Returns float/int value <x> formatted in a simplified engineering format -.
 
     using an exponent that is a multiple of 3.
 
@@ -15,7 +14,7 @@ def eng_string(x, fmt=':.3g', si=True, units=None):
 
     E.g. with format='%.2f':
         1.23e-08 => 12.30e-9
-             123 => 123.00
+        123 => 123.00
           1230.0 => 1.23e3
       -1230000.0 => -1.23e6
 

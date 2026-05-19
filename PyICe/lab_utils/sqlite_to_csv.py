@@ -5,8 +5,8 @@ from .csv_writer import csv_writer
 class sqlite_to_csv(csv_writer):
     """Formats data stored in an SQLite database so that it can be browsed interactively.
 
-       Use a program like Live Graph (https://sourceforge.net/projects/live-graph/) or KST (kst-plot.kde.org) to visualize data."""
-
+    Use a program like Live Graph (https://sourceforge.net/projects/live-graph/) or KST (kst-plot.kde.org) to visualize data.
+    """
     def __init__(self, table_name, database_file='data_log.sqlite'):
         """Name is the chart title.
 
@@ -14,8 +14,8 @@ class sqlite_to_csv(csv_writer):
         database_file is the sqlite file containing table_name.
 
         Args:
-            database_file: Database file.
-            table_name: Database table name.
+        database_file: Database file.
+        table_name: Database table name.
         """
         csv_writer.__init__(self)
         self.table_name = table_name
@@ -26,7 +26,7 @@ class sqlite_to_csv(csv_writer):
         """Enter the context manager.
 
         Returns:
-            Result value.
+        Result value.
         """
         return self
 
@@ -34,12 +34,12 @@ class sqlite_to_csv(csv_writer):
         """Exit the context manager.
 
         Args:
-            exc_tb: Exc tb.
-            exc_type: Exc type.
-            exc_val: Exc val.
+        exc_tb: Exc tb.
+        exc_type: Exc type.
+        exc_val: Exc val.
 
         Returns:
-            Result value.
+        Result value.
         """
         self.conn.close()
         return None
@@ -64,9 +64,9 @@ class sqlite_to_csv(csv_writer):
         """Write previously selected column data to output_file.
 
         Args:
-            append: Append.
-            encoding: Encoding.
-            output_file: Output file.
+        append: Append.
+        encoding: Encoding.
+        output_file: Output file.
         """
         query_txt = ''
         for column in self.columns:

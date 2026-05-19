@@ -7,10 +7,10 @@ class hp_4155b(semiconductor_parameter_analyzer):
 
     Set System->MISCELLANEOUS->COMMAND SET = HP4145
     Set System->MISCELLANEOUS->DELIMITER = COMMA
-    Set System->MISCELLANEOUS->EOI = ON"""
-
+    Set System->MISCELLANEOUS->EOI = ON
+    """
     def __init__(self, interface_visa):
-        """interface_visa".
+        """Interface_visa".
 
         Args:
             interface_visa: VISA interface instance.

@@ -5,14 +5,14 @@ from .temperature_chamber import temperature_chamber
 class delta_9039(temperature_chamber):
     """Single channel delta 9039 oven.
 
-        use wait_settle to wait for the soak to complete
-        defaults to window = 1, soak=90
-        extra data
-           _sense - the sensed temperature
-           _window - the temperature window
-           _time - the total settling time (including soak)
-           _soak - the programmed soak time"""
-
+    use wait_settle to wait for the soak to complete
+    defaults to window = 1, soak=90
+    extra data
+    _sense - the sensed temperature
+    _window - the temperature window
+    _time - the total settling time (including soak)
+    _soak - the programmed soak time
+    """
     def __init__(self, interface_visa):
         self._base_name = 'delta_9039'
         temperature_chamber.__init__(self)
@@ -24,7 +24,7 @@ class delta_9039(temperature_chamber):
         """Set named channel to new temperature "value".
 
         Args:
-            value: Value to set.
+        value: Value to set.
         """
         self.setpoint = value
         self._enable(False)
@@ -39,7 +39,7 @@ class delta_9039(temperature_chamber):
         """Read back actual chamber temperature.
 
         Returns:
-            Result value.
+        Result value.
         """
         return float(self.get_interface().ask("Temperature?"))
 
@@ -47,7 +47,7 @@ class delta_9039(temperature_chamber):
         """Enable/disable temperature chamber heating and cooling.
 
         Args:
-            enable: Enable or disable.
+        enable: Enable or disable.
         """
         if enable:
             self.get_interface().write("Active")

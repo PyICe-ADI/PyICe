@@ -5,8 +5,8 @@ from .print_to_screen import print_to_screen
 class logfile(object):
     """Creates a file and allows writes to it using the same API as print_to_screen().
 
-    Optionally can also print what is written to the screen."""
-
+    Optionally can also print what is written to the screen.
+    """
     def __init__(self, filename=None):
         self.filename = filename if filename is not None else time.strftime(
             "log-%Y-%m-%d-%H%M.txt")

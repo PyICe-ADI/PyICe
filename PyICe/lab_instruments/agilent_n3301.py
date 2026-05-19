@@ -4,15 +4,15 @@ from PyICe.lab_core import *  # noqa: F403
 class agilent_n3301(scpi_instrument):
     """Agilent N3301 Electronic Load with two channels.
 
-        This is a minimal class to interface with an Agilent N3301 electronic load.
-        Only immediate constant current mode is supported, which means you can only control
-        setting a constant current load and the new setpoint takes effect right away."""
-
+    This is a minimal class to interface with an Agilent N3301 electronic load.
+    Only immediate constant current mode is supported, which means you can only control
+    setting a constant current load and the new setpoint takes effect right away.
+    """
     def __init__(self, interface_visa):
         """Constructor takes visa GPIB address or interface object (visa,rl1009, rs232) as parameter.  Ex: "GPIB0::3".
 
         Args:
-            interface_visa: VISA interface instance.
+        interface_visa: VISA interface instance.
         """
         self._base_name = 'agilent_n3301'
         # instrument.__init__(self,f'n3300: @ {interface_visa}')
@@ -25,7 +25,8 @@ class agilent_n3301(scpi_instrument):
     def __del__(self):
         """Reset the instrument to quickly set all loads.
 
-            to zero.  (Draw no power)"""
+        to zero.  (Draw no power)
+        """
         self.get_interface().write("*RST")
         self.get_interface().close()
 
@@ -33,9 +34,9 @@ class agilent_n3301(scpi_instrument):
         """Add current force writable channel. Optionally add current readback _isense channel.
 
         Args:
-            add_sense_channel: Add sense channel.
-            channel_name: Name for the new channel.
-            channel_num: Physical channel number.
+        add_sense_channel: Add sense channel.
+        channel_name: Name for the new channel.
+        channel_num: Physical channel number.
         """
         self.add_channel_current(channel_name, channel_num)
         if add_sense_channel:
@@ -45,8 +46,8 @@ class agilent_n3301(scpi_instrument):
         """Add a channel current.
 
         Args:
-            channel_name: Name for the new channel.
-            channel_num: Physical channel number.
+        channel_name: Name for the new channel.
+        channel_num: Physical channel number.
         """
         new_channel = channel(
             channel_name,
@@ -59,8 +60,8 @@ class agilent_n3301(scpi_instrument):
         """Add a channel isense.
 
         Args:
-            channel_name: Name for the new channel.
-            channel_num: Physical channel number.
+        channel_name: Name for the new channel.
+        channel_num: Physical channel number.
         """
         new_channel = channel(
             channel_name,

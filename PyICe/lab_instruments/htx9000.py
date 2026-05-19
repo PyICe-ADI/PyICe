@@ -4,8 +4,8 @@ from ..lab_core import *  # noqa: F403
 class htx9000(scpi_instrument):
     """ Single Channel Hypertronix (Steve Martin) HTX9000.
 
-        400nA < IL < 2.5A, up to 60V, 20W Max on fanless version."""
-
+    400nA < IL < 2.5A, up to 60V, 20W Max on fanless version.
+    """
     def __init__(self, interface_visa):
         self._base_name = 'htx9000'
         scpi_instrument.__init__(self, f"HTX9000 {interface_visa}")
@@ -24,11 +24,11 @@ class htx9000(scpi_instrument):
         optionally also adds _dropout and _readback channels.
 
         Args:
-            add_extended_channels: If True, add sense and mode channels.
-            channel_name: Name for the new channel.
+        add_extended_channels: If True, add sense and mode channels.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         if add_extended_channels:
             self.add_channel_current_readback(channel_name + "_readback")
@@ -42,10 +42,10 @@ class htx9000(scpi_instrument):
         """Add a channel current.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(channel_name, write_function=self._write_current)
         # new_channel.set_min_write_warning(0.0) # set_min_write_limit too draconian. Crashes scripts that could have otherwise cleaned up. Caveat Emptor.
@@ -69,10 +69,10 @@ class htx9000(scpi_instrument):
         """Add a channel current readback.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(channel_name,
                               read_function=self._readback_current)
@@ -82,10 +82,10 @@ class htx9000(scpi_instrument):
         """Add a channel dropout.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = integer_channel(
             name=channel_name,
@@ -97,10 +97,10 @@ class htx9000(scpi_instrument):
         """Add a channel temp heatsink.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(channel_name,
                               read_function=self._read_heatsink_temp)
@@ -110,10 +110,10 @@ class htx9000(scpi_instrument):
         """Add a channel temp board.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(
             channel_name,
@@ -124,10 +124,10 @@ class htx9000(scpi_instrument):
         """Add a channel swipepad lock.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = integer_channel(
             name=channel_name,
@@ -140,10 +140,10 @@ class htx9000(scpi_instrument):
         """Add a channel manual range.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(
             channel_name, write_function=lambda rng: setattr(
@@ -157,10 +157,10 @@ class htx9000(scpi_instrument):
         """Add a channel range readback.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(
             channel_name,
@@ -174,11 +174,11 @@ class htx9000(scpi_instrument):
         """Write channel to value.
 
         Args:
-            range: Measurement or output range.
-            value: Value to set.
+        range: Measurement or output range.
+        value: Value to set.
 
         Raises:
-            Exception: On error condition.
+        Exception: On error condition.
         """
         # TODO: instrument currently broken - sets range to low if under-range
         # on input Steve to fix.
@@ -216,7 +216,7 @@ class htx9000(scpi_instrument):
         """Return False if in regulation, True if in dropout.
 
         Returns:
-            Result value.
+        Result value.
         """
         while True:
             data = self.get_interface().ask("DROPout?")
@@ -237,10 +237,10 @@ class htx9000(scpi_instrument):
     def _readback_current(self):
         """Return current setting from instrument.  Steve verify that this is just a rounded version of what.
 
-            was previously written.
+        was previously written.
 
         Returns:
-            Result value.
+        Result value.
         """
         while True:
             data = self.get_interface().ask("SOURce:CURRent?")
@@ -264,7 +264,7 @@ class htx9000(scpi_instrument):
         """Turn on or off the swipe pad lock so incidental contact doesn't change the value.
 
         Args:
-            value: Value to set.
+        value: Value to set.
         """
         self.get_interface().write("SYSTem:LOCK" if value else "SYSTem:LOCK:RELease")
         try:
@@ -282,7 +282,7 @@ class htx9000(scpi_instrument):
         """Return the serial number.
 
         Returns:
-            Result value.
+        Result value.
         """
         ident = self.get_interface().ask("*IDN?")
         return ident.split(",")[2].strip()
@@ -291,8 +291,8 @@ class htx9000(scpi_instrument):
 class htx9000SE_5A(htx9000):
     """Modified Single Channel Hypertronix (Steve Martin) HTX9000SE.
 
-    400nA < IL < 5A, up to 60V."""
-
+    400nA < IL < 5A, up to 60V.
+    """
     def __init__(self, interface_visa):
         self._base_name = 'HTX9000_SE5A'
         scpi_instrument.__init__(self, f"HTX9000SE5A {interface_visa}")
@@ -305,10 +305,10 @@ class htx9000SE_5A(htx9000):
         """Add a channel current.
 
         Args:
-            channel_name: Name for the new channel.
+        channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+        Result value.
         """
         new_channel = channel(channel_name, write_function=self._write_current)
         new_channel.set_min_write_limit(0.0)

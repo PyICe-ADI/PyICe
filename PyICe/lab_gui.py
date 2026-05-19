@@ -50,10 +50,10 @@ MAX_TAG_ROWS = 4
 
 
 class data_store():
-    """ this is a very simple hierarchy of key/value pairs. Each can have an ordered list of children. Only int/float/str should be stored.
+    """This is a very simple hierarchy of key/value pairs. Each can have an ordered list of children. Only int/float/str should be stored.
 
-    each pair must have a name but a value is optional"""
-
+    each pair must have a name but a value is optional
+    """
     def __init__(self, name=None, value=None, parent=None):
         self._children = []
         self.set_name(name)

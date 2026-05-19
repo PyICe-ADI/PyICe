@@ -3,8 +3,7 @@ class Master_Test_Template():
     # SCRIPT METHODS
     ###
     def reconfigure(self, read_function, write_function, value):
-        """
-        Optional method used during customize() if changes are made to the DUT on a particular test in a suite.
+        """Optional method used during customize() if changes are made to the DUT on a particular test in a suite.
 
         Unwound after test's collect at each temperature.
         read_function and write_function should be conjugate methods of a particular channel to help the system unwind after _this_ test.
@@ -35,7 +34,7 @@ class Master_Test_Template():
         """Optional method to log the setup needed to run the test. Plugin required."""
 
     def collect(self):
-        """ Mandatory method to operate the bench and collect the data."""
+        """Mandatory method to operate the bench and collect the data."""
 
     def plot(self):
         """ Optional method to retrieve the data collected and create plots. Can be run over and over once a collect has run. User must return a list or tuple of plots and/or pages, or an individual LTC_plot.Page, or a single LTC_plot.plot.
@@ -199,7 +198,7 @@ class Master_Test_Template():
     def evaluate_rawdata(self, name, data, conditions=None):
         """This will compare submitted data to limits for the named test.
 
-        args:
+        Args:
             name - string. The name of the test whose limits will be used.
             data - Boolean or iterable object. Each value will be compared to the limits (or boolean value) of the name argument.
             conditions - None or dictionary. A dictionary with channel names as keys and channel values as values. Used to report under what circumstances the data was taken. Default is None.
@@ -217,7 +216,7 @@ class Master_Test_Template():
     def evaluate_query(self, name, query):
         """This will compare submitted data to limits for the named test.
 
-        args:
+        Args:
             name - string. The name of the test whose limits will be used.
             database - SQLite database object. The first column will be compared to the limits of the named spec and the rest will be used for grouping.
 
@@ -234,7 +233,7 @@ class Master_Test_Template():
     def evaluate_db(self, name):
         """This method evaluates a pre-massaged SQLite database, self.get_database(), from the user. It returns a bit of flexibility on the sequel query to the user.
 
-        args:
+        Args:
             name - string. The name of the test whose limits will be used.
 
         Args:
@@ -248,7 +247,7 @@ class Master_Test_Template():
     def evaluate(self, name, values, conditions=None, where_clause=''):
         """This compares submitted data from a SQLite database to a named test in a more outlined fashion.
 
-        args:
+        Args:
             name - string. The name of the test with limits to be used.
             value_column - string. The name of the channel that will be evaluated.
             grouping_columns - list. The values of the value_column will be grouped and evaluated by the permutations of the channels that are named in this list of strings.
@@ -322,7 +321,7 @@ class Master_Test_Template():
                        test_values=None, spec=None, conditions=None):
         """Compares test values to reference values and compare the output to the limits of the named test.
 
-        args:
+        Args:
             name - string. The name of the test whose limits will be used.
             reference_values - iterable. The base values to which test values will be compared.
             test_values - iterable. The object values whose distance to the reference value will be calculated.

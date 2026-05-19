@@ -626,7 +626,6 @@ class TestIntegerReadChannel:
          10)])
     def test_unformat_specify_format(self, out_format, in_val, out_val,
                                      int_write_chan):
-
         """Perform test unformat specify format operation.
 
         Args:

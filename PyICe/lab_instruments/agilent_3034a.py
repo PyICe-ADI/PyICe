@@ -53,8 +53,7 @@ class agilent_3034a(oscilloscope):
         self.verbose = verbose
 
     def delay(self, duration=0):
-        """
-        *OPC? (self.operation_complete()) on this instrument isn't blocking of scope operations such as triggering and even entering RUN mode.
+        """*OPC? (self.operation_complete()) on this instrument isn't blocking of scope operations such as triggering and even entering RUN mode.
 
         It just doesn't help with scope synchronization.
         The Programmer's guide a offers a little advice on determining if the scope is stopped (see scope_stopped() below) but it doesn't cover all synchronization issues.
@@ -417,8 +416,7 @@ class agilent_3034a(oscilloscope):
         self.delay(0.1)
 
     def _read_scope_channel(self, scope_channel_number):
-        """
-        Return list of y-axis points for named channel.
+        """Return list of y-axis points for named channel.
 
         List will be datalogged by logger as a string in a single cell in the table.
         trigger=False can by used to suppress acquisition of new data by the instrument so that

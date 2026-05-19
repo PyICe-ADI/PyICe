@@ -8,8 +8,8 @@ class saleae(instrument, delegator):
 
     Requires https://pypi.python.org/pypi/saleae
     Also requires Saleae Logic software GUI to be running to listen on TCP remote control port.
-    Digital channels not supported (yet). (Mixed analog/digital capture file binary unsupported.)"""
-
+    Digital channels not supported (yet). (Mixed analog/digital capture file binary unsupported.)
+    """
     def __init__(self, host='localhost', port=10429):
         import saleae as saleae_lib
         instrument.__init__(self, f"Saleae Logic @ {host}:{port}")

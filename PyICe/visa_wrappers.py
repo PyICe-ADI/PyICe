@@ -1,5 +1,4 @@
-"""
-VISA Emulation Layer.
+"""VISA Emulation Layer.
 
 ====================
 
@@ -7,7 +6,6 @@ Interface wrappers to use various interfaces as if they were VISA resources
 without requiring an installed VISA library. Facilitates seamless transition
 between physical inrefaces and operating systems.
 """
-
 import traceback
 import struct
 import re

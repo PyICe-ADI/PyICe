@@ -6,10 +6,10 @@ from PyICe.lab_utils.twosComplementToSigned import twosComplementToSigned
 class TMP117(instrument):
     """Analog Devices Silicon Temperature Sensor.
 
-    https://www.ti.com/lit/gpn/tmp117"""
-
+    https://www.ti.com/lit/gpn/tmp117
+    """
     def __init__(self, interface_twi, addr7):
-        """interface_twi is a interface_twi.
+        """Interface_twi is a interface_twi.
 
         addr7 is the 7-bit I2C address of the TMP117 set by pinstrapping ADD0.
         Choose addr7 from:

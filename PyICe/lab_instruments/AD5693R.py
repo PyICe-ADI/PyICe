@@ -5,10 +5,10 @@ from PyICe.lab_utils.swap_endian import swap_endian
 class AD5693R(instrument):
     """Analog Devices 16 bit DAC.
 
-    http://www.analog.com/en/products/digital-to-analog-converters/da-converters/ad5693r.html"""
-
+    http://www.analog.com/en/products/digital-to-analog-converters/da-converters/ad5693r.html
+    """
     def __init__(self, interface_twi, addr7):
-        """interface_twi is a interface_twi.
+        """Interface_twi is a interface_twi.
 
         addr7 is the 7-bit I2C address of the ADT5693R set by pinstrapping.
         A0 = 0: 1001100 (4C)

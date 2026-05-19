@@ -2,18 +2,16 @@ import time
 
 
 class polling_delay(object):
-    """poll for test condition iteratively before unblocking.
+    """Poll for test condition iteratively before unblocking.
 
     Supports exact and range tests
     Supports abstracted notion of time and delay, or defaults to time.sleep()
     Optionally terminates search if exit criteria are not satisfied within a timeout interval.
     Optionally raises TimeoutErrror if timeout is exceeded.
     """
-
     def __init__(self, dly_fn=None, time_readback_fn=None,
                  except_on_timeout=True, timeout_str_prefix='*Error* '):
-        """
-        Parameters.
+        """Parameters.
 
         ----------
         dly_fn : function, optional
@@ -31,7 +29,6 @@ class polling_delay(object):
             time_readback_fn: Time readback fn.
             timeout_str_prefix: Timeout str prefix.
         """
-
         if dly_fn is None:
             self.dly_function = lambda dly: time.sleep(dly)
         else:

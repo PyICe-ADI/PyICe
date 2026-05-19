@@ -5,8 +5,8 @@ from .. import twi_interface
 class AD5259(instrument):
     """Analog Devices Nonvolatile, I2C-Compatible 256-Position, Digital Potentiometer.
 
-    https://www.analog.com/media/en/technical-documentation/data-sheets/ad5259.pdf"""
-
+    https://www.analog.com/media/en/technical-documentation/data-sheets/ad5259.pdf
+    """
     def __init__(self, interface_twi, addr7, full_scale_ohms):
         """Interface_twi is a PyICe interface_twi.
 

@@ -5,22 +5,22 @@ import datetime
 class delay_loop(object):
     """Make constant loop delay independent of loop processing time by measuring time at beginning.
 
-        and end of loop and adding extra delay as necessary"""
-
+    and end of loop and adding extra delay as necessary
+    """
     def __init__(self, strict=False, begin=True, no_drift=True):
         """Set strict to True to raise an Exception if loop time is longer than requested delay.
 
         Timer will automatically begin when the object is instantiated if begin=True.
-          To start timer only when ready, set begin=False and call begin() method to start timer.
+        To start timer only when ready, set begin=False and call begin() method to start timer.
         If no_drift=True, delay loop will manage loop time over-runs by debiting extra time from next cycle.
-          This ensures long-term time stability at the expense of increased jitter.
-          Windows task switching can add multi-mS uncertainty to each delay() call, which can accumulate if not accounted for.
-          Set no_drift=False to ignore time over-runs when computing next delay time.
+        This ensures long-term time stability at the expense of increased jitter.
+        Windows task switching can add multi-mS uncertainty to each delay() call, which can accumulate if not accounted for.
+        Set no_drift=False to ignore time over-runs when computing next delay time.
 
         Args:
-            begin: Begin.
-            no_drift: No drift.
-            strict: Strict.
+        begin: Begin.
+        no_drift: No drift.
+        strict: Strict.
         """
         self.strict = strict
         self.no_drift = no_drift
@@ -35,10 +35,10 @@ class delay_loop(object):
         """Call the instance.
 
         Args:
-            seconds: Seconds.
+        seconds: Seconds.
 
         Returns:
-            Result value.
+        Result value.
         """
         return self.delay(seconds)
 
@@ -46,7 +46,7 @@ class delay_loop(object):
         """Returns total number of times delay() method called.
 
         Returns:
-            Result value.
+        Result value.
         """
         return self.count
 
@@ -54,7 +54,7 @@ class delay_loop(object):
         """Returns total number of seconds since first delay.
 
         Returns:
-            Result value.
+        Result value.
         """
         return (datetime.datetime.now(datetime.UTC) -
                 self.start_time).total_seconds()
@@ -63,7 +63,7 @@ class delay_loop(object):
         """Make note of begin time for loop measurement. Use offset to adjust the begin time in case of overrun on last cycle.
 
         Args:
-            offset: Offset value.
+        offset: Offset value.
         """
         if self.begin_time is None:
             self.start_time = datetime.datetime.now(datetime.UTC)
@@ -73,16 +73,16 @@ class delay_loop(object):
     def delay(self, seconds):
         """Delay extra time to make loop time constant.
 
-            returns actual delay time achieved
+        returns actual delay time achieved
 
         Args:
-            seconds: Seconds.
+        seconds: Seconds.
 
         Returns:
-            Result value.
+        Result value.
 
         Raises:
-            Exception: On error condition.
+        Exception: On error condition.
         """
         if self.begin_time is None:
             raise Exception('Call begin() method before delay().')
@@ -120,13 +120,13 @@ class delay_loop(object):
         """Use this in a while loop to perform another function for duration loop_time. Test the result for 0 or less.
 
         Args:
-            loop_time: Loop time.
+        loop_time: Loop time.
 
         Returns:
-            Result value.
+        Result value.
 
         Raises:
-            Exception: On error condition.
+        Exception: On error condition.
         """
         if self.begin_time is None:
             raise Exception('Call begin() method before time_remaining().')
@@ -142,7 +142,7 @@ class delay_loop(object):
         """Return extra time remaining (ie sleep time) before last call to delay().
 
         Returns:
-            Result value.
+        Result value.
         """
         return self.delay_time
 
@@ -150,6 +150,6 @@ class delay_loop(object):
         """Return previous actual achieved loop time (including any overrun).
 
         Returns:
-            Result value.
+        Result value.
         """
         return self.loop_time

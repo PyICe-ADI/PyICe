@@ -21,7 +21,8 @@ class StreamWindow(object):
     and larger values of n until one peeks at a complete data packet, for the
     example use case of segmenting/parsing packets from a stream of bytes.
 
-    StreamWindow was developed to fill this gap."""
+    StreamWindow was developed to fill this gap.
+    """
     # FYI: This class should be here in PyICe.lab_utils rather than corraled in labcomm
     # because it is generally applicable to any I/O stream that follows the io.RawIOBase
     # protocol, which is most of Python standard I/O. Indeed, the functionality of this class

@@ -6,8 +6,7 @@ import time
 
 
 class firmata(instrument):
-    """
-    Firmata is a protocol for communicating with microcontrollers from software on a host computer.
+    """Firmata is a protocol for communicating with microcontrollers from software on a host computer.
 
     The protocol can be implemented in firmware on any microcontroller architecture as well as software on any host computer software package.
     The Arduino repository described here is a Firmata library for Arduino and Arduino-compatible devices. If you would like to contribute to Firmata, please see the Contributing section below.
@@ -30,10 +29,8 @@ class firmata(instrument):
 
     https://github.com/MrYsLab/PyMata/blob/master/README.md
     """
-
     def __init__(self, serial_port_name):
-        """
-        1) note that this makes its own serial object. Can't use master.get_raw_serial_interface and this will read/write in its own thread.
+        """1) note that this makes its own serial object. Can't use master.get_raw_serial_interface and this will read/write in its own thread.
 
         2) inherit from delegator and aggregate pin states with single query???
 
@@ -55,12 +52,10 @@ class firmata(instrument):
             raise e
 
         class PyMata_Extensions(PyMata):
-            """
-            This sub class simply adds a method to reset serial commuications to the base class PyMata.
+            """This sub class simply adds a method to reset serial commuications to the base class PyMata.
 
             Its done this way so when PyMata is updated to a newer version we keep the added functionality.
             """
-
             def reset_serial_communications(self):
                 """Perform reset serial communications operation."""
                 if self.verbose:

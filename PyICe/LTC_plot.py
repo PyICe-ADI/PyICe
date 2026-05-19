@@ -1,5 +1,4 @@
-"""
-Linear Technology Compliant Plot Generator.
+"""Linear Technology Compliant Plot Generator.
 
 This program can be used to generate plots for general lab use or to
 generate plots that can be imported directly into a datasheet in
@@ -29,18 +28,18 @@ Multipage_pdf.
 ::
 
   G0 = LTC_plot.plot(
-                      plot_title      = "EN/FBIN Thresholds",
-                      plot_name       = "8709 G0",
-                      xaxis_label     = "TEMPERATURE (" + DEGC + ")",
-                      yaxis_label     = "FBIN CHIP ENABLE (V)",
-                      xlims           = (-50, 125),
-                      ylims           = (1.2, 1.4),
-                      xminor          = 0,
-                      xdivs           = 7,
-                      yminor          = 0,
-                      ydivs           = 10,
-                      logx            = False,
-                      logy            = False)
+    plot_title      = "EN/FBIN Thresholds",
+    plot_name       = "8709 G0",
+    xaxis_label     = "TEMPERATURE (" + DEGC + ")",
+    yaxis_label     = "FBIN CHIP ENABLE (V)",
+    xlims           = (-50, 125),
+    ylims           = (1.2, 1.4),
+    xminor          = 0,
+    xdivs           = 7,
+    yminor          = 0,
+    ydivs           = 10,
+    logx            = False,
+    logy            = False)
 
 A plot is nothing more than a record of the plot you want to create. It doesn't
 support any outputting methods itself. A plot must eventually be added to a Page
@@ -315,7 +314,6 @@ PyICe/Examples/LTC_plot_example/LTC_plot_example.py
   try deleting: "C:\\\\Users\\\\%username%\\\\.matplotlib\\\\fontList.cache and tex.cache"
 
 """
-
 import numpy as np
 import matplotlib
 import matplotlib.ticker
@@ -1844,8 +1842,8 @@ class Page():
 class Multipage_pdf():
     """Add one or more Pages to a Multipage_pdf to keep your page sizes manageable (such as 8.5x11).
 
-    Multipage_pdf also support kit_datasheet()."""
-
+    Multipage_pdf also support kit_datasheet().
+    """
     def __init__(self):
         self.page_list = []
 
@@ -1947,7 +1945,8 @@ class color_gen(object):
 def list_markers():
     """Valid linestyles are ['-' '--' '-.' ':' 'None' ' ' ''].
 
-    Valid markers are [':' '.' ',' 'o' 'v' '^' '<' '>' '1' '2' '3' '4' '8' 's' 'p' '*' 'h' 'H' '+' 'x' 'D' 'd' '|' '_' TICKLEFT TICKRIGHT TICKUP TICKDOWN CARETLEFT CARETRIGHT CARETUP CARETDOWN]"""
+    Valid markers are [':' '.' ',' 'o' 'v' '^' '<' '>' '1' '2' '3' '4' '8' 's' 'p' '*' 'h' 'H' '+' 'x' 'D' 'd' '|' '_' TICKLEFT TICKRIGHT TICKUP TICKDOWN CARETLEFT CARETRIGHT CARETUP CARETDOWN]
+    """
     print()
     print(
         "Valid markers are: " +
