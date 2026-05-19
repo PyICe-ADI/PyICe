@@ -254,9 +254,12 @@ def write_waveform_data(
 if __name__ == '__main__':
     answer = input("(P)lot data only or (C)ollect and plot or (D)ump JSON: ")
     if answer.lower() == "c":
-        from create_user_files import create_my_scopefile
+        try:
+            from create_user_files import create_my_scopefile
+            from local.my_instruments import agilent_3034a
+        except ImportError as e:
+            raise ImportError("Collection mode requires local user files. See PyICe documentation.") from e
         create_my_scopefile()
-        from local.my_instruments import agilent_3034a
         dump = oscilloscope_waveform_dump(agilent_3034a)
         db_tablename = dump.data_to_sqlite()
     elif answer.lower() == "p" or answer.lower() == "d":
