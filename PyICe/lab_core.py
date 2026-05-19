@@ -1040,7 +1040,7 @@ class channel(delegator):
         """
         return self._write_min_warning
 
-    def format_display(self, data):
+    def format_display(self, data):  # pylint: disable=method-hidden
         """Converts data to string according to string formatting rule set by self.set_display_format_str().
 
         >>> from PyICe.lab_core import channel
