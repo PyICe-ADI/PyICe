@@ -15,15 +15,26 @@ try:
     from PySide2 import QtCore
     from PySide2.QtCore import SIGNAL, SLOT, QObject, Signal
 except ImportError:
-    # PySide6 is required for Python >=3.11.
-    # QAction moved from QtWidgets to QtGui in Qt6; monkey-patch it back into
-    # QtWidgets so that all existing code that references QtWidgets.QAction keeps
-    # working without a wholesale rewrite.
-    from PySide6 import QtGui
-    from PySide6 import QtWidgets
-    from PySide6 import QtCore
-    from PySide6.QtCore import SIGNAL, SLOT, QObject, Signal
-    QtWidgets.QAction = QtGui.QAction
+    try:
+        # PySide6 is required for Python >=3.11.
+        # QAction moved from QtWidgets to QtGui in Qt6; monkey-patch it back into
+        # QtWidgets so that all existing code that references QtWidgets.QAction keeps
+        # working without a wholesale rewrite.
+        from PySide6 import QtGui
+        from PySide6 import QtWidgets
+        from PySide6 import QtCore
+        from PySide6.QtCore import SIGNAL, SLOT, QObject, Signal
+        QtWidgets.QAction = QtGui.QAction
+    except ImportError as e:
+        import warnings
+        warnings.warn(f"Neither PySide2 nor PySide6 could be imported; GUI functionality is unavailable: {e}")
+        QtGui = None
+        QtWidgets = None
+        QtCore = None
+        SIGNAL = None
+        SLOT = None
+        QObject = None
+        Signal = None
 import queue
 import datetime
 import collections
