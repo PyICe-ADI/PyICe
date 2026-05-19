@@ -2252,6 +2252,12 @@ minus = "\u2212"
 
 if __name__ == "__main__":
     import pydoc
+    import sys
     pydoc.writedoc('LTC_plot')
-    os.startfile("LTC_plot.html")
+    if sys.platform == 'win32':
+        os.startfile("LTC_plot.html")
+    elif sys.platform == 'darwin':
+        os.system('open "LTC_plot.html"')
+    else:
+        os.system('xdg-open "LTC_plot.html"')
     # print __doc__

@@ -1,6 +1,7 @@
 """Lab plots example module."""
 from PyICe import LTC_plot
 import os
+import sys
 ###################################################################
 #   Example creating a large plot for lab viewing only.           #
 ###################################################################
@@ -76,7 +77,10 @@ Multipagefile = LTC_plot.Multipage_pdf()
 Multipagefile.add_page(Page1)
 Multipagefile.add_page(Page2)
 Multipagefile.create_pdf(file_basename="lab_plot_example")
-os.startfile(
-    os.path.dirname(
-        os.path.abspath(__file__)) +
-    "/plots/lab_plot_example.pdf")
+pdf_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "plots", "lab_plot_example.pdf")
+if sys.platform == 'win32':
+    os.startfile(pdf_path)
+elif sys.platform == 'darwin':
+    os.system(f'open "{pdf_path}"')
+else:
+    os.system(f'xdg-open "{pdf_path}"')
