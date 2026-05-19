@@ -486,6 +486,7 @@ class plot(object):
         if color is None:
             color = [1, 0, 0]
         ylims = self.ylims if axis == 1 else self.y2_axis_params["ylims"]
+        text_location = None
         if self.xlims in [None, "auto"] and xrange is None:
             hxline = True                                       # Use automatic placement mode
             xrange0 = 0                                         # Should be irrelevant
@@ -584,6 +585,7 @@ class plot(object):
         if axis not in [1, 2]:
             raise Exception("\n\nLTC_plot ERROR: AXIS MUST BE 1 or 2\n")
         axis_params = self.y1_axis_params if axis == 1 else self.y2_axis_params
+        text_location = None
         if axis_params['ylims'] in [None, "auto"] and yrange is None:
             # Use automatic placement mode
             vxline = True
