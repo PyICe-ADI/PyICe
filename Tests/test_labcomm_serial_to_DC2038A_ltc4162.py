@@ -22,7 +22,8 @@ def talk_to_demoboard(connection, src_id, xml_file, debug=False):
     Returns:
         Result value.
     """
-    from PyICe import lab_core, twi_instrument, lab_instruments
+    from PyICe import lab_core, twi_instrument
+    from PyICe.virtual_instruments import timer
     m = lab_core.master()
     m._threaded = False   # Useful when debugging.
     if connection[0] == 'serial':
@@ -55,7 +56,7 @@ def talk_to_demoboard(connection, src_id, xml_file, debug=False):
     # if self.make_ARA_channel:
     # ARAch = self.master.add_channel_virtual("ARA", read_function = self.twi.alert_response)
     # ARAch.set_category("Alerts")
-    vtimer = lab_instruments.timer()
+    vtimer = timer()
     vtimer.add_channel_delta_seconds("delta_secs")
     m.add(vtimer)
     m['battery_detection_alert'].add_change_callback()
@@ -143,7 +144,7 @@ def test_labcomm():
     # Activate while build
     # the_xml_file = "./LTC4162-BASE-local-copy.xml"
     # Dummy without board
-    # the_xml_file = "C:/WORK/A_SVN/LTC4162/trunk/Registers/LTC4162-LAD/synthetics/public/XML/LTC4162-LAD.xml"
+    # the_xml_file = "/path/to/LTC4162-LAD.xml"
 
     print()
     s = input("Press ENTER to accept default XML file {}, or enter the path\n"

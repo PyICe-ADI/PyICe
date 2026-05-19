@@ -1,6 +1,11 @@
 """Tests for scope capture."""
 import datetime
-from PyICe import lab_core, lab_utils, lab_instruments, LTC_plot
+from PyICe import lab_core, LTC_plot
+from PyICe.lab_instruments.agilent_3034a import agilent_3034a
+from PyICe.lab_utils.sqlite_data import sqlite_data
+from PyICe.lab_utils.present_menu import present_menu
+from PyICe.lab_utils.eng_string import eng_string
+from PyICe.lab_utils.oscilloscope_channel import oscilloscope_channel
 
 database_name = "scope_shots.sqlite"
 
@@ -13,7 +18,7 @@ if table_name != '':
     # interface = master.get_visa_interface("USB0::0x0957::0x17a4::MY52160757::0::INSTR")
     interface = master.get_visa_interface(
         "USB0::0x0957::0x17a4::MY52012651::0::INSTR")
-    scope = lab_instruments.agilent_3034a(interface)
+    scope = agilent_3034a(interface)
     scope.add_channel_time('scope_time')
     # [100,250,500] or [1000,2000,5000]*10^[0-4] or [8000000]
     scope.set_points(5000)
@@ -40,14 +45,14 @@ if table_name != '':
 #  Plotting  #
 ##############
 if table_name == '':
-    db = lab_utils.sqlite_data(table_name=None, database_file=database_name)
+    db = sqlite_data(table_name=None, database_file=database_name)
     tables = db.query("""SELECT name FROM SQLITE_MASTER WHERE type=='table'""")
-    table_name = lab_utils.present_menu(intro_msg="Found the following tables: ",
+    table_name = present_menu(intro_msg="Found the following tables: ",
                                         prompt_msg="Which table do you want to plot: ",
                                         item_list=[row[0]
                                                    for row in db.to_list()]
                                         )
-database = lab_utils.sqlite_data(
+database = sqlite_data(
     table_name=table_name,
     database_file=database_name)
 query = '''SELECT plot_title, scope_time_info from {}'''.format(table_name)
@@ -60,7 +65,7 @@ plot_title = database[0]['plot_title']
 GX = LTC_plot.scope_plot(plot_title=plot_title,
                          plot_name="G0X",
                          xaxis_label='TIME {}s/DIV'.format(
-                             lab_utils.eng_string(
+                             eng_string(
                                  x_units_per_div, fmt=':.3g', si=True)),
                          xlims=(x_origin, 10 * x_units_per_div + x_origin),
                          ylims=(-4, 4)  # Should this be removed from LTC_plot?
@@ -95,7 +100,7 @@ for channel in range(1, 5):
         query = '''SELECT scope_time, scope_channel_{} FROM {}'''.format(
             channel, table_name)
         database.query(query)
-        data = lab_utils.oscilloscope_channel(*database[0])
+        data = oscilloscope_channel(*database[0])
         query = '''SELECT scope_channel_{}_info FROM {}'''.format(
             channel, table_name)
         database.query(query)

@@ -1,6 +1,7 @@
 """Tests for logger."""
 
-from PyICe import lab_core, lab_utils
+from PyICe import lab_core
+from PyICe.lab_utils.csv_logger import csv_logger
 import random
 
 m = lab_core.master()
@@ -23,7 +24,7 @@ for i in range(1996):
         ch.write({'a': 1, 'b,c': 2})
 l = lab_core.logger(m, database="logger_test.sqlite", use_threads=True)
 l.new_table(table_name='dummy_data', replace_table=True)
-c = lab_utils.csv_logger(output_file='logger_test.csv')
+c = csv_logger(output_file='logger_test.csv')
 c.register_logger_callback(l)
 print(l.log())
 for i in range(10000):

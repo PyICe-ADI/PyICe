@@ -1,18 +1,17 @@
 """Tests for email."""
-from PyICe import lab_utils
+from PyICe.lab_utils.communications import email
 from email.mime.image import MIMEImage
 import cairosvg
 
-dave_mail = lab_utils.email('david.simmons@analog.com')
+dave_mail = email('recipient@example.com', smtp_server='smtp.example.com:25', sender='noreply@example.com')
 
 
-with open(r'C:\Users\DSimmons\projects\stowe_eval\tests\boost\ch0_ilim_waveforms\archive\boost_fib_DUT3_2020_07_09\ch0_ilim_waveforms_2020_07_09_14_40_53\plots\ch0_waveforms.svg', 'rb') as img:
+with open(r'path/to/example.svg', 'rb') as img:
     pic1_bytes = img.read()
     pic1 = MIMEImage(pic1_bytes, 'image/svg+xml')
     pic1.add_header('content-disposition', 'attachment; filename="foo.svg"')
-with open(r'C:\Users\DSimmons\OneDrive - Analog Devices, Inc\Pictures\dados-png-2.png', 'rb') as img:
+with open(r'path/to/example.png', 'rb') as img:
     pic2 = MIMEImage(img.read(), 'image/png')
-    # pic2.add_header('content-disposition', 'attachment; filename="bar.png"')
     pic2.add_header('Content-Disposition', 'inline')
     pic2.add_header('Content-ID', '<dice>')
 

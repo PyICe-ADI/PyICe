@@ -1,9 +1,7 @@
 """Tests for parameter analyzer."""
 import time
-import PyICe.lab_instruments as lab_instruments
-import PyICe.lab_core as lab_core
-import sys
-sys.path.append('../..')
+from PyICe import lab_core
+from PyICe.lab_instruments.hp_4155b import hp_4155b
 
 
 if __name__ == '__main__':
@@ -18,7 +16,7 @@ if __name__ == '__main__':
     m.set_gpib_adapter_rl1009(0)
     hiface = m.get_visa_gpib_interface(
         gpib_adapter_number=0, gpib_address_number=17)
-    bar = lab_instruments.hp_4155b(hiface)
+    bar = hp_4155b(hiface)
 
     bar.add_channels_smu_voltage(1, 'voltage', 'current_compliance')
     bar.add_channel_smu_voltage_sense(1, 'readback_voltage')

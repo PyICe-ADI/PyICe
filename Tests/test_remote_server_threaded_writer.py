@@ -1,5 +1,6 @@
 """Tests for remote server threaded writer."""
-from PyICe import lab_core, lab_utils
+from PyICe import lab_core
+from PyICe.lab_utils.threaded_writer import threaded_writer
 import time
 
 m = lab_core.master()
@@ -9,8 +10,8 @@ if m.attach():
     def dummy_fn():
         """Perform dummy fn operation."""
         print("Yo")
-    foo = lab_utils.threaded_writer(verbose=True)
-    # foo = lab_utils.threaded_writer()
+    foo = threaded_writer(verbose=True)
+    # foo = threaded_writer()
     foo.add_function(function=dummy_fn, time_interval=20, start=True)
     foo.connect_channel(
         channel_name='a',

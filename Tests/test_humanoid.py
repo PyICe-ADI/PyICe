@@ -1,14 +1,16 @@
 """Tests for humanoid."""
-from PyICe import lab_instruments, lab_core, lab_utils
+from PyICe import lab_core
+from PyICe.lab_utils.communications import email
+from PyICe.virtual_instruments import instrument_humanoid
 
 # import logging
 # logging.basicConfig(level=logging.DEBUG)
 
 m = lab_core.master()
-em = lab_utils.email(destination='david.simmons@analog.com')
-ih = lab_instruments.instrument_humanoid(
+em = email(destination='recipient@example.com', smtp_server='smtp.example.com:25', sender='noreply@example.com')
+ih = instrument_humanoid(
     notification_function=lambda msg: em.send(
-        msg, subject="LTC lab requires attention!"))
+        msg, subject="Lab requires attention!"))
 m.add(ih)
 wc = ih.add_channel_write('write_channel')
 rc = ih.add_channel_read('read_channel')

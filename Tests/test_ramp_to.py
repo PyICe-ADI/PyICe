@@ -1,5 +1,6 @@
 """Tests for ramp to."""
-from PyICe import lab_core, lab_instruments
+from PyICe import lab_core
+from PyICe.virtual_instruments import ramp_to
 
 
 def debug(val):
@@ -12,7 +13,7 @@ def debug(val):
 
 
 m = lab_core.master()
-rt = lab_instruments.ramp_to(verbose=True)
+rt = ramp_to(verbose=True)
 m.add(rt)
 d = m.add_channel_virtual('d', write_function=debug)
 d.write(0)

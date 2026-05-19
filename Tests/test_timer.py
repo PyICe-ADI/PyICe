@@ -1,8 +1,8 @@
 """Tests for timer."""
-from PyICe import lab_instruments
+from PyICe.virtual_instruments import timer, integrator
 import time
 
-timer = lab_instruments.timer()
+timer = timer()
 timer.add_channel_total_seconds('total_s')
 timer.add_channel_total_minutes('total_m')
 timer.add_channel_delta_seconds('delta_s')
@@ -45,7 +45,7 @@ print("Expect 6t, 1d: {}".format(timer.read_all_channels()))
 
 
 print("\nIntegrator test")
-integrator = lab_instruments.integrator()
+integrator = integrator()
 integrator.add_channel_total_seconds('int_total_s')
 integrator.add_channel_delta_seconds('int_delta_s')
 integrator.add_channel_integration_seconds('int_s')
