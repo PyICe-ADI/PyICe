@@ -29,4 +29,4 @@ jobs:
         pip install -e .
     - name: Analysing the code with pylint
       run: |
-        pylint --fail-under=2.0 --fail-on=F,E $(git ls-files '*.py')
+        git ls-files -z '*.py' | xargs -0 pylint --fail-under=2.0 --fail-on=F,E
