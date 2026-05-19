@@ -72,6 +72,7 @@ class results_ord_dict(collections.OrderedDict):
     """
 
     def __str__(self):
+        """Return column-aligned key: value listing of all results."""
         s = ''
         max_channel_name_length = 0
         for k, v in self.items():
@@ -86,6 +87,7 @@ class results_ord_dict(collections.OrderedDict):
         return s
 
     def __getstate__(self):
+        """Return empty state for pickling support."""
         return {}
 
 
@@ -95,42 +97,52 @@ class delegator(object):
     You will probably never use it directly."""
 
     def __init__(self):
+        """Initialize delegator with self-delegation, threading enabled, and empty interface list."""
         self.set_delegator(self)
         self._threadable = True
         self._interfaces = []
 
     def set_delegator(self, delegator):
+        """Set the delegator that handles read/write operations for this object."""
         self._delegator = delegator
 
     def get_delegator(self):
+        """Return the current delegator."""
         return self._delegator
 
     def set_allow_threading(self, state=True):
+        """Enable or disable threaded read operations."""
         self._threadable = state
 
     def threadable(self):
+        """Return whether this delegator allows threaded reads."""
         return self._threadable
 
     def resolve_delegator(self):
+        """Walk the delegator chain and return the root delegator."""
         if self._delegator == self:
             return self._delegator
         else:
             return self._delegator.resolve_delegator()
 
     def add_interface(self, interface):
+        """Register a communication interface with this delegator."""
         self._interfaces.append(interface)
 
     def get_interfaces(self):
+        """Return the set of interfaces from the root delegator."""
         if self.get_delegator() == self:
             return set(self._interfaces)
         else:
             return self.resolve_delegator().get_interfaces()
 
     def lock_interfaces(self):
+        """Acquire locks on all registered interfaces."""
         for interface in self._interfaces:
             interface.lock()
 
     def unlock_interfaces(self):
+        """Release locks on all registered interfaces."""
         for interface in self._interfaces:
             interface.unlock()
 
@@ -139,6 +151,7 @@ class delegator(object):
         # OVERLOAD THIS FUNCTION
         # takes a list of (channels, value) tuples
         # writes each channel to its corresponding value
+        """Perform write delegated channel list operation."""
         try:
             self.lock_interfaces()
             for (channel, value) in channel_value_list:
@@ -162,6 +175,7 @@ class delegator(object):
         # OVERLOAD THIS FUNCTION
         # takes a list of channels
         # returns a dictionary of read data by channel name
+        """Return read delegated channel list result."""
         results = results_ord_dict()
         for channel in channel_list:
             results[channel.get_name()] = channel.read_without_delegator()
@@ -169,6 +183,7 @@ class delegator(object):
 
 
 def retfirst(t):
+    """Return the first element of a tuple."""
     return (t[0])
 
 
@@ -179,6 +194,16 @@ class channel(delegator):
         For example channel number in a multi channel instrument"""
 
     def __init__(self, name, read_function=None, write_function=None):
+        """Initialize a channel with a name and optional read or write function.
+
+        Args:
+            name: Channel name (must match [_A-Za-z][_a-zA-Z0-9]*).
+            read_function: Callable that returns the channel value, or None.
+            write_function: Callable that accepts a value to write, or None.
+
+        Raises:
+            Exception: If both read_function and write_function are provided.
+        """
         delegator.__init__(self)
         self.set_name(name)
         if read_function is not None and write_function is not None:
@@ -216,6 +241,7 @@ class channel(delegator):
         self.set_display_format_str()
 
     def __str__(self):
+        """Return string representation."""
         return "channel Object: {}".format(self.get_name())
 
     def get_name(self):
@@ -257,9 +283,11 @@ class channel(delegator):
         self._type_affinity = type
 
     def get_type_affinity(self):
+        """Return the type affinity."""
         return self._type_affinity
 
     def get_size(self):
+        """Return the size."""
         return None
 
     def set_write_delay(self, delay):
@@ -311,6 +339,7 @@ class channel(delegator):
     def read(self):
         # setting delegate to false is reserved for the delegator and should
         # never be used otherwise
+        """Read and return the current channel value."""
         if not self.is_readable():
             raise ChannelAccessException(
                 f'Read a non-readable channel:{self.name}')
@@ -327,6 +356,7 @@ class channel(delegator):
 
     def read_without_delegator(self, force_data=False, data=None, **kwargs):
         # do not use this function unless you are the delegator
+        """Return read without delegator result."""
         self.lock_interfaces()
         if force_data:
             result = data
@@ -375,6 +405,7 @@ class channel(delegator):
         return result
 
     def write(self, value):
+        """Write a value to the channel."""
         if not self.is_writeable():
             raise ChannelAccessException('Wrote a non-writeable channel')
         self.lock_interfaces()
@@ -528,6 +559,7 @@ class channel(delegator):
         return set(self._preset_descriptions.values()) != set([None])
 
     def get_write_history(self):
+        """Return the write history."""
         return list(self._write_history)
 
     def delay(self, dly_time):
@@ -1011,6 +1043,7 @@ class channel(delegator):
         return self
 
     def remove_change_callback(self, change_callback=None):
+        """Remove a change callback."""
         if change_callback is None:
             change_callback = self.default_print_callback
         try:
@@ -1021,6 +1054,7 @@ class channel(delegator):
 
     @staticmethod
     def default_print_callback(channel, value):
+        """Perform default print callback operation."""
         try:
             preset_str = " ({})".format(channel._presets_reverse[value])
         except AttributeError:
@@ -1076,12 +1110,14 @@ class ChannelReadException(ChannelException):
     """Out-of-band return value to signal that channel read failed. Should only be used to indicate partial failures within delegated reads. Not typically raised, just instantiated and returned."""
 
     def __eq__(self, other):
+        """Check equality."""
         if isinstance(other, ChannelReadException):
             return self.args == other.args
         else:
             return False
 
     def __ne__(self, other):
+        """Check inequality."""
         return not self.__eq__(other)
 
 
@@ -1115,6 +1151,14 @@ class integer_channel(channel):
     """
 
     def __init__(self, name, size, read_function=None, write_function=None):
+        """Initialize an integer channel with a fixed bit width.
+
+        Args:
+            name: Channel name.
+            size: Bit width of the integer value.
+            read_function: Callable that returns the channel value, or None.
+            write_function: Callable that accepts a value to write, or None.
+        """
         channel.__init__(
             self,
             name,
@@ -1137,10 +1181,12 @@ class integer_channel(channel):
         self.set_attribute("max", 2**size - 1)
 
     def __str__(self):
+        """Return string representation."""
         return "integer_channel Object: {}".format(self.get_name())
 
     def _add_default_formats(self):
         def check_sign(data):
+            """Return check sign result."""
             assert isinstance(data, numbers.Number)
             if data < 0:
                 raise ValueError('Negative binary/hex values not allowed.')
@@ -1176,6 +1222,7 @@ class integer_channel(channel):
             raise Exception('Bad size: {}'.format(self._size))
 
     def get_size(self):
+        """Return the size."""
         return self._size
 
     def get_max_write_limit(self, formatted=False):
@@ -1415,9 +1462,11 @@ class integer_channel(channel):
                 return out_pts[i] + dy * (val - in_pts[i]) / dx
 
             def format_function(x, xp=x_pts, yp=y_pts):
+                """Return format function result."""
                 return _pwl_interp(x, xp, yp)
 
             def unformat_function(y, xp=x_pts, yp=y_pts):
+                """Return unformat function result."""
                 return int(round(_pwl_interp(y, yp, xp)))
         if signed:
             self._formats[format_name]['format_function'] = lambda x: format_function(
@@ -1868,6 +1917,7 @@ class register(integer_channel):
             self.set_write_access()
 
     def __str__(self):
+        """Return string representation."""
         return "Register Object: {}".format(self.get_name())
 
     def enable_cached_read(self):
@@ -2028,6 +2078,7 @@ class register(integer_channel):
                 f'Register special access {self.get_attribute("special_access")} improperly implemented. Contact PyICe developers.')
 
     def compute_expect_readback_data(self, data):
+        """Return compute expect readback data result."""
         if self.get_attribute('special_access') is None:
             return self.format_write(data)
         elif self.get_attribute('special_access') in ('W1C',):
@@ -2061,6 +2112,11 @@ class channel_group(object):
     """
 
     def __init__(self, name='Unnamed Channel Group'):
+        """Initialize a channel group with a name and empty channel/group collections.
+
+        Args:
+            name: Display name for this channel group.
+        """
         self.set_name(name)
         # a dictionary of channel objects, keyed by name, contained by this
         # channel_group
@@ -2073,19 +2129,24 @@ class channel_group(object):
         debug_logging.debug("Created new channel group: %s", self.get_name())
 
     def __str__(self):
+        """Return string representation."""
         return "channel_group Object: {}".format(self.get_name())
 
     def __iter__(self):
+        """Return iterator over items."""
         for channel in self.get_all_channels_list():
             yield channel  # this is inconsistent with dictionaries, which yield their keys when iterated!
 
     def __contains__(self, key):
+        """Check if item is contained."""
         return key in self.get_all_channels_list()
 
     def __getitem__(self, channel_name):
+        """Get item by key or index."""
         return self.get_channel(channel_name)
 
     def copy(self):
+        """Return copy result."""
         copy_self = copy.copy(self)  # Make copy of the channel group object
         # Replace the channel dictionary with an empty one
         copy_self._channel_dict = results_ord_dict()
@@ -2099,16 +2160,20 @@ class channel_group(object):
         return copy_self
 
     def get_name(self):
+        """Return the name."""
         return self._name
 
     def set_name(self, name):
+        """Set the name."""
         self._name = str(name)
 
     def get_categories(self):
+        """Return the categories."""
         return set([ch.get_category() for ch in self.get_all_channels_list(
             categories=None)])  # TODO return list instead of set?
 
     def sort(self, deep=True, **kwargs):
+        """Perform sort operation."""
         if 'key' not in kwargs:
             # sort by channel name by default
             kwargs['key'] = lambda kv_tuple: kv_tuple[0]
@@ -2207,15 +2272,19 @@ class channel_group(object):
         return channel_group_object
 
     def get_channel_groups(self):
+        """Return the channel groups."""
         return list(self._sub_channel_groups)
 
     def read(self, channel_name):
+        """Read and return the current channel value."""
         return self.read_channel(channel_name)
 
     def write(self, channel_name, value, confirm=False):
+        """Write a value to the channel."""
         return self.write_channel(channel_name, value, confirm)
 
     def read_channel(self, channel_name):
+        """Return read channel result."""
         channel = self._resolve_channel(channel_name)
         if channel is None:
             raise ChannelAccessException(
@@ -2235,16 +2304,19 @@ class channel_group(object):
         return self.read_channel_list(channel_list)
 
     def write_channel(self, channel_name, value, confirm=False):
+        """Return write channel result."""
         if confirm:
             return self.get_channel(channel_name).write_confirm(value)
         else:
             return self.get_channel(channel_name).write(value)
 
     def write_channels(self, item_list):
+        """Return write channels result."""
         return [self.write_channel(ch_name, ch_value)
                 for (ch_name, ch_value) in item_list]
 
     def get_channel(self, channel_name):
+        """Return the channel."""
         channel = self._resolve_channel(channel_name)
         if channel is None:
             raise ChannelAccessException(
@@ -2286,6 +2358,7 @@ class channel_group(object):
 
     def get_all_channels_dict(self, categories=None):
         # returns a dictionary of all channels by name
+        """Return the all channels dict."""
         all_channels = results_ord_dict(self._channel_dict)
         for sub_channel_group in self._sub_channel_groups:
             all_channels.update(sub_channel_group.get_all_channels_dict())
@@ -2296,17 +2369,21 @@ class channel_group(object):
         return all_channels
 
     def get_all_channel_names(self, categories=None):
+        """Return the all channel names."""
         return list(self.get_all_channels_dict(categories).keys())
 
     def get_all_channels_list(self, categories=None):
+        """Return the all channels list."""
         return list(self.get_all_channels_dict(categories).values())
 
     def get_all_channels_set(self, categories=None):
+        """Return the all channels set."""
         return set(self.get_all_channels_dict(categories).values())
 
     def read_channel_list(self, channel_list):
         # reads a list of channel objects
         # create lists of threadable and non-threadable channels
+        """Return read channel list result."""
         threadable_channels = []
         non_threadable_channels = []
         self._partial_delegation_results = results_ord_dict()
@@ -2430,6 +2507,7 @@ class channel_group(object):
         return results
 
     def start_threads(self, number):
+        """Perform start threads operation."""
         if self._threaded is False:
             self._threaded = True
             self._threads = number
@@ -2441,6 +2519,7 @@ class channel_group(object):
             raise Exception('Threads already started, do not start again')
 
     def threaded_read_function(self):
+        """Perform threaded read function operation."""
         while self._threaded:
             try:
                 channel_list = self._read_queue.get(block=True)
@@ -2457,6 +2536,7 @@ class channel_group(object):
                     self._read_results_queue.put(results)
 
     def get_threaded_results(self, work_units):
+        """Return the threaded results."""
         results = results_ord_dict()
         for i in range(work_units):
             thread_results = self._read_results_queue.get(block=True)
@@ -2495,6 +2575,7 @@ class channel_group(object):
     def remove_channel(self, channel):
         # note this delete will only remove from this channel_group, not from
         # children
+        """Remove a channel."""
         channel_name = channel.get_name()
         if channel_name not in list(self._channel_dict.keys()):
             raise Exception(
@@ -2503,32 +2584,39 @@ class channel_group(object):
         del self._channel_dict[channel_name]
 
     def remove_channel_group(self, channel_group_to_remove):
+        """Remove a channel group."""
         removed_channels = channel_group_to_remove.get_all_channels_list()
         for removed_channel in removed_channels:
             self.remove_channel(removed_channel)
 
     def remove_channel_by_name(self, channel_name):
+        """Remove a channel by name."""
         channel = self.get_channel(channel_name)
         self.remove_channel(channel)
 
     def remove_all_channels_and_sub_groups(self):
+        """Remove a all channels and sub groups."""
         self._channel_dict = results_ord_dict()
         self._sub_channel_groups = []
 
     def remove_sub_channel_group(self, sub_channel_group):
+        """Remove a sub channel group."""
         self._sub_channel_groups.remove(sub_channel_group)
 
     def remove_category(self, category):
         # note this delete will only remove from this channel_group, not from
         # children
+        """Remove a category."""
         for channel in self.get_all_channels_list():
             if channel.get_category() == category:
                 self.remove_channel(channel)
 
     def remove_categories(self, *categories):
+        """Remove a categories."""
         [self.remove_category(category) for category in categories]
 
     def debug_print(self, indent=" "):
+        """Perform debug print operation."""
         for ch in list(self._channel_dict.values()):
             d = ""
             if ch.get_delegator() is not ch:
@@ -2540,6 +2628,7 @@ class channel_group(object):
             # remove the excluded items from the scan list
 
     def remove_channel_list(self, item_list):
+        """Remove a channel list."""
         channel_list = self.resolve_channel_list(item_list)
         for channel in channel_list:
             self.remove_channel(channel)
@@ -2763,15 +2852,18 @@ class instrument(channel_group):
         self._interfaces.append(interface)
 
     def get_interface(self, num=0):
+        """Return the interface."""
         return self._interfaces[num]
 
     def set_category(self, category_name, update_existing_channels=False):
+        """Set the category."""
         self._base_name = category_name
         if update_existing_channels:
             for channel in self:
                 channel.set_category(category_name)
 
     def add_interface_visa(self, interface_visa, timeout=None):
+        """Add a interface visa."""
         if not isinstance(interface_visa, lab_interfaces.interface_visa):
             raise Exception(
                 'Interface must be a visa interface,, interface is {}'.format(interface_visa))
@@ -2783,6 +2875,7 @@ class instrument(channel_group):
 
     def add_interface_raw_serial(
             self, interface_raw_serial, timeout=None, baudrate=None):
+        """Add a interface raw serial."""
         if not isinstance(interface_raw_serial,
                           lab_interfaces.interface_raw_serial):
             raise Exception('Interface must be a raw serial interface, interface is {}'.format(
@@ -2796,6 +2889,7 @@ class instrument(channel_group):
         self._add_interface(interface_raw_serial)
 
     def add_interface_twi(self, interface_twi, timeout=None):
+        """Add a interface twi."""
         if not isinstance(interface_twi, lab_interfaces.interface_twi):
             raise Exception(
                 'Interface must be a twi interface, interface is {}'.format(interface_twi))
@@ -2806,6 +2900,7 @@ class instrument(channel_group):
         self._add_interface(interface_twi)
 
     def add_interface_spi(self, interface_spi, timeout=None, baudrate=None):
+        """Add a interface spi."""
         if not isinstance(interface_spi, lab_interfaces.interface_spi):
             raise Exception(
                 'Interface must be an spi interface, interface is {}'.format(interface_spi))
@@ -2834,10 +2929,16 @@ class scpi_instrument(instrument):
     """
 
     def __init__(self, name):
+        """Initialize a SCPI instrument.
+
+        Args:
+            name: Instrument name.
+        """
         super(scpi_instrument, self).__init__(name)
         self._debug_comms = False
 
     def get_interface(self, num=0):
+        """Return the interface."""
         if not self._debug_comms:
             return super(scpi_instrument, self).get_interface(num=num)
         else:
@@ -2858,6 +2959,7 @@ class scpi_instrument(instrument):
                 _raw_if = copy.copy(self._debug_if)
 
                 def read_check(s):
+                    """Return read check result."""
                     resp = s._naked_read()
                     err_lst = self.get_errors(interface=_raw_if)
                     if len(err_lst) > 1:
@@ -2865,12 +2967,14 @@ class scpi_instrument(instrument):
                     return resp
 
                 def write_check(s, m):
+                    """Perform write check operation."""
                     s._naked_write(m)
                     err_lst = self.get_errors(interface=_raw_if)
                     if len(err_lst) > 1:
                         raise Exception(m, err_lst)
 
                 def ask_check(s, m):
+                    """Return ask check result."""
                     resp = s._naked_ask(m)
                     err_lst = self.get_errors(interface=_raw_if)
                     if len(err_lst) > 1:
@@ -3030,14 +3134,23 @@ class scpi_instrument(instrument):
         return self.get_interface().ask('*IDN?')
 
     def flush(self, buffer):
+        """Perform flush operation."""
         self.get_interface().flush(buffer)
 
 
 class remote_channel_group_server(object):
-    # this class takes a channel groups and makes it remotely accessible
-    # it currently does not support changing channels after creation
+    """Server that exposes a channel group for remote access over a network connection."""
+
     def __init__(self, channel_group_object, address='localhost',
                  port=5001, authkey=DEFAULT_AUTHKEY):
+        """Initialize the remote channel group server.
+
+        Args:
+            channel_group_object: The channel group to expose remotely.
+            address: Network address to bind to.
+            port: TCP port number.
+            authkey: Authentication key for the connection.
+        """
         self.channel_group = channel_group_object
 
         class channel_group_manager(multiprocessing.managers.BaseManager):
@@ -3052,6 +3165,7 @@ class remote_channel_group_server(object):
             address=(address, port), authkey=authkey)
 
     def serve_forever(self):
+        """Perform serve forever operation."""
         print(("Launching remote server listening at address {}:{}".format(
             self.cgm.address[0], self.cgm.address[1])))
         server = self.cgm.get_server()
@@ -3059,7 +3173,8 @@ class remote_channel_group_server(object):
 
 
 class remote_channel(channel):
-    # this handles both registers and channels
+    """Proxy channel that forwards method calls to a remote channel over a network connection."""
+
     methods_to_proxy = ['__str__',
                         # integer_channel methods:
                         'add_format',
@@ -3122,6 +3237,12 @@ class remote_channel(channel):
                         ]
 
     def __init__(self, proxy_channel, parent_delegator):
+        """Initialize a remote channel proxy by copying methods from the remote channel.
+
+        Args:
+            proxy_channel: The remote proxy channel object to wrap.
+            parent_delegator: The delegator that owns this channel.
+        """
         # this intentially does not call the init of channel,just delegator
         delegator.__init__(self)
         self.set_delegator(parent_delegator)
@@ -3132,8 +3253,17 @@ class remote_channel(channel):
 
 
 class remote_channel_group_client(channel_group, delegator):
+    """Client that connects to a remote channel group server and proxies its channels locally."""
+
     def __init__(self, address='localhost', port=5001,
                  authkey=DEFAULT_AUTHKEY):
+        """Initialize the remote channel group client.
+
+        Args:
+            address: Network address of the remote server.
+            port: TCP port number.
+            authkey: Authentication key for the connection.
+        """
         self._address = address
         self._port = port
         self._authkey = authkey
@@ -3164,10 +3294,12 @@ class remote_channel_group_client(channel_group, delegator):
             self._add_channel(remote_channel(ch, self))
 
     def read_delegated_channel_list(self, channel_list):
+        """Return read delegated channel list result."""
         channel_names = [ch.get_name() for ch in channel_list]
         return self.server.read_channels(channel_names)
 
     def clone(self):
+        """Return clone result."""
         return remote_channel_group_client(
             self._address, self._port, self._authkey)
 
@@ -3193,6 +3325,11 @@ class channel_master(channel_group, delegator):
     """
 
     def __init__(self, name=None):
+        """Initialize the channel master.
+
+        Args:
+            name: Optional name; defaults to the object's repr string.
+        """
         if name is None:
             # remove Python <> because Qt interpret's them as HTML tags
             name = object.__str__(self)[1:-1]
@@ -3204,6 +3341,7 @@ class channel_master(channel_group, delegator):
         self.start_threads(24)
 
     def add(self, channel_or_group):
+        """Return add result."""
         return channel_group.add(self, channel_or_group)
 
     def add_channel_virtual(
@@ -3315,6 +3453,7 @@ class channel_master(channel_group, delegator):
                 self.last_time = datetime.datetime.now(datetime.UTC)
 
             def __call__(self):
+                """Call the instance."""
                 self.this_time = datetime.datetime.now(datetime.UTC)
                 elapsed = self.this_time - self.last_time
                 self.last_time = self.this_time
@@ -3348,6 +3487,7 @@ class channel_master(channel_group, delegator):
                 self.beginning = None
 
             def __call__(self):
+                """Call the instance."""
                 if self.beginning is None:
                     self.beginning = datetime.datetime.now(datetime.UTC)
                 # return native dimedelta instead?
@@ -3378,10 +3518,12 @@ class channel_master(channel_group, delegator):
                 self.count = init - self.inc
 
             def __call__(self):
+                """Call the instance."""
                 self.count += self.inc
                 return self.count
 
             def write(self, value):
+                """Write a value to the channel."""
                 self.count = value
         cnt_obj = counter(**kwargs)
         new_channel = channel(channel_name, read_function=cnt_obj)
@@ -3393,6 +3535,7 @@ class channel_master(channel_group, delegator):
         return self._add_channel(new_channel)
 
     def read_channel(self, channel_name):
+        """Return read channel result."""
         debug_logging.debug(
             "Reading Channel (via channel_master.read_channel): %s",
             channel_name)
@@ -3422,6 +3565,7 @@ class channel_master(channel_group, delegator):
         return result
 
     def read_channel_list(self, channel_list):
+        """Return read channel list result."""
         results = channel_group.read_channel_list(self, channel_list)
         if not self._caching_mode:
             for function in self._read_callbacks:
@@ -3454,6 +3598,7 @@ class channel_master(channel_group, delegator):
         return data
 
     def read_delegated_channel_list(self, channel_list):
+        """Return read delegated channel list result."""
         results = results_ord_dict()
         if self._caching_mode:
             for channel in channel_list:
@@ -3480,10 +3625,12 @@ class channel_master(channel_group, delegator):
         return results
 
     def serve(self, address='localhost', port=5001, authkey=DEFAULT_AUTHKEY):
+        """Perform serve operation."""
         rcgs = remote_channel_group_server(self, address, port, authkey)
         rcgs.serve_forever()
 
     def attach(self, address='localhost', port=5001, authkey=DEFAULT_AUTHKEY):
+        """Return attach result."""
         try:
             rcgc = remote_channel_group_client(address, port, authkey)
         except RemoteChannelGroupException as e:
@@ -3493,6 +3640,7 @@ class channel_master(channel_group, delegator):
         return True
 
     def background_gui(self, cfg_file='default.guicfg'):
+        """Perform background gui operation."""
         _thread.start_new_thread(self._gui_launcher_passive, (cfg_file,))
 
     def gui(self, cfg_file='default.guicfg', log_history=False):
@@ -3515,6 +3663,7 @@ class channel_master(channel_group, delegator):
         self._read_callbacks.append(read_callback)
 
     def remove_read_callback(self, read_callback):
+        """Remove a read callback."""
         self._read_callbacks.remove(read_callback)
 
     def add_write_callback(self, write_callback):
@@ -3528,6 +3677,7 @@ class channel_master(channel_group, delegator):
         self._write_callbacks.append(write_callback)
 
     def remove_write_callback(self, write_callback):
+        """Remove a write callback."""
         self._write_callbacks.remove(write_callback)
 
     def _gui_launcher_passive(self, cfg_file):
@@ -3547,6 +3697,7 @@ class channel_master(channel_group, delegator):
         gui.exec_()
 
     def get_dummy_clone(self):
+        """Return the dummy clone."""
         clone = channel_master()
         for channel in self:
             clone.add_channel_dummy(channel.get_name())
@@ -3557,7 +3708,14 @@ class channel_master(channel_group, delegator):
 
 
 class master(channel_master, lab_interfaces.interface_factory):
+    """Top-level instrument master combining channel management with interface creation."""
+
     def __init__(self, name=None):
+        """Initialize the master with channel management and interface factory.
+
+        Args:
+            name: Optional name; defaults to the object's repr string.
+        """
         channel_master.__init__(self, name)
         lab_interfaces.interface_factory.__init__(self)
 
@@ -3572,12 +3730,19 @@ class channel_access_wrapper(object):
     channel_access_wrapper_instance['channel_name']= value writes the value of channel to value"""
 
     def __init__(self, channel_group):
+        """Initialize the wrapper around a channel group.
+
+        Args:
+            channel_group: The channel group to wrap.
+        """
         self.channels = channel_group
 
     def __getitem__(self, channel_name):
+        """Get item by key or index."""
         return self.channels[channel_name].read()
 
     def __setitem__(self, channel_name, value):
+        """Set item by key or index."""
         return self.channels[channel_name].write(value)
 
 
@@ -3637,9 +3802,11 @@ class logger(master):
         self._previously_logged_data = None
 
     def __enter__(self):
+        """Enter the context manager."""
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
+        """Exit the context manager."""
         self.stop()
         return None
 
@@ -3648,9 +3815,11 @@ class logger(master):
         self._backend.stop()
 
     def add_channel(self, channel_object):
+        """Add a channel."""
         self._add_channel(channel_object)
 
     def append_table(self, table_name):
+        """Perform append table operation."""
         self._table_name = table_name
         columns = {ch.get_name(): ch.get_type_affinity() for ch in self}
         self._backend.append_table(table_name, columns)
@@ -3686,18 +3855,22 @@ class logger(master):
         self.create_format_view()
 
     def switch_table(self, table_name):
+        """Return switch table result."""
         self._table_name = table_name
         return self._backend.switch_table(table_name)
 
     def copy_table(self, old_table, new_table):
+        """Return copy table result."""
         return self._backend.copy_table(old_table, new_table)
 
     def check_format_name(self, format_name):
+        """Perform check format name operation."""
         if format_name in self.get_all_channel_names():
             raise ChannelNameException(
                 'Formatted channel view name:{} conflicts with table column'.format(format_name))
 
     def create_format_view(self, use_presets=True):
+        """Return create format view result."""
         if self.get_table_name() is None:
             raise Exception(
                 'Table name unspecified!\nCall new_table() or append_table() before log_formats()')
@@ -3795,9 +3968,11 @@ class logger(master):
         # constants some day?
         # self.execute('CREATE TABLE IF NOT EXISTS {TABLE_NAME}_CONSTANTS (name TEXT PRIMARY KEY, value REAL')
     def get_database(self):
+        """Return the database."""
         return self._database
 
     def get_table_name(self):
+        """Return the table name."""
         return self._table_name
 
     def _fetch_channel_data(self, exclusions):
@@ -3982,6 +4157,7 @@ class logger(master):
         return self.log_data(kwargs, only_if_changed=False)
 
     def log_many(self, data_iter_of_dictionaries):
+        """Perform log many operation."""
         self._backend.check_exception()
         # walrus comprehension not yet available in Python 3.7
         logtime = datetime.datetime.now(
@@ -4005,6 +4181,7 @@ class logger(master):
         assert len(self.get_all_channel_names()) == 0
 
         def read_disable():
+            """Perform read disable operation."""
             raise Exception(
                 'Attempted to read fake channel designed to be used with logger.log_data()')
         for key in data_dictionary:
@@ -4022,16 +4199,20 @@ class logger(master):
         self._log_callbacks.append(log_callback)
 
     def remove_log_callback(self, log_callback):
+        """Remove a log callback."""
         self._log_callbacks.remove(log_callback)
 
     def get_master(self):
+        """Return the master."""
         return self.master
 
     def get_data(self):
+        """Return the data."""
         return sqlite_data(table_name=self.get_table_name(),
                            database_file=self.get_database())
 
     def query(self, sql_query, *params):
+        """Return query result."""
         return self.get_data().query(sql_query, *params)
 
     def flush(self):
@@ -4106,7 +4287,15 @@ class logger(master):
 
 
 class logger_backend(object):
+    """SQLite logging backend that records channel data to a database."""
+
     def __init__(self, database="data_log.sqlite", use_threads=True):
+        """Initialize the logger backend.
+
+        Args:
+            database: Path to the SQLite database file.
+            use_threads: If True, use a background thread for writes.
+        """
         self.table_name = None
         self._use_thread = use_threads
         self._max_lock_time = datetime.timedelta(seconds=10)
@@ -4151,6 +4340,7 @@ class logger_backend(object):
             debug_logging.error("{} {}".format(e, type(e)))
 
     def sync_threads(self):
+        """Perform sync threads operation."""
         if self._use_thread:
             self.storage_queue.put(self._commit)
             self.storage_queue.join()
@@ -4159,6 +4349,7 @@ class logger_backend(object):
             self._commit()
 
     def check_exception(self):
+        """Perform check exception operation."""
         self._check_exception()
 
     def _check_exception(self):
@@ -4238,6 +4429,7 @@ class logger_backend(object):
         self._stopped = True
 
     def store(self, data):
+        """Perform store operation."""
         if self._use_thread:
             self.storage_queue.put(lambda: self._store(data))
         else:
@@ -4245,6 +4437,7 @@ class logger_backend(object):
             self.conn.commit()
 
     def storemany(self, data):
+        """Perform storemany operation."""
         if self._use_thread:
             self.storage_queue.put(lambda: self._storemany(data))
         else:
@@ -4498,6 +4691,7 @@ class logger_backend(object):
             self._storemany(data_iter, num=num + 1)  # keep trying forever
 
     def copy_table(self, old_table, new_table):
+        """Perform copy table operation."""
         self._check_name(new_table)
         self._check_exception()
         if self._use_thread:
@@ -4561,6 +4755,7 @@ class logger_backend(object):
                 break
 
     def switch_table(self, table_name):
+        """Perform switch table operation."""
         self._check_name(table_name)
         self._check_exception()
         if self._use_thread:
@@ -4573,6 +4768,7 @@ class logger_backend(object):
         self.table_name = table_name
 
     def append_table(self, table_name, columns):
+        """Perform append table operation."""
         self._check_name(table_name)
         self._check_exception()
         if self._use_thread:
@@ -4612,6 +4808,7 @@ class logger_backend(object):
             raise Exception('Bad Table Name "{}"'.format(name))
 
     def new_table(self, table_name, columns, replace_table=False, warn=False):
+        """Perform new table operation."""
         self._check_name(table_name)
         self._check_exception()
         if self._use_thread:
@@ -4626,6 +4823,7 @@ class logger_backend(object):
         self.sync_threads()
 
     def stop(self):
+        """Perform stop operation."""
         if self._use_thread:
             if not self._stopped:
                 self.storage_queue.put(self._stop)
@@ -4652,6 +4850,7 @@ class logger_backend(object):
 
 if __name__ == "__main__":  # pragma: no cover
     def print_it(x):
+        """Perform print it operation."""
         print(x)
     # test of threaded delegation
     lb = master()
