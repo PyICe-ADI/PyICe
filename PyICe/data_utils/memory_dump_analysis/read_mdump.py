@@ -207,7 +207,7 @@ class memory_decoder():
                     except Exception as e:
                         raise e
             elif file_ext == ".json" or file_ext == ".jsonc":
-                for k, v in json.json.load(f).items():
+                for k, v in json.load(f).items():
                     try:
                         self.twii[k].write(v)
                     except lab_core.ChannelAccessException as e:
