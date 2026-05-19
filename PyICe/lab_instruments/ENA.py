@@ -173,9 +173,7 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
         return channels
 
     def add_channel_display_split(self, channel_name, channel_number):
-        f'''Configures the screen splitting of the display.
-{screen_configs}
-'''
+        '''Configures the screen splitting of the display.'''
         new_channel = channel(
             channel_name, write_function=lambda layout: self.get_interface().write(
                 f':DISPlay:WINDow{channel_number}:SPLit {layout}'))
@@ -199,6 +197,7 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
         new_channel.set_description(
             self.get_name() + ': ' + self.add_channel_display_split.__doc__)
         return self._add_channel(new_channel)
+    add_channel_display_split.__doc__ += '\n' + screen_configs
 
     def add_xchannels(self, channel_name, channel_number=1):
         '''shortcut method to add chx x-axis channels'''
