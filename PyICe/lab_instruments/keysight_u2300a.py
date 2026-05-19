@@ -893,7 +893,6 @@ class u2300a_datalogger(u2300a_scope):
             databank.clear()  # We expect the threads to be joined by now.
             if unhandled_exception_occurred:
                 raise e
-            return
 
     def _setup(self):
         scan_internal_addresses = [

@@ -373,11 +373,10 @@ class visa_wrapper_tcp(visa_wrapper_serial):
                 resp = self.readline()
                 resp_all += resp
         except visaWrapperException:
-            pass
+            pass  # visaWrapperException is expected during resync; return what we have so far
         except Exception as e:
             raise e  # what happened???
-        finally:
-            return resp_all
+        return resp_all  # moved out of finally block; exceptions now propagate instead of being silently swallowed
 
     def __getTimeout(self):
         return self.ser.timeout
