@@ -1,6 +1,7 @@
 def column_formatter(rows_of_columns, padding=3,
                      justification="left", fist_line_justification="center"):
-    '''takes data of form: [['ID:', 'REL_NOW_TIME', 'DURATION', 'FMT', 'RAW ', 'COUNT'],
+    """Takes data of form: [['ID:', 'REL_NOW_TIME', 'DURATION', 'FMT', 'RAW ', 'COUNT'],.
+
                             [u'00:', '-00:00:35.290 ', ' 00:00:00.431 ', u'41.974488V', 28438, 1],
                             [u'01:', '-00:00:34.859 ', ' 00:00:07.216 ', u'-20.675808V', 51528, 1],
                             [u'02:', '-00:00:27.643 ', ' 00:00:00.586 ', u'-30.318516V', 44995, 1],
@@ -18,7 +19,19 @@ def column_formatter(rows_of_columns, padding=3,
     padding sets spacing between columns
     first_line_justification and justification control aligment for first and subsequent lines respectively.
         valid arguments are 'left','right' and 'center'
-    '''
+
+    Args:
+        fist_line_justification: Fist line justification.
+        justification: Justification.
+        padding: Padding.
+        rows_of_columns: Rows of columns.
+
+    Returns:
+        Result value.
+
+    Raises:
+        Exception: On error condition.
+    """
     # TODO: decimal alignment. Need to know decimal position apriori.
     # def dot_aligned(seq, width):
     # snums = [str(n) for n in seq]

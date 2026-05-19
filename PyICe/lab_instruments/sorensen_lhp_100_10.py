@@ -3,7 +3,7 @@ from .sorensen_generic_supply import *  # noqa: F403
 
 
 class sorensen_lhp_100_10(sorensen_generic_supply):
-    '''single channel sorensen_lhp_100_10'''
+    """Single channel sorensen_lhp_100_10."""
 
     def __init__(self, interface_visa):
         self.sorensen_name = "sorensen_lhp_100_10"

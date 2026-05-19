@@ -4,14 +4,20 @@ from PyICe.lab_utils.twosComplementToSigned import twosComplementToSigned
 
 
 class ADT7410(instrument):
-    '''Analog Devices Silicon Temperature Sensor
-    http://www.analog.com/static/imported-files/data_sheets/ADT7410.pdf'''
+    """Analog Devices Silicon Temperature Sensor.
 
+    http://www.analog.com/static/imported-files/data_sheets/ADT7410.pdf
+    """
     def __init__(self, interface_twi, addr7):
-        '''interface_twi is a interface_twi
+        """Interface_twi is a interface_twi.
+
         addr7 is the 7-bit I2C address of the ADT7410 set by pinstrapping.
         Choose addr7 from 0x48, 0x49, 0x4A, 0x4B
-        '''
+
+        Args:
+            addr7: 7-bit I2C device address.
+            interface_twi: TWI/I2C interface instance.
+        """
         instrument.__init__(
             self,
             f'Analog Devices ADT7410 Silicon Temperature Sensor at 0x{addr7:X}')
@@ -36,8 +42,13 @@ class ADT7410(instrument):
         self.enable()
 
     def enable(self, enabled=True):
-        '''Place ADT7410 into shutdown by writing enabled=False
-        Re-enable by writing enabled=True'''
+        """Place ADT7410 into shutdown by writing enabled=False.
+
+        Re-enable by writing enabled=True
+
+        Args:
+            enabled: Enabled.
+        """
         if enabled:
             # self.twi.write_byte(self.addr7, self.registers['config'],
             # (0b1<<7)) #16-bit mode
@@ -61,8 +72,13 @@ class ADT7410(instrument):
                 use_pec=False)
 
     def read_temp(self):
-        '''Return free-running temperature conversion result.
-        16-bit conversion result scaled to signed degrees Celsius'''
+        """Return free-running temperature conversion result.
+
+        16-bit conversion result scaled to signed degrees Celsius
+
+        Returns:
+            Result value.
+        """
         # data = self.twi.read_word(self.addr7, self.registers['t_msb'])
         # #command code counter autoincrements
         data = self.twi.read_register(
@@ -76,7 +92,11 @@ class ADT7410(instrument):
         return data / 128.0  # lsb size adjustment
 
     def read_id(self):
-        '''Return Manufacturer ID and chip revision ID'''
+        """Return Manufacturer ID and chip revision ID.
+
+        Returns:
+            Result value.
+        """
         # data = self.twi.read_byte(self.addr7, self.registers['ID'])
         data = self.twi.read_register(
             addr7=self.addr7,
@@ -89,5 +109,13 @@ class ADT7410(instrument):
         return results
 
     def add_channel(self, channel_name):
+        """Add a channel.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         temp_channel = channel(channel_name, read_function=self.read_temp)
         return self._add_channel(temp_channel)

@@ -4,11 +4,12 @@ import struct
 
 
 class saleae(instrument, delegator):
-    '''analog DAQ intrument using Saleae Logic Pro hardware.
+    """Analog DAQ intrument using Saleae Logic Pro hardware.
+
     Requires https://pypi.python.org/pypi/saleae
     Also requires Saleae Logic software GUI to be running to listen on TCP remote control port.
-    Digital channels not supported (yet). (Mixed analog/digital capture file binary unsupported.)'''
-
+    Digital channels not supported (yet). (Mixed analog/digital capture file binary unsupported.)
+    """
     def __init__(self, host='localhost', port=10429):
         import saleae as saleae_lib
         instrument.__init__(self, f"Saleae Logic @ {host}:{port}")
@@ -19,15 +20,36 @@ class saleae(instrument, delegator):
         self.set_sample_rates()  # max rate
 
     def set_num_samples(self, num_samples_per_channel):
-        '''set number of samples to average and sample rate
-        because valid sample rates change with ???number of configured channels???, may need to call after adding all channels.'''
+        """Set number of samples to average and sample rate.
+
+        because valid sample rates change with ???number of configured channels???, may need to call after adding all channels.
+
+        Args:
+            num_samples_per_channel: Num samples per channel.
+        """
         self._saleae.set_num_samples(num_samples_per_channel)
 
     def get_sample_rates(self):
         # why throw out analog rates Dave?
+        """Return the sample rates.
+
+        Returns:
+            Result value.
+        """
         return [i[1] for i in self._saleae.get_all_sample_rates()]
 
     def set_sample_rates(self, sample_rates=None):
+        """Set the sample rates.
+
+        Args:
+            sample_rates: Sample rates.
+
+        Returns:
+            Result value.
+
+        Raises:
+            ValueError: If the requested sample rate is not available.
+        """
         available_rates = self._saleae.get_all_sample_rates()
         if sample_rates is None:
             self._saleae.set_sample_rate(available_rates[0])
@@ -35,7 +57,7 @@ class saleae(instrument, delegator):
             if sample_rates in available_rates:
                 self._saleae.set_sample_rate(sample_rates)
             else:
-                raise (
+                raise ValueError(
                     f"\n\nSaleae: Sorry I can't support the sample rates {sample_rates}.\n\n")
         return self.get_sample_rates()
 
@@ -43,8 +65,18 @@ class saleae(instrument, delegator):
         self._saleae.set_active_channels(digital=[], analog=self._channels)
 
     def add_channel_scalar(self, channel_name, channel_number, scaling=1.0):
-        '''Add analog scalar (DMM) DAQ channel to instrument.
-        channel_number is 0-7 or 0-15 for Logic Pro 8 and Logic Pro 16 respectively.'''
+        """Add analog scalar (DMM) DAQ channel to instrument.
+
+        channel_number is 0-7 or 0-15 for Logic Pro 8 and Logic Pro 16 respectively.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+            scaling: Scaling.
+
+        Returns:
+            Result value.
+        """
         assert isinstance(channel_number, int)
         assert channel_number < 16
         assert channel_number not in self._channels
@@ -61,8 +93,18 @@ class saleae(instrument, delegator):
         return self._add_channel(new_channel)
 
     def add_channel_trace(self, channel_name, channel_number, scaling=1.0):
-        '''Add analog vector trace (scope) DAQ channel to instrument.
-        channel_number is 0-7 or 0-15 for Logic Pro 8 and Logic Pro 16 respectively.'''
+        """Add analog vector trace (scope) DAQ channel to instrument.
+
+        channel_number is 0-7 or 0-15 for Logic Pro 8 and Logic Pro 16 respectively.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+            scaling: Scaling.
+
+        Returns:
+            Result value.
+        """
         assert isinstance(channel_number, int)
         assert channel_number < 16
         assert channel_number not in self._channels
@@ -82,7 +124,19 @@ class saleae(instrument, delegator):
         raise Exception("Shouldn't be here...")
 
     def _read_from_file(self, file, bytes, timeout=10):
-        '''intermittently, data is slow to flush to disk...'''
+        """Intermittently, data is slow to flush to disk...
+
+        Args:
+            bytes: Bytes.
+            file: File.
+            timeout: Timeout in seconds.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         start_time = time.time()
         str = file.read(bytes)
         while len(str) < bytes:
@@ -92,7 +146,17 @@ class saleae(instrument, delegator):
         return str
 
     def read_delegated_channel_list(self, channels):
-        '''private'''
+        """Private.
+
+        Args:
+            channels: List of channel objects.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         results_dict = results_ord_dict()
         temp_dir = tempfile.mkdtemp(prefix='saleae_tmp')
         temp_file = temp_dir + '\\capture.logicdata'

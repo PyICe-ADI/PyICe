@@ -14,6 +14,17 @@ this_module = sys.modules[__name__]
 
 
 def bind_to_base(self, base_func, *args, **kwargs):
+    """Return bind to base result.
+
+    Args:
+        **kwargs: Additional keyword arguments.
+        *args: Additional positional arguments.
+        base_func: Base func.
+        self: Self.
+
+    Returns:
+        Result value.
+    """
     sig = inspect.signature(base_func)
     bound = sig.bind_partial(self, *args, **kwargs)
     bound.apply_defaults()
@@ -21,6 +32,7 @@ def bind_to_base(self, base_func, *args, **kwargs):
 
 
 class LTCPlotBokehAdapter:
+    """L t c plot bokeh adapter."""
     def __init__(self, *args, **kwargs):
         print(
             f"A call to undefined constructor of: '{type(self)}' was made with arguments: {args}, {kwargs}.")
@@ -29,9 +41,26 @@ class LTCPlotBokehAdapter:
 
     def __getattr__(self, name):
         # This function will be called for any undefined method/attribute
+        """Handle attribute access for undefined attributes.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         print(f"A call to undefined method: '{type(self)}.{name}' was made.")
 
         def dynamic_warning_method(*args, **kwargs):
+            """Return dynamic warning method result.
+
+            Args:
+                **kwargs: Additional keyword arguments.
+                *args: Additional positional arguments.
+
+            Returns:
+                Result value.
+            """
             print(
                 f"WARNING: Ignoring call to '{name}' with arguments: {args}, {kwargs}")
             return None
@@ -39,7 +68,7 @@ class LTCPlotBokehAdapter:
 
 
 class plot(LTCPlotBokehAdapter):
-    '''bokeh plot adapter'''
+    """Bokeh plot adapter."""
 
     def __init__(self, *args, **kwargs):
         args_map = bind_to_base(
@@ -183,6 +212,12 @@ class plot(LTCPlotBokehAdapter):
         # TODO add log toggle widgets
 
     def add_note(self, *args, **kwargs):
+        """Add a note.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            *args: Additional positional arguments.
+        """
         args_map = bind_to_base(
             self,
             original_classes['plot'].add_note,
@@ -205,6 +240,12 @@ class plot(LTCPlotBokehAdapter):
         self._fig.add_layout(label)
 
     def add_trace(self, *args, **kwargs):
+        """Add a trace.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            *args: Additional positional arguments.
+        """
         args_map = bind_to_base(
             self,
             original_classes['plot'].add_trace,
@@ -226,6 +267,12 @@ class plot(LTCPlotBokehAdapter):
 
     def add_horizontal_line(self, *args, **kwargs):
         # (self, value, xrange=None, note=None, axis=1, color=[1,0,0]):
+        """Add a horizontal line.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            *args: Additional positional arguments.
+        """
         args_map = bind_to_base(
             self,
             original_classes['plot'].add_horizontal_line,
@@ -251,6 +298,12 @@ class plot(LTCPlotBokehAdapter):
 
     def add_vertical_line(self, *args, **kwargs):
         # (self, value, yrange=None, note=None, axis=1, color=[1,0,0]):
+        """Add a vertical line.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            *args: Additional positional arguments.
+        """
         args_map = bind_to_base(
             self,
             original_classes['plot'].add_vertical_line,
@@ -275,15 +328,33 @@ class plot(LTCPlotBokehAdapter):
         self._fig.add_layout(vline)
 
     def make_second_y_axis(self, yaxis_label, ylims, yminor, ydivs, logy):
+        """Perform make second y axis operation.
+
+        Args:
+            logy: Logy.
+            yaxis_label: Yaxis label.
+            ydivs: Ydivs.
+            ylims: Ylims.
+            yminor: Yminor.
+        """
         pass
 
     def add_legend(self, axis, location=(
             0, 0), justification='lower left', use_axes_scale=False, fontsize=7):
+        """Add a legend.
+
+        Args:
+            axis: Axis.
+            fontsize: Fontsize.
+            justification: Justification.
+            location: Location.
+            use_axes_scale: Use axes scale.
+        """
         pass
 
 
 class Page(LTCPlotBokehAdapter):
-    '''bokeh Page adapter'''
+    """Bokeh Page adapter."""
 
     def __init__(self, *args, **kwargs):
         _args_map = bind_to_base(  # noqa: F841
@@ -294,6 +365,12 @@ class Page(LTCPlotBokehAdapter):
         self._plots = []
 
     def create_svg(self, *args, **kwargs):
+        """Perform create svg operation.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            *args: Additional positional arguments.
+        """
         args_map = bind_to_base(
             self,
             original_classes['Page'].create_svg,
@@ -321,6 +398,12 @@ class Page(LTCPlotBokehAdapter):
             pass
 
     def add_plot(self, *args, **kwargs):
+        """Add a plot.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            *args: Additional positional arguments.
+        """
         args_map = bind_to_base(
             self,
             original_classes['Page'].add_plot,
@@ -348,12 +431,23 @@ class Page(LTCPlotBokehAdapter):
 
 
 class Multipage_pdf(LTCPlotBokehAdapter):
-    '''bokeh Multipage_pdf adapter'''
+    """Bokeh Multipage_pdf adapter."""
 
     def add_page(self, page):
+        """Add a page.
+
+        Args:
+            page: Page.
+        """
         pass
 
     def create_pdf(self, file_basename, filepath=None):
+        """Perform create pdf operation.
+
+        Args:
+            file_basename: File basename.
+            filepath: Filepath.
+        """
         pass
 
 
@@ -361,7 +455,17 @@ original_classes = {}
 
 
 def install(calling_module):
+    """Perform install operation.
+
+    Args:
+        calling_module: Calling module.
+    """
     def store_and_replace(class_name):
+        """Perform store and replace operation.
+
+        Args:
+            class_name: Class name.
+        """
         original_classes[class_name] = getattr(
             calling_module.LTC_plot, class_name)
         setattr(

@@ -2,7 +2,7 @@ from .kikusui_plz import kikusui_plz
 
 
 class kikusui_plz334w(kikusui_plz):
-    '''single channel kikusui_plz334w electronic load'''
+    """Single channel kikusui_plz334w electronic load."""
 
     def __init__(self, interface_visa):
         self.kikusui_plz_name = 'kikusui_plz334w'

@@ -2,7 +2,7 @@ import unicodedata
 
 
 def clean_unicode(ustr):
-    '''Limited Unicode substitution to ASCII-safe equivalents.
+    """Limited Unicode substitution to ASCII-safe equivalents.
 
     >>> clean_unicode('100°C')
     '100_DEG_C'
@@ -12,7 +12,16 @@ def clean_unicode(ustr):
     '50_OHM_'
     >>> clean_unicode('hello')
     'hello'
-    '''
+
+    Args:
+        ustr: Ustr.
+
+    Returns:
+        Result value.
+
+    Raises:
+        Exception: On error condition.
+    """
     # limited Unicode substitution
     ustr = ustr.replace("®", "_REG_")  # 0x00AE
     ustr = ustr.replace("°", "_DEG_")  # 0x00B0

@@ -24,7 +24,7 @@ from PyICe import LTC_plot
 
 
 class Callback_logger(logger):
-    '''Wrapper for the standard logger. Used to perform special actions for specific channels on a per-log basis.'''
+    """Wrapper for the standard logger. Used to perform special actions for specific channels on a per-log basis."""
 
     def __init__(self, database, special_channel_actions, test):
         super().__init__(database=database)
@@ -32,6 +32,11 @@ class Callback_logger(logger):
         self.test = test
 
     def log(self):
+        """Return log result.
+
+        Returns:
+            Result value.
+        """
         readings = super().log()
         for channel, action in self.sp_ch_actions.items():
             action(channel, readings, self.test)
@@ -39,6 +44,7 @@ class Callback_logger(logger):
 
 
 class Plugin_Manager():
+    """Plugin_ manager."""
     def __init__(self, scratch_folder='scratch', settings={}):
         self.tests = []
         self.operator = getpass.getuser().lower()
@@ -68,9 +74,17 @@ class Plugin_Manager():
                     "")
 
     def add_test(self, test, debug=False, skip_plot=False, skip_eval=False):
-        '''Adds a script to the list that will be operated on. If this is the first time a test is added to this instance of plugin manager, plugin manager also takes this opportunity to acquire the list of plugins used for the project.
+        """Adds a script to the list that will be operated on. If this is the first time a test is added to this instance of plugin manager, plugin manager also takes this opportunity to acquire the list of plugins used for the project.
+
         args: test - class object. A test that contains the methods necessary for data collection and processing in the project.
-        args: debug - Boolean. This will be passed into all run tests to be used for abbreviating data collection loops. Default value is False.'''
+        args: debug - Boolean. This will be passed into all run tests to be used for abbreviating data collection loops. Default value is False.
+
+        Args:
+            debug: If True, enable debug output.
+            skip_eval: Skip eval.
+            skip_plot: Skip plot.
+            test: Test.
+        """
         a_test = test()
         a_test._debug = debug
         if debug:
@@ -95,14 +109,17 @@ class Plugin_Manager():
         a_test._is_crashed = False
 
     def run(self, temperatures=None):
-        '''
-        This method goes through the complete data collection process the project set out.
+        """This method goes through the complete data collection process the project set out.
+
         Scripts will be run once per temperature or just once if no temperature is given.
         Debug will be passed on to the script to be used at the script's discretion.
         args: temperatures- list.
         The list consists of values that will be set to the 'temp_control_channel' assigned by the instrument drivers.
         Default value is an empty list.
-        '''
+
+        Args:
+            temperatures: Temperatures.
+        """
         if temperatures is None:
             temperatures = []
         self._temperatures = temperatures
@@ -199,7 +216,8 @@ class Plugin_Manager():
                 '\n***PLUGIN MANAGER ERROR***\nError occurred while attempting to email linked plots.\n')
 
     def add_instrument_channels(self):
-        '''In this method, a master is populated by instruments and their channels.
+        """In this method, a master is populated by instruments and their channels.
+
         A file in the "benches" folder found anywhere under the head project folder should have the name of the computer associated with the current bench, and contains the get_instruments function.
         The name of the file should have underscores where the computer name may use dashes.
         Then, all the minidrivers are imported and the master is populated using the instruments from the bench file.
@@ -208,8 +226,11 @@ class Plugin_Manager():
         The value for "cleanup functions" is a list of functions that put the instruments in safe states once the test is complete.
         The cleanup functions are run in the order in which the instruments appear in the bench file.
         The 'temp_control_channel' is a channel object. The values provided in the temperature list will be written to it.
-        The special channel actions are functions that are run on each logging of data and the value is a dicionary with a channel object or the string name of a channel as key, and the value the function to be run. The function requires the arguments channel_name, readings, and test.'''
+        The special channel actions are functions that are run on each logging of data and the value is a dicionary with a channel object or the string name of a channel as key, and the value the function to be run. The function requires the arguments channel_name, readings, and test.
 
+        Raises:
+            Exception: On error condition.
+        """
         self.cleanup_fns = []
         self.temp_run_fns = []
         self.startup_fns = []
@@ -284,7 +305,11 @@ class Plugin_Manager():
             self.test_components.add_component(component)
 
     def _create_logger(self, test):
-        '''Each test add to the plugin manager will have its own logger with which it shall store the data collected by their collect method. The channels will be determined by the drivers added to the driver, and a sqlite database and table will be automatically created and linked to the tests.'''
+        """Each test add to the plugin manager will have its own logger with which it shall store the data collected by their collect method. The channels will be determined by the drivers added to the driver, and a sqlite database and table will be automatically created and linked to the tests.
+
+        Args:
+            test: Test.
+        """
         test._logger = Callback_logger(
             database=test.get_db_file(),
             special_channel_actions=self.special_channel_actions,
@@ -300,6 +325,7 @@ class Plugin_Manager():
             file_name=f"{test.get_module_path()}{os.sep}scratch{os.sep}{self.project_folder_name}.html")
 
     def temperature_run_startup(self):
+        """Perform temperature run startup operation."""
         for func in self.temp_run_fns:
             try:
                 func()
@@ -311,6 +337,7 @@ class Plugin_Manager():
                 exit()
 
     def startup(self):
+        """Perform startup operation."""
         for func in self.startup_fns:
             try:
                 func()
@@ -340,6 +367,7 @@ class Plugin_Manager():
             self.notify(msg=cleanup_err_str, subject="CLEANUP CRASH")
 
     def shutdown(self):
+        """Perform shutdown operation."""
         shutdown_successful = True
         shutdown_err_str = ''
         for func in self.shutdown_fns:
@@ -385,12 +413,14 @@ class Plugin_Manager():
     ###
     def notify(self, msg, subject=None, attachment_filenames=None,
                attachment_MIMEParts=None):
-        '''Sends the provided message to all emails and phone numbers found in the variable self.notification_targets.
-        args:
-            msg - str. The body of the email or the complete text.
-            subject - str. Default None. The subject given to any email sent. No affect on texts.
-            attachment filenames - list. Default empty list. A list of strings denoting the names of files that will be attached to any emails sent.
-            attachment_MIMEParts - list. Default empty list. A list of MIME (Multipurpose Internet Mail Extensions) objects that will be added to the body of any email sent.'''
+        """Sends the provided message to all emails and phone numbers found in the variable self.notification_targets.
+
+        Args:
+            msg: The body of the email or the complete text.
+            subject: The subject given to any email sent. No effect on texts.
+            attachment_filenames: A list of strings denoting the names of files that will be attached to any emails sent.
+            attachment_MIMEParts: A list of MIME (Multipurpose Internet Mail Extensions) objects that will be added to the body of any email sent.
+        """
         if attachment_filenames is None:
             attachment_filenames = []
         if attachment_MIMEParts is None:
@@ -477,7 +507,11 @@ class Plugin_Manager():
             self.notification_targets[x] = set(self.notification_targets[x])
 
     def add_notification(self, fn):
-        '''Add a function that will be run whenever a notification is sent. Arguments for the provided function are either the standard for lab_utils.communications.email.send(self, body, subject=None, attachment_filenames=[], attachment_MIMEParts=[]) or a simple text string.'''
+        """Add a function that will be run whenever a notification is sent. Arguments for the provided function are either the standard for lab_utils.communications.email.send(self, body, subject=None, attachment_filenames=[], attachment_MIMEParts=[]) or a simple text string.
+
+        Args:
+            fn: Callable function.
+        """
         self._notification_functions.append(fn)
 
     def _convert_svg(self, plot):
@@ -499,6 +533,11 @@ class Plugin_Manager():
                 f'Not sure what this plot is:\n{type(plot)}\n{plot}')
 
     def email_plots(self, plot_svg_source):
+        """Perform email plots operation.
+
+        Args:
+            plot_svg_source: Plot svg source.
+        """
         try:
             msg_body = ''
             attachment_MIMEParts = []
@@ -520,6 +559,11 @@ class Plugin_Manager():
             traceback.print_exc()
 
     def email_plot_dictionary(self, plot_svg_source):
+        """Perform email plot dictionary operation.
+
+        Args:
+            plot_svg_source: Plot svg source.
+        """
         msg_body = ''
         attachment_MIMEParts = []
         for plot_group in plot_svg_source:
@@ -556,14 +600,22 @@ class Plugin_Manager():
             self.traceability_items)
 
     def _create_metalogger(self, test):
-        '''Called from the plugin_master if the 'traceability' plugin was included in the plugin_registry, this creates a master and logger separate from the test data logger, and populates them using user provided metadata gathering functions.'''
+        """Called from the plugin_master if the 'traceability' plugin was included in the plugin_registry, this creates a master and logger separate from the test data logger, and populates them using user provided metadata gathering functions.
+
+        Args:
+            test: Test.
+        """
         _master = master()
         test._metalogger = logger(database=test.get_db_file())
         test._metalogger.add(_master)
         self._traceabilities.add_data_to_metalogger(test._metalogger)
 
     def _metalog(self, test):
-        '''This is separate from the _create_metalogger method in order to give other plugins the opportunity to add to the metalogger before the channel list is commited to a table.'''
+        """This is separate from the _create_metalogger method in order to give other plugins the opportunity to add to the metalogger before the channel list is commited to a table.
+
+        Args:
+            test: Test.
+        """
         test._modify_metalogger()
         test._metalogger.new_table(
             table_name=test.get_name() +
@@ -575,11 +627,11 @@ class Plugin_Manager():
     # ARCHIVE METHODS
     ###
     def _archive(self):
-        '''
-        Makes a copy of the data just collected and puts it and the associated metadata table (if there is one) in an archive folder.
+        """Makes a copy of the data just collected and puts it and the associated metadata table (if there is one) in an archive folder.
+
         Also adds a copy of the table (and metatable) to the database with the time of collection to the test's generic database, so it will not be overwritten when the test is next run.
         Will also generate scripts to rerun plotting (if the script has a plot method) and evaluation (if the evaluation feature is used).
-        '''
+        """
         print_banner('Archiving. . .')
         for test in self.tests:
             try:
@@ -728,6 +780,11 @@ class Plugin_Manager():
                 print_banner(f'Archiving for {test.get_name()} complete.')
 
     def archive_latest(self, destination_file=None):
+        """Perform archive latest operation.
+
+        Args:
+            destination_file: Destination file.
+        """
         for test in self.tests:
             try:
                 archive_folder = test.get_archive_folder_name()
@@ -852,9 +909,11 @@ class Plugin_Manager():
     ###
 
     def collect(self, temperatures):
-        '''This method aggregates the channels that will be logged and calls the collect method in every test added via self.add_test.
-        args:
-            temperatures (list): What values will be written to the temp_control_channel.'''
+        """This method aggregates the channels that will be logged and calls the collect method in every test added via self.add_test.
+
+        Args:
+            temperatures: List of values to write to the temp_control_channel.
+        """
         try:
             self.far_enough = False
             self.master = master()
@@ -873,7 +932,7 @@ class Plugin_Manager():
                     try:
                         test._declare_bench_connections()
                     except Exception:
-                        raise ("TEST_MANAGER ERROR: This project indicated bench configuration data would be stored. Test template requires a _declare_bench_connections method that gathers the data.")
+                        raise Exception("TEST_MANAGER ERROR: This project indicated bench configuration data would be stored. Test template requires a _declare_bench_connections method that gathers the data.")
                     self.all_benches.append(self.test_connections)
             if 'bench_config_management' in self.plugins:
                 self.all_connections = connection_collection.distill(
@@ -987,14 +1046,15 @@ class Plugin_Manager():
 
     def plot(self, database=None, table_name=None, plot_filepath=None,
              test_list=None, skip_email_input=False):
-        '''Run the plot method of each test in self.tests. Any plots returned by a test script's plot method will be emailed if the notifications plugin is used.
-        args:
-            database - string. The location of the database with the data to plot If left blank, the plot will continue with the database in the same directory as the test script.
-            table_name - string. The name of the table in the database with the data to plot. If left blank, the plot will continue with the table named after the test script.
-            plot_filepath - string. This is where the plots will be placed upon creation. If left blank, a directory name plots will be created in the directory with the plot script and and the plots will be placed in there.
-            test_list - list. List of test class objects that have plot methods you want to run. If left blank, will default to every test added to the plugin manager.
-            skip_email_input: boolean. Set to true, will not empty the _plots list and will not extend it. Useful in replotting during archive.
-            '''
+        """Run the plot method of each test in self.tests. Any plots returned by a test script's plot method will be emailed if the notifications plugin is used.
+
+        Args:
+            database: The location of the database with the data to plot. If left blank, uses the database in the same directory as the test script.
+            table_name: The name of the table in the database with the data to plot. If left blank, uses the table named after the test script.
+            plot_filepath: Where the plots will be placed upon creation. If left blank, a plots directory is created next to the plot script.
+            test_list: List of test class objects that have plot methods you want to run. Defaults to every test added to the plugin manager.
+            skip_email_input: If True, will not empty the _plots list. Useful in replotting during archive.
+        """
         if not skip_email_input:
             self._plots = []
             self._linked_plots = {}
@@ -1077,10 +1137,13 @@ class Plugin_Manager():
                 print(f"{test.get_name()} crashed. Skipping plot.")
 
     def evaluate(self, database=None, table_name=None, test_list=None):
-        '''Run the evaluate method of each test in self.tests.
-        args:
-            database - string. The location of the database with the data to evaluate If left blank, the evaluation will continue with the database in the same directory as the test script.
-            table_name - string. The name of the table in the database with the relevant data. If left blank, the evaluation will continue with the table named after the test script.'''
+        """Run the evaluate method of each test in self.tests.
+
+        Args:
+            database: The location of the database with the data to evaluate. If left blank, the evaluation will continue with the database in the same directory as the test script.
+            table_name: The name of the table in the database with the relevant data. If left blank, the evaluation will continue with the table named after the test script.
+            test_list: List of tests to evaluate. If None, uses self.tests.
+        """
         print_banner('Evaluating. . .')
         reset_db = False
         reset_tn = False
@@ -1142,10 +1205,13 @@ class Plugin_Manager():
                 print(f"Skipping evaluation for {test.get_name()}.")
 
     def correlate(self, database=None, table_name=None, test_list=None):
-        '''Run the correlate method of each test in self.tests.
-        args:
-            database - string. The location of the database with the data to correlate. If left blank, the correlation will continue with the database in the same directory as the test script.
-            table_name - string. The name of the table in the database with the relevant data. If left blank, the correlation will continue with the table named after the test script.'''
+        """Run the correlate method of each test in self.tests.
+
+        Args:
+            database: The location of the database with the data to correlate. If left blank, the correlation will continue with the database in the same directory as the test script.
+            table_name: The name of the table in the database with the relevant data. If left blank, the correlation will continue with the table named after the test script.
+            test_list: List of tests to correlate. If None, uses self.tests.
+        """
         print_banner('Correlating. . .')
         reset_db = False
         reset_tn = False
@@ -1207,7 +1273,11 @@ class Plugin_Manager():
                 print(f"Skipping correlation for {test.get_name()}.")
 
     def display_connections(self):
-        '''Distills the connections of all added tests and prints the diagram'''
+        """Distills the connections of all added tests and prints the diagram.
+
+        Raises:
+            Exception: If a test lacks a _declare_bench_connections method.
+        """
         if 'bench_config_management' in self.plugins:
             self.test_components = component_collection()
             self._add_components()
@@ -1218,7 +1288,7 @@ class Plugin_Manager():
                 try:
                     test._declare_bench_connections()
                 except Exception:
-                    raise ("TEST_MANAGER ERROR: This project indicated bench configuration data would be stored. Test template requires a _declare_bench_connections method that gathers the data.")
+                    raise Exception("TEST_MANAGER ERROR: This project indicated bench configuration data would be stored. Test template requires a _declare_bench_connections method that gathers the data.")
                 self.all_benches.append(self.test_connections)
             self.all_connections = connection_collection.distill(
                 self.all_benches)

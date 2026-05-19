@@ -3,11 +3,11 @@ from PyICe import LTC_plot
 
 
 class TWI_Pattern():
-    '''
-    This class can be used to construct a Two Wire Interface Pattern (I²C or SMBus or whatever) time-slice by time-slice.
+    """This class can be used to construct a Two Wire Interface Pattern (I²C or SMBus or whatever) time-slice by time-slice.
+
     It's meant to feed into a pattern generator instrument such as the old HP8110A dual pattern generator or its modern equivalent.
     It has two channels, one for the I²C pins SDA and SCL as well as a strobe channel (which the HP811xx family supports) to trigger a scope.
-    '''
+    """
     class Leader():
         def __init__(self, pattern, SCL, SDA, tleader, strobe=False):
             self.pattern = pattern
@@ -17,6 +17,11 @@ class TWI_Pattern():
             self.STB = strobe
 
         def extend(self, previous_item):
+            """Perform extend operation.
+
+            Args:
+                previous_item: Previous item.
+            """
             self.pattern.dwell(
                 SCL=self.SCL,
                 SDA=self.SDA,
@@ -30,6 +35,11 @@ class TWI_Pattern():
             self.STB = strobe
 
         def extend(self, previous_item):
+            """Perform extend operation.
+
+            Args:
+                previous_item: Previous item.
+            """
             self.pattern.dwell(SCL=1, SDA=0, STB=self.STB, tdwell=self.thd_sta)
 
     class Stop():
@@ -40,6 +50,11 @@ class TWI_Pattern():
             self.STB = strobe
 
         def extend(self, previous_item):
+            """Perform extend operation.
+
+            Args:
+                previous_item: Previous item.
+            """
             self.pattern.dwell(SCL=1, SDA=0, STB=self.STB, tdwell=self.tsu_sto)
             self.pattern.dwell(SCL=1, SDA=1, STB=self.STB, tdwell=self.tbuf)
 
@@ -50,6 +65,11 @@ class TWI_Pattern():
             self.tdwell = tdwell
 
         def extend(self, previous_item):
+            """Perform extend operation.
+
+            Args:
+                previous_item: Previous item.
+            """
             if previous_item.thd_dat >= 0:  # Previous bit had Positive or Zero hold time
                 self.pattern.dwell(
                     SCL=0,
@@ -71,6 +91,11 @@ class TWI_Pattern():
             assert self.twidth > 0, f"TWI Pattern Generator: Requested SDA spike starting at {tstart} rounded to 0 width in pattern, not acheivable."
 
         def extend(self, previous_item):
+            """Perform extend operation.
+
+            Args:
+                previous_item: Previous item.
+            """
             self.pattern.sda_spikes.append(self)
 
     class SCL_Spike():
@@ -83,18 +108,23 @@ class TWI_Pattern():
             assert self.twidth > 0, f"TWI Pattern Generator: Requested SCL spike starting at {tstart} rounded to 0 width in pattern, not acheivable."
 
         def extend(self, previous_item):
+            """Perform extend operation.
+
+            Args:
+                previous_item: Previous item.
+            """
             self.pattern.scl_spikes.append(self)
 
     class Bit():
-        '''
-        The data bit cycle starts by bringing SCL low.
+        """The data bit cycle starts by bringing SCL low.
+
         The previous data bit is held until its hold time (THD_DAT Prev) expires or is brought low immediately if the pervious bit's hold time is 0.
         It then dwells with SCL low until the setup time of this bit whereupon SDA goes to the value for this bit.
         It then dwells for the setup time for this bit and then SCL goes high.
         SCL stays high for the duration of THIGH.
         If the hold time of this bit is negative, SDA is brought low before this bit's cycle ends.
-                                            _____________________________
-                                           |
+        _____________________________
+        |
     SCL ___________________________________|
 
         _________                   _____________________________________
@@ -102,12 +132,11 @@ class TWI_Pattern():
         _________|_________________|_____________________________________
 
         <- THD ->|                 |<-TSU->|
-         (PREV)  |                 |       |
+        (PREV)  |                 |       |
         <------------ TLOW --------------->|<--------- THIGH ----------->
-                 |                 |       |
+        |                 |       |
         █••••••••█•••••••••••••••••█•••••••█••••••••••••••••••••••••••••• <------ █ (Blocks) Denote where changes occur, • (Dots) denote time slices
-        '''
-
+        """
         def __init__(self, pattern, value, tlow, thigh,
                      tsu_dat, thd_dat, strobe=False):
             self.pattern = pattern
@@ -119,6 +148,11 @@ class TWI_Pattern():
             self.STB = strobe
 
         def extend(self, previous_item):
+            """Perform extend operation.
+
+            Args:
+                previous_item: Previous item.
+            """
             if isinstance(previous_item, self.pattern.Start):
                 previous_thd_dat = 0
                 previous_value = 0
@@ -166,14 +200,15 @@ class TWI_Pattern():
     '''
     Here's the start of the actual TWI pattern class.
     '''
-
     def __init__(self, tstep, max_record_size):
         self.tstep = tstep
         self.max_record_size = max_record_size
 
     def initialize(self):
-        '''Call this whenever you want to start a new pattern or flush an existing pattern to change settings.
-           Otherwise the pattern will keep on growing if you keep adding items.'''
+        """Call this whenever you want to start a new pattern or flush an existing pattern to change settings.
+
+        Otherwise the pattern will keep on growing if you keep adding items.
+        """
         self.items = []
         self.SDA = []
         self.SCL = []
@@ -182,12 +217,33 @@ class TWI_Pattern():
         self.scl_spikes = []
 
     def add_item(self, item):
+        """Add a item.
+
+        Args:
+            item: Item.
+        """
         self.items.append(item)
 
     def quantize(self, time):
+        """Return quantize result.
+
+        Args:
+            time: Time.
+
+        Returns:
+            Result value.
+        """
         return round(time / self.tstep) * self.tstep
 
     def dwell(self, SCL, SDA, STB, tdwell):
+        """Perform dwell operation.
+
+        Args:
+            SCL: Scl.
+            SDA: Sda.
+            STB: Stb.
+            tdwell: Tdwell.
+        """
         cycles = round(tdwell / self.tstep)
         assert cycles >= 0, f"TWI Pattern Generator: tdwell of {tdwell} results in the addition of a negative time slice, not acheivable."
         self.SCL.extend([SCL] * cycles)
@@ -195,12 +251,14 @@ class TWI_Pattern():
         self.STB.extend([STB] * cycles)
 
     def pad_out(self):
+        """Perform pad out operation."""
         cycles = self.max_record_size - len(self.SCL)
         self.SCL.extend(self.SCL[-1:] * cycles)
         self.SDA.extend(self.SDA[-1:] * cycles)
         self.STB.extend(self.STB[-1:] * cycles)
 
     def finalize(self):
+        """Perform finalize operation."""
         previous = None
         for item in self.items:
             item.extend(previous)
@@ -224,19 +282,42 @@ class TWI_Pattern():
         self.audit()
 
     def get_SDA(self):
+        """Return the SDA.
+
+        Returns:
+            Result value.
+        """
         return self.SDA
 
     def get_SCL(self):
+        """Return the SCL.
+
+        Returns:
+            Result value.
+        """
         return self.SCL
 
     def get_STB(self):
+        """Return the STB.
+
+        Returns:
+            Result value.
+        """
         return self.STB
 
     def get_ALL(self, SCL_channel, SDA_channel, STB_channel):
-        '''
-        Build up the compound record of instrument Channels 1, 2 and 3 (Strobe).
+        """Build up the compound record of instrument Channels 1, 2 and 3 (Strobe).
+
         On the HP8110a, for example, the two output channels and the Strobe channel are binarily weighted so it takes values of 0-7 for 3 bits.
-        '''
+
+        Args:
+            SCL_channel: Scl channel.
+            SDA_channel: Sda channel.
+            STB_channel: Stb channel.
+
+        Returns:
+            Result value.
+        """
         values = []
         for position in range(len(self.SCL)):
             values.append(self.SCL[position] *
@@ -251,6 +332,7 @@ class TWI_Pattern():
         return values
 
     def audit(self):
+        """Perform audit operation."""
         assert len(
             self.SDA) == len(
             self.SCL), "TWI Pattern Generator: SDA and SCL records unequal length!"
@@ -262,6 +344,17 @@ class TWI_Pattern():
 
     def visualize(self, title=None, file_basename=None, offset_SCL=5,
                   offset_SDA=3, offset_STB=1, plot_sizex=5, plot_sizey=4):
+        """Perform visualize operation.
+
+        Args:
+            file_basename: File basename.
+            offset_SCL: Offset scl.
+            offset_SDA: Offset sda.
+            offset_STB: Offset stb.
+            plot_sizex: Plot sizex.
+            plot_sizey: Plot sizey.
+            title: Title.
+        """
         times = [index * self.tstep for index in range(len(self.SCL))]
         G0 = LTC_plot.scope_plot(plot_title="TWI Pattern" if title is None else title,
                                  plot_name=None,

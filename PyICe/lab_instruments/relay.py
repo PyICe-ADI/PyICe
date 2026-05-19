@@ -6,24 +6,37 @@ import abc
 
 
 class relay(instrument):
+    """Relay (instrument subclass)."""
     @abc.abstractmethod
     def add_channel(self, channel_name, channel_number):
-        '''placeholder'''
+        """Placeholder.
 
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+        """
     @abc.abstractmethod
     def _set_relay(self, channel_number, state):
-        '''placeholder'''
+        """Placeholder.
 
+        Args:
+            channel_number: Physical channel number.
+            state: State.
+        """
     @abc.abstractmethod
     def _get_state(self, channel_number):
-        '''placeholder'''
+        """Placeholder.
 
+        Args:
+            channel_number: Physical channel number.
+        """
     @abc.abstractmethod
     def _all_off(self):
-        '''placeholder'''
+        """Placeholder."""
 
 
 class ftdi_relay(relay):
+    """Ftdi_relay."""
     def __init__(self, serial_number=None):
         self.VID = 0x0403                   # USB Vendor ID of FT245R and FT232
         self.PID = 0x6001                   # USB Product ID of FT245R and FT232
@@ -48,7 +61,15 @@ class ftdi_relay(relay):
         # TODO : add exit cleanup method
 
     def add_channel(self, channel_name, channel_number):
-        '''Adds a channel for a relay on the board'''
+        """Adds a channel for a relay on the board.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         assert self.rb.RELAY_MIN <= channel_number and channel_number <= self.rb.RELAY_MAX, f'Channel number must correspond to a relay between {self.rb.RELAY_MIN} and {self.rb.RELAY_MAX}.'
         new_channel = integer_channel(
             channel_name,
@@ -299,7 +320,6 @@ should work fine on Raspberry Pi (Debian) and Windows 10, etc.
 ```
 
 '''
-
 #!/usr/bin/env python  # noqa: E265
 #
 # Copyright (c) 2016, Heinrich Schuchardt <xypron.glpk@gmx.de>
@@ -369,9 +389,8 @@ Then reload the udev rules with
 
 PyRelayCtl is licensed under a modified BSD license.
 """
-
-
 class FT245R:
+    """F t245 r."""
     def __init__(self):
         self.VID = 0x0403                   # USB Vendor ID of FT245R and FT232
         self.PID = 0x6001                   # USB Product ID of FT245R and FT232
@@ -383,9 +402,12 @@ class FT245R:
         self.relay_state = 0                # 8 bits representing 8 relays
 
     def list_dev(self):
-        """
-        Returns the list of FT245R devices.
+        """Returns the list of FT245R devices.
+
         @return: device list
+
+        Returns:
+            Result value.
         """
         ret = []
         for dev in usb.core.find(find_all=True,
@@ -398,9 +420,11 @@ class FT245R:
         return ret
 
     def disconnect(self):
+        """Disables output to the device. Attaches the kernel driver if available.
+
+        Raises:
+            RuntimeError: On error condition.
         """
-        Disables output to the device. Attaches the kernel driver if available.
-                """
         self.is_connected = False
         if platform.system() != 'Windows':
             # If Linux OS already has control, there's nothing to do
@@ -419,10 +443,15 @@ class FT245R:
                 print("relayctl: could not attach kernel driver")
 
     def connect(self, dev):
-        """
-        Enables output to the device. Detaches the kernel driver if attached.
+        """Enables output to the device. Detaches the kernel driver if attached.
 
         @param dev: device
+
+        Args:
+            dev: Dev.
+
+        Raises:
+            RuntimeError: On error condition.
         """
         # Save the device handler so user does not have to keep passing it
         self.dev = dev
@@ -449,12 +478,17 @@ class FT245R:
             self.relay_state = self._getstatus_byte()
 
     def _getstatus_byte(self):
-        """
-        Gets a byte which represents the status of all 8 relays.
+        """Gets a byte which represents the status of all 8 relays.
 
         @return: status
-        """
 
+        Returns:
+            Result value.
+
+        Raises:
+            IOError: On error condition.
+            RuntimeError: On error condition.
+        """
         # Check for errors
         if not self.is_connected:
             raise IOError('Must connect to device first')
@@ -468,12 +502,20 @@ class FT245R:
         return buf[0]
 
     def getstatus(self, relay_num):
-        """
-        Returns 1 if relay relay_num is on, 0 if off.
+        """Returns 1 if relay relay_num is on, 0 if off.
 
         @return: status
-        """
 
+        Args:
+            relay_num: Relay num.
+
+        Returns:
+            Result value.
+
+        Raises:
+            IOError: On error condition.
+            ValueError: On error condition.
+        """
         # Check for errors
         if relay_num < self.RELAY_MIN or relay_num > self.RELAY_MAX:
             raise ValueError(f'Relay number {relay_num} is invalid')
@@ -486,10 +528,12 @@ class FT245R:
         return 0
 
     def setstate(self):
-        """
-        Sets all relays to the state in FT245R.relay_state.
-        """
+        """Sets all relays to the state in FT245R.relay_state.
 
+        Raises:
+            IOError: On error condition.
+            RuntimeError: On error condition.
+        """
         # Check for errors
         if not self.is_connected:
             raise IOError('Must connect to device first')
@@ -506,12 +550,18 @@ class FT245R:
         return
 
     def switchoff(self, relay_num):
-        """
-        Switches relay relay_num off.
+        """Switches relay relay_num off.
 
         @param relay_num: which relay
-        """
 
+        Args:
+            relay_num: Relay num.
+
+        Raises:
+            IOError: On error condition.
+            RuntimeError: On error condition.
+            ValueError: On error condition.
+        """
         # Check for errors
         if relay_num < self.RELAY_MIN or relay_num > self.RELAY_MAX:
             raise ValueError(f'Relay number {relay_num} is invalid')
@@ -533,12 +583,18 @@ class FT245R:
         return
 
     def switchon(self, relay_num):
-        """
-        Switches relay relay_num on.
+        """Switches relay relay_num on.
 
         @param relay_num: which relay
-        """
 
+        Args:
+            relay_num: Relay num.
+
+        Raises:
+            IOError: On error condition.
+            RuntimeError: On error condition.
+            ValueError: On error condition.
+        """
         # Check for errors
         if relay_num < self.RELAY_MIN or relay_num > self.RELAY_MAX:
             raise ValueError(f'Relay number {relay_num} is invalid')

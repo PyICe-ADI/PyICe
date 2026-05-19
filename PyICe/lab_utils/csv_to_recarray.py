@@ -6,15 +6,25 @@ from .clean_c import clean_c
 
 # , force_float_dtype=False, data_types=None):
 def csv_to_recarray(csv_input_file):
-    '''return NumPy record array containing data from CSV input file.
-        CSV data can be ASCII or UTF-8 encoded, but Unicode support inside Numpy is lacking.
-        Rows can be accessed by index, ex arr[2].
-        Columns can be accessed by column name attribute, ex arr.vbat.
-        Use with data filtering, smoothing, compressing, etc matrix operations provided by SciPy and lab_utils.transform, lab_utils.decimate.
-        Use automatic column names, but force data type to float with force_float_dtype boolean argument.
-        Override automatic column names and data types (first row) by specifying data_type iterable of (column_name,example_contents) for each column matching query order.
-        http://docs.scipy.org/doc/numpy-1.10.1/reference/generated/numpy.recarray.html
-        '''
+    """Return NumPy record array containing data from CSV input file.
+
+    CSV data can be ASCII or UTF-8 encoded, but Unicode support inside Numpy is lacking.
+    Rows can be accessed by index, ex arr[2].
+    Columns can be accessed by column name attribute, ex arr.vbat.
+    Use with data filtering, smoothing, compressing, etc matrix operations provided by SciPy and lab_utils.transform, lab_utils.decimate.
+    Use automatic column names, but force data type to float with force_float_dtype boolean argument.
+    Override automatic column names and data types (first row) by specifying data_type iterable of (column_name,example_contents) for each column matching query order.
+    http://docs.scipy.org/doc/numpy-1.10.1/reference/generated/numpy.recarray.html
+
+    Args:
+        csv_input_file: Csv input file.
+
+    Returns:
+        Result value.
+
+    Raises:
+        Exception: On error condition.
+    """
     ##########################################################################
     # It's likely this whole thing should be replaced with numpy.genfromtxt, numpy.recfromcsv or numpy.recfromtxt.   #
     # https://docs.scipy.org/doc/numpy-1.10.1/user/basics.io.genfromtxt.html                                         #

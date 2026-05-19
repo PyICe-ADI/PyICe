@@ -3,14 +3,22 @@ import scipy
 
 
 def interpolating_spline(rec_array, **kwargs):
-    '''uses http://scipy.github.io/devdocs/generated/scipy.interpolate.UnivariateSpline.html
+    """Uses http://scipy.github.io/devdocs/generated/scipy.interpolate.UnivariateSpline.html.
+
     provides interpolation function with original data points returning exact values (knots placed on x-values)
     x-axis data is assumed to be first column
     x-axis data must be increasing
     returns spline function named tuple for each y-column.
     for small point count, consider scipy.interpolate.Akima1DInterpolator instead
     https://docs.scipy.org/doc/scipy-0.19.1/reference/generated/scipy.interpolate.Akima1DInterpolator.html#scipy.interpolate.Akima1DInterpolator
-    '''
+
+    Args:
+        **kwargs: Additional keyword arguments.
+        rec_array: Rec array.
+
+    Returns:
+        Result value.
+    """
     if 's' in kwargs:
         s = kwargs['s']
         del kwargs['s']

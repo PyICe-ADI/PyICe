@@ -2,10 +2,10 @@ from ..lab_core import *  # noqa: F403
 
 
 class EL34143A(scpi_instrument):
-    '''Electronic Load, model HMP 34143A
-        Single Input DC Electronic Load; 150 V, 60 A, 350 W
-    '''
+    """Electronic Load, model HMP 34143A.
 
+    Single Input DC Electronic Load; 150 V, 60 A, 350 W
+    """
     def __init__(self, interface_visa):
         self._base_name = 'EL34143A'
         super().__init__(f'EL34143A @  {interface_visa}')
@@ -30,9 +30,19 @@ class EL34143A(scpi_instrument):
 
     def add_channel(self, channel_name,
                     add_extended_channels=True, set_range='AUTO'):
-        '''Sortcut function adds CC force channel.
+        """Sortcut function adds CC force channel.
+
         if add_extended_channels, additionally add _isense,_vsense,_psense,_mode readback channels
-        Add CV,CW,CR,remote_sense channels separately if you need them.'''
+        Add CV,CW,CR,remote_sense channels separately if you need them.
+
+        Args:
+            add_extended_channels: If True, add sense and mode channels.
+            channel_name: Name for the new channel.
+            set_range: Set range.
+
+        Returns:
+            Result value.
+        """
         ch = self.add_channel_current(channel_name, curr_range=set_range)
         ch.set_description(self.get_name() + ': ' + self.add_channel.__doc__)
         if add_extended_channels:
@@ -43,7 +53,15 @@ class EL34143A(scpi_instrument):
         return ch
 
     def add_channel_current(self, channel_name, curr_range='AUTO'):
-        '''add single CC forcing channel and force zero current'''
+        """Add single CC forcing channel and force zero current.
+
+        Args:
+            channel_name: Name for the new channel.
+            curr_range: Curr range.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name, write_function=self._SetCCCurrent)
         new_channel.set_description(
             self.get_name() + ': ' + self.add_channel_current.__doc__)
@@ -56,7 +74,15 @@ class EL34143A(scpi_instrument):
         return new_channel
 
     def _add_channel_curr_range(self, channel_name, curr_range):
-        '''add single range manipulation channel'''
+        """Add single range manipulation channel.
+
+        Args:
+            channel_name: Name for the new channel.
+            curr_range: Curr range.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name + '_range',
             write_function=self._SetCurrRange)
@@ -72,7 +98,14 @@ class EL34143A(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_isense(self, channel_name):
-        '''add single current readback channel'''
+        """Add single current readback channel.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._read_isense(channel_name))
@@ -81,7 +114,14 @@ class EL34143A(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_vsense(self, channel_name):
-        '''add single voltage readback channel'''
+        """Add single voltage readback channel.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._read_vsense(channel_name))
@@ -90,7 +130,14 @@ class EL34143A(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_psense(self, channel_name):
-        '''read back computed power dissipated in load'''
+        """Read back computed power dissipated in load.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._read_psense(channel_name))
@@ -99,7 +146,14 @@ class EL34143A(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_mode(self, channel_name):
-        '''read back operating mode (Off, Constant Current, Constant Voltage, Constant Power, Constant Resistance)'''
+        """Read back operating mode (Off, Constant Current, Constant Voltage, Constant Power, Constant Resistance).
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name,
                               read_function=lambda: self.GetMode())
         new_channel.set_description(
@@ -107,19 +161,47 @@ class EL34143A(scpi_instrument):
         return self._add_channel(new_channel)
 
     def _read_vsense(self, channel_name):
-        '''Return measured voltage float.'''
+        """Return measured voltage float.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         return self.get_interface().ask("MEAS:VOLT?")
 
     def _read_isense(self, channel_name):
-        '''Return measured current float.'''
+        """Return measured current float.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         return self.get_interface().ask("MEAS:CURR?")
 
     def _read_psense(self, channel_name):
-        '''Return measured power float.'''
+        """Return measured power float.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         return self.get_interface().ask("MEAS:POW?")
 
     def add_channel_remote_sense(self, channel_name):
-        '''Enable/disable remote voltage sense through panel connectors'''
+        """Enable/disable remote voltage sense through panel connectors.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = integer_channel(
             channel_name, size=1, write_function=self.SetRemoteSense)
         new_channel.set_description(
@@ -128,7 +210,15 @@ class EL34143A(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_voltage(self, channel_name, volt_range='AUTO'):
-        '''add single CV forcing channel'''
+        """Add single CV forcing channel.
+
+        Args:
+            channel_name: Name for the new channel.
+            volt_range: Volt range.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name, write_function=self._SetCVVoltage)
         new_channel.set_description(
             self.get_name() + ': ' + self.add_channel_voltage.__doc__)
@@ -138,7 +228,15 @@ class EL34143A(scpi_instrument):
         return self._add_channel(new_channel)
 
     def _add_channel_volt_range(self, channel_name, volt_range):
-        '''add single range manipulation channel'''
+        """Add single range manipulation channel.
+
+        Args:
+            channel_name: Name for the new channel.
+            volt_range: Volt range.
+
+        Returns:
+            Result value.
+        """
         self.volt_range = volt_range
         assert volt_range in [
             'MIN', 'MAX', 'AUTO'], f"set_range must be 'MIN', 'MAX', or 'AUTO'. {volt_range} is unacceptable."
@@ -155,7 +253,15 @@ class EL34143A(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_power(self, channel_name, pow_range='AUTO'):
-        '''add single CW forcing channel'''
+        """Add single CW forcing channel.
+
+        Args:
+            channel_name: Name for the new channel.
+            pow_range: Pow range.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name, write_function=self._SetCWPower)
         new_channel.set_description(
             self.get_name() + ': ' + self.add_channel_power.__doc__)
@@ -165,7 +271,15 @@ class EL34143A(scpi_instrument):
         return self._add_channel(new_channel)
 
     def _add_channel_pow_range(self, channel_name, pow_range):
-        '''add single range manipulation channel'''
+        """Add single range manipulation channel.
+
+        Args:
+            channel_name: Name for the new channel.
+            pow_range: Pow range.
+
+        Returns:
+            Result value.
+        """
         self.pow_range = pow_range
         assert pow_range in [
             'MIN', 'MED', 'MAX', 'AUTO'], f"set_range must be 'MIN', 'MED', 'MAX', or 'AUTO'. {pow_range} is unacceptable."
@@ -183,7 +297,14 @@ class EL34143A(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_resistance(self, channel_name):
-        '''add single CR forcing channel'''
+        """Add single CR forcing channel.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name,
                               write_function=self._SetCRResistance)
         new_channel.set_description(
@@ -193,7 +314,14 @@ class EL34143A(scpi_instrument):
         return self._add_channel(new_channel)
 
     def _add_channel_res_range(self, res_range):
-        '''add single range manipulation channel'''
+        """Add single range manipulation channel.
+
+        Args:
+            res_range: Res range.
+
+        Returns:
+            Result value.
+        """
         self.res_range = res_range
         assert res_range in [
             'MIN', 'MED', 'MAX', 'AUTO'], f"set_range must be 'MIN', 'MED', 'MAX', or 'AUTO'. {res_range} is unacceptable."
@@ -311,19 +439,27 @@ class EL34143A(scpi_instrument):
         self.TurnLoadOn()  # Because it could be off
 
     def TurnLoadOn(self):
-        "Turns the load on"
+        """Turn the load on."""
         self.get_interface().write("INP 1")
 
     def TurnLoadOff(self):
-        "Turns the load off"
+        """Turn the load off."""
         self.get_interface().write("INP 0")
 
     def SetRemoteControl(self):
-        "Sets the load to remote control"
+        """Set the load to remote control.
+
+        Returns:
+            Write response string.
+        """
         return self.get_interface().write("SYST:COMM:RLST REM")
 
     def SetLocalControl(self):
-        "Sets the load to local control"
+        """Set the load to local control.
+
+        Returns:
+            Write response string.
+        """
         return self.get_interface().write("SYST:COMM:RLST LOC")
 
     def _find_current_range(self, value):
@@ -367,11 +503,19 @@ class EL34143A(scpi_instrument):
                 f'CURR:RANG {self.curr_ranges[curr_range][1]}')
 
     def SetMaxCurrent(self, current):
-        "Sets the maximum current the load will sink"
+        """Set the maximum current the load will sink.
+
+        Args:
+            current: Maximum current value.
+        """
         self.get_interface().write(f"CURR:RANG {current}")
 
     def GetMaxCurrent(self):
-        "Returns the maximum current the load will sink"
+        """Return the maximum current the load will sink.
+
+        Returns:
+            str: Maximum current value.
+        """
         return self.get_interface().ask("CURR:RANG?")
 
     def _SetVoltRange(self, volt_range):
@@ -381,11 +525,19 @@ class EL34143A(scpi_instrument):
                 f'VOLT:RANG {self.volt_ranges[volt_range][1]}')
 
     def SetMaxVoltage(self, voltage):
-        "Sets the maximum voltage the load will allow"
+        """Set the maximum voltage the load will allow.
+
+        Args:
+            voltage: Maximum voltage value.
+        """
         self.get_interface().write(f"VOLT:RANG {voltage}")
 
     def GetMaxVoltage(self):
-        "Gets the maximum voltage the load will allow"
+        """Get the maximum voltage the load will allow.
+
+        Returns:
+            str: Maximum voltage value.
+        """
         return self.get_interface().ask("VOLT:RANG?")
 
     def _SetPowRange(self, pow_range):
@@ -395,15 +547,33 @@ class EL34143A(scpi_instrument):
                 f'POW:RANG {self.pow_ranges[pow_range][1]}')
 
     def SetMaxPower(self, power):
-        "Sets the maximum power the load will allow"
+        """Set the maximum power the load will allow.
+
+        Args:
+            power: Maximum power value.
+        """
         self.get_interface().write(f"POW:RANG {power}")
 
     def GetMaxPower(self):
-        "Gets the maximum power the load will allow"
+        """Get the maximum power the load will allow.
+
+        Returns:
+            str: Maximum power value.
+        """
         return self.get_interface().ask("POW:RANG?")
 
     def SetMode(self, mode):
-        "Sets the mode (constant current, constant voltage, etc."
+        """Set the mode (constant current, constant voltage, etc.).
+
+        Args:
+            mode: Operating mode (CURR, VOLT, POW, or RES).
+
+        Returns:
+            str: Write response.
+
+        Raises:
+            Exception: If mode is not a recognized value.
+        """
         if mode not in self.modes:
             raise Exception(
                 f"Unknown mode. Expecting CURR, VOLT, POW, or RES. Not {mode}.")
@@ -414,31 +584,59 @@ class EL34143A(scpi_instrument):
         return self.get_interface().write(f"MODE {mode}")
 
     def GetMode(self):
-        "Gets the mode (constant current, constant voltage, etc."
+        """Get the mode (constant current, constant voltage, etc.).
+
+        Returns:
+            str: Current operating mode.
+        """
         return self.get_interface().ask("MODE?")
 
     def SetCCCurrent(self, current):
-        "Sets the constant current mode's current level"
+        """Set the constant current mode's current level.
+
+        Args:
+            current: Current level to set.
+        """
         self.get_interface().write(f"CURR {current}")
 
     def GetCCCurrent(self):
-        "Gets the constant current mode's current level"
+        """Get the constant current mode's current level.
+
+        Returns:
+            str: Current level.
+        """
         return self.get_interface().ask("CURR?")
 
     def SetCVVoltage(self, voltage):
-        "Sets the constant voltage mode's voltage level"
+        """Set the constant voltage mode's voltage level.
+
+        Args:
+            voltage: Voltage level to set.
+        """
         self.get_interface().write(f"VOLT {voltage}")
 
     def GetCVVoltage(self):
-        "Gets the constant voltage mode's voltage level"
+        """Get the constant voltage mode's voltage level.
+
+        Returns:
+            str: Voltage level.
+        """
         return self.get_interface().ask("VOLT?")
 
     def SetCWPower(self, power):
-        "Sets the constant power mode's power level"
+        """Set the constant power mode's power level.
+
+        Args:
+            power: Power level to set.
+        """
         self.get_interface().write(f"POW {power}")
 
     def GetCWPower(self):
-        "Gets the constant power mode's power level"
+        """Get the constant power mode's power level.
+
+        Returns:
+            str: Power level.
+        """
         return self.get_interface().ask("POW?")
 
     def _SetResRange(self, res_range):
@@ -446,15 +644,27 @@ class EL34143A(scpi_instrument):
         self.get_interface().write(f'RES:RANG {self.res_range}')
 
     def SetCRResistance(self, resistance):
-        "Sets the constant resistance mode's resistance level"
+        """Set the constant resistance mode's resistance level.
+
+        Args:
+            resistance: Resistance level to set.
+        """
         self.get_interface().write(f"RES {resistance}")
 
     def GetCRResistance(self):
-        "Gets the constant resistance mode's resistance level"
+        """Get the constant resistance mode's resistance level.
+
+        Returns:
+            str: Resistance level.
+        """
         return self.get_interface().ask("RES?")
 
     def SetRemoteSense(self, enabled=0):
-        "Enable or disable remote sensing"
+        """Enable or disable remote sensing.
+
+        Args:
+            enabled: Enable (1/True/'EXT') or disable (0/False/'INT') remote sensing.
+        """
         ernal = {
             0: 'INT',
             1: 'EXT',
@@ -465,5 +675,9 @@ class EL34143A(scpi_instrument):
         self.get_interface().write(f"VOLT:SENS {ernal[enabled]}")
 
     def GetRemoteSense(self):
-        "Get the state of remote sensing"
+        """Get the state of remote sensing.
+
+        Returns:
+            str: Remote sensing state.
+        """
         return self.get_interface().ask("VOLT:SENS?")

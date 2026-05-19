@@ -2,7 +2,7 @@ from PyICe.lab_core import *  # noqa: F403
 
 
 class kikusui_pbz(scpi_instrument):
-    '''single channel kikusui_pbz20-20, pbz40-10 bipolar power supply parent class'''
+    """Single channel kikusui_pbz20-20, pbz40-10 bipolar power supply parent class."""
 
     def __init__(self, interface_visa):
         self.add_interface_visa(interface_visa)
@@ -15,9 +15,20 @@ class kikusui_pbz(scpi_instrument):
 
     def add_channel(self, channel_name, ilim=1, delay=0.5,
                     add_extended_channels=True):
-        '''Helper channel adds primary voltage forcing channel.
+        """Helper channel adds primary voltage forcing channel.
+
             Optionally specify channel current limit.  Valid range is [???-???]
-            optionally also adds _ilim_source and _ilim_sink limit forcing channels'''
+            optionally also adds _ilim_source and _ilim_sink limit forcing channels
+
+        Args:
+            add_extended_channels: If True, add sense and mode channels.
+            channel_name: Name for the new channel.
+            delay: Delay time in seconds.
+            ilim: Current limit.
+
+        Returns:
+            Result value.
+        """
         voltage_channel = self.add_channel_voltage(channel_name)
         voltage_channel.set_write_delay(delay)
         if add_extended_channels:
@@ -44,33 +55,89 @@ class kikusui_pbz(scpi_instrument):
         return voltage_channel
 
     def add_channel_voltage(self, channel_name):
+        """Add a channel voltage.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name, write_function=self._write_voltage)
         return self._add_channel(new_channel)
 
     def add_channel_current_source(self, channel_name):
+        """Add a channel current source.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name,
                               write_function=self._write_current_source)
         return self._add_channel(new_channel)
 
     def add_channel_current_sink(self, channel_name):
+        """Add a channel current sink.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name,
                               write_function=self._write_current_sink)
         return self._add_channel(new_channel)
 
     def add_channel_output_enable(self, channel_name):
+        """Add a channel output enable.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name,
                               write_function=self._write_output_enable)
         return self._add_channel(new_channel)
 
     def add_channel_vsense(self, channel_name):
+        """Add a channel vsense.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name, read_function=self._read_vsense)
         return self._add_channel(new_channel)
 
     def add_channel_isense(self, channel_name):
+        """Add a channel isense.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name, read_function=self._read_isense)
         return self._add_channel(new_channel)
 
     def add_channel_voltage_readback(self, channel_name):
+        """Add a channel voltage readback.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name,
                               read_function=self._read_voltage_readback)
         return self._add_channel(new_channel)
@@ -82,24 +149,44 @@ class kikusui_pbz(scpi_instrument):
         self.get_interface().write((f"CURR:PROT:LOW {current}"))
 
     def _write_voltage(self, voltage):
-        '''set output voltage'''
+        """Set output voltage.
+
+        Args:
+            voltage: Voltage value.
+        """
         self.get_interface().write((f"VOLTage {voltage}"))
 
     def _write_output_enable(self, enable):
-        '''set output enable'''
+        """Set output enable.
+
+        Args:
+            enable: Enable or disable.
+        """
         if enable:
             self.get_interface().write(("OUTP 1"))
         else:
             self.get_interface().write(("OUTP 0"))
 
     def _read_voltage_readback(self):
-        '''Returns instrument's actual setopint.  May differ by commanded value by rounding/range error'''
+        """Returns instrument's actual setopint.  May differ by commanded value by rounding/range error.
+
+        Returns:
+            Result value.
+        """
         return float(self.get_interface().ask("VOLT?"))
 
     def _read_vsense(self):
-        '''Returns instrument's measured output voltage.'''
+        """Returns instrument's measured output voltage.
+
+        Returns:
+            Result value.
+        """
         return float(self.get_interface().ask("MEAS:VOLT?"))
 
     def _read_isense(self):
-        '''Returns instrument's measured current output.'''
+        """Returns instrument's measured current output.
+
+        Returns:
+            Result value.
+        """
         return float(self.get_interface().ask("MEAS:CURR?"))

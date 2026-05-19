@@ -2,16 +2,29 @@ from ..lab_core import *  # noqa: F403
 
 
 class tektronix_afg3022(scpi_instrument):
-    '''Arbitrary Function Generator - Tektronix AFG3022 '''
+    """Arbitrary Function Generator - Tektronix AFG3022."""
 
     def __init__(self, interface_visa):
-        '''interface_visa'''
+        """interface_visa.
+
+        Args:
+            interface_visa: VISA interface instance.
+        """
         self._base_name = 'tektronix_afg3022'
         scpi_instrument.__init__(self, f"afg3022 @ {interface_visa}")
         self.add_interface_visa(interface_visa)
         self.get_interface().write("*RST")
 
     def add_channel_burst(self, channel_name, channel_number):
+        """Add a channel burst.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         enable_channel = self.add_generic_channels(
             channel_name, channel_number)
         self.add_channel_burstwave_shape(
@@ -41,6 +54,15 @@ class tektronix_afg3022(scpi_instrument):
         return enable_channel
 
     def add_channel_continuous(self, channel_name, channel_number):
+        """Add a channel continuous.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         enable_channel = self.add_generic_channels(
             channel_name, channel_number)
         self.add_channel_continuouswave_shape(
@@ -62,8 +84,20 @@ class tektronix_afg3022(scpi_instrument):
         return enable_channel
 
     def add_generic_channels(self, channel_name, channel_number):
+        """Add a generic channels.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+
+        Raises:
+            ValueError: If channel_number is not 1 or 2.
+        """
         if channel_number not in [1, 2]:
-            raise (
+            raise ValueError(
                 f"\n\nTektronix AFG3022 only has two channels, there's no channel {channel_number} to assign to {channel_name}.\n")
         enable_channel = self.add_channel_enable(
             channel_name + "_enable", channel_number)
@@ -71,6 +105,15 @@ class tektronix_afg3022(scpi_instrument):
         return enable_channel
 
     def add_channel_enable(self, channel_name, channel_number):
+        """Add a channel enable.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         def _write_output_enable(channel_number, value):
             if value in [True, False]:
                 value = 'ON' if value else 'OFF'
@@ -91,6 +134,15 @@ class tektronix_afg3022(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_outputz(self, channel_name, channel_number):
+        """Add a channel outputz.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         def _write_outputz(channel_number, value):
             self.high_voltage = self.get_interface().ask(
                 f"SOURce{channel_number}:VOLTage:LEVel:IMMediate:HIGH?")
@@ -120,8 +172,17 @@ class tektronix_afg3022(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_burstwave_shape(self, channel_name, channel_number):
-        '''Instrument supports SINusoid|SQUare|PULSe|RAMP|DC|SINC|GAUSsian|LORentz|ERISe|EDECay|HAVersine|USER[1]|USER2|USER3|USER4|EMEMory[1]|EMEMory2|EFILe}
-        Driver currently supports SINusoid|SQUare|PULSe|RAMP only'''
+        """Instrument supports SINusoid|SQUare|PULSe|RAMP|DC|SINC|GAUSsian|LORentz|ERISe|EDECay|HAVersine|USER[1]|USER2|USER3|USER4|EMEMory[1]|EMEMory2|EFILe}.
+
+        Driver currently supports SINusoid|SQUare|PULSe|RAMP only
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         def _write_burstwave_shape(channel_number, value):
             self.get_interface().write(
                 f"SOURce{channel_number}:FUNCtion:SHAPe {value}")
@@ -138,6 +199,15 @@ class tektronix_afg3022(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_burstwave_low_voltage(self, channel_name, channel_number):
+        """Add a channel burstwave low voltage.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         def _write_burstwave_low_voltage(channel_number, value):
             self.get_interface().write(
                 f"SOURce{channel_number}:VOLTage:LEVel:IMMediate:LOW {value}")
@@ -150,6 +220,15 @@ class tektronix_afg3022(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_burstwave_high_voltage(self, channel_name, channel_number):
+        """Add a channel burstwave high voltage.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         def _write_burstwave_high_voltage(channel_number, value):
             self.get_interface().write(
                 f"SOURce{channel_number}:VOLTage:LEVel:IMMediate:HIGH {value}")
@@ -162,6 +241,15 @@ class tektronix_afg3022(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_burstwave_pulse_width(self, channel_name, channel_number):
+        """Add a channel burstwave pulse width.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         def _write_burstwave_width(channel_number, value):
             self.get_interface().write(
                 f"SOURce{channel_number}:PULSe:WIDTh {value}")
@@ -176,6 +264,15 @@ class tektronix_afg3022(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_burstwave_period(self, channel_name, channel_number):
+        """Add a channel burstwave period.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         def _write_burstwave_period(channel_number, value):
             self.get_interface().write(
                 f"SOURce{channel_number}:PULSe:PERiod {value}")
@@ -188,6 +285,15 @@ class tektronix_afg3022(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_burstwave_pulse_hold(self, channel_name, channel_number):
+        """Add a channel burstwave pulse hold.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         def _write_burstwave_pulse_hold(channel_number, value):
             self.get_interface().write(
                 f"SOURce{channel_number}:PULSe:HOLD {value}")
@@ -202,6 +308,15 @@ class tektronix_afg3022(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_burstwave_rise_time(self, channel_name, channel_number):
+        """Add a channel burstwave rise time.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         def _write_burstwave_rise_time(channel_number, value):
             self.get_interface().write(
                 f"SOURce{channel_number}:PULSe:TRANsition:LEADing {value}")
@@ -216,6 +331,15 @@ class tektronix_afg3022(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_burstwave_fall_time(self, channel_name, channel_number):
+        """Add a channel burstwave fall time.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         def _write_burstwave_fall_time(channel_number, value):
             self.get_interface().write(
                 f"SOURce{channel_number}:PULSe:TRANsition:TRAiling {value}")
@@ -230,6 +354,15 @@ class tektronix_afg3022(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_burstwave_cycles(self, channel_name, channel_number):
+        """Add a channel burstwave cycles.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         def _write_burstwave_cycles(channel_number, value):
             self.get_interface().write(
                 f"SOURce{channel_number}:BURSt:NCYCles {value}")
@@ -242,7 +375,15 @@ class tektronix_afg3022(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_burstwave_trigger(self, channel_name, channel_number):
-        '''Sends trigger for all active channels regardless of channel_name or channel_number'''
+        """Sends trigger for all active channels regardless of channel_name or channel_number.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         def _send_burstwave_trigger(channel_number, value):
             if value.upper() == "TRIGGER":
                 self.trigger()
@@ -261,8 +402,17 @@ class tektronix_afg3022(scpi_instrument):
         return self._add_channel(self.trigger_channel)
 
     def add_channel_continuouswave_shape(self, channel_name, channel_number):
-        '''Instrument supports SINusoid|SQUare|PULSe|RAMP|PRNoise|DC|SINC|GAUSsian|LORentz|ERISe|EDECay|HAVersine|USER[1]|USER2|USER3|USER4|EMEMory[1]|EMEMory2|EFILe}
-        Driver currently supports SINusoid|SQUare|PULSe|RAMP|PRNoise only'''
+        """Instrument supports SINusoid|SQUare|PULSe|RAMP|PRNoise|DC|SINC|GAUSsian|LORentz|ERISe|EDECay|HAVersine|USER[1]|USER2|USER3|USER4|EMEMory[1]|EMEMory2|EFILe}.
+
+        Driver currently supports SINusoid|SQUare|PULSe|RAMP|PRNoise only
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         def _write_continuouswave_shape(channel_number, value):
             self.get_interface().write(
                 f"SOURce{channel_number}:FUNCtion:SHAPe {value}")
@@ -281,6 +431,15 @@ class tektronix_afg3022(scpi_instrument):
 
     def add_channel_continuouswave_low_voltage(
             self, channel_name, channel_number):
+        """Add a channel continuouswave low voltage.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         def _write_continuouswave_low_voltage(channel_number, value):
             self.get_interface().write(
                 f"SOURce{channel_number}:VOLTage:LEVel:IMMediate:LOW {value}")
@@ -294,6 +453,15 @@ class tektronix_afg3022(scpi_instrument):
 
     def add_channel_continuouswave_high_voltage(
             self, channel_name, channel_number):
+        """Add a channel continuouswave high voltage.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         def _write_continuouswave_high_voltage(channel_number, value):
             self.get_interface().write(
                 f"SOURce{channel_number}:VOLTage:LEVel:IMMediate:HIGH {value}")
@@ -306,6 +474,15 @@ class tektronix_afg3022(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_continuouswave_width(self, channel_name, channel_number):
+        """Add a channel continuouswave width.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         def _write_continuouswave_width(channel_number, value):
             self.get_interface().write(
                 f"SOURce{channel_number}:PULSe:WIDTh {value}")
@@ -320,6 +497,15 @@ class tektronix_afg3022(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_continuouswave_period(self, channel_name, channel_number):
+        """Add a channel continuouswave period.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         def _write_continuouswave_period(channel_number, value):
             self.get_interface().write(
                 f"SOURce{channel_number}:PULSe:PERiod {value}")
@@ -333,6 +519,15 @@ class tektronix_afg3022(scpi_instrument):
 
     def add_channel_continuouswave_pulse_hold(
             self, channel_name, channel_number):
+        """Add a channel continuouswave pulse hold.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         def _write_continuouswave_pulse_hold(channel_number, value):
             self.get_interface().write(
                 f"SOURce{channel_number}:PULSe:HOLD {value}")
@@ -348,6 +543,15 @@ class tektronix_afg3022(scpi_instrument):
 
     def add_channel_continuouswave_rise_time(
             self, channel_name, channel_number):
+        """Add a channel continuouswave rise time.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         def _write_continuouswave_rise_time(channel_number, value):
             self.get_interface().write(
                 f"SOURce{channel_number}:PULSe:TRANsition:LEADing {value}")
@@ -363,6 +567,15 @@ class tektronix_afg3022(scpi_instrument):
 
     def add_channel_continuouswave_fall_time(
             self, channel_name, channel_number):
+        """Add a channel continuouswave fall time.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         def _write_continuouswave_fall_time(channel_number, value):
             self.get_interface().write(
                 f"SOURce{channel_number}:PULSe:TRANsition:TRAiling {value}")

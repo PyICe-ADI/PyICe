@@ -1,4 +1,5 @@
 class Units_Parser():
+    """Units_ parser."""
     def __init__(self):
         self.symbols = {
             # ETS DLOG
@@ -118,7 +119,26 @@ class Units_Parser():
         }
 
     def parse(self, units):
+        """Return parse result.
+
+        Args:
+            units: Unit string.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         def viable_symbol(string):
+            """Return viable symbol result.
+
+            Args:
+                string: String data.
+
+            Returns:
+                Result value.
+            """
             if string == "":
                 return True
             for symbol in self.symbols:
@@ -170,7 +190,14 @@ class Units_Parser():
 
 
 def parser(units):
-    '''Backward compatible with the old loose function call'''
+    """Backward compatible with the old loose function call.
+
+    Args:
+        units: Unit string.
+
+    Returns:
+        Result value.
+    """
     return Units_Parser().parse(units)
 
 

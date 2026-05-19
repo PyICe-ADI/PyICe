@@ -2,7 +2,7 @@ from ..lab_core import *  # noqa: F403
 
 
 class agilent_e4433b(instrument):
-    '''Agilent E4433B Signal Generator'''
+    """Agilent E4433B Signal Generator."""
 
     def __init__(self, interface_visa):
         self._base_name = 'agilent_e4433b'
@@ -11,6 +11,15 @@ class agilent_e4433b(instrument):
         self.get_interface().write(("*RST"))
 
     def add_channel(self, channel_name, add_extended_channels=True):
+        """Add a channel.
+
+        Args:
+            add_extended_channels: If True, add sense and mode channels.
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name, write_function=self.write_output)
         if add_extended_channels:
             self.add_channel_freq(channel_name + "_freq")
@@ -18,6 +27,12 @@ class agilent_e4433b(instrument):
         return self._add_channel(new_channel)
 
     def write_output(self, freq, power):
+        """Perform write output operation.
+
+        Args:
+            freq: Freq.
+            power: Power.
+        """
         self._write_power(power)
         self._write_freq(freq)
 
@@ -28,21 +43,49 @@ class agilent_e4433b(instrument):
         self.get_interface().write(("FREQuency " + str(freq) + "MHZ"))
 
     def add_channel_freq(self, channel_name):
+        """Add a channel freq.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         freq_channel = channel(channel_name, read_function=self.read_freq)
         return self._add_channel(freq_channel)
 
     def add_channel_power(self, channel_name):
+        """Add a channel power.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         power_channel = channel(channel_name, read_function=self.read_power)
         return self._add_channel(power_channel)
 
     def read_freq(self):
+        """Return read freq result.
+
+        Returns:
+            Result value.
+        """
         return self.get_interface().ask(("FREQ?"))
 
     def read_power(self):
+        """Return read power result.
+
+        Returns:
+            Result value.
+        """
         return self.get_interface().ask(("POWER?"))
 
     def enable_output(self):
+        """Enable output."""
         self.get_interface().write(("OUTP:STAT ON"))
 
     def disable_output(self):
+        """Disable output."""
         self.get_interface().write(("OUTP:STAT OFF"))

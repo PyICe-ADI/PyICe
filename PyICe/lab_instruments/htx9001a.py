@@ -8,18 +8,23 @@ str_encoding = 'latin-1'
 
 
 class htx9001a(htx9001):
-    ''' HTX9001 Configurator Pro A(Steve Martin)
-        Breakout/Edge connector board for ATE Bench, with i2c
-        Supports 5 types of channels:
-        gpio - 10 Channels, Possible values are 0,1(5V),Z (HiZ), P (Weak Pull Up)
-        test_hook - 5 channels, 1,0 pullup to 12V NO CURRENT LIMIT
-        relay - Channels 1-12, correspond to supply numbers, 0 or 1 (1 is supply connected)
-        ammeter relay - Channels 5-8
-        dvcc - Controls I2C/SMBus DVCC voltage
-        '''
+    """HTX9001 Configurator Pro A(Steve Martin).
 
+    Breakout/Edge connector board for ATE Bench, with i2c
+    Supports 5 types of channels:
+    gpio - 10 Channels, Possible values are 0,1(5V),Z (HiZ), P (Weak Pull Up)
+    test_hook - 5 channels, 1,0 pullup to 12V NO CURRENT LIMIT
+    relay - Channels 1-12, correspond to supply numbers, 0 or 1 (1 is supply connected)
+    ammeter relay - Channels 5-8
+    dvcc - Controls I2C/SMBus DVCC voltage
+    """
     def __init__(self, interface_visa, calibrating=False):
-        '''Creates a htx9001a object'''
+        """Creates a htx9001a object.
+
+        Args:
+            calibrating: Calibrating.
+            interface_visa: VISA interface instance.
+        """
         self._base_name = 'htx9001a'
         scpi_instrument.__init__(self, f"HTX9001A {interface_visa}")
         self.add_interface_visa(interface_visa)
@@ -75,16 +80,29 @@ class htx9001a(htx9001):
         self.get_interface().write(":I2C:PORT:DISable;")
 
     def resync(self):
+        """Perform resync operation."""
         line = self.get_interface().readline()
         while len(line):
             print(f"HTX9001 resync clearing out serial port data '{line}'")
             line = self.get_interface().readline()
 
     def add_channel_irelay(self, channel_name, irelay_number):
-        '''Adds an irelay channel,
-            channel_name is the name of the channel,
-            irelay_number is the number of the irelay (same number as the supply being switched)
-            valid irelays are 5-8'''
+        """Adds an irelay channel,.
+
+        channel_name is the name of the channel,
+        irelay_number is the number of the irelay (same number as the supply being switched)
+        valid irelays are 5-8
+
+        Args:
+            channel_name: Name for the new channel.
+            irelay_number: Irelay number.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         if irelay_number not in self.irelay_pins:
             raise Exception(f"Invalid irelay number {irelay_number}")
         if self.irelay_pins[irelay_number] in self.initialized_pins:
@@ -101,10 +119,23 @@ class htx9001a(htx9001):
         return new_channel
 
     def set_all_irelays(self, value):
+        """Set the all irelays.
+
+        Args:
+            value: Value to set.
+        """
         for irelay in self.irelay_pins:
             self._write_irelay(irelay, value)
 
     def get_resistor_calibration(self, resistor_number):
+        """Return the resistor calibration.
+
+        Args:
+            resistor_number: Resistor number.
+
+        Returns:
+            Result value.
+        """
         read_str = f"CAL:DATA? {resistor_number};"
         self.get_interface().write(read_str)
         data = self.get_interface().readline()
@@ -123,6 +154,15 @@ class htx9001a(htx9001):
         self.get_interface().write(f"VOLT:DVCC {voltage}")
 
     def add_channel_pwm(self, channel_name, pin):
+        """Add a channel pwm.
+
+        Args:
+            channel_name: Name for the new channel.
+            pin: Pin number.
+
+        Raises:
+            Exception: On error condition.
+        """
         if pin not in self.pwm_pins:
             raise Exception(
                 f"Invalid HTX9001A PWM pin number {pin}. Must be one of: {self.pwm_pins}")
@@ -144,6 +184,14 @@ class htx9001a(htx9001):
 
     def _add_channel_pwm_frequency(self, channel_name, pin):
         def set_pwm_frequency(value):
+            """Set the pwm frequency.
+
+            Args:
+                value: Value to set.
+
+            Raises:
+                Exception: On error condition.
+            """
             flow = 16e6 / 1024 / 65536
             fhigh = 8e6  # datasheet, fmax = fclkio / 2
             if value < flow or value > fhigh:
@@ -156,6 +204,11 @@ class htx9001a(htx9001):
 
     def _add_channel_pwm_duty_cycle(self, channel_name, pin):
         def set_pwm_duty_cycle(value):
+            """Set the pwm duty cycle.
+
+            Args:
+                value: Value to set.
+            """
             self.pwm_duty_cycle[pin] = value
             self._update_pwm_channel(pin)
         new_channel = channel(channel_name, write_function=set_pwm_duty_cycle)
@@ -163,6 +216,14 @@ class htx9001a(htx9001):
 
     def _add_channel_pwm_enable(self, channel_name, pin):
         def set_pwm_enable(value):
+            """Set the pwm enable.
+
+            Args:
+                value: Value to set.
+
+            Raises:
+                Exception: On error condition.
+            """
             value = self._clean_value(value)
             if value not in [0, 1]:
                 raise Exception(
@@ -174,6 +235,14 @@ class htx9001a(htx9001):
 
     def _add_channel_pwm_freq_readback(self, channel_name, pin):
         def compute_f(pin):
+            """Return compute f result.
+
+            Args:
+                pin: Pin number.
+
+            Returns:
+                Result value.
+            """
             return self.FCLK / \
                 float(self.prescale[pin]) / float(1 + self.top[pin])
         new_channel = channel(channel_name,
@@ -211,6 +280,18 @@ class htx9001a(htx9001):
                 f'PWM:MODE ({self.pwm_pins[pin]},DISABLE)')
 
     def add_channel_servo(self, channel_name, servo_number):
+        """Add a channel servo.
+
+        Args:
+            channel_name: Name for the new channel.
+            servo_number: Servo number.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         if servo_number not in self.pwm_pins:
             raise Exception(
                 f"Invalid HTX9001A servo pin number {servo_number}.")
@@ -229,6 +310,18 @@ class htx9001a(htx9001):
         return new_channel
 
     def add_channel_servo_enable(self, channel_name, servo_number):
+        """Add a channel servo enable.
+
+        Args:
+            channel_name: Name for the new channel.
+            servo_number: Servo number.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         if servo_number not in self.pwm_pins:
             raise Exception(
                 f"HTX9001A Invalid servo pin  number {servo_number}")
@@ -262,6 +355,11 @@ class htx9001a(htx9001):
             f'PWM:COMPare ({self.pwm_pins[servo_number]},{value * 2000 + 2000})')
 
     def set_all_relays(self, value):
+        """Set the all relays.
+
+        Args:
+            value: Value to set.
+        """
         for relay in self.relay_pins:
             self._write_relay(relay, value)
         for relay in self.irelay_pins:

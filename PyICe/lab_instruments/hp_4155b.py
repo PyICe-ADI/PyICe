@@ -3,13 +3,18 @@ from .semiconductor_parameter_analyzer import semiconductor_parameter_analyzer
 
 
 class hp_4155b(semiconductor_parameter_analyzer):
-    '''Hewlett Packard Semiconductor Parameter Analyzer speaking HP4145 Command Set
+    """Hewlett Packard Semiconductor Parameter Analyzer speaking HP4145 Command Set.
+
     Set System->MISCELLANEOUS->COMMAND SET = HP4145
     Set System->MISCELLANEOUS->DELIMITER = COMMA
-    Set System->MISCELLANEOUS->EOI = ON'''
-
+    Set System->MISCELLANEOUS->EOI = ON
+    """
     def __init__(self, interface_visa):
-        '''interface_visa"'''
+        """Interface_visa".
+
+        Args:
+            interface_visa: VISA interface instance.
+        """
         self._base_name = 'hewlett_packard_4155B-scs'
         scpi_instrument.__init__(
             self, f"hewlett_packard_4155B-scs @ {interface_visa}")
@@ -79,44 +84,118 @@ class hp_4155b(semiconductor_parameter_analyzer):
 
     def add_channels_smu_voltage(
             self, smu_number, voltage_force_channel_name, current_compliance_channel_name):
+        """Add a channels smu voltage.
+
+        Args:
+            current_compliance_channel_name: Current compliance channel name.
+            smu_number: Smu number.
+            voltage_force_channel_name: Voltage force channel name.
+
+        Returns:
+            Result value.
+        """
         assert 1 <= smu_number <= 6
         return self._add_channels_smu_voltage(
             smu_number, voltage_force_channel_name, current_compliance_channel_name)
 
     def add_channel_smu_voltage_output_range(
             self, smu_number, output_range_channel_name):
+        """Add a channel smu voltage output range.
+
+        Args:
+            output_range_channel_name: Output range channel name.
+            smu_number: Smu number.
+
+        Returns:
+            Result value.
+        """
         assert 1 <= smu_number <= 6
         return self._add_channel_smu_voltage_output_range(
             smu_number, output_range_channel_name)
 
     def add_channels_smu_current(
             self, smu_number, current_force_channel_name, voltage_compliance_channel_name):
+        """Add a channels smu current.
+
+        Args:
+            current_force_channel_name: Current force channel name.
+            smu_number: Smu number.
+            voltage_compliance_channel_name: Voltage compliance channel name.
+
+        Returns:
+            Result value.
+        """
         assert 1 <= smu_number <= 6
         return self._add_channels_smu_current(
             smu_number, current_force_channel_name, voltage_compliance_channel_name)
 
     def add_channel_smu_current_output_range(
             self, smu_number, output_range_channel_name):
+        """Add a channel smu current output range.
+
+        Args:
+            output_range_channel_name: Output range channel name.
+            smu_number: Smu number.
+
+        Returns:
+            Result value.
+        """
         assert 1 <= smu_number <= 6
         return self._add_channel_smu_current_output_range(
             smu_number, output_range_channel_name)
 
     def add_channel_smu_voltage_sense(
             self, smu_number, voltage_sense_channel_name):
+        """Add a channel smu voltage sense.
+
+        Args:
+            smu_number: Smu number.
+            voltage_sense_channel_name: Voltage sense channel name.
+
+        Returns:
+            Result value.
+        """
         assert 1 <= smu_number <= 6
         return self._add_channel_smu_voltage_sense(
             smu_number, voltage_sense_channel_name)
 
     def add_channel_smu_current_sense(
             self, smu_number, current_sense_channel_name):
+        """Add a channel smu current sense.
+
+        Args:
+            current_sense_channel_name: Current sense channel name.
+            smu_number: Smu number.
+
+        Returns:
+            Result value.
+        """
         assert 1 <= smu_number <= 6
         return self._add_channel_smu_current_sense(
             smu_number, current_sense_channel_name)
 
     def add_channel_vsource(self, vsource_number, vsource_channel_name):
+        """Add a channel vsource.
+
+        Args:
+            vsource_channel_name: Vsource channel name.
+            vsource_number: Vsource number.
+
+        Returns:
+            Result value.
+        """
         assert 1 <= vsource_number <= 2
         return self._add_channel_vsource(vsource_number, vsource_channel_name)
 
     def add_channel_vmeter(self, vmeter_number, vmeter_channel_name):
+        """Add a channel vmeter.
+
+        Args:
+            vmeter_channel_name: Vmeter channel name.
+            vmeter_number: Vmeter number.
+
+        Returns:
+            Result value.
+        """
         assert 1 <= vmeter_number <= 2
         return self._add_channel_vmeter(vmeter_number, vmeter_channel_name)

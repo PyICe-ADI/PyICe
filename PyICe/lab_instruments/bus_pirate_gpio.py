@@ -3,10 +3,14 @@ import time
 
 
 class bus_pirate_gpio(instrument):
-    '''bus pirate board as a gpio driver, uses binary mode to control and read up to 5 bits.'''
+    """Bus pirate board as a gpio driver, uses binary mode to control and read up to 5 bits."""
 
     def __init__(self, interface_raw_serial):
-        '''creates a bus_pirate_gpio object, serial_port can be a pyserial object or a string'''
+        """Creates a bus_pirate_gpio object, serial_port can be a pyserial object or a string.
+
+        Args:
+            interface_raw_serial: Interface raw serial.
+        """
         self._base_name = 'bus_pirate_gpio'
         instrument.__init__(self, f"BUS PIRATE {interface_raw_serial}")
         self.add_interface_raw_serial(interface_raw_serial)
@@ -60,9 +64,23 @@ class bus_pirate_gpio(instrument):
         return self.pin_mask[pin_name]
 
     def add_channel(self, channel_name, pin_names, output, value=0):
-        '''add channel by channel_name,
+        """Add channel by channel_name,.
+
             ie to create a 3 bit digital output channel on pins CLK,MISO,MOSI add_channel("channel_name",["CLK",MISO",MOSI"],output=1)
-            as always the FIRST pin is the MSB'''
+            as always the FIRST pin is the MSB
+
+        Args:
+            channel_name: Name for the new channel.
+            output: Output.
+            pin_names: Pin names.
+            value: Value to set.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         if isinstance(pin_names, type("")):
             pin_names = [pin_names]  # convert to a list if a string was given
         pin_names = [pin_name.upper() for pin_name in pin_names]
@@ -84,9 +102,18 @@ class bus_pirate_gpio(instrument):
         return self._add_channel(new_channel)
 
     def _write_pins(self, pin_names, value):
-        '''Write named channel to value.  Value is an integer which counts by "1".
+        """Write named channel to value.  Value is an integer which counts by "1".
+
             The value is automatically truncated and shifted according to the location information
-            provided to add_channel().  The remainder of the digital word not included in the channel remains unchanged.'''
+            provided to add_channel().  The remainder of the digital word not included in the channel remains unchanged.
+
+        Args:
+            pin_names: Pin names.
+            value: Value to set.
+
+        Raises:
+            Exception: On error condition.
+        """
         if value > pow(2, len(pin_names)):
             raise Exception(f'Buspirate {pin_names}: value {value} too large')
         for pin_name in reversed(pin_names):
@@ -99,7 +126,14 @@ class bus_pirate_gpio(instrument):
         self._bus_pirate_write_outputs()
 
     def _read_pins(self, pin_names):
-        '''Return the forcing value for the named channel.'''
+        """Return the forcing value for the named channel.
+
+        Args:
+            pin_names: Pin names.
+
+        Returns:
+            Result value.
+        """
         data = 0
         pin_data = self._bus_pirate_get_pin_state()
         for pin_name in pin_names:

@@ -30,6 +30,11 @@ if __name__ == '__main__':
     m.add(bar)
 
     def counter():
+        """Return counter result.
+
+        Returns:
+            Result value.
+        """
         if counter.count is None:
             counter.start_time = time.time()
             counter.count = 1
@@ -39,12 +44,22 @@ if __name__ == '__main__':
     counter.count = None
 
     def timer():
+        """Return timer result.
+
+        Returns:
+            Result value.
+        """
         if timer.start is None:
             timer.start = time.time()
         return time.time() - timer.start
     timer.start = None
 
     def cycle_timer():
+        """Return cycle timer result.
+
+        Returns:
+            Result value.
+        """
         return timer() / counter.count
 
     m.add_channel_virtual('count', read_function=counter)

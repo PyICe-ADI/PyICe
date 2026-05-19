@@ -3,8 +3,21 @@ import numpy
 
 
 def ramer_douglas_peucker(rec_array, epsilon, verbose=True):
-    '''reduce number of points in line-segment curve such that reduced line segment count approximates original curve within epsilon tolerance.
-    https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm'''
+    """Reduce number of points in line-segment curve such that reduced line segment count approximates original curve within epsilon tolerance.
+
+    https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm
+
+    Args:
+        epsilon: Epsilon.
+        rec_array: Rec array.
+        verbose: If True, print debug output.
+
+    Returns:
+        Result value.
+
+    Raises:
+        ImportError: On error condition.
+    """
     try:
         from rdp import rdp
     except ImportError:

@@ -3,10 +3,15 @@ import time
 
 
 class tektronix_3054(scpi_instrument, delegator):
-    '''Tek 4-channel DSO'''
+    """Tek 4-channel DSO."""
 
     def __init__(self, interface_visa, force_trigger=True):
-        '''interface_visa"'''
+        """Interface_visa".
+
+        Args:
+            force_trigger: Force trigger.
+            interface_visa: VISA interface instance.
+        """
         self._base_name = 'tektronix_3054'
         delegator.__init__(self)
         scpi_instrument.__init__(self, f"tektronix_3054 @ {interface_visa}")
@@ -19,6 +24,14 @@ class tektronix_3054(scpi_instrument, delegator):
         self.force_trigger = force_trigger
 
     def add_channel_time(self, channel_name):
+        """Add a channel time.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         time_channel = channel(
             channel_name,
             read_function=self._read_scope_time)
@@ -26,7 +39,15 @@ class tektronix_3054(scpi_instrument, delegator):
         return self._add_channel(time_channel)
 
     def add_channel(self, channel_name, scope_channel_number):
-        '''Add named channel to instrument.  num is 1-4.'''
+        """Add named channel to instrument.  num is 1-4.
+
+        Args:
+            channel_name: Name for the new channel.
+            scope_channel_number: Scope channel number.
+
+        Returns:
+            Result value.
+        """
         assert isinstance(scope_channel_number, int)
         scope_channel = channel(
             channel_name,
@@ -36,6 +57,17 @@ class tektronix_3054(scpi_instrument, delegator):
 
     def add_channel_dvm(self, channel_name,
                         scope_channel_number, measurement_time=2, mode='DC'):
+        """Add a channel dvm.
+
+        Args:
+            channel_name: Name for the new channel.
+            measurement_time: Measurement time.
+            mode: Operating mode.
+            scope_channel_number: Scope channel number.
+
+        Returns:
+            Result value.
+        """
         assert isinstance(scope_channel_number, int)
         mode = mode.upper()
         assert mode in ['ACRMS', 'ACDCRMS', 'DC', 'FREQ', 'FREQUENCY']  # 'OFF'
@@ -52,16 +84,21 @@ class tektronix_3054(scpi_instrument, delegator):
         return self._add_channel(dvm_channel)
 
     def trigger_force(self):
-        '''Creates a trigger event. If TRIGger:STATE is set to READy, the acquisition
-        will complete. Otherwise, this command will be ignored.'''
+        """Creates a trigger event. If TRIGger:STATE is set to READy, the acquisition.
+
+        will complete. Otherwise, this command will be ignored.
+        """
         self.get_interface().write(('TRIGger FORCe'))
 
     def _read_scope_time(self):
-        '''
-        Data conversion:
+        """Data conversion:.
+
         voltage = [(data value - yreference) * yincrement] + yorigin
         time = [(data point number - xreference) * xincrement] + xorigin
-        '''
+
+        Returns:
+            Result value.
+        """
         self.get_interface().write(('WFMPRE?'))
         preamble = self.get_interface().read().split(';')
         # remove junk that doesn't really belong to first field
@@ -83,11 +120,18 @@ class tektronix_3054(scpi_instrument, delegator):
         return xpoints
 
     def _read_scope_channel(self, scope_channel_number):
-        '''return list of y-axis points for named channel
+        """Return list of y-axis points for named channel.
+
             list will be datalogged by logger as a string in a single cell in the table
             trigger=False can by used to suppress acquisition of new data by the instrument so that
             data from a single trigger may be retrieved from each of the four channels in turn by read_channels()
-        '''
+
+        Args:
+            scope_channel_number: Scope channel number.
+
+        Returns:
+            Result value.
+        """
         # trigger / single arm sequence commands need investigation.  Forcing trigger here is not correct
         # if trigger:
         # self.get_interface().write(('TRIGger'))
@@ -138,7 +182,16 @@ class tektronix_3054(scpi_instrument, delegator):
         return data
 
     def _read_dvm_channel(self, scope_channel_number, measurement_time, mode):
-        '''return DVM voltage for selected channel'''
+        """Return DVM voltage for selected channel.
+
+        Args:
+            measurement_time: Measurement time.
+            mode: Operating mode.
+            scope_channel_number: Scope channel number.
+
+        Returns:
+            Result value.
+        """
         self.get_interface().write((f'DVM:SOUrce CH{scope_channel_number}'))
         self.get_interface().write((f'DVM:MODE {mode}'))
         time.sleep(measurement_time)
@@ -147,6 +200,14 @@ class tektronix_3054(scpi_instrument, delegator):
         return float(raw_data[1])
 
     def read_delegated_channel_list(self, channels):
+        """Return read delegated channel list result.
+
+        Args:
+            channels: List of channel objects.
+
+        Returns:
+            Result value.
+        """
         if self.force_trigger:
             self.trigger_force()
         results = results_ord_dict()

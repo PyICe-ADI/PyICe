@@ -3,6 +3,7 @@ import os
 
 
 def create_my_scopefile():
+    """Perform create my scopefile operation."""
     if not os.path.isfile('./local/my_instruments.py'):
         os.makedirs("./local/", exist_ok=True)
         with open('./local/my_instruments.py', 'w') as file:

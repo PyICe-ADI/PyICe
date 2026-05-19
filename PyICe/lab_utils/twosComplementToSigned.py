@@ -1,5 +1,5 @@
 def twosComplementToSigned(binary, bitCount):
-    '''take two's complement number with specified number of bits and convert to python int representation
+    """Take two's complement number with specified number of bits and convert to python int representation.
 
     >>> twosComplementToSigned(5, 8)
     5
@@ -7,7 +7,17 @@ def twosComplementToSigned(binary, bitCount):
     -1
     >>> twosComplementToSigned(128, 8)
     -128
-    '''
+
+    Args:
+        binary: Binary/integer data.
+        bitCount: Bitcount.
+
+    Returns:
+        Result value.
+
+    Raises:
+        ValueError: On error condition.
+    """
     if binary >= 2**bitCount:
         raise ValueError(
             f'binary value {binary} exceeds {bitCount}-bit range (max {2**bitCount - 1})')

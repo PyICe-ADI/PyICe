@@ -1,9 +1,9 @@
-'''
-Channel Wraper for SMBus Compliant Devices
+"""Channel Wraper for SMBus Compliant Devices.
+
 ==========================================
 
 Can automatically populate channels/reisters from XML description
-'''
+"""
 import logging
 from . import lab_core
 from . import twi_interface
@@ -24,6 +24,7 @@ debug_logging = logging.getLogger(__name__)
 
 
 class twi_instrument(lab_core.instrument, lab_core.delegator):
+    """Twi_instrument."""
     def __init__(self, interface_twi, except_on_i2cInitError=True,
                  except_on_i2cCommError=False, retry_count=5, PEC=False):
         lab_core.instrument.__init__(self, name="twi_instrument")
@@ -42,6 +43,25 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
 
     def add_register(self, name, addr7, command_code, size, offset,
                      word_size, is_readable, is_writable, overwrite_others=False):
+        """Add a register.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            command_code: Command code.
+            is_readable: Is readable.
+            is_writable: Is writable.
+            name: Name identifier.
+            offset: Offset value.
+            overwrite_others: Overwrite others.
+            size: Size in bits.
+            word_size: Word size.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         if self._addr7 != addr7:
             if self._addr7 is None:
                 self._addr7 = addr7  # first time
@@ -73,6 +93,14 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
         return self._add_channel(new_register)
 
     def add_channel_ARA(self, name):
+        """Add a channel ARA.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         ARA_channel = lab_core.channel(
             name, read_function=self._interface.alert_response)
         return self._add_channel(ARA_channel)
@@ -81,6 +109,17 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
         raise Exception("Shouldn't be here!")
 
     def get_command_codes(self, register_list):
+        """Return the command codes.
+
+        Args:
+            register_list: Register list.
+
+        Returns:
+            Result value.
+
+        Raises:
+            ChannelAccessException: On error condition.
+        """
         command_codes = []
         for register in register_list:
             if register.is_readable() and not register.get_attribute('read_caching'):
@@ -91,12 +130,28 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
         return sorted(list(set(command_codes)))  # filter unique
 
     def get_readable_command_codes(self, register_list):
-        '''returns list of command codes required to read all readable registers within register_list
-        not used for normal delegated reads. helpful to construct command code list for use with other tools (Linduino streaming for example)'''
+        """Returns list of command codes required to read all readable registers within register_list.
+
+        not used for normal delegated reads. helpful to construct command code list for use with other tools (Linduino streaming for example)
+
+        Args:
+            register_list: Register list.
+
+        Returns:
+            Result value.
+        """
         return self.get_command_codes([channel for channel in register_list if channel.is_readable(
         ) and 'command_code' in channel.get_attributes()])
 
     def read_delegated_channel_list(self, register_list):
+        """Return read delegated channel list result.
+
+        Args:
+            register_list: Register list.
+
+        Returns:
+            Result value.
+        """
         start_streaming = False
         cc_data = {}
         for data_size in set([ch.get_attribute('word_size')
@@ -118,6 +173,11 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
             # start_streaming = True
 
             def function():
+                """Return function result.
+
+                Returns:
+                    Result value.
+                """
                 return self._interface.read_register_list(
                     self._addr7, command_codes, data_size, self._PEC)
             debug_logging.debug(
@@ -204,12 +264,26 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
 
     def get_bitfield_writeback_data(
             self, addr7, data, command_code, size, offset, word_size):
+        """Return the bitfield writeback data.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            command_code: Command code.
+            data: Data to write.
+            offset: Offset value.
+            size: Size in bits.
+            word_size: Word size.
+
+        Raises:
+            Exception: On error condition.
+        """
         raise Exception(
             'Code cleanup 2024/05/08. Switch to new method name compute_rmw_writeback_data() with new calling and return signature.')
 
     def compute_rmw_writeback_data(self, data, addr7, command_code, size,
                                    offset, word_size, is_readable=True, overwrite_others=False):
-        '''Read whole (atmoic) register.
+        """Read whole (atmoic) register.
+
         Replace any slices unrelated to the write slice based on each constituent bitfield's RWM value preference
         Replace slice related to the write with the new data.
 
@@ -241,7 +315,23 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
         -------
         Exception
             Various consistency errors. Abnormal.
-        '''
+
+        Args:
+            addr7: 7-bit I2C device address.
+            command_code: Command code.
+            data: Data to write.
+            is_readable: Is readable.
+            offset: Offset value.
+            overwrite_others: Overwrite others.
+            size: Size in bits.
+            word_size: Word size.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         # Step 1: get existing data across whole register width
         if data is None and word_size == 0:
             # send_byte
@@ -250,6 +340,11 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
             raise Exception('quick_cmd not yet fully implemented.')
         else:
             def function():
+                """Return function result.
+
+                Returns:
+                    Result value.
+                """
                 return self._interface.read_register(
                     addr7, command_code, word_size, self._PEC)
             # read the data
@@ -322,8 +417,13 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
                                                                       use_pec=self._PEC))
 
     def enable_cached_read(self, include_readable_registers=False):
-        '''disable remote read of writable register and instead return cached previous write.
-        only affects write-only register by default. include_readable_registers argument also includes read-write registers.'''
+        """Disable remote read of writable register and instead return cached previous write.
+
+        only affects write-only register by default. include_readable_registers argument also includes read-write registers.
+
+        Args:
+            include_readable_registers: Include readable registers.
+        """
         for register in self:
             if register.is_writeable():
                 if not register.is_readable() or include_readable_registers:
@@ -331,38 +431,19 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
 
     def populate_from_file(self, xml_file, format_dict=None, access_list=None,
                            use_case=None, channel_prefix="", channel_suffix=""):
-        '''
-        xml_register parsing accepts xml input complying with the following DTD (register_map.dtd):
+        """Parse xml_register file complying with register_map.dtd and populate instrument channels.
 
-    <!-- Visit http://en.wikipedia.org/wiki/Document_Type_Definition for an excellent explanation of DTD syntax -->
-    <!ELEMENT register_map (chip+, use*, format_definitions?)>
-    <!ELEMENT chip (description, address+, command_code*)>
-    <!ELEMENT address EMPTY>
-    <!ELEMENT command_code (description?, access+, bit_field+)>
-    <!ELEMENT access EMPTY>
-    <!ELEMENT bit_field (description, default?, preset*, format*)>
-    <!ELEMENT description (#PCDATA)>
-    <!ELEMENT default (#PCDATA)>
-    <!ELEMENT preset (description?)>
-    <!ELEMENT format EMPTY>
-    <!ELEMENT use (category+)>
-    <!ELEMENT category (#PCDATA)>
-    <!ELEMENT format_definitions (format_definition+)>
-    <!ELEMENT format_definition (description, transformed_units?, piecewise_linear_points?)>
-    <!ELEMENT transformed_units (#PCDATA)>
-    <!ELEMENT piecewise_linear_points (point,point+)>
-    <!ELEMENT point EMPTY>
-    <!ATTLIST chip name CDATA #REQUIRED word_size CDATA #REQUIRED>
-    <!ATTLIST address address_7bit CDATA #REQUIRED>
-    <!ATTLIST command_code name ID #REQUIRED value CDATA #REQUIRED>
-    <!ATTLIST bit_field name ID #REQUIRED size CDATA #REQUIRED offset CDATA #REQUIRED category CDATA #REQUIRED>
-    <!ATTLIST access mode CDATA #REQUIRED type (read | write) #REQUIRED>
-    <!ATTLIST preset name CDATA #REQUIRED value CDATA #REQUIRED>
-    <!ATTLIST format name IDREF #REQUIRED>
-    <!ATTLIST use name CDATA #REQUIRED>
-    <!ATTLIST format_definition name ID #REQUIRED signed (True | False | 1 | 0) #REQUIRED>
-    <!ATTLIST point native CDATA #REQUIRED transformed CDATA #REQUIRED>
-    '''
+        Args:
+            xml_file: Path to XML register map file.
+            format_dict: Dictionary of format definitions. Default empty dict.
+            access_list: List of access modes to include. Default all.
+            use_case: Use case name to filter by, or None for all.
+            channel_prefix: Prefix string for channel names.
+            channel_suffix: Suffix string for channel names.
+
+        Raises:
+            Exception: On XML parsing or register configuration errors.
+        """
         if format_dict is None:
             format_dict = {}
         if access_list is None:
@@ -484,6 +565,16 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
 
     def populate_from_yoda_json_bridge(
             self, filename, i2c_addr7, extended_addressing=False):
+        """Perform populate from yoda json bridge operation.
+
+        Args:
+            extended_addressing: Extended addressing.
+            filename: File path.
+            i2c_addr7: I2c addr7.
+
+        Raises:
+            Exception: On error condition.
+        """
         with open(filename, 'r') as fp:
             registers = json.load(fp)
         for reg in registers:
@@ -610,13 +701,22 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
 
     def create_format(self, format_name, format_function, unformat_function,
                       signed=False, description=None, units='', xypoints=None):
-        '''Create a new format definition or modify an existing definition.
+        """Create a new format definition or modify an existing definition.
 
         format_function should take a single argument of integer raw data from the register and return a version of the data scaled to appropriate units.
         unformat_function should take a single argument of data in real units and return an integer version of the data scaled to the register LSB weight.
         If the data is signed in two's-complement format, set signed=True.
         After creating format, use set_active_format method to make the new format active.
-        '''
+
+        Args:
+            description: Description string.
+            format_function: Format function.
+            format_name: Name of the format.
+            signed: If True, interpret as signed value.
+            unformat_function: Unformat function.
+            units: Unit string.
+            xypoints: Xypoints.
+        """
         if xypoints is None:
             xypoints = []
         self.formatters[format_name] = {
@@ -628,16 +728,32 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
             'xypoints': xypoints}
 
     def set_constant(self, constant, value):
-        '''Sets the constants found in the datasheet used by the formatters to convert from real world values to digital value and back.'''
+        """Sets the constants found in the datasheet used by the formatters to convert from real world values to digital value and back.
+
+        Args:
+            constant: Constant.
+            value: Value to set.
+        """
         self._constants[constant] = value
         self._update_xml_formatters()
 
     def get_constant(self, constant):
-        '''Sets the constants found in the datasheet used by the formatters to convert from real world values to digital value and back.'''
+        """Sets the constants found in the datasheet used by the formatters to convert from real world values to digital value and back.
+
+        Args:
+            constant: Constant.
+
+        Returns:
+            Result value.
+        """
         return self._constants[constant]
 
     def list_constants(self):
-        '''Returns the list of constants found in the datasheet used by the formatters to convert from real world values to digital value and back.'''
+        """Returns the list of constants found in the datasheet used by the formatters to convert from real world values to digital value and back.
+
+        Returns:
+            Result value.
+        """
         return self._constants
 
     def _update_xml_formatters(self):
@@ -661,7 +777,18 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
                                xypoints=xyevalpoints)
 
     def _transform_from_points(self, xyevalpoints, direction):
-        '''Used internally to convert from register values to real world values and back again.'''
+        """Used internally to convert from register values to real world values and back again.
+
+        Args:
+            direction: Direction.
+            xyevalpoints: Xyevalpoints.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         if not SCIPY_MISSING:
             x_evaled, y_evaled = list(zip(*xyevalpoints))
             if direction == "format":
@@ -698,6 +825,7 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
 
 
 class twi_register(lab_core.register):
+    """Twi_register."""
     pass
     # 2024/05/07 DJS: This code appears unused. Prove me wrong.
     # def calculate_cc_merge_bf(self, bf_data):
@@ -716,6 +844,7 @@ class twi_register(lab_core.register):
 
 
 class pmbus_instrument(twi_instrument):
+    """Pmbus_instrument (twi_instrument subclass)."""
     def __init__(self, interface_twi, except_on_i2cInitError=True,
                  except_on_i2cCommError=False, retry_count=5, PEC=False):
         twi_instrument.__init__(
@@ -732,7 +861,32 @@ class pmbus_instrument(twi_instrument):
 
     def add_register(self, name, addr7, page, command_code,
                      size, offset, word_size, is_readable, is_writable):
+        """Add a register.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            command_code: Command code.
+            is_readable: Is readable.
+            is_writable: Is writable.
+            name: Name identifier.
+            offset: Offset value.
+            page: Page.
+            size: Size in bits.
+            word_size: Word size.
+
+        Returns:
+            Result value.
+        """
         def paged_write(data, channel):
+            """Return paged write result.
+
+            Args:
+                channel: Channel object.
+                data: Data to write.
+
+            Returns:
+                Result value.
+            """
             self.set_page(channel.get_attribute('page'))
             return channel.pmbus_unpaged_write(data)
         new_register = twi_instrument.add_register(
@@ -752,6 +906,11 @@ class pmbus_instrument(twi_instrument):
         return new_register
 
     def set_page(self, page):
+        """Set the page.
+
+        Args:
+            page: Page.
+        """
         if page is not None:
             self._interface.write_register(
                 addr7=self._addr7,
@@ -765,6 +924,14 @@ class pmbus_instrument(twi_instrument):
                 page)
 
     def read_delegated_channel_list(self, register_list):
+        """Return read delegated channel list result.
+
+        Args:
+            register_list: Register list.
+
+        Returns:
+            Result value.
+        """
         results = lab_core.results_ord_dict()
         pages = set([ch.get_attribute('page') for ch in register_list])
         if len(pages) > 1 and None in pages:
@@ -781,7 +948,7 @@ class pmbus_instrument(twi_instrument):
 
 
 class twi_instrument_dummy(twi_instrument):
-    '''use for formatters, etc without having to set up a master and physical hardware.'''
+    """Use for formatters, etc without having to set up a master and physical hardware."""
 
     def __init__(self):
         lab_core.instrument.__init__(self, name="twi_instrument_dummy")

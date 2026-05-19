@@ -44,7 +44,11 @@ collect_ignore = [
 
 @pytest.fixture(autouse=True)
 def reset_interface_factory_singleton():
-    """Reset the interface_factory singleton guard before each test."""
+    """Reset the interface_factory singleton guard before each test.
+
+    Yields:
+        Next value.
+    """
     from PyICe.lab_interfaces import interface_factory
     interface_factory._instantiated = False
     yield
@@ -53,7 +57,11 @@ def reset_interface_factory_singleton():
 
 @pytest.fixture
 def master_instance():
-    """Create a fresh master instance."""
+    """Create a fresh master instance.
+
+    Yields:
+        Next value.
+    """
     from PyICe.lab_core import master
     m = master()
     yield m
@@ -61,7 +69,14 @@ def master_instance():
 
 @pytest.fixture
 def master_with_dummies(master_instance):
-    """Master with several dummy channels pre-loaded."""
+    """Master with several dummy channels pre-loaded.
+
+    Args:
+        master_instance: Master instance.
+
+    Returns:
+        Result value.
+    """
     m = master_instance
     m.add_channel_dummy('dummy_float')
     m.add_channel_dummy('dummy_int', integer_size=8)
@@ -73,7 +88,14 @@ def master_with_dummies(master_instance):
 
 @pytest.fixture
 def master_with_virtuals(master_instance):
-    """Master with virtual read/write channels."""
+    """Master with virtual read/write channels.
+
+    Args:
+        master_instance: Master instance.
+
+    Returns:
+        Result value.
+    """
     m = master_instance
     m.add_channel_virtual('virt_read', read_function=lambda: 99)
     m.add_channel_virtual('virt_write', write_function=lambda v: None)
@@ -84,7 +106,15 @@ def master_with_virtuals(master_instance):
 
 @pytest.fixture
 def logger_instance(tmp_path, master_with_dummies):
-    """Logger with temp SQLite database for isolated testing."""
+    """Logger with temp SQLite database for isolated testing.
+
+    Args:
+        master_with_dummies: Master with dummies.
+        tmp_path: Tmp path.
+
+    Yields:
+        Next value.
+    """
     from PyICe.lab_core import logger
     db_path = str(tmp_path / "test_log.sqlite")
     lg = logger(master_with_dummies, database=db_path, use_threads=False)

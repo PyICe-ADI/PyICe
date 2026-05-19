@@ -3,22 +3,44 @@ import collections
 
 
 class Traceability_items():
+    """Traceability_items."""
     def __init__(self, test):
         self.item_list = []
         self.test = test
         self.trace_data = collections.OrderedDict()
 
     def add(self, channel_name, func):
+        """Perform add operation.
+
+        Args:
+            channel_name: Name for the new channel.
+            func: Func.
+        """
         self.item_list.append({'channel_name': channel_name, 'func': func})
 
     def populate_traceability_data(self, traceables):
+        """Perform populate traceability data operation.
+
+        Args:
+            traceables: Traceables.
+        """
         for channel_name in traceables:
             self.trace_data[channel_name] = traceables[channel_name](self.test)
 
     def get_traceability_data(self):
+        """Return the traceability data.
+
+        Returns:
+            Result value.
+        """
         return self.trace_data
 
     def add_data_to_metalogger(self, logger):
+        """Add a data to metalogger.
+
+        Args:
+            logger: Logger.
+        """
         for channel_name in self.trace_data:
             new_channel = channel(name=channel_name)
             logger.add_channel(new_channel)

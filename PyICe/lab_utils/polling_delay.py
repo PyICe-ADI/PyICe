@@ -2,18 +2,17 @@ import time
 
 
 class polling_delay(object):
-    '''poll for test condition iteratively before unblocking.
+    """Poll for test condition iteratively before unblocking.
 
     Supports exact and range tests
     Supports abstracted notion of time and delay, or defaults to time.sleep()
     Optionally terminates search if exit criteria are not satisfied within a timeout interval.
     Optionally raises TimeoutErrror if timeout is exceeded.
-    '''
-
+    """
     def __init__(self, dly_fn=None, time_readback_fn=None,
                  except_on_timeout=True, timeout_str_prefix='*Error* '):
-        """
-        Parameters
+        """Parameters.
+
         ----------
         dly_fn : function, optional
             One argument function to advance time. Default time.sleep()
@@ -23,8 +22,13 @@ class polling_delay(object):
             Raise TimeoutError if timeout exceeded. Default True
         timeout_str_prefix: str, optional
             Set begining of timeout printed or raised message to aid in log parsing. Default "*Error*"
-        """
 
+        Args:
+            dly_fn: Dly fn.
+            except_on_timeout: Except on timeout.
+            time_readback_fn: Time readback fn.
+            timeout_str_prefix: Timeout str prefix.
+        """
         if dly_fn is None:
             self.dly_function = lambda dly: time.sleep(dly)
         else:
@@ -105,6 +109,16 @@ class polling_delay(object):
         -------
         TimeoutError
             Acuumulated delay exceeds timout before exit criteria satisfied, if self.except_on_timeout.
+
+        Args:
+            expect: Expected value.
+            poll_fn: Poll fn.
+            poll_interval: Poll interval.
+            test_initial: Test initial.
+            timeout: Timeout in seconds.
+
+        Returns:
+            Result value.
         """
         self._continue_condition = expect
 
@@ -148,6 +162,17 @@ class polling_delay(object):
         -------
         TimeoutError
             Acuumulated delay exceeds timout before exit criteria satisfied, if self.except_on_timeout.
+
+        Args:
+            max: Max.
+            min: Min.
+            poll_fn: Poll fn.
+            poll_interval: Poll interval.
+            test_initial: Test initial.
+            timeout: Timeout in seconds.
+
+        Returns:
+            Result value.
         """
         self._continue_condition = (min, max)
 
@@ -166,7 +191,7 @@ class polling_delay(object):
                               timeout=timeout, test_initial=test_initial, test_fn=_test)
 
     def get_previous_outcome(self):
-        """Gets detailed results of last wait_for_limit or wait_for_exact method call
+        """Gets detailed results of last wait_for_limit or wait_for_exact method call.
 
         Parameters
         ----------
@@ -176,6 +201,9 @@ class polling_delay(object):
         -------
         dict
             keys: ['accumulated_delay':<float>, 'iterations':<int>, 'initial_time':<numeric>, 'final_time':<numeric>, 'last_value', 'continue_condition', 'success':<bool>]
+
+        Returns:
+            Result value.
         """
         return {'accumulated_delay': self._accumulated_dly,
                 'iterations': self._iterations,
@@ -189,10 +217,16 @@ class polling_delay(object):
 
 def test():
     # TODO: move to more formalized test framework / unit test
+    """Return test result."""
     import random
     from PyICe.lab_utils.polling_delay import polling_delay
 
     def thinking_of_a_number():
+        """Return thinking of a number result.
+
+        Returns:
+            Result value.
+        """
         resp = random.randrange(100)
         print(f'testing {resp}')
         return resp
@@ -202,10 +236,20 @@ def test():
             self._time = 0
 
         def delay(self, dly_time):
+            """Perform delay operation.
+
+            Args:
+                dly_time: Dly time.
+            """
             print(f'waiting {dly_time} at time {self._time}')
             self._time += dly_time
 
         def get_time(self):
+            """Return the time.
+
+            Returns:
+                Result value.
+            """
             return self._time
     vt = virt_time()
 

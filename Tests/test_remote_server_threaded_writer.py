@@ -6,6 +6,7 @@ m = lab_core.master()
 if m.attach():
     # slave stuff
     def dummy_fn():
+        """Perform dummy fn operation."""
         print("Yo")
     foo = lab_utils.threaded_writer(verbose=True)
     # foo = lab_utils.threaded_writer()

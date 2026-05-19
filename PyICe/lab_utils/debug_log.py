@@ -2,7 +2,7 @@ import time
 
 
 class debug_log(object):
-    '''Log messages into a file and optionally print to screen.'''
+    """Log messages into a file and optionally print to screen."""
     # This class used in most of Frank's tests.
 
     def __init__(self, log_file_name=__name__ + ".log", debug=False):
@@ -13,14 +13,33 @@ class debug_log(object):
         # the program exits for any reason.
 
     def __enter__(self):
+        """Enter the context manager.
+
+        Returns:
+            Result value.
+        """
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        """Exit the context manager.
+
+        Args:
+            exc_tb: Exc tb.
+            exc_type: Exc type.
+            exc_val: Exc val.
+
+        Returns:
+            Result value.
+        """
         self.f.close()
         return None
 
     def write(self, msg):
-        '''Add a message to the log file. Also print the message if debug is True'''
+        """Add a message to the log file. Also print the message if debug is True.
+
+        Args:
+            msg: Msg.
+        """
         t_str = time.asctime()
         m_str = "{} :: {}\n".format(t_str, msg)
         if self.debug:

@@ -5,14 +5,18 @@ from PyICe.lab_core import *  # noqa: F403
 
     NOTE: to use the test hook function, the wall adapter must be plugged into the Arduino Zero. No other functions require this adapter.
 '''
-
-
 class pyice_arduino_tool(instrument):
-    '''single channel agilent_34401a meter
-        defaults to dc voltage, note this instrument currently does not support using multiple measurement types at the same time'''
+    """Single channel agilent_34401a meter.
 
+    defaults to dc voltage, note this instrument currently does not support using multiple measurement types at the same time
+    """
     def __init__(self, interface, base_name='pat'):
-        '''interface'''
+        """Interface.
+
+        Args:
+            base_name: Base name.
+            interface: Interface.
+        """
         self._base_name = base_name
         instrument.__init__(self, f"PAT @ {interface}")
         self.add_interface_visa(interface, 60)
@@ -23,6 +27,11 @@ class pyice_arduino_tool(instrument):
 
     def init_channels(self, base_name):  # ADD BASENAME INPUT ARG
         # chip_data
+        """Perform init channels operation.
+
+        Args:
+            base_name: Base name.
+        """
         self.chip_uses_pec_channel = self._add_channel_chip_uses_pec(
             f'{base_name}_chip_uses_pec')
         self.chip_register_size_channel = self._add_channel_chip_register_size(
@@ -156,23 +165,40 @@ class pyice_arduino_tool(instrument):
                     self.action_timestamp_channel_us.read()) / 1e6))
 
     def map_pins(self):
-        '''Give pins unique names specific to the application, ex. self.RST = 2'''
+        """Give pins unique names specific to the application, ex. self.RST = 2."""
         print('YOU CAN OVERRIDE map_pins(). Use this to set board-specific names for each pin.')
 
     def reset_pins(self):
-        '''Give pins default states specific to the application'''
+        """Give pins default states specific to the application."""
         print(
             'YOU CAN OVERRIDE reset_pins(). Use this to set the default state for each pin.')
 
     def reset_settings(self):
+        """Perform reset settings operation."""
         self.action_flush_channel.read()
         self.enable_board_channel.write('False')
         self.test_timeout_channel.write(5)
 # ADD CHANNEL HELPERS ----------------------------------------------------
 
     def _add_read_channel(self, channel_name, command):
-        '''Register a named channel. No configuration takes place. '''
+        """Register a named channel. No configuration takes place.
+
+        Args:
+            channel_name: Name for the new channel.
+            command: Command.
+
+        Returns:
+            Result value.
+        """
         def read_mumbo(message):
+            """Return read mumbo result.
+
+            Args:
+                message: Message.
+
+            Returns:
+                Result value.
+            """
             resp = self.get_interface().ask(message)
             extra = self.get_interface().resync()
             assert extra == '', f"{message} unexpected response. Should be empty. Saw {resp} then {extra}."
@@ -187,8 +213,21 @@ class pyice_arduino_tool(instrument):
         return self._add_channel(new_channel)
 
     def _add_read_write_channel_with_param(self, channel_name, command):
-        '''Register a named channel. No configuration takes place. '''
+        """Register a named channel. No configuration takes place.
+
+        Args:
+            channel_name: Name for the new channel.
+            command: Command.
+
+        Returns:
+            Result value.
+        """
         def write_magic(message):
+            """Perform write magic operation.
+
+            Args:
+                message: Message.
+            """
             resp = self.get_interface().ask(message)
             extra = self.get_interface().resync()
             assert extra == '', f"{message} unexpected response. Should be empty. Saw {resp} then {extra}."
@@ -205,6 +244,11 @@ class pyice_arduino_tool(instrument):
 
     def _add_write_channel(self, channel_name, command):
         def write_jumbo(message):
+            """Perform write jumbo operation.
+
+            Args:
+                message: Message.
+            """
             resp = self.get_interface().ask(message)
             extra = self.get_interface().resync()
             assert extra == '', f"{message} unexpected response. Should be empty. Saw {resp} then {extra}."
@@ -216,7 +260,14 @@ class pyice_arduino_tool(instrument):
 
 # CHIP_DATA CHANNEL DEFS -------------------------------------------------
     def _add_channel_chip_uses_pec(self, channel_name):
-        '''Register the next test to be run.'''
+        """Register the next test to be run.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = self._add_read_write_channel_with_param(
             channel_name, 'CHIP:USEPec')
         new_channel.set_description(
@@ -227,7 +278,14 @@ class pyice_arduino_tool(instrument):
         return new_channel
 
     def _add_channel_chip_register_size(self, channel_name):
-        '''Register the next test to be run.'''
+        """Register the next test to be run.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = self._add_read_write_channel_with_param(
             channel_name, 'CHIP:REGSize')
         new_channel.set_description(
@@ -238,7 +296,14 @@ class pyice_arduino_tool(instrument):
         return new_channel
 
     def _add_channel_chip_address(self, channel_name):
-        '''Register the next test to be run.'''
+        """Register the next test to be run.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = self._add_read_write_channel_with_param(
             channel_name, 'CHIP:ADDRess')
         new_channel.set_description(
@@ -247,7 +312,14 @@ class pyice_arduino_tool(instrument):
         return new_channel
 
     def _add_channel_chip_watchdog_q_command_code(self, channel_name):
-        '''Register the next test to be run.'''
+        """Register the next test to be run.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = self._add_read_write_channel_with_param(
             channel_name, 'CHIP:WDQcc')
         new_channel.set_description(
@@ -256,7 +328,14 @@ class pyice_arduino_tool(instrument):
         return new_channel
 
     def _add_channel_chip_watchdog_a_command_code(self, channel_name):
-        '''Register the next test to be run.'''
+        """Register the next test to be run.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = self._add_read_write_channel_with_param(
             channel_name, 'CHIP:WDAcc')
         new_channel.set_description(
@@ -266,25 +345,53 @@ class pyice_arduino_tool(instrument):
 # CONTROL_SETTINGS CHANNEL DEFS ------------------------------------------
 
     def _add_channel_control_command_code(self, channel_name):
-        '''.'''
+        """.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = self._add_read_write_channel_with_param(
             channel_name, 'CONTrol:COMMand:CODE')
         return new_channel
 
     def _add_channel_control_command_write_data(self, channel_name):
-        '''.'''
+        """.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = self._add_read_write_channel_with_param(
             channel_name, 'CONTrol:COMMand:WDATa')
         return new_channel
 
     def _add_channel_control_command_read_data(self, channel_name):
-        '''.'''
+        """.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = self._add_read_channel(
             channel_name, 'CONTrol:COMMand:RDATa?')
         return new_channel
 
     def _add_channel_control_command_write(self, channel_name):
-        '''Write the current control_settings to the chip'''
+        """Write the current control_settings to the chip.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = self._add_write_channel(
             channel_name, 'CONTrol:COMMand:WRITe')
         new_channel.set_description(
@@ -293,19 +400,40 @@ class pyice_arduino_tool(instrument):
         return new_channel
 
     def _add_channel_control_command_read(self, channel_name):
-        '''.'''
+        """.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = self._add_read_channel(
             channel_name, 'CONTrol:COMMand:READ?')
         return new_channel
 
     def _add_channel_control_pin_number(self, channel_name):
-        '''.'''
+        """.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = self._add_read_write_channel_with_param(
             channel_name, 'CONTrol:PIN:NUMBer')
         return new_channel
 
     def _add_channel_control_pin_edge(self, channel_name):
-        '''Choose which edge will be used in the next test (how it is used depends on the test).'''
+        """Choose which edge will be used in the next test (how it is used depends on the test).
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = self._add_read_write_channel_with_param(
             channel_name, 'CONTrol:PIN:EDGE')
         new_channel.set_description(
@@ -319,7 +447,14 @@ class pyice_arduino_tool(instrument):
         return new_channel
 
     def _add_channel_control_pin_write(self, channel_name):
-        '''Write the current control_settings to the chip'''
+        """Write the current control_settings to the chip.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = self._add_write_channel(
             channel_name, 'CONTrol:PIN:WRITe')
         new_channel.set_description(
@@ -328,12 +463,26 @@ class pyice_arduino_tool(instrument):
         return new_channel
 
     def _add_channel_control_pin_read(self, channel_name):
-        '''.'''
+        """.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = self._add_write_channel(channel_name, 'CONTrol:PIN:READ')
         return new_channel
 
     def _add_channel_control_test_hook_enable(self, channel_name):
-        '''.'''
+        """.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = self._add_read_write_channel_with_param(
             channel_name, 'CONTrol:HOOK:ENABle')
         new_channel.add_preset('True', 'The test hook is enabled.')
@@ -342,12 +491,26 @@ class pyice_arduino_tool(instrument):
 # TEST CHANNEL DEFS ------------------------------------------------------
 
     def _add_channel_test_timeout_ms(self, channel_name):
-        '''Set the timeout (ms) of the test.'''
+        """Set the timeout (ms) of the test.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         return self._add_read_write_channel_with_param(
             channel_name, 'TEST:TIMEout')
 
     def _add_channel_test_arm(self, channel_name):
-        '''Set the next test that will be run.'''
+        """Set the next test that will be run.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = self._add_read_write_channel_with_param(
             channel_name, 'TEST:ARM')
         new_channel.set_description(
@@ -370,21 +533,49 @@ class pyice_arduino_tool(instrument):
         return new_channel
 
     def _add_channel_test_run(self, channel_name):
-        '''Run the currently armed test.'''
+        """Run the currently armed test.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         return self._add_read_channel(channel_name, 'TEST:RUN')
 
     def _add_channel_test_data_ready(self, channel_name):
-        '''Ask if the test has completed and data is ready.'''
+        """Ask if the test has completed and data is ready.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         return self._add_read_channel(channel_name, 'TEST:DRDY?')
 
     def _add_channel_test_data(self, channel_name):
-        '''Ask if the test has completed and data is ready.'''
+        """Ask if the test has completed and data is ready.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         return self._add_read_write_channel_with_param(
             channel_name, 'TEST:DATA')
 # TRIGGER_SETTINGS CHANNEL DEFS ------------------------------------------
 
     def _add_channel_trigger_select(self, channel_name):
-        '''.'''
+        """.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = self._add_read_write_channel_with_param(
             channel_name, 'TRIGger:SELect')
         new_channel.add_preset(
@@ -394,7 +585,14 @@ class pyice_arduino_tool(instrument):
         return new_channel
 
     def _add_channel_trigger_type(self, channel_name):
-        '''.'''
+        """.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = self._add_read_write_channel_with_param(
             channel_name, 'TRIGger:TYPE')
         new_channel.add_preset('EXTERNAL', 'No trigger performed by PAT.')
@@ -421,31 +619,66 @@ class pyice_arduino_tool(instrument):
         return new_channel
 
     def _add_channel_trigger_command_code(self, channel_name):
-        '''.'''
+        """.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = self._add_read_write_channel_with_param(
             channel_name, 'TRIGger:COMMand:CODE')
         return new_channel
 
     def _add_channel_trigger_command_write_data(self, channel_name):
-        '''.'''
+        """.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = self._add_read_write_channel_with_param(
             channel_name, 'TRIGger:COMMand:WDATa')
         return new_channel
 
     def _add_channel_trigger_command_read_data(self, channel_name):
-        '''.'''
+        """.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = self._add_read_channel(
             channel_name, 'TRIGger:COMMand:RDATa?')
         return new_channel
 
     def _add_channel_trigger_pin_number(self, channel_name):
-        '''.'''
+        """.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = self._add_read_write_channel_with_param(
             channel_name, 'TRIGger:PIN:NUMBer')
         return new_channel
 
     def _add_channel_trigger_pin_edge(self, channel_name):
-        '''Choose which edge will be used in the next test (how it is used depends on the test).'''
+        """Choose which edge will be used in the next test (how it is used depends on the test).
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = self._add_read_write_channel_with_param(
             channel_name, 'TRIGger:PIN:EDGE')
         new_channel.set_description(
@@ -460,22 +693,50 @@ class pyice_arduino_tool(instrument):
 # ACTION CHANNEL DEFS ----------------------------------------------------
 
     def _add_channel_queue_action(self, channel_name):
-        '''.'''
+        """.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = self._add_read_channel(channel_name, 'ACTIon:QUEUe')
         return new_channel
 
     def _add_channel_run_all_actions(self, channel_name):
-        '''.'''
+        """.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = self._add_read_channel(channel_name, 'ACTIon:RUNAll')
         return new_channel
 
     def _add_channel_flush_actions(self, channel_name):
-        '''.'''
+        """.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = self._add_read_channel(channel_name, 'ACTIon:FLUSh')
         return new_channel
 
     def _add_channel_action_type(self, channel_name):
-        '''.'''
+        """.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = self._add_read_write_channel_with_param(
             channel_name, 'ACTIon:TYPE')
         new_channel.add_preset('NONE', 'No action, just a dummy placeholder.')
@@ -491,13 +752,27 @@ class pyice_arduino_tool(instrument):
         return new_channel
 
     def _add_channel_action_delay_us(self, channel_name):
-        '''.'''
+        """.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = self._add_read_write_channel_with_param(
             channel_name, 'ACTIon:DELAy')
         return new_channel
 
     def _add_channel_action_select(self, channel_name):
-        '''.'''
+        """.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = self._add_read_write_channel_with_param(
             channel_name, 'ACTIon:SELect')
         new_channel.add_preset('0', 'Select action 0.')
@@ -519,25 +794,53 @@ class pyice_arduino_tool(instrument):
         return new_channel
 
     def _add_channel_action_command_code(self, channel_name):
-        '''.'''
+        """.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = self._add_read_write_channel_with_param(
             channel_name, 'ACTIon:COMMand:CODE')
         return new_channel
 
     def _add_channel_action_command_write_data(self, channel_name):
-        '''.'''
+        """.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = self._add_read_write_channel_with_param(
             channel_name, 'ACTIon:COMMand:WDATa')
         return new_channel
 
     def _add_channel_action_pin_number(self, channel_name):
-        '''.'''
+        """.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = self._add_read_write_channel_with_param(
             channel_name, 'ACTIon:PIN:NUMBer')
         return new_channel
 
     def _add_channel_action_pin_edge(self, channel_name):
-        '''Choose which edge will be used in the next test (how it is used depends on the test).'''
+        """Choose which edge will be used in the next test (how it is used depends on the test).
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = self._add_read_write_channel_with_param(
             channel_name, 'ACTIon:PIN:EDGE')
         new_channel.set_description(
@@ -634,6 +937,15 @@ class pyice_arduino_tool(instrument):
 
     def set_chip_settings(self, uses_pec='True', register_size='8',
                           address='0x00', wd_q_cc='0x00', wd_a_cc='0x00'):
+        """Set the chip settings.
+
+        Args:
+            address: Address.
+            register_size: Register size.
+            uses_pec: Uses pec.
+            wd_a_cc: Wd a cc.
+            wd_q_cc: Wd q cc.
+        """
         self.chip_uses_pec_channel.write(uses_pec)
         self.chip_register_size_channel.write(register_size)
         self.chip_address_channel.write(address)
@@ -641,17 +953,44 @@ class pyice_arduino_tool(instrument):
         self.chip_watchdog_a_command_code_channel.write(wd_a_cc)
 
     def write_chip(self, command_code, write_data):
+        """Return write chip result.
+
+        Args:
+            command_code: Command code.
+            write_data: Write data.
+
+        Returns:
+            Result value.
+        """
         self.control_command_code_channel.write(command_code)
         self.control_command_write_data_channel.write(write_data)
         return self.control_command_write_channel.write("TRIG")
 
     def read_chip(self, command_code):
+        """Return read chip result.
+
+        Args:
+            command_code: Command code.
+
+        Returns:
+            Result value.
+        """
         self.control_command_code_channel.write(command_code)
         return self.control_command_read_channel.read()
 
     def get_bf_writeback_data(self, channels, channel_name, write_data):
-        '''Read register data and calclate new register data with only relevant bits changed.
-           NOTE: does not write the data back in case you want to write it with a trigger/action, etc.'''
+        """Read register data and calclate new register data with only relevant bits changed.
+
+        NOTE: does not write the data back in case you want to write it with a trigger/action, etc.
+
+        Args:
+            channel_name: Name for the new channel.
+            channels: List of channel objects.
+            write_data: Write data.
+
+        Returns:
+            Result value.
+        """
         channel = channels.get_channel(channel_name)
         command_code = channel.get_attribute('command_code')
         offset = channel.get_attribute('offset')
@@ -660,6 +999,14 @@ class pyice_arduino_tool(instrument):
         register_read_data = int(self.read_chip(command_code))
 
         def size_to_bitmask(size):
+            """Return size to bitmask result.
+
+            Args:
+                size: Size in bits.
+
+            Returns:
+                Result value.
+            """
             return 2**size - 1
         # bitmask the size of the register with relevant bits cleared
         bitmask = size_to_bitmask(word_size) - \
@@ -669,16 +1016,37 @@ class pyice_arduino_tool(instrument):
         return write_data
 
     def write_pin(self, pin_num, pin_edge):
+        """Perform write pin operation.
+
+        Args:
+            pin_edge: Pin edge.
+            pin_num: Pin num.
+        """
         self.control_pin_number_channel.write(pin_num)
         self.control_pin_edge_channel.write(pin_edge)
         self.control_pin_write_channel.write("TRIG")
 
     def read_pin(self, pin_num):
+        """Return read pin result.
+
+        Args:
+            pin_num: Pin num.
+
+        Returns:
+            Result value.
+        """
         self.control_pin_number_channel.write(pin_num)
         return self.control_pin_read_channel.write("TRIG")
 
     # mode is a string, 'INPUT' or 'OUTPUT'
     def set_pin_mode(self, pin_num, mode, output_state='LOW'):
+        """Set the pin mode.
+
+        Args:
+            mode: Operating mode.
+            output_state: Output state.
+            pin_num: Pin num.
+        """
         if mode == 'OUTPUT':
             self.write_pin(pin_num, output_state)
         else:
@@ -686,10 +1054,25 @@ class pyice_arduino_tool(instrument):
             self.read_pin(pin_num)
 
     def enable_test_hook(self, enable=True):
+        """Enable test hook.
+
+        Args:
+            enable: Enable or disable.
+        """
         self.control_test_hook_enable.write(enable)
 
     def set_trigger(self, trigger, type, cc=None,
                     write_data=None, pin_num=None, pin_edge=None):
+        """Set the trigger.
+
+        Args:
+            cc: Cc.
+            pin_edge: Pin edge.
+            pin_num: Pin num.
+            trigger: Trigger.
+            type: Type.
+            write_data: Write data.
+        """
         self.trigger_select_channel.write(trigger)
         self.trigger_type_channel.write(type)
         if cc is not None:
@@ -702,12 +1085,28 @@ class pyice_arduino_tool(instrument):
             self.trigger_pin_edge_channel.write(pin_edge)
 
     def set_trigger_cc(self, trigger, type, cc, write_data):
+        """Set the trigger cc.
+
+        Args:
+            cc: Cc.
+            trigger: Trigger.
+            type: Type.
+            write_data: Write data.
+        """
         self.trigger_select_channel.write(trigger)
         self.trigger_type_channel.write(type)
         self.trigger_command_code_channel.write(cc)
         self.trigger_command_write_data_channel.write(write_data)
 
     def set_trigger_pin_num(self, trigger, type, pin_num, pin_edge):
+        """Set the trigger pin num.
+
+        Args:
+            pin_edge: Pin edge.
+            pin_num: Pin num.
+            trigger: Trigger.
+            type: Type.
+        """
         self.trigger_select_channel.write(trigger)
         self.trigger_type_channel.write(type)
         self.trigger_pin_number_channel.write(pin_num)
@@ -716,6 +1115,16 @@ class pyice_arduino_tool(instrument):
     def queue_action(self, type, delay_us=0, cc=None,
                      write_data=None, pin_num=None, pin_edge=None):
         # switch to the action that is under edit
+        """Perform queue action operation.
+
+        Args:
+            cc: Cc.
+            delay_us: Delay us.
+            pin_edge: Pin edge.
+            pin_num: Pin num.
+            type: Type.
+            write_data: Write data.
+        """
         self.action_select_channel.write('NEXT')
         self.action_type_channel.write(type)
         if delay_us != 0:
@@ -731,14 +1140,32 @@ class pyice_arduino_tool(instrument):
         self.action_queue_channel.read()
 
     def run_all_actions(self):
+        """Perform run all actions operation."""
         self.action_run_all_channel.write("TRIG")
 
     # in microseconds
     def get_action_complete_timestamp_us(self, action_queue_index):
+        """Return the action complete timestamp us.
+
+        Args:
+            action_queue_index: Action queue index.
+
+        Returns:
+            Result value.
+        """
         self.action_select_channel.write(action_queue_index)
         return int(self.action_timestamp_channel_us.read())
 
     def run_test(self, test_name, timeout_ms=None):
+        """Return run test result.
+
+        Args:
+            test_name: Test name.
+            timeout_ms: Timeout ms.
+
+        Returns:
+            Result value.
+        """
         if timeout_ms is not None:
             self.test_timeout_channel_ms.write(timeout_ms)
         self.test_arm_channel.write(test_name)
@@ -749,6 +1176,15 @@ class pyice_arduino_tool(instrument):
         return self.test_data_channel.read()
 
     def add_channel_pin_control(self, channel_name, pin_num):
+        """Add a channel pin control.
+
+        Args:
+            channel_name: Name for the new channel.
+            pin_num: Pin num.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             write_function=lambda value: self.write_pin(
@@ -775,6 +1211,14 @@ class pyice_arduino_tool(instrument):
 
     def add_channels_pwm(self, logger_instance,
                          channel_name, pin_num, pwm_freq):
+        """Add a channels pwm.
+
+        Args:
+            channel_name: Name for the new channel.
+            logger_instance: Logger instance.
+            pin_num: Pin num.
+            pwm_freq: Pwm freq.
+        """
         gclk_div, tcc_div, steps = self._setup_pwm(
             pin_num=pin_num, freq=pwm_freq)
 

@@ -5,6 +5,7 @@ import minimalmodbus
 
 
 class modbus_reg_type(Enum):
+    """Modbus_reg_type (enum subclass)."""
     bit = auto()
     register = auto()
     long = auto()
@@ -13,7 +14,7 @@ class modbus_reg_type(Enum):
 
 
 class modbus_register(channel):
-    '''register in the sense of remote memory (read AND write functions), but without binary/2's comp features'''
+    """Register in the sense of remote memory (read AND write functions), but without binary/2's comp features."""
 
     def __init__(self, name, read_function, write_function=None):
         channel.__init__(self, name=name, read_function=read_function)
@@ -40,8 +41,8 @@ register_description = collections.namedtuple('Register_description',
 
 
 class modbus_instrument(instrument, minimalmodbus.Instrument):
-    '''
-    https://en.wikipedia.org/wiki/Modbus
+    """Https://en.wikipedia.org/wiki/Modbus.
+
     Modbus function codes
     01: Read coils
     02: Read discrete inputs
@@ -52,8 +53,7 @@ class modbus_instrument(instrument, minimalmodbus.Instrument):
     15: Write multiple coils
     16: Write multiple registers
     20: Read file record
-    '''
-
+    """
     def __init__(self, interface_raw_serial,
                  modbus_address, baudrate, mode='rtu'):
         minimalmodbus.BAUDRATE = baudrate
@@ -97,6 +97,14 @@ class modbus_instrument(instrument, minimalmodbus.Instrument):
     def add_registers(self, register_descriptions):
         # todo add capability to merge separate MODBUS read/write (only)
         # addresses into one pyice register channel?
+        """Add a registers.
+
+        Args:
+            register_descriptions: Register descriptions.
+
+        Raises:
+            Exception: On error condition.
+        """
         for reg_description in register_descriptions:
             if reg_description.reg_type == modbus_reg_type.bit:
                 ch = register(name=reg_description.name,

@@ -3,16 +3,16 @@ import numpy
 
 
 class signal_generator():
-    '''This tool can be used to generate sample wavefors that may be useful in signal analysis and waveform processing techniques.
-       The goal is to generate zipped (time,value) tuples of N whole waveforms of the specified function (as of this writing, pulse and sine waves).
-       The waveform period, sample rate and cycle count can be entered and simple state machines generate data until the desired cycle count is generated.
+    """This tool can be used to generate sample wavefors that may be useful in signal analysis and waveform processing techniques.
 
-       The period_function can be used generate aperiodic waveforms such as spread spectrum or frequency modulated waveforms.
-       For example, a spread spectrum function may be something like:
+    The goal is to generate zipped (time,value) tuples of N whole waveforms of the specified function (as of this writing, pulse and sine waves).
+    The waveform period, sample rate and cycle count can be entered and simple state machines generate data until the desired cycle count is generated.
 
-                period_function = lambda : random.uniform(PERIOD*(1-SPREAD_PERCENTAGE/2), PERIOD*(1+SPREAD_PERCENTAGE/2))
-       '''
+    The period_function can be used generate aperiodic waveforms such as spread spectrum or frequency modulated waveforms.
+    For example, a spread spectrum function may be something like:
 
+    period_function = lambda : random.uniform(PERIOD*(1-SPREAD_PERCENTAGE/2), PERIOD*(1+SPREAD_PERCENTAGE/2))
+    """
     def __init__(self, hi_value, lo_value, period, cyclecount,
                  timestep, phase=0.10, period_function=None):
         self.period = period
@@ -29,7 +29,14 @@ class signal_generator():
                 "Taking an FFT will include significant skirt energy without windowing.")
 
     def pulse_wave(self, duty_cycle):
-        '''Generates a pulsatile wafeform of arbitrary duty cycle, high and low amplitude values.'''
+        """Generates a pulsatile wafeform of arbitrary duty cycle, high and low amplitude values.
+
+        Args:
+            duty_cycle: Duty cycle.
+
+        Returns:
+            Result value.
+        """
         times = []
         values = []
         time_now = 0
@@ -49,8 +56,13 @@ class signal_generator():
         return zip(times, values)
 
     def sine_wave(self):
-        '''Generates a sine wave. Frequency, sample rate, peak and trough values are prescribed by signal generator initializer.
-           Phase is currently direspected.'''
+        """Generates a sine wave. Frequency, sample rate, peak and trough values are prescribed by signal generator initializer.
+
+        Phase is currently direspected.
+
+        Returns:
+            Result value.
+        """
         times = []
         values = []
         time_now = 0
@@ -76,15 +88,16 @@ class signal_generator():
 
 
 class lfsr_period_generator():
-    ''' ┌────┬────┬────┬────┬────┬────┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┐
-        │ 15 │ 14 │ 13 │ 12 │ 11 │ 10 │ 9 │ 8 │ 7 │ 6 │ 5 │ 4 │ 3 │ 2 │ 1 │ 0 │<──┐
-        └──┬─┴──┬─┴────┴──┬─┴────┴────┴───┴───┴───┴───┴───┴───┴─┬─┴───┴───┴───┘   │
-           │    │         │                                     │               ┌─O─┐XNOR
-           │    │         │                                     └──────────────>│   │
-           │    │         └────────────────────────────────────────────────────>│(+)│
-           │    └──────────────────────────────────────────────────────────────>│   │
-           └───────────────────────────────────────────────────────────────────>└───┘
-    '''
+    """┌────┬────┬────┬────┬────┬────┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┐.
+
+    │ 15 │ 14 │ 13 │ 12 │ 11 │ 10 │ 9 │ 8 │ 7 │ 6 │ 5 │ 4 │ 3 │ 2 │ 1 │ 0 │<──┐
+    └──┬─┴──┬─┴────┴──┬─┴────┴────┴───┴───┴───┴───┴───┴───┴─┬─┴───┴───┴───┘   │
+    │    │         │                                     │               ┌─O─┐XNOR
+    │    │         │                                     └──────────────>│   │
+    │    │         └────────────────────────────────────────────────────>│(+)│
+    │    └──────────────────────────────────────────────────────────────>│   │
+    └───────────────────────────────────────────────────────────────────>└───┘
+    """
     # https://en.wikipedia.org/wiki/Linear-feedback_shift_register
     # taps: 16 15 13 4; feedback polynomial: x^16 + x^15 + x^13 + x^4 + 1
 
@@ -98,6 +111,11 @@ class lfsr_period_generator():
         self.min_freq = freq_center * (1 - freq_range_percent)
 
     def get_next_period(self):
+        """Return the next period.
+
+        Returns:
+            Result value.
+        """
         bit = self.lfsr >> self.poly[0] & 1 ^ \
             self.lfsr >> self.poly[1] & 1 ^ \
             self.lfsr >> self.poly[2] & 1 ^ \
@@ -110,6 +128,11 @@ class lfsr_period_generator():
         return 1 / freq
 
     def set_polynomial(self, ploynomial):
-        '''Takes a list ordered higest order term to the left, lowest to the right.
-           The rightmost term starts from 0 not 1 whereas most math references start from index 1.'''
+        """Takes a list ordered higest order term to the left, lowest to the right.
+
+        The rightmost term starts from 0 not 1 whereas most math references start from index 1.
+
+        Args:
+            ploynomial: Ploynomial.
+        """
         self.poly = ploynomial

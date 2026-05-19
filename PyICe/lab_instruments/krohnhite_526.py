@@ -2,7 +2,8 @@ from ..lab_core import *  # noqa: F403
 
 
 class krohnhite_526(instrument):
-    '''Krohn-Hite Model 526 Precision DC Source/Calibrator
+    """Krohn-Hite Model 526 Precision DC Source/Calibrator.
+
     Driver uses 526 protocol (other protocols do not support LAN operation)
     Voltage Ranges are +/- 0.1V, 1V, 10V, 100V
     Current Ranges are +/- 10mA, 100mA
@@ -25,7 +26,7 @@ class krohnhite_526(instrument):
         9(OPT) Sense        2 = 2-Wire Mode
                             4 = 4-Wire Mode
 
-    '''
+    """
 
     def __init__(self, interface_visa):
         self._base_name = 'Krohn-Hite 526'
@@ -42,7 +43,14 @@ class krohnhite_526(instrument):
         self._current = 0
 
     def add_channel_current(self, channel_name):
-        '''Write channel to switch instrument to current mode and program current. Default current range is +/-10mA.  Create a irange channel to adjust range to (10, 100)mA '''
+        """Write channel to switch instrument to current mode and program current. Default current range is +/-10mA.  Create a irange channel to adjust range to (10, 100)mA.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         self.i_channel = channel(
             channel_name, write_function=self._write_current)
         self.i_channel.set_max_write_limit(self._irange)
@@ -50,7 +58,14 @@ class krohnhite_526(instrument):
         return self._add_channel(self.i_channel)
 
     def add_channel_irange(self, channel_name):
-        '''Write channel to set current mode full scale range to +/-(10,100)mA.  Won't take effect until the current is programmed.'''
+        """Write channel to set current mode full scale range to +/-(10,100)mA.  Won't take effect until the current is programmed.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name, write_function=self._set_irange)
         return self._add_channel(new_channel)
 
@@ -92,6 +107,14 @@ class krohnhite_526(instrument):
         self.get_interface().write((command))
 
     def add_channel_voltage(self, channel_name):
+        """Add a channel voltage.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         self.v_channel = channel(
             channel_name, write_function=self._write_voltage)
         self.v_channel.set_max_write_limit(self._vrange)
@@ -99,7 +122,14 @@ class krohnhite_526(instrument):
         return self._add_channel(self.v_channel)
 
     def add_channel_vrange(self, channel_name):
-        '''Write channel to set voltage mode full scale range to +/-(0.1,1,10,100)V or +/-(10,100)mA.  Won't take effect until the voltage is programmed.'''
+        """Write channel to set voltage mode full scale range to +/-(0.1,1,10,100)V or +/-(10,100)mA.  Won't take effect until the voltage is programmed.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name, write_function=self._set_vrange)
         return self._add_channel(new_channel)
 

@@ -107,6 +107,7 @@ sign = r'''
 def display():
     # print logo,
     # print isometric
+    """Perform display operation."""
     print(sign)
 
 

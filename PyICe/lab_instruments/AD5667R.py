@@ -63,17 +63,22 @@ DONT_CARE = 0
 
 
 class AD5667R(instrument):
-    '''Analog Devices Dual 16 bit DAC
-    http://www.analog.com/en/products/digital-to-analog-converters/da-converters/AD5667R.html'''
+    """Analog Devices Dual 16 bit DAC.
 
+    http://www.analog.com/en/products/digital-to-analog-converters/da-converters/AD5667R.html
+    """
     def __init__(self, interface_twi, addr7):
-        '''
-        addr7 is the 7-bit I²C address of the ADT5667R set by pin strapping.
+        """Addr7 is the 7-bit I²C address of the ADT5667R set by pin strapping.
+
         ADDR    A1  A0  Full Address    ADDR7
         VDD     0   0   7b0001100       0x0C
         FLOAT   1   0   7b0001110       0x0E
         GND     1   1   7b0001111       0x0F
-        '''
+
+        Args:
+            addr7: 7-bit I2C device address.
+            interface_twi: TWI/I2C interface instance.
+        """
         instrument.__init__(
             self,
             f'Analog Devices AD5667R Digital to Ananlog Converter at 0x{addr7:X}')
@@ -124,9 +129,19 @@ class AD5667R(instrument):
                     lsb=(power_mode << POWER_STATE_OFFSET) | (dac << DAC_ENABLE_OFFSET))
 
     def write_power_state_DAC_A(self, power_state):
+        """Perform write power state DAC A operation.
+
+        Args:
+            power_state: Power state.
+        """
         self._set_power_state(power_state, dac=DAC_A_ENABLE)
 
     def write_power_state_DAC_B(self, power_state):
+        """Perform write power state DAC B operation.
+
+        Args:
+            power_state: Power state.
+        """
         self._set_power_state(power_state, dac=DAC_B_ENABLE)
 
     def _write_dac_code(self, code, dac):
@@ -161,18 +176,42 @@ class AD5667R(instrument):
         return code * GAIN * VREF / 65536
 
     def add_channel_DAC_A(self, channel_name):
+        """Add a channel DAC A.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         output = channel(channel_name, write_function=self._set_dac_A_voltage)
         output.set_attribute('ch_type', 'voltage')
         output.add_write_callback(self._sync_channels)
         return self._add_channel(output)
 
     def add_channel_DAC_B(self, channel_name):
+        """Add a channel DAC B.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         output = channel(channel_name, write_function=self._set_dac_B_voltage)
         output.set_attribute('ch_type', 'voltage')
         output.add_write_callback(self._sync_channels)
         return self._add_channel(output)
 
     def add_channel_code_DAC_A(self, channel_name):
+        """Add a channel code DAC A.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         int_output = integer_channel(
             channel_name, size=16, write_function=self._write_dac_A_code)
         int_output.set_attribute('ch_type', 'code')
@@ -180,6 +219,14 @@ class AD5667R(instrument):
         return self._add_channel(int_output)
 
     def add_channel_code_DAC_B(self, channel_name):
+        """Add a channel code DAC B.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         int_output = integer_channel(
             channel_name, size=16, write_function=self._write_dac_B_code)
         int_output.set_attribute('ch_type', 'code')
@@ -187,6 +234,14 @@ class AD5667R(instrument):
         return self._add_channel(int_output)
 
     def add_channel_powerstate_DAC_A(self, channel_name):
+        """Add a channel powerstate DAC A.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         powerstate_channel = channel(
             channel_name, write_function=self.write_power_state_DAC_A)
         powerstate_channel.add_preset('0', 'ON')
@@ -196,6 +251,14 @@ class AD5667R(instrument):
         return self._add_channel(powerstate_channel)
 
     def add_channel_powerstate_DAC_B(self, channel_name):
+        """Add a channel powerstate DAC B.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         powerstate_channel = channel(
             channel_name, write_function=self.write_power_state_DAC_B)
         powerstate_channel.add_preset('0', 'ON')
@@ -205,7 +268,15 @@ class AD5667R(instrument):
         return self._add_channel(powerstate_channel)
 
     def _sync_channels(self, channel, value):
-        '''Sync's Voltages and Codes to match each other after changes to either.'''
+        """Sync's Voltages and Codes to match each other after changes to either.
+
+        Args:
+            channel: Channel object.
+            value: Value to set.
+
+        Raises:
+            Exception: On error condition.
+        """
         if channel.get_attribute('ch_type') == 'voltage':
             voltage = value
             code = self._volts_to_code(voltage)

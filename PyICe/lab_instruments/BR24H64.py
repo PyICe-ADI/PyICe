@@ -4,9 +4,10 @@ from PyICe.lab_utils.banners import print_banner
 
 
 class BR24H64(instrument):
-    '''Rhom 64kb (8kbyte) EEPROM
-    https://fscdn.rohm.com/en/products/databook/datasheet/ic/memory/eeprom/br24h64xxx-5ac-e.pdf'''
+    """Rhom 64kb (8kbyte) EEPROM.
 
+    https://fscdn.rohm.com/en/products/databook/datasheet/ic/memory/eeprom/br24h64xxx-5ac-e.pdf
+    """
     # Proposed Dictionary Like Structure
     # https://en.wikipedia.org/wiki/C0_and_C1_control_codes
     # [STX] (0x02) ..........	Start of an Entry
@@ -24,11 +25,19 @@ class BR24H64(instrument):
     EOM = b'\x19'     # End of All Entries  (End of Media)
 
     def __init__(self, interface_twi, addr7):
-        '''interface_twi is a interface_twi
+        """Interface_twi is a interface_twi.
+
         addr7 is the 7-bit I2C address of the BR24H64 set by pinstrapping.
         Choose addr7 from 0x50 - 0x57 only.
         Device uses 16bit internal addressing for 8 bit memory so had to play some protocol games.
-        '''
+
+        Args:
+            addr7: 7-bit I2C device address.
+            interface_twi: TWI/I2C interface instance.
+
+        Raises:
+            ValueError: On error condition.
+        """
         instrument.__init__(
             self,
             f'64KBit, I²C BUS, High Speed Write Cycle, High Endurance, Serial EEPROM at {hex(addr7)}')
@@ -81,12 +90,37 @@ class BR24H64(instrument):
                         f"BR24H64 EEPROM read communication failed at ADDR7:{hex(self.addr7)}.") from e
 
     def write_location(self, location, value):
+        """Perform write location operation.
+
+        Args:
+            location: Location.
+            value: Value to set.
+        """
         self._write_location(location, value)
 
     def read_location(self, location):
+        """Return read location result.
+
+        Args:
+            location: Location.
+
+        Returns:
+            Result value.
+        """
         return self._read_location(location)
 
     def read_dictionary(self, verbose=False):
+        """Return read dictionary result.
+
+        Args:
+            verbose: If True, print debug output.
+
+        Returns:
+            Result value.
+
+        Raises:
+            ChannelAccessException: On error condition.
+        """
         file = b''
         if verbose:
             print_banner(
@@ -126,6 +160,16 @@ class BR24H64(instrument):
         return data
 
     def write_dictionary(self, data_dict, verbose=False):
+        """Perform write dictionary operation.
+
+        Args:
+            data_dict: Data dict.
+            verbose: If True, print debug output.
+
+        Raises:
+            ChannelAccessException: On error condition.
+            ChannelValueException: On error condition.
+        """
         file = b''
         for key in data_dict:
             file += self.STX + \

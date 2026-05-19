@@ -1,4 +1,4 @@
-'''Tests for the LabComm packet parser.
+"""Tests for the LabComm packet parser.
 
 Our starting point is the test cases Bobby used when developing the DC2038A Comm_GUI protocol. We have to adapt these cases to the LabComm protocol.
 
@@ -44,7 +44,7 @@ And from Rev 2451,
 
 Case BB008: "the FW sends a bad Start of Response before every 10th good response, which results in a the timestamps as being interpretted as the number of bytes field.  Attached picture shows the GUI is correctly dropping 2 bytes every 10 responses."
 
-'''
+"""
 
 import time
 import random
@@ -52,7 +52,8 @@ from PyICe import labcomm
 
 
 def infinite_bytestream(*bytes):
-    '''Yield an infinite stream of bytes by
+    """Yield an infinite stream of bytes by.
+
     infinitely looping through
     and returning each byte given as argument.
     For example:
@@ -62,7 +63,14 @@ def infinite_bytestream(*bytes):
 
     prints the following infinite sequence:
 
-        90 0d f0 0d 90 0d f0 0d 90 0d f0 0d 90 0d f0 0d . . .'''
+        90 0d f0 0d 90 0d f0 0d 90 0d f0 0d 90 0d f0 0d . . .
+
+    Args:
+        *bytes: Additional positional arguments.
+
+    Yields:
+        Next value.
+    """
     for b in bytes:
         assert isinstance(b, int) and b >= 0 and b < 256
     while True:
@@ -76,8 +84,17 @@ INITIAL_RNG_STATE = random.getstate()
 
 
 def infinite_random_intstream(min_int, max_int):
-    '''Create an infinite stream of random integers from min_int to max_int inclusive.
-    Of course, if max_int < 256, the resulting stream can be considered a byte stream.'''
+    """Create an infinite stream of random integers from min_int to max_int inclusive.
+
+    Of course, if max_int < 256, the resulting stream can be considered a byte stream.
+
+    Args:
+        max_int: Max int.
+        min_int: Min int.
+
+    Yields:
+        Next value.
+    """
     assert isinstance(min_int, int) and min_int >= 0
     assert isinstance(max_int, int) and max_int > min_int
     while True:
@@ -89,23 +106,40 @@ def infinite_random_intstream(min_int, max_int):
 
 
 def infinite_chunkstream(*bytelists):
-    '''Given a set of byte lists, create an infinite stream
+    """Given a set of byte lists, create an infinite stream.
+
     that yields one byte list each time, in the order each list is
-    given in the arguments.'''
+    given in the arguments.
+
+    Args:
+        *bytelists: Additional positional arguments.
+
+    Yields:
+        Next value.
+    """
     while True:
         for chunk in bytelists:
             yield chunk
 
 
 def random_choice_chunkstream(*bytelists):
-    '''Given a set of byte lists, create an infinite stream
-    that yields one byte list each time, in random order.'''
+    """Given a set of byte lists, create an infinite stream.
+
+    that yields one byte list each time, in random order.
+
+    Args:
+        *bytelists: Additional positional arguments.
+
+    Yields:
+        Next value.
+    """
     while True:
         yield bytelists[random.randint(0, len(bytelists) - 1)]
 
 
 def infinite_sequential_chunk_generator(start, step, stop=None):
-    '''Generates a sequence of groups of bytes representing an ascending
+    """Generates a sequence of groups of bytes representing an ascending.
+
     (or descending, for negative step values) sequence of integers
     encoded in as few bytes as possible, in big-endian format.
 
@@ -118,7 +152,15 @@ def infinite_sequential_chunk_generator(start, step, stop=None):
     2 ff
     3 01 04
     4 01 09
-    '''
+
+    Args:
+        start: Start bit position.
+        step: Step size.
+        stop: If True, send stop condition.
+
+    Yields:
+        Next value.
+    """
     import struct
     assert isinstance(start, int) and start > 0
     assert isinstance(step, int) and step > 0
@@ -143,6 +185,17 @@ def infinite_sequential_chunk_generator(start, step, stop=None):
 
 
 def infinite_random_chunkstream(max_size, min_size=0, max_int=255, min_int=0):
+    """Perform infinite random chunkstream operation.
+
+    Args:
+        max_int: Max int.
+        max_size: Max size.
+        min_int: Min int.
+        min_size: Min size.
+
+    Yields:
+        Next value.
+    """
     for v in (min_int, max_int, min_size, max_size):
         assert isinstance(v, int) and v >= 0
     assert max_int >= min_int
@@ -155,6 +208,14 @@ def infinite_random_chunkstream(max_size, min_size=0, max_int=255, min_int=0):
 
 
 def chunkstream_to_bytestream(*chunkstreams):
+    """Perform chunkstream to bytestream operation.
+
+    Args:
+        *chunkstreams: Additional positional arguments.
+
+    Yields:
+        Next value.
+    """
     while True:
         for chunkstrm in chunkstreams:
             chunk = next(chunkstrm)
@@ -166,10 +227,19 @@ def chunkstream_to_bytestream(*chunkstreams):
 
 
 def mux_streams(selection_sequence, *streams):
-    '''Creates a stream that yields elements chosen from the argument streams per the given selection sequence.
+    """Creates a stream that yields elements chosen from the argument streams per the given selection sequence.
+
     Given N argument streams, the selection sequence must be a sequence of integers 0 to N-1 that indicate
     which stream should the next element come from.
-    If selection_sequence has finite length, it is repeated indefinitely.'''
+    If selection_sequence has finite length, it is repeated indefinitely.
+
+    Args:
+        *streams: Additional positional arguments.
+        selection_sequence: Selection sequence.
+
+    Yields:
+        Next value.
+    """
     import collections
     assert isinstance(selection_sequence, collections.Iterable)
     while True:
@@ -178,7 +248,15 @@ def mux_streams(selection_sequence, *streams):
 
 
 def get_this_many(howmany, stream):
-    "Get exactly this many elements from the given stream."
+    """Get exactly this many elements from the given stream.
+
+    Args:
+        howmany: Howmany.
+        stream: Stream.
+
+    Yields:
+        Next value.
+    """
     assert isinstance(howmany, int) and howmany >= 0
     i = howmany
     while i > 0:
@@ -191,8 +269,18 @@ def get_this_many(howmany, stream):
 
 
 def chunkstream_to_labcomm_packet_stream(input_chnkstrm, src_id, dest_id):
-    '''Given an input chunkstream, wrap each chunk as the payload of a LabComm packet
-    and return the stream of these LabComm packets. Use the given source and destination IDs.'''
+    """Given an input chunkstream, wrap each chunk as the payload of a LabComm packet.
+
+    and return the stream of these LabComm packets. Use the given source and destination IDs.
+
+    Args:
+        dest_id: Destination identifier.
+        input_chnkstrm: Input chnkstrm.
+        src_id: Source identifier.
+
+    Yields:
+        Next value.
+    """
     for chunk in input_chnkstrm:
         pkt = labcomm.packet(src_id=src_id, dest_id=dest_id,
                              length=len(chunk), data=chunk, crc=None)
@@ -284,6 +372,11 @@ if __name__ == '__main__':
     print("=" * 78)
 
     def print_junk_bytes(junk_bytes):
+        """Perform print junk bytes operation.
+
+        Args:
+            junk_bytes: Junk bytes.
+        """
         print_hex_bytes(
             the_bytes=junk_bytes,
             prefix="JUNKED bytes ",

@@ -3,15 +3,21 @@ from PyICe.lab_utils.swap_endian import swap_endian
 
 
 class AD5693R(instrument):
-    '''Analog Devices 16 bit DAC
-    http://www.analog.com/en/products/digital-to-analog-converters/da-converters/ad5693r.html'''
+    """Analog Devices 16 bit DAC.
 
+    http://www.analog.com/en/products/digital-to-analog-converters/da-converters/ad5693r.html
+    """
     def __init__(self, interface_twi, addr7):
-        '''interface_twi is a interface_twi
+        """Interface_twi is a interface_twi.
+
         addr7 is the 7-bit I2C address of the ADT5693R set by pinstrapping.
         A0 = 0: 1001100 (4C)
         A1 = 1: 1001110 (4E)
-        '''
+
+        Args:
+            addr7: 7-bit I2C device address.
+            interface_twi: TWI/I2C interface instance.
+        """
         instrument.__init__(
             self,
             f'Analog Devices AD5693R Digital to Analog Converter at 0x{addr7:X}')
@@ -44,7 +50,11 @@ class AD5693R(instrument):
             use_pec=False)
 
     def _set_code(self, code):
-        '''Set the code of the AD5693R'''
+        """Set the code of the AD5693R.
+
+        Args:
+            code: Code.
+        """
         # self.twi.write_word(self.addr7, self.dac_reg, swap_endian(code, elementCount = 2))
         self.twi.write_register(
             addr7=self.addr7,
@@ -79,7 +89,11 @@ class AD5693R(instrument):
         self._update_controlreg()
 
     def _set_voltage(self, voltage):
-        '''Set the voltage of the AD5693R'''
+        """Set the voltage of the AD5693R.
+
+        Args:
+            voltage: Voltage value.
+        """
         code = self._volts_to_code(voltage)
         self._set_code(code)
 
@@ -130,12 +144,28 @@ class AD5693R(instrument):
                 # Todo gain channel syncing?
 
     def add_channel(self, channel_name):
+        """Add a channel.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         output = channel(channel_name, write_function=self._set_voltage)
         output.set_attribute('ch_type', 'voltage')
         output.add_write_callback(self._sync_channels)
         return self._add_channel(output)
 
     def add_channel_code(self, channel_name):
+        """Add a channel code.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         int_output = integer_channel(
             channel_name, size=16, write_function=self._set_code)
         int_output.set_attribute('ch_type', 'code')
@@ -143,10 +173,26 @@ class AD5693R(instrument):
         return self._add_channel(int_output)
 
     def add_channel_outputz(self, channel_name):
+        """Add a channel outputz.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         output = channel(channel_name, write_function=self._set_outputz)
         return self._add_channel(output)
 
     def add_channel_gain(self, channel_name):
+        """Add a channel gain.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         output = channel(channel_name, write_function=self._set_gain)
         # TODO - sync up?
         return self._add_channel(output)

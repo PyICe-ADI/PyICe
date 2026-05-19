@@ -4,9 +4,10 @@ from .csv_writer import csv_writer
 
 
 class csv_logger(csv_writer):
-    '''set up columns, then pass results dictionary from logger or channel group to write() method.
+    """Set up columns, then pass results dictionary from logger or channel group to write() method.
+
     Can be used to provide automated test script 'marching waves' with a program such as Live Graph (https://sourceforge.net/projects/live-graph/).
-    '''
+    """
 
     def __init__(self, output_file, encoding='utf-8'):
         csv_writer.__init__(self)
@@ -18,24 +19,44 @@ class csv_logger(csv_writer):
         self._row_id = -1
 
     def __enter__(self):
+        """Enter the context manager.
+
+        Returns:
+            Result value.
+        """
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        """Exit the context manager.
+
+        Args:
+            exc_tb: Exc tb.
+            exc_type: Exc type.
+            exc_val: Exc val.
+
+        Returns:
+            Result value.
+        """
         print("__exit__ closing CSV filehandle: {}".format(self.output_file))
         self.f.close()
         return None
 
     def __del__(self):
+        """Clean up resources."""
         print("__del__ closing CSV filehandle: {}".format(self.output_file))
         self.f.close()
 
     def _row_count(self):
-        '''private method used by rowid column.'''
+        """Private method used by rowid column.
+
+        Returns:
+            Result value.
+        """
         self._row_id += 1
         return self._row_id
 
     def add_timestamps(self):
-        '''add rowid and datetime fields to output'''
+        """Add rowid and datetime fields to output."""
         csv_writer.add_column(
             self,
             query_name=None,
@@ -61,7 +82,14 @@ class csv_logger(csv_writer):
                 (t - self._time_zero).total_seconds()))
 
     def add_column(self, channel):
-        '''set up output to include channel object as column data source'''
+        """Set up output to include channel object as column data source.
+
+        Args:
+            channel: Channel object.
+
+        Raises:
+            Exception: On error condition.
+        """
         if self.header_written:
             raise Exception(
                 "Can't add column {} after header has been written.".format(
@@ -74,14 +102,28 @@ class csv_logger(csv_writer):
             transform=None)
 
     def add_columns(self, channel_list):
-        '''set up output to include channel objects in channel_list as column data sources'''
+        """Set up output to include channel objects in channel_list as column data sources.
+
+        Args:
+            channel_list: Channel list.
+
+        Raises:
+            Exception: On error condition.
+        """
         if self.header_written:
             raise Exception("Can't add columns after header has been written.")
         for channel in channel_list:
             self.add_column(channel)
 
     def write(self, channel_data):
-        '''write selected columns with data supplied in channel_data dictionary'''
+        """Write selected columns with data supplied in channel_data dictionary.
+
+        Args:
+            channel_data: Channel data.
+
+        Returns:
+            Result value.
+        """
         # migrate to csv.DictWriter ?
         # https://docs.python.org/3/library/csv.html
         if not self.header_written:
@@ -105,15 +147,23 @@ class csv_logger(csv_writer):
         return channel_data
 
     def register_logger_callback(self, logger):
-        '''register this csv_logger instance with a lab_core.logger instance for automatic data plotting
-        '''
+        """Register this csv_logger instance with a lab_core.logger instance for automatic data plotting.
+
+        Args:
+            logger: Logger.
+        """
         if not len(self.columns):
             self.add_timestamps()
             self.add_columns(logger)
         logger.add_log_callback(self.write)
 
     def unregister_logger_callback(self, logger, close_file=True):
-        '''clean up in case lab_core.logger will be re-used for a new test.'''
+        """Clean up in case lab_core.logger will be re-used for a new test.
+
+        Args:
+            close_file: Close file.
+            logger: Logger.
+        """
         logger.remove_log_callback(self.write)
         if close_file:
             self.f.close()

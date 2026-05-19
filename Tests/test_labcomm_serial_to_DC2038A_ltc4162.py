@@ -10,6 +10,17 @@ PYICE_NATIVE = True
 
 
 def talk_to_demoboard(connection, src_id, xml_file, debug=False):
+    """Return talk to demoboard result.
+
+    Args:
+        connection: Connection.
+        debug: If True, enable debug output.
+        src_id: Source identifier.
+        xml_file: Xml file.
+
+    Returns:
+        Result value.
+    """
     from PyICe import lab_core, twi_instrument, lab_instruments
     m = lab_core.master()
     m._threaded = False   # Useful when debugging.
@@ -69,11 +80,13 @@ def talk_to_demoboard(connection, src_id, xml_file, debug=False):
 
 
 def test_labcomm():
-    """
-    Main Test code for labcomm initialization
-    :return:
-    """
+    """Main Test code for labcomm initialization.
 
+    :return:
+
+    Raises:
+        SystemExit: On error condition.
+    """
     while True:
         comport_list = comports()
         if not len(comport_list):

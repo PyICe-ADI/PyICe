@@ -4,13 +4,18 @@ import time
 
 
 class keithley_7002_meter(keithley_7002):
-    '''Combines 7002 switch system and any multimeter instrument into a virtual super 34970.'''
+    """Combines 7002 switch system and any multimeter instrument into a virtual super 34970."""
 
     def __init__(self, interface_visa, multimeter_channel):
-        '''interface_visa for the Keithley 7002 mux system
+        """Interface_visa for the Keithley 7002 mux system.
+
             multimeter_channel is channel object, lb.get_channel(channel_name) or some_meter.get_channel(channel_name) will return ones
             delay is the number of seconds between closing the channel relay and triggering the meter measurement.
-        '''
+
+        Args:
+            interface_visa: VISA interface instance.
+            multimeter_channel: Multimeter channel.
+        """
         keithley_7002.__init__(self, interface_visa)
         self._base_name = 'keithley_7002_meter'
         self.multimeter_channel = multimeter_channel
@@ -18,13 +23,26 @@ class keithley_7002_meter(keithley_7002):
 
     def add_channel_meter(self, channel_name, bay, num, pre_calls=None,
                           post_calls=None, multimeter_channel=None, delay=0):
-        '''add named channel to instrument
+        """Add named channel to instrument.
+
             bay is the switch system plugin bay. Valid range [1-10]
             num valid range [1-40] for 7011S Quad 10 to 1 multiplexer card
             pre_calls is a list of functions taking exactly 0 arguments to call after closing channel relay but before triggering multimeter measurement
             post_calls is a list of functions taking exactly 0 arguments to call after triggering multimeter measurement but before opening channel relay
             multimeter_channel is a channel with the meter on it, if not specified the instrument meter is used
-        '''
+
+        Args:
+            bay: Instrument bay number.
+            channel_name: Name for the new channel.
+            delay: Delay time in seconds.
+            multimeter_channel: Multimeter channel.
+            num: Count or number.
+            post_calls: Post calls.
+            pre_calls: Pre calls.
+
+        Returns:
+            Result value.
+        """
         if pre_calls is None:
             pre_calls = []
         if post_calls is None:
@@ -42,12 +60,24 @@ class keithley_7002_meter(keithley_7002):
 
     def _read_meter(self, multimeter_channel, bay,
                     num, pre_calls, post_calls, delay):
-        '''close relay to named channel, run any pre_calls associated with channel,
+        """Close relay to named channel, run any pre_calls associated with channel,.
+
             trigger measurement, run any post_calls associated with channel, and return the measurment result
 
             pre_ and post_calls can be used, for example, to set different ranges
             or integration powerline cycles for different channels using the same multimeter.
-        '''
+
+        Args:
+            bay: Instrument bay number.
+            delay: Delay time in seconds.
+            multimeter_channel: Multimeter channel.
+            num: Count or number.
+            post_calls: Post calls.
+            pre_calls: Pre calls.
+
+        Returns:
+            Result value.
+        """
         self.open_all()  # just to be sure...
         self._close_relay(bay, num)
         for func in pre_calls:

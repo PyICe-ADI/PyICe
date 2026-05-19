@@ -3,10 +3,7 @@ from .temperature_chamber import temperature_chamber
 
 
 class TestEquity_115(temperature_chamber):
-    '''
-    TestEquity_115 with basic channels
-    '''
-
+    """TestEquity_115 with basic channels."""
     def __init__(self, interface_raw_serial):
         import minimalmodbus
         minimalmodbus.BAUDRATE = 9600
@@ -22,11 +19,26 @@ class TestEquity_115(temperature_chamber):
             interface_raw_serial, slaveaddress=1)
 
     def add_channels(self, channel_name):
+        """Add a channels.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         temp_channel = temperature_chamber.add_channels(self, channel_name)
         return temp_channel
 
     def add_channel_enable_output(self, channel_name):
-        '''Enable/Disable heat and cool outputs.'''
+        """Enable/Disable heat and cool outputs.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_register = register(f'{channel_name}_enable',
                                 size=1,
                                 read_function=lambda: False if self.modbus_pid.read_register(
@@ -59,6 +71,11 @@ class TestEquity_115(temperature_chamber):
         self.modbus_pid.write_register(300, float(value), 1, 16, True)
 
     def instrumentInfoString(self):
+        """Return instrumentInfoString result.
+
+        Returns:
+            Result value.
+        """
         return "%s - %s - SN:%s - %s" % \
             (self._manufacturer, self._modelNumber,
              self._serialNumber, self._address)

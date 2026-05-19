@@ -9,6 +9,17 @@ from numpy import bool_, ndarray
 
 
 def freeze(o):
+    """Return freeze result.
+
+    Args:
+        o: O.
+
+    Returns:
+        Result value.
+
+    Raises:
+        TypeError: On error condition.
+    """
     if isinstance(o, dict):
         return frozenset({k: freeze(v)
                          for k, v in o.items()}.items())  # sorted??
@@ -29,13 +40,27 @@ def freeze(o):
 
 
 def make_hash(o):
-    """
-    makes a hash out of anything that contains only list,dict and hashable types including string and numeric types
+    """Makes a hash out of anything that contains only list,dict and hashable types including string and numeric types.
+
+    Args:
+        o: O.
+
+    Returns:
+        Result value.
     """
     return hash(freeze(o))
 
 
 def none_min(a, b):
+    """Return none min result.
+
+    Args:
+        a: A.
+        b: B.
+
+    Returns:
+        Result value.
+    """
     if a is None and b is None:
         return None
     if a is None:
@@ -46,6 +71,15 @@ def none_min(a, b):
 
 
 def none_max(a, b):
+    """Return none max result.
+
+    Args:
+        a: A.
+        b: B.
+
+    Returns:
+        Result value.
+    """
     if a is None and b is None:
         return None
     if a is None:
@@ -56,13 +90,21 @@ def none_max(a, b):
 
 
 def none_abs(a):
+    """Return none abs result.
+
+    Args:
+        a: A.
+
+    Returns:
+        Result value.
+    """
     if a is None:
         return None
     return abs(a)
 
 
 class generic_results():
-    '''Parent of Test_Results and correlation_results and keeper of any commonalities.'''
+    """Parent of Test_Results and correlation_results and keeper of any commonalities."""
 
     def __init__(self):
         raise Exception(
@@ -76,9 +118,19 @@ class generic_results():
         self._failure_override = False
 
     def get_name(self):
+        """Return the name.
+
+        Returns:
+            Result value.
+        """
         return self._name
 
     def get_traceability_info(self):
+        """Return the traceability info.
+
+        Returns:
+            Result value.
+        """
         return self._traceability_info
 
     def _set_traceability_info(self, **kwargs):
@@ -90,7 +142,19 @@ class generic_results():
             ate_results = []
 
         class CustomJSONizer(json.JSONEncoder):
+            """Custom j s o nizer (j s o n encoder subclass)."""
             def default(self, obj):
+                """Return default result.
+
+                Args:
+                    obj: Obj.
+
+                Returns:
+                    Result value.
+
+                Raises:
+                    TypeError: On error condition.
+                """
                 if isinstance(obj, bool_):
                     return bool(obj)
                 elif isinstance(obj, datetime.datetime):
@@ -168,11 +232,19 @@ class generic_results():
 
 
 class Test_Results(generic_results):
+    """Tests for Results."""
     class _test_result(collections.namedtuple('test_result', [
                        'test_name', 'conditions', 'min_data', 'max_data', 'passes', 'failure_reason', 'collected_data', 'plot', 'query'])):
-        '''add some helper moethods for easy summary'''
+        """Add some helper moethods for easy summary."""
         def __new__(cls, **kwargs):
-            '''fix (allowed) missing fields. For instance, original JSON didn't retain SQL query string.'''
+            """Fix (allowed) missing fields. For instance, original JSON didn't retain SQL query string.
+
+            Args:
+                **kwargs: Additional keyword arguments.
+
+            Returns:
+                Result value.
+            """
             if 'query' not in kwargs:
                 kwargs['query'] = None
             if 'outerclass' in kwargs.keys():
@@ -180,9 +252,19 @@ class Test_Results(generic_results):
             return super().__new__(cls, **kwargs)
 
         def __deepcopy__(self, _memo):
+            """Implement deepcopy protocol.
+
+            Returns:
+                Result value.
+            """
             return Test_Results._test_result(**self._asdict())
 
         def __bool__(self):
+            """Return boolean value.
+
+            Returns:
+                Result value.
+            """
             return bool(self.passes)
 
         def _min(self):
@@ -196,6 +278,11 @@ class Test_Results(generic_results):
             return max(self.collected_data)
 
         def __str__(self):
+            """Return string representation.
+
+            Returns:
+                Result value.
+            """
             summary_str = ''
             summary_str += f'{self.__padded_str(self.conditions)}\tTRIALS:{len(self)}\tVERDICT:{"PASS" if self else "FAIL"}\n'.expandtabs()
             min = self._min()
@@ -213,9 +300,22 @@ class Test_Results(generic_results):
             return summary_str
 
         def __len__(self):
+            """Return the number of items.
+
+            Returns:
+                Result value.
+            """
             return len(self.collected_data)
 
         def __add__(self, other):
+            """Implement add protocol.
+
+            Args:
+                other: Other.
+
+            Returns:
+                Result value.
+            """
             assert isinstance(other, type(self))
             assert self.test_name == other.test_name
             assert self.conditions == other.conditions
@@ -242,7 +342,7 @@ class Test_Results(generic_results):
             return str(conditions).ljust(self.outerclass.max_con_len)
 
     class _test_results_list(list):
-        '''add some helper methods for easy filtering and summary'''
+        """Add some helper methods for easy filtering and summary."""
 
         def __init__(self, name, upper_limit, lower_limit, override):
             self.name = name
@@ -252,12 +352,22 @@ class Test_Results(generic_results):
             super().__init__()
 
         def __bool__(self):
+            """Return boolean value.
+
+            Returns:
+                Result value.
+            """
             if not len(self):
                 return False
             return bool(functools.reduce(lambda a, b: a and b,
                         [item.passes for item in self]))
 
         def __str__(self):
+            """Return string representation.
+
+            Returns:
+                Result value.
+            """
             resp = ''
             resp += f'{self.name}\n'
             resp += '\tLIMITS:'
@@ -294,9 +404,22 @@ class Test_Results(generic_results):
             return functools.reduce(none_max, (r._max() for r in self))
 
         def get_conditions(self):
+            """Return the conditions.
+
+            Returns:
+                Result value.
+            """
             return {make_hash(data_group.conditions): data_group.conditions for data_group in self}
 
         def filter(self, condition_hash):
+            """Return filter result.
+
+            Args:
+                condition_hash: Condition hash.
+
+            Returns:
+                Result value.
+            """
             ret = type(self)(
                 self.name,
                 self.upper_limit,
@@ -308,8 +431,13 @@ class Test_Results(generic_results):
             return ret
 
         def factored(self):
-            '''returns new object; doesn't modifiy existing one in place
-            merges all resutls from like conditions'''
+            """Returns new object; doesn't modifiy existing one in place.
+
+            merges all resutls from like conditions
+
+            Returns:
+                Result value.
+            """
             ret = type(self)(
                 self.name,
                 self.upper_limit,
@@ -324,8 +452,12 @@ class Test_Results(generic_results):
             return ret
 
     def __init__(self, name, module):
-        '''TODO'''
+        """TODO.
 
+        Args:
+            module: Module.
+            name: Name identifier.
+        """
         self._test_results = collections.OrderedDict()
         self._ate_results = collections.OrderedDict()
         self._init(name, module)
@@ -334,14 +466,28 @@ class Test_Results(generic_results):
         self.max_con_len = 0
 
     def json_report(self):
+        """Return json report result.
+
+        Returns:
+            Result value.
+        """
         return self._json_report(declarations=self._test_declarations,
                                  results=self._test_results, ate_results=self._ate_results)
 
     def get_test_declarations(self):
+        """Return the test declarations.
+
+        Returns:
+            Result value.
+        """
         return self._test_declarations
 
     def __str__(self):
-        '''printable regression results'''
+        """Printable regression results.
+
+        Returns:
+            Result value.
+        """
         # TODO more concise summary when passing, grouped results, etc.
         resp = ''
         passes = bool(len(self._test_declarations))
@@ -352,6 +498,11 @@ class Test_Results(generic_results):
         return resp.expandtabs(3)
 
     def __bool__(self):
+        """Return boolean value.
+
+        Returns:
+            Result value.
+        """
         if not len(self):
             # No tests declared
             return True
@@ -359,13 +510,30 @@ class Test_Results(generic_results):
                     [bool(self[k]) for k in self]))
 
     def __iter__(self):
-        '''test declaration names'''
+        """Test declaration names.
+
+        Returns:
+            Result value.
+        """
         return iter(self._test_declarations)
 
     def __len__(self):
+        """Return the number of items.
+
+        Returns:
+            Result value.
+        """
         return len(self.get_test_declarations())
 
     def __getitem__(self, key):
+        """Get item by key or index.
+
+        Args:
+            key: Key.
+
+        Returns:
+            Result value.
+        """
         return self._test_results[key]
 
     def _register_test_failure(self, name, reason, conditions, query=None):
@@ -497,6 +665,11 @@ class Test_Results(generic_results):
         return new_result_record
 
     def remove_result(self, key):
+        """Remove a result.
+
+        Args:
+            key: Key.
+        """
         del self._test_results[key]
         self._test_declarations.remove(key)
 
@@ -544,7 +717,7 @@ class Test_Results(generic_results):
 
 
 class Test_Results_Reload(Test_Results):
-    '''Rereads a json file and converts it back to a Test_Results compatible schema.'''
+    """Rereads a json file and converts it back to a Test_Results compatible schema."""
 
     def __init__(self, results_json='test_results.json'):
         self._test_declarations = []
@@ -583,17 +756,33 @@ class Test_Results_Reload(Test_Results):
                     )
 
     def json_report(self, filename='test_results_rewrite.json'):
+        """Perform json report operation.
+
+        Args:
+            filename: File path.
+        """
         with open(filename, 'wb') as f:
             f.write(super().json_report().encode('utf-8'))
             f.close()
 
 
 class Failed_Eval(Test_Results):
+    """Failed_ eval (test_ results subclass)."""
     def __init__(self, test):
         self.test = test
 
     def __str__(self):
+        """Return string representation.
+
+        Returns:
+            Result value.
+        """
         return f'Evaluation method itself failed for {self.test.get_name()}.\n\n'
 
     def __bool__(self):
+        """Return boolean value.
+
+        Returns:
+            Result value.
+        """
         return False
