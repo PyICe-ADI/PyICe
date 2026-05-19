@@ -19,6 +19,7 @@ class Franken_oven(autonicstk, temperature_chamber):
             interface_raw_serial, slaveaddress=1)
 
     def add_channels(self, channel_name):
+        """Add a channels."""
         temp_channel = temperature_chamber.add_channels(self, channel_name)
         return temp_channel
 

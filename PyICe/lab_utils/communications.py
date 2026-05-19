@@ -63,6 +63,7 @@ class email(object):
 
     def send(self, body, subject=None, attachment_filenames=None,
              attachment_MIMEParts=None):
+        """Perform send operation."""
         self.send_html_monospace(
             body=body,
             subject=subject,
@@ -71,6 +72,7 @@ class email(object):
 
     def send_html_monospace(self, body, subject=None,
                             attachment_filenames=None, attachment_MIMEParts=None):
+        """Perform send html monospace operation."""
         if attachment_filenames is None:
             attachment_filenames = []
         if attachment_MIMEParts is None:
@@ -154,6 +156,7 @@ class sms(email):
         email.__init__(self, sms_email)
 
     def send(self, body, subject=None, attachments=[]):
+        """Perform send operation."""
         email.send(
             self,
             clean_unicode(body) if body is not None else None,

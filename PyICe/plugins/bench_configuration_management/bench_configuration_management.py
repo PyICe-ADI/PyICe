@@ -38,12 +38,15 @@ class terminal():
         self.instrument = instrument
 
     def get_type(self):
+        """Return the type."""
         return self.type
 
     def get_owner(self):
+        """Return the owner."""
         return self.owner
 
     def get_ownerclass(self):
+        """Return the ownerclass."""
         return self.instrument
 
 
@@ -68,6 +71,7 @@ class bench_config_component():
         self.is_a_kind_of = generic_instrument_class
 
     def add_terminal(self, name, instrument=None):
+        """Add a terminal."""
         if name in self._terminals:
             raise ValueError(
                 f"\n\n*** ERROR: Bad component definition in {self.type}. Duplicate terminal name: '{name}'.\n")
@@ -79,18 +83,23 @@ class bench_config_component():
         """Prototype. Make repeated calls to self.add_terminal."""
 
     def get_terminals(self):
+        """Return the terminals."""
         return self._terminals
 
     def get_name(self):
+        """Return the name."""
         return self.name
 
     def __getitem__(self, item):
+        """Get item by key or index."""
         return self._terminals[item]
 
     def __contains__(self, item):
+        """Check if item is contained."""
         return item in self._terminals
 
     def __iter__(self):
+        """Return iterator over items."""
         return self._terminals.keys()
 
 
@@ -101,12 +110,15 @@ class component_collection():
         self.components = {}
 
     def add_component(self, component):
+        """Add a component."""
         self.components[component.get_name()] = component
 
     def get_components(self):
+        """Return the components."""
         return self.components
 
     def print_components(self):
+        """Perform print components operation."""
         print("Bench Configuration Components:")
         print("-------------------------------")
         for component in self.components:
@@ -114,6 +126,7 @@ class component_collection():
         print("\n")
 
     def print_terminals_by_component(self):
+        """Return print terminals by component result."""
         text = ''
         for component in self.components:
             text += f'{component}\n'
@@ -131,15 +144,19 @@ class connection():
         self.owner = owner
 
     def get_terminals(self):
+        """Return the terminals."""
         return self.terminals
 
     def get_script_name(self):
+        """Return the script name."""
         return self.owner
 
     def has_terminals(self, terminal_list):
+        """Return whether terminals exists."""
         return terminal_list[0] in self.terminals and terminal_list[1] in self.terminals
 
     def has_terminal(self, terminal):
+        """Return whether terminal exists."""
         return terminal in self.terminals
 
 
@@ -155,17 +172,21 @@ class connection_collection():
         self._invalid_config = False
 
     def set_invalid(self):
+        """Set the invalid."""
         self._invalid_config = True
 
     def block_connection(self, terminal):
+        """Perform block connection operation."""
         if terminal not in self.blocked_terminals:
             self.blocked_terminals.append(terminal)
 
     def unblock_connection(self, terminal):
+        """Perform unblock connection operation."""
         if terminal in self.blocked_terminals:
             self.blocked_terminals.remove(terminal)
 
     def add_connection(self, *terminals):
+        """Add a connection."""
         if len(terminals) != 2:
             raise ValueError(
                 "\nConnections must specify precisely 2 terminals.\n")
@@ -336,7 +357,9 @@ class connection_collection():
         return logged_connections
 
     def check_consistency(self, connection_source):
+        """Perform check consistency operation."""
         def raise_error(terminal1, terminal2a, terminal2b, script1, script2):
+            """Perform raise error operation."""
             print_banner("*** CONNECTION ERROR ***",
                          f'"{terminal1.get_owner()}:{terminal1.get_type()}" is assigned differently in',
                          f'{script1}({terminal2a.get_owner()}:{terminal2a.get_type()})',
@@ -482,6 +505,7 @@ class configuration_parser():
         self.config_string = config_string
 
     def parse(self):
+        """Return parse result."""
         connections = []
         for conn in self.config_string.split(
                 "\n")[:-1]:  # last one is always an empty line

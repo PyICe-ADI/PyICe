@@ -31,9 +31,11 @@ class saleae(instrument, delegator):
 
     def get_sample_rates(self):
         # why throw out analog rates Dave?
+        """Return the sample rates."""
         return [i[1] for i in self._saleae.get_all_sample_rates()]
 
     def set_sample_rates(self, sample_rates=None):
+        """Set the sample rates."""
         available_rates = self._saleae.get_all_sample_rates()
         if sample_rates is None:
             self._saleae.set_sample_rate(available_rates[0])

@@ -4,6 +4,7 @@ baudrate = 115200
 
 
 def try_out_dc2709a_4021(comport, src_id, xml_file, debug=False):
+    """Return try out dc2709a 4021 result."""
     from PyICe import lab_core, twi_instrument, lab_instruments
     m = lab_core.master()
     twi = m.get_twi_labcomm_raw_serial(serial_port_name=comport, src_id=src_id)

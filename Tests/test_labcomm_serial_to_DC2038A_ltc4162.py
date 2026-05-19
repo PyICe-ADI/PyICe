@@ -10,6 +10,7 @@ PYICE_NATIVE = True
 
 
 def talk_to_demoboard(connection, src_id, xml_file, debug=False):
+    """Return talk to demoboard result."""
     from PyICe import lab_core, twi_instrument, lab_instruments
     m = lab_core.master()
     m._threaded = False   # Useful when debugging.

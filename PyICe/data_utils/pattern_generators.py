@@ -18,6 +18,7 @@ class TWI_Pattern():
             self.STB = strobe
 
         def extend(self, previous_item):
+            """Perform extend operation."""
             self.pattern.dwell(
                 SCL=self.SCL,
                 SDA=self.SDA,
@@ -31,6 +32,7 @@ class TWI_Pattern():
             self.STB = strobe
 
         def extend(self, previous_item):
+            """Perform extend operation."""
             self.pattern.dwell(SCL=1, SDA=0, STB=self.STB, tdwell=self.thd_sta)
 
     class Stop():
@@ -41,6 +43,7 @@ class TWI_Pattern():
             self.STB = strobe
 
         def extend(self, previous_item):
+            """Perform extend operation."""
             self.pattern.dwell(SCL=1, SDA=0, STB=self.STB, tdwell=self.tsu_sto)
             self.pattern.dwell(SCL=1, SDA=1, STB=self.STB, tdwell=self.tbuf)
 
@@ -51,6 +54,7 @@ class TWI_Pattern():
             self.tdwell = tdwell
 
         def extend(self, previous_item):
+            """Perform extend operation."""
             if previous_item.thd_dat >= 0:  # Previous bit had Positive or Zero hold time
                 self.pattern.dwell(
                     SCL=0,
@@ -72,6 +76,7 @@ class TWI_Pattern():
             assert self.twidth > 0, f"TWI Pattern Generator: Requested SDA spike starting at {tstart} rounded to 0 width in pattern, not acheivable."
 
         def extend(self, previous_item):
+            """Perform extend operation."""
             self.pattern.sda_spikes.append(self)
 
     class SCL_Spike():
@@ -84,6 +89,7 @@ class TWI_Pattern():
             assert self.twidth > 0, f"TWI Pattern Generator: Requested SCL spike starting at {tstart} rounded to 0 width in pattern, not acheivable."
 
         def extend(self, previous_item):
+            """Perform extend operation."""
             self.pattern.scl_spikes.append(self)
 
     class Bit():
@@ -121,6 +127,7 @@ class TWI_Pattern():
             self.STB = strobe
 
         def extend(self, previous_item):
+            """Perform extend operation."""
             if isinstance(previous_item, self.pattern.Start):
                 previous_thd_dat = 0
                 previous_value = 0
@@ -185,12 +192,15 @@ class TWI_Pattern():
         self.scl_spikes = []
 
     def add_item(self, item):
+        """Add a item."""
         self.items.append(item)
 
     def quantize(self, time):
+        """Return quantize result."""
         return round(time / self.tstep) * self.tstep
 
     def dwell(self, SCL, SDA, STB, tdwell):
+        """Perform dwell operation."""
         cycles = round(tdwell / self.tstep)
         assert cycles >= 0, f"TWI Pattern Generator: tdwell of {tdwell} results in the addition of a negative time slice, not acheivable."
         self.SCL.extend([SCL] * cycles)
@@ -198,12 +208,14 @@ class TWI_Pattern():
         self.STB.extend([STB] * cycles)
 
     def pad_out(self):
+        """Perform pad out operation."""
         cycles = self.max_record_size - len(self.SCL)
         self.SCL.extend(self.SCL[-1:] * cycles)
         self.SDA.extend(self.SDA[-1:] * cycles)
         self.STB.extend(self.STB[-1:] * cycles)
 
     def finalize(self):
+        """Perform finalize operation."""
         previous = None
         for item in self.items:
             item.extend(previous)
@@ -227,12 +239,15 @@ class TWI_Pattern():
         self.audit()
 
     def get_SDA(self):
+        """Return the SDA."""
         return self.SDA
 
     def get_SCL(self):
+        """Return the SCL."""
         return self.SCL
 
     def get_STB(self):
+        """Return the STB."""
         return self.STB
 
     def get_ALL(self, SCL_channel, SDA_channel, STB_channel):
@@ -263,6 +278,7 @@ class TWI_Pattern():
         return values
 
     def audit(self):
+        """Perform audit operation."""
         assert len(
             self.SDA) == len(
             self.SCL), "TWI Pattern Generator: SDA and SCL records unequal length!"
@@ -274,6 +290,7 @@ class TWI_Pattern():
 
     def visualize(self, title=None, file_basename=None, offset_SCL=5,
                   offset_SDA=3, offset_STB=1, plot_sizex=5, plot_sizey=4):
+        """Perform visualize operation."""
         times = [index * self.tstep for index in range(len(self.SCL))]
         G0 = LTC_plot.scope_plot(plot_title="TWI Pattern" if title is None else title,
                                  plot_name=None,

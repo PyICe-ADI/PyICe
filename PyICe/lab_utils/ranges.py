@@ -79,6 +79,7 @@ def logRange(start, stop, stepsPerDecade=None, stepsPerOctave=None):
 
 
 def logRangeInc(start, stop, stepsPerDecade=None, stepsPerOctave=None):
+    """Return logRangeInc result."""
     lr = logRange(
         start,
         stop,

@@ -55,33 +55,40 @@ class kikusui_pbz(scpi_instrument):
         return voltage_channel
 
     def add_channel_voltage(self, channel_name):
+        """Add a channel voltage."""
         new_channel = channel(channel_name, write_function=self._write_voltage)
         return self._add_channel(new_channel)
 
     def add_channel_current_source(self, channel_name):
+        """Add a channel current source."""
         new_channel = channel(channel_name,
                               write_function=self._write_current_source)
         return self._add_channel(new_channel)
 
     def add_channel_current_sink(self, channel_name):
+        """Add a channel current sink."""
         new_channel = channel(channel_name,
                               write_function=self._write_current_sink)
         return self._add_channel(new_channel)
 
     def add_channel_output_enable(self, channel_name):
+        """Add a channel output enable."""
         new_channel = channel(channel_name,
                               write_function=self._write_output_enable)
         return self._add_channel(new_channel)
 
     def add_channel_vsense(self, channel_name):
+        """Add a channel vsense."""
         new_channel = channel(channel_name, read_function=self._read_vsense)
         return self._add_channel(new_channel)
 
     def add_channel_isense(self, channel_name):
+        """Add a channel isense."""
         new_channel = channel(channel_name, read_function=self._read_isense)
         return self._add_channel(new_channel)
 
     def add_channel_voltage_readback(self, channel_name):
+        """Add a channel voltage readback."""
         new_channel = channel(channel_name,
                               read_function=self._read_voltage_readback)
         return self._add_channel(new_channel)

@@ -7,11 +7,13 @@ from PyICe.lab_interfaces import interface_factory
 class TestChannelMasterFactoryMethods:
 
     def test_add_channel_dummy(self, master_instance):
+        """Perform test add channel dummy operation."""
         ch = master_instance.add_channel_dummy('my_dummy')
         ch.write(3.14)
         assert ch.read() == 3.14
 
     def test_add_channel_dummy_integer(self, master_instance):
+        """Perform test add channel dummy integer operation."""
         ch = master_instance.add_channel_dummy('my_int_dummy', integer_size=8)
         assert isinstance(ch, integer_channel)
         ch.write(200)
@@ -19,13 +21,16 @@ class TestChannelMasterFactoryMethods:
         assert ch.get_size() == 8
 
     def test_add_channel_dummy_none_default(self, master_instance):
+        """Perform test add channel dummy none default operation."""
         ch = master_instance.add_channel_dummy('empty')
         assert ch.read() is None
 
     def test_add_channel_virtual_read(self, master_instance):
+        """Return test add channel virtual read result."""
         call_count = [0]
 
         def read_fn():
+            """Return read fn result."""
             call_count[0] += 1
             return 42
 
@@ -34,9 +39,11 @@ class TestChannelMasterFactoryMethods:
         assert call_count[0] == 1
 
     def test_add_channel_virtual_write(self, master_instance):
+        """Perform test add channel virtual write operation."""
         written = []
 
         def write_fn(v):
+            """Perform write fn operation."""
             written.append(v)
 
         ch = master_instance.add_channel_virtual('virt_w',
@@ -46,6 +53,7 @@ class TestChannelMasterFactoryMethods:
         assert ch.read() == 10
 
     def test_add_channel_virtual_integer(self, master_instance):
+        """Perform test add channel virtual integer operation."""
         ch = master_instance.add_channel_virtual('virt_int',
                                                  read_function=lambda: 5,
                                                  integer_size=4)
@@ -54,11 +62,13 @@ class TestChannelMasterFactoryMethods:
         assert ch.read() == 5
 
     def test_add_channel_virtual_caching_sets_delegator(self, master_instance):
+        """Perform test add channel virtual caching sets delegator operation."""
         ch = master_instance.add_channel_virtual_caching(
             'cached', read_function=lambda: 77)
         assert ch.get_delegator() is master_instance
 
     def test_add_channel_delta_timer(self, master_instance):
+        """Perform test add channel delta timer operation."""
         ch = master_instance.add_channel_delta_timer('dt')
         ch.read()
         time.sleep(0.05)
@@ -67,6 +77,7 @@ class TestChannelMasterFactoryMethods:
         assert second >= 0.04
 
     def test_add_channel_total_timer(self, master_instance):
+        """Perform test add channel total timer operation."""
         ch = master_instance.add_channel_total_timer('total')
         t0 = ch.read()
         time.sleep(0.05)
@@ -75,18 +86,21 @@ class TestChannelMasterFactoryMethods:
         assert t1 >= 0.04
 
     def test_add_channel_counter_default(self, master_instance):
+        """Perform test add channel counter default operation."""
         ch = master_instance.add_channel_counter('cnt')
         assert ch.read() == 0
         assert ch.read() == 1
         assert ch.read() == 2
 
     def test_add_channel_counter_custom_init_inc(self, master_instance):
+        """Perform test add channel counter custom init inc operation."""
         ch = master_instance.add_channel_counter('cnt2', init=10, inc=5)
         assert ch.read() == 10
         assert ch.read() == 15
         assert ch.read() == 20
 
     def test_add_channel_counter_write_resets(self, master_instance):
+        """Perform test add channel counter write resets operation."""
         ch = master_instance.add_channel_counter('cnt3')
         ch.read()  # 0
         ch.read()  # 1
@@ -97,16 +111,19 @@ class TestChannelMasterFactoryMethods:
 class TestChannelMasterCaching:
 
     def test_caching_channel_uses_cached_value(self, master_instance):
+        """Return test caching channel uses cached value result."""
         m = master_instance
         call_count = [0]
 
         def expensive_read():
+            """Return expensive read result."""
             call_count[0] += 1
             return 99
 
         m.add_channel_virtual('source', read_function=expensive_read)
 
         def cached_read():
+            """Return cached read result."""
             return m.read_channel('source') * 2
 
         m.add_channel_virtual_caching('derived', read_function=cached_read)
@@ -117,6 +134,7 @@ class TestChannelMasterCaching:
         assert call_count[0] == 1
 
     def test_caching_mode_resets_after_read(self, master_instance):
+        """Perform test caching mode resets after read operation."""
         m = master_instance
         m.add_channel_dummy('ch1')
         m['ch1'].write(5)
@@ -127,6 +145,7 @@ class TestChannelMasterCaching:
 class TestChannelMasterCallbacks:
 
     def test_add_read_callback(self, master_instance):
+        """Perform test add read callback operation."""
         m = master_instance
         m.add_channel_dummy('cb_ch')
         m['cb_ch'].write(7)
@@ -137,12 +156,14 @@ class TestChannelMasterCallbacks:
         assert received[0]['cb_ch'] == 7
 
     def test_remove_read_callback(self, master_instance):
+        """Return test remove read callback result."""
         m = master_instance
         m.add_channel_dummy('cb_ch')
         m['cb_ch'].write(1)
         received = []
 
         def cb(data):
+            """Return cb result."""
             return received.append(data)
 
         m.add_read_callback(cb)
@@ -152,6 +173,7 @@ class TestChannelMasterCallbacks:
         assert len(received) == 1
 
     def test_add_write_callback(self, master_instance):
+        """Perform test add write callback operation."""
         m = master_instance
         m.add_channel_dummy('wch')
         received = []
@@ -161,11 +183,13 @@ class TestChannelMasterCallbacks:
         assert received[0]['wch'] == 42
 
     def test_remove_write_callback(self, master_instance):
+        """Return test remove write callback result."""
         m = master_instance
         m.add_channel_dummy('wch')
         received = []
 
         def cb(data):
+            """Return cb result."""
             return received.append(data)
 
         m.add_write_callback(cb)
@@ -179,6 +203,7 @@ class TestChannelMasterThreading:
 
     @pytest.mark.threading
     def test_threaded_read_multiple_channels(self, master_instance):
+        """Perform test threaded read multiple channels operation."""
         m = master_instance
         for i in range(5):
             m.add_channel_virtual(f'tch{i}', read_function=lambda i=i: i * 10)
@@ -188,6 +213,7 @@ class TestChannelMasterThreading:
 
     @pytest.mark.threading
     def test_non_threadable_channel(self, master_instance):
+        """Perform test non threadable channel operation."""
         m = master_instance
         ch = m.add_channel_virtual('no_thread', read_function=lambda: 'seq')
         ch.set_allow_threading(False)
@@ -196,9 +222,11 @@ class TestChannelMasterThreading:
 
     @pytest.mark.threading
     def test_read_exception_propagates(self, master_instance):
+        """Perform test read exception propagates operation."""
         m = master_instance
 
         def bad_read():
+            """Perform bad read operation."""
             raise ValueError("simulated failure")
 
         m.add_channel_virtual('bad', read_function=bad_read)
@@ -209,16 +237,20 @@ class TestChannelMasterThreading:
 class TestMaster:
 
     def test_master_inherits_channel_master(self, master_instance):
+        """Perform test master inherits channel master operation."""
         assert isinstance(master_instance, channel_master)
 
     def test_master_inherits_interface_factory(self, master_instance):
+        """Perform test master inherits interface factory operation."""
         assert isinstance(master_instance, interface_factory)
 
     def test_get_twi_dummy_interface(self, master_instance):
+        """Perform test get twi dummy interface operation."""
         iface = master_instance.get_twi_dummy_interface()
         assert iface is not None
 
     def test_get_dummy_clone(self, master_with_dummies):
+        """Perform test get dummy clone operation."""
         m = master_with_dummies
         clone = m.get_dummy_clone()
         clone_names = clone.get_all_channel_names()
@@ -228,6 +260,7 @@ class TestMaster:
 
     def test_read_all_channels_returns_results_ord_dict(
             self, master_with_dummies):
+        """Perform test read all channels returns results ord dict operation."""
         results = master_with_dummies.read_all_channels()
         assert isinstance(results, results_ord_dict)
         assert results['dummy_float'] == 3.14
@@ -237,11 +270,13 @@ class TestMaster:
 class TestResultsOrdDict:
 
     def test_is_ordered_dict(self):
+        """Perform test is ordered dict operation."""
         from collections import OrderedDict
         r = results_ord_dict()
         assert isinstance(r, OrderedDict)
 
     def test_str_formatting(self):
+        """Perform test str formatting operation."""
         r = results_ord_dict()
         r['voltage'] = 3.3
         r['current'] = 0.001
@@ -250,6 +285,7 @@ class TestResultsOrdDict:
         assert 'current' in s
 
     def test_getstate(self):
+        """Perform test getstate operation."""
         r = results_ord_dict()
         r['a'] = 1
         assert r.__getstate__() == {}

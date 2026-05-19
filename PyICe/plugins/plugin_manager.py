@@ -32,6 +32,7 @@ class Callback_logger(logger):
         self.test = test
 
     def log(self):
+        """Return log result."""
         readings = super().log()
         for channel, action in self.sp_ch_actions.items():
             action(channel, readings, self.test)
@@ -321,6 +322,7 @@ class Plugin_Manager():
             file_name=f"{test.get_module_path()}{os.sep}scratch{os.sep}{self.project_folder_name}.html")
 
     def temperature_run_startup(self):
+        """Perform temperature run startup operation."""
         for func in self.temp_run_fns:
             try:
                 func()
@@ -332,6 +334,7 @@ class Plugin_Manager():
                 exit()
 
     def startup(self):
+        """Perform startup operation."""
         for func in self.startup_fns:
             try:
                 func()
@@ -361,6 +364,7 @@ class Plugin_Manager():
             self.notify(msg=cleanup_err_str, subject="CLEANUP CRASH")
 
     def shutdown(self):
+        """Perform shutdown operation."""
         shutdown_successful = True
         shutdown_err_str = ''
         for func in self.shutdown_fns:
@@ -532,6 +536,7 @@ class Plugin_Manager():
                 f'Not sure what this plot is:\n{type(plot)}\n{plot}')
 
     def email_plots(self, plot_svg_source):
+        """Perform email plots operation."""
         try:
             msg_body = ''
             attachment_MIMEParts = []
@@ -553,6 +558,7 @@ class Plugin_Manager():
             traceback.print_exc()
 
     def email_plot_dictionary(self, plot_svg_source):
+        """Perform email plot dictionary operation."""
         msg_body = ''
         attachment_MIMEParts = []
         for plot_group in plot_svg_source:
@@ -770,6 +776,7 @@ class Plugin_Manager():
                 print_banner(f'Archiving for {test.get_name()} complete.')
 
     def archive_latest(self, destination_file=None):
+        """Perform archive latest operation."""
         for test in self.tests:
             try:
                 archive_folder = test.get_archive_folder_name()

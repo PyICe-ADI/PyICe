@@ -10,6 +10,7 @@ class manual_oven(temperature_chamber, instrument_humanoid):
         self._temp_sense_channel = temp_sense_channel
 
     def add_channels(self, channel_name):
+        """Add a channels."""
         self._temp_base_name = channel_name
         return temperature_chamber.add_channels(self, channel_name)
 

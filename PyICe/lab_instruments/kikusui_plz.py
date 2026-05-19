@@ -51,39 +51,48 @@ class kikusui_plz(scpi_instrument):
         self.write_channel(channel_name, 0)  # default to zero current
 
     def add_channel_current(self, channel_name):
+        """Add a channel current."""
         new_channel = channel(channel_name, write_function=self._write_current)
         self._add_channel(new_channel)
 
     def add_channel_voltage(self, channel_name):
+        """Add a channel voltage."""
         new_channel = channel(channel_name, write_function=self._write_voltage)
         self._add_channel(new_channel)
 
     def add_channel_vsense(self, channel_name):
+        """Add a channel vsense."""
         new_channel = channel(channel_name, read_function=self._read_vsense)
         self._add_channel(new_channel)
 
     def add_channel_isense(self, channel_name):
+        """Add a channel isense."""
         new_channel = channel(channel_name, read_function=self._read_isense)
         self._add_channel(new_channel)
 
     def add_channel_power(self, channel_name):
+        """Add a channel power."""
         new_channel = channel(channel_name, read_function=self._read_power)
         self._add_channel(new_channel)
 
     def add_channel_range_readback(self, channel_name):
+        """Add a channel range readback."""
         new_channel = channel(channel_name, read_function=self._read_range)
         self._add_channel(new_channel)
 
     def add_channel_range(self, channel_name):
+        """Add a channel range."""
         new_channel = channel(channel_name, write_function=self._write_range)
         self._add_channel(new_channel)
 
     def add_channel_slew_rate(self, channel_name):
+        """Add a channel slew rate."""
         new_channel = channel(channel_name,
                               write_function=self._write_slew_rate)
         self._add_channel(new_channel)
 
     def add_channel_pulse_on(self, channel_name):
+        """Add a channel pulse on."""
         new_channel = channel(
             channel_name,
             write_function=self._write_pulse_on)
@@ -91,16 +100,19 @@ class kikusui_plz(scpi_instrument):
 
     # Duty cycle, frequency and current level are used for Switch operation
     def add_channel_duty_cycle(self, channel_name):
+        """Add a channel duty cycle."""
         new_channel = channel(channel_name,
                               write_function=self._write_duty_cycle)
         self._add_channel(new_channel)
 
     def add_channel_frequency(self, channel_name):
+        """Add a channel frequency."""
         new_channel = channel(channel_name,
                               write_function=self._write_frequency)
         self._add_channel(new_channel)
 
     def add_channel_current_level(self, channel_name):
+        """Add a channel current level."""
         new_channel = channel(channel_name,
                               write_function=self._write_current_level)
         self._add_channel(new_channel)
@@ -110,10 +122,12 @@ class kikusui_plz(scpi_instrument):
     def add_channel_short(self, channel_name):
         # Remember to input a high current in your own code to force the change
         # in Range
+        """Add a channel short."""
         new_channel = channel(channel_name, write_function=self._write_short)
         self._add_channel(new_channel)
 
     def add_channel_enable(self, channel_name):
+        """Add a channel enable."""
         new_channel = channel(channel_name, write_function=self._write_enable)
         self._add_channel(new_channel)
 

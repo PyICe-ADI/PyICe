@@ -36,6 +36,7 @@ class daq970a_instrument(scpi_instrument, delegator):
     def read_delegated_channel_list(self, channel_list):
         # channel_list is a list of channel objects
         # returns a dictionary of read data by channel name
+        """Return read delegated channel list result."""
         results = results_ord_dict()
         # special case for reading the moniotor
         # This doesn't work!!! Monitor update rate is also affected by channel
@@ -114,10 +115,12 @@ class daq970a_instrument(scpi_instrument, delegator):
 
     def read_raw(self, internal_address):
         # the scan list is in the delegator, not the creating instrument
+        """Return read raw result."""
         assert internal_address in self.resolve_delegator().scan_results
         return self.resolve_delegator().scan_results[internal_address]
 
     def read_apply_function(self, internal_address, function):
+        """Return read apply function result."""
         return function(self.read_raw(internal_address))
 
     def _add_bay_number(self, channel_object, bay, number):
@@ -980,6 +983,7 @@ class agilent_a970a_actuator(daq970a_instrument):
 
     # NB #CB fixed to use self.bay intead of hard coded base address = 200
     def open_all_relays(self):
+        """Perform open all relays operation."""
         base = self.bay * 100
         for internal_address in range(base + 1, base + 21):
             self._open(internal_address)
@@ -1122,9 +1126,11 @@ class agilent_a970a_dig_in8(daq970a_instrument):
             raise Exception(f"{self.get_name()}: only 8 bits allowed")
 
         def conversion_function(data):
+            """Return conversion function result."""
             return self._read_bits(start, size, data)
 
         def read_function():
+            """Return read function result."""
             return self.read_apply_function(
                 self.internal_address, conversion_function)
         new_channel = integer_channel(

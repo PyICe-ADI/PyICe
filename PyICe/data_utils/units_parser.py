@@ -118,7 +118,9 @@ class Units_Parser():
         }
 
     def parse(self, units):
+        """Return parse result."""
         def viable_symbol(string):
+            """Return viable symbol result."""
             if string == "":
                 return True
             for symbol in self.symbols:

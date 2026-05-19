@@ -65,12 +65,15 @@ class FileReader:
         self.data = []
 
     def after_send(self, dataSource, data):
+        """Perform after send operation."""
         self.data.append(data)
 
     def write(self, line):
+        """Write a value to the channel."""
         self.data.append(line)
 
     def flush(self):
+        """Perform flush operation."""
         pass
 
 
@@ -93,6 +96,7 @@ class stdf_reader():
         self.scan_file(filename)
 
     def scan_file(self, filename):
+        """Perform scan file operation."""
         with open(filename, 'rb') as file:
             p = Parser(inp=file, reopen_fn=None)
             reader = FileReader()
@@ -194,6 +198,7 @@ class stdf_reader():
             file.close()
 
     def test_passed(self, device, testnum):
+        """Return test passed result."""
         for test in self.parts[str(device)]["TESTS"]:
             if test[PTR_TEST_NUM] == testnum:
                 return test[PTR_TEST_FLG] == 0  # All bits must be 0 to pass

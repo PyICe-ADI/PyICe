@@ -36,17 +36,20 @@ class pds_reader():
         self.build_record()
 
     def get_column_map(self):
+        """Return the column map."""
         self.column_map = []
         for column in self.data["Datasheet Variable Map"]:
             self.column_map.append(column.split(",")[1].strip('"'))
 
     def find_test_groups(self):
+        """Perform find test groups operation."""
         self.test_groups = []
         for key in self.data:
             if key.startswith("T") and key[1].isdigit():
                 self.test_groups.append(key)
 
     def build_record(self):
+        """Perform build record operation."""
         self.results = {}
         for test_group in self.test_groups:
             self.results[test_group] = {}
@@ -62,6 +65,7 @@ class pds_reader():
                 self.results[test_group][f"{test_number}.{parameter['SubTestNmbr']}"] = parameter
 
     def get_test(self, test_number, subtest_number):
+        """Return the test."""
         for test_group in self.results:
             if f"{test_number}.{subtest_number}" in self.results[test_group].keys(
             ):
@@ -70,6 +74,7 @@ class pds_reader():
             f"PDS Reader: Sorry, couldn't find test: {test_number}.{subtest_number} in the record.")
 
     def generate_excel_report(self, file_name):
+        """Perform generate excel report operation."""
         columns = ["TestNmbr", "SubTestNmbr", "DLogDesc", "LoFTRm", "HiFTRm", "LoFTTrim", "HiFTTrim", "LoFTCold", "HiFTCold", "LoFTHot", "HiFTHot", "LoQARm", "HiQARm", "LoQACold", "HiQACold", "LoQACold1", "HiQACold1", "LoQAHot", "HiQAHot", "LoQAHot1", "HiQAHot1", "LoWS", "HiWS", "LoWS1", "HiWS1",
                    "LoWS2", "HiWS2", "LoWSEng", "HiWSEng", "LoEng1", "HiEng1", "LoEng2", "HiEng2", "Units"]
         workbook = xlsxwriter.Workbook(file_name)

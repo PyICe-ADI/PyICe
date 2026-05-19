@@ -130,6 +130,7 @@ class bk8600(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_mode(self, channel_name):
+        """Add a channel mode."""
         new_channel = channel(channel_name, read_function=self._read_mode)
         return self._add_channel(new_channel)
 
@@ -207,6 +208,7 @@ class bk8600(scpi_instrument):
             self.get_interface().write("REMote:SENSe 0")
 
     def GetRemoteSense(self):
+        """Return GetRemoteSense result."""
         resp = self.get_interface().ask("REMote:SENSe?")
         if resp == '0':
             return False

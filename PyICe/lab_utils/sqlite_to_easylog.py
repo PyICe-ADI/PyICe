@@ -37,6 +37,7 @@ class sqlite_to_easylog(sqlite_to_csv):
             display_name='Time')
 
     def add_comment(self, *args, **kwargs):
+        """Add a comment."""
         raise Exception(
             "Comment lines don't seem to be allowed in EasyLog files.")
 

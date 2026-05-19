@@ -220,10 +220,12 @@ class polling_delay(object):
 
 def test():
     # TODO: move to more formalized test framework / unit test
+    """Return test result."""
     import random
     from PyICe.lab_utils.polling_delay import polling_delay
 
     def thinking_of_a_number():
+        """Return thinking of a number result."""
         resp = random.randrange(100)
         print(f'testing {resp}')
         return resp
@@ -233,10 +235,12 @@ def test():
             self._time = 0
 
         def delay(self, dly_time):
+            """Perform delay operation."""
             print(f'waiting {dly_time} at time {self._time}')
             self._time += dly_time
 
         def get_time(self):
+            """Return the time."""
             return self._time
     vt = virt_time()
 

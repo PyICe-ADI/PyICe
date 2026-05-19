@@ -72,26 +72,32 @@ class kikusui_pwr(scpi_instrument):
         return voltage_channel
 
     def add_channel_voltage(self, channel_name):
+        """Add a channel voltage."""
         new_channel = channel(channel_name, write_function=self._write_voltage)
         return self._add_channel(new_channel)
 
     def add_channel_current(self, channel_name):
+        """Add a channel current."""
         new_channel = channel(channel_name, write_function=self._write_current)
         return self._add_channel(new_channel)
 
     def add_channel_vsense(self, channel_name):
+        """Add a channel vsense."""
         new_channel = channel(channel_name, read_function=self._read_vsense)
         return self._add_channel(new_channel)
 
     def add_channel_isense(self, channel_name):
+        """Add a channel isense."""
         new_channel = channel(channel_name, read_function=self._read_isense)
         return self._add_channel(new_channel)
 
     def add_channel_power(self, channel_name):
+        """Add a channel power."""
         new_channel = channel(channel_name, read_function=self._read_power)
         return self._add_channel(new_channel)
 
     def add_channel_enable(self, channel_name):
+        """Add a channel enable."""
         new_channel = channel(channel_name, write_function=self._enable)
         return self._add_channel(new_channel)
 

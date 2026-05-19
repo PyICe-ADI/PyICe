@@ -42,6 +42,7 @@ class agilent_n3301(scpi_instrument):
             self.add_channel_isense(channel_name + "_isense", channel_num)
 
     def add_channel_current(self, channel_name, channel_num):
+        """Add a channel current."""
         new_channel = channel(
             channel_name,
             write_function=lambda current: self._write_current(
@@ -50,6 +51,7 @@ class agilent_n3301(scpi_instrument):
         self._add_channel(new_channel)
 
     def add_channel_isense(self, channel_name, channel_num):
+        """Add a channel isense."""
         new_channel = channel(
             channel_name,
             read_function=lambda: self._read_isense(channel_num))

@@ -100,6 +100,7 @@ class semiconductor_parameter_analyzer(scpi_instrument):
         self.get_interface().write((f"DS {vs_number}"))
 
     def shutdown(self):
+        """Perform shutdown operation."""
         for smu in self.smu_numbers:
             self._disable_smu(smu)
         for vs in self.vs_numbers:
@@ -254,6 +255,7 @@ class semiconductor_parameter_analyzer(scpi_instrument):
         return vmeter_channel
 
     def add_channel_integration_time(self, integration_time_channel_name):
+        """Add a channel integration time."""
         integration_time_channel = channel(
             integration_time_channel_name,
             write_function=self._set_integration_time)

@@ -144,12 +144,14 @@ class AD5693R(instrument):
                 # Todo gain channel syncing?
 
     def add_channel(self, channel_name):
+        """Add a channel."""
         output = channel(channel_name, write_function=self._set_voltage)
         output.set_attribute('ch_type', 'voltage')
         output.add_write_callback(self._sync_channels)
         return self._add_channel(output)
 
     def add_channel_code(self, channel_name):
+        """Add a channel code."""
         int_output = integer_channel(
             channel_name, size=16, write_function=self._set_code)
         int_output.set_attribute('ch_type', 'code')
@@ -157,10 +159,12 @@ class AD5693R(instrument):
         return self._add_channel(int_output)
 
     def add_channel_outputz(self, channel_name):
+        """Add a channel outputz."""
         output = channel(channel_name, write_function=self._set_outputz)
         return self._add_channel(output)
 
     def add_channel_gain(self, channel_name):
+        """Add a channel gain."""
         output = channel(channel_name, write_function=self._set_gain)
         # TODO - sync up?
         return self._add_channel(output)

@@ -32,6 +32,7 @@ class delay_loop(object):
             self.begin()
 
     def __call__(self, seconds):
+        """Call the instance."""
         return self.delay(seconds)
 
     def get_count(self):

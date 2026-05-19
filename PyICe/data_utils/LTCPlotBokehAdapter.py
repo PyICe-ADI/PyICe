@@ -14,6 +14,7 @@ this_module = sys.modules[__name__]
 
 
 def bind_to_base(self, base_func, *args, **kwargs):
+    """Return bind to base result."""
     sig = inspect.signature(base_func)
     bound = sig.bind_partial(self, *args, **kwargs)
     bound.apply_defaults()
@@ -29,9 +30,11 @@ class LTCPlotBokehAdapter:
 
     def __getattr__(self, name):
         # This function will be called for any undefined method/attribute
+        """Handle attribute access for undefined attributes."""
         print(f"A call to undefined method: '{type(self)}.{name}' was made.")
 
         def dynamic_warning_method(*args, **kwargs):
+            """Return dynamic warning method result."""
             print(
                 f"WARNING: Ignoring call to '{name}' with arguments: {args}, {kwargs}")
             return None
@@ -183,6 +186,7 @@ class plot(LTCPlotBokehAdapter):
         # TODO add log toggle widgets
 
     def add_note(self, *args, **kwargs):
+        """Add a note."""
         args_map = bind_to_base(
             self,
             original_classes['plot'].add_note,
@@ -205,6 +209,7 @@ class plot(LTCPlotBokehAdapter):
         self._fig.add_layout(label)
 
     def add_trace(self, *args, **kwargs):
+        """Add a trace."""
         args_map = bind_to_base(
             self,
             original_classes['plot'].add_trace,
@@ -226,6 +231,7 @@ class plot(LTCPlotBokehAdapter):
 
     def add_horizontal_line(self, *args, **kwargs):
         # (self, value, xrange=None, note=None, axis=1, color=[1,0,0]):
+        """Add a horizontal line."""
         args_map = bind_to_base(
             self,
             original_classes['plot'].add_horizontal_line,
@@ -251,6 +257,7 @@ class plot(LTCPlotBokehAdapter):
 
     def add_vertical_line(self, *args, **kwargs):
         # (self, value, yrange=None, note=None, axis=1, color=[1,0,0]):
+        """Add a vertical line."""
         args_map = bind_to_base(
             self,
             original_classes['plot'].add_vertical_line,
@@ -275,10 +282,12 @@ class plot(LTCPlotBokehAdapter):
         self._fig.add_layout(vline)
 
     def make_second_y_axis(self, yaxis_label, ylims, yminor, ydivs, logy):
+        """Perform make second y axis operation."""
         pass
 
     def add_legend(self, axis, location=(
             0, 0), justification='lower left', use_axes_scale=False, fontsize=7):
+        """Add a legend."""
         pass
 
 
@@ -294,6 +303,7 @@ class Page(LTCPlotBokehAdapter):
         self._plots = []
 
     def create_svg(self, *args, **kwargs):
+        """Perform create svg operation."""
         args_map = bind_to_base(
             self,
             original_classes['Page'].create_svg,
@@ -321,6 +331,7 @@ class Page(LTCPlotBokehAdapter):
             pass
 
     def add_plot(self, *args, **kwargs):
+        """Add a plot."""
         args_map = bind_to_base(
             self,
             original_classes['Page'].add_plot,
@@ -351,9 +362,11 @@ class Multipage_pdf(LTCPlotBokehAdapter):
     """Bokeh Multipage_pdf adapter."""
 
     def add_page(self, page):
+        """Add a page."""
         pass
 
     def create_pdf(self, file_basename, filepath=None):
+        """Perform create pdf operation."""
         pass
 
 
@@ -361,7 +374,9 @@ original_classes = {}
 
 
 def install(calling_module):
+    """Perform install operation."""
     def store_and_replace(class_name):
+        """Perform store and replace operation."""
         original_classes[class_name] = getattr(
             calling_module.LTC_plot, class_name)
         setattr(

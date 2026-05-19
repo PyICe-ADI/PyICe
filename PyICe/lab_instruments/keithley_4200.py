@@ -76,6 +76,7 @@ class keithley_4200(semiconductor_parameter_analyzer):
 
     def get_slot_configuration(self):
         # only works in EM 1 (4200 extended command mode)
+        """Return the slot configuration."""
         self.slot_conf = self.get_interface().ask("*OPT?").strip('"').split(",")
         self.smu_numbers = []
         self.vs_numbers = []
@@ -157,43 +158,51 @@ class keithley_4200(semiconductor_parameter_analyzer):
     def add_channels_smu_voltage(
             self, smu_number, voltage_force_channel_name, current_compliance_channel_name):
         # check smu_number is valid
+        """Add a channels smu voltage."""
         return self._add_channels_smu_voltage(
             smu_number, voltage_force_channel_name, current_compliance_channel_name)
 
     def add_channel_smu_voltage_output_range(
             self, smu_number, output_range_channel_name):
         # check smu_number is valid
+        """Add a channel smu voltage output range."""
         return self._add_channel_smu_voltage_output_range(
             smu_number, output_range_channel_name)
 
     def add_channels_smu_current(
             self, smu_number, current_force_channel_name, voltage_compliance_channel_name):
         # check smu_number is valid
+        """Add a channels smu current."""
         return self._add_channels_smu_current(
             smu_number, current_force_channel_name, voltage_compliance_channel_name)
 
     def add_channel_smu_current_output_range(
             self, smu_number, output_range_channel_name):
         # check smu_number is valid
+        """Add a channel smu current output range."""
         return self._add_channel_smu_current_output_range(
             smu_number, output_range_channel_name)
 
     def add_channel_smu_voltage_sense(
             self, smu_number, voltage_sense_channel_name):
         # check smu_number is valid
+        """Add a channel smu voltage sense."""
         return self._add_channel_smu_voltage_sense(
             smu_number, voltage_sense_channel_name)
 
     def add_channel_smu_current_sense(
             self, smu_number, current_sense_channel_name):
         # check smu_number is valid
+        """Add a channel smu current sense."""
         return self._add_channel_smu_current_sense(
             smu_number, current_sense_channel_name)
 
     def add_channel_vsource(self, vsource_number, vsource_channel_name):
         # check vsource_number is valid
+        """Add a channel vsource."""
         return self._add_channel_vsource(vsource_number, vsource_channel_name)
 
     def add_channel_vmeter(self, vmeter_number, vmeter_channel_name):
         # check vmeter_number is valid
+        """Add a channel vmeter."""
         return self._add_channel_vmeter(vmeter_number, vmeter_channel_name)

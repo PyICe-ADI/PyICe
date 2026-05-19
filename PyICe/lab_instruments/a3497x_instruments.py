@@ -40,6 +40,7 @@ class a3497xa_instrument(scpi_instrument, delegator):
     def read_delegated_channel_list(self, channel_list):
         # channel_list is a list of channel objects
         # returns a dictionary of read data by channel name
+        """Return read delegated channel list result."""
         results = results_ord_dict()
         # special case for reading the moniotor
         # This doesn't work!!! Monitor update rate is also affected by channel
@@ -121,10 +122,12 @@ class a3497xa_instrument(scpi_instrument, delegator):
 
     def read_raw(self, internal_address):
         # the scan list is in the delegator, not the creating instrument
+        """Return read raw result."""
         assert internal_address in self.resolve_delegator().scan_results
         return self.resolve_delegator().scan_results[internal_address]
 
     def read_apply_function(self, internal_address, function):
+        """Return read apply function result."""
         return function(self.read_raw(internal_address))
 
     def _add_bay_number(self, channel_object, bay, number):
@@ -256,6 +259,7 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
             relay_count_bay3_warned_already = True
 
     def warn_about_relays(self, bay):
+        """Perform warn about relays operation."""
         plugin_type = self.get_interface().ask(
             f"SYSTem:CTYPe? {bay * 100}").split(",")[1]
         self.relay_cycle_counts = self._get_all_relay_cycles(
@@ -267,6 +271,7 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
             print(f"Relay Cycle Counts: {self.relay_cycle_counts}")
 
     def get_relay_cycle_counts(self):
+        """Return the relay cycle counts."""
         return self.relay_cycle_counts
 
     def add_channel(self, channel_name, channel_num):
@@ -655,6 +660,7 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
         return new_channel
 
     def add_channel_range_readback(self, channel_name, base_channel):
+        """Add a channel range readback."""
         new_channel = channel(channel_name, read_function=lambda bc=base_channel: float(
             self.get_interface().ask(f"SENSe:VOLTage:DC:RANGe? (@{bc.get_attribute('internal_address')})")))
         return self._add_channel(new_channel)
@@ -1434,6 +1440,7 @@ class agilent_3497xa_actuator(a3497xa_instrument):
 
     # NB #CB fixed to use self.bay intead of hard coded base address = 200
     def open_all_relays(self):
+        """Perform open all relays operation."""
         base = self.bay * 100
         for internal_address in range(base + 1, base + 21):
             self._open(internal_address)
@@ -1588,9 +1595,11 @@ class agilent_3497xa_dig_in8(a3497xa_instrument):
             raise Exception(f"{self.get_name()}: only 8 bits allowed")
 
         def conversion_function(data):
+            """Return conversion function result."""
             return self._read_bits(start, size, data)
 
         def read_function():
+            """Return read function result."""
             return self.read_apply_function(
                 self.internal_address, conversion_function)
         new_channel = integer_channel(

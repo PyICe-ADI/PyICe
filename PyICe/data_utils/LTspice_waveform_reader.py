@@ -98,4 +98,5 @@ class LTspice_wavereader():
             print("Resampling Complete!")
 
     def get_results(self):
+        """Return the results."""
         return self.data

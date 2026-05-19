@@ -53,27 +53,33 @@ class scope_data():
         self.time_right = self.time_left + self.Xrange
 
     def raise_error(self, trace_name, request, e):
+        """Perform raise error operation."""
         raise Exception(
             f'\n\nPyICE Oscilloscope Tools:\nNo trace parameters available for "{trace_name}" {request} request.\nTry adding a {trace_name} trace first.\n\n') from e
 
     def raise_sqlite_exception(self, query, e):
+        """Perform raise sqlite exception operation."""
         raise Exception(
             f'\n\nPyICE Oscilloscope Tools: A failure occurred when querying the database.\nTry pasting this line into a dbBrowser and see what it returns:\n\n{query}') from e
 
     def time_range(self):
+        """Return time range result."""
         return (self.time_left, self.time_right)
 
     def time_label(self, xlimits=None):
+        """Return time label result."""
         if xlimits is None:
             return f"{eng_string((self.time_right - self.time_left) / 10, fmt=':.3g', si=True)}s/DIV"
         else:
             return f"{eng_string((xlimits[1] - xlimits[0]) / 10, fmt=':.3g', si=True)}s/DIV"
 
     def all_time_refmarkers(self):
+        """Return all time refmarkers result."""
         return {'xlocation_open': -self.Xposition,
                 'xlocation_closed': 0}
 
     def trace_data(self, trace_name, graticule=None, scale_by=1):
+        """Return trace data result."""
         self.trace_params[trace_name] = {
             "graticule": graticule, "scale_factor": scale_by}
         if self.readbacks_available:
@@ -98,6 +104,7 @@ class scope_data():
             return list(zip(self.row['scope_timedata'], ydata))
 
     def marker_location(self, trace_name):  # Expecting use_axes_scale of False
+        """Return marker location result."""
         try:
             graticule = self.trace_params[trace_name]["graticule"]
         except Exception as e:
@@ -110,6 +117,7 @@ class scope_data():
                 self.row[f'{trace_name}_Yrange'] if graticule is None else graticule / 8
 
     def trace_locator(self, trace_name, value=0):
+        """Return trace locator result."""
         try:
             scale_factor = self.trace_params[trace_name]["scale_factor"]
         except Exception as e:
@@ -137,6 +145,7 @@ class scope_data():
                     self.row[f'{trace_name}_Yrange']
 
     def trace_label(self, trace_name, display_name=None):
+        """Return trace label result."""
         try:
             scale_factor = self.trace_params[trace_name]["scale_factor"]
         except Exception as e:
@@ -154,16 +163,19 @@ class scope_data():
             return f"{trace_name.replace('scope_', '') if display_name is None else display_name}\n{eng_string(self.row[f'{trace_name}_Yrange'] / 8 / scale_factor, fmt=':.3g', si=True)}{trace_units}/DIV"
 
     def axis_info(self, xlimits=None):
+        """Return axis info result."""
         return {'xaxis_label': self.time_label(xlimits=xlimits),
                 'xlims': self.time_range() if xlimits is None else xlimits,
                 'ylims': [0, 8]}  # All scaling now maps to unit graticules
 
     def volts_per_division(self, channel_name):
+        """Return volts per division result."""
         return self.row[f'{channel_name}_Yrange_readback'] / 8
 
 
 def plot_waveform(y_data_column_names, db_tablename,
                   db_filename='scope_data.sqlite'):
+    """Perform plot waveform operation."""
     from bokeh import colors
     from bokeh.io import curdoc
     from bokeh.layouts import layout

@@ -94,12 +94,15 @@ class dummy(instrument):
         instrument.__init__(self, self._base_name)
 
     def set_verbose(self, verbose=True):
+        """Set the verbose."""
         self._verbose = verbose
 
     def set_add_channel_is_writeable(self, add_channel_is_writeable=None):
+        """Set the add channel is writeable."""
         self._add_channel_is_writeable = add_channel_is_writeable
 
     def set_random_read(self, channel_read_returns_random=True):
+        """Set the random read."""
         self._random_read = channel_read_returns_random
 
     def add_channel_write(self, channel_name, *args, **kwargs):
@@ -2145,6 +2148,7 @@ class servo(instrument):
 
     def reconfigure(self, minimum=None, maximum=None,
                     abstol=None, reltol=None):
+        """Perform reconfigure operation."""
         if (minimum is not None):
             self.minimum = minimum
         if (maximum is not None):
@@ -2169,6 +2173,7 @@ class servo(instrument):
         return self._add_channel(servo_channel)
 
     def check_enpoints(self):
+        """Perform check enpoints operation."""
         self.output_channel.write(self.maximum)
         max_readback = float(self.fb_channel.read())
         self.output_channel.write(self.minimum)
@@ -2632,6 +2637,7 @@ class peak_finder(instrument):
         return self._add_channel(new_channel)
 
     def find(self, searchstart, searchstop):
+        """Return find result."""
         self._input_channel.write(searchstart)
         y1 = self._output_channel.read()
         self._input_channel.write(
@@ -3423,6 +3429,7 @@ class threshold_finder(instrument, delegator):
         return self.results_dictionary
 
     def debug_print(self, msg):
+        """Perform debug print operation."""
         if self.verbose:
             print(msg)
 
@@ -3903,6 +3910,7 @@ class threshold_finder(instrument, delegator):
         self.tries += tries
 
     def test_repeatability(self, linear_backtrack=None, decades=None):
+        """Return test repeatability result."""
         binary_results = self.find(cautious=True)
         hybrid_results = self.find_hybrid(linear_backtrack=linear_backtrack)
         linear_results = self.find_linear()
@@ -4042,6 +4050,7 @@ class servo_binary_search(instrument):  # todo delegator?!?!?
         self._add_channel(target_error_channel)
 
     def add_channels(self, channel_name, auto_find=True):
+        """Add a channels."""
         self.add_channel_results(channel_name)
         return self.add_channel_target(
             f'{channel_name}_target', auto_find=auto_find)
@@ -4052,6 +4061,7 @@ class servo_binary_search(instrument):  # todo delegator?!?!?
             return self.find(value)
 
     def find(self, value):
+        """Return find result."""
         self._target_value = value
         tf_results = self._tf.find_no_hysteresis()
         # Some non-specific exceptions leak out of threshold finder. Ex
@@ -4095,15 +4105,18 @@ class leakage_nuller(instrument):
         self._leakage_servo = servo_binary_search()
 
     def measure(self, estimated_voltage):
+        """Perform measure operation."""
         self._common_mode_servo.find(estimated_voltage)
         self.ileak = self.leakage_measurement_channel.read()
         return  # something
 
     def null(self):
+        """Return null result."""
         leak_servo_results = self._leakage_servo.find(self.ileak)
         return leak_servo_results
 
     def add_channel_null(self, channel_name, auto_null=False):
+        """Add a channel null."""
         pass
 
 
@@ -4745,10 +4758,12 @@ class aggregator(instrument):
         instrument.__init__(self, 'AGGREGATOR')
 
     def add_channel_sequential(self, channel_name, slave_channels):
+        """Add a channel sequential."""
         return self.add_channel(channel_name=channel_name,
                                 slave_channels=slave_channels, sequential=True)
 
     def add_channel_parallel(self, channel_name, slave_channels):
+        """Add a channel parallel."""
         return self.add_channel(channel_name=channel_name,
                                 slave_channels=slave_channels, sequential=False)
 
@@ -4879,6 +4894,7 @@ class simple_servo(instrument):
         # final_range = starting_range * range_attenuation
 
     def set_search_direction_override_fn(self, fn):
+        """Set the search direction override fn."""
         self._search_direction_override_fn = fn
 
     def search_direction_override(self, **kwargs):
@@ -4902,9 +4918,11 @@ class simple_servo(instrument):
         return None
 
     def set_minimum(self, value):
+        """Set the minimum."""
         self.minimum = value
 
     def set_maximum(self, value):
+        """Set the maximum."""
         self.maximum = value
 
     def add_channel_target(self, channel_name):
@@ -4922,6 +4940,7 @@ class simple_servo(instrument):
         return self._add_channel(servo_channel)
 
     def servo(self, target):
+        """Return servo result."""
         assert target != 0 or self.reltol is not None
         self.lower_bound = self.minimum
         self.upper_bound = self.maximum
@@ -4994,6 +5013,7 @@ class simple_servo(instrument):
         raise ServoException(f"Max servo tries exceeded: {self.max_tries}")
 
     def is_in_spec(self, target, setting):
+        """Return whether the channel is in spec."""
         self.previous_error = self.error
         self.fb_read_val = float(self.fb_channel.read())
         self.error = self.fb_read_val - target

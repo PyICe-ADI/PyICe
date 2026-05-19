@@ -23,9 +23,11 @@ class sqlite_to_csv(csv_writer):
         self.cursor = self.conn.cursor()
 
     def __enter__(self):
+        """Enter the context manager."""
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        """Exit the context manager."""
         self.conn.close()
         return None
 

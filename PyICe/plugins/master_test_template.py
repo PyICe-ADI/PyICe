@@ -52,15 +52,19 @@ class Master_Test_Template():
     # GET METHODS
     ###
     def get_channels(self):
+        """Return the channels."""
         return self._logger
 
     def get_name(self):
+        """Return the name."""
         return self._name
 
     def get_project_folder_name(self):
+        """Return the project folder name."""
         return self.project_folder_name
 
     def get_module_path(self):
+        """Return the module path."""
         if hasattr(self, '_module_path'):
             return self._module_path
         else:
@@ -68,12 +72,15 @@ class Master_Test_Template():
                 f"Attempted to access the module path for {self.get_name()}. It would be created upon adding a test to the plugin manager but you didn't get that far.")
 
     def get_debug(self):
+        """Return the debug."""
         return self._debug
 
     def get_verbose(self):
+        """Return the verbose."""
         return self.verbose
 
     def get_db_file(self):
+        """Return the db file."""
         if hasattr(self, '_db_file'):
             return self._db_file
         else:
@@ -81,6 +88,7 @@ class Master_Test_Template():
                 f"Attempted to access the database file for {self.get_name()}. It would be created upon adding a test to the plugin manager but you didn't get that far.")
 
     def get_database(self):
+        """Return the database."""
         if hasattr(self, '_db'):
             return self._db
         else:
@@ -88,6 +96,7 @@ class Master_Test_Template():
                 f"Attempted to access the database for {self.get_name()}. It's only intended to be accessible from inside the plot() or evaluate() methods.")
 
     def get_table_name(self):
+        """Return the table name."""
         if hasattr(self, '_table_name'):
             return self._table_name
         else:
@@ -95,6 +104,7 @@ class Master_Test_Template():
                 f'No table name has been assigned to {self.get_name()} at this time.')
 
     def get_plot_filepath(self):
+        """Return the plot filepath."""
         if hasattr(self, '_plot_filepath'):
             return self._plot_filepath
         else:
@@ -102,6 +112,7 @@ class Master_Test_Template():
                 f'No file path for plot locations has been assigned to {self.get_name()} at this time.')
 
     def get_bench_image_locations(self):
+        """Return the bench image locations."""
         if hasattr(self, 'bench_image_locations'):
             return self.bench_image_locations
         else:
@@ -315,5 +326,6 @@ class Master_Test_Template():
         return res_str
 
     def get_test_limits(self, name):
+        """Return the test limits."""
         raise Exception(
             "MASTER TEST TEMPLATE ERROR: This project indicated a use of the TEST_LIMIT plugin but no project specific 'get_test_limits' method was provided.")

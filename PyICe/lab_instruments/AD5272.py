@@ -76,6 +76,7 @@ class AD5272(instrument):
                 use_pec=False)
 
     def set_output(self, value):
+        """Set the output."""
         assert value >= 0
         assert value <= 2**10 - 1
         value = int(value)
@@ -86,6 +87,7 @@ class AD5272(instrument):
         self._write_byte(self.addr7, msbyte, lsbyte)
 
     def get_output(self):
+        """Return the output."""
         tries = self.tries
         while tries:
             try:
@@ -122,26 +124,31 @@ class AD5272(instrument):
         self.set_output(code)
 
     def add_channel_code(self, channel_name):
+        """Add a channel code."""
         code_channel = channel(channel_name, write_function=self.set_output)
         code_channel.set_description('Raw 10-bit DAC code input')
         return self._add_channel(code_channel)
 
     def add_channel_percent(self, channel_name):
+        """Add a channel percent."""
         percent_channel = channel(
             channel_name, write_function=self._write_percent)
         return self._add_channel(percent_channel)
 
     def add_channel_resistance(self, channel_name):
+        """Add a channel resistance."""
         resistance_channel = channel(
             channel_name, write_function=lambda resistance: self._write_percent(
                 float(resistance) / self.full_scale_ohms))
         return self._add_channel(resistance_channel)
 
     def add_channel_code_readback(self, channel_name):
+        """Add a channel code readback."""
         code_channel = channel(channel_name, read_function=self.get_output)
         return self._add_channel(code_channel)
 
     def add_channel_percent_readback(self, channel_name):
+        """Add a channel percent readback."""
         percent_channel = channel(
             channel_name,
             read_function=lambda: self.get_output() /
@@ -151,6 +158,7 @@ class AD5272(instrument):
         return self._add_channel(percent_channel)
 
     def add_channel_resistance_readback(self, channel_name):
+        """Add a channel resistance readback."""
         resistance_channel = channel(
             channel_name,
             read_function=lambda: self.get_output() *
@@ -161,6 +169,7 @@ class AD5272(instrument):
         return self._add_channel(resistance_channel)
 
     def add_channel_enable(self, channel_name):
+        """Add a channel enable."""
         enable_channel = integer_channel(
             channel_name, size=1, write_function=self.enable)
         return self._add_channel(enable_channel)

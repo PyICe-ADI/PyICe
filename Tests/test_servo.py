@@ -4,6 +4,7 @@ OFFSET = 70
 
 
 def relU(input):
+    """Return relU result."""
     return 0 if input < OFFSET else (input - OFFSET) * 0.2
 
 

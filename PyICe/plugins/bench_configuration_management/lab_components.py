@@ -3,12 +3,14 @@ from PyICe.plugins.bench_configuration_management.bench_configuration_management
 
 class thru_terminator(bench_config_component):
     def add_terminals(self):
+        """Add a terminals."""
         self.add_terminal("M", instrument=self)
         self.add_terminal("F", instrument=self)
 
 
 class four_channel_oscilloscope(bench_config_component):
     def add_terminals(self):
+        """Add a terminals."""
         self.add_terminal("CH1", instrument=self)
         self.add_terminal("CH2", instrument=self)
         self.add_terminal("CH3", instrument=self)
@@ -30,18 +32,21 @@ class AGILENT_3034x(four_channel_oscilloscope):
 
 class voltage_probe(bench_config_component):
     def add_terminals(self):
+        """Add a terminals."""
         self.add_terminal("BNC", instrument=self)
         self.add_terminal("TIP", instrument=self)
 
 
 class current_probe(bench_config_component):
     def add_terminals(self):
+        """Add a terminals."""
         self.add_terminal("SIGNAL", instrument=self)
         self.add_terminal("LOOP", instrument=self)
 
 
 class two_channel_pulse_generator(bench_config_component):
     def add_terminals(self):
+        """Add a terminals."""
         self.add_terminal("CH1", instrument=self)
         self.add_terminal("CH2", instrument=self)
 
@@ -60,6 +65,7 @@ class SDG1032X(two_channel_pulse_generator):
 
 class single_channel_electronic_load(bench_config_component):
     def add_terminals(self):
+        """Add a terminals."""
         self.add_terminal("IIN", instrument=self)
 
 
@@ -92,17 +98,20 @@ class BK8500(single_channel_electronic_load):
 
 class one_channel_power_supply(bench_config_component):
     def add_terminals(self):
+        """Add a terminals."""
         self.add_terminal("VOUT1", instrument=self)
 
 
 class two_channel_power_supply(bench_config_component):
     def add_terminals(self):
+        """Add a terminals."""
         self.add_terminal("CHANNELA", instrument=self)
         self.add_terminal("CHANNELB", instrument=self)
 
 
 class four_channel_power_supply(bench_config_component):
     def add_terminals(self):
+        """Add a terminals."""
         self.add_terminal("VOUT1", instrument=self)
         self.add_terminal("VOUT2", instrument=self)
         self.add_terminal("VOUT3", instrument=self)
@@ -111,6 +120,7 @@ class four_channel_power_supply(bench_config_component):
 
 class HAMEG_HMP4040(four_channel_power_supply):
     def add_terminals(self):
+        """Add a terminals."""
         self.add_terminal("FRONTPANEL1", instrument=self)
         self.add_terminal("FRONTPANEL2", instrument=self)
         self.add_terminal("FRONTPANEL3", instrument=self)
@@ -119,6 +129,7 @@ class HAMEG_HMP4040(four_channel_power_supply):
 
 class ConfiguratorXT(bench_config_component):
     def add_terminals(self):
+        """Add a terminals."""
         self.add_terminal("POWER1", instrument=self)
         self.add_terminal("POWER2", instrument=self)
         self.add_terminal("POWER3", instrument=self)
@@ -171,11 +182,13 @@ class ConfiguratorXT(bench_config_component):
 
 class Uext_Accelerator(bench_config_component):
     def add_terminals(self):
+        """Add a terminals."""
         self.add_terminal("UEXT", instrument=self)
 
 
 class Rampinator(bench_config_component):
     def add_terminals(self):
+        """Add a terminals."""
         self.add_terminal("INPUT", instrument=self)
         self.add_terminal("OUTPUT", instrument=self)
         self.add_terminal("GATE_IN", instrument=self)
@@ -185,6 +198,7 @@ class Rampinator(bench_config_component):
 
 class Agilent_3497x(bench_config_component):
     def add_terminals(self):
+        """Add a terminals."""
         self.add_terminal("BAY1", instrument=self)
         self.add_terminal("BAY2", instrument=self)
         self.add_terminal("BAY3", instrument=self)
@@ -194,6 +208,7 @@ class Agilent_34901A(bench_config_component):
     """20 Channel Differential Plugin."""
 
     def add_terminals(self):
+        """Add a terminals."""
         self.add_terminal("BAY", instrument=self)
         self.add_terminal("DIFF_1-4", instrument=self)
         self.add_terminal("DIFF_5-8", instrument=self)
@@ -206,6 +221,7 @@ class Agilent_34908A(bench_config_component):
     """40 Channel Single Ended Plugin."""
 
     def add_terminals(self):
+        """Add a terminals."""
         self.add_terminal("BAY", instrument=self)
         self.add_terminal("SINGLE_1-8", instrument=self)
         self.add_terminal("SINGLE_9-16", instrument=self)
@@ -219,12 +235,14 @@ class Agilent_U2300_DAQ(bench_config_component):
     """40 Channel Differential Plugin."""
 
     def add_terminals(self):
+        """Add a terminals."""
         self.add_terminal("CONNECTOR1", instrument=self)
         self.add_terminal("CONNECTOR2", instrument=self)
 
 
 class Agilent_U2300_TO_CAT5(bench_config_component):
     def add_terminals(self):
+        """Add a terminals."""
         self.add_terminal("VHDCI", instrument=self)
         self.add_terminal("CAT5A", instrument=self)
         self.add_terminal("CAT5B", instrument=self)
@@ -234,6 +252,7 @@ class Agilent_U2300_TO_CAT5(bench_config_component):
 
 class Y_Connector(bench_config_component):
     def add_terminals(self):
+        """Add a terminals."""
         self.add_terminal("A", instrument=self)  # All terminals interchangable
         self.add_terminal("B", instrument=self)  # All terminals interchangable
         self.add_terminal("C", instrument=self)  # All terminals interchangable
@@ -241,6 +260,7 @@ class Y_Connector(bench_config_component):
 
 class ConfigXT_Power_Breakout(bench_config_component):
     def add_terminals(self):
+        """Add a terminals."""
         self.add_terminal("POWER_IN", instrument=self)
         self.add_terminal("POWER_OUT", instrument=self)
         self.add_terminal("SCOPE_BNC", instrument=self)
@@ -250,6 +270,7 @@ class ConfigXT_Power_Breakout(bench_config_component):
 
 class HTX9016(bench_config_component):
     def add_terminals(self):
+        """Add a terminals."""
         self.add_terminal("RFIN1", instrument=self)
         self.add_terminal("RFIN2", instrument=self)
         self.add_terminal("RFIN3", instrument=self)
@@ -269,11 +290,13 @@ class HTX9016_DC(HTX9016):
 
 class E4446A_PSA(bench_config_component):
     def add_terminals(self):
+        """Add a terminals."""
         self.add_terminal("RFIN", instrument=self)
 
 
 class E5061B_ENA(bench_config_component):
     def add_terminals(self):
+        """Add a terminals."""
         self.add_terminal("T", instrument=self)
         self.add_terminal("R", instrument=self)
         self.add_terminal("LFOUT", instrument=self)
@@ -283,6 +306,7 @@ class E5061B_ENA(bench_config_component):
 
 class HP8110A(bench_config_component):
     def add_terminals(self):
+        """Add a terminals."""
         self.add_terminal("OUTPUT1", instrument=self)
         self.add_terminal("OUTPUT2", instrument=self)
         self.add_terminal("STROBE_OUT", instrument=self)
@@ -292,6 +316,7 @@ class HP8110A(bench_config_component):
 
 class PICOTEST_J2111B(bench_config_component):
     def add_terminals(self):
+        """Add a terminals."""
         self.add_terminal("MOD", instrument=self)
         self.add_terminal("OUT", instrument=self)
         self.add_terminal("I_MONITOR", instrument=self)
@@ -299,5 +324,6 @@ class PICOTEST_J2111B(bench_config_component):
 
 class HTX9015_DC_BLOCKER(bench_config_component):
     def add_terminals(self):
+        """Add a terminals."""
         self.add_terminal("SMA_M", instrument=self)
         self.add_terminal("SMA_F", instrument=self)

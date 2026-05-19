@@ -18,4 +18,5 @@ class oscilloscope_channel(ordered_pair):
                                  ('x', float), ('y', float)])
 
     def to_recarray(self):
+        """Return to recarray result."""
         return self.array.view(numpy.recarray)

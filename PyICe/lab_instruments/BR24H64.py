@@ -90,12 +90,15 @@ class BR24H64(instrument):
                         f"BR24H64 EEPROM read communication failed at ADDR7:{hex(self.addr7)}.") from e
 
     def write_location(self, location, value):
+        """Perform write location operation."""
         self._write_location(location, value)
 
     def read_location(self, location):
+        """Return read location result."""
         return self._read_location(location)
 
     def read_dictionary(self, verbose=False):
+        """Return read dictionary result."""
         file = b''
         if verbose:
             print_banner(
@@ -135,6 +138,7 @@ class BR24H64(instrument):
         return data
 
     def write_dictionary(self, data_dict, verbose=False):
+        """Perform write dictionary operation."""
         file = b''
         for key in data_dict:
             file += self.STX + \

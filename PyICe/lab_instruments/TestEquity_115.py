@@ -22,6 +22,7 @@ class TestEquity_115(temperature_chamber):
             interface_raw_serial, slaveaddress=1)
 
     def add_channels(self, channel_name):
+        """Add a channels."""
         temp_channel = temperature_chamber.add_channels(self, channel_name)
         return temp_channel
 
@@ -66,6 +67,7 @@ class TestEquity_115(temperature_chamber):
         self.modbus_pid.write_register(300, float(value), 1, 16, True)
 
     def instrumentInfoString(self):
+        """Return instrumentInfoString result."""
         return "%s - %s - SN:%s - %s" % \
             (self._manufacturer, self._modelNumber,
              self._serialNumber, self._address)

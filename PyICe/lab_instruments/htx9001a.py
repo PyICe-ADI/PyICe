@@ -81,6 +81,7 @@ class htx9001a(htx9001):
         self.get_interface().write(":I2C:PORT:DISable;")
 
     def resync(self):
+        """Perform resync operation."""
         line = self.get_interface().readline()
         while len(line):
             print(f"HTX9001 resync clearing out serial port data '{line}'")
@@ -119,10 +120,12 @@ class htx9001a(htx9001):
         return new_channel
 
     def set_all_irelays(self, value):
+        """Set the all irelays."""
         for irelay in self.irelay_pins:
             self._write_irelay(irelay, value)
 
     def get_resistor_calibration(self, resistor_number):
+        """Return the resistor calibration."""
         read_str = f"CAL:DATA? {resistor_number};"
         self.get_interface().write(read_str)
         data = self.get_interface().readline()
@@ -141,6 +144,7 @@ class htx9001a(htx9001):
         self.get_interface().write(f"VOLT:DVCC {voltage}")
 
     def add_channel_pwm(self, channel_name, pin):
+        """Add a channel pwm."""
         if pin not in self.pwm_pins:
             raise Exception(
                 f"Invalid HTX9001A PWM pin number {pin}. Must be one of: {self.pwm_pins}")
@@ -162,6 +166,7 @@ class htx9001a(htx9001):
 
     def _add_channel_pwm_frequency(self, channel_name, pin):
         def set_pwm_frequency(value):
+            """Set the pwm frequency."""
             flow = 16e6 / 1024 / 65536
             fhigh = 8e6  # datasheet, fmax = fclkio / 2
             if value < flow or value > fhigh:
@@ -174,6 +179,7 @@ class htx9001a(htx9001):
 
     def _add_channel_pwm_duty_cycle(self, channel_name, pin):
         def set_pwm_duty_cycle(value):
+            """Set the pwm duty cycle."""
             self.pwm_duty_cycle[pin] = value
             self._update_pwm_channel(pin)
         new_channel = channel(channel_name, write_function=set_pwm_duty_cycle)
@@ -181,6 +187,7 @@ class htx9001a(htx9001):
 
     def _add_channel_pwm_enable(self, channel_name, pin):
         def set_pwm_enable(value):
+            """Set the pwm enable."""
             value = self._clean_value(value)
             if value not in [0, 1]:
                 raise Exception(
@@ -192,6 +199,7 @@ class htx9001a(htx9001):
 
     def _add_channel_pwm_freq_readback(self, channel_name, pin):
         def compute_f(pin):
+            """Return compute f result."""
             return self.FCLK / \
                 float(self.prescale[pin]) / float(1 + self.top[pin])
         new_channel = channel(channel_name,
@@ -229,6 +237,7 @@ class htx9001a(htx9001):
                 f'PWM:MODE ({self.pwm_pins[pin]},DISABLE)')
 
     def add_channel_servo(self, channel_name, servo_number):
+        """Add a channel servo."""
         if servo_number not in self.pwm_pins:
             raise Exception(
                 f"Invalid HTX9001A servo pin number {servo_number}.")
@@ -247,6 +256,7 @@ class htx9001a(htx9001):
         return new_channel
 
     def add_channel_servo_enable(self, channel_name, servo_number):
+        """Add a channel servo enable."""
         if servo_number not in self.pwm_pins:
             raise Exception(
                 f"HTX9001A Invalid servo pin  number {servo_number}")
@@ -280,6 +290,7 @@ class htx9001a(htx9001):
             f'PWM:COMPare ({self.pwm_pins[servo_number]},{value * 2000 + 2000})')
 
     def set_all_relays(self, value):
+        """Set the all relays."""
         for relay in self.relay_pins:
             self._write_relay(relay, value)
         for relay in self.irelay_pins:

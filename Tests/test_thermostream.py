@@ -27,9 +27,11 @@ class temptronic_4310(instrument):
         self.intrument.write("DUTM 1")
 
     def add_channel(self, name):
+        """Add a channel."""
         self.channels.append(name)
 
     def write_channel(self, name, value):
+        """Perform write channel operation."""
         self.setpoint = value
         txt = "SETP " + str(self.setpoint) + ";WNDW " + \
             str(self.window) + "; SOAK " + str(self.soak)
@@ -39,21 +41,25 @@ class temptronic_4310(instrument):
         self.time = 0
 
     def set_window(self, value):
+        """Set the window."""
         self.window = value
         txt = "WNDW " + str(self.window)
         self.instrument.write(txt)
 
     def set_soak(self, value):
+        """Set the soak."""
         self.soak = value
         txt = "SOAK " + str(self.soak)
         self.instrument.write(txt)
 
     def off(self):
+        """Perform off operation."""
         self.instrument.write("FLOW 0")
         self.instrument.write("HEAD 0")
         self.instrument.write("COOL 0")
 
     def wait_settle(self):
+        """Perform wait settle operation."""
         settled = False
         while not settled:
             time.sleep(.5)
@@ -64,9 +70,11 @@ class temptronic_4310(instrument):
                 settled = True
 
     def read_channel(self, name):
+        """Return read channel result."""
         return self.setpoint
 
     def read_channels(self):
+        """Return read channels result."""
         results = {}
         for channel in self.channels:
             results[channel] = self.read_channel(channel)

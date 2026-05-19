@@ -35,11 +35,13 @@ class CAT5140(instrument):
                         "CAT5140 Communication Failed.") from e
 
     def set_output(self, value):
+        """Set the output."""
         assert value >= 0
         assert value <= 2**8 - 1
         self._write_byte(self.addr7, 0x00, value)
 
     def get_output(self):
+        """Return the output."""
         tries = self.tries
         while tries:
             try:
@@ -67,19 +69,23 @@ class CAT5140(instrument):
         self.set_output(code)
 
     def add_channel_code(self, channel_name):
+        """Add a channel code."""
         code_channel = channel(channel_name, write_function=self.set_output)
         return self._add_channel(code_channel)
 
     def add_channel_percent(self, channel_name):
+        """Add a channel percent."""
         percent_channel = channel(
             channel_name, write_function=self._write_percent)
         return self._add_channel(percent_channel)
 
     def add_channel_code_readback(self, channel_name):
+        """Add a channel code readback."""
         code_channel = channel(channel_name, read_function=self.get_output)
         return self._add_channel(code_channel)
 
     def add_channel_percent_readback(self, channel_name):
+        """Add a channel percent readback."""
         percent_channel = channel(
             channel_name,
             read_function=lambda: self.get_output() /
@@ -107,12 +113,14 @@ class CAT5140(instrument):
             use_pec=False)
 
     def add_channel_select_nonvolatile_register(self, channel_name):
+        """Add a channel select nonvolatile register."""
         nvselect_channel = channel(
             channel_name,
             write_function=lambda x: self._select_nonvolatile_register())
         return self._add_channel(nvselect_channel)
 
     def add_channel_select_volatile_register(self, channel_name):
+        """Add a channel select volatile register."""
         volselect_channel = channel(
             channel_name,
             write_function=lambda x: self._select_volatile_register())

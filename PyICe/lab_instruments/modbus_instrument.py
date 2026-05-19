@@ -98,6 +98,7 @@ class modbus_instrument(instrument, minimalmodbus.Instrument):
     def add_registers(self, register_descriptions):
         # todo add capability to merge separate MODBUS read/write (only)
         # addresses into one pyice register channel?
+        """Add a registers."""
         for reg_description in register_descriptions:
             if reg_description.reg_type == modbus_reg_type.bit:
                 ch = register(name=reg_description.name,

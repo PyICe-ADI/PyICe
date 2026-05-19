@@ -20,6 +20,7 @@ class modbus_relay(instrument):
         # self.modbus_relay.serial.timeout = 1
 
     def add_channel_relay1(self, channel_name='relay1'):
+        """Add a channel relay1."""
         new_register = modbus_register(channel_name,
                                        read_function=lambda: self.modbus_relay.read_register(
                                            registeraddress=1, functioncode=3),
@@ -35,6 +36,7 @@ class modbus_relay(instrument):
         return self._add_channel(new_register)
 
     def add_channel_relay2(self, channel_name='relay2'):
+        """Add a channel relay2."""
         new_register = register(channel_name,
                                 size=1,
                                 read_function=lambda: self.modbus_relay.read_register(
@@ -49,5 +51,6 @@ class modbus_relay(instrument):
                 256 if data else 512), functioncode=6)
 
     def flush(self):
+        """Return flush result."""
         return self.modbus_relay.serial.read(
             self.modbus_relay.serial.inWaiting())

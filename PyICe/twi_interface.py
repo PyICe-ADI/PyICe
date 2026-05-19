@@ -101,6 +101,7 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         pass
 
     def set_frequency(self, frequency):
+        """Set the frequency."""
         raise i2cUnimplementedError()
 
     # Utilities###
@@ -382,6 +383,7 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         return self.word(dataByteList)
 
     def write_register(self, addr7, commandCode, data, data_size, use_pec):
+        """Perform write register operation."""
         self.print_warning(
             operation=f"write_register Data Size={data_size}, PEC={use_pec}")
         '''write_word with optional additional PEC byte written to slave.'''
@@ -1252,10 +1254,12 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         return self._read_x_list(addr7, cc_list, self.read_word_pec)
 
     def read_register_list(self, addr7, cc_list, data_size, use_pec):
+        """Return read register list result."""
         return self._read_x_list(addr7, cc_list, lambda addr7, cc: self.read_register(
             addr7, cc, data_size, use_pec))
 
     def print_warning(self, operation):
+        """Perform print warning operation."""
         debug_logging.debug(
             "WARNING: Using deprecated/potentially slow SMBus access method '%s.twi_interface.%s' Switch to hardware-accelerated/protocol-specific methods for best performance, if available.",
             __name__,
@@ -1350,6 +1354,7 @@ class i2c_dummy(twi_interface):
         time.sleep(self._delay)
 
     def write_register(self, addr7, commandCode, data, data_size, use_pec):
+        """Perform write register operation."""
         if data_size in (8, 16, 32, 64):
             self.check_size(commandCode, self._cc_size)
             self.check_size(data, data_size)
@@ -1429,6 +1434,7 @@ class i2c_dummy(twi_interface):
         return self._cc_data[commandCode]
 
     def read_register_list(self, addr7, cc_list, data_size, use_pec):
+        """Return read register list result."""
         time.sleep(self._delay)
         return {cc: self.read_register(
             addr7, cc, data_size, use_pec, no_delay=True) for cc in cc_list}
@@ -1457,6 +1463,7 @@ class i2c_buspirate(twi_interface):
         self.commands['write4'] = 0x13
 
     def __del__(self):
+        """Clean up resources."""
         self.ser.close()
 
     def __init_i2c(self):
@@ -1595,6 +1602,7 @@ class i2c_buspirate(twi_interface):
         return bytearray(resp)[0]
 
     def resync_communication(self):
+        """Perform resync communication operation."""
         self.__init_i2c()
 
     def send_byte(self, addr7, data8):
@@ -1862,6 +1870,7 @@ class i2c_pic(twi_interface):
         self.__init_i2c()
 
     def __del__(self):
+        """Clean up resources."""
         self.ser.close()
 
     def __init_i2c(self):
@@ -1891,10 +1900,12 @@ class i2c_pic(twi_interface):
         self.ser.close()
 
     def resync_communication(self):
+        """Perform resync communication operation."""
         self.__init_i2c()
 
     # implement i2c primitives
     def start(self):
+        """Return start result."""
         self.ser.write("s")
         ret_str = self.ser.read(4)
         if len(ret_str) < 2:
@@ -1907,6 +1918,7 @@ class i2c_pic(twi_interface):
         return True
 
     def stop(self):
+        """Return stop result."""
         self.ser.write("p")
         ret_str = self.ser.read(2)
         if len(ret_str) < 1 or ret_str[0] != "P":
@@ -1916,6 +1928,7 @@ class i2c_pic(twi_interface):
         return True
 
     def write(self, data8):
+        """Write a value to the channel."""
         data8 = int(data8) & 0xFF
         write_str = hex(data8)[2:].rjust(2, "0")
         self.ser.write(write_str)
@@ -1925,6 +1938,7 @@ class i2c_pic(twi_interface):
         return (ret_str[3] == "K")
 
     def read_ack(self):
+        """Return read ack result."""
         self.ser.write("RK")
         ret_str = ""
         ret_str = self.ser.read(3)
@@ -1934,6 +1948,7 @@ class i2c_pic(twi_interface):
         return int(ret_str[:2], 16)
 
     def read_nack(self):
+        """Return read nack result."""
         self.ser.write("RN")
         ret_str = self.ser.read(3)
         if ret_str[2] != " " or len(ret_str) != 3:
@@ -1995,9 +2010,11 @@ class i2c_scpi(twi_interface):
         self.set_frequency(400e3)
 
     def __del__(self):
+        """Clean up resources."""
         self.interface.close()
 
     def init_i2c(self):
+        """Perform init i2c operation."""
         self.reset_twi()
         # modified this to remove the pyserial inWaiting, now its a plain visa
         # interface
@@ -2011,6 +2028,7 @@ class i2c_scpi(twi_interface):
         self.interface.timeout = timeout
 
     def resync_communication(self):
+        """Perform resync communication operation."""
         print("***** i2c_scpi: Attempting RE-SYNC *****")
         self.init_i2c()
 
@@ -2019,10 +2037,12 @@ class i2c_scpi(twi_interface):
         self.interface.close()
 
     def bus_scan(self):
+        """Return bus scan result."""
         self.interface.write('W?;')
         return self.interface.readline().rstrip().lstrip('(@').rstrip(')').split(',')
 
     def port_status(self):
+        """Return port status result."""
         results = {}
         self.interface.write(':I2C:PORT:TWSR?;')
         results['TWSR'] = self.interface.readline().strip()
@@ -2031,9 +2051,11 @@ class i2c_scpi(twi_interface):
         return results
 
     def reset_twi(self):
+        """Perform reset twi operation."""
         self.interface.write(':I2C:PORT:RST;')
 
     def set_frequency(self, frequency):
+        """Set the frequency."""
         FCLK = 16e6
         TWBR = int(round(((FCLK / frequency - 16) / 2)))
         assert TWBR <= 255 and TWBR >= 0
@@ -2042,6 +2064,7 @@ class i2c_scpi(twi_interface):
     # I2C Primitives###
 
     def start(self):
+        """Return start result."""
         self.interface.write(':S?;')
         ret_str = self.interface.readline()
         if len(ret_str) < 2:
@@ -2052,6 +2075,7 @@ class i2c_scpi(twi_interface):
         return (ret_str[0] == "S")
 
     def stop(self):
+        """Return stop result."""
         self.interface.write(':P?;')
         ret_str = self.interface.readline()
         if len(ret_str) < 2:
@@ -2062,6 +2086,7 @@ class i2c_scpi(twi_interface):
         return (ret_str[0] == "P")
 
     def write(self, data8):
+        """Write a value to the channel."""
         data8 = int(data8) & 0xFF
         write_str_b = hex(data8)[2:].rjust(2, "0")
         write_str = ':0X?{};'.format(write_str_b)
@@ -2073,6 +2098,7 @@ class i2c_scpi(twi_interface):
         return (ret_str[0] == "K")
 
     def read_ack(self):
+        """Return read ack result."""
         self.interface.write(':RK?;')
         ret_str = self.interface.readline()
         if len(ret_str) < 4:
@@ -2087,6 +2113,7 @@ class i2c_scpi(twi_interface):
         return int(ret_str[:2], 16)
 
     def read_nack(self):
+        """Return read nack result."""
         self.interface.write(':RN?;')
         ret_str = self.interface.readline()
         if len(ret_str) < 4:
@@ -2526,6 +2553,7 @@ class i2c_scpi(twi_interface):
         return results
 
     def read_register_list(self, addr7, cc_list, data_size, use_pec):
+        """Return read register list result."""
         if data_size == 16 and use_pec:
             # binary trigger skips SCPI parser
             return self._read_list(
@@ -2621,9 +2649,11 @@ class i2c_scpi_sp(twi_interface):
         super().__init__(name, **kwargs)
 
     def __del__(self):
+        """Clean up resources."""
         self.interface.close()
 
     def init_i2c(self):
+        """Perform init i2c operation."""
         time.sleep(0.1)
         # modified this to remove the pyserial inWaiting, now its a plain visa
         # interface
@@ -2634,6 +2664,7 @@ class i2c_scpi_sp(twi_interface):
         self.interface.timeout = timeout
 
     def resync_communication(self):
+        """Perform resync communication operation."""
         pass
 
     def close(self):
@@ -2641,10 +2672,12 @@ class i2c_scpi_sp(twi_interface):
         self.interface.close()
 
     def bus_scan(self):
+        """Return bus scan result."""
         self.interface.write('{}:W?;'.format(self.cmd))
         return self.interface.readline().rstrip().lstrip('(@').rstrip(')').split(',')
 
     def scan_addr7_range(self, addr7_range):
+        """Return scan addr7 range result."""
         addr7s_found = []
         for addr7 in addr7_range:
             self.interface.write(
@@ -2655,10 +2688,12 @@ class i2c_scpi_sp(twi_interface):
         return addr7s_found
 
     def port_status(self):
+        """Return port status result."""
         results = {}
         return results
 
     def configure_twi(self, sclpin, sdapin, pullup_en):
+        """Perform configure twi operation."""
         self.interface.write('{}:PORT:SDApin {};'.format(self.cmd, sdapin))
         self.interface.write('{}:PORT:SCLpin {};'.format(self.cmd, sclpin))
         if pullup_en:
@@ -2668,6 +2703,7 @@ class i2c_scpi_sp(twi_interface):
     # I2C Primitives###
 
     def start(self):
+        """Return start result."""
         self.interface.write('{}:S?;'.format(self.cmd))
         ret_str = self.interface.readline()
         if len(ret_str) < 2:
@@ -2678,6 +2714,7 @@ class i2c_scpi_sp(twi_interface):
         return (ret_str[0] == "S")
 
     def stop(self):
+        """Return stop result."""
         self.interface.write('{}:P?;'.format(self.cmd))
         ret_str = self.interface.readline()
         if len(ret_str) < 2:
@@ -2688,6 +2725,7 @@ class i2c_scpi_sp(twi_interface):
         return (ret_str[0] == "P")
 
     def write(self, data8):
+        """Write a value to the channel."""
         data8 = int(data8) & 0xFF
         write_str_b = hex(data8)[2:].rjust(2, "0")
         write_str = ':0X?{};'.format(write_str_b)
@@ -2699,6 +2737,7 @@ class i2c_scpi_sp(twi_interface):
         return (ret_str[0] == "K")
 
     def read_ack(self):
+        """Return read ack result."""
         self.interface.write('{}:RK?;'.format(self.cmd))
         ret_str = self.interface.readline()
         if len(ret_str) < 4:
@@ -2713,6 +2752,7 @@ class i2c_scpi_sp(twi_interface):
         return int(ret_str[:2], 16)
 
     def read_nack(self):
+        """Return read nack result."""
         self.interface.write('{}:RN?;'.format(self.cmd))
         ret_str = self.interface.readline()
         if len(ret_str) < 4:
@@ -2760,6 +2800,7 @@ class i2c_scpi_sp(twi_interface):
         return data8
 
     def receive_byte_pec(self, addr7):
+        """Return receive byte pec result."""
         print("\nReceive byte PEC from i2c_scpi_sp unimplemented. Contact PyICe-developers@analog.com for more information.\n")
         return False
 
@@ -2971,10 +3012,13 @@ class i2c_scpi_sp(twi_interface):
         return True
 
     def write_softport_speed(self, sclk_freq):
+        """Return write softport speed result."""
         def freq_to_counts(sclk_freq):
+            """Return freq to counts result."""
             return int(round((1. / sclk_freq - 24.374e-6) / 2.625e-6))
 
         def counts_to_freq(counts):
+            """Return counts to freq result."""
             return 1. / (counts * 2.625e-6 + 24.374e-6)
         counts = freq_to_counts(sclk_freq)
         if counts < 0 or counts > 255:
@@ -3102,6 +3146,7 @@ class i2c_scpi_testhook(i2c_scpi):
     # purple-board specific hardware driver methods###
 
     def set_dvcc(self, voltage):
+        """Set the dvcc."""
         self.aux_start()
         self.aux_write(0xE8)
         data = int(max(min(voltage, 5), 0.8) / 5.0 * 63.0) & 0x3F
@@ -3156,6 +3201,7 @@ class i2c_scpi_testhook(i2c_scpi):
                 "I2C Error: Failed to set_pin: {}".format(ret_str))
 
     def read_pin(self, pin_name):
+        """Return read pin result."""
         pin_name = self.check_name(pin_name)
         write_str = ':SETPin?(@{});'.format(pin_name)
         self.interface.write(write_str)
@@ -3172,6 +3218,7 @@ class i2c_scpi_testhook(i2c_scpi):
         return ret_str[0]
 
     def check_name(self, name):
+        """Return check name result."""
         pin_names = ['HOOK1', 'HOOK2', 'HOOK3', 'HOOK4',
                      'PAD_TP_1', 'PAD_TP_2', 'PAD_TP_3', 'PAD_TP_4', 'PAD_TP_5',
                      'PAD_TP_6', 'PAD_TP_7', 'PAD_TP_8', 'PAD_TP_9', 'GPIO']
@@ -3183,6 +3230,7 @@ class i2c_scpi_testhook(i2c_scpi):
     # Secondary I2C Port Primitives###
 
     def aux_start(self):
+        """Return aux start result."""
         self.interface.write(':I2CAux:S?;')
         ret_str = self.interface.readline()
         if len(ret_str) < 2:
@@ -3194,6 +3242,7 @@ class i2c_scpi_testhook(i2c_scpi):
         return (ret_str[0] == "S")
 
     def aux_stop(self):
+        """Return aux stop result."""
         self.interface.write(':I2CAux:P?;')
         ret_str = self.interface.readline()
         if len(ret_str) < 2:
@@ -3205,6 +3254,7 @@ class i2c_scpi_testhook(i2c_scpi):
         return (ret_str[0] == "P")
 
     def aux_write(self, data8):
+        """Return aux write result."""
         data8 = int(data8) & 0xFF
         write_str_b = hex(data8)[2:].rjust(2, "0")
         write_str = ':I2CAux:0X?{};'.format(write_str_b)
@@ -3216,6 +3266,7 @@ class i2c_scpi_testhook(i2c_scpi):
         return (ret_str[0] == "K")
 
     def aux_read_ack(self):
+        """Return aux read ack result."""
         self.interface.write(':I2CAux:RK?;')
         ret_str = self.interface.readline()
         if len(ret_str) < 4:
@@ -3230,6 +3281,7 @@ class i2c_scpi_testhook(i2c_scpi):
         return int(ret_str[:2], 16)
 
     def aux_read_nack(self):
+        """Return aux read nack result."""
         self.interface.write(':I2CAux:RN?;')
         ret_str = self.interface.readline()
         if len(ret_str) < 4:
@@ -3258,9 +3310,11 @@ class i2c_dc590(twi_interface):
         self.set_gpio(True)
 
     def __del__(self):
+        """Clean up resources."""
         self.close()
 
     def init_i2c(self):
+        """Perform init i2c operation."""
         time.sleep(2.5)  # Linduino bootloader delay!
         self.iface.write(('\n' * 10))
         time.sleep(2.5)  # Linduino bootloader delay!
@@ -3297,14 +3351,17 @@ class i2c_dc590(twi_interface):
         return hex(integer).rstrip("L")[2:].rjust(2, "0").upper()
 
     def start(self):
+        """Return start result."""
         self.iface.write('s')  # no response expected
         return True
 
     def stop(self):
+        """Return stop result."""
         self.iface.write('p')  # no response expected
         return True
 
     def write(self, data8):
+        """Write a value to the channel."""
         data8 = int(data8) & 0xFF
         write_str = 'S' + hex(data8)[2:].rjust(2, "0").upper()
         self.iface.write(write_str)
@@ -3323,6 +3380,7 @@ class i2c_dc590(twi_interface):
                 'Bad response to DC590 write command: {}'.format(ret_str))
 
     def read_ack(self):
+        """Return read ack result."""
         self.iface.write("Q")
         resp = self.iface.read(2)
         ret_str = resp[0]
@@ -3338,6 +3396,7 @@ class i2c_dc590(twi_interface):
         return int(ret_str, 16)
 
     def read_nack(self):
+        """Return read nack result."""
         self.iface.write("R")
         resp = self.iface.read(2)
         ret_str = resp[0]
@@ -3353,6 +3412,7 @@ class i2c_dc590(twi_interface):
         return int(ret_str, 16)
 
     def set_gpio(self, pin_high):
+        """Set the gpio."""
         if pin_high:
             # sets tristate for list_read sketch. C and r commands from 590 not
             # implemented.
@@ -3418,6 +3478,7 @@ class i2c_dc590(twi_interface):
     # SMBus Overloads
 
     def read_byte(self, addr7, commandCode):
+        """Return read byte result."""
         self.check_size(commandCode, 8)
         byteList = [self.write_addr(addr7), commandCode, self.read_addr(addr7)]
         write_str = 'sS{}S{}sS{}Rp'.format(*list(map(self._hex_str, byteList)))
@@ -3489,6 +3550,7 @@ class i2c_dc590(twi_interface):
         return byteList[-2]
 
     def read_word(self, addr7, commandCode):
+        """Return read word result."""
         self.check_size(commandCode, 8)
         byteList = [self.write_addr(addr7), commandCode, self.read_addr(addr7)]
         write_str = 'sS{}S{}sS{}QRp'.format(
@@ -3678,6 +3740,7 @@ class i2c_dc590(twi_interface):
             ret_str[4:6], 16), int(ret_str[6:8], 16)])
 
     def write_byte(self, addr7, commandCode, data8):
+        """Perform write byte operation."""
         self.check_size(commandCode, 8)
         self.check_size(data8, 8)
         byteList = [self.write_addr(addr7), commandCode, data8]
@@ -3690,6 +3753,7 @@ class i2c_dc590(twi_interface):
                 'Response: {} from DC590 write_byte command'.format(ret_str))
 
     def write_byte_pec(self, addr7, commandCode, data8):
+        """Perform write byte pec operation."""
         self.check_size(commandCode, 8)
         self.check_size(data8, 8)
         byteList = [self.write_addr(addr7), commandCode, data8]
@@ -3704,6 +3768,7 @@ class i2c_dc590(twi_interface):
                 'Bad response: {} from DC590 write_byte_pec command'.format(ret_str))
 
     def write_word(self, addr7, commandCode, data16):
+        """Perform write word operation."""
         self.check_size(commandCode, 8)
         self.check_size(data16, 16)
         byteList = [
@@ -3720,6 +3785,7 @@ class i2c_dc590(twi_interface):
                 'Response: {} from DC590 write_word command'.format(ret_str))
 
     def write_word_pec(self, addr7, commandCode, data16):
+        """Perform write word pec operation."""
         self.check_size(commandCode, 8)
         self.check_size(data16, 16)
         byteList = [
@@ -3737,6 +3803,7 @@ class i2c_dc590(twi_interface):
                 'Bad response: {} from DC590 write_word_pec command'.format(ret_str))
 
     def write_32(self, addr7, commandCode, data32):
+        """Perform write 32 operation."""
         self.check_size(commandCode, 8)
         self.check_size(data32, 32)
         byteList = [
@@ -3755,6 +3822,7 @@ class i2c_dc590(twi_interface):
                 'Bad response: {} from DC590 write_32 command'.format(ret_str))
 
     def write_32_pec(self, addr7, commandCode, data32):
+        """Perform write 32 pec operation."""
         self.check_size(commandCode, 8)
         self.check_size(data32, 32)
         byteList = [
@@ -3774,6 +3842,7 @@ class i2c_dc590(twi_interface):
                 'Bad response: {} from DC590 write_32_pec command'.format(ret_str))
 
     def send_byte(self, addr7, data8):
+        """Perform send byte operation."""
         self.check_size(data8, 8)
         byteList = [self.write_addr(addr7), data8]
         write_str = 'sS{}S{}p'.format(*list(map(self._hex_str, byteList)))
@@ -3785,6 +3854,7 @@ class i2c_dc590(twi_interface):
                 'Response: {} from DC590 send_byte command'.format(ret_str))
 
     def resync_communication(self):
+        """Perform resync communication operation."""
         self.iface.read(None)
 
 
@@ -3826,6 +3896,7 @@ class i2c_firmata(twi_interface):
         self.init_i2c()
 
     def init_i2c(self):
+        """Perform init i2c operation."""
         self.firmata.i2c_config(
             read_delay_time=0,
             pin_type=None,
@@ -3834,18 +3905,23 @@ class i2c_firmata(twi_interface):
     # I2C Primitives###
 
     def start(self):
+        """Perform start operation."""
         raise i2cUnimplementedError('Firmata I2C primitives not implemented')
 
     def stop(self):
+        """Perform stop operation."""
         raise i2cUnimplementedError('Firmata I2C primitives not implemented')
 
     def write(self, data8):
+        """Write a value to the channel."""
         raise i2cUnimplementedError('Firmata I2C primitives not implemented')
 
     def read_ack(self):
+        """Perform read ack operation."""
         raise i2cUnimplementedError('Firmata I2C primitives not implemented')
 
     def read_nack(self):
+        """Perform read nack operation."""
         raise i2cUnimplementedError('Firmata I2C primitives not implemented')
     # SMBus Overloads###
 
@@ -4231,6 +4307,7 @@ class i2c_bobbytalk(twi_interface):
 
     @src_id.setter
     def src_id(self, val):
+        """Perform src id operation."""
         from . import bobbytalk
         assert isinstance(val, int)
         self.check_size(val, 8 * bobbytalk.packet.SRC_ID_SIZE)
@@ -4247,6 +4324,7 @@ class i2c_bobbytalk(twi_interface):
 
     @dest_id.setter
     def dest_id(self, val):
+        """Perform dest id operation."""
         from . import bobbytalk
         assert isinstance(val, int)
         self.check_size(val, 8 * bobbytalk.packet.DEST_ID_SIZE)
@@ -4263,6 +4341,7 @@ class i2c_bobbytalk(twi_interface):
 
     @recv_timeout.setter
     def recv_timeout(self, val):
+        """Perform recv timeout operation."""
         from numbers import Real
         assert isinstance(val, Real) and val >= 0
         self._recv_timeout = float(val)
@@ -4281,6 +4360,7 @@ class i2c_bobbytalk(twi_interface):
 
     @cmd_tries.setter
     def cmd_tries(self, val):
+        """Perform cmd tries operation."""
         assert isinstance(val, int) and val >= 1
         self._cmd_tries = val
 
@@ -4297,6 +4377,7 @@ class i2c_bobbytalk(twi_interface):
 
     @recv_tries.setter
     def recv_tries(self, val):
+        """Perform recv tries operation."""
         assert isinstance(val, int) and val >= 1
         self._recv_tries = val
     #
@@ -4478,6 +4559,7 @@ class i2c_bobbytalk(twi_interface):
         return results_dict
 
     def read_register(self, addr7, commandCode, data_size, use_pec):
+        """Return read register result."""
         if data_size == 16:
             if use_pec:
                 return self.read_word_pec(addr7=addr7, commandCode=commandCode)
@@ -4570,6 +4652,7 @@ class i2c_bobbytalk(twi_interface):
         return data16
 
     def write_register(self, addr7, commandCode, data, data_size, use_pec):
+        """Return write register result."""
         if data_size == 16:
             if use_pec:
                 return self.write_word_pec(
@@ -4913,6 +4996,7 @@ class i2c_labcomm(twi_interface):
         self.ERROR_CODE_SMBUS_UNKNOWN_ERROR = 32
 
     def raise_twi_error(self, code, command_code):
+        """Perform raise twi error operation."""
         if code == self.ERROR_CODE_SMBUS_SUCCESS:
             pass
         if code & self.ERROR_CODE_SMBUS_NACK_ON_ADDRESS:
@@ -4935,9 +5019,11 @@ class i2c_labcomm(twi_interface):
                 f"Labcomm had an unknown error at command code: {command_code}.")
 
     def set_source_id(self, src_id):
+        """Set the source id."""
         self.src_id = src_id
 
     def set_destination_id(self, dest_id):
+        """Set the destination id."""
         self.dest_id = dest_id
 
     def bytes_grouper(self, iterable, size):
@@ -4957,6 +5043,7 @@ class i2c_labcomm(twi_interface):
         return list(itertools.zip_longest(fillvalue=None, *args))
 
     def read_register_list(self, addr7, command_codes, data_size, use_pec):
+        """Return read register list result."""
         payload = int.to_bytes(
             self.SET_REG_LIST_AND_READ_LIST,
             length=1,
@@ -4991,6 +5078,7 @@ class i2c_labcomm(twi_interface):
         return dict(list(zip(command_codes, values)))
 
     def write_register(self, addr7, commandCode, data, data_size, use_pec):
+        """Perform write register operation."""
         payload = int.to_bytes(
             self.SMBUS_WRITE_REGISTER,
             length=1,
@@ -5017,6 +5105,7 @@ class i2c_labcomm(twi_interface):
             command_code=commandCode)
 
     def read_register(self, addr7, commandCode, data_size, use_pec):
+        """Return read register result."""
         payload = int.to_bytes(
             self.SMBUS_READ_REGISTER,
             length=1,
@@ -5041,6 +5130,7 @@ class i2c_labcomm(twi_interface):
 
     # TODO PyICe is broken here, needs to support receive_byte with Pec
     def receive_byte(self, addr7, use_pec=False):
+        """Return receive byte result."""
         payload = int.to_bytes(
             self.SMBUS_RECEIVE_BYTE,
             length=1,
@@ -5062,17 +5152,21 @@ class i2c_labcomm(twi_interface):
         return packet["payload"][1]
 
     def read_word_pec(self, addr7, commandCode):
+        """Perform read word pec operation."""
         print("read_word_pec in twi_interface unimplemented.")
         # return data16
 
     def write_word_pec(self, addr7, commandCode, data16):
+        """Perform write word pec operation."""
         print("write_word_pec in twi_interface unimplemented.")
 
     def read_byte_pec(self, addr7, commandCode):
+        """Perform read byte pec operation."""
         print("read_byte_pec in twi_interface unimplemented.")
         # return data8
 
     def write_byte_pec(self, addr7, commandCode, data8):
+        """Perform write byte pec operation."""
         print("write_byte_pec in twi_interface unimplemented.")
 
     def start(self):
@@ -5125,12 +5219,14 @@ class mem_dict(twi_interface):
         self.set_data_source(data_source)
 
     def set_data_source(self, data):
+        """Set the data source."""
         self._data_dict = data
 
     def read_register(self, addr7, commandCode, data_size, use_pec):
         # Most everything ignored
         # Interface unchanged to be able to use TWI Instrument bit field
         # decoding.
+        """Return read register result."""
         assert self._data_dict is not None, 'Must set input data source.'
         try:
             return self._data_dict[commandCode]
@@ -5139,18 +5235,23 @@ class mem_dict(twi_interface):
             return None
 
     def read_ack(self):
+        """Perform read ack operation."""
         raise Exception('Unimplemented')
 
     def read_nack(self):
+        """Perform read nack operation."""
         raise Exception('Unimplemented')
 
     def start(self):
+        """Perform start operation."""
         raise Exception('Unimplemented')
 
     def stop(self):
+        """Perform stop operation."""
         raise Exception('Unimplemented')
 
     def write(self):
+        """Write a value to the channel."""
         raise Exception('Unimplemented')
 
 
@@ -5161,6 +5262,7 @@ class i2cError(Exception):
         self.value = value
 
     def __str__(self):
+        """Return string representation."""
         return repr(self.value)
 
 

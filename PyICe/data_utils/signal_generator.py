@@ -112,6 +112,7 @@ class lfsr_period_generator():
         self.min_freq = freq_center * (1 - freq_range_percent)
 
     def get_next_period(self):
+        """Return the next period."""
         bit = self.lfsr >> self.poly[0] & 1 ^ \
             self.lfsr >> self.poly[1] & 1 ^ \
             self.lfsr >> self.poly[2] & 1 ^ \

@@ -53,11 +53,13 @@ class agilent_e364xa(agilent_e36xxa):
             self.set_current(num, ilim)
 
     def set_ovp_voltage(self, voltage, num):  # NB
+        """Set the ovp voltage."""
         self.select_output(num)
         self.get_interface().write(f'VOLT:PROT {voltage}')
         self.get_interface().write('VOLT:PROT:STAT ON')
 
     def select_output(self, num):  # NB
+        """Perform select output operation."""
         num = num.upper()
         if num not in ['OUT1', 'OUT2']:
             raise Exception(f'Invalid channel number "{num}"')

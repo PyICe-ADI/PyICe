@@ -287,6 +287,7 @@ class htx9011(scpi_instrument):
         return new_channel
 
     def add_channel_range(self, channel_name, channel_number):
+        """Add a channel range."""
         if channel_number not in [1, 2, 3, 4, 5, 6, 7, 8]:
             raise Exception(
                 f'\n\nInvalid channel number:{channel_number}, needs to be in 1-8 for the ConfiguratorXT.\n\n')
@@ -702,18 +703,22 @@ class htx9011(scpi_instrument):
         return self._from_bit_list(output)
 
     def set_all_relays_bypass(self, value):
+        """Set the all relays bypass."""
         for relay in self.relay_pins_bypass:
             self._write_relay_bypass(relay, value)
 
     def set_all_relays_connect(self, value):
+        """Set the all relays connect."""
         for relay in self.relay_pins_connect:
             self._write_relay_connect(relay, value)
 
     def set_all_relays_range_H(self, value):
+        """Set the all relays range H."""
         for relay in self.relay_pins_range_H:
             self._write_relay_range_H(relay, value)
 
     def set_all_relays_range_M_LB(self, value):
+        """Set the all relays range M LB."""
         for relay in self.relay_pins_range_M_LB:
             self._write_relay_range_M_LB(relay, value)
 
@@ -744,6 +749,7 @@ class htx9011(scpi_instrument):
         self.get_interface().write(write_str)
 
     def add_channel_pwm(self, channel_name, pin):
+        """Add a channel pwm."""
         if pin not in self.pwm_pins:
             raise Exception(
                 f"\n\nInvalid HTX9011 PWM pin number {pin}. Must be one of: {self.pwm_pins}\n\n")
@@ -764,6 +770,7 @@ class htx9011(scpi_instrument):
 
     def _add_channel_pwm_frequency(self, channel_name, pin):
         def set_pwm_frequency(value):
+            """Set the pwm frequency."""
             flow = 16e6 / 1024 / 65536
             fhigh = 8e6  # datasheet, fmax = fclkio / 2
             if value < flow or value > fhigh:
@@ -776,6 +783,7 @@ class htx9011(scpi_instrument):
 
     def _add_channel_pwm_duty_cycle(self, channel_name, pin):
         def set_pwm_duty_cycle(value):
+            """Set the pwm duty cycle."""
             self.pwm_duty_cycle[pin] = value
             self._update_pwm_channel(pin)
         new_channel = channel(channel_name, write_function=set_pwm_duty_cycle)
@@ -783,6 +791,7 @@ class htx9011(scpi_instrument):
 
     def _add_channel_pwm_enable(self, channel_name, pin):
         def set_pwm_enable(value):
+            """Set the pwm enable."""
             value = self._clean_value(value)
             if value not in [0, 1]:
                 raise Exception(
@@ -796,6 +805,7 @@ class htx9011(scpi_instrument):
 
     def _add_channel_pwm_freq_readback(self, channel_name, pin):
         def compute_f(pin):
+            """Return compute f result."""
             return self.FCLK / \
                 float(self.prescale[pin]) / float(1 + self.top[pin])
         new_channel = channel(channel_name,
@@ -833,6 +843,7 @@ class htx9011(scpi_instrument):
                 f'PWM:MODE ({self.pwm_pins[pin]},DISABLE)')
 
     def add_channel_servo(self, channel_name, servo_number):
+        """Add a channel servo."""
         if servo_number not in self.pwm_pins:
             raise Exception(
                 f"\n\nInvalid HTX9011 servo pin number {servo_number}.\n\n")
@@ -850,6 +861,7 @@ class htx9011(scpi_instrument):
         return new_channel
 
     def add_channel_servo_enable(self, channel_name, servo_number):
+        """Add a channel servo enable."""
         if servo_number not in self.pwm_pins:
             raise Exception(
                 f"\n\nHTX9011 Invalid servo pin number {servo_number}\n\n")
@@ -861,6 +873,7 @@ class htx9011(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_interrupt(self, channel_name, interrupt_number):
+        """Add a channel interrupt."""
         def _write_interrupt_control_channel(ch, value):
             command_list = ["DISABLE", "ANYEDGE", "RISING", "FALLING"]
             if value.upper() not in command_list:
@@ -1062,32 +1075,40 @@ class htx9011(scpi_instrument):
         return self.get_interface().ask("SYSTem:VERSion?")
 
     def get_firmware_version(self):
+        """Return the firmware version."""
         idnstr = self.get_interface().ask("*IDN?")
         return idnstr.split(",")[3]
 
     def is_calibrateable(self):
+        """Return whether the channel is calibrateable."""
         year, month, day = [int(value)
                             for value in self.get_firmware_version().split(".")]
         return datetime.datetime(
             year, month, day) >= datetime.datetime(2020, 11, 26)
 
     def set_serial_number(self, serialnum):
+        """Set the serial number."""
         self.get_interface().write(f"CALibration:BOArdrev {serialnum}")
 
     def get_serialnum(self):
+        """Return the serialnum."""
         return self.get_interface().ask("CALibration:BOArdrev?")
 
     def valid_serialnum(self):
+        """Return valid serialnum result."""
         serialnum = self.get_serialnum()
         return len(serialnum) == 10 and serialnum.isdigit()
 
     def get_idn(self):
+        """Return the idn."""
         return self.get_interface().ask("*IDN?")
 
     def get_error(self):
+        """Return the error."""
         return self.get_interface().ask("SYStem:ERRor?")
 
     def set_resistor_calibration(self, resistor_number, value):
+        """Set the resistor calibration."""
         try:
             float(value)
         except BaseException:
@@ -1098,15 +1119,18 @@ class htx9011(scpi_instrument):
             f"CALibration:DATA ({resistor_number},{value:0.10e});")
 
     def get_resistor_calibration(self, resistor_number):
+        """Return the resistor calibration."""
         return float(self.get_interface().ask(
             f"CALibration:DATA? {resistor_number};"))
 
     def set_calibration_date(self, now):
+        """Set the calibration date."""
         self.get_interface().write(
             f"CALibration:DATE {now.strftime('%Y-%m-%d')}")
 
     def get_calibration_date(self):
         # datetime.datetime.now().strftime("%Y-%m-%d")
+        """Return the calibration date."""
         datestr = self.get_interface().ask('CALibration:DATE?')
         try:
             y, m, d = datestr.split('-')
@@ -1117,14 +1141,17 @@ class htx9011(scpi_instrument):
             return None
 
     def get_days_since_calibration(self):
+        """Return the days since calibration."""
         cal_date = self.get_calibration_date()
         if cal_date is not None:
             return (datetime.date.today() - cal_date).days
 
     def start_bootloader(self):
+        """Perform start bootloader operation."""
         self.get_interface().write("SYSTem:RST:BTLOader")
 
     def check_calibration_valid(self, calibrating):
+        """Perform check calibration valid operation."""
         cal_duration = 365  # days
         days = self.get_days_since_calibration()
         if days is None and not calibrating:
@@ -1167,6 +1194,7 @@ class PCF8574_on_ConfiguratorXT(instrument):
         self._cached_port_value = None
 
     def add_channel_covering_all_pins(self, channel_name):
+        """Add a channel covering all pins."""
         new_channel = channel(channel_name, write_function=self.write_port)
         new_channel.set_description("Write a byte value to the 8 GPIO pins of ConfiguratorXT GPIO expander."
                                     "Pin NS1 is forced to the byte's lsb, NS2 outputs the next significant bit, etc., and "
@@ -1174,6 +1202,7 @@ class PCF8574_on_ConfiguratorXT(instrument):
         return new_channel
 
     def add_readback_channel_covering_all_pins(self, channel_name):
+        """Add a readback channel covering all pins."""
         new_channel = channel(channel_name, read_function=self.read_port)
         new_channel.set_description("Reads the state of the 8 GPIO pins of the ConfiguratorXT GPIO expander. "
                                     "The returned byte's lsb is pin NS1's logic state. The returned byte's msb is pin NS8's state. "
@@ -1240,6 +1269,7 @@ class PCF8574_on_ConfiguratorXT(instrument):
         return int(resp_str, base=16)
 
     def write_port(self, data8):
+        """Return write port result."""
         if isinstance(data8, int) and data8 > 0 and data8 <= 255:
             return self.get_interface().write(f"GPIOX:WRI {data8:02x}")
         else:
@@ -1247,6 +1277,7 @@ class PCF8574_on_ConfiguratorXT(instrument):
                              "Expected integer between 0 and 255 inclusive.")
 
     def make_write_function(self, pin_name):
+        """Return make write function result."""
         assert pin_name in self.valid_pin_names_set
 
         def _write_pin(databit):
@@ -1270,6 +1301,7 @@ class PCF8574_on_ConfiguratorXT(instrument):
         return _write_pin
 
     def make_read_function(self, pin_name):
+        """Return make read function result."""
         assert pin_name in self.valid_pin_names_set
         pin_num = int(pin_name[2]) - 1  # 0: NS1, 1: NS2, ..., 7: NS8
         mask = 1 << pin_num

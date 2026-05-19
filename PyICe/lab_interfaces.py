@@ -54,6 +54,7 @@ STR_ENCODING = 'latin-1'
 
 
 def strify(bs):
+    """Return strify result."""
     if not isinstance(bs, str):
         return bs.decode(STR_ENCODING)
     else:
@@ -63,6 +64,7 @@ def strify(bs):
 
 
 def byteify(s):
+    """Return byteify result."""
     if isinstance(s, str):
         return s.encode(STR_ENCODING)
     else:
@@ -105,36 +107,44 @@ class communication_node(object):
         self._lock = multiprocessing.RLock()
 
     def debug_com_nodes(self, indent=""):
+        """Perform debug com nodes operation."""
         print(
             f'{indent}{self}, child of {self._parent}. Thread_safe: {self._thread_safe}')
         for child in self._children:
             child.debug_com_nodes(indent=f"{indent}    ")
 
     def get_com_parent(self):
+        """Return the com parent."""
         return self._parent
 
     def set_com_node_parent(self, parent):
+        """Set the com node parent."""
         if self._parent:
             print("warning: changing a communication_node parent")
         self._parent = parent
         self._parent.com_node_register_child(self)
 
     def set_com_node_thread_safe(self, safe=True):
+        """Set the com node thread safe."""
         self._thread_safe = safe
 
     def com_node_register_child(self, child):
+        """Perform com node register child operation."""
         self._children.append(child)
 
     def com_node_get_root(self):
+        """Return com node get root result."""
         if self._parent:
             return self._parent.com_node_get_root()
         else:
             return self
 
     def com_node_get_children(self):
+        """Return com node get children result."""
         return self._children
 
     def com_node_get_all_descendents(self):
+        """Return com node get all descendents result."""
         descendents = set()
         for child in self.com_node_get_children():
             descendents.add(child)
@@ -261,6 +271,7 @@ class interface(communication_node):
         super().__init__(**kwargs)
 
     def __str__(self):
+        """Return string representation."""
         return self._interface_name
 
 
@@ -568,12 +579,14 @@ class interface_raw_serial(interface, serial_from_name_or_url):
         self._serial_port_name = serial_port_name
 
     def get_serial_port_name(self):
+        """Return the serial port name."""
         return self._serial_port_name
 
     def write(self, msg, *args, **kw):
         # '''Attempt to intercept calls to PySerial write() and do str to bytes translation as needed'''
         # Intercept calls to abstract all byte-serialization from the rest of
         # PyICe. Work natively in Python3 unicode strings.
+        """Write a value to the channel."""
         if isinstance(msg, str):
             msgbytes = byteify(msg)
             # if True:  # Helpful for debugging during Python 2 to 3 porting.
@@ -600,19 +613,23 @@ class interface_raw_serial(interface, serial_from_name_or_url):
         return self.write_raw(msgbytes, *args, **kw)
 
     def read(self, size, *args, **kw):
+        """Read and return the current channel value."""
         resp = self.read_raw(size, *args, **kw)
         return strify(resp)
 
     def readline(self, *args, **kw):
+        """Return readline result."""
         resp = super(interface_raw_serial, self).readline(*args, **kw)
         return strify(resp)
     # Readlines, writelines, readinto, .... byte<->str wrappers
     # unimplemented!!!
 
     def write_raw(self, msgbytes, *args, **kw):
+        """Return write raw result."""
         return super(interface_raw_serial, self).write(msgbytes, *args, **kw)
 
     def read_raw(self, size, *args, **kw):
+        """Return read raw result."""
         return super(interface_raw_serial, self).read(size, *args, **kw)
 
     def __del__(self):
@@ -636,27 +653,34 @@ class interface_tcp_serial(interface):
         super(interface_tcp_serial, self).__init__(self.ser.port)
 
     def get_serial_port_name(self):
+        """Return the serial port name."""
         return self.ser.port
 
     def read(self, *args, **kwargs):
+        """Read and return the current channel value."""
         return self.ser.read(*args, **kwargs)
 
     def write(self, *args, **kwargs):
+        """Write a value to the channel."""
         return self.ser.write(*args, **kwargs)
 
     def close(self, *args, **kwargs):
+        """Return close result."""
         return self.ser.close(*args, **kwargs)
 
     @property
     def timeout(self):
+        """Return timeout result."""
         return self.ser.timeout
 
     @timeout.setter
     def timeout(self, new_timeout):
+        """Perform timeout operation."""
         self.ser.timeout = new_timeout
 
     @property
     def in_waiting(self):
+        """Return in waiting result."""
         if hasattr(self.ser, "in_waiting"):
             return self.ser.in_waiting
         elif hasattr(self.ser, "inWaiting"):
@@ -699,6 +723,7 @@ class SerialTestHarness(object):
 
     @staticmethod
     def biased_rng(min_val, max_val):
+        """Return biased rng result."""
         assert isinstance(min_val, int)
         assert isinstance(max_val, int) and max_val > min_val
         choice = random.randint(0, 3)
@@ -766,24 +791,29 @@ class SerialTestHarness(object):
         return result
 
     def write(self, bytestring):
+        """Write a value to the channel."""
         pass
 
     @property
     def timeout(self):
+        """Return timeout result."""
         return self._timeout
 
     @timeout.setter
     def timeout(self, new_timeout):
+        """Perform timeout operation."""
         from numbers import Real
         assert isinstance(new_timeout, Real) and new_timeout >= 0
         self._timeout = new_timeout
 
     @property
     def max_bytes_returned_per_read(self):
+        """Return max bytes returned per read result."""
         return self._max_bytes_returned_per_read
 
     @max_bytes_returned_per_read.setter
     def max_bytes_returned_per_read(self, new_max):
+        """Perform max bytes returned per read operation."""
         assert isinstance(new_max, int) and new_max >= 0
         self._max_bytes_returned_per_read = new_max
 
@@ -825,6 +855,7 @@ class interface_test_harness_serial(interface, SerialTestHarness):
         self._serial_port_name = serial_port_name
 
     def get_serial_port_name(self):
+        """Return the serial port name."""
         return self._serial_port_name
 
 
@@ -918,6 +949,7 @@ class interface_bobbytalk_raw_serial(interface_bobbytalk):
         if junk_bytes_dump is None:
             # By default, discard junk bytes.
             def trash(junk_bytes):
+                """Perform trash operation."""
                 return
             self.dump = trash
         else:
@@ -1212,12 +1244,15 @@ class interface_labcomm_raw_serial(interface):
         self.parser = labcomm.labcomm_parser(raw_serial_interface)
 
     def set_source_id(self, src_id):
+        """Set the source id."""
         self.src_id = src_id
 
     def set_destination_id(self, dest_id):
+        """Set the destination id."""
         self.dest_id = dest_id
 
     def send_payload(self, payload):
+        """Perform send payload operation."""
         self.interface.write_raw(
             self.talker.assemble(
                 source=self.src_id,
@@ -1225,6 +1260,7 @@ class interface_labcomm_raw_serial(interface):
                 payload=payload))
 
     def receive_packet(self):
+        """Return receive packet result."""
         return self.parser.read_message()
 
 
@@ -1239,9 +1275,11 @@ class interface_labcomm_twi_serial(twi_interface.i2c_labcomm, interface_twi):
         self.parser = labcomm.labcomm_parser(raw_serial_interface)
 
     def set_source_id(self, src_id):
+        """Set the source id."""
         self.src_id = src_id
 
     def set_destination_id(self, dest_id):
+        """Set the destination id."""
         self.dest_id = dest_id
 
 
@@ -1322,6 +1360,7 @@ class interface_factory(communication_node):
         self._default_timeout = 2
 
     def get_visa_interface(self, visa_address_string, timeout=None):
+        """Return the visa interface."""
         if visaMissing:
             raise Exception(
                 "pyVisa or VISA is missing on this computer, install one or both")
@@ -1342,6 +1381,7 @@ class interface_factory(communication_node):
 
     def get_visa_gpib_interface(
             self, gpib_adapter_number, gpib_address_number, timeout=None):
+        """Return the visa gpib interface."""
         timeout = self._set_timeout(timeout)
         if visaMissing:
             raise Exception(
@@ -1395,6 +1435,7 @@ class interface_factory(communication_node):
 
     def get_visa_tcp_ip_interface(
             self, host_address, port, timeout=None, **kwargs):
+        """Return the visa tcp ip interface."""
         new_interface = interface_visa_tcp_ip(
             host_address, port, timeout, **kwargs)
         new_interface.set_com_node_parent(self)
@@ -1402,6 +1443,7 @@ class interface_factory(communication_node):
         return new_interface
 
     def get_visa_telnet_interface(self, host_address, port, timeout=None):
+        """Return the visa telnet interface."""
         if telnetlibMissing:
             raise Exception("telnetlib is missing on this computer")
         new_interface = interface_visa_telnet(host_address, port, timeout)
@@ -1410,6 +1452,7 @@ class interface_factory(communication_node):
         return new_interface
 
     def get_visa_vxi11_interface(self, address, timeout):
+        """Return the visa vxi11 interface."""
         timeout = self._set_timeout(timeout)
         new_interface = interface_visa_vxi11(address, timeout)
         new_interface.set_com_node_parent(self)
@@ -1417,6 +1460,7 @@ class interface_factory(communication_node):
         return new_interface
 
     def get_visa_usbtmc_interface(self, address, timeout):
+        """Return the visa usbtmc interface."""
         timeout = self._set_timeout(timeout)
         new_interface = interface_visa_usbtmc(address, timeout)
         new_interface.set_com_node_parent(self)
@@ -1425,6 +1469,7 @@ class interface_factory(communication_node):
 
     def get_visa_serial_interface(
             self, serial_obj_or_port_name, baudrate=None, timeout=None, **kwargs):
+        """Return the visa serial interface."""
         timeout = self._set_timeout(timeout)
         if isinstance(serial_obj_or_port_name, str):
             rawser = self.get_raw_serial_interface(
@@ -1438,6 +1483,7 @@ class interface_factory(communication_node):
 
     def get_raw_serial_interface(
             self, serial_port_name, baudrate=None, timeout=None, **kwargs):
+        """Return the raw serial interface."""
         if serialMissing:
             raise Exception("pySerial is missing on this computer")
         timeout = self._set_timeout(timeout)
@@ -1458,6 +1504,7 @@ class interface_factory(communication_node):
 
     def get_tcp_serial_interface(
             self, dest_ip_address, dest_tcp_portnum, timeout):
+        """Return the tcp serial interface."""
         if serialMissing:
             raise Exception("pySerial is missing on this computer")
         timeout = self._set_timeout(timeout)
@@ -1490,34 +1537,40 @@ class interface_factory(communication_node):
 
     def get_interface_libusb(self, idVendor=0x1272,
                              idProduct=0x8004, timeout=1):
+        """Return the interface libusb."""
         new_interface = interface_libusb(
             idVendor=0x1272, idProduct=0x8004, timeout=1)
         new_interface.set_com_node_parent(self)
         return new_interface
 
     def get_interface_stream_serial(self, interface_raw_serial):
+        """Return the interface stream serial."""
         new_interface = interface_stream_serial(interface_raw_serial)
         new_interface.set_com_node_parent(interface_raw_serial)
         return new_interface
 
     def get_interface_ftdi_d2xx(self):
         # need some kind of device descriptor....
+        """Return the interface ftdi d2xx."""
         new_interface = interface_ftdi_d2xx()
         new_interface.set_com_node_parent(self)
         return new_interface
 
     def get_twi_dummy_interface(self, delay=0, timeout=None, **kwargs):
+        """Return the twi dummy interface."""
         new_interface = interface_twi_dummy(delay, **kwargs)
         new_interface.set_com_node_parent(self)
         return new_interface
 
     def get_twi_mdump_interface(self, data_source, **kwargs):
+        """Return the twi mdump interface."""
         new_interface = interface_twi_mdump(data_source, **kwargs)
         new_interface.set_com_node_parent(self)
         return new_interface
 
     def get_twi_scpi_interface(
             self, serial_port_name, baudrate=None, timeout=None):
+        """Return the twi scpi interface."""
         serial = self.get_visa_serial_interface(
             serial_port_name, baudrate, timeout)
         new_interface = interface_twi_scpi(serial, timeout)
@@ -1526,6 +1579,7 @@ class interface_factory(communication_node):
 
     def get_twi_scpi_sp_interface(self, serial_port_name, portnum,
                                   sclpin, sdapin, pullup=False, baudrate=None, timeout=None):
+        """Return the twi scpi sp interface."""
         serial = self.get_visa_serial_interface(
             serial_port_name, baudrate, timeout)
         new_interface = interface_twi_scpi_sp(
@@ -1540,6 +1594,7 @@ class interface_factory(communication_node):
 
     def get_twi_scpi_testhook_interface(
             self, serial_port_name, baudrate=None, timeout=None):
+        """Return the twi scpi testhook interface."""
         serial = self.get_visa_serial_interface(
             serial_port_name, baudrate, timeout)
         new_interface = interface_twi_scpi_testhook(serial, timeout)
@@ -1548,6 +1603,7 @@ class interface_factory(communication_node):
 
     def get_twi_dc590_serial(self, serial_port_name,
                              baudrate=None, timeout=None):
+        """Return the twi dc590 serial."""
         if baudrate is None:
             baudrate = 115200  # DC590/Linduino default
         serial = self.get_raw_serial_interface(
@@ -1559,6 +1615,7 @@ class interface_factory(communication_node):
 
     def get_twi_buspirate_interface(
             self, serial_port_name, baudrate=None, timeout=None):
+        """Return the twi buspirate interface."""
         serial = self.get_raw_serial_interface(
             serial_port_name, baudrate, timeout)
         new_interface = interface_twi_buspirate(serial, timeout)
@@ -1566,12 +1623,14 @@ class interface_factory(communication_node):
         return new_interface
 
     def get_twi_kernel_interface(self, bus_number):
+        """Return the twi kernel interface."""
         new_interface = interface_twi_kernel(bus_number)  # noqa: F821 - class defined externally or not yet implemented
         new_interface.set_com_node_parent(self)
         return new_interface
 
     def get_twi_firmata_interface(self, firmata_instance):
         # Old. Consider Telemetrix instead.
+        """Return the twi firmata interface."""
         new_interface = interface_twi_firmata(firmata_instance)
         new_interface.set_com_node_parent(self)
         return new_interface
@@ -1671,6 +1730,7 @@ class interface_factory(communication_node):
 
     def get_labcomm_raw_interface(
             self, comport_name, src_id, dest_id, baudrate, timeout):
+        """Return the labcomm raw interface."""
         rawser = self.get_raw_serial_interface(comport_name, baudrate, timeout)
         new_interface = interface_labcomm_raw_serial(
             rawser, comport_name, src_id, dest_id)
@@ -1679,6 +1739,7 @@ class interface_factory(communication_node):
 
     def get_labcomm_twi_interface(
             self, comport_name, src_id, dest_id, baudrate, timeout):
+        """Return the labcomm twi interface."""
         rawser = self.get_raw_serial_interface(comport_name, baudrate, timeout)
         new_interface = interface_labcomm_twi_serial(
             rawser, comport_name, src_id, dest_id)
@@ -1686,12 +1747,14 @@ class interface_factory(communication_node):
         return new_interface
 
     def get_spi_dummy_interface(self, delay=0):
+        """Return the spi dummy interface."""
         iface_spi = interface_spi_dummy(delay)
         iface_spi.set_com_node_parent(self)
         return iface_spi
 
     def get_spi_dc590_interface(
             self, serial_port_name, uart_baudrate=None, uart_timeout=None, ss_ctrl=None, **kwargs):
+        """Return the spi dc590 interface."""
         if uart_baudrate is None:
             uart_baudrate = 115200  # DC590/Linduino default
         iface_serial = self.get_raw_serial_interface(

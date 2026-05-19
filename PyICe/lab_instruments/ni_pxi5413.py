@@ -26,6 +26,7 @@ class ni_pxi5413(scpi_instrument, delegator):
 
     def create_trapzoid_signal(SampleN, width, slope, VOH, VOL, period):
         # function to generate custom pulse
+        """Return create trapzoid signal result."""
         t = np.linspace(0, period, SampleN)
         amp = VOH - VOL
         offset = VOL
@@ -41,6 +42,7 @@ class ni_pxi5413(scpi_instrument, delegator):
         return waveform_data
 
     def main_method(resource_name, options, samples, gain, offset, gen_time):
+        """Perform main method operation."""
         waveform_data = create_waveform_data(samples)
         # gen_time = period
         with nifgen.Session(resource_name=resource_name, options=options) as session:

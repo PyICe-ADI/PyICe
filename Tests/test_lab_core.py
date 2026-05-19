@@ -7,30 +7,36 @@ from PyICe.lab_core import integer_channel, channel_group, results_ord_dict
 
 
 def read_function():
+    """Return read function result."""
     return "Reading"
 
 
 def write_function(write_val):
+    """Return write function result."""
     return "Writing"
 
 
 @pytest.fixture(scope='function')
 def chan():
+    """Return chan result."""
     return channel(name='empty_channel')
 
 
 class TestChannelBaseFunctionality:
 
     def test_exception_read_write_defined(self):
+        """Perform test exception read write defined operation."""
         with pytest.raises(
                 Exception):  # Ideally this would be a more specific exception
             _c = channel(name='test', read_function=read_function,  # noqa: F841
                          write_function=write_function)
 
     def test_get_name(self, chan):
+        """Perform test get name operation."""
         assert chan.get_name() == "empty_channel"
 
     def test_set_name(self, chan):
+        """Perform test set name operation."""
         chan.set_name('new_name')
         assert chan.get_name() == 'new_name'
 
@@ -42,10 +48,12 @@ class TestChannelBaseFunctionality:
     # BLOB). PyICeBLOB is an intentional custom affinity used throughout the
     # codebase.
     def test_get_type_affinity(self, chan):
+        """Perform test get type affinity operation."""
         chan._set_type_affinity('NOT_TYPE')
         assert chan.get_type_affinity() == 'NOT_TYPE'
 
     def test_set_description(self, chan):
+        """Perform test set description operation."""
         assert chan is chan.set_description(
             'new description')  # how come? chaining commands?
 
@@ -53,33 +61,41 @@ class TestChannelBaseFunctionality:
 class TestReadChannel:
     @pytest.fixture(scope='function')
     def chan_read(self):
+        """Return chan read result."""
         return channel(name='test', read_function=read_function)
 
     def test_read(self, chan_read):
+        """Perform test read operation."""
         val = chan_read.read()
         assert val == "Reading"
 
     def test_read_without_delegator(self, chan_read):
+        """Perform test read without delegator operation."""
         print(chan_read.read_without_delegator())
 
     def test_write(self, chan_read):
+        """Perform test write operation."""
         with pytest.raises(ChannelAccessException):
             chan_read.write('test')
 
     @pytest.fixture
     def read_exception(self):
+        """Return read exception result."""
         def read_func():
+            """Perform read func operation."""
             raise ValueError
 
         return channel(name='read_channel', read_function=read_func)
 
     @patch.object(delegator, 'unlock_interfaces')
     def test_exception_on_read(self, mock_unlock, read_exception):
+        """Perform test exception on read operation."""
         with pytest.raises(ValueError):
             read_exception.read()
         assert mock_unlock.called
 
     def test_add_preset_read_exception(self, chan_read):
+        """Perform test add preset read exception operation."""
         with pytest.raises(ChannelAccessException):
             chan_read.add_preset('TEST')
 
@@ -87,13 +103,16 @@ class TestReadChannel:
 class TestWriteChannel:
     @pytest.fixture(scope='function')
     def simple_write(self):
+        """Return simple write result."""
         return channel(name='write_test', write_function=write_function)
 
     @pytest.mark.parametrize('write_arg', [1, 33.2, 'WOW', [1], (0, 0)])
     def test_write(self, write_arg, simple_write):
+        """Perform test write operation."""
         assert simple_write.write(write_arg) == write_arg
 
     def test_write_history(self, simple_write):
+        """Perform test write history operation."""
         for val in range(0, 9):
             simple_write.write(val)
         assert simple_write.get_write_history() == list(range(0, 9))
@@ -103,6 +122,7 @@ class TestWriteChannel:
         assert simple_write.get_write_history() == list(range(10, 20))
 
     def test_set_max_write_limit(self, simple_write):
+        """Perform test set max write limit operation."""
         simple_write.set_max_write_limit(10)
         assert simple_write._write_max == 10
         assert type(simple_write._write_max) is float
@@ -114,6 +134,7 @@ class TestWriteChannel:
 
     @patch.object(delegator, 'unlock_interfaces')
     def test_write_above_max_limit(self, mock_unlock, simple_write):
+        """Perform test write above max limit operation."""
         simple_write.set_max_write_limit(10)
         with pytest.raises(ChannelValueException):
             simple_write.write(11)
@@ -121,6 +142,7 @@ class TestWriteChannel:
 
     @patch.object(delegator, 'unlock_interfaces')
     def test_write_below_min_limit(self, mock_unlock, simple_write):
+        """Perform test write below min limit operation."""
         simple_write.set_min_write_limit(0)
         with pytest.raises(ChannelValueException):
             simple_write.write(-2)
@@ -128,22 +150,27 @@ class TestWriteChannel:
 
     @pytest.fixture
     def write_exception(self):
+        """Return write exception result."""
         def write_func(val):
+            """Perform write func operation."""
             raise ValueError
 
         return channel(name='write_channel', write_function=write_func)
 
     @patch.object(delegator, 'unlock_interfaces')
     def test_exception_on_write(self, mock_unlock, write_exception):
+        """Perform test exception on write operation."""
         with pytest.raises(ValueError):
             write_exception.write(3)
         assert mock_unlock.called
 
     def test_get_max_write_limit(self, simple_write):
+        """Perform test get max write limit operation."""
         simple_write.set_max_write_limit(999)
         assert simple_write.get_max_write_limit() == 999
 
     def test_set_min_write_limit(self, simple_write):
+        """Perform test set min write limit operation."""
         simple_write.set_min_write_limit(5)
         assert simple_write._write_min == 5
         assert type(simple_write._write_min) is float
@@ -154,10 +181,12 @@ class TestWriteChannel:
             simple_write.set_min_write_limit(" Not a num")
 
     def test_get_min_write_limit(self, simple_write):
+        """Perform test get min write limit operation."""
         simple_write.set_min_write_limit(1)
         assert simple_write.get_min_write_limit() == 1
 
     def test_set_max_write_warning(self, simple_write):
+        """Perform test set max write warning operation."""
         simple_write.set_max_write_warning(10)
         assert simple_write._write_max_warning == 10
         assert type(simple_write._write_max_warning) is float
@@ -168,10 +197,12 @@ class TestWriteChannel:
             simple_write.test_set_max_write_warning("Not a num")
 
     def test_get_max_write_warning(self, simple_write):
+        """Perform test get max write warning operation."""
         simple_write.set_max_write_warning(99)
         assert simple_write.get_max_write_warning() == 99
 
     def test_set_min_write_warning(self, simple_write):
+        """Perform test set min write warning operation."""
         simple_write.set_min_write_warning(5)
         assert simple_write._write_min_warning == 5
         assert type(simple_write._write_min_warning) is float
@@ -182,36 +213,44 @@ class TestWriteChannel:
             simple_write.set_min_write_warning(" Not a num")
 
     def test_get_min_write_warning(self, simple_write):
+        """Perform test get min write warning operation."""
         simple_write.set_min_write_warning(1)
         assert simple_write.get_min_write_warning() == 1
 
     def test_format_display(self, simple_write):
+        """Perform test format display operation."""
         data_str = simple_write.format_display(1)
         assert type(data_str) is str
 
     def test_set_display_format_str(self, simple_write):
+        """Perform test set display format str operation."""
         simple_write.set_display_format_str(2, 1, 3)
         assert simple_write._display_format_str == '1{:2}3'
 
     def test_get_min_write_warning_2(self, simple_write):
+        """Perform test get min write warning 2 operation."""
         simple_write.set_min_write_warning(30)
         assert simple_write.get_min_write_warning() == 30
 
     def test_get_channel_write_delay(self, simple_write):
+        """Perform test get channel write delay operation."""
         delay = simple_write.get_write_delay()
         assert delay == 0  # default write delay
 
     def test_read_exception(self, simple_write):
+        """Perform test read exception operation."""
         simple_write.set_read_access(False)
         with pytest.raises(ChannelAccessException):
             simple_write.read()
 
     def test_add_preset(self, simple_write):
+        """Perform test add preset operation."""
         simple_write.add_preset('TEST')
         with pytest.raises(ChannelException):
             simple_write.add_preset('TEST')
 
     def test_set_write_resolution(self, simple_write):
+        """Perform test set write resolution operation."""
         simple_write.set_write_resolution(decimal_digits=9)
         assert simple_write._write_resolution == 9
         with pytest.raises(AssertionError):
@@ -219,15 +258,18 @@ class TestWriteChannel:
 
 
 def int_read_func():
+    """Return int read func result."""
     return 10
 
 
 def int_write_func(val):
+    """Return int write func result."""
     return "writing"
 
 
 @pytest.fixture(scope='function', params=[1, 5])
 def int_read_chan(request):
+    """Return int read chan result."""
     return integer_channel(name='int_read_channel',
                            size=request.param,
                            read_function=int_read_func)
@@ -235,6 +277,7 @@ def int_read_chan(request):
 
 @pytest.fixture(scope='function')
 def int_write_chan():
+    """Return int write chan result."""
     return integer_channel(name='int_write_channel',
                            size=5,
                            write_function=int_write_func)
@@ -243,17 +286,21 @@ def int_write_chan():
 class TestIntegerReadChannel:
 
     def test_get_size(self, int_read_chan):
+        """Perform test get size operation."""
         assert int_read_chan.get_size() == int_read_chan._size
 
     def test_get_max_write_limit(self, int_write_chan):
+        """Perform test get max write limit operation."""
         int_write_chan.set_max_write_limit(10)
         assert int_write_chan.get_max_write_limit() == 10
 
     def test_get_min_write_limit(self, int_write_chan):
+        """Perform test get min write limit operation."""
         int_write_chan.set_min_write_limit(10)
         assert int_write_chan.get_min_write_limit() == 10
 
     def test_add_preset(self, int_read_chan):
+        """Perform test add preset operation."""
         int_read_chan.add_preset(preset_name='TEST_PRESET',
                                  preset_value=1)
         int_read_chan.add_preset(preset_name='TEST_PRESET2',
@@ -271,6 +318,7 @@ class TestIntegerReadChannel:
                                              'bin',
                                              'signed dec'])
     def test_set_format(self, format_type, int_read_chan):
+        """Perform test set format operation."""
         if int_read_chan.get_size() == 1:
             with pytest.raises(Exception):
                 int_read_chan.set_format(format_type)
@@ -283,6 +331,7 @@ class TestIntegerReadChannel:
                                              'bin',
                                              'signed dec'])
     def test_get_format(self, format_type, int_read_chan):
+        """Perform test get format operation."""
         if int_read_chan.get_size() == 1:
             pass
         else:
@@ -292,17 +341,21 @@ class TestIntegerReadChannel:
     @pytest.mark.parametrize('data', [0, 4, 128, 1024, 89])
     @pytest.mark.parametrize('format', ['dec', 'hex', 'bin'])
     def test_format(self, data, format, int_write_chan):
+        """Perform test format operation."""
         print(int_write_chan.format(data, format, use_presets=True))
 
     @pytest.mark.parametrize('data', [1, 15, 16, 31])
     def test_format_signed_dec(self, data, int_write_chan):
+        """Perform test format signed dec operation."""
         print(int_write_chan.format(data, 'signed dec', use_presets=True))
 
     def test_format_signed_dec_overflow(self, int_write_chan):
+        """Perform test format signed dec overflow operation."""
         with pytest.raises(ValueError):
             int_write_chan.format(32, 'signed dec', use_presets=True)
 
     def test_sql_format(self, int_write_chan):
+        """Perform test sql format operation."""
         int_write_chan.add_format('volts', lambda x: x * 0.01, lambda x: int(x / 0.01),
                                   xypoints=[(0, 0.0), (100, 1.0)])
         result = int_write_chan.sql_format('volts', use_presets=False)
@@ -310,10 +363,12 @@ class TestIntegerReadChannel:
         assert 'int_write_channel' in result
 
     def test_unformat_string(self, int_write_chan):
+        """Perform test unformat string operation."""
         assert int_write_chan.unformat(string=None, format='dec',
                                        use_presets=False) is None
 
     def test_unformat_use_presets(self, int_write_chan):
+        """Perform test unformat use presets operation."""
         int_write_chan.add_preset('ONE', 1)
         int_write_chan.add_preset('TWO', 2)
         assert int_write_chan.unformat(string='ONE', format='dec',
@@ -334,6 +389,7 @@ class TestIntegerReadChannel:
     def test_unformat_specify_format(self, out_format, in_val, out_val,
                                      int_write_chan):
 
+        """Perform test unformat specify format operation."""
         int_write_chan.add_preset('ONE', out_val)
         assert int_write_chan.unformat(string=in_val, format=out_format,
                                        use_presets=False) == out_val
@@ -344,6 +400,7 @@ class TestIntegerReadChannel:
                                                      ('signed dec', '10')
                                                      ])
     def test_format_read(self, format_type, result, int_read_chan):
+        """Perform test format read operation."""
         if int_read_chan.get_size() != 1:
             int_read_chan.set_format(format_type)
             assert int_read_chan.format_read(10) == result
@@ -354,10 +411,12 @@ class TestIntegerReadChannel:
                                                      ('signed dec', '10')
                                                      ])
     def test_format_write(self, format_type, result, int_write_chan):
+        """Perform test format write operation."""
         int_write_chan.set_format(format_type)
         assert int_write_chan.format_write(result) == 10
 
     def test_write_size_1(self, int_write_chan):
+        """Perform test write size 1 operation."""
         chan = integer_channel('TEST', size=1,
                                write_function=write_function)
         assert chan.write(True)
@@ -370,6 +429,7 @@ class TestIntegerReadChannel:
                                                      (None, None)
                                                      ])
     def test_write_size_greater_1(self, format_type, result, int_write_chan):
+        """Perform test write size greater 1 operation."""
         int_write_chan.set_format(format_type)
         if result is None:
             assert int_write_chan.write(result) is None
@@ -377,6 +437,7 @@ class TestIntegerReadChannel:
             assert int_write_chan.write(result) == 10
 
     def test_write_unformatted_size_1(self, int_write_chan):
+        """Perform test write unformatted size 1 operation."""
         chan = integer_channel('TEST', size=1,
                                write_function=write_function)
         assert chan.write_unformatted(True)
@@ -384,17 +445,20 @@ class TestIntegerReadChannel:
 
     @pytest.mark.parametrize('data', [10, 1.1])
     def test_write_unformatted_size_greater_1(self, data, int_write_chan):
+        """Perform test write unformatted size greater 1 operation."""
         assert int_write_chan.write_unformatted(data) == int(data)
 
 
 @pytest.fixture(scope='function')
 def group():
+    """Return group result."""
     c = channel_group(name='New Group')
     return c
 
 
 @pytest.fixture
 def loaded_group_w_channels(group):
+    """Return loaded group w channels result."""
     sub_group1 = channel_group('subg1')
     sub_group2 = channel_group('subg2')
 
@@ -412,12 +476,14 @@ def loaded_group_w_channels(group):
 
 @pytest.fixture
 def loaded_group(loaded_group_w_channels):
+    """Return loaded group result."""
     g, chans = loaded_group_w_channels
     return g
 
 
 @pytest.fixture
 def thread_group(group):
+    """Return thread group result."""
     group.add(c0 := channel(name='chan0',
                             read_function=read_function))
     group.add(c1 := channel(name='chan1',
@@ -435,6 +501,7 @@ def thread_group(group):
 
 class TestChannelGroup:
     def test_copy(self, loaded_group):
+        """Perform test copy operation."""
         copied = loaded_group.copy()
         assert copied is not loaded_group
         assert copied.get_name() == loaded_group.get_name()
@@ -445,18 +512,22 @@ class TestChannelGroup:
             assert copied[name] is loaded_group[name]
 
     def test_get_name(self, group):
+        """Perform test get name operation."""
         assert group.get_name() == 'New Group'
 
     def test_set_name(self, group):
+        """Perform test set name operation."""
         group.set_name('New Name')
         assert group.get_name() == 'New Name'
 
     def test_get_categories(self, loaded_group):
+        """Perform test get categories operation."""
         cats = loaded_group.get_categories()
         assert 'cat1' in cats
         assert 'cat2' in cats
 
     def test_sort(self, group):
+        """Perform test sort operation."""
         group.add(channel(name='zebra', read_function=read_function))
         group.add(channel(name='alpha', read_function=read_function))
         group.add(channel(name='middle', read_function=read_function))
@@ -465,12 +536,15 @@ class TestChannelGroup:
         assert names == ['alpha', 'middle', 'zebra']
 
     def read_func1(self):
+        """Return read func1 result."""
         return 1
 
     def read_func2(self):
+        """Return read func2 result."""
         return 2
 
     def test_add(self, group):
+        """Perform test add operation."""
         c1 = channel(name='read1', read_function=self.read_func1)
         c2 = channel(name='read2', read_function=self.read_func2)
         l1 = [w1 := channel(name='write1', write_function=write_function),
@@ -489,6 +563,7 @@ class TestChannelGroup:
             group.add(0)
 
     def test__add_channel(self, group, chan):
+        """Perform test  add channel operation."""
         assert chan is group._add_channel(chan)
         with pytest.raises(Exception):
             group._add_channel(0)
@@ -500,6 +575,7 @@ class TestChannelGroup:
             group.add(c)
 
     def test_merge_in_channel_group(self, group):
+        """Perform test merge in channel group operation."""
         new_group = channel_group('new')
         new_group.add([
             c1 := channel(name='c1'),
@@ -514,6 +590,7 @@ class TestChannelGroup:
             group.merge_in_channel_group('Type')
 
     def test__add_sub_channel_group(self, group):
+        """Perform test  add sub channel group operation."""
         with pytest.raises(Exception):
             group._add_sub_channel_group(0)
         group1 = channel_group('group1')
@@ -530,12 +607,14 @@ class TestChannelGroup:
             group._add_sub_channel_group(group2)
 
     def test_get_channel_groups(self, group):
+        """Perform test get channel groups operation."""
         group.add(g1 := channel_group('name_test'))
         group.add(g2 := channel_group('name_test'))
         groups = group.get_channel_groups()
         assert groups == [g1, g2]
 
     def test_read(self, group):
+        """Perform test read operation."""
         group.add(channel(name='test_channel',
                           read_function=read_function))
         assert group.read('test_channel') == 'Reading'
@@ -543,11 +622,13 @@ class TestChannelGroup:
             group.read(None)
 
     def test_write(self, group):
+        """Perform test write operation."""
         group.add(channel(name='test_channel',
                           write_function=write_function))
         assert group.write('test_channel', 6) == 6
 
     def test_read_channels(self, group):
+        """Perform test read channels operation."""
         chan_names = []
         for i in range(4):
             group.add(channel(name=f'chan{i}',
@@ -562,6 +643,7 @@ class TestChannelGroup:
         }
 
     def test_write_channels(self, group):
+        """Perform test write channels operation."""
         chan_names = []
         for i in range(4):
             group.add(channel(name=f'chan{i}',
@@ -575,10 +657,12 @@ class TestChannelGroup:
         assert result == [1, 2, 3]
 
     def test_get_channel(self, group):
+        """Perform test get channel operation."""
         with pytest.raises(ChannelAccessException):
             group.get_channel('doesnt_exhist')
 
     def test_get_flat_channel_group(self, group):
+        """Perform test get flat channel group operation."""
         sub_group1 = channel_group('subg1')
         sub_group2 = channel_group('subg2')
 
@@ -593,6 +677,7 @@ class TestChannelGroup:
         assert c2 in new_group
 
     def test__resolve_channel(self, group):
+        """Perform test  resolve channel operation."""
         sub_group1 = channel_group('subg1')
         sub_group1.add(c1 := channel(name='chan0',
                                      write_function=write_function))
@@ -600,6 +685,7 @@ class TestChannelGroup:
         assert group._resolve_channel('chan0') is c1
 
     def test_get_all_channels_dict(self, loaded_group):
+        """Perform test get all channels dict operation."""
         chans = loaded_group.get_all_channels_dict()
         assert 'chan0' in chans
         assert 'chan1' in chans
@@ -612,6 +698,7 @@ class TestChannelGroup:
         assert 'chan2' not in chans_filtered
 
     def test_get_all_channel_names(self, loaded_group):
+        """Perform test get all channel names operation."""
         chans = loaded_group.get_all_channel_names()
         assert 'chan0' in chans
         assert 'chan1' in chans
@@ -624,6 +711,7 @@ class TestChannelGroup:
         assert 'chan2' not in chans_filtered
 
     def test_get_all_channels_list(self, loaded_group_w_channels):
+        """Perform test get all channels list operation."""
         group, (c1, c2, c3) = loaded_group_w_channels
         chan_list = group.get_all_channels_list()
         assert c1 in chan_list
@@ -635,6 +723,7 @@ class TestChannelGroup:
         assert c3 not in chan_list
 
     def test_get_all_channels_set(self, loaded_group_w_channels):
+        """Perform test get all channels set operation."""
         group, (c1, c2, c3) = loaded_group_w_channels
         chan_list = group.get_all_channels_list()
         assert c1 in chan_list
@@ -642,6 +731,7 @@ class TestChannelGroup:
         assert c3 in chan_list
 
     def test_read_channel_list(self, thread_group):
+        """Perform test read channel list operation."""
         group, (c0, c1, c2, c3, c4) = thread_group
         results = group.read_channel_list([c0, c1, c2, c3])
         # non threaded
@@ -651,6 +741,7 @@ class TestChannelGroup:
         assert results['chan3'] == 'Reading'
 
     def test__read_channels_non_threaded(self, thread_group):
+        """Perform test  read channels non threaded operation."""
         group, channels = thread_group
         readable = [
             c for c in channels if c.get_name() in (
@@ -663,6 +754,7 @@ class TestChannelGroup:
     def test__read_channels_threaded(self, thread_group):
         # channel_group lacks group_com_nodes_for_threads_filter, so always
         # falls back to non-threaded
+        """Perform test  read channels threaded operation."""
         group, channels = thread_group
         readable = [c for c in channels if c.get_name() in ('chan0', 'chan3')]
         results = group._read_channels_threaded(readable)
@@ -670,6 +762,7 @@ class TestChannelGroup:
         assert results['chan3'] == 'Reading'
 
     def test_start_threads(self, group):
+        """Perform test start threads operation."""
         assert group._threaded is False
         group.start_threads(2)
         assert group._threaded is True
@@ -683,6 +776,7 @@ class TestChannelGroup:
             group._read_queue.put([])
 
     def test_threaded_read_function(self, thread_group):
+        """Perform test threaded read function operation."""
         group, channels = thread_group
         group.start_threads(1)
         readable = [c for c in channels if c.get_name() == 'chan0']
@@ -693,6 +787,7 @@ class TestChannelGroup:
         group._read_queue.put([])
 
     def test_get_threaded_results(self, group):
+        """Perform test get threaded results operation."""
         group._read_results_queue = queue.Queue()
         r1 = results_ord_dict()
         r1['ch_a'] = 1
@@ -708,6 +803,7 @@ class TestChannelGroup:
             group.get_threaded_results(1)
 
     def test_read_all_channels(self, thread_group):
+        """Perform test read all channels operation."""
         group, channels = thread_group
         data = group.read_all_channels()
         assert 'chan0' in data
@@ -717,6 +813,7 @@ class TestChannelGroup:
         assert 'chan4' in data
 
     def test_remove_channel(self, thread_group):
+        """Perform test remove channel operation."""
         group, channels = thread_group
         group.remove_channel(channels[0])
 
@@ -727,6 +824,7 @@ class TestChannelGroup:
             group.remove_channel(chan)
 
     def test_remove_channel_group(self, group):
+        """Perform test remove channel group operation."""
         sub_group1 = channel_group('subg1')
         sub_group2 = channel_group('subg2')
 
@@ -751,22 +849,26 @@ class TestChannelGroup:
 
     # @pytest.mark.xfail  # This one does not work because if you remove a channel group
     def test_remove_channel_by_name(self, loaded_group):
+        """Perform test remove channel by name operation."""
         loaded_group.add(c1 := channel(name='remove_chan'))
         assert c1 in loaded_group
         loaded_group.remove_channel_by_name('remove_chan')
         assert c1 not in loaded_group
 
     def test_remove_all_channels_and_sub_groups(self, loaded_group):
+        """Perform test remove all channels and sub groups operation."""
         loaded_group.remove_all_channels_and_sub_groups()
         assert not loaded_group._channel_dict
         assert not loaded_group._sub_channel_groups
 
     def test_remove_sub_channel_group(self, loaded_group):
+        """Perform test remove sub channel group operation."""
         sub_group = loaded_group._sub_channel_groups[0]
         loaded_group.remove_sub_channel_group(sub_group)
         assert sub_group not in loaded_group
 
     def test_remove_category(self, group):
+        """Perform test remove category operation."""
         c1 = channel(name='a', read_function=read_function)
         c1.set_category('remove_me')
         c2 = channel(name='b', read_function=read_function)
@@ -779,6 +881,7 @@ class TestChannelGroup:
         assert 'b' in names
 
     def test_remove_categories(self, group):
+        """Perform test remove categories operation."""
         c1 = channel(name='a', read_function=read_function)
         c1.set_category('cat1')
         c2 = channel(name='b', read_function=read_function)
@@ -795,11 +898,13 @@ class TestChannelGroup:
         assert 'c' in names
 
     def test_debug_print(self, loaded_group, capsys):
+        """Perform test debug print operation."""
         loaded_group.debug_print()
         captured = capsys.readouterr()
         assert 'chan0' in captured.out or 'chan1' in captured.out
 
     def test_remove_channel_list(self, group):
+        """Perform test remove channel list operation."""
         c1 = channel(name='rm1', read_function=read_function)
         c2 = channel(name='rm2', read_function=read_function)
         c3 = channel(name='keep', read_function=read_function)
@@ -812,18 +917,21 @@ class TestChannelGroup:
         assert c3 in group
 
     def test_resolve_channel_list(self, loaded_group_w_channels):
+        """Perform test resolve channel list operation."""
         group, (c1, c2, c3) = loaded_group_w_channels
         resolved = group.resolve_channel_list(['chan0', c2])
         assert c1 in resolved
         assert c2 in resolved
 
     def test_clone(self, loaded_group):
+        """Perform test clone operation."""
         cloned = loaded_group.clone()
         assert 'chan0' in cloned.get_all_channel_names()
         assert 'chan1' in cloned.get_all_channel_names()
         assert cloned is not loaded_group
 
     def test_write_html(self, loaded_group, tmp_path):
+        """Perform test write html operation."""
         import html5lib
         from bs4 import BeautifulSoup
 
@@ -859,6 +967,7 @@ class TestChannelGroup:
         assert out_file.read_bytes() == html2.encode('utf-8')
 
     def test_write_html_sort_categories(self, loaded_group_w_channels):
+        """Perform test write html sort categories operation."""
         from bs4 import BeautifulSoup
 
         group, _ = loaded_group_w_channels
@@ -870,6 +979,7 @@ class TestChannelGroup:
         assert cell_texts == sorted(cell_texts, key=str)
 
     def test_write_html_verbose_presets_and_attributes(self, tmp_path):
+        """Perform test write html verbose presets and attributes operation."""
         from bs4 import BeautifulSoup
 
         group = channel_group('verbose_group')
@@ -898,6 +1008,7 @@ class TestChannelGroup:
         assert 'units' in attrs_select.get_text()
 
     def test_write_html_not_verbose(self, tmp_path):
+        """Perform test write html not verbose operation."""
         from bs4 import BeautifulSoup
 
         group = channel_group('quiet_group')

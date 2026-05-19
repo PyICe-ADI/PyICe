@@ -589,12 +589,14 @@ class spi_cfgpro(spiInterface):
             self.interface.write('SPI:CLOCk:PHASe 1')
 
     def cs(self, select):
+        """Perform cs operation."""
         if select:
             self.interface.write('SPI:SSELect:ENable')
         else:
             self.interface.write('SPI:SSELect:DISable')
 
     def __del__(self):
+        """Clean up resources."""
         self.interface.close()
 
     def _shift_data(self, data_out, clk_count):
@@ -620,6 +622,7 @@ class spi_dc590(spiInterface):
         self.interface = interface_stream
         if ss_ctrl is None:
             def ss_ctrl(ss):
+                """Return ss ctrl result."""
                 return self.set_cs(not ss)  # active low
         spiInterface.__init__(
             self,
@@ -656,6 +659,7 @@ class spi_dc590(spiInterface):
             self.interface.write('COg')
 
     def init_spi(self):
+        """Perform init spi operation."""
         time.sleep(2.5)  # Linduino bootloader delay!
         self.interface.write('\n' * 10)
         time.sleep(2.5)  # Linduino bootloader delay!
@@ -681,6 +685,7 @@ class spi_dc590(spiInterface):
                 'Error switching DC590 to SPI Mode. Unexpected data in buffer:{}'.format(buffer))
 
     def __del__(self):
+        """Clean up resources."""
         self.interface.close()
 
     def _shift_data(self, data_out, clk_count):
@@ -759,6 +764,7 @@ class spi_buspirate(spiInterface):
         #     raise SPIMasterError('Buspirate failed to set pullup voltage to 3.3v: {}'.format(resp))
 
     def set_baudrate(self, baudrate):
+        """Set the baudrate."""
         baudrate = float(baudrate)
         self.baudrate = baudrate
         if baudrate == 30e3:
@@ -790,6 +796,7 @@ class spi_buspirate(spiInterface):
         # 1 = Serial output data changes on transition from active clock state to Idle clock state (see bit 6)
         # 0 = Serial output data changes on transition from Idle clock state to
         # active clock state (see bit 6)
+        """Set the mode."""
         if self.mode == 0:
             self.ser.write('\x8A')
         elif self.mode == 1:
@@ -827,6 +834,7 @@ class spi_buspirate(spiInterface):
                     ord(resp)))
 
     def __del__(self):
+        """Clean up resources."""
         self.ser.close()
 
     def _shift_data(self, data_out, clk_count):
@@ -957,6 +965,7 @@ class spi_dummy(spiInterface):
             word_size=word_size)
 
     def cs(self, select):
+        """Perform cs operation."""
         if select:
             print("Writing slave_select ACTIVE.")
         else:
@@ -991,6 +1000,7 @@ if __name__ == "__main__":
     m = lab_core.master()
 
     def dummy_print(ch_name, data):
+        """Perform dummy print operation."""
         print('{}:{}'.format(ch_name, data))
     clk_ch = m.add_channel_virtual(
         'sck', write_function=lambda data: dummy_print(

@@ -13,23 +13,29 @@ class krohnhite_523(instrument):
         self.disable_crowbar()  # turn off crowbar by default
 
     def ground_lo_terminal(self):
+        """Perform ground lo terminal operation."""
         self.get_interface().write(("g"))
 
     def float_lo_terminal(self):
+        """Perform float lo terminal operation."""
         self.get_interface().write(("f"))
 
     def disable_crowbar(self):
+        """Disable crowbar."""
         self.get_interface().write(("v"))
 
     def add_channel_voltage(self, channel_name):
+        """Add a channel voltage."""
         new_channel = channel(channel_name, write_function=self._write_voltage)
         return self._add_channel(new_channel)
 
     def add_channel_current(self, channel_name):
+        """Add a channel current."""
         new_channel = channel(channel_name, write_function=self._write_current)
         return self._add_channel(new_channel)
 
     def add_channel_voltage_compliance(self, channel_name):
+        """Add a channel voltage compliance."""
         new_channel = channel(channel_name,
                               write_function=self._write_compliance_voltage)
         return self._add_channel(new_channel)

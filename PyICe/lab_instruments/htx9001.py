@@ -203,10 +203,12 @@ class htx9001(scpi_instrument):
         raise e
 
     def read_channel_pin(self, channel_name):
+        """Return read channel pin result."""
         return self.read_channel_generic(
             channel_name, function=self.read_pins_values)
 
     def resync(self):
+        """Perform resync operation."""
         self._twi.init_i2c()
 
     def _clean_value(self, value):
@@ -372,6 +374,7 @@ class htx9001(scpi_instrument):
         return self._from_bit_list(output)
 
     def set_resistor_calibration(self, resistor_number, value):
+        """Set the resistor calibration."""
         try:
             float(value)
         except BaseException:
@@ -380,6 +383,7 @@ class htx9001(scpi_instrument):
         self.get_interface().write(write_str)
 
     def get_resistor_calibration(self, resistor_number):
+        """Return the resistor calibration."""
         read_str = f"CAL:DATA?({resistor_number});"
         self.get_interface().write(read_str)
         data = self.get_interface().readline()
@@ -387,6 +391,7 @@ class htx9001(scpi_instrument):
 
     def get_calibration_date(self):
         # datetime.datetime.now().strftime("%Y-%m-%d")
+        """Return the calibration date."""
         datestr = self.get_interface().ask('CAL:DATE?')
         try:
             y, m, d = datestr.split('-')
@@ -397,11 +402,13 @@ class htx9001(scpi_instrument):
             return None
 
     def get_days_since_calibration(self):
+        """Return the days since calibration."""
         cal_date = self.get_calibration_date()
         if cal_date is not None:
             return (datetime.date.today() - cal_date).days
 
     def check_calibration_valid(self, calibrating):
+        """Perform check calibration valid operation."""
         cal_duration = 365  # days
         days = self.get_days_since_calibration()
         if days is None and not calibrating:
@@ -422,6 +429,7 @@ class htx9001(scpi_instrument):
                     f'HTX9001 Calibration Expired.  Calibration required every {cal_duration} days')
 
     def set_all_relays(self, value):
+        """Set the all relays."""
         for relay in self.relay_pins:
             self._write_relay(relay, value)
 

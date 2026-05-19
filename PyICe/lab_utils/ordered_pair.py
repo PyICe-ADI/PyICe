@@ -17,9 +17,11 @@ class ordered_pair(list):
         """
         if x_transform is None:
             def x_transform(x):
+                """Return x transform result."""
                 return x
         if y_transform is None:
             def y_transform(y):
+                """Return y transform result."""
                 return y
         for i in range(len(self)):
             self[i] = [x_transform(self[i][0]), y_transform(self[i][1])]
@@ -73,9 +75,11 @@ class ordered_pair(list):
         self.transform(y_transform=lambda y: y * y_scale)
 
     def xoffset(self, x_offset):
+        """Perform xoffset operation."""
         self.transform(x_transform=lambda x: x + x_offset)
 
     def yoffset(self, y_offset):
+        """Perform yoffset operation."""
         self.transform(y_transform=lambda y: y + y_offset)
 
     def xyscale(self, x_scale, y_scale):
@@ -90,6 +94,7 @@ class ordered_pair(list):
             y_transform=lambda y: y * y_scale)
 
     def truncate(self, length=None, offset=0):
+        """Perform truncate operation."""
         orig_len = len(self)
         del self[0:offset]  # offset or offset+1?
         if length is None:
@@ -116,6 +121,7 @@ class ordered_pair(list):
                 'length argument should be 0-1 percentage of original record length or integer desired record length.')
 
     def decimate(self, scale):
+        """Perform decimate operation."""
         assert scale > 0
         assert scale <= 1
         old_len = len(self)
@@ -326,14 +332,17 @@ class ordered_pair(list):
             iterations=order)
 
     def x_extents(self):
+        """Return x extents result."""
         xdata = list(zip(*self))[0]
         return {"min": min(xdata), "max": max(
             xdata), "diff": max(xdata) - min(xdata)}
 
     def y_extents(self):
+        """Return y extents result."""
         ydata = list(zip(*self))[1]
         return {"min": min(ydata), "max": max(
             ydata), "diff": max(ydata) - min(ydata)}
 
     def interpolated_y_value(self, xvalue):
+        """Return interpolated y value result."""
         return numpy.interp(xvalue, list(zip(*self))[0], list(zip(*self))[1])

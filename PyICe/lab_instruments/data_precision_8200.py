@@ -20,10 +20,12 @@ class data_precision_8200(instrument):
         self._mode = None
 
     def __del__(self):
+        """Clean up resources."""
         self.local_control()
         self.get_interface().close()
 
     def local_control(self):
+        """Perform local control operation."""
         term_chars = self.get_interface().term_chars
         # need to remove any carriage return or line feed added by visa for
         # this to work correctly

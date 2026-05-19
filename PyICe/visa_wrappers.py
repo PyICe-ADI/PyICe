@@ -51,6 +51,7 @@ str_encoding = 'latin-1'
 
 
 def strify(bs):
+    """Return strify result."""
     if not isinstance(bs, str):
         return bs.decode(str_encoding)
     else:
@@ -60,6 +61,7 @@ def strify(bs):
 
 
 def byteify(s):
+    """Return byteify result."""
     if isinstance(s, str):
         return s.encode(str_encoding)
     else:
@@ -76,12 +78,15 @@ class visa_wrapper(object):
     #    def __init__(self, address, timeout=5):
     #        raise NotImplementedError('Interface Not Fully Implemented: __init__()')
     def read(self):
+        """Read and return the current channel value."""
         raise NotImplementedError('Interface Not Fully Implemented: read()')
 
     def write(self, message):
+        """Write a value to the channel."""
         raise NotImplementedError('Interface Not Fully Implemented: write()')
 
     def read_values(self):
+        """Perform read values operation."""
         raise NotImplementedError(
             'Interface Not Fully Implemented: read_values()')
 
@@ -106,10 +111,12 @@ class visa_wrapper(object):
             'Interface Not Fully Implemented: read_values_binary()')
 
     def ask(self, message):
+        """Return ask result."""
         self.write(message)
         return self.read()
 
     def ask_for_values(self, message):
+        """Return ask for values result."""
         self.write(message)
         return self.read_values()
 
@@ -137,15 +144,19 @@ class visa_wrapper(object):
             format_str, byte_order, terminationCharacter)
 
     def clear(self):
+        """Perform clear operation."""
         raise NotImplementedError('Interface Not Fully Implemented: clear()')
 
     def clear_errors(self):
+        """Perform clear errors operation."""
         print("Interface Not Fully Implemented: clear_errors()'")
 
     def trigger(self):
+        """Perform trigger operation."""
         raise NotImplementedError('Interface Not Fully Implemented: trigger()')
 
     def read_raw(self):
+        """Perform read raw operation."""
         raise NotImplementedError(
             'Interface Not Fully Implemented: read_raw()')
 
@@ -158,6 +169,7 @@ class visa_wrapper(object):
         return ''
 
     def close(self):
+        """Perform close operation."""
         pass
 
     def __getTimeout(self):
@@ -223,6 +235,7 @@ class visa_wrapper_serial(visa_wrapper):
         # readline() of ser doesn't work correctly
         # https://docs.python.org/2/library/io.html#io.TextIOWrapper
         # http://pyserial.readthedocs.org/en/latest/shortintro.html#eol
+        """Return readline result."""
         dbgprint(
             "vvv-- visa_wrapper_serial.readline({}) entered".format(self.serial_port_name))
         # response = bytes()
@@ -243,6 +256,7 @@ class visa_wrapper_serial(visa_wrapper):
         # return strify(response)
 
     def read(self):
+        """Read and return the current channel value."""
         dbgprint(
             "vvv-- visa_wrapper_serial.read({}) entered".format(self.serial_port_name))
         message = self.readline().rstrip()
@@ -251,6 +265,7 @@ class visa_wrapper_serial(visa_wrapper):
         return message
 
     def write(self, message):
+        """Write a value to the channel."""
         dbgprint("vvv-- visa_wrapper.serial.write({}, {}) "
                  "entered".format(self.serial_port_name, repr(message)))
         if isinstance(message, str):
@@ -283,6 +298,7 @@ class visa_wrapper_serial(visa_wrapper):
                  "returns".format(self.serial_port_name, repr(message)))
 
     def read_values(self):
+        """Return read values result."""
         dbgprint(
             "vvv-- visa_wrapper_serial.read_values({}) entered".format(self.serial_port_name))
         # valtup = self.read().decode(str_encoding).split(",")
@@ -358,6 +374,7 @@ class visa_wrapper_serial(visa_wrapper):
         return struct.unpack(fmt, data)
 
     def read_raw(self):
+        """Return read raw result."""
         dbgprint(
             "vvv-- visa_wrapper_serial.read_raw({}) entered".format(self.serial_port_name))
         dbytes = self.readline()
@@ -366,6 +383,7 @@ class visa_wrapper_serial(visa_wrapper):
         return dbytes
 
     def write_raw(self, message):
+        """Perform write raw operation."""
         dbgprint("vvv-- visa_wrapper.serial.write_raw({}, {}) "
                  "entered".format(self.serial_port_name, repr(message)))
         # self.ser.write(message)
@@ -375,12 +393,15 @@ class visa_wrapper_serial(visa_wrapper):
                  "returns".format(self.serial_port_name, repr(message)))
 
     def flush(self):
+        """Perform flush operation."""
         print(self.ser.flush())
 
     def resync(self):
+        """Return resync result."""
         return self.ser.read(self.ser.inWaiting())
 
     def close(self):
+        """Perform close operation."""
         self.ser.close()
 
     def get_serial_port(self):
@@ -406,6 +427,7 @@ class visa_wrapper_tcp(visa_wrapper_serial):
         visa_wrapper_serial.__init__(self, port, **kwargs)
 
     def resync(self):
+        """Return resync result."""
         print('TCP Resync in progress.')
         resp_all = ''
         try:
@@ -438,9 +460,11 @@ class visa_wrapper_telnet(visa_wrapper_serial):
         visa_wrapper_serial.__init__(self, port)
 
     def resync(self):
+        """Return resync result."""
         return self.ser.read_very_eager()
 
     def readline(self):
+        """Return readline result."""
         response = self.ser.read_until(
             self.terminationCharacter, self._timeout)
         if response[-1] != self.terminationCharacter:
@@ -463,43 +487,53 @@ class visa_wrapper_vxi11(visa_wrapper):
             address, term_char=self.terminationCharacter, timeout=timeout)
 
     def read(self):
+        """Read and return the current channel value."""
         return self.vxi_interface.read()
 
     def write(self, message):
         # DJS Does this needs tom strify/byteify help???
+        """Write a value to the channel."""
         self.vxi_interface.write(message)
 
     def read_values(self):
         # ascii transfer only
         # see visa.py for binary parsing example
+        """Return read values result."""
         float_regex = re.compile(r"[-+]?(?:\d+(?:\.\d*)?|\d*\.\d+)"
                                  "(?:[eE][-+]?\\d+)?")
         return [float(raw_value) for raw_value in
                 float_regex.findall(self.read())]
 
     def ask(self, message):
+        """Return ask result."""
         return self.vxi_interface.ask(message)
 
     def ask_for_values(self, message):
+        """Return ask for values result."""
         self.write(message)
         return self.read_values()
 
     def clear(self):
+        """Perform clear operation."""
         raise NotImplementedError('Interface Not Fully Implemented: clear()')
 
     def trigger(self):
+        """Perform trigger operation."""
         self.vxi_interface.trigger()
 
     def read_raw(self):
+        """Perform read raw operation."""
         self.vxi_interface.read_raw()
 
     def resync(self):
         """Flush buffers to resync after communication fault - usb-serial problem."""
 
     def close(self):
+        """Perform close operation."""
         self.vxi_interface.close()
 
     def open(self):
+        """Perform open operation."""
         self.vxi_interface.open()
 
     def __getTimeout(self):
@@ -523,42 +557,52 @@ class visa_wrapper_usbtmc(visa_wrapper):
         self.usbtmc_interfacetimeout = timeout
 
     def read(self):
+        """Read and return the current channel value."""
         return self.usbtmc_interface.read()
 
     def write(self, message):
+        """Write a value to the channel."""
         self.usbtmc_interface.write(message)
 
     def read_values(self):
         # ascii transfer only
         # see visa.py for binary parsing example
+        """Return read values result."""
         float_regex = re.compile(r"[-+]?(?:\d+(?:\.\d*)?|\d*\.\d+)"
                                  "(?:[eE][-+]?\\d+)?")
         return [float(raw_value) for raw_value in
                 float_regex.findall(self.read())]
 
     def ask(self, message):
+        """Return ask result."""
         return self.usbtmc_interface.ask(message)
 
     def ask_for_values(self, message):
+        """Return ask for values result."""
         self.write(message)
         return self.read_values()
 
     def clear(self):
+        """Perform clear operation."""
         self.usbtmc_interface.clear()
 
     def trigger(self):
+        """Perform trigger operation."""
         self.usbtmc_interface.trigger()
 
     def read_raw(self):
+        """Perform read raw operation."""
         self.usbtmc_interface.read_raw()
 
     def resync(self):
         """Flush buffers to resync after communication fault - usb-serial problem."""
 
     def close(self):
+        """Perform close operation."""
         self.usbtmc_interface.close()
 
     def open(self):
+        """Perform open operation."""
         self.usbtmc_interface.open()
 
     def __getTimeout(self):
@@ -585,9 +629,11 @@ class visa_interface(visa_wrapper):
         self.timeout = timeout
 
     def read(self):
+        """Read and return the current channel value."""
         return self.visaInterface.read().rstrip()
 
     def write(self, message):
+        """Write a value to the channel."""
         if not isinstance(message, str):
             print(
                 "fVisa write() message unexpectedly non-string ({type(message)}). Contact PyICe-developers@analog.com for more information.")
@@ -596,16 +642,20 @@ class visa_interface(visa_wrapper):
         self.visaInterface.write(message)
 
     def read_values(self):
+        """Return read values result."""
         return self.visaInterface.read_values().rstrip()
 
     def ask(self, message):
+        """Return ask result."""
         return self.visaInterface.query(message).rstrip()
 
     def ask_for_values(self, message):
+        """Return ask for values result."""
         return self.visaInterface.ask_for_values(message).rstrip()
 
     def ask_for_values_binary(
             self, message, format_str='B', byte_order='=', terminationCharacter=''):
+        """Return ask for values binary result."""
         if byte_order == '<':
             is_big_endian = False
         else:
@@ -614,19 +664,24 @@ class visa_interface(visa_wrapper):
             message, datatype=format_str, is_big_endian=is_big_endian)
 
     def clear(self):
+        """Perform clear operation."""
         self.visaInterface.clear()
 
     def trigger(self):
+        """Perform trigger operation."""
         self.visaInterface.trigger()
 
     def read_raw(self):
         # Response comes back as bytes from VISA lib
+        """Return read raw result."""
         return self.visaInterface.read_raw()
 
     def close(self):
+        """Perform close operation."""
         self.visaInterface.close()
 
     def flush(self, buffer):
+        """Perform flush operation."""
         if buffer == "READ":
             self.visaInterface.flush(visa.constants.VI_READ_BUF)
         elif buffer == "WRITE":

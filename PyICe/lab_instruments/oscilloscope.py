@@ -17,6 +17,7 @@ class oscilloscope(scpi_instrument, delegator):
 
     def fetch_waveform_data(self):
         # assumes :WAVeform:SOURce set correctly before call!
+        """Return fetch waveform data result."""
         self.get_interface().write(':WAVeform:DATA?')
         raw_data = self.get_interface().read_raw()
         # Example: "#800027579 4.03266e-002, 1.25647e-004, 1.25647e-004, 1.25647e-004,......."
@@ -105,6 +106,7 @@ class oscilloscope(scpi_instrument, delegator):
         # yincrement = float(yincrement)
         # yorigin = float(yorigin)
         # yreference = int(yreference)
+        """Return scale waveform data result."""
         waveform_scaling = self.get_waveform_scaling()
         data = map(
             lambda pt: (
@@ -120,6 +122,7 @@ class oscilloscope(scpi_instrument, delegator):
 
     def get_waveform_scaling(self):
         # Requires Waveform Source to be previously set
+        """Return the waveform scaling."""
         waveform_scaling = {}
         preamble = self.get_interface().ask(':WAVeform:PREamble?')
         (waveform_scaling['fmt'],

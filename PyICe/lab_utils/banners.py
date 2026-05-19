@@ -1,8 +1,10 @@
 def print_banner(*message, offset=1, length=80):
+    """Perform print banner operation."""
     print(build_banner(*message, offset=offset, length=length))
 
 
 def build_banner(*message, offset=1, length=80):
+    """Return build banner result."""
     upper_left = u"\u250c"
     bar = u"\u2500"
     upper_right = u"\u2510"

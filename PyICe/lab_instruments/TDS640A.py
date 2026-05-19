@@ -23,6 +23,7 @@ class TDS640A(scpi_instrument, delegator):
         self.force_trigger = force_trigger
 
     def add_channel_time(self, channel_name):
+        """Add a channel time."""
         time_channel = channel(
             channel_name,
             read_function=self._read_scope_time)
@@ -143,6 +144,7 @@ class TDS640A(scpi_instrument, delegator):
         return data
 
     def read_delegated_channel_list(self, channels):
+        """Return read delegated channel list result."""
         if self.force_trigger:
             self.trigger_force()
         results = results_ord_dict()
