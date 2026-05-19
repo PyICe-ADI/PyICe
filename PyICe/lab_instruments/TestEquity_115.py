@@ -3,8 +3,7 @@ from .temperature_chamber import temperature_chamber
 
 
 class TestEquity_115(temperature_chamber):
-    """TestEquity_115 with basic channels.
-    """
+    """TestEquity_115 with basic channels."""
     def __init__(self, interface_raw_serial):
         import minimalmodbus
         minimalmodbus.BAUDRATE = 9600

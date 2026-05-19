@@ -10,7 +10,7 @@ class SiglentIOError(Exception):
 
 
 class siglent_SDG1000X(scpi_instrument):
-    """ Siglent Function Generator.
+    """Siglent Function Generator.
 
     Since it's a two channel instrument reset() needs to be called manually rather than upon creation of each driver object.
     """
@@ -18,7 +18,7 @@ class siglent_SDG1000X(scpi_instrument):
         """Instrument_visa.
 
         Args:
-        instrument_visa: Instrument visa.
+            instrument_visa: Instrument visa.
         """
         self._base_name = 'SDG1000X'
         scpi_instrument.__init__(self, f"SDG1000X @ {instrument_visa}")
@@ -34,8 +34,8 @@ class siglent_SDG1000X(scpi_instrument):
         """Perform append activity log operation.
 
         Args:
-        argument: Argument.
-        command: Command.
+            argument: Argument.
+            command: Command.
         """
         if command in self.activity_log:
             self.activity_log.move_to_end(command)
@@ -75,11 +75,11 @@ class siglent_SDG1000X(scpi_instrument):
         """Add a channel burst.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         enable_channel = self.add_generic_channels(
             channel_name, channel_number)
@@ -120,11 +120,11 @@ class siglent_SDG1000X(scpi_instrument):
         """Add a channel continuous.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         enable_channel = self.add_generic_channels(
             channel_name, channel_number)
@@ -148,14 +148,14 @@ class siglent_SDG1000X(scpi_instrument):
         """Add a generic channels.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
 
         Raises:
-        ValueError: If channel_number is not 1 or 2.
+            ValueError: If channel_number is not 1 or 2.
         """
         if channel_number not in [1, 2]:
             raise ValueError(
@@ -169,11 +169,11 @@ class siglent_SDG1000X(scpi_instrument):
         """Add a channel enable.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         def _write_output_enable(channel_number, value):
             command = f"C{channel_number}:OUTP"
@@ -192,11 +192,11 @@ class siglent_SDG1000X(scpi_instrument):
         """Add a channel outputz.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         def _write_outputz(channel_number, value):
             command = f"C{channel_number}:OUTP LOAD,"
@@ -219,11 +219,11 @@ class siglent_SDG1000X(scpi_instrument):
         """Add a channel DC.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         def _write_DC(channel_number, value):
             command = f"C{channel_number}:BursTWaVe WVTP,DC,OFST"
@@ -241,11 +241,11 @@ class siglent_SDG1000X(scpi_instrument):
         """Add a channel burstwave gate ncyc.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         def _write_burstwave_gate_ncyc(channel_number, value):
             command = f"C{channel_number}:BursTWaVe GATE_NCYC"
@@ -262,11 +262,11 @@ class siglent_SDG1000X(scpi_instrument):
         """Add a channel burstwave state.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         def _write_burstwave_state(channel_number, value):
             command = f"C{channel_number}:BursTWaVe STATE"
@@ -284,11 +284,11 @@ class siglent_SDG1000X(scpi_instrument):
         """Add a channel burstwave trigger source.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         def _write_burstwave_trigger_source(channel_number, value):
             command = f"C{channel_number}:BursTWaVe TRSR"
@@ -309,11 +309,11 @@ class siglent_SDG1000X(scpi_instrument):
         """Add a channel burstwave trigger out mode.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         def _write_burst_trigger_out_mode(channel_number, value):
             command = f"C{channel_number}:BursTWaVe TRMD"
@@ -333,11 +333,11 @@ class siglent_SDG1000X(scpi_instrument):
         """Add a channel burstwave cycles.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         def _write_burstwave_cycles(channel_number, value):
             # When BursTWaVe GATE_NCYC,NCYC; 'TIME' is cycle count
@@ -356,11 +356,11 @@ class siglent_SDG1000X(scpi_instrument):
         """Add a channel burstwave trigger delay.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         def _write_burstwave_trigger_delay(channel_number, value):
             command = f"C{channel_number}:BursTWaVe DLAY"
@@ -377,11 +377,11 @@ class siglent_SDG1000X(scpi_instrument):
         """Add a channel burstwave shape.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         def _write_burstwave_shape(channel_number, value):
             command = f"C{channel_number}:BursTWaVe CARR,WVTP"
@@ -414,11 +414,11 @@ class siglent_SDG1000X(scpi_instrument):
         """Add a channel burstwave low voltage.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         def _write_burstwave_low_voltage(channel_number, value):
             self.low_voltage = value
@@ -435,11 +435,11 @@ class siglent_SDG1000X(scpi_instrument):
         """Add a channel burstwave high voltage.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         def _write_burstwave_high_voltage(channel_number, value):
             self.high_voltage = value
@@ -456,11 +456,11 @@ class siglent_SDG1000X(scpi_instrument):
         """Add a channel burstwave pulse width.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         def _write_burstwave_width(channel_number, value):
             frequency_command = f"C{channel_number}:BursTWaVe CARR,FRQ"
@@ -482,11 +482,11 @@ class siglent_SDG1000X(scpi_instrument):
         """Add a channel burstwave period.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         def _write_burstwave_period(channel_number, value):
             command = f"C{channel_number}:BursTWaVe CARR, PERI"
@@ -504,11 +504,11 @@ class siglent_SDG1000X(scpi_instrument):
         """Add a channel burstwave rise time.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         def _write_burstwave_rise_time(channel_number, value):
             command = f"C{channel_number}:BursTWaVe CARR,RISE"
@@ -527,11 +527,11 @@ class siglent_SDG1000X(scpi_instrument):
         """Add a channel burstwave fall time.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         def _write_burstwave_fall_time(channel_number, value):
             command = f"C{channel_number}:BursTWaVe CARR,FALL"
@@ -550,11 +550,11 @@ class siglent_SDG1000X(scpi_instrument):
         """Add a channel burstwave delay.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         def _write_burstwave_delay(channel_number, value):
             command = f"C{channel_number}:BursTWaVe CARR,DLY"
@@ -571,11 +571,11 @@ class siglent_SDG1000X(scpi_instrument):
         """Add a channel burstwave trigger.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         def _send_burstwave_trigger(channel_number, value):
             if value.upper() == "TRIGGER":
@@ -599,11 +599,11 @@ class siglent_SDG1000X(scpi_instrument):
         """Add a channel continuouswave shape.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         def _write_continuouswave_shape(channel_number, value):
             command = f"C{channel_number}:BaSic_WaVe WVTP"
@@ -629,11 +629,11 @@ class siglent_SDG1000X(scpi_instrument):
         """Add a channel continuouswave low voltage.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         def _write_continuouswave_low_voltage(channel_number, value):
             command = f"C{channel_number}:BaSic_WaVe LLEV"
@@ -651,11 +651,11 @@ class siglent_SDG1000X(scpi_instrument):
         """Add a channel continuouswave high voltage.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         def _write_continuouswave_high_voltage(channel_number, value):
             command = f"C{channel_number}:BaSic_WaVe HLEV"
@@ -672,11 +672,11 @@ class siglent_SDG1000X(scpi_instrument):
         """Add a channel continuouswave width.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         def _write_continuouswave_width(channel_number, value):
             command = f"C{channel_number}:BaSic_WaVe WIDTH"
@@ -695,11 +695,11 @@ class siglent_SDG1000X(scpi_instrument):
         """Add a channel continuouswave period.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         def _write_continuouswave_period(channel_number, value):
             command = f"C{channel_number}:BaSic_WaVe PERI"
@@ -718,11 +718,11 @@ class siglent_SDG1000X(scpi_instrument):
         """Add a channel continuouswave rise time.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         def _write_continuouswave_rise_time(channel_number, value):
             command = f"C{channel_number}:BaSic_WaVe RISE"
@@ -742,11 +742,11 @@ class siglent_SDG1000X(scpi_instrument):
         """Add a channel continuouswave fall time.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         def _write_continuouswave_fall_time(channel_number, value):
             command = f"C{channel_number}:BaSic_WaVe FALL"
@@ -765,10 +765,10 @@ class siglent_SDG1000X(scpi_instrument):
         """Add a channel phase mode.
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         def _write_phase_mode(value):
             if value.upper() not in ["INDEPENDENT", "PHASE-LOCKED"]:
@@ -788,11 +788,11 @@ class siglent_SDG1000X(scpi_instrument):
         """Add a channel sync out.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         def _write_sync_out(channel_number, value):
             command = f"C{channel_number}:SYNC"

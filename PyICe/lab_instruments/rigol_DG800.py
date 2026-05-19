@@ -2,7 +2,7 @@ from ..lab_core import *  # noqa: F403
 
 
 class rigol_DG800(scpi_instrument):
-    """ Function Generator.
+    """Function Generator.
 
     The intrument will default to pulse generation (driver does not support other functions yet).
     A default instr_trigger channel will control sending of trigger for all active channels.
@@ -13,7 +13,7 @@ class rigol_DG800(scpi_instrument):
         """Instrument_visa.
 
         Args:
-        instrument_visa: Instrument visa.
+            instrument_visa: Instrument visa.
         """
         self._base_name = 'Rigol_DG800'
         scpi_instrument.__init__(self, f"DG800 @ {instrument_visa}")
@@ -26,13 +26,13 @@ class rigol_DG800(scpi_instrument):
         """Add a channel.
 
         Args:
-        add_extended_channels: If True, add sense and mode channels.
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
-        function: Function.
+            add_extended_channels: If True, add sense and mode channels.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+            function: Function.
 
         Returns:
-        Result value.
+            Result value.
         """
         if function == "PULSe":
             self._config_pulse_func(channel_number, function)
@@ -64,13 +64,13 @@ class rigol_DG800(scpi_instrument):
         """Set instrument output function to pulse generation.
 
         Args:
-        channel_number: Physical channel number.
-        cycle_count: Cycle count.
-        function: Function.
-        high_voltage: High voltage.
-        low_voltage: Low voltage.
-        period: Period.
-        pulse_width: Pulse width.
+            channel_number: Physical channel number.
+            cycle_count: Cycle count.
+            function: Function.
+            high_voltage: High voltage.
+            low_voltage: Low voltage.
+            period: Period.
+            pulse_width: Pulse width.
         """
         self.instrument.write(
             f"SOURce{channel_number}:FUNCtion:SHAPe {function}")
@@ -127,11 +127,11 @@ class rigol_DG800(scpi_instrument):
         """Add a channel enable.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         new_channel = channel(
             channel_name,
@@ -146,11 +146,11 @@ class rigol_DG800(scpi_instrument):
         """Add a channel low voltage.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         new_channel = channel(
             channel_name,
@@ -164,11 +164,11 @@ class rigol_DG800(scpi_instrument):
         """Add a channel high voltage.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         new_channel = channel(
             channel_name,
@@ -182,11 +182,11 @@ class rigol_DG800(scpi_instrument):
         """Add a channel pulse width.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         new_channel = channel(
             channel_name,
@@ -201,11 +201,11 @@ class rigol_DG800(scpi_instrument):
         """Add a channel pulse period.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         new_channel = channel(
             channel_name,
@@ -219,11 +219,11 @@ class rigol_DG800(scpi_instrument):
         """Add a channel rise time.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         new_channel = channel(
             channel_name,
@@ -238,11 +238,11 @@ class rigol_DG800(scpi_instrument):
         """Add a channel fall time.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         new_channel = channel(
             channel_name,
@@ -257,11 +257,11 @@ class rigol_DG800(scpi_instrument):
         """Add a channel trigger.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         self.trigger_channel = channel(
             channel_name, write_function=lambda value: self._send_trigger(
@@ -274,11 +274,11 @@ class rigol_DG800(scpi_instrument):
         """Add a channel cycle count.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_number: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
 
         Returns:
-        Result value.
+            Result value.
         """
         new_channel = channel(
             channel_name,

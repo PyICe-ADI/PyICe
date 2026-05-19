@@ -415,16 +415,10 @@ class Plugin_Manager():
         """Sends the provided message to all emails and phone numbers found in the variable self.notification_targets.
 
         Args:
-            msg - str. The body of the email or the complete text.
-            subject - str. Default None. The subject given to any email sent. No affect on texts.
-            attachment filenames - list. Default empty list. A list of strings denoting the names of files that will be attached to any emails sent.
-            attachment_MIMEParts - list. Default empty list. A list of MIME (Multipurpose Internet Mail Extensions) objects that will be added to the body of any email sent.
-
-        Args:
-            attachment_MIMEParts: Attachment mimeparts.
-            attachment_filenames: Attachment filenames.
-            msg: Msg.
-            subject: Subject.
+            msg: The body of the email or the complete text.
+            subject: The subject given to any email sent. No effect on texts.
+            attachment_filenames: A list of strings denoting the names of files that will be attached to any emails sent.
+            attachment_MIMEParts: A list of MIME (Multipurpose Internet Mail Extensions) objects that will be added to the body of any email sent.
         """
         if attachment_filenames is None:
             attachment_filenames = []
@@ -1145,13 +1139,9 @@ class Plugin_Manager():
         """Run the evaluate method of each test in self.tests.
 
         Args:
-            database - string. The location of the database with the data to evaluate If left blank, the evaluation will continue with the database in the same directory as the test script.
-            table_name - string. The name of the table in the database with the relevant data. If left blank, the evaluation will continue with the table named after the test script.
-
-        Args:
-            database: Database.
-            table_name: Database table name.
-            test_list: Test list.
+            database: The location of the database with the data to evaluate. If left blank, the evaluation will continue with the database in the same directory as the test script.
+            table_name: The name of the table in the database with the relevant data. If left blank, the evaluation will continue with the table named after the test script.
+            test_list: List of tests to evaluate. If None, uses self.tests.
         """
         print_banner('Evaluating. . .')
         reset_db = False
@@ -1217,13 +1207,9 @@ class Plugin_Manager():
         """Run the correlate method of each test in self.tests.
 
         Args:
-            database - string. The location of the database with the data to correlate. If left blank, the correlation will continue with the database in the same directory as the test script.
-            table_name - string. The name of the table in the database with the relevant data. If left blank, the correlation will continue with the table named after the test script.
-
-        Args:
-            database: Database.
-            table_name: Database table name.
-            test_list: Test list.
+            database: The location of the database with the data to correlate. If left blank, the correlation will continue with the database in the same directory as the test script.
+            table_name: The name of the table in the database with the relevant data. If left blank, the correlation will continue with the table named after the test script.
+            test_list: List of tests to correlate. If None, uses self.tests.
         """
         print_banner('Correlating. . .')
         reset_db = False

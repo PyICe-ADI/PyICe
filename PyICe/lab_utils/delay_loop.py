@@ -18,9 +18,9 @@ class delay_loop(object):
         Set no_drift=False to ignore time over-runs when computing next delay time.
 
         Args:
-        begin: Begin.
-        no_drift: No drift.
-        strict: Strict.
+            begin: Begin.
+            no_drift: No drift.
+            strict: Strict.
         """
         self.strict = strict
         self.no_drift = no_drift
@@ -35,10 +35,10 @@ class delay_loop(object):
         """Call the instance.
 
         Args:
-        seconds: Seconds.
+            seconds: Seconds.
 
         Returns:
-        Result value.
+            Result value.
         """
         return self.delay(seconds)
 
@@ -46,7 +46,7 @@ class delay_loop(object):
         """Returns total number of times delay() method called.
 
         Returns:
-        Result value.
+            Result value.
         """
         return self.count
 
@@ -54,7 +54,7 @@ class delay_loop(object):
         """Returns total number of seconds since first delay.
 
         Returns:
-        Result value.
+            Result value.
         """
         return (datetime.datetime.now(datetime.UTC) -
                 self.start_time).total_seconds()
@@ -63,7 +63,7 @@ class delay_loop(object):
         """Make note of begin time for loop measurement. Use offset to adjust the begin time in case of overrun on last cycle.
 
         Args:
-        offset: Offset value.
+            offset: Offset value.
         """
         if self.begin_time is None:
             self.start_time = datetime.datetime.now(datetime.UTC)
@@ -76,13 +76,13 @@ class delay_loop(object):
         returns actual delay time achieved
 
         Args:
-        seconds: Seconds.
+            seconds: Seconds.
 
         Returns:
-        Result value.
+            Result value.
 
         Raises:
-        Exception: On error condition.
+            Exception: On error condition.
         """
         if self.begin_time is None:
             raise Exception('Call begin() method before delay().')
@@ -120,13 +120,13 @@ class delay_loop(object):
         """Use this in a while loop to perform another function for duration loop_time. Test the result for 0 or less.
 
         Args:
-        loop_time: Loop time.
+            loop_time: Loop time.
 
         Returns:
-        Result value.
+            Result value.
 
         Raises:
-        Exception: On error condition.
+            Exception: On error condition.
         """
         if self.begin_time is None:
             raise Exception('Call begin() method before time_remaining().')
@@ -142,7 +142,7 @@ class delay_loop(object):
         """Return extra time remaining (ie sleep time) before last call to delay().
 
         Returns:
-        Result value.
+            Result value.
         """
         return self.delay_time
 
@@ -150,6 +150,6 @@ class delay_loop(object):
         """Return previous actual achieved loop time (including any overrun).
 
         Returns:
-        Result value.
+            Result value.
         """
         return self.loop_time

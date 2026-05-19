@@ -1,13 +1,13 @@
 def expand_tabs(string, *column_widths, **default_column_width):
-    """Like string.expandtabs, but works only on a single line and allows for varying column widths.
+    r"""Like string.expandtabs, but works only on a single line and allows for varying column widths.
 
     accepts variable number of positional arguments for each column width.
     accepts keyword argument "default_column_width" if not all column widths are specified.
     accepts keyword argument "verbose" to warn if column width is too narrow for contents.
 
-    >>> expand_tabs('a\\tb\\tc', 5, 5, 5)
+    >>> expand_tabs('a\tb\tc', 5, 5, 5)
     'a    b    c    '
-    >>> expand_tabs('hi\\tthere', default_column_width=8)
+    >>> expand_tabs('hi\tthere', default_column_width=8)
     'hi      there   '
 
     Args:

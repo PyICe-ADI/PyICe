@@ -10,7 +10,7 @@ class fluke_8845(scpi_instrument):
         """Interface_visa.
 
         Args:
-        interface_visa: VISA interface instance.
+            interface_visa: VISA interface instance.
         """
         self._base_name = 'fluke_8845'
         scpi_instrument.__init__(self, f"fluke_8845 @ {interface_visa}")
@@ -41,7 +41,7 @@ class fluke_8845(scpi_instrument):
         """[SENSe:]ZERO:AUTO {OFF|ONCE|ON}.
 
         Args:
-        mode: Operating mode.
+            mode: Operating mode.
         """
         if mode.upper() not in ["ON", "OFF", "AUTO"]:
             print(
@@ -58,12 +58,12 @@ class fluke_8845(scpi_instrument):
         Valid values are in amps: [0.01, 0.1, 1, 3]
 
         Args:
-        BW: Bw.
-        NPLC: Number of power line cycles for integration.
-        range: Measurement or output range.
+            BW: Bw.
+            NPLC: Number of power line cycles for integration.
+            range: Measurement or output range.
 
         Raises:
-        Exception: On error condition.
+            Exception: On error condition.
         """
         if NPLC not in [.02, .2, 1, 10, 100]:
             raise Exception(
@@ -88,10 +88,10 @@ class fluke_8845(scpi_instrument):
         """Add named channel to instrument without configuring measurement type.
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         meter_channel = channel(channel_name, read_function=self.read_meter)
         return self._add_channel(meter_channel)
@@ -100,7 +100,7 @@ class fluke_8845(scpi_instrument):
         """Return float representing meter measurement.  Units are V,A,Ohm, etc depending on meter configuration.
 
         Returns:
-        Result value.
+            Result value.
         """
         return float(self.get_interface().ask("READ?"))
 
@@ -108,7 +108,7 @@ class fluke_8845(scpi_instrument):
         """Required for RS-232 control.  Not allowed for GPIB control.
 
         Args:
-        remote: Remote.
+            remote: Remote.
         """
         if remote:
             self.get_interface().write("SYSTem:REMote")

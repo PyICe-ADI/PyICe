@@ -22,7 +22,7 @@ class sun_ec0x(sun_ecxx):
         """Set named channel to new temperature "value".
 
         Args:
-        value: Value to set.
+            value: Value to set.
         """
         # self._standby()
         self.setpoint = value
@@ -37,7 +37,7 @@ class sun_ec0x(sun_ecxx):
         """Enable/disable temperature chamber heating and cooling.
 
         Args:
-        enable: Enable or disable.
+            enable: Enable or disable.
         """
         if enable:
             self.get_interface().write("ON")

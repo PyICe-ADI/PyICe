@@ -5,15 +5,11 @@ import sqlite3
 
 class database_archive():
     def __init__(self, test_script_file, db_source_file):
-        """This class is part of the archive plugin for the PyICe Infrastructure Extensions and manipulates tables in a given SQlite database. Specifically, it can copy, move, or delete a table.
+        """Initialize database archive for manipulating tables in a given SQLite database.
 
         Args:
-            test_script_file - str. File location of the test that collected the data.
-            db_source_file - str. Path to the database that will be manipulated.
-
-        Args:
-            db_source_file: Db source file.
-            test_script_file: Test script file.
+            test_script_file: File location of the test that collected the data.
+            db_source_file: Path to the database that will be manipulated.
         """
         self.test_script_file = test_script_file
         self.db_source_file = os.path.abspath(db_source_file)
@@ -41,19 +37,13 @@ class database_archive():
 
     def copy_table(self, db_source_table, db_dest_table,
                    db_dest_file, db_indices=None):
-        """Copies a table from the given database to a different.
+        """Copies a table from the given database to a different database.
 
         Args:
-            db_source_table - str. The name of the table to be copied.
-            db_dest_table - str. What the copy table will be called.
-            db_dest_file - str. The path to the new database.
-            db_indices - list. A list of lists consisting of column names in the database as strings. Each list will be used to create an index in the new database.
-
-        Args:
-            db_dest_file: Db dest file.
-            db_dest_table: Db dest table.
-            db_indices: Db indices.
-            db_source_table: Db source table.
+            db_source_table: The name of the table to be copied.
+            db_dest_table: What the copy table will be called.
+            db_dest_file: The path to the new database.
+            db_indices: A list of lists consisting of column names in the database as strings. Each list will be used to create an index in the new database.
         """
         if db_indices is None:
             db_indices = []
@@ -145,11 +135,8 @@ class database_archive():
         """Deletes the given table from the database.
 
         Args:
-            db_source_table - str. Name of the table to be deleted.
-
-        Args:
-            commit: Commit.
-            db_source_table: Db source table.
+            db_source_table: Name of the table to be deleted.
+            commit: Whether to commit the transaction after deletion.
         """
         self.source_conn.execute(f'DROP TABLE {db_source_table}')
         self.source_conn.execute(

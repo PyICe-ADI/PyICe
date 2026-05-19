@@ -17,11 +17,11 @@ class sqlite_to_easylog(sqlite_to_csv):
         database_file is the filename of the sqlite database
 
         Args:
-        chart_name: Chart name.
-        database_file: Database file.
-        table_name: Database table name.
-        y1_axis_units: Y1 axis units.
-        y2_axis_units: Y2 axis units.
+            chart_name: Chart name.
+            database_file: Database file.
+            table_name: Database table name.
+            y1_axis_units: Y1 axis units.
+            y2_axis_units: Y2 axis units.
         """
         self.y1_axis_units = y1_axis_units
         self.y2_axis_units = y2_axis_units
@@ -40,11 +40,11 @@ class sqlite_to_easylog(sqlite_to_csv):
         """Add a comment.
 
         Args:
-        **kwargs: Additional keyword arguments.
-        *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+            *args: Additional positional arguments.
 
         Raises:
-        Exception: On error condition.
+            Exception: On error condition.
         """
         raise Exception(
             "Comment lines don't seem to be allowed in EasyLog files.")
@@ -58,11 +58,11 @@ class sqlite_to_easylog(sqlite_to_csv):
         format controls appearance of queried data. Ex: "3.2f"
 
         Args:
-        display_name: Display name.
-        format: Format name string.
-        query_name: Query name.
-        second_y_axis: Second y axis.
-        transform: Transform.
+            display_name: Display name.
+            format: Format name string.
+            query_name: Query name.
+            second_y_axis: Second y axis.
+            transform: Transform.
         """
         if display_name is None:
             display_name = query_name
@@ -84,9 +84,9 @@ class sqlite_to_easylog(sqlite_to_csv):
         format controls appearance of queried data. Ex: "3.2f"
 
         Args:
-        column_list: Column list.
-        format: Format name string.
-        second_y_axis: Second y axis.
+            column_list: Column list.
+            format: Format name string.
+            second_y_axis: Second y axis.
         """
         for column in column_list:
             self.add_column(
@@ -100,8 +100,8 @@ class sqlite_to_easylog(sqlite_to_csv):
         """Write queried data to output_file after column setup is complete.
 
         Args:
-        append: Append.
-        output_file: Output file.
+            append: Append.
+            output_file: Output file.
         """
         sqlite_to_csv.write(
             self,

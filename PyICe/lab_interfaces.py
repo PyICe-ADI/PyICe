@@ -56,10 +56,10 @@ def strify(bs):
     """Return strify result.
 
     Args:
-    bs: Bs.
+        bs: Bs.
 
     Returns:
-    Result value.
+        Result value.
     """
     if not isinstance(bs, str):
         return bs.decode(STR_ENCODING)
@@ -73,10 +73,10 @@ def byteify(s):
     """Return byteify result.
 
     Args:
-    s: S.
+        s: S.
 
     Returns:
-    Result value.
+        Result value.
     """
     if isinstance(s, str):
         return s.encode(STR_ENCODING)
@@ -110,8 +110,8 @@ class communication_node(object):
         be called. We forward whatever arguments we get to the superclass constructor.
 
         Args:
-        **kwargs: Additional keyword arguments.
-        *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+            *args: Additional positional arguments.
         """
         super().__init__(*args, **kwargs)
         self._parent = None
@@ -123,7 +123,7 @@ class communication_node(object):
         """Perform debug com nodes operation.
 
         Args:
-        indent: Indent.
+            indent: Indent.
         """
         print(
             f'{indent}{self}, child of {self._parent}. Thread_safe: {self._thread_safe}')
@@ -134,7 +134,7 @@ class communication_node(object):
         """Return the com parent.
 
         Returns:
-        Result value.
+            Result value.
         """
         return self._parent
 
@@ -142,7 +142,7 @@ class communication_node(object):
         """Set the com node parent.
 
         Args:
-        parent: Parent.
+            parent: Parent.
         """
         if self._parent:
             print("warning: changing a communication_node parent")
@@ -153,7 +153,7 @@ class communication_node(object):
         """Set the com node thread safe.
 
         Args:
-        safe: Safe.
+            safe: Safe.
         """
         self._thread_safe = safe
 
@@ -161,7 +161,7 @@ class communication_node(object):
         """Perform com node register child operation.
 
         Args:
-        child: Child.
+            child: Child.
         """
         self._children.append(child)
 
@@ -169,7 +169,7 @@ class communication_node(object):
         """Return com node get root result.
 
         Returns:
-        Result value.
+            Result value.
         """
         if self._parent:
             return self._parent.com_node_get_root()
@@ -180,7 +180,7 @@ class communication_node(object):
         """Return com node get children result.
 
         Returns:
-        Result value.
+            Result value.
         """
         return self._children
 
@@ -188,7 +188,7 @@ class communication_node(object):
         """Return com node get all descendents result.
 
         Returns:
-        Result value.
+            Result value.
         """
         descendents = set()
         for child in self.com_node_get_children():
@@ -203,10 +203,10 @@ class communication_node(object):
         because upstream interfaces are not thread safe
 
         Args:
-        sets: Sets.
+            sets: Sets.
 
         Returns:
-        Result value.
+            Result value.
         """
         if sets is None:
             sets = list()
@@ -228,13 +228,13 @@ class communication_node(object):
         make sure all interface's root resolves back here
 
         Args:
-        com_node_list: Com node list.
+            com_node_list: Com node list.
 
         Returns:
-        Result value.
+            Result value.
 
         Raises:
-        Exception: On error condition.
+            Exception: On error condition.
         """
         if len(set([interface.com_node_get_root()
                for interface in com_node_list])) > 1:
@@ -265,7 +265,7 @@ class communication_node(object):
         acquire locks of this communication node's parents.
 
         Raises:
-        TypeError: On error condition.
+            TypeError: On error condition.
         """
         self._lock.acquire()
         parent_com_node = self.get_com_parent()
@@ -281,7 +281,7 @@ class communication_node(object):
         """Release all parent locks starting with this node's oldest ancestor. Finish by unlocking this com node.
 
         Raises:
-        TypeError: On error condition.
+            TypeError: On error condition.
         """
         parent_com_node = self.get_com_parent()
         if isinstance(parent_com_node, communication_node):
@@ -319,7 +319,7 @@ class interface(communication_node):
         """Return string representation.
 
         Returns:
-        Result value.
+            Result value.
         """
         return self._interface_name
 
@@ -353,12 +353,12 @@ class interface_bobbytalk(interface):
         couldn't accept buffer for some reason.
 
         Args:
-        buffer: Buffer.
-        dest_id: Destination identifier.
-        src_id: Source identifier.
+            buffer: Buffer.
+            dest_id: Destination identifier.
+            src_id: Source identifier.
 
         Raises:
-        NotImplementedError: On error condition.
+            NotImplementedError: On error condition.
         """
         raise NotImplementedError("Subclass must implement this.")
 
@@ -371,12 +371,12 @@ class interface_bobbytalk(interface):
         Upon timeout, returns None.
 
         Args:
-        dest_id: Destination identifier.
-        src_id: Source identifier.
-        timeout: Timeout in seconds.
+            dest_id: Destination identifier.
+            src_id: Source identifier.
+            timeout: Timeout in seconds.
 
         Raises:
-        NotImplementedError: On error condition.
+            NotImplementedError: On error condition.
         """
         raise NotImplementedError("Subclass must implement this.")
 
@@ -386,7 +386,7 @@ class interface_bobbytalk(interface):
         and dispatch to any registered packet handlers (or "modules")
 
         Raises:
-        NotImplementedError: On error condition.
+            NotImplementedError: On error condition.
         """
         raise NotImplementedError("Subclass must implement this.")
 
@@ -397,11 +397,11 @@ class interface_bobbytalk(interface):
         handler_function(bobbytalk_packet)
 
         Args:
-        dest_id: Destination identifier.
-        handler_function: Handler function.
+            dest_id: Destination identifier.
+            handler_function: Handler function.
 
         Raises:
-        NotImplementedError: On error condition.
+            NotImplementedError: On error condition.
         """
         raise NotImplementedError("Subclass must implement this.")
 
@@ -414,17 +414,18 @@ class interface_libusb(interface):
     Requires PyUSB: https://github.com/walac/pyusb
     """
     def __init__(self, idVendor, idProduct, timeout):
-        """PyUSB requires installation of WinUSB filter driver. Use install-filter-win.exe under PyICe/deps/Direct590.
+        """Initialize PyUSB interface.
 
+        Requires installation of WinUSB filter driver. Use install-filter-win.exe under PyICe/deps/Direct590.
         Untested on linux; filter driver probably not required.
 
         Args:
-        idProduct: Idproduct.
-        idVendor: Idvendor.
-        timeout: Timeout in seconds.
+            idProduct: Idproduct.
+            idVendor: Idvendor.
+            timeout: Timeout in seconds.
 
         Raises:
-        ValueError: On error condition.
+            ValueError: On error condition.
         """
         interface.__init__(self, 'WinUSB Communication Interface')
         self.timeout = 1000 * timeout  # ms
@@ -462,9 +463,10 @@ class interface_libusb(interface):
         print(self.dev)
 
     def read(self):
-        """Returns:.
+        """Read data from the endpoint.
 
-        Result value.
+        Returns:
+            Result value.
         """
         resp = self.dev.read(self.ep_in, self.read_packet_size, self.timeout)
         while len(resp) == self.read_packet_size:  # response split across packets
@@ -477,7 +479,7 @@ class interface_libusb(interface):
         """Send byte_list across subclass-specific communication interface.
 
         Args:
-        byte_list: Byte list.
+            byte_list: Byte list.
         """
         self.dev.write(self.ep_out, byte_list)
 
@@ -496,7 +498,7 @@ class interface_stream(
         If fewer than byte_count bytes are available, return all available.
 
         Args:
-        byte_count: Byte count.
+            byte_count: Byte count.
         """
         pass
 
@@ -505,7 +507,7 @@ class interface_stream(
         """Send byte_list across subclass-specific communication interface.
 
         Args:
-        byte_list: Byte list.
+            byte_list: Byte list.
         """
         pass
 
@@ -529,10 +531,10 @@ class interface_stream_serial(interface_stream):
         If byte_count is None, return all available.
 
         Args:
-        byte_count: Byte count.
+            byte_count: Byte count.
 
         Returns:
-        Result value.
+            Result value.
         """
         if byte_count is None:
             byte_count = self.ser.inWaiting()
@@ -544,7 +546,7 @@ class interface_stream_serial(interface_stream):
         """Send byte_list across subclass-specific communication interface.
 
         Args:
-        byte_list: Byte list.
+            byte_list: Byte list.
         """
         self.ser.write(byte_list)
 
@@ -630,7 +632,7 @@ class interface_raw_serial(interface, serial_from_name_or_url):
         """Return the serial port name.
 
         Returns:
-        Result value.
+            Result value.
         """
         return self._serial_port_name
 
@@ -641,15 +643,15 @@ class interface_raw_serial(interface, serial_from_name_or_url):
         """Write a value to the channel.
 
         Args:
-        **kw: Additional keyword arguments.
-        *args: Additional positional arguments.
-        msg: Msg.
+            **kw: Additional keyword arguments.
+            *args: Additional positional arguments.
+            msg: Msg.
 
         Returns:
-        Result value.
+            Result value.
 
         Raises:
-        Exception: On error condition.
+            Exception: On error condition.
         """
         if isinstance(msg, str):
             msgbytes = byteify(msg)
@@ -680,12 +682,12 @@ class interface_raw_serial(interface, serial_from_name_or_url):
         """Read and return the current channel value.
 
         Args:
-        **kw: Additional keyword arguments.
-        *args: Additional positional arguments.
-        size: Size in bits.
+            **kw: Additional keyword arguments.
+            *args: Additional positional arguments.
+            size: Size in bits.
 
         Returns:
-        Result value.
+            Result value.
         """
         resp = self.read_raw(size, *args, **kw)
         return strify(resp)
@@ -694,11 +696,11 @@ class interface_raw_serial(interface, serial_from_name_or_url):
         """Return readline result.
 
         Args:
-        **kw: Additional keyword arguments.
-        *args: Additional positional arguments.
+            **kw: Additional keyword arguments.
+            *args: Additional positional arguments.
 
         Returns:
-        Result value.
+            Result value.
         """
         resp = super(interface_raw_serial, self).readline(*args, **kw)
         return strify(resp)
@@ -709,12 +711,12 @@ class interface_raw_serial(interface, serial_from_name_or_url):
         """Return write raw result.
 
         Args:
-        **kw: Additional keyword arguments.
-        *args: Additional positional arguments.
-        msgbytes: Msgbytes.
+            **kw: Additional keyword arguments.
+            *args: Additional positional arguments.
+            msgbytes: Msgbytes.
 
         Returns:
-        Result value.
+            Result value.
         """
         return super(interface_raw_serial, self).write(msgbytes, *args, **kw)
 
@@ -722,12 +724,12 @@ class interface_raw_serial(interface, serial_from_name_or_url):
         """Return read raw result.
 
         Args:
-        **kw: Additional keyword arguments.
-        *args: Additional positional arguments.
-        size: Size in bits.
+            **kw: Additional keyword arguments.
+            *args: Additional positional arguments.
+            size: Size in bits.
 
         Returns:
-        Result value.
+            Result value.
         """
         return super(interface_raw_serial, self).read(size, *args, **kw)
 
@@ -755,7 +757,7 @@ class interface_tcp_serial(interface):
         """Return the serial port name.
 
         Returns:
-        Result value.
+            Result value.
         """
         return self.ser.port
 
@@ -763,11 +765,11 @@ class interface_tcp_serial(interface):
         """Read and return the current channel value.
 
         Args:
-        **kwargs: Additional keyword arguments.
-        *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+            *args: Additional positional arguments.
 
         Returns:
-        Result value.
+            Result value.
         """
         return self.ser.read(*args, **kwargs)
 
@@ -775,11 +777,11 @@ class interface_tcp_serial(interface):
         """Write a value to the channel.
 
         Args:
-        **kwargs: Additional keyword arguments.
-        *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+            *args: Additional positional arguments.
 
         Returns:
-        Result value.
+            Result value.
         """
         return self.ser.write(*args, **kwargs)
 
@@ -787,11 +789,11 @@ class interface_tcp_serial(interface):
         """Return close result.
 
         Args:
-        **kwargs: Additional keyword arguments.
-        *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+            *args: Additional positional arguments.
 
         Returns:
-        Result value.
+            Result value.
         """
         return self.ser.close(*args, **kwargs)
 
@@ -800,7 +802,7 @@ class interface_tcp_serial(interface):
         """Return timeout result.
 
         Returns:
-        Result value.
+            Result value.
         """
         return self.ser.timeout
 
@@ -809,7 +811,7 @@ class interface_tcp_serial(interface):
         """Perform timeout operation.
 
         Args:
-        new_timeout: New timeout.
+            new_timeout: New timeout.
         """
         self.ser.timeout = new_timeout
 
@@ -818,7 +820,7 @@ class interface_tcp_serial(interface):
         """Return in waiting result.
 
         Returns:
-        Result value.
+            Result value.
         """
         if hasattr(self.ser, "in_waiting"):
             return self.ser.in_waiting
@@ -829,7 +831,7 @@ class interface_tcp_serial(interface):
         """Returns in_waiting. Added for PySerial <3.0 compatibility.
 
         Returns:
-        Result value.
+            Result value.
         """
         return self.in_waiting
 
@@ -865,11 +867,11 @@ class SerialTestHarness(object):
         """Return biased rng result.
 
         Args:
-        max_val: Max val.
-        min_val: Min val.
+            max_val: Max val.
+            min_val: Min val.
 
         Returns:
-        Result value.
+            Result value.
         """
         assert isinstance(min_val, int)
         assert isinstance(max_val, int) and max_val > min_val
@@ -893,10 +895,10 @@ class SerialTestHarness(object):
         bytestream generator, with random delay that's within timeout.
 
         Args:
-        numbytes: Numbytes.
+            numbytes: Numbytes.
 
         Returns:
-        Result value.
+            Result value.
         """
         # First note by what wallclock time we have to
         # return the requested bytes:
@@ -941,7 +943,7 @@ class SerialTestHarness(object):
         """Write a value to the channel.
 
         Args:
-        bytestring: Bytestring.
+            bytestring: Bytestring.
         """
         pass
 
@@ -950,7 +952,7 @@ class SerialTestHarness(object):
         """Return timeout result.
 
         Returns:
-        Result value.
+            Result value.
         """
         return self._timeout
 
@@ -959,7 +961,7 @@ class SerialTestHarness(object):
         """Perform timeout operation.
 
         Args:
-        new_timeout: New timeout.
+            new_timeout: New timeout.
         """
         from numbers import Real
         assert isinstance(new_timeout, Real) and new_timeout >= 0
@@ -970,7 +972,7 @@ class SerialTestHarness(object):
         """Return max bytes returned per read result.
 
         Returns:
-        Result value.
+            Result value.
         """
         return self._max_bytes_returned_per_read
 
@@ -979,7 +981,7 @@ class SerialTestHarness(object):
         """Perform max bytes returned per read operation.
 
         Args:
-        new_max: New max.
+            new_max: New max.
         """
         assert isinstance(new_max, int) and new_max >= 0
         self._max_bytes_returned_per_read = new_max
@@ -993,7 +995,7 @@ class SerialTestHarness(object):
         optionally set during object instantiation.
 
         Returns:
-        Result value.
+            Result value.
         """
         if self._in_waiting is not None:
             return self._in_waiting
@@ -1008,7 +1010,7 @@ class SerialTestHarness(object):
         """Returns in_waiting. Added for PySerial <3.0 compatibility.
 
         Returns:
-        Result value.
+            Result value.
         """
         return self.in_waiting
 
@@ -1025,7 +1027,7 @@ class interface_test_harness_serial(interface, SerialTestHarness):
         """Return the serial port name.
 
         Returns:
-        Result value.
+            Result value.
         """
         return self._serial_port_name
 
@@ -1080,7 +1082,7 @@ class interface_visa_direct(interface_visa, visa_wrappers.visa_interface):
 
 
 class interface_bobbytalk_raw_serial(interface_bobbytalk):
-    "Sends and receives bobbytalk packets over a raw serial interface."
+    """Sends and receives bobbytalk packets over a raw serial interface."""
 
     def __init__(self, raw_serial_interface, fifo_size=2 **
                  16, junk_bytes_dump=None, debug=False):
@@ -1091,10 +1093,10 @@ class interface_bobbytalk_raw_serial(interface_bobbytalk):
         all the bytes discarded by the bobbytalk parser as non-packet-bytes.
 
         Args:
-        debug: If True, enable debug output.
-        fifo_size: Fifo size.
-        junk_bytes_dump: Junk bytes dump.
-        raw_serial_interface: Raw serial interface.
+            debug: If True, enable debug output.
+            fifo_size: Fifo size.
+            junk_bytes_dump: Junk bytes dump.
+            raw_serial_interface: Raw serial interface.
         """
         # Can't be interface_stream_serial because we need to be
         # able to change timeouts on every recv_packet() call.
@@ -1123,7 +1125,7 @@ class interface_bobbytalk_raw_serial(interface_bobbytalk):
                 """Perform trash operation.
 
                 Args:
-                junk_bytes: Junk bytes.
+                    junk_bytes: Junk bytes.
                 """
                 return
             self.dump = trash
@@ -1142,7 +1144,7 @@ class interface_bobbytalk_raw_serial(interface_bobbytalk):
         Case 3: {0 or more non-SOP bytes}
 
         Returns:
-        Result value.
+            Result value.
         """
         psbl_SOP_position = self.fifo.find(
             bobbytalk.packet.START_OF_PACKET_BYTEARRAY)
@@ -1168,12 +1170,12 @@ class interface_bobbytalk_raw_serial(interface_bobbytalk):
         couldn't accept buffer for some reason.
 
         Args:
-        buffer: Buffer.
-        dest_id: Destination identifier.
-        src_id: Source identifier.
+            buffer: Buffer.
+            dest_id: Destination identifier.
+            src_id: Source identifier.
 
         Returns:
-        Result value.
+            Result value.
         """
         pktbytes = bobbytalk.packet(
             src_id=src_id,
@@ -1197,13 +1199,13 @@ class interface_bobbytalk_raw_serial(interface_bobbytalk):
         Upon timeout, returns None.
 
         Args:
-        dest_id: Destination identifier.
-        receive_tries: Receive tries.
-        src_id: Source identifier.
-        timeout: Timeout in seconds.
+            dest_id: Destination identifier.
+            receive_tries: Receive tries.
+            src_id: Source identifier.
+            timeout: Timeout in seconds.
 
         Returns:
-        Result value.
+            Result value.
         """
         # Stuff we'll use from Python's standard library.
         from numbers import Real
@@ -1310,7 +1312,7 @@ class interface_bobbytalk_raw_serial(interface_bobbytalk):
         the module_table.
 
         Raises:
-        NotImplementedError: On error condition.
+            NotImplementedError: On error condition.
         """
         raise NotImplementedError("Subclass must implement this.")
 
@@ -1321,11 +1323,11 @@ class interface_bobbytalk_raw_serial(interface_bobbytalk):
         handler_function(bobbytalk_packet)
 
         Args:
-        dest_id: Destination identifier.
-        handler_function: Handler function.
+            dest_id: Destination identifier.
+            handler_function: Handler function.
 
         Raises:
-        NotImplementedError: On error condition.
+            NotImplementedError: On error condition.
         """
         raise NotImplementedError("Subclass must implement this.")
 
@@ -1422,7 +1424,7 @@ class interface_labcomm_raw_serial(interface):
         """Set the source id.
 
         Args:
-        src_id: Source identifier.
+            src_id: Source identifier.
         """
         self.src_id = src_id
 
@@ -1430,7 +1432,7 @@ class interface_labcomm_raw_serial(interface):
         """Set the destination id.
 
         Args:
-        dest_id: Destination identifier.
+            dest_id: Destination identifier.
         """
         self.dest_id = dest_id
 
@@ -1438,7 +1440,7 @@ class interface_labcomm_raw_serial(interface):
         """Perform send payload operation.
 
         Args:
-        payload: Payload.
+            payload: Payload.
         """
         self.interface.write_raw(
             self.talker.assemble(
@@ -1450,7 +1452,7 @@ class interface_labcomm_raw_serial(interface):
         """Return receive packet result.
 
         Returns:
-        Result value.
+            Result value.
         """
         return self.parser.read_message()
 
@@ -1469,7 +1471,7 @@ class interface_labcomm_twi_serial(twi_interface.i2c_labcomm, interface_twi):
         """Set the source id.
 
         Args:
-        src_id: Source identifier.
+            src_id: Source identifier.
         """
         self.src_id = src_id
 
@@ -1477,7 +1479,7 @@ class interface_labcomm_twi_serial(twi_interface.i2c_labcomm, interface_twi):
         """Set the destination id.
 
         Args:
-        dest_id: Destination identifier.
+            dest_id: Destination identifier.
         """
         self.dest_id = dest_id
 
@@ -1562,14 +1564,14 @@ class interface_factory(communication_node):
         """Return the visa interface.
 
         Args:
-        timeout: Timeout in seconds.
-        visa_address_string: Visa address string.
+            timeout: Timeout in seconds.
+            visa_address_string: Visa address string.
 
         Returns:
-        Result value.
+            Result value.
 
         Raises:
-        Exception: On error condition.
+            Exception: On error condition.
         """
         if visaMissing:
             raise Exception(
@@ -1594,15 +1596,15 @@ class interface_factory(communication_node):
         """Return the visa gpib interface.
 
         Args:
-        gpib_adapter_number: Gpib adapter number.
-        gpib_address_number: Gpib address number.
-        timeout: Timeout in seconds.
+            gpib_adapter_number: Gpib adapter number.
+            gpib_address_number: Gpib address number.
+            timeout: Timeout in seconds.
 
         Returns:
-        Result value.
+            Result value.
 
         Raises:
-        Exception: On error condition.
+            Exception: On error condition.
         """
         timeout = self._set_timeout(timeout)
         if visaMissing:
@@ -1642,7 +1644,7 @@ class interface_factory(communication_node):
         """Deprectaed, I put this stuff in .get_visa_gpib_interface() since it asked for an adapter number anyway.
 
         Args:
-        adapter_number: Adapter number.
+            adapter_number: Adapter number.
         """
     def _get_gpib_interface(
             self, gpib_adapter, gpib_adapter_number, gpib_address_number, timeout):
@@ -1659,13 +1661,13 @@ class interface_factory(communication_node):
         """Return the visa tcp ip interface.
 
         Args:
-        **kwargs: Additional keyword arguments.
-        host_address: Host address.
-        port: Port.
-        timeout: Timeout in seconds.
+            **kwargs: Additional keyword arguments.
+            host_address: Host address.
+            port: Port.
+            timeout: Timeout in seconds.
 
         Returns:
-        Result value.
+            Result value.
         """
         new_interface = interface_visa_tcp_ip(
             host_address, port, timeout, **kwargs)
@@ -1677,15 +1679,15 @@ class interface_factory(communication_node):
         """Return the visa telnet interface.
 
         Args:
-        host_address: Host address.
-        port: Port.
-        timeout: Timeout in seconds.
+            host_address: Host address.
+            port: Port.
+            timeout: Timeout in seconds.
 
         Returns:
-        Result value.
+            Result value.
 
         Raises:
-        Exception: On error condition.
+            Exception: On error condition.
         """
         if telnetlibMissing:
             raise Exception("telnetlib is missing on this computer")
@@ -1698,11 +1700,11 @@ class interface_factory(communication_node):
         """Return the visa vxi11 interface.
 
         Args:
-        address: Address.
-        timeout: Timeout in seconds.
+            address: Address.
+            timeout: Timeout in seconds.
 
         Returns:
-        Result value.
+            Result value.
         """
         timeout = self._set_timeout(timeout)
         new_interface = interface_visa_vxi11(address, timeout)
@@ -1714,11 +1716,11 @@ class interface_factory(communication_node):
         """Return the visa usbtmc interface.
 
         Args:
-        address: Address.
-        timeout: Timeout in seconds.
+            address: Address.
+            timeout: Timeout in seconds.
 
         Returns:
-        Result value.
+            Result value.
         """
         timeout = self._set_timeout(timeout)
         new_interface = interface_visa_usbtmc(address, timeout)
@@ -1731,13 +1733,13 @@ class interface_factory(communication_node):
         """Return the visa serial interface.
 
         Args:
-        **kwargs: Additional keyword arguments.
-        baudrate: Baudrate.
-        serial_obj_or_port_name: Serial obj or port name.
-        timeout: Timeout in seconds.
+            **kwargs: Additional keyword arguments.
+            baudrate: Baudrate.
+            serial_obj_or_port_name: Serial obj or port name.
+            timeout: Timeout in seconds.
 
         Returns:
-        Result value.
+            Result value.
         """
         timeout = self._set_timeout(timeout)
         if isinstance(serial_obj_or_port_name, str):
@@ -1755,16 +1757,16 @@ class interface_factory(communication_node):
         """Return the raw serial interface.
 
         Args:
-        **kwargs: Additional keyword arguments.
-        baudrate: Baudrate.
-        serial_port_name: Serial port name.
-        timeout: Timeout in seconds.
+            **kwargs: Additional keyword arguments.
+            baudrate: Baudrate.
+            serial_port_name: Serial port name.
+            timeout: Timeout in seconds.
 
         Returns:
-        Result value.
+            Result value.
 
         Raises:
-        Exception: On error condition.
+            Exception: On error condition.
         """
         if serialMissing:
             raise Exception("pySerial is missing on this computer")
@@ -1789,15 +1791,15 @@ class interface_factory(communication_node):
         """Return the tcp serial interface.
 
         Args:
-        dest_ip_address: Dest ip address.
-        dest_tcp_portnum: Dest tcp portnum.
-        timeout: Timeout in seconds.
+            dest_ip_address: Dest ip address.
+            dest_tcp_portnum: Dest tcp portnum.
+            timeout: Timeout in seconds.
 
         Returns:
-        Result value.
+            Result value.
 
         Raises:
-        Exception: On error condition.
+            Exception: On error condition.
         """
         if serialMissing:
             raise Exception("pySerial is missing on this computer")
@@ -1815,13 +1817,13 @@ class interface_factory(communication_node):
         of test stimulus each time its next() method is called.
 
         Args:
-        bytestream: Bytestream.
-        max_bytes_returned_per_read: Max bytes returned per read.
-        serial_port_name: Serial port name.
-        timeout: Timeout in seconds.
+            bytestream: Bytestream.
+            max_bytes_returned_per_read: Max bytes returned per read.
+            serial_port_name: Serial port name.
+            timeout: Timeout in seconds.
 
         Returns:
-        Result value.
+            Result value.
         """
         timeout = self._set_timeout(timeout)
         new_interface = interface_test_harness_serial(
@@ -1834,12 +1836,12 @@ class interface_factory(communication_node):
         """Return the interface libusb.
 
         Args:
-        idProduct: Idproduct.
-        idVendor: Idvendor.
-        timeout: Timeout in seconds.
+            idProduct: Idproduct.
+            idVendor: Idvendor.
+            timeout: Timeout in seconds.
 
         Returns:
-        Result value.
+            Result value.
         """
         new_interface = interface_libusb(
             idVendor=0x1272, idProduct=0x8004, timeout=1)
@@ -1850,10 +1852,10 @@ class interface_factory(communication_node):
         """Return the interface stream serial.
 
         Args:
-        interface_raw_serial: Interface raw serial.
+            interface_raw_serial: Interface raw serial.
 
         Returns:
-        Result value.
+            Result value.
         """
         new_interface = interface_stream_serial(interface_raw_serial)
         new_interface.set_com_node_parent(interface_raw_serial)
@@ -1864,7 +1866,7 @@ class interface_factory(communication_node):
         """Return the interface ftdi d2xx.
 
         Returns:
-        Result value.
+            Result value.
         """
         new_interface = interface_ftdi_d2xx()
         new_interface.set_com_node_parent(self)
@@ -1874,12 +1876,12 @@ class interface_factory(communication_node):
         """Return the twi dummy interface.
 
         Args:
-        **kwargs: Additional keyword arguments.
-        delay: Delay time in seconds.
-        timeout: Timeout in seconds.
+            **kwargs: Additional keyword arguments.
+            delay: Delay time in seconds.
+            timeout: Timeout in seconds.
 
         Returns:
-        Result value.
+            Result value.
         """
         new_interface = interface_twi_dummy(delay, **kwargs)
         new_interface.set_com_node_parent(self)
@@ -1889,11 +1891,11 @@ class interface_factory(communication_node):
         """Return the twi mdump interface.
 
         Args:
-        **kwargs: Additional keyword arguments.
-        data_source: Data source.
+            **kwargs: Additional keyword arguments.
+            data_source: Data source.
 
         Returns:
-        Result value.
+            Result value.
         """
         new_interface = interface_twi_mdump(data_source, **kwargs)
         new_interface.set_com_node_parent(self)
@@ -1904,12 +1906,12 @@ class interface_factory(communication_node):
         """Return the twi scpi interface.
 
         Args:
-        baudrate: Baudrate.
-        serial_port_name: Serial port name.
-        timeout: Timeout in seconds.
+            baudrate: Baudrate.
+            serial_port_name: Serial port name.
+            timeout: Timeout in seconds.
 
         Returns:
-        Result value.
+            Result value.
         """
         serial = self.get_visa_serial_interface(
             serial_port_name, baudrate, timeout)
@@ -1922,16 +1924,16 @@ class interface_factory(communication_node):
         """Return the twi scpi sp interface.
 
         Args:
-        baudrate: Baudrate.
-        portnum: Portnum.
-        pullup: Pullup.
-        sclpin: Sclpin.
-        sdapin: Sdapin.
-        serial_port_name: Serial port name.
-        timeout: Timeout in seconds.
+            baudrate: Baudrate.
+            portnum: Portnum.
+            pullup: Pullup.
+            sclpin: Sclpin.
+            sdapin: Sdapin.
+            serial_port_name: Serial port name.
+            timeout: Timeout in seconds.
 
         Returns:
-        Result value.
+            Result value.
         """
         serial = self.get_visa_serial_interface(
             serial_port_name, baudrate, timeout)
@@ -1950,12 +1952,12 @@ class interface_factory(communication_node):
         """Return the twi scpi testhook interface.
 
         Args:
-        baudrate: Baudrate.
-        serial_port_name: Serial port name.
-        timeout: Timeout in seconds.
+            baudrate: Baudrate.
+            serial_port_name: Serial port name.
+            timeout: Timeout in seconds.
 
         Returns:
-        Result value.
+            Result value.
         """
         serial = self.get_visa_serial_interface(
             serial_port_name, baudrate, timeout)
@@ -1968,12 +1970,12 @@ class interface_factory(communication_node):
         """Return the twi dc590 serial.
 
         Args:
-        baudrate: Baudrate.
-        serial_port_name: Serial port name.
-        timeout: Timeout in seconds.
+            baudrate: Baudrate.
+            serial_port_name: Serial port name.
+            timeout: Timeout in seconds.
 
         Returns:
-        Result value.
+            Result value.
         """
         if baudrate is None:
             baudrate = 115200  # DC590/Linduino default
@@ -1989,12 +1991,12 @@ class interface_factory(communication_node):
         """Return the twi buspirate interface.
 
         Args:
-        baudrate: Baudrate.
-        serial_port_name: Serial port name.
-        timeout: Timeout in seconds.
+            baudrate: Baudrate.
+            serial_port_name: Serial port name.
+            timeout: Timeout in seconds.
 
         Returns:
-        Result value.
+            Result value.
         """
         serial = self.get_raw_serial_interface(
             serial_port_name, baudrate, timeout)
@@ -2006,10 +2008,10 @@ class interface_factory(communication_node):
         """Return the twi kernel interface.
 
         Args:
-        bus_number: Bus number.
+            bus_number: Bus number.
 
         Returns:
-        Result value.
+            Result value.
         """
         new_interface = interface_twi_kernel(bus_number)  # noqa: F821 - class defined externally or not yet implemented
         new_interface.set_com_node_parent(self)
@@ -2020,10 +2022,10 @@ class interface_factory(communication_node):
         """Return the twi firmata interface.
 
         Args:
-        firmata_instance: Firmata instance.
+            firmata_instance: Firmata instance.
 
         Returns:
-        Result value.
+            Result value.
         """
         new_interface = interface_twi_firmata(firmata_instance)
         new_interface.set_com_node_parent(self)
@@ -2045,18 +2047,18 @@ class interface_factory(communication_node):
         injection of test bytes and other stimuli to the bobbytalk parser.
 
         Args:
-        **kwargs: Additional keyword arguments.
-        baudrate: Baudrate.
-        debug: If True, enable debug output.
-        fifo_size: Fifo size.
-        serial_port_name: Serial port name.
-        src_id: Source identifier.
+            **kwargs: Additional keyword arguments.
+            baudrate: Baudrate.
+            debug: If True, enable debug output.
+            fifo_size: Fifo size.
+            serial_port_name: Serial port name.
+            src_id: Source identifier.
 
         Returns:
-        Result value.
+            Result value.
 
         Raises:
-        ValueError: On error condition.
+            ValueError: On error condition.
         """
         if baudrate is None:
             baudrate = 115200  # bobbytalk Firmware default
@@ -2097,16 +2099,16 @@ class interface_factory(communication_node):
         is ignored. This allows injection of test bytes and other stimuli to the bobbytalk parser.
 
         Args:
-        **kwargs: Additional keyword arguments.
-        debug: If True, enable debug output.
-        dest_ip_address: Dest ip address.
-        dest_tcp_portnum: Dest tcp portnum.
-        fifo_size: Fifo size.
-        src_id: Source identifier.
-        timeout: Timeout in seconds.
+            **kwargs: Additional keyword arguments.
+            debug: If True, enable debug output.
+            dest_ip_address: Dest ip address.
+            dest_tcp_portnum: Dest tcp portnum.
+            fifo_size: Fifo size.
+            src_id: Source identifier.
+            timeout: Timeout in seconds.
 
         Returns:
-        Result value.
+            Result value.
         """
         if isinstance(dest_ip_address, str):
             serial_intf = self.get_tcp_serial_interface(
@@ -2127,14 +2129,14 @@ class interface_factory(communication_node):
         """Return the labcomm raw interface.
 
         Args:
-        baudrate: Baudrate.
-        comport_name: Comport name.
-        dest_id: Destination identifier.
-        src_id: Source identifier.
-        timeout: Timeout in seconds.
+            baudrate: Baudrate.
+            comport_name: Comport name.
+            dest_id: Destination identifier.
+            src_id: Source identifier.
+            timeout: Timeout in seconds.
 
         Returns:
-        Result value.
+            Result value.
         """
         rawser = self.get_raw_serial_interface(comport_name, baudrate, timeout)
         new_interface = interface_labcomm_raw_serial(
@@ -2147,14 +2149,14 @@ class interface_factory(communication_node):
         """Return the labcomm twi interface.
 
         Args:
-        baudrate: Baudrate.
-        comport_name: Comport name.
-        dest_id: Destination identifier.
-        src_id: Source identifier.
-        timeout: Timeout in seconds.
+            baudrate: Baudrate.
+            comport_name: Comport name.
+            dest_id: Destination identifier.
+            src_id: Source identifier.
+            timeout: Timeout in seconds.
 
         Returns:
-        Result value.
+            Result value.
         """
         rawser = self.get_raw_serial_interface(comport_name, baudrate, timeout)
         new_interface = interface_labcomm_twi_serial(
@@ -2166,10 +2168,10 @@ class interface_factory(communication_node):
         """Return the spi dummy interface.
 
         Args:
-        delay: Delay time in seconds.
+            delay: Delay time in seconds.
 
         Returns:
-        Result value.
+            Result value.
         """
         iface_spi = interface_spi_dummy(delay)
         iface_spi.set_com_node_parent(self)
@@ -2180,14 +2182,14 @@ class interface_factory(communication_node):
         """Return the spi dc590 interface.
 
         Args:
-        **kwargs: Additional keyword arguments.
-        serial_port_name: Serial port name.
-        ss_ctrl: Ss ctrl.
-        uart_baudrate: Uart baudrate.
-        uart_timeout: Uart timeout.
+            **kwargs: Additional keyword arguments.
+            serial_port_name: Serial port name.
+            ss_ctrl: Ss ctrl.
+            uart_baudrate: Uart baudrate.
+            uart_timeout: Uart timeout.
 
         Returns:
-        Result value.
+            Result value.
         """
         if uart_baudrate is None:
             uart_baudrate = 115200  # DC590/Linduino default
@@ -2203,15 +2205,15 @@ class interface_factory(communication_node):
         """The configurator Pro (or XT) is an ADI specific breakout board that interfaces test equipment and ICs in a semi-standardized manner.
 
         Args:
-        CPHA: Clock phase.
-        CPOL: Clock polarity.
-        serial_port_name: Serial port name.
-        spi_baudrate: Spi baudrate.
-        ss_ctrl: Ss ctrl.
-        uart_timeout: Uart timeout.
+            CPHA: Clock phase.
+            CPOL: Clock polarity.
+            serial_port_name: Serial port name.
+            spi_baudrate: Spi baudrate.
+            ss_ctrl: Ss ctrl.
+            uart_timeout: Uart timeout.
 
         Returns:
-        Result value.
+            Result value.
         """
         iface_visa_serial = self.get_visa_serial_interface(
             serial_port_name, timeout=uart_timeout)
@@ -2224,11 +2226,11 @@ class interface_factory(communication_node):
         """Used only for testing the core lab functions.
 
         Args:
-        name: Name identifier.
-        parent: Parent.
+            name: Name identifier.
+            parent: Parent.
 
         Returns:
-        Result value.
+            Result value.
         """
         new_interface = interface(name)
         if parent is None:

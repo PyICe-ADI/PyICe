@@ -3,7 +3,7 @@ import datetime
 
 
 class htx9001(scpi_instrument):
-    """ HTX9001 Configurator Pro (Steve Martin).
+    """HTX9001 Configurator Pro (Steve Martin).
 
     Breakout/Edge connector board for ATE Bench, with i2c
     Supports 4 types of channels:
@@ -16,9 +16,9 @@ class htx9001(scpi_instrument):
         """Creates a htx9001 object.
 
         Args:
-        calibrating: Calibrating.
-        interface_twi: TWI/I2C interface instance.
-        interface_visa: VISA interface instance.
+            calibrating: Calibrating.
+            interface_twi: TWI/I2C interface instance.
+            interface_visa: VISA interface instance.
         """
         self._base_name = 'htx9001'
         # work with both serial port strings and pyserial objects
@@ -68,10 +68,10 @@ class htx9001(scpi_instrument):
         """Adds a channel controlling the dvcc voltage.
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         dvcc = channel(channel_name, write_function=self._set_dvcc)
         dvcc.set_write_delay(0.2)
@@ -85,14 +85,14 @@ class htx9001(scpi_instrument):
         valid relays are 1-4 and 9-12
 
         Args:
-        channel_name: Name for the new channel.
-        relay_number: Relay number.
+            channel_name: Name for the new channel.
+            relay_number: Relay number.
 
         Returns:
-        Result value.
+            Result value.
 
         Raises:
-        Exception: On error condition.
+            Exception: On error condition.
         """
         if relay_number not in self.relay_pins:
             raise Exception(f"Invalid relay number {relay_number}")
@@ -117,14 +117,14 @@ class htx9001(scpi_instrument):
         test_hook_number is the number of the test hook (valid test hooks are 1-5
 
         Args:
-        channel_name: Name for the new channel.
-        test_hook_number: Test hook number.
+            channel_name: Name for the new channel.
+            test_hook_number: Test hook number.
 
         Returns:
-        Result value.
+            Result value.
 
         Raises:
-        Exception: On error condition.
+            Exception: On error condition.
         """
         if test_hook_number not in self.test_hook_pins:
             raise Exception(f"Invalid test hook number {test_hook_number}")
@@ -151,16 +151,16 @@ class htx9001(scpi_instrument):
         valid settings are [{integer},'z','Z','p','P','H','L']
 
         Args:
-        channel_name: Name for the new channel.
-        gpio_list: Gpio list.
-        output: Output.
-        pin_state: Pin state.
+            channel_name: Name for the new channel.
+            gpio_list: Gpio list.
+            output: Output.
+            pin_state: Pin state.
 
         Returns:
-        Result value.
+            Result value.
 
         Raises:
-        Exception: On error condition.
+            Exception: On error condition.
         """
         if not isinstance(gpio_list, list):
             gpio_list = [gpio_list]
@@ -205,10 +205,10 @@ class htx9001(scpi_instrument):
         """Return read channel pin result.
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         return self.read_channel_generic(
             channel_name, function=self.read_pins_values)
@@ -383,11 +383,11 @@ class htx9001(scpi_instrument):
         """Set the resistor calibration.
 
         Args:
-        resistor_number: Resistor number.
-        value: Value to set.
+            resistor_number: Resistor number.
+            value: Value to set.
 
         Raises:
-        Exception: On error condition.
+            Exception: On error condition.
         """
         try:
             float(value)
@@ -400,10 +400,10 @@ class htx9001(scpi_instrument):
         """Return the resistor calibration.
 
         Args:
-        resistor_number: Resistor number.
+            resistor_number: Resistor number.
 
         Returns:
-        Result value.
+            Result value.
         """
         read_str = f"CAL:DATA?({resistor_number});"
         self.get_interface().write(read_str)
@@ -415,7 +415,7 @@ class htx9001(scpi_instrument):
         """Return the calibration date.
 
         Returns:
-        Result value.
+            Result value.
         """
         datestr = self.get_interface().ask('CAL:DATE?')
         try:
@@ -430,7 +430,7 @@ class htx9001(scpi_instrument):
         """Return the days since calibration.
 
         Returns:
-        Result value.
+            Result value.
         """
         cal_date = self.get_calibration_date()
         if cal_date is not None:
@@ -440,10 +440,10 @@ class htx9001(scpi_instrument):
         """Perform check calibration valid operation.
 
         Args:
-        calibrating: Calibrating.
+            calibrating: Calibrating.
 
         Raises:
-        Exception: On error condition.
+            Exception: On error condition.
         """
         cal_duration = 365  # days
         days = self.get_days_since_calibration()
@@ -468,7 +468,7 @@ class htx9001(scpi_instrument):
         """Set the all relays.
 
         Args:
-        value: Value to set.
+            value: Value to set.
         """
         for relay in self.relay_pins:
             self._write_relay(relay, value)
@@ -480,10 +480,10 @@ class htx9001(scpi_instrument):
         there is currently no way to connect this with channels so the pin is the raw pin name like PB1 etc
 
         Args:
-        write_list: Write list.
+            write_list: Write list.
 
         Raises:
-        Exception: On error condition.
+            Exception: On error condition.
         """
         write_str = ''
         for pin, value in write_list:

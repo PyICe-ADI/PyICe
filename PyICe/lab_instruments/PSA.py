@@ -10,11 +10,11 @@ def bit_is_set(value, bit):
     """Return bit is set result.
 
     Args:
-    bit: Bit.
-    value: Value to set.
+        bit: Bit.
+        value: Value to set.
 
     Returns:
-    Result value.
+        Result value.
     """
     return value & 2**bit == 2**bit
 
@@ -32,10 +32,10 @@ class keysight_e4440a(scpi_SA):
         """Interface_visa.
 
         Args:
-        interface_visa: VISA interface instance.
-        maximum_frequency: Maximum frequency.
-        minimum_frequency: Minimum frequency.
-        reset: Reset.
+            interface_visa: VISA interface instance.
+            maximum_frequency: Maximum frequency.
+            minimum_frequency: Minimum frequency.
+            reset: Reset.
         """
         self._base_name = 'Keysight E4440a PSA signal analyzer'
         super(scpi_SA, self).__init__(f"Keysight E4440a @ {interface_visa}")
@@ -99,10 +99,10 @@ class keysight_e4440a(scpi_SA):
         The :SYSTem:PRESet command is equivalent to a front panel Preset key.
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         new_channel = channel(name=channel_name, write_function=lambda: self.get_interface(
         ).write(':SYSTem:PRESet:TYPE FACTory;:SYSTem:PRESet'))
@@ -177,11 +177,11 @@ class keysight_e4440a(scpi_SA):
         """Trace data vector.
 
         Args:
-        channel_name: Name for the new channel.
-        trace_number: Trace number.
+            channel_name: Name for the new channel.
+            trace_number: Trace number.
 
         Returns:
-        Result value.
+            Result value.
         """
         new_channel = channel(
             channel_name,
@@ -199,10 +199,10 @@ class keysight_e4440a(scpi_SA):
         """Frequency sweep data vector.
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         new_channel = channel(channel_name, read_function=self._compute_x_axis)
         # self._configured_channels[trace_number]['v_sense'] = new_channel
@@ -214,12 +214,13 @@ class keysight_e4440a(scpi_SA):
         return self._add_channel(new_channel)
 
     def add_channel_sweep_control(self, channel_name):
-        """Args:.
+        """Add sweep control channels (start, stop, center, span frequency).
 
-        channel_name: Name for the new channel.
+        Args:
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         start_channel = channel(
             f'{channel_name}_start',
@@ -414,10 +415,10 @@ class keysight_e4440a(scpi_SA):
         Example: SWE:FFT:SPAN:RAT 20
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         type_channel = channel(
             f'{channel_name}',
@@ -473,10 +474,10 @@ class keysight_e4440a(scpi_SA):
         closest RBW filter for the analyzer that would be used is 68 kHz.
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         def _set_RBW(bw):
             self.get_interface().write(':SENSe:BANDwidth:RESolution:AUTO OFF')
@@ -495,10 +496,10 @@ class keysight_e4440a(scpi_SA):
         """Tracks the state of the AUTO setting for the resolution bandwidth.
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         new_channel = integer_channel(
             name=channel_name,
@@ -546,10 +547,10 @@ class keysight_e4440a(scpi_SA):
         determined as indicated in Table 2-1 on page 70
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         def _set_vbw(bw):
             self.get_interface().write(':SENSe:BANDwidth:VIDeo:AUTO OFF')
@@ -575,10 +576,10 @@ class keysight_e4440a(scpi_SA):
         """Tracks the state of the AUTO setting for the video bandwidth and the RBW/VBW ratio channel.
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         auto_channel = integer_channel(
             name=channel_name,
@@ -655,10 +656,10 @@ class keysight_e4440a(scpi_SA):
         the analyzer uses that type regardless of other analyzer settings, and sets Avg/VBW Type to Man.
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         def _write_avg(count):
             if count == 0:
@@ -770,10 +771,10 @@ class keysight_e4440a(scpi_SA):
         If the detector has been manually selected, a # appears next to it.
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         new_channel = channel(
             channel_name,
@@ -819,10 +820,10 @@ class keysight_e4440a(scpi_SA):
         level results in a mixer level at or below −10 dBm
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         def _set_attenuator(value):
             if value in range(0, 72, 2):
@@ -847,10 +848,10 @@ class keysight_e4440a(scpi_SA):
         """Tracks the state of the AUTO setting for the front end attenuators.
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         new_channel = integer_channel(
             name=channel_name,
@@ -880,10 +881,10 @@ class keysight_e4440a(scpi_SA):
         ************************************************************************************************
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         limits = [
             {"MINFREQ": 6.6e12, "MAXFREQ": 50e12, "POWER_dBm": -2},
@@ -895,10 +896,10 @@ class keysight_e4440a(scpi_SA):
             """Return pmax of freqs result.
 
             Returns:
-            Result value.
+                Result value.
 
             Raises:
-            Exception: On error condition.
+                Exception: On error condition.
             """
             if self.maximum_frequency > 50e12:
                 raise Exception(
@@ -921,10 +922,10 @@ class keysight_e4440a(scpi_SA):
             """Return nearest even value result.
 
             Args:
-            value: Value to set.
+                value: Value to set.
 
             Returns:
-            Result value.
+                Result value.
             """
             return math.ceil(value / 2) * 2
 
@@ -932,11 +933,11 @@ class keysight_e4440a(scpi_SA):
             """Return attenuation level result.
 
             Args:
-            pmax: Pmax.
-            power_in: Power in.
+                pmax: Pmax.
+                power_in: Power in.
 
             Returns:
-            Result value.
+                Result value.
             """
             print(
                 f"Returning attenuation level of {nearest_even_value(max(min(power_in - pmax, 70), 0))}")
@@ -965,10 +966,10 @@ class keysight_e4440a(scpi_SA):
         mixing.
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         self.preamp_channel = integer_channel(
             channel_name,
@@ -986,8 +987,8 @@ class keysight_e4440a(scpi_SA):
             """Perform maxp atten cb operation.
 
             Args:
-            ch: Ch.
-            val: Val.
+                ch: Ch.
+                val: Val.
             """
             if self.max_power_ch is not None and self.max_power_ch.read() is not None:
                 self.max_power_ch.write(self.max_power_ch.read())
@@ -1049,12 +1050,12 @@ class keysight_e4440a(scpi_SA):
         This instrument is very screen memory centric.
 
         Args:
-        channel_name: Name for the new channel.
-        marker_number: Marker number.
-        trace_number: Trace number.
+            channel_name: Name for the new channel.
+            marker_number: Marker number.
+            trace_number: Trace number.
 
         Returns:
-        Result value.
+            Result value.
         """
         self.get_interface().write(
             f':CALCulate:MARKer{marker_number}:STATe ON')  # OFF|ON|0|1
@@ -1132,12 +1133,12 @@ class keysight_e4440a(scpi_SA):
         detectors gives less accurate measurement results
 
         Args:
-        channel_name: Name for the new channel.
-        marker_number: Marker number.
-        trace_number: Trace number.
+            channel_name: Name for the new channel.
+            marker_number: Marker number.
+            trace_number: Trace number.
 
         Returns:
-        Result value.
+            Result value.
         """
         # handling of marker mode is a little crude. TODO - keep track of
         # already used marker and trace numbers better.
@@ -1186,8 +1187,8 @@ class keysight_e4440a(scpi_SA):
         while in this function, selecting any other mode (for example, Normal or Delta) turns off this function
 
         Args:
-        channel_name: Name for the new channel.
-        marker_number: Marker number.
+            channel_name: Name for the new channel.
+            marker_number: Marker number.
         """
         # TODO
         # :CALCulate:MARKer[1]|2|3|4:FUNCtion BPOWer|NOISe|OFF
@@ -1201,12 +1202,13 @@ class keysight_e4440a(scpi_SA):
         # :CALCulate:MARKer[1]|2|3|4:STATe?
 
     def add_channel_trigger(self, channel_name):
-        """Args:.
+        """Add trigger control channels.
 
-        channel_name: Name for the new channel.
+        Args:
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         def _single_abort_trigger_wait(run_mode):
             if run_mode == 'Single':
@@ -1379,10 +1381,10 @@ class keysight_e4440a(scpi_SA):
         """Calculated time for single sweep, dependent on start/stop/points/rbw/etc.
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         def _set_sweep_time(t):
             self.get_interface().write(':SENSe:SWEep:TIME:AUTO OFF')
@@ -1403,10 +1405,10 @@ class keysight_e4440a(scpi_SA):
         """Tracks the state of the AUTO setting for the sweep time.
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         new_channel = integer_channel(
             name=channel_name,
@@ -1424,10 +1426,10 @@ class keysight_e4440a(scpi_SA):
         """Write message to lower left corner of screen display.
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         def _disp_msg(msg):
             if msg is None:
@@ -1460,11 +1462,11 @@ class keysight_e4440a(scpi_SA):
         It will give 0.707•A.
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
-"""
+            Result value.
+        """
         reference_level_channel = channel(
             f'{channel_name}_reference_level',
             write_function=lambda ampl: self.get_interface().write(
@@ -1601,10 +1603,10 @@ class keysight_e4440a(scpi_SA):
         +30 dBm
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         coupling_channel = channel(
             f'{channel_name}',
@@ -1626,10 +1628,10 @@ class keysight_e4440a(scpi_SA):
         Increase the declared power level or manually coerce the attenuation level up (not recommended).
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         scpi = ':STATus:QUEStionable:POWer:CONDition?'
         decode_bit = 6
@@ -1639,7 +1641,7 @@ class keysight_e4440a(scpi_SA):
             """Return the status.
 
             Returns:
-            Result value.
+                Result value.
             """
             error = bit_is_set(int(self.get_interface().ask(scpi)), decode_bit)
             if error:
@@ -1659,10 +1661,10 @@ class keysight_e4440a(scpi_SA):
         Increase the declared power level or manually coerce the attenuation level up (not recommended).
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         scpi = ':STATus:QUEStionable:INTegrity:CONDition?'
         decode_bit = 4
@@ -1672,7 +1674,7 @@ class keysight_e4440a(scpi_SA):
             """Return the status.
 
             Returns:
-            Result value.
+                Result value.
             """
             error = bit_is_set(int(self.get_interface().ask(scpi)), decode_bit)
             if error:
@@ -1692,10 +1694,10 @@ class keysight_e4440a(scpi_SA):
         Increase the declared power level or manually coerce the attenuation level up (not recommended).
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         scpi = ':STATus:QUEStionable:INTegrity:CONDition?'
         decode_bit = 3
@@ -1705,7 +1707,7 @@ class keysight_e4440a(scpi_SA):
             """Return the status.
 
             Returns:
-            Result value.
+                Result value.
             """
             error = bit_is_set(int(self.get_interface().ask(scpi)), decode_bit)
             if error:
@@ -1725,10 +1727,10 @@ class keysight_e4440a(scpi_SA):
         Increase the declared power level or manually coerce the attenuation level up (not recommended).
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         scpi = 'STATus:QUEStionable:INTegrity:UNCalibrated:CONDition?'
         decode_bit = 0
@@ -1738,7 +1740,7 @@ class keysight_e4440a(scpi_SA):
             """Return the status.
 
             Returns:
-            Result value.
+                Result value.
             """
             error = bit_is_set(int(self.get_interface().ask(scpi)), decode_bit)
             if error:
@@ -1759,10 +1761,10 @@ class keysight_e4440a(scpi_SA):
         https://swarm.adsdesign.analog.com/files/adi/equipment_info/north_chelmsford/TRUNK/Keysight/Signal%20Analyzer/PSA/Doc/E444x%20programmers%20manual%209018-01328.pdf).
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         scpi = 'STATus:QUEStionable:CONDition?'
         message1, message2, message3 = '*** ERROR ***', 'PSA indicates generally questionable data.', 'Correct the attenuation level!'
@@ -1771,7 +1773,7 @@ class keysight_e4440a(scpi_SA):
             """Return the status.
 
             Returns:
-            Result value.
+                Result value.
             """
             error = int(self.get_interface().ask(scpi))
             if error:
@@ -1789,10 +1791,10 @@ class keysight_e4440a(scpi_SA):
         """Turns off the screen buttons temporarily for more usful viewing. They will come back on if other user inputs require them.
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         new_channel = integer_channel(
             name=channel_name,
@@ -1810,10 +1812,10 @@ class keysight_e4440a(scpi_SA):
         """Returns the response to :SYSTem:ERROr? to see if there are any commands making the instrument angry. Perform repeated reads to get them all and clear the buffer.
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         new_channel = channel(
             name=channel_name,
@@ -1833,12 +1835,13 @@ class keysight_e4440a(scpi_SA):
     # So what gives?
 
     def add_channels(self, channel_name):
-        """Args:.
+        """Add all instrument channels.
 
-        channel_name: Name for the new channel.
+        Args:
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         channels = []
         channels.append(self.add_channel_xdata(f'{channel_name}_xpoints'))

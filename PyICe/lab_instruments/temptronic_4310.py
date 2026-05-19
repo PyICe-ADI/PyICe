@@ -20,8 +20,8 @@ class temptronic_4310(instrument):
         """Optionally disable compressor on startup.
 
         Args:
-        en_compressor: En compressor.
-        interface_visa: VISA interface instance.
+            en_compressor: En compressor.
+            interface_visa: VISA interface instance.
         """
         # needs enable/compressor channel work
         self._base_name = 'temptronic_4310'
@@ -47,11 +47,11 @@ class temptronic_4310(instrument):
         optionlayy also adds _sense_dut, _sense_air, _soak, _window, and _soak_settling_time channels.
 
         Args:
-        add_extended_channels: If True, add sense and mode channels.
-        channel_name: Name for the new channel.
+            add_extended_channels: If True, add sense and mode channels.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         temp_channel = self.add_channel_temp(channel_name)
         if add_extended_channels:
@@ -67,10 +67,10 @@ class temptronic_4310(instrument):
         """Channel_name represents PID loop forcing temperature setpoint.
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         new_channel = channel(channel_name,
                               write_function=self._write_temperature)
@@ -81,10 +81,10 @@ class temptronic_4310(instrument):
         """Channel_name represents primary PID control loop thermocouple readback.
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         new_channel = channel(
             channel_name, read_function=lambda: float(
@@ -95,10 +95,10 @@ class temptronic_4310(instrument):
         """Channel_name represents secondary air stream thermocouple readback.
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         new_channel = channel(
             channel_name, read_function=lambda: float(
@@ -109,10 +109,10 @@ class temptronic_4310(instrument):
         """Channel_name represents soak time setpoint in seconds. Soak timer runs while temperature is continuously within 'window' and resets to zero otherwise.
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         new_channel = channel(channel_name, write_function=self._set_soak)
         new_channel.write(self.soak)
@@ -122,10 +122,10 @@ class temptronic_4310(instrument):
         """Channel_name represents width setpoint of tolerance window to start soak timer. Setpoint is total window width in degrees (temp must be +/-window/2).
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         new_channel = channel(channel_name, write_function=self._set_window)
         new_channel.write(self.window)
@@ -135,10 +135,10 @@ class temptronic_4310(instrument):
         """Channel_name represents soak timer elapsed time readback.
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         new_channel = channel(channel_name, read_function=lambda: self.time)
         return self._add_channel(new_channel)
@@ -147,10 +147,10 @@ class temptronic_4310(instrument):
         """Channel_name represents maximum airflow temperature setting.
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         new_channel = channel(channel_name, write_function=self._set_max_air)
         new_channel.write(self.maxair)
@@ -160,10 +160,10 @@ class temptronic_4310(instrument):
         """Channel_name represents maximum allowed temperature difference between airflow and dut setting.
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         new_channel = channel(channel_name,
                               write_function=self._set_max_air2dut)
@@ -180,7 +180,7 @@ class temptronic_4310(instrument):
         """Set allowed window to start soak timer.
 
         Args:
-        value: Value to set.
+            value: Value to set.
         """
         self.window = value
         txt = "WNDW " + str(self.window)
@@ -190,7 +190,7 @@ class temptronic_4310(instrument):
         """Set soak time in seconds.
 
         Args:
-        value: Value to set.
+            value: Value to set.
         """
         self.soak = value
         txt = "SOAK " + str(self.soak)
@@ -207,7 +207,7 @@ class temptronic_4310(instrument):
         """Set temperature.
 
         Args:
-        value: Value to set.
+            value: Value to set.
         """
         self.setpoint = value
         if value < 20:

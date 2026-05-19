@@ -422,7 +422,6 @@ class FT245R:
         Raises:
             RuntimeError: On error condition.
         """
-
         self.is_connected = False
         if platform.system() != 'Windows':
             # If Linux OS already has control, there's nothing to do
@@ -532,7 +531,6 @@ class FT245R:
             IOError: On error condition.
             RuntimeError: On error condition.
         """
-
         # Check for errors
         if not self.is_connected:
             raise IOError('Must connect to device first')

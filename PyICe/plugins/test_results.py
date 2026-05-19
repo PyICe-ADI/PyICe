@@ -41,6 +41,7 @@ def freeze(o):
 
 def make_hash(o):
     """Makes a hash out of anything that contains only list,dict and hashable types including string and numeric types.
+
     Args:
         o: O.
 

@@ -65,13 +65,8 @@ class touchstone_utils():
         One of the main goals of the touchstone utils is to simplify networks from N port to M port.
         Touchstone utils can also plot bode plots and create networks and touchstones files.
 
-        Parameters
-        -----------
-        file_name: str
-        Touchstone file to be imported, extension ".s?p"
-
         Args:
-        file_name: File name.
+            file_name: Touchstone file to be imported, extension ".s?p".
         """
         self.network = None
 
@@ -89,29 +84,13 @@ class touchstone_utils():
                           input_network=None, start=None, stop=None, output_form='ri'):
         """Outputs a touchstone of a specified network. If none specified, the current touchstone_utils network is used.
 
-        Parameters
-        -----------
-        output_file_name: str
-        Output file name without file extension. File extension will be assigned.
-        output_file_dir: str
-        Output file directory.
-        input_network: skrf.network.Network, optional
-        Optional input network to output a touchstone of, if none given, the current touchstone utils network is used
-        start: float, optional
-        Start frequency for the data of the network. If none given or lower than output_network.f[0] it is ignored.
-        stop: float, optional
-        Stop frequency for the data of the network. If none given or higher than network.f[-1] it is ignored.
-        output_form: str, optional
-        Output form based on skrf.network.Network.write_touchstone.
-        Common forms are 'ri' for real & imaginary and 'ma' for magnitude & angle (degrees).
-
         Args:
-        input_network: Input network.
-        output_file_dir: Output file dir.
-        output_file_name: Output file name.
-        output_form: Output form.
-        start: Start bit position.
-        stop: If True, send stop condition.
+            output_file_name: Output file name without file extension. File extension will be assigned.
+            output_file_dir: Output file directory.
+            input_network: Optional input network to output a touchstone of, if none given, the current touchstone utils network is used.
+            start: Start frequency for the data of the network. If none given or lower than output_network.f[0] it is ignored.
+            stop: Stop frequency for the data of the network. If none given or higher than network.f[-1] it is ignored.
+            output_form: Output form based on skrf.network.Network.write_touchstone. Common forms are 'ri' for real & imaginary and 'ma' for magnitude & angle (degrees).
         """
         # TODO: Add model type option to choose S, Y, or Z parameters.
         # TODO: Make the output file name automatic based on the current or input network
@@ -135,19 +114,13 @@ class touchstone_utils():
     def network_Nport_to_Mport(self, port_nums):
         """Converts current touchstone utils network to an M-port network of ports 'port_nums'.
 
-        Parameters
-        -----------
-        port_nums: list(type(int))
-        Port numbers from the current N-port network to be used for M-port network.
-        M-port port numbers 1-M are assigned in order of port_nums, so port_nums = [2, 1] will give
-        M-port port 1 as N-port port 2 and M-port port 2 as N-port port 1.
-        Common forms are 'ri' for real & imaginary and 'ma' for magnitude & angle (degrees).
-
         Args:
-        port_nums: Port nums.
+            port_nums: Port numbers from the current N-port network to be used for M-port network.
+                M-port port numbers 1-M are assigned in order of port_nums, so port_nums = [2, 1] will give
+                M-port port 1 as N-port port 2 and M-port port 2 as N-port port 1.
 
         Returns:
-        Result value.
+            Result value.
         """
         # TODO: Add input network
         # TODO: Add error handling for port_nums outside of N-port port count
@@ -155,10 +128,10 @@ class touchstone_utils():
             """Return open terminator result.
 
             Args:
-            name: Name identifier.
+                name: Name identifier.
 
             Returns:
-            Result value.
+                Result value.
             """
             open_port = skrf.Circuit.Port(
                 frequency=freqs, name='open_term_port', z0=z0)
@@ -207,21 +180,14 @@ class touchstone_utils():
     def network_Nport_to_1port(self, source_port_num, load_port_num):
         """Converts current touchstone utils network to an 1-port network.
 
-        The input port is the source_port_num and which port port is shorted to make the 1-port network is load_port_num.
-
-        Parameters
-        -----------
-        source_port_num: int
-        Port number from the current N-port network to be used as the input port for the 1-port network.
-        output_port_num: int
-        Port number from the current N-port network to be shorted for the simplification to a 1-port network.
+        The input port is the source_port_num and which port is shorted to make the 1-port network is load_port_num.
 
         Args:
-        load_port_num: Load port num.
-        source_port_num: Source port num.
+            source_port_num: Port number from the current N-port network to be used as the input port for the 1-port network.
+            load_port_num: Port number from the current N-port network to be shorted for the simplification to a 1-port network.
 
         Returns:
-        Result value.
+            Result value.
         """
         # TODO: Add functionality for load_port_num to be multiple load ports
         # that get shorted.
@@ -229,10 +195,10 @@ class touchstone_utils():
             """Return short terminator result.
 
             Args:
-            name: Name identifier.
+                name: Name identifier.
 
             Returns:
-            Result value.
+                Result value.
             """
             short_port = skrf.Circuit.Port(
                 frequency=freqs, name='short_term_port', z0=z0)
@@ -271,27 +237,18 @@ class touchstone_utils():
         """TODO: Make an error checking network setter.
 
         Args:
-        network: Network.
+            network: Network.
         """
 
     def test_make_Nport_Mport_reference_networks(self, N, M=None):
         """Converts current touchstone utils network to an 1-port network.
 
-        The input port is the source_port_num and which port port is shorted to make the 1-port network is load_port_num.
-
-        Parameters
-        -----------
-        source_port_num: int
-        Port number from the current N-port network to be used as the input port for the 1-port network.
-        output_port_num: int
-        Port number from the current N-port network to be shorted for the simplification to a 1-port network.
-
         Args:
-        M: M.
-        N: N.
+            N: Number of ports for the N-port network.
+            M: Number of ports for the M-port network.
 
         Returns:
-        Result value.
+            Result value.
         """
         # TODO: Complete the M-port portion of this function. Currently just made N-port and used Adice to verify the simplification.
         # TODO: Find a way to compare the networks locally without Adice
@@ -304,10 +261,10 @@ class touchstone_utils():
             """Return port terminator result.
 
             Args:
-            name: Name identifier.
+                name: Name identifier.
 
             Returns:
-            Result value.
+                Result value.
             """
             return skrf.Circuit.Port(frequency=freqs, name=name, z0=z0)
 
@@ -315,11 +272,11 @@ class touchstone_utils():
             """Return series resistor result.
 
             Args:
-            name: Name identifier.
-            resistance: Resistance.
+                name: Name identifier.
+                resistance: Resistance.
 
             Returns:
-            Result value.
+                Result value.
             """
             return skrf.Circuit.SeriesImpedance(
                 frequency=freqs, name=name, z0=z0, Z=resistance)
@@ -354,35 +311,16 @@ class touchstone_utils():
 
 
 def sweep_plots_to_pptx(ts_plots_dir, output_pptx_path, date_time_flag=1):
-    """Intended to collect plots from an archive folder and automatically add them to a Microsoft.
-
-    PowerPoint presentation.
+    """Collects plots from an archive folder and adds them to a Microsoft PowerPoint presentation.
 
     Searches through a directory for PNG or SVG files, creates a PowerPoint and adds them to it.
-    The titles of the slides is the filename of the image. There is no additional slides in the PowerPoint.
+    The titles of the slides is the filename of the image. There are no additional slides in the PowerPoint.
     The slides have no background.
 
-    Parameters
-    -----------
-    ts_plots_dir: string
-    Directory of target touchstone plots to be swept into PowerPoint presentation.
-    output_pptx_path: string
-    Full file path of output pptx file. The directory must exist, but the ouptut file can be created.
-    date_time_flag: bool or int
-    Flag for including the current date and time at the beginning of the ouptut pptx file name.
-
-    Future Work
-    ------------
-    TODO: Error checking and feedback
-    TODO: Make it look for SVG as well or just SVG
-    TODO: Add a way to input presentation templates
-    TODO Ben: Change adice script to print SVG
-    TODO: Make a from archive workflow that can take the datetime the plots were recorded not the current datetime.
-
     Args:
-    date_time_flag: Date time flag.
-    output_pptx_path: Output pptx path.
-    ts_plots_dir: Ts plots dir.
+        ts_plots_dir: Directory of target touchstone plots to be swept into PowerPoint presentation.
+        output_pptx_path: Full file path of output pptx file. The directory must exist, but the output file can be created.
+        date_time_flag: Flag for including the current date and time at the beginning of the output pptx file name.
     """
     # TODO: Check that ts_plots_dir exists and has an image
     # TODO: Check that output_pptx_path.parent exists, its okay for the file not to exist.
@@ -434,12 +372,12 @@ def resistor_ladder_coefficient(r_dc, r_hf, num_stages):
     """Return resistor ladder coefficient result.
 
     Args:
-    num_stages: Num stages.
-    r_dc: R dc.
-    r_hf: R hf.
+        num_stages: Num stages.
+        r_dc: R dc.
+        r_hf: R hf.
 
     Returns:
-    Result value.
+        Result value.
     """
     r_coeff = sympy.symbols('a')
     r_inv = 1 / r_hf
@@ -456,11 +394,11 @@ def inductor_ladder_coefficient(z_hf, z_lf, r_hf, r_coeff, num_stages):
     """Perform inductor ladder coefficient operation.
 
     Args:
-    num_stages: Num stages.
-    r_coeff: R coeff.
-    r_hf: R hf.
-    z_hf: Z hf.
-    z_lf: Z lf.
+        num_stages: Num stages.
+        r_coeff: R coeff.
+        r_hf: R hf.
+        z_hf: Z hf.
+        z_lf: Z lf.
     """
     pass
 
@@ -485,10 +423,10 @@ def _parallel(Ra, Rb):
         """Perform dev make series LR model operation.
 
         Args:
-        L: L.
-        R: R.
-        outputFileName: Outputfilename.
-        self: Self.
+            L: L.
+            R: R.
+            outputFileName: Outputfilename.
+            self: Self.
         """
         freqs = skrf.frequency.Frequency(start=10, stop=10e6,
                                          npoints=1000, unit='Hz',
@@ -525,10 +463,10 @@ def _parallel(Ra, Rb):
         """Return dev series LR curve fit result.
 
         Args:
-        self: Self.
+            self: Self.
 
         Returns:
-        Result value.
+            Result value.
         """
         z11 = np.abs(self.network.z[:, 0, 0])
         freqs = self.network.f
@@ -537,12 +475,12 @@ def _parallel(Ra, Rb):
             """Return estimator fun result.
 
             Args:
-            L: L.
-            R: R.
-            x: X.
+                L: L.
+                R: R.
+                x: X.
 
             Returns:
-            Result value.
+                Result value.
             """
             return np.abs(R + 1j * 2 * 3.14 * x * L)
         params, covariance = optimize.curve_fit(f=estimator_fun,
@@ -556,11 +494,11 @@ def _parallel(Ra, Rb):
         """Return dev curve fit 3stage ladder result.
 
         Args:
-        points: Points.
-        self: Self.
+            points: Points.
+            self: Self.
 
         Returns:
-        Result value.
+            Result value.
         """
         range = int(points / 2)
         z11 = self.network.z[:, 0, 0]
@@ -590,11 +528,11 @@ def _parallel(Ra, Rb):
             """Return parallel result.
 
             Args:
-            z1: Z1.
-            z2: Z2.
+                z1: Z1.
+                z2: Z2.
 
             Returns:
-            Result value.
+                Result value.
             """
             return z1 * z2 / (z1 + z2)
 
@@ -602,15 +540,15 @@ def _parallel(Ra, Rb):
             """Return estimator fun result.
 
             Args:
-            L0: L0.
-            L1: L1.
-            LL: Ll.
-            R1: R1.
-            RR: Rr.
-            x: X.
+                L0: L0.
+                L1: L1.
+                LL: Ll.
+                R1: R1.
+                RR: Rr.
+                x: X.
 
             Returns:
-            Result value.
+                Result value.
             """
             s = x * 2j * 3.14
             ladder = s * L1 * (LL**2) + R1 * (RR**3)
@@ -635,11 +573,11 @@ def _parallel(Ra, Rb):
         """Return dev curve fit 2stage ladder result.
 
         Args:
-        fmax: Fmax.
-        self: Self.
+            fmax: Fmax.
+            self: Self.
 
         Returns:
-        Result value.
+            Result value.
         """
         z11 = self.network.z[:, 0, 0]
         freqs = self.network.f
@@ -668,11 +606,11 @@ def _parallel(Ra, Rb):
             """Return parallel result.
 
             Args:
-            z1: Z1.
-            z2: Z2.
+                z1: Z1.
+                z2: Z2.
 
             Returns:
-            Result value.
+                Result value.
             """
             return z1 * z2 / (z1 + z2)
 
@@ -680,16 +618,16 @@ def _parallel(Ra, Rb):
             """Return estimator fun result.
 
             Args:
-            L0: L0.
-            L1: L1.
-            L2: L2.
-            R1: R1.
-            R2: R2.
-            R3: R3.
-            x: X.
+                L0: L0.
+                L1: L1.
+                L2: L2.
+                R1: R1.
+                R2: R2.
+                R3: R3.
+                x: X.
 
             Returns:
-            Result value.
+                Result value.
             """
             s = x * 2j * 3.14
             ladder = s * L1 + R2
@@ -712,11 +650,11 @@ def _parallel(Ra, Rb):
         """Return dev curve fit 1stage ladder result.
 
         Args:
-        points: Points.
-        self: Self.
+            points: Points.
+            self: Self.
 
         Returns:
-        Result value.
+            Result value.
         """
         range = int(points / 2)
         z11 = self.network.z[:, 0, 0]
@@ -732,11 +670,11 @@ def _parallel(Ra, Rb):
             """Return parallel result.
 
             Args:
-            z1: Z1.
-            z2: Z2.
+                z1: Z1.
+                z2: Z2.
 
             Returns:
-            Result value.
+                Result value.
             """
             return z1 * z2 / (z1 + z2)
 
@@ -744,14 +682,14 @@ def _parallel(Ra, Rb):
             """Return estimator fun result.
 
             Args:
-            L0: L0.
-            L1: L1.
-            R1: R1.
-            R2: R2.
-            x: X.
+                L0: L0.
+                L1: L1.
+                R1: R1.
+                R2: R2.
+                x: X.
 
             Returns:
-            Result value.
+                Result value.
             """
             s = x * 2j * 3.14
             ladder = s * L1 + R2
@@ -772,8 +710,8 @@ def _parallel(Ra, Rb):
         """Perform dev minimize 2stage ladder operation.
 
         Args:
-        fmax: Fmax.
-        self: Self.
+            fmax: Fmax.
+            self: Self.
         """
         _z11 = self.network.z[:, 0, 0]  # noqa: F841
         # freqs = self.network.f
@@ -808,17 +746,17 @@ def _parallel(Ra, Rb):
         """Return dev plot parallel result.
 
         Args:
-        Req: Req.
+            Req: Req.
         """
         def dev_parallel_solver(Req, R2):
             """Return dev parallel solver result.
 
             Args:
-            R2: R2.
-            Req: Req.
+                R2: R2.
+                Req: Req.
 
             Returns:
-            Result value.
+                Result value.
             """
             R1 = R2 * Req / (R2 - Req)
             return R1
@@ -881,8 +819,8 @@ def _parallel(Ra, Rb):
         """Perform dev plot series LR error operation.
 
         Args:
-        params: Params.
-        self: Self.
+            params: Params.
+            self: Self.
         """
         R, L = params
         freq_obj = self.network.frequency
@@ -926,8 +864,8 @@ def _parallel(Ra, Rb):
         """Perform dev plot 3stage ladder operation.
 
         Args:
-        params: Params.
-        self: Self.
+            params: Params.
+            self: Self.
         """
         L0, R1, L1, LL, RR = params
         freq_obj = self.network.frequency
@@ -993,8 +931,8 @@ def _parallel(Ra, Rb):
         """Perform dev plot 2stage ladder operation.
 
         Args:
-        params: Params.
-        self: Self.
+            params: Params.
+            self: Self.
         """
         L0, R1, L1, R2, L2, R3 = params
         freq_obj = self.network.frequency
@@ -1049,8 +987,8 @@ def _parallel(Ra, Rb):
         """Perform dev plot 1stage ladder operation.
 
         Args:
-        params: Params.
-        self: Self.
+            params: Params.
+            self: Self.
         """
         L0, R1, L1, R2 = params
         freq_obj = self.network.frequency
@@ -1100,7 +1038,7 @@ def _parallel(Ra, Rb):
         """Return dev LR minimize fit result.
 
         Args:
-        self: Self.
+            self: Self.
         """
         if self.network is None:
             print('No network to fit\n')
@@ -1112,10 +1050,10 @@ def _parallel(Ra, Rb):
             """Return error fun result.
 
             Args:
-            params: Params.
+                params: Params.
 
             Returns:
-            Result value.
+                Result value.
             """
             print(params.shape)
             R, L = params
@@ -1142,12 +1080,12 @@ def _parallel(Ra, Rb):
         """Return dev aprx ckt values result.
 
         Args:
-        Rdc: Rdc.
-        Rhf: Rhf.
-        corners: Corners.
+            Rdc: Rdc.
+            Rhf: Rhf.
+            corners: Corners.
 
         Returns:
-        Result value.
+            Result value.
         """
         z1, p1, z2, p2, z3 = corners
 
@@ -1155,11 +1093,11 @@ def _parallel(Ra, Rb):
             """Return parallel result.
 
             Args:
-            z1: Z1.
-            z2: Z2.
+                z1: Z1.
+                z2: Z2.
 
             Returns:
-            Result value.
+                Result value.
             """
             return z1 * z2 / (z1 + z2)
         R1 = Rhf
@@ -1179,11 +1117,11 @@ def _parallel(Ra, Rb):
         """Return dev S11 coefficients Z11 result.
 
         Args:
-        x: X.
-        y: Y.
+            x: X.
+            y: Y.
 
         Returns:
-        Result value.
+            Result value.
         """
         s = sympy.symbols('s')
         z0 = 0.1
@@ -1233,9 +1171,9 @@ def _parallel(Ra, Rb):
         """Perform dev plot rational coefficients operation.
 
         Args:
-        self: Self.
-        x: X.
-        y: Y.
+            self: Self.
+            x: X.
+            y: Y.
         """
         freqs = np.logspace(3, 8, num=51)
         s = 2j * 3.14 * freqs
@@ -1278,11 +1216,11 @@ def _parallel(Ra, Rb):
         """Perform plot residue impedance operation.
 
         Args:
-        fstop: Fstop.
-        k: K.
-        p: P.
-        r: R.
-        self: Self.
+            fstop: Fstop.
+            k: K.
+            p: P.
+            r: R.
+            self: Self.
         """
         freqs = self.network.f
         s = 2j * 3.14 * freqs
@@ -1367,40 +1305,16 @@ def _parallel(Ra, Rb):
         or M(s) = k + n_Σ {r[n] / (s - p[n])}, where n is the degree.
         M(s) is generic model parameter, which can either be S(s) or Y(s) [S11 or admittance (Y11)].
         Z(s) can be returned in residue or rational form.
-        Residue  Z(s) = k + n_Σ {r[n] / (s - p[n])}
-        Rational Z(s) = y(s)/x(s) where y[0] corresponds to s**n.
-
-        Parameters
-        -----------
-        model_type: optional
-        0 for Y parameter RPC coefficients, 1 for S parameter RPC coefficients.
-        a
-        List a[i] is equal to r[i]/p[i] (residues over poles) from the above M(s) equation.
-        b
-        List b[i] is equal to p[i] (poles) from M(s) equation.
-        k
-        DC term of M(s) equation.
-        z0
-        Characteristic impedance of S or Y parameter from RPC file.
-        residue: optional
-        1 to return residue version of Z, 0 to return rational version of Z
-
-        Returns
-        -----------
-        y
-        List of T(s) transfer function numerator coefficients.
-        x
-        List of T(s) transfer function denominator coefficients.
 
         Args:
-        a: A.
-        b: B.
-        k: K.
-        model_type: Model type.
-        z0: Z0.
+            a: List where a[i] is equal to r[i]/p[i] (residues over poles).
+            b: List where b[i] is equal to p[i] (poles).
+            k: DC term of M(s) equation.
+            z0: Characteristic impedance of S or Y parameter from RPC file.
+            model_type: 0 for Y parameter RPC coefficients, 1 for S parameter RPC coefficients.
 
         Returns:
-        Result value.
+            Tuple of (z_num_coeff, z_den_coeff, r, p, k) impedance coefficients.
         """
         r = np.multiply(a, b) * (-1)
         y, x = signal.invres(r=r, p=b, k=k)
@@ -1432,36 +1346,18 @@ def _parallel(Ra, Rb):
     def adice_rpc_to_rational(a, b, k):
         """Converts adiceRPC (root polynomial coefficient) file parameters, (a,b,k) to rational.
 
-
-
-        coefficients of the form T(s) = y(s)/x(s), whwere y[0] corresponds to s**n and n=degree.
-
+        Coefficients of the form T(s) = y(s)/x(s), where y[0] corresponds to s**n and n=degree.
         RPC coefficients are of the form M(s) = k + n_Σ {a[n] / (1 - s/b[n])}
-        or M(s) = k + l_Σ {r[l] / (s - p[l])}
-        M(s) is model type S(s) or Y(s) [S11 or admittance]
-
-        Parameters
-        -----------
-        a
-        List a[i] is equal to r[i]/p[i] (residues over poles) from the above M(s) equation.
-        b
-        List b[i] is equal to p[i] (poles) from M(s) equation.
-        k
-        DC term of M(s) equation.
-        Returns
-        -----------
-        y
-        List of T(s) transfer function numerator coefficients.
-        x
-        List of T(s) transfer function denominator coefficients.
+        or M(s) = k + l_Σ {r[l] / (s - p[l])}.
+        M(s) is model type S(s) or Y(s) [S11 or admittance].
 
         Args:
-        a: A.
-        b: B.
-        k: K.
+            a: List where a[i] is equal to r[i]/p[i] (residues over poles).
+            b: List where b[i] is equal to p[i] (poles).
+            k: DC term of M(s) equation.
 
         Returns:
-        Result value.
+            Tuple of (y, x) numerator and denominator coefficient lists.
         """
         r = np.multiply(a, b) * (-1)
         y, x = signal.invres(r=r, p=b, k=k)
@@ -1471,8 +1367,8 @@ def _parallel(Ra, Rb):
         """Perform dev parse RPC operation.
 
         Args:
-        input_file_name: Input file name.
-        port_num: Port num.
+            input_file_name: Input file name.
+            port_num: Port num.
         """
         pass
         # open file
@@ -1484,12 +1380,12 @@ def _parallel(Ra, Rb):
         """Return dev make N port touchstone result.
 
         Args:
-        num_ports: Num ports.
-        output_file_name: Output file name.
-        self: Self.
+            num_ports: Num ports.
+            output_file_name: Output file name.
+            self: Self.
 
         Returns:
-        Result value.
+            Result value.
         """
         freq_obj = self.network.frequency
         _freqs = self.network.f  # noqa: F841
@@ -1498,10 +1394,10 @@ def _parallel(Ra, Rb):
             """Return make port result.
 
             Args:
-            name: Name identifier.
+                name: Name identifier.
 
             Returns:
-            Result value.
+                Result value.
             """
             return skrf.Circuit.Port(frequency=freq_obj, name=name, z0=50)
 
@@ -1509,10 +1405,10 @@ def _parallel(Ra, Rb):
             """Return make resistor result.
 
             Args:
-            name: Name identifier.
+                name: Name identifier.
 
             Returns:
-            Result value.
+                Result value.
             """
             return skrf.Circuit.SeriesImpedance(
                 frequency=freq_obj, name=name, z0=50, Z=50)
@@ -1553,7 +1449,7 @@ def _parallel(Ra, Rb):
         """Perform plot Sbode operation.
 
         Args:
-        self: Self.
+            self: Self.
         """
         if self.network is None:
             print("No 2 port network stored, please input or create a network")
@@ -1565,7 +1461,7 @@ def _parallel(Ra, Rb):
         """Perform plot Zbode operation.
 
         Args:
-        self: Self.
+            self: Self.
         """
         network = self.network
         if self.network is None:
@@ -1582,8 +1478,8 @@ def _parallel(Ra, Rb):
         """Perform model fit RC LPF operation.
 
         Args:
-        self: Self.
-        touchstone_file_name: Touchstone file name.
+            self: Self.
+            touchstone_file_name: Touchstone file name.
         """
         input_network = skrf.Network(touchstone_file_name)
         _z0 = input_network.z0[0][0]  # per freq,port array  # noqa: F841
@@ -1593,8 +1489,8 @@ def _parallel(Ra, Rb):
         """Perform LR modelfit operation.
 
         Args:
-        f_max: F max.
-        self: Self.
+            f_max: F max.
+            self: Self.
         """
         model_params = {}
         model_z_thru = 1. / self.network.y[:, 0, 0]
@@ -1615,25 +1511,23 @@ def _parallel(Ra, Rb):
         """Plots a smith chart to investigate the complex impedance over frequency.
 
         Args:
-        self: Self.
+            self: Self.
         """
-
         self.network.plot_s_smith()
 
     def get_resistor_skin_effect_model():
         """Returns the approximate DC resistance and the scaling coefficient for the sqrt(2*pi*freq) skin effect term.
 
         Returns:
-        Result value.
+            Result value.
         """
-
         return dc_res, ac_res_coefficient  # noqa: F821
 
     def get_series_LR(self):
         """Return the series LR.
 
         Args:
-        self: Self.
+            self: Self.
         """
         y_admittance = self.network.y[:, 0, 0]
         y_mag = abs(y_admittance)

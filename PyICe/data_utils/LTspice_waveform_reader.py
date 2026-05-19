@@ -5,7 +5,7 @@ import numpy
 
 class LTspice_wavereader():
     def __init__(self, file_name):
-        """LTspice has the ability to export waveforms from the waveform viewer.
+        """Initialize LTspice waveform reader from exported text file.
 
            To export a record of one or more waveforms in a waveform pane, right click in the plane, drop down to 'File' menu and select 'export data as text'.
 

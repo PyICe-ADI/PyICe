@@ -185,7 +185,7 @@ class tektronix_4104b(scpi_instrument, delegator):
         return time_channel
 
     def set_points(self, stop, start=1):
-        """ No. of acquired points: DATA:STOP value - DATA:STARt value should be less than time_info['points'] or WFMOutpre:NR_PT?
+        """No. of acquired points: DATA:STOP value - DATA:STARt value should be less than time_info['points'] or WFMOutpre:NR_PT?
 
         Args:
             start: Start bit position.
@@ -352,7 +352,7 @@ class tektronix_4104b(scpi_instrument, delegator):
         return new_channel
 
     def add_channel_BWLimit(self, channel_name, channel_number):
-        """ Available bandwidth limits vary by model and are also influenced by probes.
+        """Available bandwidth limits vary by model and are also influenced by probes.
 
         Args:
             channel_name: Name for the new channel.
@@ -384,7 +384,7 @@ class tektronix_4104b(scpi_instrument, delegator):
         return new_channel
 
     def add_channel_Yrange(self, channel_name, channel_number):
-        """ Range = Scale x 8?
+        """Range = Scale x 8?
 
         Args:
             channel_name: Name for the new channel.
@@ -544,7 +544,7 @@ class tektronix_4104b(scpi_instrument, delegator):
         return new_channel
 
     def add_channel_Xrange(self, channel_name):
-        """ Xrange = SCALE x 10.
+        """Xrange = SCALE x 10.
 
         Args:
             channel_name: Name for the new channel.
@@ -906,7 +906,7 @@ class tektronix_4104b(scpi_instrument, delegator):
         return self.read()
 
     def set_channel_label_text(self, channel_number, label_text):
-        """ Sets channel label.
+        """Sets channel label.
 
         Args:
             channel_number: Physical channel number.

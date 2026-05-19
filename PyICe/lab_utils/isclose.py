@@ -10,7 +10,6 @@ def isclose(a, b, rel_tol=1e-9, abs_tol=0.0):
     # https://github.com/PythonCHB/close_pep/blob/master/is_close.py
     """Returns True if a is close in value to b. False otherwise.
 
-
     :param a: one of the values to be tested
     :param b: the other value to be tested
     :param rel_tol=1e-9: The relative tolerance -- the amount of error
@@ -18,6 +17,7 @@ def isclose(a, b, rel_tol=1e-9, abs_tol=0.0):
         larger input values.
     :param abs_tol=0.0: The minimum absolute tolerance level -- useful
         for comparisons to zero.
+
     Notes:
     -inf, inf and NaN behave similarly to the IEEE 754 Standard. That
     is, NaN is not close to anything, even itself. inf and -inf are

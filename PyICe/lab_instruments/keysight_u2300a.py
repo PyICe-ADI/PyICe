@@ -254,14 +254,15 @@ class u2300a_scope(scpi_instrument, delegator):
 
     def set_trigger(self, trigger_channel, mode='POST', delay_count=None,
                     polarity_condition='AHIG', high_threshold=1, low_threshold=1):
-        """Args:.
+        """Configure the trigger settings.
 
+        Args:
+            trigger_channel: Trigger channel.
+            mode: Operating mode.
             delay_count: Delay count.
+            polarity_condition: Polarity condition.
             high_threshold: High threshold.
             low_threshold: Low threshold.
-            mode: Operating mode.
-            polarity_condition: Polarity condition.
-            trigger_channel: Trigger channel.
 
         Raises:
             Exception: On error condition.

@@ -31,10 +31,10 @@ class sun_ec1x(sun_ecxx):
         """Channel_name represents secondary non-control thermocouple readback.
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         new_channel = channel(
             channel_name, read_function=lambda: float(
@@ -47,7 +47,7 @@ class sun_ec1x(sun_ecxx):
         """Set named channel to new temperature "value".
 
         Args:
-        value: Value to set.
+            value: Value to set.
         """
         self.setpoint = value
         time.sleep(1)
@@ -60,10 +60,10 @@ class sun_ec1x(sun_ecxx):
         """Individually control heat/cool outputs. Usually used through channel framework.
 
         Args:
-        enable: Enable or disable.
+            enable: Enable or disable.
 
         Raises:
-        Exception: On error condition.
+            Exception: On error condition.
         """
         if enable is False or enable == 0:
             time.sleep(0.5)
@@ -98,7 +98,7 @@ class sun_ec1x(sun_ecxx):
         """Turn entire temp controller on or off. This is different than enabling/disabling the heat and cool outputs.
 
         Args:
-        shutdown: Shutdown.
+            shutdown: Shutdown.
         """
         if shutdown:
             time.sleep(0.5)

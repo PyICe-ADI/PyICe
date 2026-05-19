@@ -14,6 +14,6 @@ class sun_ecxx(temperature_chamber):
         """Read back actual chamber temperature.
 
         Returns:
-        Result value.
+            Result value.
         """
         return float(self.get_interface().ask("TEMP?"))

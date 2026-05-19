@@ -20,7 +20,7 @@ class TWI_Pattern():
             """Perform extend operation.
 
             Args:
-            previous_item: Previous item.
+                previous_item: Previous item.
             """
             self.pattern.dwell(
                 SCL=self.SCL,
@@ -38,7 +38,7 @@ class TWI_Pattern():
             """Perform extend operation.
 
             Args:
-            previous_item: Previous item.
+                previous_item: Previous item.
             """
             self.pattern.dwell(SCL=1, SDA=0, STB=self.STB, tdwell=self.thd_sta)
 
@@ -53,7 +53,7 @@ class TWI_Pattern():
             """Perform extend operation.
 
             Args:
-            previous_item: Previous item.
+                previous_item: Previous item.
             """
             self.pattern.dwell(SCL=1, SDA=0, STB=self.STB, tdwell=self.tsu_sto)
             self.pattern.dwell(SCL=1, SDA=1, STB=self.STB, tdwell=self.tbuf)
@@ -68,7 +68,7 @@ class TWI_Pattern():
             """Perform extend operation.
 
             Args:
-            previous_item: Previous item.
+                previous_item: Previous item.
             """
             if previous_item.thd_dat >= 0:  # Previous bit had Positive or Zero hold time
                 self.pattern.dwell(
@@ -94,7 +94,7 @@ class TWI_Pattern():
             """Perform extend operation.
 
             Args:
-            previous_item: Previous item.
+                previous_item: Previous item.
             """
             self.pattern.sda_spikes.append(self)
 
@@ -111,7 +111,7 @@ class TWI_Pattern():
             """Perform extend operation.
 
             Args:
-            previous_item: Previous item.
+                previous_item: Previous item.
             """
             self.pattern.scl_spikes.append(self)
 
@@ -151,7 +151,7 @@ class TWI_Pattern():
             """Perform extend operation.
 
             Args:
-            previous_item: Previous item.
+                previous_item: Previous item.
             """
             if isinstance(previous_item, self.pattern.Start):
                 previous_thd_dat = 0
@@ -220,7 +220,7 @@ class TWI_Pattern():
         """Add a item.
 
         Args:
-        item: Item.
+            item: Item.
         """
         self.items.append(item)
 
@@ -228,10 +228,10 @@ class TWI_Pattern():
         """Return quantize result.
 
         Args:
-        time: Time.
+            time: Time.
 
         Returns:
-        Result value.
+            Result value.
         """
         return round(time / self.tstep) * self.tstep
 
@@ -239,10 +239,10 @@ class TWI_Pattern():
         """Perform dwell operation.
 
         Args:
-        SCL: Scl.
-        SDA: Sda.
-        STB: Stb.
-        tdwell: Tdwell.
+            SCL: Scl.
+            SDA: Sda.
+            STB: Stb.
+            tdwell: Tdwell.
         """
         cycles = round(tdwell / self.tstep)
         assert cycles >= 0, f"TWI Pattern Generator: tdwell of {tdwell} results in the addition of a negative time slice, not acheivable."
@@ -285,7 +285,7 @@ class TWI_Pattern():
         """Return the SDA.
 
         Returns:
-        Result value.
+            Result value.
         """
         return self.SDA
 
@@ -293,7 +293,7 @@ class TWI_Pattern():
         """Return the SCL.
 
         Returns:
-        Result value.
+            Result value.
         """
         return self.SCL
 
@@ -301,7 +301,7 @@ class TWI_Pattern():
         """Return the STB.
 
         Returns:
-        Result value.
+            Result value.
         """
         return self.STB
 
@@ -311,12 +311,12 @@ class TWI_Pattern():
         On the HP8110a, for example, the two output channels and the Strobe channel are binarily weighted so it takes values of 0-7 for 3 bits.
 
         Args:
-        SCL_channel: Scl channel.
-        SDA_channel: Sda channel.
-        STB_channel: Stb channel.
+            SCL_channel: Scl channel.
+            SDA_channel: Sda channel.
+            STB_channel: Stb channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         values = []
         for position in range(len(self.SCL)):
@@ -347,13 +347,13 @@ class TWI_Pattern():
         """Perform visualize operation.
 
         Args:
-        file_basename: File basename.
-        offset_SCL: Offset scl.
-        offset_SDA: Offset sda.
-        offset_STB: Offset stb.
-        plot_sizex: Plot sizex.
-        plot_sizey: Plot sizey.
-        title: Title.
+            file_basename: File basename.
+            offset_SCL: Offset scl.
+            offset_SDA: Offset sda.
+            offset_STB: Offset stb.
+            plot_sizex: Plot sizex.
+            plot_sizey: Plot sizey.
+            title: Title.
         """
         times = [index * self.tstep for index in range(len(self.SCL))]
         G0 = LTC_plot.scope_plot(plot_title="TWI Pattern" if title is None else title,

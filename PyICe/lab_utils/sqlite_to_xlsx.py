@@ -357,7 +357,7 @@ class sqlite_to_xlsx(object):
         return chartsheet
 
     def close(self):
-        """Close Excel workbook and release file lock. No further writing is possible after close()."""
+        """Close Excel workbook and release file lock. No further writing is possible after closing."""
         if self._workbook is not None:
             self._workbook.close()
             self._workbook = None

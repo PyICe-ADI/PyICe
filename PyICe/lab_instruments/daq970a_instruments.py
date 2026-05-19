@@ -29,7 +29,7 @@ class daq970a_instrument(scpi_instrument, delegator):
         set False to force traditional scanlist behavior and manual monitor channel selection via set_monitor and get_monitor_data methods.
 
         Args:
-        enable: True to enable automatic monitor switching, False to disable.
+            enable: True to enable automatic monitor switching, False to disable.
         """
         self._automatic_monitor = enable
 
@@ -39,13 +39,13 @@ class daq970a_instrument(scpi_instrument, delegator):
         """Return read delegated channel list result.
 
         Args:
-        channel_list: Channel list.
+            channel_list: Channel list.
 
         Returns:
-        Result value.
+            Result value.
 
         Raises:
-        Exception: On error condition.
+            Exception: On error condition.
         """
         results = results_ord_dict()
         # special case for reading the moniotor
@@ -128,10 +128,10 @@ class daq970a_instrument(scpi_instrument, delegator):
         """Return read raw result.
 
         Args:
-        internal_address: Internal address.
+            internal_address: Internal address.
 
         Returns:
-        Result value.
+            Result value.
         """
         assert internal_address in self.resolve_delegator().scan_results
         return self.resolve_delegator().scan_results[internal_address]
@@ -140,11 +140,11 @@ class daq970a_instrument(scpi_instrument, delegator):
         """Return read apply function result.
 
         Args:
-        function: Function.
-        internal_address: Internal address.
+            function: Function.
+            internal_address: Internal address.
 
         Returns:
-        Result value.
+            Result value.
         """
         return function(self.read_raw(internal_address))
 
@@ -161,7 +161,7 @@ class daq970a_instrument(scpi_instrument, delegator):
         """View named channel measurement on the front panel whenever scan is idle.
 
         Args:
-        monitor_channel_name: Name of the channel to display on the front panel.
+            monitor_channel_name: Name of the channel to display on the front panel.
         """
         channel = self.get_channel(monitor_channel_name)
         channel_number = channel.get_attribute('internal_address')
@@ -176,10 +176,10 @@ class daq970a_instrument(scpi_instrument, delegator):
         """Return data from last monitor reading.
 
         Args:
-        channel_name: Optional name of channel to set as monitor before reading.
+            channel_name: Optional name of channel to set as monitor before reading.
 
         Returns:
-        The float value from the last monitor reading.
+            The float value from the last monitor reading.
         """
         if channel_name is not None:
             self.set_monitor(channel_name)
@@ -197,8 +197,8 @@ class agilent_a970a_chassis(daq970a_instrument):
         """Agilent a970a collection object.
 
         Args:
-        interface_visa: VISA interface string for the instrument.
-        automatic_monitor: Enable automatic monitor channel switching.
+            interface_visa: VISA interface string for the instrument.
+            automatic_monitor: Enable automatic monitor channel switching.
         """
         self._base_name = 'daq970a_chasis'
         daq970a_instrument.__init__(self,
@@ -210,10 +210,10 @@ class agilent_a970a_chassis(daq970a_instrument):
         """Only appropriate to add instantiated daq970a plugin instrument objects to this class (20ch, 40ch, dacs, dig-in, dig-out, etc).
 
         Args:
-        new_instrument: A daq970a_instrument instance to add to the chassis.
+            new_instrument: A daq970a_instrument instance to add to the chassis.
 
         Raises:
-        Exception: If new_instrument is not a daq970a_instrument instance.
+            Exception: If new_instrument is not a daq970a_instrument instance.
         """
         if not isinstance(new_instrument, daq970a_instrument):
             raise Exception(
@@ -229,14 +229,14 @@ class agilent_a970a_20ch_40ch(daq970a_instrument):
     by the appropriate subclasses.
     """
     def __init__(self, interface_visa, bay, automatic_monitor=True):
-        """"interface_visa".
+        """Initialize instrument.
 
         bay is 1-3.  1 is top slot, 3 is bottom slot.
 
         Args:
-        interface_visa: VISA interface string for the instrument.
-        bay: Plugin bay number (1-3). 1 is top slot, 3 is bottom slot.
-        automatic_monitor: Enable automatic monitor channel switching.
+            interface_visa: VISA interface string for the instrument.
+            bay: Plugin bay number (1-3). 1 is top slot, 3 is bottom slot.
+            automatic_monitor: Enable automatic monitor channel switching.
         """
         self._base_name = 'daq970a_mux'
         self.bay = bay
@@ -264,11 +264,11 @@ class agilent_a970a_20ch_40ch(daq970a_instrument):
         channel_num is 1-40 for the 40Ch mux.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_num: Physical channel number on the mux.
+            channel_name: Name for the new channel.
+            channel_num: Physical channel number on the mux.
 
         Returns:
-        The newly created channel object.
+            The newly created channel object.
         """
         internal_address = self.bay * 100 + channel_num
         new_channel = channel(
@@ -287,17 +287,17 @@ class agilent_a970a_20ch_40ch(daq970a_instrument):
         """Shortcut method to add voltage channel and configure in one step.
 
         Args:
-        channel_name: Name for the new voltage channel.
-        channel_num: Physical channel number on the mux.
-        NPLC: Number of power line cycles for integration.
-        range: Measurement range or "AUTO".
-        high_z: True for >10G ohm input impedance, False for 10M ohm.
-        delay: Delay in seconds between relay close and measurement start.
-        disable_autozero: True to disable autozero, False to enable.
-        Rsource: Source resistance in ohms for automatic delay calculation.
+            channel_name: Name for the new voltage channel.
+            channel_num: Physical channel number on the mux.
+            NPLC: Number of power line cycles for integration.
+            range: Measurement range or "AUTO".
+            high_z: True for >10G ohm input impedance, False for 10M ohm.
+            delay: Delay in seconds between relay close and measurement start.
+            disable_autozero: True to disable autozero, False to enable.
+            Rsource: Source resistance in ohms for automatic delay calculation.
 
         Returns:
-        The configured voltage channel object.
+            The configured voltage channel object.
         """
         # TODO: add_extended_channels argument to add nplc, delay, etc all at
         # once???
@@ -336,14 +336,14 @@ class agilent_a970a_20ch_40ch(daq970a_instrument):
         """Shortcut method to add thermistor measurement channel and configure in one step.
 
         Args:
-        channel_name: Name for the new thermocouple channel.
-        channel_num: Physical channel number on the mux.
-        tcouple_type: Thermocouple type (J, K, or T).
-        NPLC: Number of power line cycles for integration.
-        disable_autozero: True to disable autozero, False to enable.
+            channel_name: Name for the new thermocouple channel.
+            channel_num: Physical channel number on the mux.
+            tcouple_type: Thermocouple type (J, K, or T).
+            NPLC: Number of power line cycles for integration.
+            disable_autozero: True to disable autozero, False to enable.
 
         Returns:
-        The configured thermocouple channel object.
+            The configured thermocouple channel object.
         """
         new_channel = self.add_channel(channel_name, channel_num)
         new_channel.set_attribute('a970a_type', 'thermocouple')
@@ -364,8 +364,8 @@ class agilent_a970a_20ch_40ch(daq970a_instrument):
         impedance always 10M if argument is false.
 
         Args:
-        channel: Channel object to configure impedance for.
-        high_z: True for >10G ohm input impedance, False for 10M ohm.
+            channel: Channel object to configure impedance for.
+            high_z: True for >10G ohm input impedance, False for 10M ohm.
         """
         internal_address = channel.get_attribute('internal_address')
         channel.set_attribute('input_impedance_hiz', high_z)
@@ -383,12 +383,12 @@ class agilent_a970a_20ch_40ch(daq970a_instrument):
         Optionally specify number of powerline cycles integration period and attenuator range.
 
         Args:
-        channel: Channel object to configure.
-        NPLC: Number of power line cycles for integration.
-        range: Measurement range or "AUTO".
-        high_z: True for >10G ohm input impedance, False for 10M ohm.
-        delay: Delay in seconds between relay close and measurement start.
-        disable_autozero: True to disable autozero, False to enable.
+            channel: Channel object to configure.
+            NPLC: Number of power line cycles for integration.
+            range: Measurement range or "AUTO".
+            high_z: True for >10G ohm input impedance, False for 10M ohm.
+            delay: Delay in seconds between relay close and measurement start.
+            disable_autozero: True to disable autozero, False to enable.
         """
         internal_address = channel.get_attribute('internal_address')
         self.get_interface().write(
@@ -409,8 +409,8 @@ class agilent_a970a_20ch_40ch(daq970a_instrument):
         """Delay specified number of seconds between closing relay and starting DMM measurement for channel.
 
         Args:
-        channel: Channel object to configure delay for.
-        delay: Delay time in seconds.
+            channel: Channel object to configure delay for.
+            delay: Delay time in seconds.
         """
         internal_address = channel.get_attribute('internal_address')
         channel.set_attribute('delay', delay)
@@ -431,8 +431,8 @@ class agilent_a970a_20ch_40ch(daq970a_instrument):
         and < 10 minutes, add 0.0002% range additional error + 5 μV.
 
         Args:
-        channel: Channel object to configure autozero for.
-        disable_autozero: True to disable autozero (ONCE mode), False to enable (ON mode).
+            channel: Channel object to configure autozero for.
+            disable_autozero: True to disable autozero (ONCE mode), False to enable (ON mode).
         """
         internal_address = channel.get_attribute('internal_address')
         self.get_interface().write(
@@ -443,10 +443,10 @@ class agilent_a970a_20ch_40ch(daq970a_instrument):
         """Perform y=mx+b scaling to channel inside instrument and change displayed units.
 
         Args:
-        channel: Channel object to configure scaling for.
-        gain: Multiplier (m) for scaling equation y=mx+b.
-        offset: Offset (b) for scaling equation y=mx+b.
-        unit: Display unit string (e.g. "V", "A").
+            channel: Channel object to configure scaling for.
+            gain: Multiplier (m) for scaling equation y=mx+b.
+            offset: Offset (b) for scaling equation y=mx+b.
+            unit: Display unit string (e.g. "V", "A").
         """
         internal_address = channel.get_attribute('internal_address')
         if gain is not None:
@@ -491,11 +491,11 @@ class agilent_a970a_20ch_40ch(daq970a_instrument):
         """Adds a secondary channel that can modify the nplc setting of an existing channel.
 
         Args:
-        channel_name: Name for the new NPLC control channel.
-        base_channel: The measurement channel whose NPLC to modify.
+            channel_name: Name for the new NPLC control channel.
+            base_channel: The measurement channel whose NPLC to modify.
 
         Returns:
-        The newly created NPLC control channel.
+            The newly created NPLC control channel.
         """
         new_channel = channel(
             channel_name,
@@ -514,11 +514,11 @@ class agilent_a970a_20ch_40ch(daq970a_instrument):
         """Adds a secondary channel that can modify the delay of an existing channel.
 
         Args:
-        channel_name: Name for the new delay control channel.
-        base_channel: The measurement channel whose delay to modify.
+            channel_name: Name for the new delay control channel.
+            base_channel: The measurement channel whose delay to modify.
 
         Returns:
-        The newly created delay control channel.
+            The newly created delay control channel.
         """
         new_channel = channel(
             channel_name,
@@ -542,11 +542,11 @@ class agilent_a970a_20ch_40ch(daq970a_instrument):
         Write channel to True for >10G mode (<~10V), False for 10Meg mode.
 
         Args:
-        channel_name: Name for the new impedance control channel.
-        base_channel: The measurement channel whose input impedance to modify.
+            channel_name: Name for the new impedance control channel.
+            base_channel: The measurement channel whose input impedance to modify.
 
         Returns:
-        The newly created impedance control channel.
+            The newly created impedance control channel.
         """
         new_channel = integer_channel(
             channel_name,
@@ -569,11 +569,11 @@ class agilent_a970a_20ch_40ch(daq970a_instrument):
         Write channel to True autozero every measurement (doubling measurement time), False for one-time autozero.
 
         Args:
-        channel_name: Name for the new autozero control channel.
-        base_channel: The measurement channel whose autozero mode to modify.
+            channel_name: Name for the new autozero control channel.
+            base_channel: The measurement channel whose autozero mode to modify.
 
         Returns:
-        The newly created autozero control channel.
+            The newly created autozero control channel.
         """
         new_channel = integer_channel(
             channel_name,
@@ -594,11 +594,11 @@ class agilent_a970a_20ch_40ch(daq970a_instrument):
         """Add a channel that reads back the current voltage range setting.
 
         Args:
-        channel_name: Name for the new range readback channel.
-        base_channel: The measurement channel to read range from.
+            channel_name: Name for the new range readback channel.
+            base_channel: The measurement channel to read range from.
 
         Returns:
-        The newly created range readback channel.
+            The newly created range readback channel.
         """
         new_channel = channel(channel_name, read_function=lambda bc=base_channel: float(
             self.get_interface().ask(f"SENSe:VOLTage:DC:RANGe? (@{bc.get_attribute('internal_address')})")))
@@ -608,11 +608,11 @@ class agilent_a970a_20ch_40ch(daq970a_instrument):
         """Adds a secondary channel that can modify the gain (span multiplier) of an existing channel.
 
         Args:
-        channel_name: Name for the new gain control channel.
-        base_channel: The measurement channel whose gain to modify.
+            channel_name: Name for the new gain control channel.
+            base_channel: The measurement channel whose gain to modify.
 
         Returns:
-        The newly created gain control channel.
+            The newly created gain control channel.
         """
         new_channel = channel(
             channel_name,
@@ -636,11 +636,11 @@ class agilent_a970a_20ch_40ch(daq970a_instrument):
         """Adds a secondary channel that can modify the offset of an existing channel.
 
         Args:
-        channel_name: Name for the new offset control channel.
-        base_channel: The measurement channel whose offset to modify.
+            channel_name: Name for the new offset control channel.
+            base_channel: The measurement channel whose offset to modify.
 
         Returns:
-        The newly created offset control channel.
+            The newly created offset control channel.
         """
         new_channel = channel(
             channel_name,
@@ -664,11 +664,11 @@ class agilent_a970a_20ch_40ch(daq970a_instrument):
         """Adds a secondary channel that can modify the displayed unit (V/A/etc) of an existing channel.
 
         Args:
-        channel_name: Name for the new unit control channel.
-        base_channel: The measurement channel whose display unit to modify.
+            channel_name: Name for the new unit control channel.
+            base_channel: The measurement channel whose display unit to modify.
 
         Returns:
-        The newly created unit control channel.
+            The newly created unit control channel.
         """
         new_channel = channel(
             channel_name,
@@ -715,18 +715,18 @@ class agilent_a970a_20ch(agilent_a970a_20ch_40ch):
         """DC current measurement only allowed on 34901A channels 21 and 22.
 
         Args:
-        channel_name: Name for the new current channel.
-        channel_num: Physical channel number (must be 21 or 22).
-        NPLC: Number of power line cycles for integration.
-        range: Measurement range or "AUTO".
-        delay: Delay in seconds between relay close and measurement start.
-        disable_autozero: True to disable autozero, False to enable.
+            channel_name: Name for the new current channel.
+            channel_num: Physical channel number (must be 21 or 22).
+            NPLC: Number of power line cycles for integration.
+            range: Measurement range or "AUTO".
+            delay: Delay in seconds between relay close and measurement start.
+            disable_autozero: True to disable autozero, False to enable.
 
         Returns:
-        The configured current measurement channel.
+            The configured current measurement channel.
 
         Raises:
-        Exception: If channel_num is not 21 or 22.
+            Exception: If channel_num is not 21 or 22.
         """
         if channel_num not in [21, 22]:
             raise Exception(
@@ -749,8 +749,8 @@ class agilent_a970a_20ch(agilent_a970a_20ch_40ch):
         """DC current measurement only allowed on 34901A channels 21 and 22.
 
         Args:
-        channel: Channel object to configure for DC current measurement.
-        range: Measurement range or "AUTO".
+            channel: Channel object to configure for DC current measurement.
+            range: Measurement range or "AUTO".
         """
         internal_address = channel.get_attribute('internal_address')
         channel.set_attribute('range', range)
@@ -761,11 +761,11 @@ class agilent_a970a_20ch(agilent_a970a_20ch_40ch):
         """Modify ammeter current range shunt.
 
         Args:
-        channel_name: Name for the new range control channel.
-        base_channel: The current measurement channel whose range to modify.
+            channel_name: Name for the new range control channel.
+            base_channel: The current measurement channel whose range to modify.
 
         Returns:
-        The newly created range control channel.
+            The newly created range control channel.
         """
         assert base_channel.get_attribute(
             'number') == 21 or base_channel.get_attribute('number') == 22
@@ -786,7 +786,7 @@ class agilent_a970a_20ch(agilent_a970a_20ch_40ch):
         """Configure a channel to measure frequency.
 
         Args:
-        channel_name: Name of the channel to configure for frequency measurement.
+            channel_name: Name of the channel to configure for frequency measurement.
         """
         print('config_freq expect this to change and become an add_channel')
         internal_address = self._get_internal_address_by_name(channel_name)
@@ -797,7 +797,7 @@ class agilent_a970a_20ch(agilent_a970a_20ch_40ch):
         """DC resistance measurement.
 
         Args:
-        channel_name: Name of the channel to configure for resistance measurement.
+            channel_name: Name of the channel to configure for resistance measurement.
         """
         print('config_res expect this to change and become an add_channel')
         ch_list = f"(@{self._get_internal_address_by_name(channel_name)})"
@@ -810,21 +810,21 @@ class agilent_a970a_20ch(agilent_a970a_20ch_40ch):
         user-supplied sense resistor.  Specify either gain or its reciprocal resistance.
 
         Args:
-        channel_name: Name for the new current sense channel.
-        channel_num: Physical channel number on the mux.
-        gain: Scaling gain factor (reciprocal of resistance).
-        NPLC: Number of power line cycles for integration.
-        range: Measurement range or "AUTO".
-        resistance: Sense resistor value in ohms (alternative to gain).
-        delay: Delay in seconds between relay close and measurement start.
-        disable_autozero: True to disable autozero, False to enable.
-        Rsource: Source resistance in ohms for automatic delay calculation.
+            channel_name: Name for the new current sense channel.
+            channel_num: Physical channel number on the mux.
+            gain: Scaling gain factor (reciprocal of resistance).
+            NPLC: Number of power line cycles for integration.
+            range: Measurement range or "AUTO".
+            resistance: Sense resistor value in ohms (alternative to gain).
+            delay: Delay in seconds between relay close and measurement start.
+            disable_autozero: True to disable autozero, False to enable.
+            Rsource: Source resistance in ohms for automatic delay calculation.
 
         Returns:
-        The configured current sense channel.
+            The configured current sense channel.
 
         Raises:
-        Exception: If both resistance and gain are specified.
+            Exception: If both resistance and gain are specified.
         """
         if Rsource is None:
             Rsource = resistance
@@ -887,8 +887,8 @@ class agilent_a970a_dacs(daq970a_instrument):
         """Bay is numbered (1,2,3).  1 is the upper bay.  3 is the lower bay.
 
         Args:
-        interface_visa: VISA interface string for the instrument.
-        bay: Plugin bay number (1-3). 1 is upper, 3 is lower.
+            interface_visa: VISA interface string for the instrument.
+            bay: Plugin bay number (1-3). 1 is upper, 3 is lower.
         """
         self._base_name = 'agilent_a970a_dacs'
         self.bay = bay
@@ -901,11 +901,11 @@ class agilent_a970a_dacs(daq970a_instrument):
         """Add named DAC channel to instrument.  num is 1-2, mapping to physical channel 4-5.
 
         Args:
-        channel_name: Name for the new DAC channel.
-        channel_num: DAC number (1 or 2), mapping to physical channel 4-5.
+            channel_name: Name for the new DAC channel.
+            channel_num: DAC number (1 or 2), mapping to physical channel 4-5.
 
         Returns:
-        The newly created DAC channel object.
+            The newly created DAC channel object.
         """
         if ((channel_num != 1) & (channel_num != 2)):
             print(("ERROR invalid dac " + self.get_name() + ", " + channel_num))
@@ -927,8 +927,8 @@ class agilent_a970a_dacs(daq970a_instrument):
         """Set named DAC to voltage.  Range is +/-12V with 16bit (366uV) resolution.
 
         Args:
-        internal_address: Internal address of the DAC channel.
-        voltage: Voltage to set in the range +/-12V.
+            internal_address: Internal address of the DAC channel.
+            voltage: Voltage to set in the range +/-12V.
         """
         txt = "SOURCE:VOLT " + str(voltage) + \
             ", (@" + str(internal_address) + ")"
@@ -951,8 +951,8 @@ class agilent_a970a_actuator(daq970a_instrument):
         bay is 970 plugin bay 1-3.
 
         Args:
-        interface_visa: VISA interface string for the instrument.
-        bay: Plugin bay number (1-3).
+            interface_visa: VISA interface string for the instrument.
+            bay: Plugin bay number (1-3).
         """
         self._base_name = 'agilent_a970a_actuator'
         self.bay = bay
@@ -967,11 +967,11 @@ class agilent_a970a_actuator(daq970a_instrument):
         """Channel_num is 1-20.
 
         Args:
-        channel_name: Name for the new relay channel.
-        channel_num: Physical channel number (1-20).
+            channel_name: Name for the new relay channel.
+            channel_num: Physical channel number (1-20).
 
         Returns:
-        The newly created relay channel object.
+            The newly created relay channel object.
         """
         internal_address = channel_num + self.bay * 100
         new_channel = channel(
@@ -996,8 +996,8 @@ class agilent_a970a_actuator(daq970a_instrument):
         """Boolean True closes relay channel_name, boolean False opens relay channel_name.
 
         Args:
-        internal_address: Internal address of the relay channel.
-        state: True to close relay, False to open relay.
+            internal_address: Internal address of the relay channel.
+            state: True to close relay, False to open relay.
         """
         if state:
             self._close(internal_address)
@@ -1024,9 +1024,9 @@ class agilent_a970a_dig_out8(daq970a_instrument):
         bay is 34970 plugin bay 1-3.  ch is digital bank 1-2.
 
         Args:
-        interface_visa: VISA interface string for the instrument.
-        bay: Plugin bay number (1-3).
-        ch: Digital bank number (1-2).
+            interface_visa: VISA interface string for the instrument.
+            bay: Plugin bay number (1-3).
+            ch: Digital bank number (1-2).
         """
         self._base_name = 'agilent_3497xa_dig_out8'
         self.bay = bay
@@ -1047,15 +1047,15 @@ class agilent_a970a_dig_out8(daq970a_instrument):
         ie to create a 3 bit digital channel on bits 1,2,3 add_channel("channel_name",1,3).
 
         Args:
-        channel_name: Name for the new digital output channel.
-        start: Starting bit position within the 8-bit word.
-        size: Number of bits for this channel.
+            channel_name: Name for the new digital output channel.
+            start: Starting bit position within the 8-bit word.
+            size: Number of bits for this channel.
 
         Returns:
-        The newly created digital output channel.
+            The newly created digital output channel.
 
         Raises:
-        Exception: If bits overlap with previously defined channels or exceed 8 bits.
+            Exception: If bits overlap with previously defined channels or exceed 8 bits.
         """
         mask = pow(2, size) - 1 << start
         if mask & self._defined_bit_mask:
@@ -1086,9 +1086,9 @@ class agilent_a970a_dig_out8(daq970a_instrument):
         provided to add_channel().  The remainder of the digital word not included in the channel remains unchanged.
 
         Args:
-        start: Starting bit position within the 8-bit word.
-        size: Number of bits for this channel.
-        value: Integer value to write to the channel.
+            start: Starting bit position within the 8-bit word.
+            size: Number of bits for this channel.
+            value: Integer value to write to the channel.
         """
         # construct mask
         mask = pow(2, size) - 1 << start
@@ -1114,9 +1114,9 @@ class agilent_a970a_dig_in8(daq970a_instrument):
         bay is 34970 plugin bay 1-3.  ch is digital bank 1-2.
 
         Args:
-        interface_visa: VISA interface string for the instrument.
-        bay: Plugin bay number (1-3).
-        ch: Digital bank number (1-2).
+            interface_visa: VISA interface string for the instrument.
+            bay: Plugin bay number (1-3).
+            ch: Digital bank number (1-2).
         """
         self._base_name = 'agilent_3497xa_dig_in8'
         self.bay = bay
@@ -1135,15 +1135,15 @@ class agilent_a970a_dig_in8(daq970a_instrument):
         ie to create a 3 bit digital channel on bits 1,2,3 add_channel("channel_name",1,3).
 
         Args:
-        channel_name: Name for the new digital input channel.
-        start: Starting bit position within the 8-bit word.
-        size: Number of bits for this channel.
+            channel_name: Name for the new digital input channel.
+            start: Starting bit position within the 8-bit word.
+            size: Number of bits for this channel.
 
         Returns:
-        The newly created digital input channel.
+            The newly created digital input channel.
 
         Raises:
-        Exception: If start + size exceeds 8 bits.
+            Exception: If start + size exceeds 8 bits.
         """
         if (start + size) > 8:
             raise Exception(f"{self.get_name()}: only 8 bits allowed")
@@ -1152,10 +1152,10 @@ class agilent_a970a_dig_in8(daq970a_instrument):
             """Return conversion function result.
 
             Args:
-            data: Data to write.
+                data: Data to write.
 
             Returns:
-            Result value.
+                Result value.
             """
             return self._read_bits(start, size, data)
 
@@ -1163,7 +1163,7 @@ class agilent_a970a_dig_in8(daq970a_instrument):
             """Return read function result.
 
             Returns:
-            Result value.
+                Result value.
             """
             return self.read_apply_function(
                 self.internal_address, conversion_function)
@@ -1183,12 +1183,12 @@ class agilent_a970a_dig_in8(daq970a_instrument):
         the actual location of the channel within the physical byte.
 
         Args:
-        start: Starting bit position within the 8-bit word.
-        size: Number of bits for this channel.
-        data: Raw data string from the instrument.
+            start: Starting bit position within the 8-bit word.
+            size: Number of bits for this channel.
+            data: Raw data string from the instrument.
 
         Returns:
-        The extracted integer value for the channel bits.
+            The extracted integer value for the channel bits.
         """
         mask = pow(2, size) - 1 << start
         # data string from instrument is f.p. (ex '+2.55E+02')

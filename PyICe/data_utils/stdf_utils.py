@@ -246,7 +246,6 @@ class stdf_reader():
         Returns:
             Result value.
         """
-
         passing_parts = []
         for part in self.parts:
             if self.parts[part]["PASSING"]:
@@ -425,6 +424,7 @@ def to_eagle_testnumber(test_number):
 
 def from_eagle_testnumber(test_number, subtest_number):
     """Returns an integer comprised of the arguments test_number time 100,000 plus the argument subtest_number to get back to the natively stored value of the U*4, 32 bit number, in the stdf file.
+
     Args:
         subtest_number: Subtest number.
         test_number: Test number.

@@ -17,10 +17,10 @@ class spectrum_analyzer():
         A scale factor of 1/√2 was added because spectrum analyzers always reports in RMS but an FFT returns sine amplitude "A" as in A•sin(ωt).
 
         Args:
-        signal: Signal.
+            signal: Signal.
 
         Returns:
-        Result value.
+            Result value.
         """
         self.times, self.values = zip(*signal)
         self.npoints = len(self.values)
@@ -41,7 +41,7 @@ class spectrum_analyzer():
         This should also be equal to 1/(Tmax-Tmin) or the reciprocal of the time series duration.
 
         Returns:
-        Result value.
+            Result value.
         """
         return self.xf[1] - self.xf[0]
 
@@ -51,7 +51,7 @@ class spectrum_analyzer():
         This should be the reciprocal of the Resolution Bandwidth.
 
         Returns:
-        Result value.
+            Result value.
         """
         return self.times[-1] - self.times[0]
 
@@ -61,6 +61,6 @@ class spectrum_analyzer():
         The number of frequency points in the computed outgoing spectrum should be the same.
 
         Returns:
-        Result value.
+            Result value.
         """
         return self.npoints

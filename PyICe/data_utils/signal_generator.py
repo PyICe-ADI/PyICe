@@ -32,10 +32,10 @@ class signal_generator():
         """Generates a pulsatile wafeform of arbitrary duty cycle, high and low amplitude values.
 
         Args:
-        duty_cycle: Duty cycle.
+            duty_cycle: Duty cycle.
 
         Returns:
-        Result value.
+            Result value.
         """
         times = []
         values = []
@@ -61,7 +61,7 @@ class signal_generator():
         Phase is currently direspected.
 
         Returns:
-        Result value.
+            Result value.
         """
         times = []
         values = []
@@ -88,7 +88,7 @@ class signal_generator():
 
 
 class lfsr_period_generator():
-    """ ┌────┬────┬────┬────┬────┬────┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┐.
+    """┌────┬────┬────┬────┬────┬────┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┐.
 
     │ 15 │ 14 │ 13 │ 12 │ 11 │ 10 │ 9 │ 8 │ 7 │ 6 │ 5 │ 4 │ 3 │ 2 │ 1 │ 0 │<──┐
     └──┬─┴──┬─┴────┴──┬─┴────┴────┴───┴───┴───┴───┴───┴───┴─┬─┴───┴───┴───┘   │
@@ -114,7 +114,7 @@ class lfsr_period_generator():
         """Return the next period.
 
         Returns:
-        Result value.
+            Result value.
         """
         bit = self.lfsr >> self.poly[0] & 1 ^ \
             self.lfsr >> self.poly[1] & 1 ^ \
@@ -133,6 +133,6 @@ class lfsr_period_generator():
         The rightmost term starts from 0 not 1 whereas most math references start from index 1.
 
         Args:
-        ploynomial: Ploynomial.
+            ploynomial: Ploynomial.
         """
         self.poly = ploynomial

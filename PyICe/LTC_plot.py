@@ -1,4 +1,4 @@
-"""Linear Technology Compliant Plot Generator.
+r"""Linear Technology Compliant Plot Generator.
 
 This program can be used to generate plots for general lab use or to
 generate plots that can be imported directly into a datasheet in

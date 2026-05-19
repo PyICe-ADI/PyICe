@@ -37,7 +37,7 @@ class Master_Test_Template():
         """Mandatory method to operate the bench and collect the data."""
 
     def plot(self):
-        """ Optional method to retrieve the data collected and create plots. Can be run over and over once a collect has run. User must return a list or tuple of plots and/or pages, or an individual LTC_plot.Page, or a single LTC_plot.plot.
+        """Optional method to retrieve the data collected and create plots. Can be run over and over once a collect has run. User must return a list or tuple of plots and/or pages, or an individual LTC_plot.Page, or a single LTC_plot.plot.
 
         Returns:
             Result value.
@@ -196,17 +196,12 @@ class Master_Test_Template():
             )
 
     def evaluate_rawdata(self, name, data, conditions=None):
-        """This will compare submitted data to limits for the named test.
+        """Compare submitted data to limits for the named test.
 
         Args:
-            name - string. The name of the test whose limits will be used.
-            data - Boolean or iterable object. Each value will be compared to the limits (or boolean value) of the name argument.
-            conditions - None or dictionary. A dictionary with channel names as keys and channel values as values. Used to report under what circumstances the data was taken. Default is None.
-
-        Args:
-            conditions: Conditions.
-            data: Data to write.
-            name: Name identifier.
+            name: The name of the test whose limits will be used.
+            data: Boolean or iterable object to compare against limits.
+            conditions: Dictionary of channel names to values for reporting context, or None.
         """
         if name not in self._test_results.test_limits.keys():
             self.declare_test(name, **self.get_test_limits(name))
@@ -214,15 +209,11 @@ class Master_Test_Template():
             name=name, iter_data=data, conditions=conditions)
 
     def evaluate_query(self, name, query):
-        """This will compare submitted data to limits for the named test.
+        """Compare submitted query results to limits for the named test.
 
         Args:
-            name - string. The name of the test whose limits will be used.
-            database - SQLite database object. The first column will be compared to the limits of the named spec and the rest will be used for grouping.
-
-        Args:
-            name: Name identifier.
-            query: Query.
+            name: The name of the test whose limits will be used.
+            query: SQL query string to execute against the database.
         """
         if name not in self._test_results.test_limits.keys():
             self.declare_test(name, **self.get_test_limits(name))
@@ -231,13 +222,10 @@ class Master_Test_Template():
             name=name, database=self.get_database())
 
     def evaluate_db(self, name):
-        """This method evaluates a pre-massaged SQLite database, self.get_database(), from the user. It returns a bit of flexibility on the sequel query to the user.
+        """Evaluate a pre-massaged SQLite database against limits for the named test.
 
         Args:
-            name - string. The name of the test whose limits will be used.
-
-        Args:
-            name: Name identifier.
+            name: The name of the test whose limits will be used.
         """
         if name not in self._test_results.test_limits.keys():
             self.declare_test(name, **self.get_test_limits(name))
@@ -245,18 +233,13 @@ class Master_Test_Template():
             name=name, database=self.get_database())
 
     def evaluate(self, name, values, conditions=None, where_clause=''):
-        """This compares submitted data from a SQLite database to a named test in a more outlined fashion.
+        """Compare data from a SQLite database to a named test with more control over the query.
 
         Args:
-            name - string. The name of the test with limits to be used.
-            value_column - string. The name of the channel that will be evaluated.
-            grouping_columns - list. The values of the value_column will be grouped and evaluated by the permutations of the channels that are named in this list of strings.
-
-        Args:
-            conditions: Conditions.
-            name: Name identifier.
-            values: Values.
-            where_clause: Where clause.
+            name: The name of the test whose limits will be used.
+            values: Column name(s) to select and evaluate.
+            conditions: List of additional column names for grouping, or None.
+            where_clause: Optional SQL WHERE clause to filter rows.
         """
         if conditions is None:
             conditions = []
@@ -281,18 +264,13 @@ class Master_Test_Template():
 
     def evaluate_test_conditions(
             self, name, expected_conditions='', report_conditions=[], where_clause=''):
-        """This queries the test's database and checks that the string provided in expected_conditions returns only True values. If a False is returned, a FAIL result is added to the provided test's submitted data.
-
-            name - string. The name of the test that will fail if the expected conditions are not met.
-            expected_conditions - string. A string that will be added to the SELECT portion of a sqlite query. Should return boolean statements, e.g. vout2 == 3, imaina_force < 5, etc.
-            report_conditions - list of strings. Column names of the database whose values will be included in the FAIL result.
-            where_clause - string. Portion of a sqlite query that goes after WHERE, limiting what rows the database is considering the expected conditions in.
+        """Check that expected conditions return only True values in the test database.
 
         Args:
-            expected_conditions: Expected conditions.
-            name: Name identifier.
-            report_conditions: Report conditions.
-            where_clause: Where clause.
+            name: The name of the test that will fail if conditions are not met.
+            expected_conditions: SQL SELECT expression returning booleans (e.g. 'vout2 == 3').
+            report_conditions: Column names whose values will be included in FAIL results.
+            where_clause: Optional SQL WHERE clause to limit evaluated rows.
         """
         select_string = expected_conditions
         if report_conditions:
@@ -319,21 +297,14 @@ class Master_Test_Template():
 
     def correlate_data(self, name, reference_values=None,
                        test_values=None, spec=None, conditions=None):
-        """Compares test values to reference values and compare the output to the limits of the named test.
+        """Compare test values to reference values and evaluate against named test limits.
 
         Args:
-            name - string. The name of the test whose limits will be used.
-            reference_values - iterable. The base values to which test values will be compared.
-            test_values - iterable. The object values whose distance to the reference value will be calculated.
-            spec - string. Either '%' or '-'. Determines whether the comparison is made by percentage or by difference.
-            conditions - None or dictionary. A dictionary with channel names as keys and channel values as values. Used to report under what circumstances the data was taken. Default is None.
-
-        Args:
-            conditions: Conditions.
-            name: Name identifier.
-            reference_values: Reference values.
-            spec: Spec.
-            test_values: Test values.
+            name: The name of the test whose limits will be used.
+            reference_values: Base values to compare against.
+            test_values: Values whose distance to reference will be calculated.
+            spec: Either '%' for percentage or '-' for difference comparison.
+            conditions: Dictionary of channel names to values for reporting context, or None.
         """
         if reference_values is None:
             reference_values = []

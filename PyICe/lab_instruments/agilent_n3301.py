@@ -12,7 +12,7 @@ class agilent_n3301(scpi_instrument):
         """Constructor takes visa GPIB address or interface object (visa,rl1009, rs232) as parameter.  Ex: "GPIB0::3".
 
         Args:
-        interface_visa: VISA interface instance.
+            interface_visa: VISA interface instance.
         """
         self._base_name = 'agilent_n3301'
         # instrument.__init__(self,f'n3300: @ {interface_visa}')
@@ -34,9 +34,9 @@ class agilent_n3301(scpi_instrument):
         """Add current force writable channel. Optionally add current readback _isense channel.
 
         Args:
-        add_sense_channel: Add sense channel.
-        channel_name: Name for the new channel.
-        channel_num: Physical channel number.
+            add_sense_channel: Add sense channel.
+            channel_name: Name for the new channel.
+            channel_num: Physical channel number.
         """
         self.add_channel_current(channel_name, channel_num)
         if add_sense_channel:
@@ -46,8 +46,8 @@ class agilent_n3301(scpi_instrument):
         """Add a channel current.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_num: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_num: Physical channel number.
         """
         new_channel = channel(
             channel_name,
@@ -60,8 +60,8 @@ class agilent_n3301(scpi_instrument):
         """Add a channel isense.
 
         Args:
-        channel_name: Name for the new channel.
-        channel_num: Physical channel number.
+            channel_name: Name for the new channel.
+            channel_num: Physical channel number.
         """
         new_channel = channel(
             channel_name,

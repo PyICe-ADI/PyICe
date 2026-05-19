@@ -22,7 +22,7 @@ def dBV(voltageRMS):
 
 
 def dBm(voltageRMS):
-    """Convert RMS voltage to dBm (50 ohm reference).
+    """Convert RMS voltage to decibel-milliwatts (50 ohm reference).
 
     >>> float(round(dBm(1.0), 2))
     13.01

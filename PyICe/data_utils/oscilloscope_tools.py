@@ -56,12 +56,12 @@ class scope_data():
         """Perform raise error operation.
 
         Args:
-        e: E.
-        request: Request.
-        trace_name: Trace name.
+            e: E.
+            request: Request.
+            trace_name: Trace name.
 
         Raises:
-        Exception: On error condition.
+            Exception: On error condition.
         """
         raise Exception(
             f'\n\nPyICE Oscilloscope Tools:\nNo trace parameters available for "{trace_name}" {request} request.\nTry adding a {trace_name} trace first.\n\n') from e
@@ -70,11 +70,11 @@ class scope_data():
         """Perform raise sqlite exception operation.
 
         Args:
-        e: E.
-        query: Query.
+            e: E.
+            query: Query.
 
         Raises:
-        Exception: On error condition.
+            Exception: On error condition.
         """
         raise Exception(
             f'\n\nPyICE Oscilloscope Tools: A failure occurred when querying the database.\nTry pasting this line into a dbBrowser and see what it returns:\n\n{query}') from e
@@ -83,7 +83,7 @@ class scope_data():
         """Return time range result.
 
         Returns:
-        Result value.
+            Result value.
         """
         return (self.time_left, self.time_right)
 
@@ -91,10 +91,10 @@ class scope_data():
         """Return time label result.
 
         Args:
-        xlimits: Xlimits.
+            xlimits: Xlimits.
 
         Returns:
-        Result value.
+            Result value.
         """
         if xlimits is None:
             return f"{eng_string((self.time_right - self.time_left) / 10, fmt=':.3g', si=True)}s/DIV"
@@ -105,7 +105,7 @@ class scope_data():
         """Return all time refmarkers result.
 
         Returns:
-        Result value.
+            Result value.
         """
         return {'xlocation_open': -self.Xposition,
                 'xlocation_closed': 0}
@@ -114,12 +114,12 @@ class scope_data():
         """Return trace data result.
 
         Args:
-        graticule: Graticule.
-        scale_by: Scale by.
-        trace_name: Trace name.
+            graticule: Graticule.
+            scale_by: Scale by.
+            trace_name: Trace name.
 
         Returns:
-        Result value.
+            Result value.
         """
         self.trace_params[trace_name] = {
             "graticule": graticule, "scale_factor": scale_by}
@@ -148,10 +148,10 @@ class scope_data():
         """Return marker location result.
 
         Args:
-        trace_name: Trace name.
+            trace_name: Trace name.
 
         Returns:
-        Result value.
+            Result value.
         """
         try:
             graticule = self.trace_params[trace_name]["graticule"]
@@ -168,11 +168,11 @@ class scope_data():
         """Return trace locator result.
 
         Args:
-        trace_name: Trace name.
-        value: Value to set.
+            trace_name: Trace name.
+            value: Value to set.
 
         Returns:
-        Result value.
+            Result value.
         """
         try:
             scale_factor = self.trace_params[trace_name]["scale_factor"]
@@ -204,11 +204,11 @@ class scope_data():
         """Return trace label result.
 
         Args:
-        display_name: Display name.
-        trace_name: Trace name.
+            display_name: Display name.
+            trace_name: Trace name.
 
         Returns:
-        Result value.
+            Result value.
         """
         try:
             scale_factor = self.trace_params[trace_name]["scale_factor"]
@@ -230,10 +230,10 @@ class scope_data():
         """Return axis info result.
 
         Args:
-        xlimits: Xlimits.
+            xlimits: Xlimits.
 
         Returns:
-        Result value.
+            Result value.
         """
         return {'xaxis_label': self.time_label(xlimits=xlimits),
                 'xlims': self.time_range() if xlimits is None else xlimits,
@@ -243,10 +243,10 @@ class scope_data():
         """Return volts per division result.
 
         Args:
-        channel_name: Name for the new channel.
+            channel_name: Name for the new channel.
 
         Returns:
-        Result value.
+            Result value.
         """
         return self.row[f'{channel_name}_Yrange_readback'] / 8
 
@@ -256,9 +256,9 @@ def plot_waveform(y_data_column_names, db_tablename,
     """Perform plot waveform operation.
 
     Args:
-    db_filename: Db filename.
-    db_tablename: Db tablename.
-    y_data_column_names: Y data column names.
+        db_filename: Db filename.
+        db_tablename: Db tablename.
+        y_data_column_names: Y data column names.
     """
     from bokeh import colors
     from bokeh.io import curdoc

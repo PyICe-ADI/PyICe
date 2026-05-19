@@ -12,7 +12,7 @@ class keithley_7002(scpi_instrument):
         """Interface_visa.
 
         Args:
-        interface_visa: VISA interface instance.
+            interface_visa: VISA interface instance.
         """
         self._base_name = 'keithley_7002'
         scpi_instrument.__init__(self, self._base_name)
@@ -28,12 +28,12 @@ class keithley_7002(scpi_instrument):
         number valid range [1-40] for 7011S Quad 10 to 1 multiplexer card
 
         Args:
-        bay: Instrument bay number.
-        channel_name: Name for the new channel.
-        number: Channel or port number.
+            bay: Instrument bay number.
+            channel_name: Name for the new channel.
+            number: Channel or port number.
 
         Returns:
-        Result value.
+            Result value.
         """
         relay_channel = channel(
             channel_name,
@@ -47,8 +47,8 @@ class keithley_7002(scpi_instrument):
         """Close named channel relay.
 
         Args:
-        bay: Instrument bay number.
-        number: Channel or port number.
+            bay: Instrument bay number.
+            number: Channel or port number.
         """
         self.get_interface().write((f"CLOSE (@{bay}!{number})"))
 
@@ -56,8 +56,8 @@ class keithley_7002(scpi_instrument):
         """Open named channel relay.
 
         Args:
-        bay: Instrument bay number.
-        number: Channel or port number.
+            bay: Instrument bay number.
+            number: Channel or port number.
         """
         self.get_interface().write((f"OPEN (@{bay}!{number})"))
 
@@ -71,7 +71,7 @@ class keithley_7002(scpi_instrument):
         """Open all relays, set sync_channels to true to keep the channels synced (no need to do this if shutting down).
 
         Args:
-        sync_channels: Sync channels.
+            sync_channels: Sync channels.
         """
         if sync_channels:
             for relay_channel in self.get_all_channels_list():
