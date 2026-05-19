@@ -38,6 +38,7 @@ class LTspice_wavereader():
         file = open(self.file_name, "r")
         firstline = True
         self.data = {}
+        keys = []
         for line in file:
             if firstline:
                 keys = line.strip().split("\t")
