@@ -661,7 +661,7 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
                     self.get_interface().ask(':SENSe:SWEep:TIME?'))
                 self.get_interface().write(':TRIGger:SOURce BUS')
                 self.get_interface().write(':TRIGger:SINGle')
-                datetime_now_str = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                datetime_now_str = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
                 print(
                     f'{datetime_now_str} trigger time. Expected sweep time {expected_time}s.')
             else:

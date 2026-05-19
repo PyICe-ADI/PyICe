@@ -33,15 +33,15 @@ class delay_loop(object):
 
     def get_total_time(self):
         '''returns total number of seconds since first delay'''
-        return (datetime.datetime.now(datetime.UTC) -
+        return (datetime.datetime.now(datetime.timezone.utc) -
                 self.start_time).total_seconds()
 
     def begin(self, offset=0):
         '''make note of begin time for loop measurement. Use offset to adjust the begin time in case of overrun on last cycle.'''
         if self.begin_time is None:
-            self.start_time = datetime.datetime.now(datetime.UTC)
+            self.start_time = datetime.datetime.now(datetime.timezone.utc)
         self.begin_time = datetime.datetime.now(
-            datetime.UTC) + datetime.timedelta(seconds=offset)
+            datetime.timezone.utc) + datetime.timedelta(seconds=offset)
 
     def delay(self, seconds):
         '''delay extra time to make loop time constant
@@ -49,7 +49,7 @@ class delay_loop(object):
         if self.begin_time is None:
             raise Exception('Call begin() method before delay().')
         self.count += 1
-        elapsed_time = datetime.datetime.now(datetime.UTC) - self.begin_time
+        elapsed_time = datetime.datetime.now(datetime.timezone.utc) - self.begin_time
         self.delay_time = (
             datetime.timedelta(
                 seconds=seconds) -
@@ -67,7 +67,7 @@ class delay_loop(object):
             time.sleep(self.delay_time)
         self.loop_time = (
             datetime.datetime.now(
-                datetime.UTC) -
+                datetime.timezone.utc) -
             self.begin_time).total_seconds()
         if self.no_drift:
             # restart timer for next loop cycle, use offset to correct for over
@@ -83,7 +83,7 @@ class delay_loop(object):
         if self.begin_time is None:
             raise Exception('Call begin() method before time_remaining().')
         remaining_time = loop_time - \
-            (datetime.datetime.now(datetime.UTC) - self.begin_time).total_seconds()
+            (datetime.datetime.now(datetime.timezone.utc) - self.begin_time).total_seconds()
         if remaining_time <= 0:
             # restart timer for next loop cycle, use offset to correct for over
             # run.

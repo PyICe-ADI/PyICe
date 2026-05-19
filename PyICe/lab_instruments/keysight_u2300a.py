@@ -842,15 +842,15 @@ class u2300a_datalogger(u2300a_scope):
         print("TRIG'D!")
         try:
             # This is one block away from where we triggered.
-            start_time = datetime.datetime.utcnow()
+            start_time = datetime.datetime.now(datetime.timezone.utc)
             self.time_since = time.time()
             reset_clock = time.time()
             while True if record_time is None else (
-                    datetime.datetime.utcnow() - start_time).total_seconds() < record_time:
+                    datetime.datetime.now(datetime.timezone.utc) - start_time).total_seconds() < record_time:
                 data = self.read_all_channels()
                 data['datetime'] = (start_time + datetime.timedelta(seconds=data[idx_prime])).strftime(
                     '%Y-%m-%dT%H:%M:%S.%fZ')  # Repair datetime by means of DAQ_time
-                # data['datetime']=datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+                # data['datetime']=datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
                 if data is not None:
                     databank.append(data)
                 time_now = time.time()
@@ -877,7 +877,7 @@ class u2300a_datalogger(u2300a_scope):
                     data = self.read_all_channels()
                     data['datetime'] = (start_time + datetime.timedelta(seconds=data['DAQ_time'])).strftime(
                         '%Y-%m-%dT%H:%M:%S.%fZ')  # Repair datetime by means of DAQ_time
-                    # data['datetime']=datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+                    # data['datetime']=datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
                     databank.append(data)
             except u2300aBufferUnderflowError:
                 print(
@@ -886,10 +886,10 @@ class u2300a_datalogger(u2300a_scope):
                 # This is passing mutable data pass the boundary, but we
                 # promise not to mutate it until it does what it needs to do.
                 print(
-                    f"All data has been sent to logger thread. It took {(datetime.datetime.utcnow() - start_time).total_seconds()} seconds to log {record_time} seconds from the start. Thank you for your patience.")
+                    f"All data has been sent to logger thread. It took {(datetime.datetime.now(datetime.timezone.utc) - start_time).total_seconds()} seconds to log {record_time} seconds from the start. Thank you for your patience.")
             self.logger.stop()
             print(
-                f'Logger thread complete. It took {(datetime.datetime.utcnow() - start_time).total_seconds()} seconds from the start.')
+                f'Logger thread complete. It took {(datetime.datetime.now(datetime.timezone.utc) - start_time).total_seconds()} seconds from the start.')
             databank.clear()  # We expect the threads to be joined by now.
             if unhandled_exception_occurred:
                 raise e

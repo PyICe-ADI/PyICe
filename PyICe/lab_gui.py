@@ -495,7 +495,7 @@ class display_item(QtWidgets.QLabel, channel_wrapper):
                     raise e
             self._prev_raw_data = raw_data
             if self._data_changed:
-                self._history.append([datetime.datetime.utcnow(), raw_data, 1])
+                self._history.append([datetime.datetime.now(datetime.timezone.utc), raw_data, 1])
             else:
                 try:
                     # incremement value-unchanged read count
@@ -504,7 +504,7 @@ class display_item(QtWidgets.QLabel, channel_wrapper):
                     # if first channel read is None, _data_changed detection
                     # doesn't worker
                     self._history.append(
-                        [datetime.datetime.utcnow(), raw_data, 1])
+                        [datetime.datetime.now(datetime.timezone.utc), raw_data, 1])
             try:
                 if self._iir_setting == "Disabled":
                     self._current_raw_data = raw_data
@@ -702,7 +702,7 @@ class display_item(QtWidgets.QLabel, channel_wrapper):
         app.cb.setText(str(self.get_formatted_data()))
 
     def print_history(self):
-        request_time = datetime.datetime.utcnow()
+        request_time = datetime.datetime.now(datetime.timezone.utc)
         if not len(self._history):
             debug_logging.info(("{} has no change history at "
                                 "{}").format(self.get_name(), request_time.strftime('%Y-%m-%dT%H:%M:%S.%fZ')))
@@ -2192,7 +2192,7 @@ class gui_logger(QtCore.QObject):
             self.SI_request_background_call.emit(self._logger.log)
             # self.emit(SIGNAL('request_background_call(PyQt_PyObject)'),self._logger.log)
             debug_logging.info(("Logging selected channel data to SQLite database at "
-                                "{}").format(datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')))
+                                "{}").format(datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%fZ')))
         else:
             raise Exception('Logger is not connected')
 
@@ -2547,7 +2547,7 @@ class background_worker(QtCore.QThread):
             self.log.write("\n\n###############################\n")
             self.log.write(
                 "# {} #\n".format(
-                    datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')))
+                    datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%fZ')))
             self.log.write("###############################\n\n")
         self.running = True
         self.run_loop_has_quit = False

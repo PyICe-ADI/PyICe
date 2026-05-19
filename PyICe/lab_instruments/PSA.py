@@ -1045,7 +1045,7 @@ mixing.'''
             # probably not right now that we have trigger source controls
             # coming....
             self.get_interface().write(':INITiate:IMMediate')
-            print(f'{datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")} trigger time. Expected sweep time {expected_time}s.')
+            print(f'{datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")} trigger time. Expected sweep time {expected_time}s.')
             if run_mode == 'Continuous':
                 return
             status = int(self.get_interface().ask(
