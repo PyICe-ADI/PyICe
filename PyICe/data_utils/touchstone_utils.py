@@ -1334,7 +1334,7 @@ def _parallel(Ra, Rb):
             print(m11_denominator)
             z11 = m11_denominator / m11_numerator
         else:
-            print("Invalid model_type, please use 0 or 1.")
+            raise ValueError("Invalid model_type, please use 0 or 1.")
         z_num, z_den = sympy.fraction(z11)
         z_num_poly = sympy.Poly(z_num)
         z_den_poly = sympy.Poly(z_den)
@@ -1515,13 +1515,13 @@ def _parallel(Ra, Rb):
         """
         self.network.plot_s_smith()
 
-    def get_resistor_skin_effect_model():
+    def get_resistor_skin_effect_model(self):
         """Returns the approximate DC resistance and the scaling coefficient for the sqrt(2*pi*freq) skin effect term.
 
         Returns:
             Result value.
         """
-        return dc_res, ac_res_coefficient  # noqa: F821
+        raise NotImplementedError
 
     def get_series_LR(self):
         """Return the series LR.
