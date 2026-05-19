@@ -11,6 +11,12 @@ def float_prior(val):
     True
     >>> float_prior(0.0) < 0.0
     True
+
+    Args:
+        val: Val.
+
+    Returns:
+        Result value.
     '''
     # algorithm copied from Boost:
     # http://www.boost.org/doc/libs/1_45_0/boost/math/special_functions/next.hpp

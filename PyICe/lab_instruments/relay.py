@@ -48,7 +48,15 @@ class ftdi_relay(relay):
         # TODO : add exit cleanup method
 
     def add_channel(self, channel_name, channel_number):
-        '''Adds a channel for a relay on the board'''
+        '''Adds a channel for a relay on the board
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        '''
         assert self.rb.RELAY_MIN <= channel_number and channel_number <= self.rb.RELAY_MAX, f'Channel number must correspond to a relay between {self.rb.RELAY_MIN} and {self.rb.RELAY_MAX}.'
         new_channel = integer_channel(
             channel_name,
@@ -386,6 +394,9 @@ class FT245R:
         """
         Returns the list of FT245R devices.
         @return: device list
+
+        Returns:
+            Result value.
         """
         ret = []
         for dev in usb.core.find(find_all=True,
@@ -400,6 +411,9 @@ class FT245R:
     def disconnect(self):
         """
         Disables output to the device. Attaches the kernel driver if available.
+
+        Raises:
+            RuntimeError: On error condition.
                 """
         self.is_connected = False
         if platform.system() != 'Windows':
@@ -423,6 +437,12 @@ class FT245R:
         Enables output to the device. Detaches the kernel driver if attached.
 
         @param dev: device
+
+        Args:
+            dev: Dev.
+
+        Raises:
+            RuntimeError: On error condition.
         """
         # Save the device handler so user does not have to keep passing it
         self.dev = dev
@@ -453,6 +473,13 @@ class FT245R:
         Gets a byte which represents the status of all 8 relays.
 
         @return: status
+
+        Returns:
+            Result value.
+
+        Raises:
+            IOError: On error condition.
+            RuntimeError: On error condition.
         """
 
         # Check for errors
@@ -472,6 +499,16 @@ class FT245R:
         Returns 1 if relay relay_num is on, 0 if off.
 
         @return: status
+
+        Args:
+            relay_num: Relay num.
+
+        Returns:
+            Result value.
+
+        Raises:
+            IOError: On error condition.
+            ValueError: On error condition.
         """
 
         # Check for errors
@@ -488,6 +525,10 @@ class FT245R:
     def setstate(self):
         """
         Sets all relays to the state in FT245R.relay_state.
+
+        Raises:
+            IOError: On error condition.
+            RuntimeError: On error condition.
         """
 
         # Check for errors
@@ -510,6 +551,14 @@ class FT245R:
         Switches relay relay_num off.
 
         @param relay_num: which relay
+
+        Args:
+            relay_num: Relay num.
+
+        Raises:
+            IOError: On error condition.
+            RuntimeError: On error condition.
+            ValueError: On error condition.
         """
 
         # Check for errors
@@ -537,6 +586,14 @@ class FT245R:
         Switches relay relay_num on.
 
         @param relay_num: which relay
+
+        Args:
+            relay_num: Relay num.
+
+        Raises:
+            IOError: On error condition.
+            RuntimeError: On error condition.
+            ValueError: On error condition.
         """
 
         # Check for errors

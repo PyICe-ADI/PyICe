@@ -117,7 +117,11 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
     ''''''
 
     def __init__(self, interface_visa):
-        '''interface_visa'''
+        '''Initialize Keysight E5061B ENA network analyzer.
+
+        Args:
+            interface_visa: VISA interface address string.
+        '''
         self._base_name = 'Keysight E5061B ENA network analyzer'
         super(keysight_e5061b_base, self).__init__(
             f"Keysight E5061B @ {interface_visa}")
@@ -160,7 +164,15 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
         # TODO What about setting channel count and layout???
 
     def add_channels(self, channel_name, channel_number=1):
-        '''shortcut method to add chx/trace1 channels'''
+        '''Shortcut method to add chx/trace1 channels.
+
+        Args:
+            channel_name: Base name for the channels.
+            channel_number: Instrument channel number.
+
+        Returns:
+            List of created channel objects.
+        '''
         channels = []
         channels.extend(
             self.add_xchannels(
@@ -175,7 +187,14 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
     def add_channel_display_split(self, channel_name, channel_number):
         f'''Configures the screen splitting of the display.
 {screen_configs}
-'''
+
+        Args:
+            channel_name: Name for the display split channel.
+            channel_number: Instrument channel number.
+
+        Returns:
+            The newly created display split channel.
+        '''
         new_channel = channel(
             channel_name, write_function=lambda layout: self.get_interface().write(
                 f':DISPlay:WINDow{channel_number}:SPLit {layout}'))
@@ -201,7 +220,15 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
         return self._add_channel(new_channel)
 
     def add_xchannels(self, channel_name, channel_number=1):
-        '''shortcut method to add chx x-axis channels'''
+        '''Shortcut method to add chx x-axis channels.
+
+        Args:
+            channel_name: Base name for the x-axis channels.
+            channel_number: Instrument channel number.
+
+        Returns:
+            List of created x-axis channel objects.
+        '''
         channels = []
         channels.append(
             self.add_channel_xdata(
@@ -235,7 +262,14 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
         return channels
 
     def add_channel_error(self, channel_name):
-        ''''''
+        '''Error readback channel.
+
+        Args:
+            channel_name: Name for the error channel.
+
+        Returns:
+            The newly created error channel.
+        '''
         new_channel = channel(
             channel_name,
             read_function=lambda: '\n'.join(
@@ -271,7 +305,16 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
 
     def add_channel_ydata(self, channel_name,
                           trace_number=1, channel_number=1):
-        '''trace data vector'''
+        '''Trace data vector.
+
+        Args:
+            channel_name: Name for the y-data channel.
+            trace_number: Trace number on the instrument.
+            channel_number: Instrument channel number.
+
+        Returns:
+            The newly created y-data channel.
+        '''
         new_channel = channel(
             channel_name,
             read_function=lambda trace_number=trace_number,
@@ -286,7 +329,15 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
         return self._add_channel(new_channel)
 
     def add_channel_xdata(self, channel_name, channel_number=1):
-        '''frequency sweep data vector'''
+        '''Frequency sweep data vector.
+
+        Args:
+            channel_name: Name for the x-data channel.
+            channel_number: Instrument channel number.
+
+        Returns:
+            The newly created x-data channel.
+        '''
         new_channel = channel(
             channel_name,
             read_function=lambda channel_number=channel_number: self._read_x_data(channel_number))
@@ -297,7 +348,15 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
         return self._add_channel(new_channel)
 
     def add_channel_start_freq(self, channel_name, channel_number=1):
-        '''sweep start (low)frequency control'''
+        '''Sweep start (low) frequency control.
+
+        Args:
+            channel_name: Name for the start frequency channel.
+            channel_number: Instrument channel number.
+
+        Returns:
+            The newly created start frequency channel.
+        '''
         new_channel = channel(
             channel_name,
             write_function=lambda freq,
@@ -320,7 +379,15 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
         return self._add_channel(new_channel)
 
     def add_channel_stop_freq(self, channel_name, channel_number=1):
-        '''sweep stop (high) frequency control'''
+        '''Sweep stop (high) frequency control.
+
+        Args:
+            channel_name: Name for the stop frequency channel.
+            channel_number: Instrument channel number.
+
+        Returns:
+            The newly created stop frequency channel.
+        '''
         new_channel = channel(
             channel_name,
             write_function=lambda freq,
@@ -342,7 +409,15 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
         return self._add_channel(new_channel)
 
     def add_channel_points(self, channel_name, channel_number=1):
-        '''number of trace data points'''
+        '''Number of trace data points.
+
+        Args:
+            channel_name: Name for the points channel.
+            channel_number: Instrument channel number.
+
+        Returns:
+            The newly created points channel.
+        '''
         new_channel = channel(
             channel_name,
             write_function=lambda points,
@@ -360,7 +435,15 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
         return self._add_channel(new_channel)
 
     def add_channel_sweep_type(self, channel_name, channel_number=1):
-        '''sweept variable control'''
+        '''Sweep variable control.
+
+        Args:
+            channel_name: Name for the sweep type channel.
+            channel_number: Instrument channel number.
+
+        Returns:
+            The newly created sweep type channel.
+        '''
         new_channel = channel(
             channel_name,
             write_function=lambda stype,
@@ -380,7 +463,15 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
         return self._add_channel(new_channel)
 
     def add_channel_IFBW(self, channel_name, channel_number=1):
-        '''IF/resolution bandwidth. TODO: Disrespected when IFBW set to AUTO.'''
+        '''IF/resolution bandwidth. TODO: Disrespected when IFBW set to AUTO.
+
+        Args:
+            channel_name: Name for the IFBW channel.
+            channel_number: Instrument channel number.
+
+        Returns:
+            The newly created IFBW channel.
+        '''
         new_channel = channel(
             channel_name,
             write_function=lambda rbw,
@@ -410,7 +501,15 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
     # TODO IFBW Auto and Auto Limit control channels.
 
     def add_channel_sweep_time(self, channel_name, channel_number=1):
-        ''''''
+        '''Sweep time control.
+
+        Args:
+            channel_name: Name for the sweep time channel.
+            channel_number: Instrument channel number.
+
+        Returns:
+            The newly created sweep time channel.
+        '''
         channel_number = 1  # TODO
 
         def _set_sweep_time(time, channel_number=channel_number):
@@ -433,12 +532,23 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
         return self._add_channel(new_channel)
 
     def add_channel_display(self, channel_name):
-        ''''''
+        '''Display control channel.
+
+        Args:
+            channel_name: Name for the display channel.
+        '''
         # axis linlog-y, reference level, scale/div, autoscale, division_count, etc
         # trace allocation
 
     def add_channels_gp_control(self, channel_name):  # todo channl number???
-        ''''''
+        '''General purpose port control channels.
+
+        Args:
+            channel_name: Base name for the GP control channels.
+
+        Returns:
+            List of created GP control channel objects.
+        '''
         channels = []
         r_z = channel(
             f'{channel_name}_R_Z',
@@ -499,7 +609,14 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
         return channels
 
     def add_channels_bias_control(self, channel_name):  # TODO channel number!
-        '''bias sweep currently unsupported TODO'''
+        '''Bias sweep currently unsupported TODO.
+
+        Args:
+            channel_name: Base name for the bias control channels.
+
+        Returns:
+            List of created bias control channel objects.
+        '''
         channels = []
 
         def _write_bias_enable_port(p):
@@ -547,7 +664,18 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
 
     # TODO channel number!
     def add_channels_source_power(self, channel_name, port='GP'):
-        '''dBm'''
+        '''Source power control in dBm.
+
+        Args:
+            channel_name: Name for the source power channel.
+            port: Port selection, either 'GP' or a port number.
+
+        Returns:
+            Tuple of created power channel objects.
+
+        Raises:
+            Exception: If port is not 'GP' (non-GP ports not yet implemented).
+        '''
         # NB 460 Continuous switching may damage source. This error occurs when different power ranges are selected in multiple channel measurement settings to avoid source attenuator damage.
         # TODO sync channel powers...
         assert port in ('GP', 1, 2, 3, 4)
@@ -576,7 +704,17 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
 
     def add_marker(self, channel_name, marker_number,
                    trace_number, channel_number=1):
-        ''''''
+        '''Add marker channels for x and y readback.
+
+        Args:
+            channel_name: Base name for the marker channels.
+            marker_number: Marker number on the instrument.
+            trace_number: Trace number on the instrument.
+            channel_number: Instrument channel number.
+
+        Returns:
+            List of created marker channel objects.
+        '''
         channels = []
         assert marker_number in range(1, 11)
         m_x = channel(f'{channel_name}_x', write_function=lambda x: self.get_interface().write(
@@ -610,7 +748,14 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
     def add_channel_trigger(self, channel_name):
         # TODO channel number!
         # todo all-channel controls?
-        ''''''
+        '''Trigger control channels.
+
+        Args:
+            channel_name: Base name for the trigger channels.
+
+        Returns:
+            Tuple of mode, source, and slope trigger channels.
+        '''
         channel_number = 1
 
         def _single_abort_trigger_wait(run_mode):
@@ -751,12 +896,25 @@ class keysight_e5061b(keysight_e5061b_base):
         return channels
 
     def add_channel_limit(self, channel_name):
-        ''''''
+        '''Limit channel.
+
+        Args:
+            channel_name: Name for the limit channel.
+        '''
         # SCPI.CALCulate(Ch).SELected.LIMit.DATA = Data
         # Data = SCPI.CALCulate(Ch).SELected.LIMit.DATA
 
     def add_channel_TR_mag(self, channel_name, trace_number, channel_number=1):
-        ''''''
+        '''T/R log magnitude measurement channel.
+
+        Args:
+            channel_name: Name for the TR magnitude channel.
+            trace_number: Trace number on the instrument.
+            channel_number: Instrument channel number.
+
+        Returns:
+            The created y-data channel configured for TR magnitude.
+        '''
         self._check_trace_unconfigured(
             trace_number=trace_number,
             channel_number=channel_number)
@@ -793,7 +951,16 @@ class keysight_e5061b(keysight_e5061b_base):
         return channels[0]
 
     def add_channel_T_mag(self, channel_name, trace_number, channel_number=1):
-        ''''''
+        '''T log magnitude measurement channel.
+
+        Args:
+            channel_name: Name for the T magnitude channel.
+            trace_number: Trace number on the instrument.
+            channel_number: Instrument channel number.
+
+        Returns:
+            The created y-data channel configured for T magnitude.
+        '''
         self._check_trace_unconfigured(
             trace_number=trace_number,
             channel_number=channel_number)
@@ -831,7 +998,16 @@ class keysight_e5061b(keysight_e5061b_base):
     # channels.append(self.add_channel_ydata(f'{channel_name}_ypoints', trace_number=1, channel_number=channel_number))
 
     def add_channel_R_mag(self, channel_name, trace_number, channel_number=1):
-        ''''''
+        '''R log magnitude measurement channel.
+
+        Args:
+            channel_name: Name for the R magnitude channel.
+            trace_number: Trace number on the instrument.
+            channel_number: Instrument channel number.
+
+        Returns:
+            The created y-data channel configured for R magnitude.
+        '''
         self._check_trace_unconfigured(
             trace_number=trace_number,
             channel_number=channel_number)
@@ -870,7 +1046,16 @@ class keysight_e5061b(keysight_e5061b_base):
 
     def add_channel_TR_phase(
             self, channel_name, trace_number, channel_number=1):
-        ''''''
+        '''T/R expanded phase measurement channel.
+
+        Args:
+            channel_name: Name for the TR phase channel.
+            trace_number: Trace number on the instrument.
+            channel_number: Instrument channel number.
+
+        Returns:
+            The created y-data channel configured for TR phase.
+        '''
         # "3"	"E5061B"	":CALCulate:SELected:FORMat PHASe"	""
         self._check_trace_unconfigured(
             trace_number=trace_number,
@@ -898,8 +1083,19 @@ class keysight_e5061b(keysight_e5061b_base):
     # channels.append(self.add_channel_ydata(f'{channel_name}_ypoints', trace_number=1, channel_number=channel_number))
 
     def add_channel_rlevel(self, channel_name, channel_number, trace_number):
-        ''':DISPlay:WINDow{}:TRACe{}:Y:SCALe:RLEVel value
-        This command sets/gets the value of the reference division line, for the selected trace (Tr) of the selected channel (Ch).'''
+        ''':DISPlay:WINDow{}:TRACe{}:Y:SCALe:RLEVel value.
+
+        This command sets/gets the value of the reference division line,
+        for the selected trace (Tr) of the selected channel (Ch).
+
+        Args:
+            channel_name: Name for the reference level channel.
+            channel_number: Instrument channel number.
+            trace_number: Trace number on the instrument.
+
+        Returns:
+            The newly created reference level channel.
+        '''
         new_channel = channel(
             channel_name,
             write_function=lambda value,
@@ -945,8 +1141,18 @@ class keysight_e5061b(keysight_e5061b_base):
         # return self._add_channel(new_channel)
 
     def add_channel_divisions(self, channel_name, channel_number):
-        ''':DISPlay:WINDow{}:Y:SCALe:DIVisions value
-        This command sets/gets the number of divisions in all the graphs, for the selected channel (Ch)..'''
+        ''':DISPlay:WINDow{}:Y:SCALe:DIVisions value.
+
+        This command sets/gets the number of divisions in all the graphs,
+        for the selected channel (Ch).
+
+        Args:
+            channel_name: Name for the divisions channel.
+            channel_number: Instrument channel number.
+
+        Returns:
+            The newly created divisions channel.
+        '''
         new_channel = channel(
             channel_name,
             write_function=lambda value,
@@ -960,9 +1166,22 @@ class keysight_e5061b(keysight_e5061b_base):
         return self._add_channel(new_channel)
 
     def add_channel_pdiv(self, channel_name, channel_number, trace_number):
-        ''':DISPlay:WINDow{}:TRACe{}:Y:SCALe:PDIVision value
-        For the selected trace (Tr) of selected channel (Ch), when the data format is not the Smith chart format or the polar format, sets the scale per division.
-        When the data format is the Smith chart format or the polar format, sets the full scale value (the value of the outermost circumference).'''
+        ''':DISPlay:WINDow{}:TRACe{}:Y:SCALe:PDIVision value.
+
+        For the selected trace (Tr) of selected channel (Ch), when the data
+        format is not the Smith chart format or the polar format, sets the
+        scale per division. When the data format is the Smith chart format
+        or the polar format, sets the full scale value (the value of the
+        outermost circumference).
+
+        Args:
+            channel_name: Name for the per-division channel.
+            channel_number: Instrument channel number.
+            trace_number: Trace number on the instrument.
+
+        Returns:
+            The newly created per-division channel.
+        '''
         new_channel = channel(
             channel_name,
             write_function=lambda value,
@@ -978,7 +1197,18 @@ class keysight_e5061b(keysight_e5061b_base):
 
     def add_channel_sparam(
             self, channel_name, trace_number, x, y, channel_number=1):
-        ''''''
+        '''S-parameter log magnitude measurement channel.
+
+        Args:
+            channel_name: Name for the S-parameter channel.
+            trace_number: Trace number on the instrument.
+            x: S-parameter source port number.
+            y: S-parameter destination port number.
+            channel_number: Instrument channel number.
+
+        Returns:
+            The created y-data channel configured for S-parameter measurement.
+        '''
         assert x in range(1, 3)  # What about 4-port machines?
         assert y in range(1, 3)  # What about 4-port machines?
         self._check_trace_unconfigured(
@@ -1018,7 +1248,11 @@ class keysight_e5061b(keysight_e5061b_base):
     # channel_number=1):
 
     def add_channels_calibration(self, channel_name):
-        ''''''
+        '''Calibration control channels.
+
+        Args:
+            channel_name: Base name for the calibration channels.
+        '''
         # G/P vs sparam
         # fixture
         # correction status
@@ -1141,7 +1375,15 @@ class keysight_e5061b_impedance(keysight_e5061b_base):
         return channels
 
     def add_channel_zmethod(self, channel_name, channel_number=1):
-        ''''''
+        '''Impedance measurement method control channel.
+
+        Args:
+            channel_name: Name for the Z method channel.
+            channel_number: Instrument channel number.
+
+        Returns:
+            The newly created Z method channel.
+        '''
         # :SENSe{[1]-4}:Z:METHod <string>
         # :SENSe{[1]-4}:Z:METHod?
         # Select one of the following options:
@@ -1190,7 +1432,16 @@ class keysight_e5061b_impedance(keysight_e5061b_base):
 
     def add_channel_zparameter(
             self, channel_name, trace_number=1, channel_number=1):
-        ''''''
+        '''Impedance parameter selection channel.
+
+        Args:
+            channel_name: Name for the Z parameter channel.
+            trace_number: Trace number on the instrument.
+            channel_number: Instrument channel number.
+
+        Returns:
+            The newly created Z parameter channel.
+        '''
         # :CALCulate{[1]-4}[:SELected]:ZPARameter:DEFine <string>
         # :CALCulate{[1]-4}[:SELected]:ZPARameter:DEFine?
         # Z|Y|Cp|Cs|Lp|Ls|Rp|Rs|D|Q
@@ -1229,7 +1480,15 @@ class keysight_e5061b_impedance(keysight_e5061b_base):
                 for i in range(0, len(interleaved_array), 2)]
 
     def add_channel_zcorrection_open(self, channel_name, channel_number=1):
-        '''open load complex correction vector'''
+        '''Open load complex correction vector.
+
+        Args:
+            channel_name: Name for the open correction channel.
+            channel_number: Instrument channel number.
+
+        Returns:
+            The newly created open correction channel.
+        '''
         new_channel = channel(
             channel_name,
             read_function=lambda channel_number=channel_number: self._parse_complex(
@@ -1242,7 +1501,15 @@ class keysight_e5061b_impedance(keysight_e5061b_base):
         return self._add_channel(new_channel)
 
     def add_channel_zcorrection_short(self, channel_name, channel_number=1):
-        '''shorted load complex correction vector'''
+        '''Shorted load complex correction vector.
+
+        Args:
+            channel_name: Name for the short correction channel.
+            channel_number: Instrument channel number.
+
+        Returns:
+            The newly created short correction channel.
+        '''
         new_channel = channel(
             channel_name,
             read_function=lambda channel_number=channel_number: self._parse_complex(
@@ -1255,7 +1522,15 @@ class keysight_e5061b_impedance(keysight_e5061b_base):
         return self._add_channel(new_channel)
 
     def add_channel_zcorrection_load(self, channel_name, channel_number=1):
-        '''50 Ogm load complex correction vector'''
+        '''50 Ohm load complex correction vector.
+
+        Args:
+            channel_name: Name for the load correction channel.
+            channel_number: Instrument channel number.
+
+        Returns:
+            The newly created load correction channel.
+        '''
         new_channel = channel(
             channel_name,
             read_function=lambda channel_number=channel_number: self._parse_complex(
@@ -1268,7 +1543,15 @@ class keysight_e5061b_impedance(keysight_e5061b_base):
         return self._add_channel(new_channel)
 
     def add_channels_impedance_setup(self, channel_name, channel_number=1):
-        '''shortcut to add impedance measurment control channels'''
+        '''Shortcut to add impedance measurement control channels.
+
+        Args:
+            channel_name: Base name for the impedance setup channels.
+            channel_number: Instrument channel number.
+
+        Returns:
+            List of created impedance setup channel objects.
+        '''
         channels = []
         channels.append(
             self.add_channel_zmethod(
@@ -1286,7 +1569,15 @@ class keysight_e5061b_impedance(keysight_e5061b_base):
         return channels
 
     def add_channels_zcorrection(self, channel_name, channel_number=1):
-        ''''''
+        '''Z correction channels for open, short, and load.
+
+        Args:
+            channel_name: Base name for the Z correction channels.
+            channel_number: Instrument channel number.
+
+        Returns:
+            List of created Z correction channel objects.
+        '''
         channels = []
         channels.append(
             self.add_channel_zcorrection_open(
@@ -1304,7 +1595,15 @@ class keysight_e5061b_impedance(keysight_e5061b_base):
         return channels
 
     def add_channel_zcorrection_collect(self, channel_name, channel_number=1):
-        ''''''
+        '''Z correction collection channel.
+
+        Args:
+            channel_name: Name for the Z correction collect channel.
+            channel_number: Instrument channel number.
+
+        Returns:
+            The newly created Z correction collect channel.
+        '''
         def col_and_wait(cal_type, channel_number):
             old_timeout = self.get_interface().timeout
             self.get_interface().write(
@@ -1332,7 +1631,17 @@ class keysight_e5061b_impedance(keysight_e5061b_base):
         return self._add_channel(new_channel)
 
     def add_channel_zcorrection_write(self, channel_name, channel_number=1):
-        '''single channel expects dictionary of OPEN/SHORt/LOAD complex correction vectors. Intended usage to 3-d cal across applied bias, etc'''
+        '''Single channel expects dictionary of OPEN/SHORt/LOAD complex correction vectors.
+
+        Intended usage to 3-d cal across applied bias, etc.
+
+        Args:
+            channel_name: Name for the Z correction write channel.
+            channel_number: Instrument channel number.
+
+        Returns:
+            The newly created Z correction write channel.
+        '''
         def _write_cal_data(data_dict, channel_number):
             for cal_type in ('OPEN', 'SHORt', 'LOAD'):  # LOAD2
                 vector_str = ','.join(
@@ -1354,27 +1663,67 @@ class keysight_e5061b_impedance(keysight_e5061b_base):
         return self._add_channel(new_channel)
 
     def add_channels_impedance_equiv_A(self, channel_name, channel_number=1):
-        '''Parallel RLC. Model A - Generally suited to analyze inductors with high core loss.'''
+        '''Parallel RLC. Model A - Generally suited to analyze inductors with high core loss.
+
+        Args:
+            channel_name: Base name for the equivalent circuit channels.
+            channel_number: Instrument channel number.
+
+        Returns:
+            List of created equivalent circuit channel objects.
+        '''
         return self._add_channels_impedance_equiv(
             channel_name=channel_name, channel_number=channel_number, circuit_topology='A')
 
     def add_channels_impedance_equiv_B(self, channel_name, channel_number=1):
-        '''C parallel R+L. Model B - Generally suited to analyze general inductors and resistors.'''
+        '''C parallel R+L. Model B - Generally suited to analyze general inductors and resistors.
+
+        Args:
+            channel_name: Base name for the equivalent circuit channels.
+            channel_number: Instrument channel number.
+
+        Returns:
+            List of created equivalent circuit channel objects.
+        '''
         return self._add_channels_impedance_equiv(
             channel_name=channel_name, channel_number=channel_number, circuit_topology='B')
 
     def add_channels_impedance_equiv_C(self, channel_name, channel_number=1):
-        '''L series C//R. Model C - Generally suited to analyze resistors with high resistance.'''
+        '''L series C//R. Model C - Generally suited to analyze resistors with high resistance.
+
+        Args:
+            channel_name: Base name for the equivalent circuit channels.
+            channel_number: Instrument channel number.
+
+        Returns:
+            List of created equivalent circuit channel objects.
+        '''
         return self._add_channels_impedance_equiv(
             channel_name=channel_name, channel_number=channel_number, circuit_topology='C')
 
     def add_channels_impedance_equiv_D(self, channel_name, channel_number=1):
-        '''Series RLC. Model D - Generally suited to analyze capacitors.'''
+        '''Series RLC. Model D - Generally suited to analyze capacitors.
+
+        Args:
+            channel_name: Base name for the equivalent circuit channels.
+            channel_number: Instrument channel number.
+
+        Returns:
+            List of created equivalent circuit channel objects.
+        '''
         return self._add_channels_impedance_equiv(
             channel_name=channel_name, channel_number=channel_number, circuit_topology='D')
 
     def add_channels_impedance_equiv_E(self, channel_name, channel_number=1):
-        '''C0 parallel Series RLC. Model E - Generally suited to analyze resonators and oscillators.'''
+        '''C0 parallel Series RLC. Model E - Generally suited to analyze resonators and oscillators.
+
+        Args:
+            channel_name: Base name for the equivalent circuit channels.
+            channel_number: Instrument channel number.
+
+        Returns:
+            List of created equivalent circuit channel objects.
+        '''
         channels = self._add_channels_impedance_equiv(
             channel_name=channel_name,
             channel_number=channel_number,
@@ -1419,7 +1768,17 @@ class keysight_e5061b_impedance(keysight_e5061b_base):
 
     def _add_channel_impedance_equiv(
             self, channel_name, channel_number, circuit_topology, component_desig):
-        ''''''
+        '''Equivalent circuit component readback channel.
+
+        Args:
+            channel_name: Name for the equivalent circuit channel.
+            channel_number: Instrument channel number.
+            circuit_topology: Circuit topology model letter (A-E).
+            component_desig: Component designator (R1, C1, L1, C0).
+
+        Returns:
+            The newly created equivalent circuit channel.
+        '''
         # :CALCulate{[1]-4}:EPARameters:CIRCuit:B:C1?
         calc_cmd = f':CALCulate{channel_number}:EPARameters:EXECute; '
         new_channel = channel(

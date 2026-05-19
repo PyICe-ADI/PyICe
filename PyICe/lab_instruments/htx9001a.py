@@ -19,7 +19,12 @@ class htx9001a(htx9001):
         '''
 
     def __init__(self, interface_visa, calibrating=False):
-        '''Creates a htx9001a object'''
+        '''Creates a htx9001a object
+
+        Args:
+            calibrating: Calibrating.
+            interface_visa: VISA interface instance.
+        '''
         self._base_name = 'htx9001a'
         scpi_instrument.__init__(self, f"HTX9001A {interface_visa}")
         self.add_interface_visa(interface_visa)
@@ -84,7 +89,18 @@ class htx9001a(htx9001):
         '''Adds an irelay channel,
             channel_name is the name of the channel,
             irelay_number is the number of the irelay (same number as the supply being switched)
-            valid irelays are 5-8'''
+            valid irelays are 5-8
+
+        Args:
+            channel_name: Name for the new channel.
+            irelay_number: Irelay number.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        '''
         if irelay_number not in self.irelay_pins:
             raise Exception(f"Invalid irelay number {irelay_number}")
         if self.irelay_pins[irelay_number] in self.initialized_pins:

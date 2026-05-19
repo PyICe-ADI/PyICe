@@ -11,7 +11,11 @@ class sqlite_to_xlsx(object):
     '''dump whole/partial/multiple SQLite database(s) to Excel format'''
 
     def __init__(self, output_file):
-        '''specify Excel output filename, with .xlsx extension'''
+        '''specify Excel output filename, with .xlsx extension
+
+        Args:
+            output_file: Output file.
+        '''
         import xlsxwriter
         self.rowcol_to_cell = xlsxwriter.utility.xl_rowcol_to_cell
         self.output_file = output_file
@@ -50,6 +54,16 @@ class sqlite_to_xlsx(object):
 
         returns the newly created worksheet instance if creation was successful, or None in case the SQLite data was empty.
         See: http://xlsxwriter.readthedocs.io/worksheet.html
+
+        Args:
+            elapsed_time_columns: Elapsed time columns.
+            sqlite_data_obj: Sqlite data obj.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
         '''
         if self._workbook is None:
             raise Exception(
@@ -259,6 +273,13 @@ class sqlite_to_xlsx(object):
         Each table/view will be added to a separate worksheet.
         returns a dictionary containing all worksheets with worksheet name keys
         See: http://xlsxwriter.readthedocs.io/worksheet.html
+
+        Args:
+            db_file_name: Db file name.
+            elapsed_time_columns: Elapsed time columns.
+
+        Returns:
+            Result value.
         '''
         from .sqlite_data import sqlite_data  # local import to avoid circular dependency
         conn = sqlite3.connect(db_file_name)
@@ -292,6 +313,12 @@ class sqlite_to_xlsx(object):
         Title, axes, etc must be configured manually
            (set_title, set_x_axis, set_y_axis, set_y2_axis, set_style, set_size, set_legend methods)
         See: http://xlsxwriter.readthedocs.io/chart.html
+
+        Args:
+            subtype: Subtype.
+
+        Returns:
+            Result value.
         '''
         return self._workbook.add_chart(
             {'type': 'scatter', 'subtype': subtype})

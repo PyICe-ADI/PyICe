@@ -20,7 +20,14 @@ class keysight_e4440a(scpi_SA):
 
     def __init__(self, interface_visa, minimum_frequency,
                  maximum_frequency, reset=True):
-        '''interface_visa'''
+        '''interface_visa
+
+        Args:
+            interface_visa: VISA interface instance.
+            maximum_frequency: Maximum frequency.
+            minimum_frequency: Minimum frequency.
+            reset: Reset.
+        '''
         self._base_name = 'Keysight E4440a PSA signal analyzer'
         super(scpi_SA, self).__init__(f"Keysight E4440a @ {interface_visa}")
         self.add_interface_visa(interface_visa)
@@ -80,6 +87,12 @@ class keysight_e4440a(scpi_SA):
            *RST does not change the mode and only resets the parameters for the current
            mode.
            The :SYSTem:PRESet command is equivalent to a front panel Preset key.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
            '''
         new_channel = channel(name=channel_name, write_function=lambda: self.get_interface(
         ).write(':SYSTem:PRESet:TYPE FACTory;:SYSTem:PRESet'))
@@ -151,7 +164,15 @@ class keysight_e4440a(scpi_SA):
                 f"PSA _compute_x_axis(): start {start} greater than stop {stop}. Sorry can't sweep backwards.")
 
     def add_channel_ydata(self, channel_name, trace_number=1):
-        '''trace data vector'''
+        '''trace data vector
+
+        Args:
+            channel_name: Name for the new channel.
+            trace_number: Trace number.
+
+        Returns:
+            Result value.
+        '''
         new_channel = channel(
             channel_name,
             read_function=lambda trace_number=trace_number: self._read_trace_data(trace_number))
@@ -165,7 +186,14 @@ class keysight_e4440a(scpi_SA):
         return self._add_channel(new_channel)
 
     def add_channel_xdata(self, channel_name):
-        '''frequency sweep data vector'''
+        '''frequency sweep data vector
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_channel = channel(channel_name, read_function=self._compute_x_axis)
         # self._configured_channels[trace_number]['v_sense'] = new_channel
         new_channel.set_attribute('channel_type', 'x_data')
@@ -176,7 +204,14 @@ class keysight_e4440a(scpi_SA):
         return self._add_channel(new_channel)
 
     def add_channel_sweep_control(self, channel_name):
-        ''''''
+        '''
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         start_channel = channel(
             f'{channel_name}_start',
             write_function=lambda freq: self.get_interface().write(
@@ -367,6 +402,12 @@ class keysight_e4440a(scpi_SA):
             [:SENSe]:SWEep:FFT:SPAN:RATio <integer>
             [:SENSe]:SWEep:FFT:SPAN:RATio?
             Example: SWE:FFT:SPAN:RAT 20
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
         '''
         type_channel = channel(
             f'{channel_name}',
@@ -418,7 +459,14 @@ class keysight_e4440a(scpi_SA):
             equivalent 6 dB bandwidth of any RBW filter can be determined using the following
             formula: 6 dB RBW = 3 dB RBW x 1.414. For example, if a 6 dB RBW of 100 kHz is
             required, the equivalent 3 dB RBW Filter would be 100 kHz/1.414 = 70.7 kHz. The
-            closest RBW filter for the analyzer that would be used is 68 kHz.'''
+            closest RBW filter for the analyzer that would be used is 68 kHz.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         def _set_RBW(bw):
             self.get_interface().write(':SENSe:BANDwidth:RESolution:AUTO OFF')
             self.get_interface().write(f':SENSe:BANDwidth:RESolution {bw}')
@@ -433,7 +481,14 @@ class keysight_e4440a(scpi_SA):
         return self._add_channel(set_channel)
 
     def add_channel_RBW_auto(self, channel_name):
-        '''Tracks the state of the AUTO setting for the resolution bandwidth'''
+        '''Tracks the state of the AUTO setting for the resolution bandwidth
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_channel = integer_channel(
             name=channel_name,
             size=1,
@@ -476,7 +531,14 @@ reduces the variance of noise-like signals and makes spectral components close t
 to view. The knob and step keys change the ratio in a 1, 3, 10 sequence. If the numbered keys are used,
 the VBW/RBW ratio will be rounded to the nearest 1, 3, or 10 response. Pressing Preset or selecting
 Auto Couple, Auto All sets the ratio to 1.000 X. When VBW/RBW (Auto) is selected, the ratio is
-determined as indicated in Table 2-1 on page 70'''
+determined as indicated in Table 2-1 on page 70
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         def _set_vbw(bw):
             self.get_interface().write(':SENSe:BANDwidth:VIDeo:AUTO OFF')
             self.get_interface().write(f':SENSe:BANDwidth:VIDeo {bw}')
@@ -498,7 +560,14 @@ determined as indicated in Table 2-1 on page 70'''
         return self._add_channel(set_channel)
 
     def add_channel_VBW_auto(self, channel_name):
-        '''Tracks the state of the AUTO setting for the video bandwidth and the RBW/VBW ratio channel.'''
+        '''Tracks the state of the AUTO setting for the video bandwidth and the RBW/VBW ratio channel.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         auto_channel = integer_channel(
             name=channel_name,
             size=1,
@@ -570,7 +639,14 @@ determined as indicated in Table 2-1 on page 70'''
                 • VBW filtering adds video filtering which is a form of averaging of the video signal.
                 When manual is selected, the type is shown on the left side of the display with a #. When auto is
                 selected, the analyzer chooses the type of averaging. When one of the average types is selected manually,
-                the analyzer uses that type regardless of other analyzer settings, and sets Avg/VBW Type to Man.'''
+                the analyzer uses that type regardless of other analyzer settings, and sets Avg/VBW Type to Man.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         def _write_avg(count):
             if count == 0:
                 self.get_interface().write(':SENSe:AVERage:STATe OFF')
@@ -679,7 +755,14 @@ designators are:
 • EmiAv − ΕMI Average detector
 • EmiPk − Peak detector with CISPR bandwidths
 • MILPk − Peak detector with MIL bandwidths
-If the detector has been manually selected, a # appears next to it.'''
+If the detector has been manually selected, a # appears next to it.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_channel = channel(
             channel_name,
             write_function=lambda det_type: self.get_interface().write(
@@ -720,7 +803,14 @@ If the detector has been manually selected, a # appears next to it.'''
         To prevent signal compression, keep the power at the input mixer below
         0 dBm (10 MHz - 200 MHz), below 3 dBm (200 MHz - 6.6 GHz), and below –2 dBm
         (6.6 GHz - 50.0 GHz). With the attenuator set to Auto, a signal at or below the reference
-        level results in a mixer level at or below −10 dBm'''
+        level results in a mixer level at or below −10 dBm
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         def _set_attenuator(value):
             if value in range(0, 72, 2):
                 self.get_interface().write(':SENSe:POWer:RF:ATTenuation:AUTO OFF')
@@ -741,7 +831,14 @@ If the detector has been manually selected, a # appears next to it.'''
         return self._add_channel(self.attenuator_channel)
 
     def add_channel_attenuator_auto(self, channel_name):
-        '''Tracks the state of the AUTO setting for the front end attenuators'''
+        '''Tracks the state of the AUTO setting for the front end attenuators
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_channel = integer_channel(
             name=channel_name,
             size=1,
@@ -766,7 +863,14 @@ If the detector has been manually selected, a # appears next to it.'''
         exceed −30 dBm.
         ************************************************************************************************
         * This is a proxy for the attenuator level so we don't have to always be computing it by hand  *
-        ************************************************************************************************'''
+        ************************************************************************************************
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         limits = [
             {"MINFREQ": 6.6e12, "MAXFREQ": 50e12, "POWER_dBm": -2},
             {"MINFREQ": 200e6, "MAXFREQ": 6.6e12, "POWER_dBm": 3},
@@ -818,7 +922,14 @@ even though the PA annotation remains on screen. For signal frequencies below 10
 not automatically switched out, but signal amplitude roll-off occurs even in the “DC” setting of the RF
 Coupling control.
 The gain of the preamp is nominally 30 dB. This functionality is not available when using external
-mixing.'''
+mixing.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         self.preamp_channel = integer_channel(
             channel_name,
             size=1,
@@ -888,7 +999,16 @@ mixing.'''
     def add_channel_max_marker(
             self, channel_name, marker_number=1, trace_number=1):
         '''Spot measurment scalar finds the maximum value on the screen.
-        This instrument is very screen memory centric.'''
+        This instrument is very screen memory centric.
+
+        Args:
+            channel_name: Name for the new channel.
+            marker_number: Marker number.
+            trace_number: Trace number.
+
+        Returns:
+            Result value.
+        '''
         self.get_interface().write(
             f':CALCulate:MARKer{marker_number}:STATe ON')  # OFF|ON|0|1
         # Puts the marker on the specified trace and turns Auto OFF for that
@@ -963,6 +1083,14 @@ mixing.'''
             therefore, normally chooses the Average detector and Power Averaging. Though the Marker Noise
             function works with all settings of detector and Avg/VBW Type, using the positive or negative peak
             detectors gives less accurate measurement results
+
+        Args:
+            channel_name: Name for the new channel.
+            marker_number: Marker number.
+            trace_number: Trace number.
+
+        Returns:
+            Result value.
         '''
         # handling of marker mode is a little crude. TODO - keep track of
         # already used marker and trace numbers better.
@@ -1007,7 +1135,12 @@ mixing.'''
             average detector is selected. If the Avg/VBW type is set to Auto, Power Averaging is selected, other
             choices of detector and Avg/VBW type will usually cause measurement inaccuracy. The active marker
             pair indicate the edges of the band. Only Delta Pair and Span Pair marker control modes can be used
-            while in this function, selecting any other mode (for example, Normal or Delta) turns off this function'''
+            while in this function, selecting any other mode (for example, Normal or Delta) turns off this function
+
+        Args:
+            channel_name: Name for the new channel.
+            marker_number: Marker number.
+        '''
         # TODO
         # :CALCulate:MARKer[1]|2|3|4:FUNCtion BPOWer|NOISe|OFF
         # :CALCulate:MARKer[1]|2|3|4:FUNCtion?
@@ -1020,7 +1153,14 @@ mixing.'''
         # :CALCulate:MARKer[1]|2|3|4:STATe?
 
     def add_channel_trigger(self, channel_name):
-        ''''''
+        '''
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         def _single_abort_trigger_wait(run_mode):
             if run_mode == 'Single':
                 self.get_interface().write(':INITiate:CONTinuous OFF')
@@ -1189,7 +1329,14 @@ mixing.'''
         # todo read_delegated blocking / autotrigger??
 
     def add_channel_sweep_time(self, channel_name):
-        '''calculated time for single sweep, dependent on start/stop/points/rbw/etc'''
+        '''calculated time for single sweep, dependent on start/stop/points/rbw/etc
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         def _set_sweep_time(t):
             self.get_interface().write(':SENSe:SWEep:TIME:AUTO OFF')
             self.get_interface().write(f':SENSe:SWEep:TIME {t}')
@@ -1206,7 +1353,14 @@ mixing.'''
         return self._add_channel(force_channel)
 
     def add_channel_sweep_time_auto(self, channel_name):
-        '''Tracks the state of the AUTO setting for the sweep time'''
+        '''Tracks the state of the AUTO setting for the sweep time
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_channel = integer_channel(
             name=channel_name,
             size=1,
@@ -1220,7 +1374,14 @@ mixing.'''
         return self._add_channel(new_channel)
 
     def add_channel_message(self, channel_name):
-        '''write message to lower left corner of screen display'''
+        '''write message to lower left corner of screen display
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         def _disp_msg(msg):
             if msg is None:
                 self.get_interface().write(':SYSTem:MESSage:OFF')
@@ -1249,6 +1410,12 @@ mixing.'''
 
         When the _units is set to "V" that is RMS not amplitude, A, as in A•sin(ωt)
         It will give 0.707•A.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
 '''
         reference_level_channel = channel(
             f'{channel_name}_reference_level',
@@ -1382,7 +1549,14 @@ Some amplitude specifications apply only when coupling is set to DC. Refer to th
 amplitude specifications and characteristics for your analyzer.
 CAUTION When operating in DC coupled mode, ensure protection of the input mixer by limiting the
 input level to within 200 mV of 0 Vdc. In AC or DC coupling, limit the input RF power to
-+30 dBm'''
++30 dBm
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         coupling_channel = channel(
             f'{channel_name}',
             write_function=lambda c: self.get_interface().write(
@@ -1399,7 +1573,14 @@ input level to within 200 mV of 0 Vdc. In AC or DC coupling, limit the input RF 
     def add_channel_1st_IF_overload(self, channel_name):
         '''Corresponds to "1st IF Overload" on screen.
         Indicates that the input to the mixer is overloaded after the attenutors and preamplifier.
-        Increase the declared power level or manually coerce the attenuation level up (not recommended).'''
+        Increase the declared power level or manually coerce the attenuation level up (not recommended).
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         scpi = ':STATus:QUEStionable:POWer:CONDition?'
         decode_bit = 6
         message1, message2, message3 = '*** ERROR ***', 'PSA indicates an overload on the 1st IF stage.', 'Correct the attenuation level!'
@@ -1419,7 +1600,14 @@ input level to within 200 mV of 0 Vdc. In AC or DC coupling, limit the input RF 
     def add_channel_final_IF_overload(self, channel_name):
         '''Corresponds to "Final IF Overload" on screen.
         Indicates that the input to the second stage is overloaded after the first mixer (?).
-        Increase the declared power level or manually coerce the attenuation level up (not recommended).'''
+        Increase the declared power level or manually coerce the attenuation level up (not recommended).
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         scpi = ':STATus:QUEStionable:INTegrity:CONDition?'
         decode_bit = 4
         message1, message2, message3 = '*** ERROR ***', 'PSA indicates an overload on the final IF stage.', 'Correct the attenuation level!'
@@ -1439,7 +1627,14 @@ input level to within 200 mV of 0 Vdc. In AC or DC coupling, limit the input RF 
     def add_channel_measurement_uncalibrated(self, channel_name):
         '''Signal Integrity Issue.
         Indicates that the signal is out of range for calibration somewhere along the signal path(?).
-        Increase the declared power level or manually coerce the attenuation level up (not recommended).'''
+        Increase the declared power level or manually coerce the attenuation level up (not recommended).
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         scpi = ':STATus:QUEStionable:INTegrity:CONDition?'
         decode_bit = 3
         message1, message2, message3 = '*** ERROR ***', 'PSA indicates measurement uncalibrated.', 'Correct the attenuation level!'
@@ -1459,7 +1654,14 @@ input level to within 200 mV of 0 Vdc. In AC or DC coupling, limit the input RF 
     def add_channel_calibration_error(self, channel_name):
         '''Signal Integrity Issue.
         Indicates that the signal is out of range for calibration somewhere along the signal path(?).
-        Increase the declared power level or manually coerce the attenuation level up (not recommended).'''
+        Increase the declared power level or manually coerce the attenuation level up (not recommended).
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         scpi = 'STATus:QUEStionable:INTegrity:UNCalibrated:CONDition?'
         decode_bit = 0
         message1, message2, message3 = '*** ERROR ***', 'PSA indicates measurement uncalibrated.', 'Correct the attenuation level!'
@@ -1480,7 +1682,14 @@ input level to within 200 mV of 0 Vdc. In AC or DC coupling, limit the input RF 
         '''Aggregation (catchall) of various status questionable bits.
         This should always be zero if the data is to be trusted.
         For non zero values see the programmer's manual pages 347 and 379:
-        https://swarm.adsdesign.analog.com/files/adi/equipment_info/north_chelmsford/TRUNK/Keysight/Signal%20Analyzer/PSA/Doc/E444x%20programmers%20manual%209018-01328.pdf).'''
+        https://swarm.adsdesign.analog.com/files/adi/equipment_info/north_chelmsford/TRUNK/Keysight/Signal%20Analyzer/PSA/Doc/E444x%20programmers%20manual%209018-01328.pdf).
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         scpi = 'STATus:QUEStionable:CONDition?'
         message1, message2, message3 = '*** ERROR ***', 'PSA indicates generally questionable data.', 'Correct the attenuation level!'
 
@@ -1498,7 +1707,14 @@ input level to within 200 mV of 0 Vdc. In AC or DC coupling, limit the input RF 
         return self._add_channel(new_channel)
 
     def add_channel_fullscreen(self, channel_name):
-        '''Turns off the screen buttons temporarily for more usful viewing. They will come back on if other user inputs require them.'''
+        '''Turns off the screen buttons temporarily for more usful viewing. They will come back on if other user inputs require them.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_channel = integer_channel(
             name=channel_name,
             size=1,
@@ -1512,7 +1728,14 @@ input level to within 200 mV of 0 Vdc. In AC or DC coupling, limit the input RF 
         return self._add_channel(new_channel)
 
     def add_channel_syst_error(self, channel_name):
-        '''Returns the response to :SYSTem:ERROr? to see if there are any commands making the instrument angry. Perform repeated reads to get them all and clear the buffer.'''
+        '''Returns the response to :SYSTem:ERROr? to see if there are any commands making the instrument angry. Perform repeated reads to get them all and clear the buffer.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_channel = channel(
             name=channel_name,
             read_function=lambda: self.get_interface().ask(':SYSTem:ERROr?'))
@@ -1531,7 +1754,14 @@ input level to within 200 mV of 0 Vdc. In AC or DC coupling, limit the input RF 
     # So what gives?
 
     def add_channels(self, channel_name):
-        ''''''
+        '''
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         channels = []
         channels.append(self.add_channel_xdata(f'{channel_name}_xpoints'))
         channels.append(

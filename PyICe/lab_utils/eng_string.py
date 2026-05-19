@@ -32,6 +32,15 @@ def eng_string(x, fmt=':.3g', si=True, units=None):
     '4.7kV'
     >>> eng_string(-0.000047)
     '-47µ'
+
+    Args:
+        fmt: Fmt.
+        si: Si.
+        units: Unit string.
+        x: X.
+
+    Returns:
+        Result value.
     '''
     assert isinstance(x, numbers.Number)
     if x == 0 or not math.isfinite(x):

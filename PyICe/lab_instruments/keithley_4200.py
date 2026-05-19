@@ -6,7 +6,11 @@ class keithley_4200(semiconductor_parameter_analyzer):
     '''Keithley Model 4200-SCS Semiconductor Characterization System'''
 
     def __init__(self, interface_visa):
-        '''interface_visa"'''
+        '''interface_visa"
+
+        Args:
+            interface_visa: VISA interface instance.
+        '''
         self._base_name = 'keithley_4200-scs'
         scpi_instrument.__init__(self, f"keithley_4200-scs @ {interface_visa}")
         self.add_interface_visa(interface_visa)
@@ -103,7 +107,12 @@ class keithley_4200(semiconductor_parameter_analyzer):
                     f'Problem parsing Keithley 4200 slot {slot} configuration: {self.slot_conf}')
 
     def configure_slot_smu(self, slot_number, smu_number):
-        '''reconfigure smu instrument in slot_number to act as an smu'''
+        '''reconfigure smu instrument in slot_number to act as an smu
+
+        Args:
+            slot_number: Slot number.
+            smu_number: Smu number.
+        '''
         assert slot_number >= 1
         assert slot_number <= 8
         # empty slot shouldn't be configured
@@ -114,7 +123,12 @@ class keithley_4200(semiconductor_parameter_analyzer):
         self.get_slot_configuration()
 
     def configure_slot_vs(self, slot_number, vsource_number):
-        '''reconfigure smu instrument in slot_number to act as a vs'''
+        '''reconfigure smu instrument in slot_number to act as a vs
+
+        Args:
+            slot_number: Slot number.
+            vsource_number: Vsource number.
+        '''
         assert slot_number >= 1
         assert slot_number <= 8
         # empty slot shouldn't be configured
@@ -125,7 +139,12 @@ class keithley_4200(semiconductor_parameter_analyzer):
         self.get_slot_configuration()
 
     def configure_slot_vm(self, slot_number, vmeter_number):
-        '''reconfigure smu instrument in slot_number to act as a vm'''
+        '''reconfigure smu instrument in slot_number to act as a vm
+
+        Args:
+            slot_number: Slot number.
+            vmeter_number: Vmeter number.
+        '''
         assert slot_number >= 1
         assert slot_number <= 8
         # empty slot shouldn't be configured

@@ -70,7 +70,14 @@ class Plugin_Manager():
     def add_test(self, test, debug=False, skip_plot=False, skip_eval=False):
         '''Adds a script to the list that will be operated on. If this is the first time a test is added to this instance of plugin manager, plugin manager also takes this opportunity to acquire the list of plugins used for the project.
         args: test - class object. A test that contains the methods necessary for data collection and processing in the project.
-        args: debug - Boolean. This will be passed into all run tests to be used for abbreviating data collection loops. Default value is False.'''
+        args: debug - Boolean. This will be passed into all run tests to be used for abbreviating data collection loops. Default value is False.
+
+        Args:
+            debug: If True, enable debug output.
+            skip_eval: Skip eval.
+            skip_plot: Skip plot.
+            test: Test.
+        '''
         a_test = test()
         a_test._debug = debug
         if debug:
@@ -102,6 +109,9 @@ class Plugin_Manager():
         args: temperatures- list.
         The list consists of values that will be set to the 'temp_control_channel' assigned by the instrument drivers.
         Default value is an empty list.
+
+        Args:
+            temperatures: Temperatures.
         '''
         if temperatures is None:
             temperatures = []
@@ -208,7 +218,11 @@ class Plugin_Manager():
         The value for "cleanup functions" is a list of functions that put the instruments in safe states once the test is complete.
         The cleanup functions are run in the order in which the instruments appear in the bench file.
         The 'temp_control_channel' is a channel object. The values provided in the temperature list will be written to it.
-        The special channel actions are functions that are run on each logging of data and the value is a dicionary with a channel object or the string name of a channel as key, and the value the function to be run. The function requires the arguments channel_name, readings, and test.'''
+        The special channel actions are functions that are run on each logging of data and the value is a dicionary with a channel object or the string name of a channel as key, and the value the function to be run. The function requires the arguments channel_name, readings, and test.
+
+        Raises:
+            Exception: On error condition.
+        '''
 
         self.cleanup_fns = []
         self.temp_run_fns = []
@@ -284,7 +298,11 @@ class Plugin_Manager():
             self.test_components.add_component(component)
 
     def _create_logger(self, test):
-        '''Each test add to the plugin manager will have its own logger with which it shall store the data collected by their collect method. The channels will be determined by the drivers added to the driver, and a sqlite database and table will be automatically created and linked to the tests.'''
+        '''Each test add to the plugin manager will have its own logger with which it shall store the data collected by their collect method. The channels will be determined by the drivers added to the driver, and a sqlite database and table will be automatically created and linked to the tests.
+
+        Args:
+            test: Test.
+        '''
         test._logger = Callback_logger(
             database=test.get_db_file(),
             special_channel_actions=self.special_channel_actions,
@@ -390,7 +408,14 @@ class Plugin_Manager():
             msg - str. The body of the email or the complete text.
             subject - str. Default None. The subject given to any email sent. No affect on texts.
             attachment filenames - list. Default empty list. A list of strings denoting the names of files that will be attached to any emails sent.
-            attachment_MIMEParts - list. Default empty list. A list of MIME (Multipurpose Internet Mail Extensions) objects that will be added to the body of any email sent.'''
+            attachment_MIMEParts - list. Default empty list. A list of MIME (Multipurpose Internet Mail Extensions) objects that will be added to the body of any email sent.
+
+        Args:
+            attachment_MIMEParts: Attachment mimeparts.
+            attachment_filenames: Attachment filenames.
+            msg: Msg.
+            subject: Subject.
+        '''
         if attachment_filenames is None:
             attachment_filenames = []
         if attachment_MIMEParts is None:
@@ -477,7 +502,11 @@ class Plugin_Manager():
             self.notification_targets[x] = set(self.notification_targets[x])
 
     def add_notification(self, fn):
-        '''Add a function that will be run whenever a notification is sent. Arguments for the provided function are either the standard for lab_utils.communications.email.send(self, body, subject=None, attachment_filenames=[], attachment_MIMEParts=[]) or a simple text string.'''
+        '''Add a function that will be run whenever a notification is sent. Arguments for the provided function are either the standard for lab_utils.communications.email.send(self, body, subject=None, attachment_filenames=[], attachment_MIMEParts=[]) or a simple text string.
+
+        Args:
+            fn: Callable function.
+        '''
         self._notification_functions.append(fn)
 
     def _convert_svg(self, plot):
@@ -556,14 +585,22 @@ class Plugin_Manager():
             self.traceability_items)
 
     def _create_metalogger(self, test):
-        '''Called from the plugin_master if the 'traceability' plugin was included in the plugin_registry, this creates a master and logger separate from the test data logger, and populates them using user provided metadata gathering functions.'''
+        '''Called from the plugin_master if the 'traceability' plugin was included in the plugin_registry, this creates a master and logger separate from the test data logger, and populates them using user provided metadata gathering functions.
+
+        Args:
+            test: Test.
+        '''
         _master = master()
         test._metalogger = logger(database=test.get_db_file())
         test._metalogger.add(_master)
         self._traceabilities.add_data_to_metalogger(test._metalogger)
 
     def _metalog(self, test):
-        '''This is separate from the _create_metalogger method in order to give other plugins the opportunity to add to the metalogger before the channel list is commited to a table.'''
+        '''This is separate from the _create_metalogger method in order to give other plugins the opportunity to add to the metalogger before the channel list is commited to a table.
+
+        Args:
+            test: Test.
+        '''
         test._modify_metalogger()
         test._metalogger.new_table(
             table_name=test.get_name() +
@@ -854,7 +891,11 @@ class Plugin_Manager():
     def collect(self, temperatures):
         '''This method aggregates the channels that will be logged and calls the collect method in every test added via self.add_test.
         args:
-            temperatures (list): What values will be written to the temp_control_channel.'''
+            temperatures (list): What values will be written to the temp_control_channel.
+
+        Args:
+            temperatures: Temperatures.
+        '''
         try:
             self.far_enough = False
             self.master = master()
@@ -994,6 +1035,13 @@ class Plugin_Manager():
             plot_filepath - string. This is where the plots will be placed upon creation. If left blank, a directory name plots will be created in the directory with the plot script and and the plots will be placed in there.
             test_list - list. List of test class objects that have plot methods you want to run. If left blank, will default to every test added to the plugin manager.
             skip_email_input: boolean. Set to true, will not empty the _plots list and will not extend it. Useful in replotting during archive.
+
+        Args:
+            database: Database.
+            plot_filepath: Plot filepath.
+            skip_email_input: Skip email input.
+            table_name: Database table name.
+            test_list: Test list.
             '''
         if not skip_email_input:
             self._plots = []
@@ -1080,7 +1128,13 @@ class Plugin_Manager():
         '''Run the evaluate method of each test in self.tests.
         args:
             database - string. The location of the database with the data to evaluate If left blank, the evaluation will continue with the database in the same directory as the test script.
-            table_name - string. The name of the table in the database with the relevant data. If left blank, the evaluation will continue with the table named after the test script.'''
+            table_name - string. The name of the table in the database with the relevant data. If left blank, the evaluation will continue with the table named after the test script.
+
+        Args:
+            database: Database.
+            table_name: Database table name.
+            test_list: Test list.
+        '''
         print_banner('Evaluating. . .')
         reset_db = False
         reset_tn = False
@@ -1145,7 +1199,13 @@ class Plugin_Manager():
         '''Run the correlate method of each test in self.tests.
         args:
             database - string. The location of the database with the data to correlate. If left blank, the correlation will continue with the database in the same directory as the test script.
-            table_name - string. The name of the table in the database with the relevant data. If left blank, the correlation will continue with the table named after the test script.'''
+            table_name - string. The name of the table in the database with the relevant data. If left blank, the correlation will continue with the table named after the test script.
+
+        Args:
+            database: Database.
+            table_name: Database table name.
+            test_list: Test list.
+        '''
         print_banner('Correlating. . .')
         reset_db = False
         reset_tn = False

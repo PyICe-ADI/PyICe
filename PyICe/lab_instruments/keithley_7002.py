@@ -9,7 +9,11 @@ class keithley_7002(scpi_instrument):
     '''
 
     def __init__(self, interface_visa):
-        '''interface_visa'''
+        '''interface_visa
+
+        Args:
+            interface_visa: VISA interface instance.
+        '''
         self._base_name = 'keithley_7002'
         scpi_instrument.__init__(self, self._base_name)
         self.add_interface_visa(interface_visa, timeout=10)
@@ -21,6 +25,14 @@ class keithley_7002(scpi_instrument):
         '''Add named channel at bay and num
             bay valid range [1-10]
             number valid range [1-40] for 7011S Quad 10 to 1 multiplexer card
+
+        Args:
+            bay: Instrument bay number.
+            channel_name: Name for the new channel.
+            number: Channel or port number.
+
+        Returns:
+            Result value.
         '''
         relay_channel = channel(
             channel_name,
@@ -31,11 +43,21 @@ class keithley_7002(scpi_instrument):
         return self._add_channel(relay_channel)
 
     def _close_relay(self, bay, number):
-        '''close named channel relay'''
+        '''close named channel relay
+
+        Args:
+            bay: Instrument bay number.
+            number: Channel or port number.
+        '''
         self.get_interface().write((f"CLOSE (@{bay}!{number})"))
 
     def _open_relay(self, bay, number):
-        '''open named channel relay'''
+        '''open named channel relay
+
+        Args:
+            bay: Instrument bay number.
+            number: Channel or port number.
+        '''
         self.get_interface().write((f"OPEN (@{bay}!{number})"))
 
     def _set_relay(self, bay, number, state):
@@ -45,7 +67,11 @@ class keithley_7002(scpi_instrument):
             self._open_relay(bay, number)
 
     def open_all(self, sync_channels=False):
-        '''open all relays, set sync_channels to true to keep the channels synced (no need to do this if shutting down)'''
+        '''open all relays, set sync_channels to true to keep the channels synced (no need to do this if shutting down)
+
+        Args:
+            sync_channels: Sync channels.
+        '''
         if sync_channels:
             for relay_channel in self.get_all_channels_list():
                 relay_channel.write(False)

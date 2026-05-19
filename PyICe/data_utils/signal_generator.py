@@ -29,7 +29,14 @@ class signal_generator():
                 "Taking an FFT will include significant skirt energy without windowing.")
 
     def pulse_wave(self, duty_cycle):
-        '''Generates a pulsatile wafeform of arbitrary duty cycle, high and low amplitude values.'''
+        '''Generates a pulsatile wafeform of arbitrary duty cycle, high and low amplitude values.
+
+        Args:
+            duty_cycle: Duty cycle.
+
+        Returns:
+            Result value.
+        '''
         times = []
         values = []
         time_now = 0
@@ -50,7 +57,11 @@ class signal_generator():
 
     def sine_wave(self):
         '''Generates a sine wave. Frequency, sample rate, peak and trough values are prescribed by signal generator initializer.
-           Phase is currently direspected.'''
+           Phase is currently direspected.
+
+        Returns:
+            Result value.
+        '''
         times = []
         values = []
         time_now = 0
@@ -111,5 +122,9 @@ class lfsr_period_generator():
 
     def set_polynomial(self, ploynomial):
         '''Takes a list ordered higest order term to the left, lowest to the right.
-           The rightmost term starts from 0 not 1 whereas most math references start from index 1.'''
+           The rightmost term starts from 0 not 1 whereas most math references start from index 1.
+
+        Args:
+            ploynomial: Ploynomial.
+        '''
         self.poly = ploynomial

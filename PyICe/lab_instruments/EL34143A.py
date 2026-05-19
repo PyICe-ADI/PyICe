@@ -32,7 +32,16 @@ class EL34143A(scpi_instrument):
                     add_extended_channels=True, set_range='AUTO'):
         '''Sortcut function adds CC force channel.
         if add_extended_channels, additionally add _isense,_vsense,_psense,_mode readback channels
-        Add CV,CW,CR,remote_sense channels separately if you need them.'''
+        Add CV,CW,CR,remote_sense channels separately if you need them.
+
+        Args:
+            add_extended_channels: If True, add sense and mode channels.
+            channel_name: Name for the new channel.
+            set_range: Set range.
+
+        Returns:
+            Result value.
+        '''
         ch = self.add_channel_current(channel_name, curr_range=set_range)
         ch.set_description(self.get_name() + ': ' + self.add_channel.__doc__)
         if add_extended_channels:
@@ -43,7 +52,15 @@ class EL34143A(scpi_instrument):
         return ch
 
     def add_channel_current(self, channel_name, curr_range='AUTO'):
-        '''add single CC forcing channel and force zero current'''
+        '''add single CC forcing channel and force zero current
+
+        Args:
+            channel_name: Name for the new channel.
+            curr_range: Curr range.
+
+        Returns:
+            Result value.
+        '''
         new_channel = channel(channel_name, write_function=self._SetCCCurrent)
         new_channel.set_description(
             self.get_name() + ': ' + self.add_channel_current.__doc__)
@@ -56,7 +73,15 @@ class EL34143A(scpi_instrument):
         return new_channel
 
     def _add_channel_curr_range(self, channel_name, curr_range):
-        '''add single range manipulation channel'''
+        '''add single range manipulation channel
+
+        Args:
+            channel_name: Name for the new channel.
+            curr_range: Curr range.
+
+        Returns:
+            Result value.
+        '''
         new_channel = channel(
             channel_name + '_range',
             write_function=self._SetCurrRange)
@@ -72,7 +97,14 @@ class EL34143A(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_isense(self, channel_name):
-        '''add single current readback channel'''
+        '''add single current readback channel
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_channel = channel(
             channel_name,
             read_function=lambda: self._read_isense(channel_name))
@@ -81,7 +113,14 @@ class EL34143A(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_vsense(self, channel_name):
-        '''add single voltage readback channel'''
+        '''add single voltage readback channel
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_channel = channel(
             channel_name,
             read_function=lambda: self._read_vsense(channel_name))
@@ -90,7 +129,14 @@ class EL34143A(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_psense(self, channel_name):
-        '''read back computed power dissipated in load'''
+        '''read back computed power dissipated in load
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_channel = channel(
             channel_name,
             read_function=lambda: self._read_psense(channel_name))
@@ -99,7 +145,14 @@ class EL34143A(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_mode(self, channel_name):
-        '''read back operating mode (Off, Constant Current, Constant Voltage, Constant Power, Constant Resistance)'''
+        '''read back operating mode (Off, Constant Current, Constant Voltage, Constant Power, Constant Resistance)
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_channel = channel(channel_name,
                               read_function=lambda: self.GetMode())
         new_channel.set_description(
@@ -107,19 +160,47 @@ class EL34143A(scpi_instrument):
         return self._add_channel(new_channel)
 
     def _read_vsense(self, channel_name):
-        '''Return measured voltage float.'''
+        '''Return measured voltage float.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         return self.get_interface().ask("MEAS:VOLT?")
 
     def _read_isense(self, channel_name):
-        '''Return measured current float.'''
+        '''Return measured current float.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         return self.get_interface().ask("MEAS:CURR?")
 
     def _read_psense(self, channel_name):
-        '''Return measured power float.'''
+        '''Return measured power float.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         return self.get_interface().ask("MEAS:POW?")
 
     def add_channel_remote_sense(self, channel_name):
-        '''Enable/disable remote voltage sense through panel connectors'''
+        '''Enable/disable remote voltage sense through panel connectors
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_channel = integer_channel(
             channel_name, size=1, write_function=self.SetRemoteSense)
         new_channel.set_description(
@@ -128,7 +209,15 @@ class EL34143A(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_voltage(self, channel_name, volt_range='AUTO'):
-        '''add single CV forcing channel'''
+        '''add single CV forcing channel
+
+        Args:
+            channel_name: Name for the new channel.
+            volt_range: Volt range.
+
+        Returns:
+            Result value.
+        '''
         new_channel = channel(channel_name, write_function=self._SetCVVoltage)
         new_channel.set_description(
             self.get_name() + ': ' + self.add_channel_voltage.__doc__)
@@ -138,7 +227,15 @@ class EL34143A(scpi_instrument):
         return self._add_channel(new_channel)
 
     def _add_channel_volt_range(self, channel_name, volt_range):
-        '''add single range manipulation channel'''
+        '''add single range manipulation channel
+
+        Args:
+            channel_name: Name for the new channel.
+            volt_range: Volt range.
+
+        Returns:
+            Result value.
+        '''
         self.volt_range = volt_range
         assert volt_range in [
             'MIN', 'MAX', 'AUTO'], f"set_range must be 'MIN', 'MAX', or 'AUTO'. {volt_range} is unacceptable."
@@ -155,7 +252,15 @@ class EL34143A(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_power(self, channel_name, pow_range='AUTO'):
-        '''add single CW forcing channel'''
+        '''add single CW forcing channel
+
+        Args:
+            channel_name: Name for the new channel.
+            pow_range: Pow range.
+
+        Returns:
+            Result value.
+        '''
         new_channel = channel(channel_name, write_function=self._SetCWPower)
         new_channel.set_description(
             self.get_name() + ': ' + self.add_channel_power.__doc__)
@@ -165,7 +270,15 @@ class EL34143A(scpi_instrument):
         return self._add_channel(new_channel)
 
     def _add_channel_pow_range(self, channel_name, pow_range):
-        '''add single range manipulation channel'''
+        '''add single range manipulation channel
+
+        Args:
+            channel_name: Name for the new channel.
+            pow_range: Pow range.
+
+        Returns:
+            Result value.
+        '''
         self.pow_range = pow_range
         assert pow_range in [
             'MIN', 'MED', 'MAX', 'AUTO'], f"set_range must be 'MIN', 'MED', 'MAX', or 'AUTO'. {pow_range} is unacceptable."
@@ -183,7 +296,14 @@ class EL34143A(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_resistance(self, channel_name):
-        '''add single CR forcing channel'''
+        '''add single CR forcing channel
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_channel = channel(channel_name,
                               write_function=self._SetCRResistance)
         new_channel.set_description(
@@ -193,7 +313,14 @@ class EL34143A(scpi_instrument):
         return self._add_channel(new_channel)
 
     def _add_channel_res_range(self, res_range):
-        '''add single range manipulation channel'''
+        '''add single range manipulation channel
+
+        Args:
+            res_range: Res range.
+
+        Returns:
+            Result value.
+        '''
         self.res_range = res_range
         assert res_range in [
             'MIN', 'MED', 'MAX', 'AUTO'], f"set_range must be 'MIN', 'MED', 'MAX', or 'AUTO'. {res_range} is unacceptable."

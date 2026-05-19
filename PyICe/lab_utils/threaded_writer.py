@@ -58,6 +58,18 @@ class threaded_writer(object):
         If sequence is None, Periodically read and re-write channel as keepalive.
         Thread safety provided by remote channel server infrastructure.
         First thread must call master.serve() and test script should call master.attach().
+
+        Args:
+            address: Address.
+            authkey: Authkey.
+            channel_name: Name for the new channel.
+            port: Port.
+            sequence: Sequence.
+            start: Start bit position.
+            time_interval: Time interval.
+
+        Returns:
+            Result value.
         '''
         from PyICe import lab_core
         m = lab_core.master()
@@ -82,6 +94,14 @@ class threaded_writer(object):
         '''
         Periodically execute function.
         No thread safety. Use caution with shared interfaces or use separate remote channel clients with each function. See example above.
+
+        Args:
+            function: Function.
+            start: Start bit position.
+            time_interval: Time interval.
+
+        Returns:
+            Result value.
         '''
         stop_event = threading.Event()
         stopped_event = threading.Event()
@@ -103,7 +123,15 @@ class threaded_writer(object):
         return thread
 
     def _task(self, function, time_interval, stop_event, stopped_event, qq):
-        '''thread handling loop. processes input Event to request thread termination and sends event back when thread terminates.'''
+        '''thread handling loop. processes input Event to request thread termination and sends event back when thread terminates.
+
+        Args:
+            function: Function.
+            qq: Qq.
+            stop_event: Stop event.
+            stopped_event: Stopped event.
+            time_interval: Time interval.
+        '''
         dly = delay_loop()
         params = {}
         params['time_interval'] = time_interval

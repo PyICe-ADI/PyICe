@@ -12,6 +12,15 @@ def clean_unicode(ustr):
     '50_OHM_'
     >>> clean_unicode('hello')
     'hello'
+
+    Args:
+        ustr: Ustr.
+
+    Returns:
+        Result value.
+
+    Raises:
+        Exception: On error condition.
     '''
     # limited Unicode substitution
     ustr = ustr.replace("®", "_REG_")  # 0x00AE

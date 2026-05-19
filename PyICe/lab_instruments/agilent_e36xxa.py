@@ -44,7 +44,14 @@ class agilent_e36xxa(scpi_instrument):
         time.sleep(0.2)
 
     def read_vsense(self, num):
-        '''Query the instrument and return float representing actual measured terminal voltage.'''
+        '''Query the instrument and return float representing actual measured terminal voltage.
+
+        Args:
+            num: Count or number.
+
+        Returns:
+            Result value.
+        '''
         self.get_interface().write("\n")   # Clear out instrument's input buffer
         time.sleep(0.2)
         self.get_interface().write((":INSTrument:SELect " + num))
@@ -52,7 +59,14 @@ class agilent_e36xxa(scpi_instrument):
         return float(self.get_interface().ask((":MEASure:VOLTage?")))
 
     def read_isense(self, num):
-        '''Query the instrument and return float representing actual measured terminal current.'''
+        '''Query the instrument and return float representing actual measured terminal current.
+
+        Args:
+            num: Count or number.
+
+        Returns:
+            Result value.
+        '''
         self.get_interface().write("\n")   # Clear out instrument's input buffer
         time.sleep(0.2)
         self.get_interface().write((":INSTrument:SELect " + num))
@@ -74,7 +88,11 @@ class agilent_e36xxa(scpi_instrument):
         return self.get_interface().ask("OUTput:STATe?")
 
     def _set_remote_mode(self, remote=True):
-        '''Required for RS-232 control.  Not allowed for GPIB control'''
+        '''Required for RS-232 control.  Not allowed for GPIB control
+
+        Args:
+            remote: Remote.
+        '''
         self.get_interface().write("\n")   # Clear out instrument's input buffer
         time.sleep(0.2)
         if remote:

@@ -6,7 +6,11 @@ class hp_4195a(scpi_instrument):
         Current Driver Only Collects Data; no configuration or measurement trigger'''
 
     def __init__(self, interface_visa):
-        '''interface_visa'''
+        '''interface_visa
+
+        Args:
+            interface_visa: VISA interface instance.
+        '''
         self._base_name = 'hp_4195a'
         scpi_instrument.__init__(self, f"h4195a @ {interface_visa}")
         self.add_interface_visa(interface_visa)
@@ -17,7 +21,18 @@ class hp_4195a(scpi_instrument):
             A - A register
             B - B register
             C - C register
-            D - D register'''
+            D - D register
+
+        Args:
+            channel_name: Name for the new channel.
+            register: Register.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        '''
         register = register.upper()
         if register.upper() not in ['X', 'A', 'B', 'C', 'D']:
             raise Exception(f'Bad register {register} for 4195a')
@@ -27,13 +42,28 @@ class hp_4195a(scpi_instrument):
         return self._add_channel(new_channel)
 
     def _read_4195a_register(self, register):
-        '''read from one of the five hardware registers associated with this channel_name.  Return list of scalars representing points.'''
+        '''read from one of the five hardware registers associated with this channel_name.  Return list of scalars representing points.
+
+        Args:
+            register: Register.
+
+        Returns:
+            Result value.
+        '''
         data = self.get_interface().ask(('{register}?'))
         return list(map(float, data.split(',')))
 
     def config_network(self, start=0.1, stop=500e6,
                        RBW='AUTO', NOP=401, OSCA=-50):
-        '''Configure the 4195 for network analysis  with start, stop, sweep type and resolution'''
+        '''Configure the 4195 for network analysis  with start, stop, sweep type and resolution
+
+        Args:
+            NOP: Nop.
+            OSCA: Osca.
+            RBW: Rbw.
+            start: Start bit position.
+            stop: If True, send stop condition.
+        '''
         self.get_interface().write(("RST"))
         self.get_interface().write((f"OSC1={OSCA}"))
         self.get_interface().write(("FNC1"))  # set Network
@@ -48,7 +78,14 @@ class hp_4195a(scpi_instrument):
         self.get_interface().write(("SWM2"))  # single trigger mode
 
     def config_spectrum(self, start=0.1, stop=500e6, RBW='AUTO', NOP=401):
-        '''Configure the 4195 for spectrum analysis (noise here) with start, stop, sweep type and resolution'''
+        '''Configure the 4195 for spectrum analysis (noise here) with start, stop, sweep type and resolution
+
+        Args:
+            NOP: Nop.
+            RBW: Rbw.
+            start: Start bit position.
+            stop: If True, send stop condition.
+        '''
         self.get_interface().write(("RST"))
         self.get_interface().write(("FNC2"))  # set Spectrum
         self.get_interface().write((f"START={start}"))  # start freq
@@ -63,7 +100,11 @@ class hp_4195a(scpi_instrument):
         self.get_interface().write(("SWM2"))  # singletrigger mode
 
     def trigger(self):
-        '''Return the sweep time and trigger once'''
+        '''Return the sweep time and trigger once
+
+        Returns:
+            Result value.
+        '''
         ttime = self.get_interface().ask(('ST?'))
         self.get_interface().write(('SWTRG'))
         return ttime

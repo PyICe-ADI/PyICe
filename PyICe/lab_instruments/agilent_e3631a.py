@@ -31,7 +31,20 @@ class agilent_e3631a(agilent_e36xxa):
         '''Register a named channel with the instrument.
             channel_name is a user-supplied string
             num is "P6V", "P25V", "N25V", P50V has been removed, refer to virtual instrument
-            optionally add _isense and _vsense readback channels'''
+            optionally add _isense and _vsense readback channels
+
+        Args:
+            add_sense_channels: Add sense channels.
+            channel_name: Name for the new channel.
+            ilim: Current limit.
+            num: Count or number.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        '''
         num = num.upper()
         if num not in ['P6V', 'P25V', 'N25V']:
             raise Exception(f'Invalid channel number "{num}"')

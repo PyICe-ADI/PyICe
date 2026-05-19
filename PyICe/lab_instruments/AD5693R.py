@@ -11,6 +11,10 @@ class AD5693R(instrument):
         addr7 is the 7-bit I2C address of the ADT5693R set by pinstrapping.
         A0 = 0: 1001100 (4C)
         A1 = 1: 1001110 (4E)
+
+        Args:
+            addr7: 7-bit I2C device address.
+            interface_twi: TWI/I2C interface instance.
         '''
         instrument.__init__(
             self,
@@ -44,7 +48,11 @@ class AD5693R(instrument):
             use_pec=False)
 
     def _set_code(self, code):
-        '''Set the code of the AD5693R'''
+        '''Set the code of the AD5693R
+
+        Args:
+            code: Code.
+        '''
         # self.twi.write_word(self.addr7, self.dac_reg, swap_endian(code, elementCount = 2))
         self.twi.write_register(
             addr7=self.addr7,
@@ -79,7 +87,11 @@ class AD5693R(instrument):
         self._update_controlreg()
 
     def _set_voltage(self, voltage):
-        '''Set the voltage of the AD5693R'''
+        '''Set the voltage of the AD5693R
+
+        Args:
+            voltage: Voltage value.
+        '''
         code = self._volts_to_code(voltage)
         self._set_code(code)
 

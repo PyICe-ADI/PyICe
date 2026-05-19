@@ -14,6 +14,15 @@ def csv_to_recarray(csv_input_file):
         Use automatic column names, but force data type to float with force_float_dtype boolean argument.
         Override automatic column names and data types (first row) by specifying data_type iterable of (column_name,example_contents) for each column matching query order.
         http://docs.scipy.org/doc/numpy-1.10.1/reference/generated/numpy.recarray.html
+
+    Args:
+        csv_input_file: Csv input file.
+
+    Returns:
+        Result value.
+
+    Raises:
+        Exception: On error condition.
         '''
     ##########################################################################
     # It's likely this whole thing should be replaced with numpy.genfromtxt, numpy.recfromcsv or numpy.recfromtxt.   #

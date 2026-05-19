@@ -12,7 +12,14 @@ class spectrum_analyzer():
     def compute_fft(self, signal):
         '''The argument "signal" should be a zipped list of (time,value) pairs upon which to compute the FFT.
            Requiring pre-zipping of the time,voltage series ensures that the user understands that there must be an equal number of each.
-           A scale factor of 1/√2 was added because spectrum analyzers always reports in RMS but an FFT returns sine amplitude "A" as in A•sin(ωt).'''
+           A scale factor of 1/√2 was added because spectrum analyzers always reports in RMS but an FFT returns sine amplitude "A" as in A•sin(ωt).
+
+        Args:
+            signal: Signal.
+
+        Returns:
+            Result value.
+        '''
         self.times, self.values = zip(*signal)
         self.npoints = len(self.values)
         self.yf = dBV(2.0 / self.npoints / 2**-0.5 *
@@ -28,15 +35,27 @@ class spectrum_analyzer():
 
     def get_RBW(self):
         '''Returns the effective Resolution Bandwidth which is the step between frequenices of the computed spectral record.
-           This should also be equal to 1/(Tmax-Tmin) or the reciprocal of the time series duration.'''
+           This should also be equal to 1/(Tmax-Tmin) or the reciprocal of the time series duration.
+
+        Returns:
+            Result value.
+        '''
         return self.xf[1] - self.xf[0]
 
     def get_record_duration(self):
         '''Returns the duration of the time series (Tmax-Tmin).
-           This should be the reciprocal of the Resolution Bandwidth.'''
+           This should be the reciprocal of the Resolution Bandwidth.
+
+        Returns:
+            Result value.
+        '''
         return self.times[-1] - self.times[0]
 
     def get_record_length(self):
         '''Returns the number of points in the incoming record.
-           The number of frequency points in the computed outgoing spectrum should be the same.'''
+           The number of frequency points in the computed outgoing spectrum should be the same.
+
+        Returns:
+            Result value.
+        '''
         return self.npoints

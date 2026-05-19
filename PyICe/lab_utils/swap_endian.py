@@ -10,6 +10,14 @@ def swap_endian(word, elementCount, elementSize=8):
     '0x563412'
     >>> bin(swap_endian(0b1100, 4, elementSize=1))
     '0b11'
+
+    Args:
+        elementCount: Elementcount.
+        elementSize: Elementsize.
+        word: Word.
+
+    Returns:
+        Result value.
     '''
     assert word < 2**(elementSize * elementCount)
     assert word >= 0

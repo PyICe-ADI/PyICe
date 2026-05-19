@@ -73,6 +73,10 @@ class AD5667R(instrument):
         VDD     0   0   7b0001100       0x0C
         FLOAT   1   0   7b0001110       0x0E
         GND     1   1   7b0001111       0x0F
+
+        Args:
+            addr7: 7-bit I2C device address.
+            interface_twi: TWI/I2C interface instance.
         '''
         instrument.__init__(
             self,
@@ -205,7 +209,15 @@ class AD5667R(instrument):
         return self._add_channel(powerstate_channel)
 
     def _sync_channels(self, channel, value):
-        '''Sync's Voltages and Codes to match each other after changes to either.'''
+        '''Sync's Voltages and Codes to match each other after changes to either.
+
+        Args:
+            channel: Channel object.
+            value: Value to set.
+
+        Raises:
+            Exception: On error condition.
+        '''
         if channel.get_attribute('ch_type') == 'voltage':
             voltage = value
             code = self._volts_to_code(voltage)

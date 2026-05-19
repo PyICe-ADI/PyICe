@@ -35,7 +35,12 @@ class kikusui_plz(scpi_instrument):
         self._mode = self._read_mode()
 
     def add_channel(self, channel_name, add_sense_channels=True):
-        '''Helper function adds primary current forcing channel of channel_name plus _vsense and _isense readback channels.'''
+        '''Helper function adds primary current forcing channel of channel_name plus _vsense and _isense readback channels.
+
+        Args:
+            add_sense_channels: Add sense channels.
+            channel_name: Name for the new channel.
+        '''
         self.add_channel_current(channel_name)
         if add_sense_channels:
             self.add_channel_vsense(channel_name + "_vsense")
@@ -112,32 +117,61 @@ class kikusui_plz(scpi_instrument):
         self._add_channel(new_channel)
 
     def _read_vsense(self):
-        '''Return channel measured voltage float.'''
+        '''Return channel measured voltage float.
+
+        Returns:
+            Result value.
+        '''
         return float(self.get_interface().ask("MEAS:VOLT?"))
 
     def _read_power(self):
-        '''Return channel measured power float.'''
+        '''Return channel measured power float.
+
+        Returns:
+            Result value.
+        '''
         return float(self.get_interface().ask("MEAS:POW?"))
 
     def _read_isense(self):
-        '''Return channel measured current float.'''
+        '''Return channel measured current float.
+
+        Returns:
+            Result value.
+        '''
         return float(self.get_interface().ask("MEAS:CURR?"))
 
     def _read_range(self):
-        '''Return channel range string.'''
+        '''Return channel range string.
+
+        Returns:
+            Result value.
+        '''
         return self.get_interface().ask(("CURRent:RANGe?"))
 
     def _read_load(self):
-        '''Return load state (1 -> "On", 0 -> "Off").'''
+        '''Return load state (1 -> "On", 0 -> "Off").
+
+        Returns:
+            Result value.
+        '''
         return self.get_interface().ask(("OUTPut?"))
 
     def _read_mode(self):
-        '''Return operation mode ( CC, CV, etc).'''
+        '''Return operation mode ( CC, CV, etc).
+
+        Returns:
+            Result value.
+        '''
         return self.get_interface().ask(("SOURce:FUNCtion:MODE?"))
 
     def _write_current(self, current, autorange=False):
         '''Write channel to force value current.  Optionally set range manually.
-            Valid ranges are "HIGH", "MED", and "LOW"'''
+            Valid ranges are "HIGH", "MED", and "LOW"
+
+        Args:
+            autorange: Autorange.
+            current: Current value.
+        '''
         self._write_mode("CC")
         self._mode = "CC"
         if autorange:

@@ -75,7 +75,17 @@ class sqlite_data(
             col_data_bytes, offset=1 + fmt_str_size, dtype=numpy.dtype(fmt_str))
 
     def __getitem__(self, key):
-        '''implement sequence behavior.'''
+        '''implement sequence behavior.
+
+        Args:
+            key: Key.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        '''
         subs = {}
         if isinstance(key, slice):
             if key.start is None:
@@ -99,12 +109,19 @@ class sqlite_data(
             self.sql_query + " LIMIT {limit} OFFSET {start};".format(**subs), self.params))
 
     def __iter__(self):
-        '''implement iterable behavior.'''
+        '''implement iterable behavior.
+
+        Returns:
+            Result value.
+        '''
         return self.conn.execute(self.sql_query, self.params)
 
     def __len__(self):
         '''return number of rows returned by SQL query.
         WARNING: Inefficient.
+
+        Returns:
+            Result value.
         '''
         # this is hard because the iterable doesn't actually know its length
         # self.cursor.rowcount doesn't work; returns -1 when database isn't modified.
@@ -129,6 +146,12 @@ class sqlite_data(
     def get_column_names(self):
         '''return tuple of column names.
         Column names can be used for future queries or used to select column from query row results.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
         '''
         if self.sql_query is None:
             raise Exception('table_name not specified')
@@ -142,6 +165,9 @@ class sqlite_data(
         Note that SQLite does not enforce types within a column, nor does the PyICe logger.
         The types of data stored in the first row will be returned, which may not match data stored elsewhere in the relation.
         Used by numpy array conversion to define data stride.
+
+        Returns:
+            Result value.
         '''
         cursor = self.conn.execute(self.sql_query, self.params).fetchone()
         return collections.OrderedDict(
@@ -151,6 +177,18 @@ class sqlite_data(
                      where_clause=None, force_tuple=False):
         '''return one copy of each value (set) in specified column
         table_name can be an expression returning a synthetic non-table relation.
+
+        Args:
+            column_name: Column name.
+            force_tuple: Force tuple.
+            table_name: Database table name.
+            where_clause: Where clause.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
         '''
         if isinstance(column_name, (list, tuple)):
             column_names = ', '.join(column_name)
@@ -187,19 +225,40 @@ class sqlite_data(
     def query(self, sql_query, *params):
         '''return iterable with query results.
         columns within each row can be accessed by column name or by position
+
+        Args:
+            *params: Additional positional arguments.
+            sql_query: Sql query.
+
+        Returns:
+            Result value.
         '''
         self.sql_query = sql_query
         self.params = params
         return self.conn.execute(self.sql_query, self.params)
 
     def zip(self):
-        '''return query data transposed into column_list of row_lists.'''
+        '''return query data transposed into column_list of row_lists.
+
+        Returns:
+            Result value.
+        '''
         return list(zip(*self))
 
     def csv(self, output_file, elapsed_time_columns=False,
             append=False, encoding='utf-8'):
         '''write data to CSV output_file.
-        set output_file to None to just return CSV string.'''
+        set output_file to None to just return CSV string.
+
+        Args:
+            append: Append.
+            elapsed_time_columns: Elapsed time columns.
+            encoding: Encoding.
+            output_file: Output file.
+
+        Returns:
+            Result value.
+        '''
         # migrate to csv.DictWriter ?
         # https://docs.python.org/3/library/csv.html
         output_txt = ""
@@ -241,14 +300,23 @@ class sqlite_data(
         return output_txt
 
     def xlsx(self, output_file, elapsed_time_columns=False):
-        '''write data to excel output_file.'''
+        '''write data to excel output_file.
+
+        Args:
+            elapsed_time_columns: Elapsed time columns.
+            output_file: Output file.
+        '''
         from .sqlite_to_xlsx import sqlite_to_xlsx  # local import to avoid circular dependency
         with sqlite_to_xlsx(output_file) as writer:
             writer.add_worksheet(self, elapsed_time_columns)
             writer.close()
 
     def to_list(self):
-        '''return copy of data in list object'''
+        '''return copy of data in list object
+
+        Returns:
+            Result value.
+        '''
         return [row for row in self]
 
     def numpy_recarray(self, force_float_dtype=False, data_types=None):
@@ -259,6 +327,16 @@ class sqlite_data(
         Use automatic column names, but force data type to float with force_float_dtype boolean argument.
         Override automatic column names and data types (first row) by specifying data_type iterable of (column_name,example_contents) for each column matching query order.
         http://docs.scipy.org/doc/numpy-1.10.1/reference/generated/numpy.recarray.html
+
+        Args:
+            data_types: Data types.
+            force_float_dtype: Force float dtype.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
         '''
         if force_float_dtype and data_types is None:
             dtype = numpy.dtype([(key, type(float()))
@@ -276,7 +354,11 @@ class sqlite_data(
         return arr.view(numpy.recarray)
 
     def pandas_dataframe(self):
-        '''return Pandas dataframe based on stored sql_query'''
+        '''return Pandas dataframe based on stored sql_query
+
+        Returns:
+            Result value.
+        '''
         return pandas.read_sql_query(self.sql_query,
                                      self.conn,
                                      params=self.params,
@@ -288,7 +370,14 @@ class sqlite_data(
                                      )
 
     def column_query(self, column_list):
-        '''return partial query string separating column names with comma characters.'''
+        '''return partial query string separating column names with comma characters.
+
+        Args:
+            column_list: Column list.
+
+        Returns:
+            Result value.
+        '''
         str = ''
         for column in column_list:
             str += '{},'.format(column)
@@ -299,6 +388,16 @@ class sqlite_data(
         Feed back into query to get elapsed time column.
         Ex "SELECT rowid, {}, * FROM ...".format(sqlite_data_obj.time_delta_query())
         Use time_div to convert from second to your choice of time scales, example: time_div=3600 would be hours.
+
+        Args:
+            column_name: Column name.
+            time_div: Time div.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
         '''
         if column_name is None:
             if time_div == 0.001:
@@ -330,6 +429,18 @@ class sqlite_data(
         result tuple can be fed into a new query("SELECT ... WHERE rowid in {}".format(sqlite_data_obj.filter_change())).
         it table_name is omitted, instance default will be used.
         setting preceding_row to True will also return the rowid before the change occurred.
+
+        Args:
+            column_name_list: Column name list.
+            first_row: First row.
+            preceding_row: Preceding row.
+            table_name: Database table name.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
         '''
         if table_name is None:
             table_name = self.table_name
@@ -370,6 +481,17 @@ class sqlite_data(
         Scalar data will be expanded to vector length.
         Returns numpy record array.
         Optionally write output to comma separated file if csv_filname argument is specified.
+
+        Args:
+            csv_append: Csv append.
+            csv_encoding: Csv encoding.
+            csv_filename: Csv filename.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
         '''
         columns = []
         dtypes = []

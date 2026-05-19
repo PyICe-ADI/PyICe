@@ -21,7 +21,17 @@ def print_hex_bytes(the_bytes, number_of_bytes_per_line=16,
     lab_utils.logfile's print_to_file_and_screen() method.
     If number_of_bytes_per_line is None, then all bytes will
     be printed on one line AND the caller is responsible for
-    ensuring that the_bytes is a finite number of bytes.'''
+    ensuring that the_bytes is a finite number of bytes.
+
+    Args:
+        number_of_bytes_per_line: Number of bytes per line.
+        number_of_bytes_to_print: Number of bytes to print.
+        prefix: Name prefix string.
+        show_offsets: Show offsets.
+        suffix: Suffix.
+        the_bytes: The bytes.
+        write: Write.
+    '''
     # Validate arguments.
     assert isinstance(the_bytes, collections.Iterable)
     for v in (number_of_bytes_per_line, number_of_bytes_to_print):

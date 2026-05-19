@@ -14,6 +14,11 @@ class delay_loop(object):
           This ensures long-term time stability at the expense of increased jitter.
           Windows task switching can add multi-mS uncertainty to each delay() call, which can accumulate if not accounted for.
           Set no_drift=False to ignore time over-runs when computing next delay time.
+
+        Args:
+            begin: Begin.
+            no_drift: No drift.
+            strict: Strict.
         '''
         self.strict = strict
         self.no_drift = no_drift
@@ -28,16 +33,28 @@ class delay_loop(object):
         return self.delay(seconds)
 
     def get_count(self):
-        '''returns total number of times delay() method called'''
+        '''returns total number of times delay() method called
+
+        Returns:
+            Result value.
+        '''
         return self.count
 
     def get_total_time(self):
-        '''returns total number of seconds since first delay'''
+        '''returns total number of seconds since first delay
+
+        Returns:
+            Result value.
+        '''
         return (datetime.datetime.now(datetime.UTC) -
                 self.start_time).total_seconds()
 
     def begin(self, offset=0):
-        '''make note of begin time for loop measurement. Use offset to adjust the begin time in case of overrun on last cycle.'''
+        '''make note of begin time for loop measurement. Use offset to adjust the begin time in case of overrun on last cycle.
+
+        Args:
+            offset: Offset value.
+        '''
         if self.begin_time is None:
             self.start_time = datetime.datetime.now(datetime.UTC)
         self.begin_time = datetime.datetime.now(
@@ -45,7 +62,17 @@ class delay_loop(object):
 
     def delay(self, seconds):
         '''delay extra time to make loop time constant
-            returns actual delay time achieved'''
+            returns actual delay time achieved
+
+        Args:
+            seconds: Seconds.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        '''
         if self.begin_time is None:
             raise Exception('Call begin() method before delay().')
         self.count += 1
@@ -79,7 +106,17 @@ class delay_loop(object):
         return self.delay_time
 
     def time_remaining(self, loop_time):
-        '''Use this in a while loop to perform another function for duration loop_time. Test the result for 0 or less.'''
+        '''Use this in a while loop to perform another function for duration loop_time. Test the result for 0 or less.
+
+        Args:
+            loop_time: Loop time.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        '''
         if self.begin_time is None:
             raise Exception('Call begin() method before time_remaining().')
         remaining_time = loop_time - \
@@ -91,9 +128,17 @@ class delay_loop(object):
         return remaining_time
 
     def delay_margin(self):
-        '''Return extra time remaining (ie sleep time) before last call to delay().'''
+        '''Return extra time remaining (ie sleep time) before last call to delay().
+
+        Returns:
+            Result value.
+        '''
         return self.delay_time
 
     def achieved_loop_time(self):
-        '''Return previous actual achieved loop time (including any overrun).'''
+        '''Return previous actual achieved loop time (including any overrun).
+
+        Returns:
+            Result value.
+        '''
         return self.loop_time

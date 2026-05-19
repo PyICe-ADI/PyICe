@@ -18,7 +18,11 @@ class sun_ec0x(sun_ecxx):
         sun_ecxx.__init__(self, interface_visa)
 
     def _write_temperature(self, value):
-        '''Set named channel to new temperature "value"'''
+        '''Set named channel to new temperature "value"
+
+        Args:
+            value: Value to set.
+        '''
         # self._standby()
         self.setpoint = value
         time.sleep(1)
@@ -29,7 +33,11 @@ class sun_ec0x(sun_ecxx):
         self._wait_settle()
 
     def _enable(self, enable):
-        '''enable/disable temperature chamber heating and cooling'''
+        '''enable/disable temperature chamber heating and cooling
+
+        Args:
+            enable: Enable or disable.
+        '''
         if enable:
             self.get_interface().write("ON")
         else:

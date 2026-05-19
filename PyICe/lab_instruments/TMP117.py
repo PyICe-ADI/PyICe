@@ -15,6 +15,10 @@ class TMP117(instrument):
         ADD0 = V+:     0x49
         ADD0 = SDA:    0x4A
         ADD0 = SCL:    0x4B
+
+        Args:
+            addr7: 7-bit I2C device address.
+            interface_twi: TWI/I2C interface instance.
         '''
         instrument.__init__(
             self,
@@ -38,7 +42,11 @@ class TMP117(instrument):
 
     def enable(self, enable=True):
         '''Place TMP117 into shutdown by writing enabled=False
-        Re-enable by writing enabled=True'''
+        Re-enable by writing enabled=True
+
+        Args:
+            enable: Enable or disable.
+        '''
         if enable:
             self.twi.write_register(
                 addr7=self.addr7,
@@ -56,7 +64,11 @@ class TMP117(instrument):
 
     def read_temp(self):
         '''Return free-running temperature conversion result.
-        Temperature is the signed result at 7.8125m°C/lsb'''
+        Temperature is the signed result at 7.8125m°C/lsb
+
+        Returns:
+            Result value.
+        '''
         data = self.twi.read_register(
             addr7=self.addr7,
             commandCode=self.registers['Temp_Result'],
@@ -68,7 +80,11 @@ class TMP117(instrument):
             data, bitCount=16) / 128.0      # LSB size adjustment
 
     def read_id(self):
-        '''Return REV ID and Device ID'''
+        '''Return REV ID and Device ID
+
+        Returns:
+            Result value.
+        '''
         data = self.twi.read_register(
             addr7=self.addr7,
             commandCode=self.registers['Device_ID'],

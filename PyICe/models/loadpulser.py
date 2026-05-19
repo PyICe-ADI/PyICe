@@ -10,7 +10,11 @@ def loadpulser():
     There is a dead zoe up to about 1.3V which may make this difficult for a servo instrument to deal with.
     It's based on an LTSPICE simulation of an FMMT617 NPN and 100m Ohm resistor.
     The base is loaded with 50 Ohms and the source voltage is assumed to be on the upstream of 50 Ohms of source impedance or in other words the open circuit voltage.
-    The schematic can be found in the Kicad repo for the Stowe base Board under Docs.'''
+    The schematic can be found in the Kicad repo for the Stowe base Board under Docs.
+
+    Returns:
+        Result value.
+    '''
 
     xpoints = [
         0.000000000000000e+00,

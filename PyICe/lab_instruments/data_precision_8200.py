@@ -36,25 +36,51 @@ class data_precision_8200(instrument):
         +/-10V range has 10uV resolution, output impedance 10 mOhm, max current 100mA
         +/-100V range has 100uV resolution, output impedance 20 mOhm, max current 10mA
         +/-1000V range specifications are unknown
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
         '''
         new_channel = channel(channel_name, write_function=self._write_voltage)
         return self._add_channel(new_channel)
 
     def add_channel_current(self, channel_name):
         '''Write channel to switch instrument to current mode and program current between +/-100mA
-        Voltage compliance is +/-10V'''
+        Voltage compliance is +/-10V
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_channel = channel(channel_name, write_function=self._write_current)
         return self._add_channel(new_channel)
 
     def add_channel_vrange(self, channel_name):
         '''Write channel to set voltage mode full scale range to +/-(0.1,10,100,1000)V
         Takes immediate effect when in voltage mode, cached until switch to voltage mode when in current mode
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
         '''
         new_channel = channel(channel_name, write_function=self._set_vrange)
         return self._add_channel(new_channel)
 
     def add_channel_mode(self, channel_name):
-        '''Channel returns 'V' when in Voltage mode and 'A' when in current mode'''
+        '''Channel returns 'V' when in Voltage mode and 'A' when in current mode
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_channel = channel(channel_name, read_function=self._get_mode)
         return self._add_channel(new_channel)
 

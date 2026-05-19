@@ -19,7 +19,15 @@ class htx9000(scpi_instrument):
 
     def add_channel(self, channel_name, add_extended_channels=True):
         '''Helper function adds current forcing channel of channel_name
-        optionally also adds _dropout and _readback channels.'''
+        optionally also adds _dropout and _readback channels.
+
+        Args:
+            add_extended_channels: If True, add sense and mode channels.
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         if add_extended_channels:
             self.add_channel_current_readback(channel_name + "_readback")
             self.add_channel_dropout(channel_name + "_dropout")
@@ -97,7 +105,15 @@ class htx9000(scpi_instrument):
         return self._add_channel(new_channel)
 
     def _write_current(self, value, range=None):
-        '''Write channel to value.'''
+        '''Write channel to value.
+
+        Args:
+            range: Measurement or output range.
+            value: Value to set.
+
+        Raises:
+            Exception: On error condition.
+        '''
         # TODO: instrument currently broken - sets range to low if under-range
         # on input Steve to fix.
         if value < 0:  # ooops need to fix instrument, does bad things when asked to make negative SM.
@@ -131,7 +147,11 @@ class htx9000(scpi_instrument):
             print(f"saw {len(flush_chars)} extra characters: {flush_chars}")
 
     def _read_dropout(self):
-        '''Return False if in regulation, True if in dropout.'''
+        '''Return False if in regulation, True if in dropout.
+
+        Returns:
+            Result value.
+        '''
         while True:
             data = self.get_interface().ask("DROPout?")
             try:
@@ -150,7 +170,11 @@ class htx9000(scpi_instrument):
 
     def _readback_current(self):
         '''Return current setting from instrument.  Steve verify that this is just a rounded version of what
-            was previously written.'''
+            was previously written.
+
+        Returns:
+            Result value.
+        '''
         while True:
             data = self.get_interface().ask("SOURce:CURRent?")
             try:
@@ -170,7 +194,11 @@ class htx9000(scpi_instrument):
         return float(self.get_interface().ask("TEMP:BOARD?"))
 
     def _write_swipepad_lock(self, value):
-        '''Turn on or off the swipe pad lock so incidental contact doesn't change the value.'''
+        '''Turn on or off the swipe pad lock so incidental contact doesn't change the value.
+
+        Args:
+            value: Value to set.
+        '''
         self.get_interface().write("SYSTem:LOCK" if value else "SYSTem:LOCK:RELease")
         try:
             response = self.get_interface().ask("SYSTem:ERRor?")

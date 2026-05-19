@@ -30,7 +30,11 @@ class csv_logger(csv_writer):
         self.f.close()
 
     def _row_count(self):
-        '''private method used by rowid column.'''
+        '''private method used by rowid column.
+
+        Returns:
+            Result value.
+        '''
         self._row_id += 1
         return self._row_id
 
@@ -61,7 +65,14 @@ class csv_logger(csv_writer):
                 (t - self._time_zero).total_seconds()))
 
     def add_column(self, channel):
-        '''set up output to include channel object as column data source'''
+        '''set up output to include channel object as column data source
+
+        Args:
+            channel: Channel object.
+
+        Raises:
+            Exception: On error condition.
+        '''
         if self.header_written:
             raise Exception(
                 "Can't add column {} after header has been written.".format(
@@ -74,14 +85,28 @@ class csv_logger(csv_writer):
             transform=None)
 
     def add_columns(self, channel_list):
-        '''set up output to include channel objects in channel_list as column data sources'''
+        '''set up output to include channel objects in channel_list as column data sources
+
+        Args:
+            channel_list: Channel list.
+
+        Raises:
+            Exception: On error condition.
+        '''
         if self.header_written:
             raise Exception("Can't add columns after header has been written.")
         for channel in channel_list:
             self.add_column(channel)
 
     def write(self, channel_data):
-        '''write selected columns with data supplied in channel_data dictionary'''
+        '''write selected columns with data supplied in channel_data dictionary
+
+        Args:
+            channel_data: Channel data.
+
+        Returns:
+            Result value.
+        '''
         # migrate to csv.DictWriter ?
         # https://docs.python.org/3/library/csv.html
         if not self.header_written:
@@ -106,6 +131,9 @@ class csv_logger(csv_writer):
 
     def register_logger_callback(self, logger):
         '''register this csv_logger instance with a lab_core.logger instance for automatic data plotting
+
+        Args:
+            logger: Logger.
         '''
         if not len(self.columns):
             self.add_timestamps()
@@ -113,7 +141,12 @@ class csv_logger(csv_writer):
         logger.add_log_callback(self.write)
 
     def unregister_logger_callback(self, logger, close_file=True):
-        '''clean up in case lab_core.logger will be re-used for a new test.'''
+        '''clean up in case lab_core.logger will be re-used for a new test.
+
+        Args:
+            close_file: Close file.
+            logger: Logger.
+        '''
         logger.remove_log_callback(self.write)
         if close_file:
             self.f.close()

@@ -72,6 +72,9 @@ def test_labcomm():
     """
     Main Test code for labcomm initialization
     :return:
+
+    Raises:
+        SystemExit: On error condition.
     """
 
     while True:

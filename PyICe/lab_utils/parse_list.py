@@ -10,6 +10,15 @@ def parse_list(string_list):
     ['a', 'b']
     >>> parse_list('[[1, 2], [3, 4]]')
     [[1, 2], [3, 4]]
+
+    Args:
+        string_list: String list.
+
+    Returns:
+        Result value.
+
+    Raises:
+        Exception: On error condition.
     '''
     if type(string_list) is not type(""):
         raise Exception(

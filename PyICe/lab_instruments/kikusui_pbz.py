@@ -17,7 +17,17 @@ class kikusui_pbz(scpi_instrument):
                     add_extended_channels=True):
         '''Helper channel adds primary voltage forcing channel.
             Optionally specify channel current limit.  Valid range is [???-???]
-            optionally also adds _ilim_source and _ilim_sink limit forcing channels'''
+            optionally also adds _ilim_source and _ilim_sink limit forcing channels
+
+        Args:
+            add_extended_channels: If True, add sense and mode channels.
+            channel_name: Name for the new channel.
+            delay: Delay time in seconds.
+            ilim: Current limit.
+
+        Returns:
+            Result value.
+        '''
         voltage_channel = self.add_channel_voltage(channel_name)
         voltage_channel.set_write_delay(delay)
         if add_extended_channels:
@@ -82,24 +92,44 @@ class kikusui_pbz(scpi_instrument):
         self.get_interface().write((f"CURR:PROT:LOW {current}"))
 
     def _write_voltage(self, voltage):
-        '''set output voltage'''
+        '''set output voltage
+
+        Args:
+            voltage: Voltage value.
+        '''
         self.get_interface().write((f"VOLTage {voltage}"))
 
     def _write_output_enable(self, enable):
-        '''set output enable'''
+        '''set output enable
+
+        Args:
+            enable: Enable or disable.
+        '''
         if enable:
             self.get_interface().write(("OUTP 1"))
         else:
             self.get_interface().write(("OUTP 0"))
 
     def _read_voltage_readback(self):
-        '''Returns instrument's actual setopint.  May differ by commanded value by rounding/range error'''
+        '''Returns instrument's actual setopint.  May differ by commanded value by rounding/range error
+
+        Returns:
+            Result value.
+        '''
         return float(self.get_interface().ask("VOLT?"))
 
     def _read_vsense(self):
-        '''Returns instrument's measured output voltage.'''
+        '''Returns instrument's measured output voltage.
+
+        Returns:
+            Result value.
+        '''
         return float(self.get_interface().ask("MEAS:VOLT?"))
 
     def _read_isense(self):
-        '''Returns instrument's measured current output.'''
+        '''Returns instrument's measured current output.
+
+        Returns:
+            Result value.
+        '''
         return float(self.get_interface().ask("MEAS:CURR?"))

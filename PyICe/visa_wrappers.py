@@ -90,7 +90,16 @@ class visa_wrapper(object):
         ie ASCII header '#<heder_bytes_following><data_bytes_following><data0>...<dataN>
         eg #40003<byte0><byte1><byte2><byte3>
         format_str and byte_order are passed to struct library for to set word boundaries for unpacking and conversion to numeric types
-        https://docs.python.org/2/library/struct.html#format-strings'''
+        https://docs.python.org/2/library/struct.html#format-strings
+
+        Args:
+            byte_order: Byte order.
+            format_str: Format str.
+            terminationCharacter: Terminationcharacter.
+
+        Raises:
+            NotImplementedError: On error condition.
+        '''
         raise NotImplementedError(
             'Interface Not Fully Implemented: read_values_binary()')
 
@@ -108,7 +117,17 @@ class visa_wrapper(object):
         ie ASCII header '#<heder_bytes_following><data_bytes_following><data0>...<dataN>
         eg #40003<byte0><byte1><byte2><byte3>
         format_str and byte_order are passed to struct library for to set word boundaries for unpacking and conversion to numeric types
-        https://docs.python.org/2/library/struct.html#format-strings'''
+        https://docs.python.org/2/library/struct.html#format-strings
+
+        Args:
+            byte_order: Byte order.
+            format_str: Format str.
+            message: Message.
+            terminationCharacter: Terminationcharacter.
+
+        Returns:
+            Result value.
+        '''
         assert isinstance(message, bytes)
         self.write_raw(message)
         return self.read_values_binary(
@@ -128,7 +147,11 @@ class visa_wrapper(object):
             'Interface Not Fully Implemented: read_raw()')
 
     def resync(self):
-        '''flush buffers to resync after communication fault - usb-serial problem'''
+        '''flush buffers to resync after communication fault - usb-serial problem
+
+        Returns:
+            Result value.
+        '''
         return ''
 
     def close(self):
@@ -296,6 +319,17 @@ class visa_wrapper_serial(visa_wrapper):
         '=': native
         '<': little-endian (LSByte first)
         '>': big-endian (MSByte first)
+
+        Args:
+            byte_order: Byte order.
+            format_str: Format str.
+            terminationCharacter: Terminationcharacter.
+
+        Returns:
+            Result value.
+
+        Raises:
+            visaWrapperException: On error condition.
         '''
         dbgprint(
             "vvv-- visa_wrapper_serial.read_values_binary({}) entered".format(self.serial_port_name))

@@ -113,7 +113,11 @@ class TestNoneOperations:
 # --- Data Structures ---
 
 def make_test_results():
-    """Create a minimal Test_Results instance with a mock module."""
+    """Create a minimal Test_Results instance with a mock module.
+
+    Returns:
+        Result value.
+    """
     module = MagicMock()
     module.get_name.return_value = 'test_module'
     module.get_database.return_value = MagicMock()
@@ -446,7 +450,11 @@ class TestRegisterTestFailure:
 class TestCustomJSONEncoder:
 
     def get_encoder(self):
-        """Extract the CustomJSONizer class from _json_report."""
+        """Extract the CustomJSONizer class from _json_report.
+
+        Returns:
+            Result value.
+        """
         from numpy import bool_, ndarray
 
         class CustomJSONizer(json.JSONEncoder):
@@ -483,7 +491,11 @@ class TestCustomJSONEncoder:
 # --- JSON Schema & Round-Trip Tests ---
 
 def build_populated_test_results():
-    """Build a Test_Results with multiple tests, conditions, and results."""
+    """Build a Test_Results with multiple tests, conditions, and results.
+
+    Returns:
+        Result value.
+    """
     tr = make_test_results()
 
     # Declare test limits
@@ -511,7 +523,15 @@ def build_populated_test_results():
 
 
 def write_json_report(tr, path):
-    """Generate JSON report bypassing database metadata lookup."""
+    """Generate JSON report bypassing database metadata lookup.
+
+    Args:
+        path: Path.
+        tr: Tr.
+
+    Returns:
+        Result value.
+    """
     # Mock the module's database access for _json_report
     mock_db = MagicMock()
     mock_db.get_table_names.return_value = []
@@ -704,7 +724,12 @@ class TestJSONRoundTrip:
         assert bool(reloaded) == bool(original)
 
     def test_double_round_trip(self, round_trip, tmp_path):
-        """Serialize reloaded results back to JSON and compare structure."""
+        """Serialize reloaded results back to JSON and compare structure.
+
+        Args:
+            round_trip: Round trip.
+            tmp_path: Tmp path.
+        """
         original, reloaded, _ = round_trip
         # Re-export from reloaded object
         reloaded._module = MagicMock()

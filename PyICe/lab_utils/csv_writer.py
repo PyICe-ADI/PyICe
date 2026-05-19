@@ -21,7 +21,15 @@ class csv_writer(object):
         return header_txt[:-1] + '\n'
 
     def _format_output(self, data, column_setup_tuple):
-        '''give just one element of a data row'''
+        '''give just one element of a data row
+
+        Args:
+            column_setup_tuple: Column setup tuple.
+            data: Data to write.
+
+        Returns:
+            Result value.
+        '''
         if column_setup_tuple.query_function is not None:
             data = column_setup_tuple.query_function()
         data = column_setup_tuple.transform(data)
@@ -39,32 +47,57 @@ class csv_writer(object):
     def add_comment(self, comment_str, comment_character='#'):
         '''add comment line(s) to the top of the output file.
         Live Graph treats '@' as a 'description line' and '#' as a 'comment line'.
-        Neither has any effect on the data interpretation.'''
+        Neither has any effect on the data interpretation.
+
+        Args:
+            comment_character: Comment character.
+            comment_str: Comment str.
+        '''
         self.comments.append('{}{}'.format(comment_character, comment_str))
 
     def add_elapsed_seconds(self, display_name='elapsed_seconds', format=''):
-        '''computes elapsed seconds since first row of table'''
+        '''computes elapsed seconds since first row of table
+
+        Args:
+            display_name: Display name.
+            format: Format name string.
+        '''
         self._add_elapsed_time(
             display_name=display_name,
             format=format,
             transform=self.no_transform)
 
     def add_elapsed_minutes(self, display_name='elapsed_minutes', format=''):
-        '''computes elapsed minutes since first row of table'''
+        '''computes elapsed minutes since first row of table
+
+        Args:
+            display_name: Display name.
+            format: Format name string.
+        '''
         self._add_elapsed_time(
             display_name=display_name,
             format=format,
             transform=lambda x: x / 60.0)
 
     def add_elapsed_hours(self, display_name='elapsed_hours', format=''):
-        '''computes elapsed hours since first row of table'''
+        '''computes elapsed hours since first row of table
+
+        Args:
+            display_name: Display name.
+            format: Format name string.
+        '''
         self._add_elapsed_time(
             display_name=display_name,
             format=format,
             transform=lambda x: x / 3600.0)
 
     def add_elapsed_days(self, display_name='elapsed_days', format=''):
-        '''computes elapsed days since first row of table'''
+        '''computes elapsed days since first row of table
+
+        Args:
+            display_name: Display name.
+            format: Format name string.
+        '''
         self._add_elapsed_time(
             display_name=display_name,
             format=format,
@@ -80,6 +113,13 @@ class csv_writer(object):
         transform is a python function applied to the query results before formatting
         format is a format string to alter the column data.  Ex: 3.2f.
         query function is a function that returns data directly from Python rather than from external data source. Ex: time
+
+        Args:
+            display_name: Display name.
+            format: Format name string.
+            query_function: Query function.
+            query_name: Query name.
+            transform: Transform.
         '''
         if display_name is None:
             display_name = query_name
@@ -98,6 +138,11 @@ class csv_writer(object):
         '''Shortcut method to add multiple data columns at once.
         column_list selects additional data columns to output.
         format is a format string to alter the column data.  Ex: 3.2f.
-        For more flexibility, add columns individually using add_column() method.'''
+        For more flexibility, add columns individually using add_column() method.
+
+        Args:
+            column_list: Column list.
+            format: Format name string.
+        '''
         for column in column_list:
             self.add_column(column, format=format)

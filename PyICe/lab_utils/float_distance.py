@@ -3,7 +3,15 @@ import sys
 
 
 def float_distance(x, y):
-    '''return signed difference between x and y expressed as distance between representable floating point numbers.'''
+    '''return signed difference between x and y expressed as distance between representable floating point numbers.
+
+    Args:
+        x: X.
+        y: Y.
+
+    Returns:
+        Result value.
+    '''
     # Boost library algorithm port:
     # http://www.boost.org/doc/libs/1_45_0/boost/math/special_functions/next.hpp
     if x > y:

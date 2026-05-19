@@ -9,7 +9,11 @@ class rigol_DG800(scpi_instrument):
         parameters (low voltage, high voltage, pulse width, period, transition time and no. of cycles)'''
 
     def __init__(self, instrument_visa):
-        '''instrument_visa'''
+        '''instrument_visa
+
+        Args:
+            instrument_visa: Instrument visa.
+        '''
         self._base_name = 'Rigol_DG800'
         scpi_instrument.__init__(self, f"DG800 @ {instrument_visa}")
         self.add_interface_visa(instrument_visa)
@@ -45,7 +49,17 @@ class rigol_DG800(scpi_instrument):
 
     def _config_pulse_func(self, channel_number, function, high_voltage=3.3,
                            low_voltage=0, period=500e-6, pulse_width=50e-6, cycle_count=1):
-        '''Set instrument output function to pulse generation.'''
+        '''Set instrument output function to pulse generation.
+
+        Args:
+            channel_number: Physical channel number.
+            cycle_count: Cycle count.
+            function: Function.
+            high_voltage: High voltage.
+            low_voltage: Low voltage.
+            period: Period.
+            pulse_width: Pulse width.
+        '''
         self.instrument.write(
             f"SOURce{channel_number}:FUNCtion:SHAPe {function}")
         self.instrument.write(f"OUTPut{channel_number}:IMPedance 50")

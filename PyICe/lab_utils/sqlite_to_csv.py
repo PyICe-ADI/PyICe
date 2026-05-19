@@ -9,7 +9,12 @@ class sqlite_to_csv(csv_writer):
     def __init__(self, table_name, database_file='data_log.sqlite'):
         '''name is the chart title.
         table_name is the database table containing selected data columns.
-        database_file is the sqlite file containing table_name.'''
+        database_file is the sqlite file containing table_name.
+
+        Args:
+            database_file: Database file.
+            table_name: Database table name.
+        '''
         csv_writer.__init__(self)
         self.table_name = table_name
         self.conn = sqlite3.connect(database_file)
@@ -39,7 +44,13 @@ class sqlite_to_csv(csv_writer):
             transform=transform)
 
     def write(self, output_file, append=False, encoding='utf-8'):
-        '''write previously selected column data to output_file.'''
+        '''write previously selected column data to output_file.
+
+        Args:
+            append: Append.
+            encoding: Encoding.
+            output_file: Output file.
+        '''
         query_txt = ''
         for column in self.columns:
             query_txt += "{},".format(column.query_name)

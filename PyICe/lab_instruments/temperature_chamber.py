@@ -17,7 +17,14 @@ class temperature_chamber(instrument, metaclass=ABCMeta):
     def add_channels(self, channel_name):
         '''Add most commonly used channels.
         channel_name represents temperature setpoint.
-        Also adds _sense, _soak, _window, and _soak_settling_time channels.'''
+        Also adds _sense, _soak, _window, and _soak_settling_time channels.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         temp_ch = self.add_channel_temp(channel_name)
         self.add_channel_sense(channel_name + "_sense")
         self.add_channel_soak(channel_name + "_soak")
@@ -30,11 +37,25 @@ class temperature_chamber(instrument, metaclass=ABCMeta):
         return temp_ch
 
     def add_channel(self, channel_name):
-        '''Adds just the main temperature setting setpoint channel.'''
+        '''Adds just the main temperature setting setpoint channel.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         return self.add_channel_temp(channel_name)
 
     def add_channel_temp(self, channel_name):
-        '''Channel_name represents PID loop forcing temperature setpoint.'''
+        '''Channel_name represents PID loop forcing temperature setpoint.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_channel = channel(channel_name,
                               write_function=self._write_temperature)
         new_channel.set_description(
@@ -43,7 +64,14 @@ class temperature_chamber(instrument, metaclass=ABCMeta):
         return self._add_channel(new_channel)
 
     def add_channel_sense(self, channel_name):
-        '''channel_name represents primary PID control loop thermocouple readback.'''
+        '''channel_name represents primary PID control loop thermocouple readback.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_channel = channel(channel_name,
                               read_function=self._read_temperature_sense)
         new_channel.set_description(
@@ -51,7 +79,14 @@ class temperature_chamber(instrument, metaclass=ABCMeta):
         return self._add_channel(new_channel)
 
     def add_channel_soak(self, channel_name):
-        '''channel_name represents soak time setpoint in seconds. Soak timer runs while temperature is continuously within 'window' and resets to zero otherwise.'''
+        '''channel_name represents soak time setpoint in seconds. Soak timer runs while temperature is continuously within 'window' and resets to zero otherwise.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_channel = channel(channel_name, write_function=self._set_soak)
         new_channel.write(self.soak)
         new_channel.set_description(
@@ -59,7 +94,14 @@ class temperature_chamber(instrument, metaclass=ABCMeta):
         return self._add_channel(new_channel)
 
     def add_channel_window(self, channel_name):
-        '''channel_name represents width setpoint of tolerance window to start soak timer. Setpoint is total window width in degrees (temp must be +/-window/2).'''
+        '''channel_name represents width setpoint of tolerance window to start soak timer. Setpoint is total window width in degrees (temp must be +/-window/2).
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_channel = channel(channel_name, write_function=self._set_window)
         new_channel.write(self.window)
         new_channel.set_description(
@@ -67,14 +109,28 @@ class temperature_chamber(instrument, metaclass=ABCMeta):
         return self._add_channel(new_channel)
 
     def add_channel_soak_settling_time(self, channel_name):
-        '''channel_name represents soak timer elapsed time readback.'''
+        '''channel_name represents soak timer elapsed time readback.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_channel = channel(channel_name, read_function=lambda: self.time)
         new_channel.set_description(
             self.get_name() + ': ' + self.add_channel_soak_settling_time.__doc__)
         return self._add_channel(new_channel)
 
     def add_channel_settle_time_limit(self, channel_name):
-        '''channel_name represents max time to wait for oven to settle to within window before raising Exception.'''
+        '''channel_name represents max time to wait for oven to settle to within window before raising Exception.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_channel = channel(channel_name,
                               write_function=self._set_settle_time_limit)
         new_channel.write(self.settle_time_limit)
@@ -83,7 +139,14 @@ class temperature_chamber(instrument, metaclass=ABCMeta):
         return self._add_channel(new_channel)
 
     def add_channel_blocking(self, channel_name):
-        '''allow Python to continue immediately for gui/interactive use without waiting for slew/settle'''
+        '''allow Python to continue immediately for gui/interactive use without waiting for slew/settle
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_channel = integer_channel(
             channel_name, size=1, write_function=self.set_blocking_mode)
         new_channel.set_description(
@@ -93,7 +156,14 @@ class temperature_chamber(instrument, metaclass=ABCMeta):
 
     def add_channel_enable(self, channel_name):
         '''channel name represents oven enable/disable setting.  Accepts boolean and True enables the oven.
-        Heat and cool only settings also accepted if temperature chamber supports that.'''
+        Heat and cool only settings also accepted if temperature chamber supports that.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_channel = integer_channel(
             channel_name, size=2, write_function=self._enable)
         new_channel.set_description(
@@ -105,25 +175,45 @@ class temperature_chamber(instrument, metaclass=ABCMeta):
         return self._add_channel(new_channel)
 
     def set_blocking_mode(self, blocking):
-        '''allow Python to continue immediately for gui/interactive use without waiting for slew/settle'''
+        '''allow Python to continue immediately for gui/interactive use without waiting for slew/settle
+
+        Args:
+            blocking: Blocking.
+        '''
         self._blocking = blocking
 
     def _set_window(self, value):
-        '''Set allowed window to start soak timer.'''
+        '''Set allowed window to start soak timer.
+
+        Args:
+            value: Value to set.
+        '''
         self.window = value
 
     def _set_settle_time_limit(self, seconds):
         '''set oven to standby and raise exception if oven does not settle within
-            specified time'''
+            specified time
+
+        Args:
+            seconds: Seconds.
+        '''
         self.settle_time_limit = seconds
 
     def _set_soak(self, value):
-        '''Set soak time in seconds'''
+        '''Set soak time in seconds
+
+        Args:
+            value: Value to set.
+        '''
         self.soak = value
 
     def _wait_settle(self):
         '''Block until temperature has been within window for soak time.
-            Optionally abort, set oven to standby, and raise exception if oven temp fails to converge in specified time'''
+            Optionally abort, set oven to standby, and raise exception if oven temp fails to converge in specified time
+
+        Raises:
+            Exception: On error condition.
+        '''
         if not self._blocking:
             return
         settled = 0
@@ -174,5 +264,8 @@ class temperature_chamber(instrument, metaclass=ABCMeta):
         '''separate method to turn off temperature chamber.
         overload if possible for individual hardware.
         otherwise, default to disable heating and cooling.
+
+        Args:
+            shutdown: Shutdown.
         '''
         self._enable(not shutdown)

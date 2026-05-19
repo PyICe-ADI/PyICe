@@ -16,12 +16,20 @@ class LTspice_wavereader():
            This script endevors to parse the file and return a Python record of the individual columns.
 
            The resultant data structure is a dictionary with the header row values as the keys and a list of values found for each column as the values for each key.
-           It is incumbent upon the user to massage the record further, for example zipping times and voltages if need be for the data analysis.'''
+           It is incumbent upon the user to massage the record further, for example zipping times and voltages if need be for the data analysis.
+
+        Args:
+            file_name: File name.
+        '''
         self.file_name = file_name
 
     def read_file(self, floats=True):
         '''As returned from the file, each data value would be a string.
-           The argument 'floats' (default True) converts all the values to floats presuming that was the intent of the LTCspice excercise.'''
+           The argument 'floats' (default True) converts all the values to floats presuming that was the intent of the LTCspice excercise.
+
+        Args:
+            floats: Floats.
+        '''
         rows = []
         file = open(self.file_name, "r")
         firstline = True
@@ -45,7 +53,12 @@ class LTspice_wavereader():
         '''This utility can be used to resample the data with a known fixed time step so that an FFT may be taken.
            LTspice, as with all versions of Spice, generates variable time steps as needed for covergence.
            The first column of data (first dictionary key) is presumed to be the indepdendent variable, or common indepedent variable, across all columns - almost invariably "time".
-           The original series is destroyed and replaced with the resampled version.'''
+           The original series is destroyed and replaced with the resampled version.
+
+        Args:
+            timestep: Timestep.
+            verbose: If True, print debug output.
+        '''
 
         keys = [key for key in self.data.keys()]
         native_times = self.data[keys[0]]

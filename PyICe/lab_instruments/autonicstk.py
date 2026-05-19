@@ -42,7 +42,14 @@ class autonicstk(instrument):
         return self.modbus_pid.read_register(1001, functioncode=4)
 
     def add_channel_measured(self, channel_name):
-        '''Measured Temperature Readback (PV)'''
+        '''Measured Temperature Readback (PV)
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_register = channel(
             f'{channel_name}_PV',
             read_function=self._read_temperature_sense)
@@ -55,7 +62,14 @@ class autonicstk(instrument):
             1000, number_of_decimals=self.get_decimal(), functioncode=4, signed=True)
 
     def add_channel_units(self, channel_name):
-        '''Select Celsius or Farenheit. CAUTION: Units also change PID gains.'''
+        '''Select Celsius or Farenheit. CAUTION: Units also change PID gains.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_register = register(f'{channel_name}_Units',
                                 size=1,
                                 read_function=lambda: self.modbus_pid.read_register(
@@ -70,7 +84,14 @@ class autonicstk(instrument):
         return self._add_channel(new_register)
 
     def add_channel_setpoint(self, channel_name):
-        '''Target Temperature Setpoint (SV)'''
+        '''Target Temperature Setpoint (SV)
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_register = modbus_register(channel_name,
                                        read_function=lambda: self.retry(
                                            lambda: self.modbus_pid.read_register(
@@ -95,7 +116,14 @@ class autonicstk(instrument):
             signed=True)
 
     def add_channel_heat_mv(self, channel_name):
-        '''Heater percent power manipulated variable (MV). Can be written directly in manual mode.'''
+        '''Heater percent power manipulated variable (MV). Can be written directly in manual mode.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_register = modbus_register(f'{channel_name}_MV_Heat',
                                        read_function=lambda: self.modbus_pid.read_register(
                                            1, number_of_decimals=1, functioncode=3, signed=False),
@@ -105,7 +133,14 @@ class autonicstk(instrument):
         return self._add_channel(new_register)
 
     def add_channel_cool_mv(self, channel_name):
-        '''Cooler percent power manipulated variable (MV). Can be written directly in manual mode.'''
+        '''Cooler percent power manipulated variable (MV). Can be written directly in manual mode.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_register = modbus_register(f'{channel_name}_MV_Cool',
                                        read_function=lambda: self.modbus_pid.read_register(
                                            2, number_of_decimals=1, functioncode=3, signed=False),
@@ -115,7 +150,14 @@ class autonicstk(instrument):
         return self._add_channel(new_register)
 
     def add_channel_mode(self, channel_name):
-        '''Automatic/Manual mode selector. Automatic uses temperature setpoint (SV). Manual uses heat and cool MV setpoints.'''
+        '''Automatic/Manual mode selector. Automatic uses temperature setpoint (SV). Manual uses heat and cool MV setpoints.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_register = register(f'{channel_name}_Mode',
                                 size=1,
                                 read_function=lambda: self.modbus_pid.read_register(
@@ -130,7 +172,14 @@ class autonicstk(instrument):
         return self._add_channel(new_register)
 
     def add_channel_presets(self, channel_name):
-        '''Select one of 4 pre-selected temperatures.'''
+        '''Select one of 4 pre-selected temperatures.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_register = register(f'{channel_name}_Preset',
                                 size=16,
                                 read_function=lambda: self.modbus_pid.read_register(
@@ -147,7 +196,14 @@ class autonicstk(instrument):
         return self._add_channel(new_register)
 
     def add_channel_alarm1(self, channel_name):
-        '''Alarm 1 output status.'''
+        '''Alarm 1 output status.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_register = integer_channel(f'{channel_name}_Alarm1',
                                        size=1,
                                        read_function=lambda: self.modbus_pid.read_register(1006, functioncode=4) >> 9 & 1)
@@ -160,7 +216,14 @@ class autonicstk(instrument):
         return self._add_channel(new_register)
 
     def add_channel_alarm2(self, channel_name):
-        '''Alarm 2 output status.'''
+        '''Alarm 2 output status.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_register = integer_channel(f'{channel_name}_Alarm2',
                                        size=1,
                                        read_function=lambda: self.modbus_pid.read_register(1006, functioncode=4) >> 10 & 1)
@@ -173,7 +236,14 @@ class autonicstk(instrument):
         return self._add_channel(new_register)
 
     def add_channel_enable_output(self, channel_name):
-        '''Enable/Disable heat and cool outputs.'''
+        '''Enable/Disable heat and cool outputs.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_register = register(f'{channel_name}_enable',
                                 size=1,
                                 read_function=lambda: False if self.modbus_pid.read_register(
@@ -191,7 +261,14 @@ class autonicstk(instrument):
         self.modbus_pid.write_register(50, 0 if enable else 1, functioncode=6)
 
     def add_channel_heat_cool_mode(self, channel_name):
-        '''enable heat only, cool only or heat-cool mode'''
+        '''enable heat only, cool only or heat-cool mode
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_register = register(f'{channel_name}_heat_cool_mode',
                                 size=2,
                                 read_function=lambda: self.modbus_pid.read_register(
@@ -207,7 +284,14 @@ class autonicstk(instrument):
         return self._add_channel(new_register)
 
     def add_channel_autotune(self, channel_name):
-        '''Start autotune sequence.'''
+        '''Start autotune sequence.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_register = register(f'{channel_name}_Autotune',
                                 size=1,
                                 read_function=lambda: self.modbus_pid.read_register(
@@ -222,7 +306,14 @@ class autonicstk(instrument):
         return self._add_channel(new_register)
 
     def add_channels_tuning(self, channel_name):
-        '''PID control gain settings. See: https://en.wikipedia.org/wiki/PID_controller#Alternative_nomenclature_and_PID_forms'''
+        '''PID control gain settings. See: https://en.wikipedia.org/wiki/PID_controller#Alternative_nomenclature_and_PID_forms
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_channels = []
         new_register = modbus_register(f'{channel_name}_Heat_Proportional',
                                        read_function=lambda: self.modbus_pid.read_register(

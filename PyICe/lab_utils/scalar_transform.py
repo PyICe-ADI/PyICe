@@ -12,6 +12,14 @@ def scalar_transform(rec_array, column_scalar_functions, column_names=None):
     column_names is a list of names for each column in the returned record array.
     To leave a column name unchanged from input record array, set column name to None.
     To leave all column names unchanged from input record array, set column_names to None.
+
+    Args:
+        column_names: Column names.
+        column_scalar_functions: Column scalar functions.
+        rec_array: Rec array.
+
+    Returns:
+        Result value.
     '''
     column_vector_functions = []
     for csf in column_scalar_functions:

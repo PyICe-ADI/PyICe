@@ -170,7 +170,14 @@ class Units_Parser():
 
 
 def parser(units):
-    '''Backward compatible with the old loose function call'''
+    '''Backward compatible with the old loose function call
+
+    Args:
+        units: Unit string.
+
+    Returns:
+        Result value.
+    '''
     return Units_Parser().parse(units)
 
 

@@ -11,6 +11,15 @@ def bounded(value, min_value=None, max_value=None, key=None):
     10
     >>> bounded(-3, min_value=0)
     0
+
+    Args:
+        key: Key.
+        max_value: Max value.
+        min_value: Min value.
+        value: Value to set.
+
+    Returns:
+        Result value.
     '''
     kwargs = {}
     if key is not None:

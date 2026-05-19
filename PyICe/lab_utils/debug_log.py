@@ -20,7 +20,11 @@ class debug_log(object):
         return None
 
     def write(self, msg):
-        '''Add a message to the log file. Also print the message if debug is True'''
+        '''Add a message to the log file. Also print the message if debug is True
+
+        Args:
+            msg: Msg.
+        '''
         t_str = time.asctime()
         m_str = "{} :: {}\n".format(t_str, msg)
         if self.debug:

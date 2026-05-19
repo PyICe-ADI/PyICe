@@ -8,6 +8,14 @@ def make_comparator_system(m, threshold=2.5, hysteresis=0.0):
 
     Uses PyICe.models.comparator which properly models rising/falling
     thresholds, hysteresis, and output levels.
+
+    Args:
+        hysteresis: Hysteresis.
+        m: M.
+        threshold: Threshold.
+
+    Returns:
+        Result value.
     """
     rising_th = threshold + hysteresis / 2
     falling_th = threshold - hysteresis / 2
@@ -109,7 +117,11 @@ class TestThresholdFinderLinearSearch:
 class TestThresholdFinderPolarity:
 
     def test_inverted_polarity(self, master_instance):
-        """Comparator output goes LOW when input exceeds threshold."""
+        """Comparator output goes LOW when input exceeds threshold.
+
+        Args:
+            master_instance: Master instance.
+        """
         m = master_instance
         comp = comparator(falling_threshold=2.5, rising_threshold=2.5,
                           out_high=0.0, out_low=5.0)
@@ -148,7 +160,11 @@ class TestComparatorOvershoot:
     """Test threshold_finder with comparator overshoot modeling."""
 
     def test_overshoot_shifts_binary_threshold(self, master_instance):
-        """With large overshoot, the binary search finds a shifted threshold."""
+        """With large overshoot, the binary search finds a shifted threshold.
+
+        Args:
+            master_instance: Master instance.
+        """
         m = master_instance
         # Large overshoot: 50% of step magnitude
         comp = comparator(falling_threshold=2.5, rising_threshold=2.5,

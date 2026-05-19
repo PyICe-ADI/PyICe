@@ -41,7 +41,11 @@ class StreamWindow(object):
     def _shift_buffer(self, num_bytes):
         '''Delete num_bytes of data from the front of buf, overwriting
         it with valid data slid over from the end of buf. This makes
-        room at the end of buf for new data from stream.'''
+        room at the end of buf for new data from stream.
+
+        Args:
+            num_bytes: Number of bytes.
+        '''
         self.buf[:self.buffer_size - num_bytes] = self.buf[num_bytes:]
 
     def _read_buffer(self, num_bytes):
@@ -55,12 +59,26 @@ class StreamWindow(object):
 
     def __len__(self):
         '''Just return the number of valid bytes in the FIFO, as it is already
-        known that streams have indefinite length.'''
+        known that streams have indefinite length.
+
+        Returns:
+            Result value.
+        '''
         return self.content_size
 
     def __getitem__(self, k):
         '''Support x[i] indexing or x[i:j] slice peeking into the FIFO.
-        0 indexes the head byte in the FIFO, -1 indexes the tail byte.'''
+        0 indexes the head byte in the FIFO, -1 indexes the tail byte.
+
+        Args:
+            k: K.
+
+        Returns:
+            Result value.
+
+        Raises:
+            IndexError: On error condition.
+        '''
         if isinstance(k, int):
             if (k > 0 and k >= self.content_size) or (
                     k < 0 and -k > self.content_size):
@@ -74,12 +92,28 @@ class StreamWindow(object):
 
     def find(self, sub, start=0, end=None):
         '''Return the lowest index in FIFO buffer where subsection sub is found.
-        Returns -1 if not found.'''
+        Returns -1 if not found.
+
+        Args:
+            end: End.
+            start: Start bit position.
+            sub: Sub.
+
+        Returns:
+            Result value.
+        '''
         return self.buf.find(sub, 0, self.content_size)
 
     def read(self, num=1):
         '''Try to read and consume num bytes from the FIFO-buffered stream.
-        Returns at most num bytes as a string.'''
+        Returns at most num bytes as a string.
+
+        Args:
+            num: Count or number.
+
+        Returns:
+            Result value.
+        '''
         assert num > 0
         if self.debug:
             print(
@@ -120,7 +154,14 @@ class StreamWindow(object):
         buffer to allow future peek()s and read()s to see them. If FIFO is full,
         peek() returns only what is in the FIFO and won't read from stream until
         space is made.
-        Use read() to make some space in the FIFO to continue retrieving bytes from stream.'''
+        Use read() to make some space in the FIFO to continue retrieving bytes from stream.
+
+        Args:
+            num: Count or number.
+
+        Returns:
+            Result value.
+        '''
         assert num > 0
         if num > self.buffer_size:
             num = self.buffer_size

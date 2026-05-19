@@ -10,12 +10,29 @@ def floatRange(start, stop=None, step=None):
     [0.0, 0.5]
     >>> floatRange(0, 3, 1)
     [0, 1, 2]
+
+    Args:
+        start: Start bit position.
+        step: Step size.
+        stop: If True, send stop condition.
+
+    Returns:
+        Result value.
     '''
     return numpy.arange(start, stop, step).tolist()
 
 
 def floatRangeInc(start, stop=None, step=None):
-    '''Same as float range, however it is inclusive of the last value'''
+    '''Same as float range, however it is inclusive of the last value
+
+    Args:
+        start: Start bit position.
+        step: Step size.
+        stop: If True, send stop condition.
+
+    Returns:
+        Result value.
+    '''
     fr = floatRange(start, stop, step)
     if fr[-1] != stop:
         # stopnumber: End of interval. The interval does not include this
@@ -32,6 +49,18 @@ def logRange(start, stop, stepsPerDecade=None, stepsPerOctave=None):
     6
     >>> logRange(1, 10, stepsPerDecade=1)
     [1.0]
+
+    Args:
+        start: Start bit position.
+        stepsPerDecade: Stepsperdecade.
+        stepsPerOctave: Stepsperoctave.
+        stop: If True, send stop condition.
+
+    Returns:
+        Result value.
+
+    Raises:
+        Exception: On error condition.
     '''
     if (stepsPerDecade is not None and stepsPerOctave is None):
         stepsize = 10**(1.0 / stepsPerDecade)  # possible divide by zero!
@@ -66,6 +95,13 @@ def decadeListRange(decadePoints, decades):
 
     >>> decadeListRange([1, 2, 5], 3)
     [1, 2, 5, 10, 20, 50, 100, 200, 500]
+
+    Args:
+        decadePoints: Decadepoints.
+        decades: Decades.
+
+    Returns:
+        Result value.
     '''
     r = []
     exp = 0

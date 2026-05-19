@@ -41,7 +41,11 @@ class twi_interface(object, metaclass=abc.ABCMeta):
     def restart(self):
         '''I2C Re-Start  - Falling SDA with SCL high between start and stop condition.
         Implement only if restart requires a different action than a normal start in underlying hardware.
-        Returns True or False to indicate successful arbitration'''
+        Returns True or False to indicate successful arbitration
+
+        Returns:
+            Result value.
+        '''
         return self.start()
 
     @abc.abstractmethod
@@ -75,7 +79,11 @@ class twi_interface(object, metaclass=abc.ABCMeta):
 
     # Utilities###
     def scan(self):
-        '''Find all devices on bus by checking acknowledge of each address in turn.'''
+        '''Find all devices on bus by checking acknowledge of each address in turn.
+
+        Returns:
+            Result value.
+        '''
         responses = []
         for addr in range(0, 255, 2):
             self.start()
@@ -219,7 +227,26 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         return word_value
 
     def read_register(self, addr7, commandCode, data_size, use_pec):
-        '''read data (8,16,32, or 64b) with optional additional PEC byte read from slave.'''
+        '''read data (8,16,32, or 64b) with optional additional PEC byte read from slave.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+            data_size: Data size.
+            use_pec: If True, use PEC (Packet Error Checking).
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+            i2cAcknowledgeError: On error condition.
+            i2cCommandCodeAcknowledgeError: On error condition.
+            i2cPECError: On error condition.
+            i2cReadAddressAcknowledgeError: On error condition.
+            i2cStartStopError: On error condition.
+            i2cWriteAddressAcknowledgeError: On error condition.
+        '''
         self.print_warning(
             operation=f"read_register Data Size={data_size}, PEC={use_pec}")
         debug_logging.debug(
@@ -341,7 +368,15 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             turn a device function on or off, or enable/disable a low-power standby mode. There is no data sent or
             received.
             The quick command implementation is good for very small devices that have limited support for the
-            SMBus specification. It also limits data on the bus for simple devices.'''
+            SMBus specification. It also limits data on the bus for simple devices.
+
+        Args:
+            addr7: 7-bit I2C device address.
+
+        Raises:
+            i2cReadAddressAcknowledgeError: On error condition.
+            i2cStartStopError: On error condition.
+        '''
         self.print_warning(operation="quick_command_rd")
         if not self.start():
             raise i2cStartStopError(
@@ -358,7 +393,15 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             turn a device function on or off, or enable/disable a low-power standby mode. There is no data sent or
             received.
             The quick command implementation is good for very small devices that have limited support for the
-            SMBus specification. It also limits data on the bus for simple devices.'''
+            SMBus specification. It also limits data on the bus for simple devices.
+
+        Args:
+            addr7: 7-bit I2C device address.
+
+        Raises:
+            i2cStartStopError: On error condition.
+            i2cWriteAddressAcknowledgeError: On error condition.
+        '''
         # self.print_warning(operation="quick_command_wr")
         if not self.start():
             raise i2cStartStopError(
@@ -376,7 +419,12 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             All or parts of the Send Byte may contribute to the command. For example, the highest 7 bits of the
             command code might specify an access to a feature, while the least significant bit would tell the device to
             turn the feature on or off. Or, a device may set the “volume” of its output based on the value it received
-            from the Send Byte protocol.'''
+            from the Send Byte protocol.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            data8: 8-bit data value.
+        '''
         self.write_register(
             addr7,
             commandCode=data8,
@@ -385,7 +433,12 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             use_pec=False)
 
     def send_byte_pec(self, addr7, data8):
-        '''send_byte with additional PEC byte written to slave.'''
+        '''send_byte with additional PEC byte written to slave.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            data8: 8-bit data value.
+        '''
         self.write_register(
             addr7,
             commandCode=data8,
@@ -397,12 +450,26 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         '''The Receive Byte is similar to a Send Byte, the only difference being the direction of data transfer. A
             simple device may have information that the host needs. It can do so with the Receive Byte protocol. The
             same device may accept both Send Byte and Receive Byte protocols. A NACK (a ‘1’ in the ACK bit
-            position) signifies the end of a read transfer.'''
+            position) signifies the end of a read transfer.
+
+        Args:
+            addr7: 7-bit I2C device address.
+
+        Returns:
+            Result value.
+        '''
         return self.read_register(
             self, addr7, commandCode=None, data_size=0, use_pec=False)
 
     def receive_byte_pec(self, addr7):
-        '''receive_byte with additional PEC byte read from slave.'''
+        '''receive_byte with additional PEC byte read from slave.
+
+        Args:
+            addr7: 7-bit I2C device address.
+
+        Returns:
+            Result value.
+        '''
         return self.read_register(
             self, addr7, commandCode=None, data_size=0, use_pec=True)
 
@@ -418,7 +485,14 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         transmit device is placed in the 7 most significant bits of the byte. The eighth bit can be a zero or one.
 
         Returns 7 bit address of responding device.
-        Returns None if no response to ARA.'''
+        Returns None if no response to ARA.
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cStartStopError: On error condition.
+        '''
         self.print_warning(operation="alert_response")
         if not self.start():
             raise i2cStartStopError()
@@ -433,7 +507,15 @@ class twi_interface(object, metaclass=abc.ABCMeta):
     def alert_response_pec(self):
         '''Alert Response Query to SMBALERT# interrupt with Packet Error Check.
             Returns 7 bit address of responding device.
-            Returns None if no response to ARA.'''
+            Returns None if no response to ARA.
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cPECError: On error condition.
+            i2cStartStopError: On error condition.
+        '''
         self.print_warning(operation="alert_response_pec")
         byteList = []
         if not self.start():
@@ -457,7 +539,13 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             is the data to be written. In this example the master asserts the slave device address followed by the write
             bit. The device acknowledges and the master delivers the command code. The slave again acknowledges
             before the master sends the data byte. The slave acknowledges each byte, and the
-            entire transaction is finished with a STOP condition.'''
+            entire transaction is finished with a STOP condition.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+            data8: 8-bit data value.
+        '''
         self.write_register(
             addr7,
             commandCode,
@@ -466,7 +554,13 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             use_pec=False)
 
     def write_byte_pec(self, addr7, commandCode, data8):
-        '''write_byte with additional PEC byte written to slave.'''
+        '''write_byte with additional PEC byte written to slave.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+            data8: 8-bit data value.
+        '''
         self.write_register(
             addr7,
             commandCode,
@@ -479,7 +573,13 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             are the data to be written. In this example the master asserts the slave device address followed by the write
             bit. The device acknowledges and the master delivers the command code. The slave again acknowledges
             before the master sends the data word (low byte first). The slave acknowledges each byte, and the
-            entire transaction is finished with a STOP condition.'''
+            entire transaction is finished with a STOP condition.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+            data16: 16-bit data value.
+        '''
         self.write_register(
             addr7,
             commandCode,
@@ -488,7 +588,13 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             use_pec=False)
 
     def write_word_pec(self, addr7, commandCode, data16):
-        '''write_word with additional PEC byte written to slave.'''
+        '''write_word with additional PEC byte written to slave.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+            data16: 16-bit data value.
+        '''
         self.write_register(
             addr7,
             commandCode,
@@ -501,12 +607,28 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             slave device. Then it must follow that command with a repeated START condition to denote a read from
             that device’s address. The slave then returns one byte of data.
             Note that there is no STOP condition before the repeated START condition, and that a NACK signifies the
-            end of the read transfer.'''
+            end of the read transfer.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+
+        Returns:
+            Result value.
+        '''
         return self.read_register(
             addr7, commandCode, data_size=8, use_pec=False)
 
     def read_byte_pec(self, addr7, commandCode):
-        '''read_byte with additional PEC byte read from slave.'''
+        '''read_byte with additional PEC byte read from slave.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+
+        Returns:
+            Result value.
+        '''
         return self.read_register(
             addr7, commandCode, data_size=8, use_pec=True)
 
@@ -515,12 +637,28 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             slave device. Then it must follow that command with a repeated START condition to denote a read from
             that device’s address. The slave then returns two bytes of data.
             Note that there is no STOP condition before the repeated START condition, and that a NACK signifies the
-            end of the read transfer.'''
+            end of the read transfer.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+
+        Returns:
+            Result value.
+        '''
         return self.read_register(
             addr7, commandCode, data_size=16, use_pec=False)
 
     def read_word_pec(self, addr7, commandCode):
-        '''read_word with additional PEC byte read from slave.'''
+        '''read_word with additional PEC byte read from slave.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+
+        Returns:
+            Result value.
+        '''
         return self.read_register(
             addr7, commandCode, data_size=16, use_pec=True)
 
@@ -529,7 +667,24 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             dependent on that data. The protocol is simply a Write Word followed by a Read Word without the Read-
             Word command field and the Write-Word STOP bit.
             Note that there is no STOP condition before the repeated START condition, and that a NACK signifies the
-            end of the read transfer.'''
+            end of the read transfer.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+            data16: 16-bit data value.
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cCommandCodeAcknowledgeError: On error condition.
+            i2cDataHighAcknowledgeError: On error condition.
+            i2cDataLowAcknowledgeError: On error condition.
+            i2cReadAddressAcknowledgeError: On error condition.
+            i2cStartStopError: On error condition.
+            i2cWriteAddressAcknowledgeError: On error condition.
+        '''
         self.print_warning(operation="process_call")
         self.check_size(commandCode, 8)
         dataLow = self.get_byte(data16, 0)
@@ -555,7 +710,25 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         return self.word([dataLow, dataHigh])
 
     def process_call_pec(self, addr7, commandCode, data16):
-        '''process_call with additional PEC byte read from slave.'''
+        '''process_call with additional PEC byte read from slave.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+            data16: 16-bit data value.
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cCommandCodeAcknowledgeError: On error condition.
+            i2cDataHighAcknowledgeError: On error condition.
+            i2cDataLowAcknowledgeError: On error condition.
+            i2cPECError: On error condition.
+            i2cReadAddressAcknowledgeError: On error condition.
+            i2cStartStopError: On error condition.
+            i2cWriteAddressAcknowledgeError: On error condition.
+        '''
         self.print_warning(operation="process_call_pec")
         self.check_size(commandCode, 8)
         dataLow = self.get_byte(data16, 0)
@@ -598,7 +771,20 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             issues a byte count which describes how many more bytes will follow in the message. If a slave has 20
             bytes to send, the byte count field will have the value 20 (14h), followed by the 20 bytes of data. The byte
             count does not include the PEC byte. The byte count may not be 0. A Block Read or Write is allowed to
-            transfer a maximum of 32 data bytes.'''
+            transfer a maximum of 32 data bytes.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+            dataByteList: Databytelist.
+
+        Raises:
+            i2cCommandCodeAcknowledgeError: On error condition.
+            i2cDataAcknowledgeError: On error condition.
+            i2cError: On error condition.
+            i2cStartStopError: On error condition.
+            i2cWriteAddressAcknowledgeError: On error condition.
+        '''
         self.print_warning(operation="block_write")
         if not self.start():
             raise i2cStartStopError()
@@ -621,7 +807,21 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             raise i2cStartStopError()
 
     def block_write_pec(self, addr7, commandCode, dataByteList):
-        '''block_write with additional PEC byte written to slave.'''
+        '''block_write with additional PEC byte written to slave.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+            dataByteList: Databytelist.
+
+        Raises:
+            i2cCommandCodeAcknowledgeError: On error condition.
+            i2cDataAcknowledgeError: On error condition.
+            i2cDataPECAcknowledgeError: On error condition.
+            i2cError: On error condition.
+            i2cStartStopError: On error condition.
+            i2cWriteAddressAcknowledgeError: On error condition.
+        '''
         self.print_warning(operation="block_write_pec")
         byteList = []
         if not self.start():
@@ -653,7 +853,22 @@ class twi_interface(object, metaclass=abc.ABCMeta):
     def block_read(self, addr7, commandCode):
         '''A Block Read differs from a block write in that the repeated START condition exists to satisfy the
             requirement for a change in the transfer direction. A NACK immediately preceding the STOP condition
-            signifies the end of the read transfer.'''
+            signifies the end of the read transfer.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cCommandCodeAcknowledgeError: On error condition.
+            i2cError: On error condition.
+            i2cReadAddressAcknowledgeError: On error condition.
+            i2cStartStopError: On error condition.
+            i2cWriteAddressAcknowledgeError: On error condition.
+        '''
         self.print_warning(operation="block_read")
         if not self.start():
             raise i2cStartStopError()
@@ -681,7 +896,23 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         return dataByteList
 
     def block_read_pec(self, addr7, commandCode):
-        '''block_read with additional PEC byte read from slave.'''
+        '''block_read with additional PEC byte read from slave.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cCommandCodeAcknowledgeError: On error condition.
+            i2cError: On error condition.
+            i2cPECError: On error condition.
+            i2cReadAddressAcknowledgeError: On error condition.
+            i2cStartStopError: On error condition.
+            i2cWriteAddressAcknowledgeError: On error condition.
+        '''
         self.print_warning(operation="block_read_pec")
         byteList = []
         if not self.start():
@@ -735,7 +966,24 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             with the first slave address and using the normal PEC computational rules. It is highly recommended that a
             PEC byte be used with the Block Write-Block Read Process Call.
             Note that there is no STOP condition before the repeated START condition, and that a NACK signifies the
-            end of the read transfer.'''
+            end of the read transfer.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+            dataByteListWrite: Databytelistwrite.
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cCommandCodeAcknowledgeError: On error condition.
+            i2cDataAcknowledgeError: On error condition.
+            i2cError: On error condition.
+            i2cReadAddressAcknowledgeError: On error condition.
+            i2cStartStopError: On error condition.
+            i2cWriteAddressAcknowledgeError: On error condition.
+        '''
         self.print_warning(operation="block_process_call")
         if not self.start():
             raise i2cStartStopError()
@@ -772,7 +1020,25 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         return dataByteListRead
 
     def block_process_call_pec(self, addr7, commandCode, dataByteListWrite):
-        '''block write-block read process call with additional PEC byte read from slave.'''
+        '''block write-block read process call with additional PEC byte read from slave.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+            dataByteListWrite: Databytelistwrite.
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cCommandCodeAcknowledgeError: On error condition.
+            i2cDataAcknowledgeError: On error condition.
+            i2cError: On error condition.
+            i2cPECError: On error condition.
+            i2cReadAddressAcknowledgeError: On error condition.
+            i2cStartStopError: On error condition.
+            i2cWriteAddressAcknowledgeError: On error condition.
+        '''
         self.print_warning(operation="block_process_call_pec")
         byteList = []
         if not self.start():
@@ -825,6 +1091,14 @@ class twi_interface(object, metaclass=abc.ABCMeta):
     def _read_x_list(self, addr7, cc_list, rd_function):
         '''Return dictionary of read results.
         Reads each commandCode of cc_list in turn at chip address addr7 using rd_function protocol.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            cc_list: Cc list.
+            rd_function: Rd function.
+
+        Returns:
+            Result value.
         '''
         self.print_warning(operation="_read_x_list")
         cc_data = {}
@@ -836,6 +1110,13 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         '''Return dictionary of read_byte results.
         Reads each commandCode of cc_list in turn at chip address addr7
         Overload this method to improve communication speed when the instrument supports it.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            cc_list: Cc list.
+
+        Returns:
+            Result value.
         '''
         self.print_warning(operation="read_byte_list")
         return self._read_x_list(addr7, cc_list, self.read_byte)
@@ -844,6 +1125,13 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         '''Return dictionary of read_byte_pec results.
         Reads each commandCode of cc_list in turn at chip address addr7
         Overload this method to improve communication speed when the instrument supports it.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            cc_list: Cc list.
+
+        Returns:
+            Result value.
         '''
         self.print_warning(operation="read_byte_list_pec")
         return self._read_x_list(addr7, cc_list, self.read_byte_pec)
@@ -852,6 +1140,13 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         '''Return dictionary of read_word results.
         Reads each commandCode of cc_list in turn at chip address addr7
         Overload this method to improve communication speed when the instrument supports it.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            cc_list: Cc list.
+
+        Returns:
+            Result value.
         '''
         self.print_warning(operation="read_word_list")
         return self._read_x_list(addr7, cc_list, self.read_word)
@@ -860,6 +1155,13 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         '''Return dictionary of read_word_pec results.
         Reads each commandCode of cc_list in turn at chip address addr7
         Overload this method to improve communication speed when the instrument supports it.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            cc_list: Cc list.
+
+        Returns:
+            Result value.
         '''
         self.print_warning(operation="read_word_list_pec")
         return self._read_x_list(addr7, cc_list, self.read_word_pec)
@@ -899,28 +1201,47 @@ class i2c_dummy(twi_interface):
         self._cc_data = {}
 
     def start(self):
-        '''don't do anything.  Return value indicates that transaction was successful.'''
+        '''don't do anything.  Return value indicates that transaction was successful.
+
+        Returns:
+            Result value.
+        '''
         time.sleep(self._delay)
         if self._verbose:
             print("i2c_dummy Start")
         return True
 
     def stop(self):
-        '''don't do anything.  Return value indicates that transaction was successful.'''
+        '''don't do anything.  Return value indicates that transaction was successful.
+
+        Returns:
+            Result value.
+        '''
         time.sleep(self._delay)
         if self._verbose:
             print("i2c_dummy Stop")
         return True
 
     def write(self, data8):
-        '''don't do anything.  Return value indicates that transaction was successful.'''
+        '''don't do anything.  Return value indicates that transaction was successful.
+
+        Args:
+            data8: 8-bit data value.
+
+        Returns:
+            Result value.
+        '''
         time.sleep(self._delay)
         if self._verbose:
             print("i2c_dummy write 0x{:02X}".format(data8))
         return True
 
     def read_ack(self):
-        '''don't do anything.  Return random 8-bit value'''
+        '''don't do anything.  Return random 8-bit value
+
+        Returns:
+            Result value.
+        '''
         time.sleep(self._delay)
         rd = random.randint(0, 255)
         if self._verbose:
@@ -928,7 +1249,11 @@ class i2c_dummy(twi_interface):
         return rd
 
     def read_nack(self):
-        '''don't do anything.  Return random 8-bit value'''
+        '''don't do anything.  Return random 8-bit value
+
+        Returns:
+            Result value.
+        '''
         time.sleep(self._delay)
         rd = random.randint(0, 255)
         if self._verbose:
@@ -967,7 +1292,21 @@ class i2c_dummy(twi_interface):
 
     def read_register(self, addr7, commandCode,
                       data_size, use_pec, no_delay=False):
-        '''read data (8,16,32, or 64b) with optional additional PEC byte read from slave.'''
+        '''read data (8,16,32, or 64b) with optional additional PEC byte read from slave.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+            data_size: Data size.
+            no_delay: No delay.
+            use_pec: If True, use PEC (Packet Error Checking).
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        '''
         if data_size in (8, 16, 32, 64):
             self.check_size(commandCode, self._cc_size)
         elif data_size in (-1, 0):
@@ -1083,7 +1422,11 @@ class i2c_buspirate(twi_interface):
         self.ser.close()
 
     def start(self):
-        '''I2C Start  - Falling SDA with SCL high.  Returns True or False to indicate successful arbitration'''
+        '''I2C Start  - Falling SDA with SCL high.  Returns True or False to indicate successful arbitration
+
+        Returns:
+            Result value.
+        '''
         self.ser.write(self.commands['start'])
         resp = self.ser.read(1)
         if resp == '\x01':
@@ -1092,7 +1435,11 @@ class i2c_buspirate(twi_interface):
             return False
 
     def stop(self):
-        '''I2C Start  - Rising SDA with SCL high.  Returns True or False to indicate successful arbitration'''
+        '''I2C Start  - Rising SDA with SCL high.  Returns True or False to indicate successful arbitration
+
+        Returns:
+            Result value.
+        '''
         self.ser.write(self.commands['stop'])
         resp = self.ser.read(1)
         if resp == '\x01':
@@ -1101,7 +1448,17 @@ class i2c_buspirate(twi_interface):
             return False
 
     def write(self, data8):
-        '''Transmit 8 bits plus 9th acknowledge clock.  Returns True or False to indicate slave acknowledge'''
+        '''Transmit 8 bits plus 9th acknowledge clock.  Returns True or False to indicate slave acknowledge
+
+        Args:
+            data8: 8-bit data value.
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cMasterError: On error condition.
+        '''
         self.ser.write(bytearray([self.commands['writebyte'], data8]))
         # buspirate returns 0x01 to acknowledge command
         # then returns 0x00 for ACK or 0x01 for NACK
@@ -1115,7 +1472,14 @@ class i2c_buspirate(twi_interface):
                 'Buspirate write unxepected communication: {}'.format(resp))
 
     def read_ack(self):
-        '''Read 8 bits from slave transmitter  and assert SDA during 9th acknowledge clock.  Returns 8 bit data'''
+        '''Read 8 bits from slave transmitter  and assert SDA during 9th acknowledge clock.  Returns 8 bit data
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cMasterError: On error condition.
+        '''
         # read returns byte
         # ack returns 0x01
         self.ser.write(
@@ -1127,7 +1491,14 @@ class i2c_buspirate(twi_interface):
         return bytearray(resp)[0]
 
     def read_nack(self):
-        '''Read 8 bits from slave transmitter  and release SDA during 9th acknowledge clock to request end of transmission.  Returns 8 bit data'''
+        '''Read 8 bits from slave transmitter  and release SDA during 9th acknowledge clock to request end of transmission.  Returns 8 bit data
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cMasterError: On error condition.
+        '''
         # read returns byte
         # nack returns 0x01
         self.ser.write(
@@ -1147,7 +1518,15 @@ class i2c_buspirate(twi_interface):
             All or parts of the Send Byte may contribute to the command. For example, the highest 7 bits of the
             command code might specify an access to a feature, while the least significant bit would tell the device to
             turn the feature on or off. Or, a device may set the “volume” of its output based on the value it received
-            from the Send Byte protocol.'''
+            from the Send Byte protocol.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            data8: 8-bit data value.
+
+        Raises:
+            i2cMasterError: On error condition.
+        '''
         # self.ser.write(bytearray([self.commands['start'],
         # self.write_addr(addr7), data8, self.commands['stop']))
         self.ser.write(bytearray(
@@ -1161,7 +1540,17 @@ class i2c_buspirate(twi_interface):
         '''The Receive Byte is similar to a Send Byte, the only difference being the direction of data transfer. A
             simple device may have information that the host needs. It can do so with the Receive Byte protocol. The
             same device may accept both Send Byte and Receive Byte protocols. A NACK (a ‘1’ in the ACK bit
-            position) signifies the end of a read transfer.'''
+            position) signifies the end of a read transfer.
+
+        Args:
+            addr7: 7-bit I2C device address.
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cMasterError: On error condition.
+        '''
         self.ser.write(bytearray(
             [self.commands['writeread'], 0x00, 0x01, 0x00, 0x01, self.read_addr(addr7)]))
         resp = self.ser.read(2)
@@ -1175,7 +1564,16 @@ class i2c_buspirate(twi_interface):
             is the data to be written. In this example the master asserts the slave device address followed by the write
             bit. The device acknowledges and the master delivers the command code. The slave again acknowledges
             before the master sends the data byte. The slave acknowledges each byte, and the
-            entire transaction is finished with a STOP condition.'''
+            entire transaction is finished with a STOP condition.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+            data8: 8-bit data value.
+
+        Raises:
+            i2cMasterError: On error condition.
+        '''
         self.ser.write(
             bytearray(
                 [
@@ -1197,7 +1595,16 @@ class i2c_buspirate(twi_interface):
             are the data to be written. In this example the master asserts the slave device address followed by the write
             bit. The device acknowledges and the master delivers the command code. The slave again acknowledges
             before the master sends the data word (low byte first). The slave acknowledges each byte, and the
-            entire transaction is finished with a STOP condition.'''
+            entire transaction is finished with a STOP condition.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+            data16: 16-bit data value.
+
+        Raises:
+            i2cMasterError: On error condition.
+        '''
         self.ser.write(
             bytearray(
                 [
@@ -1224,7 +1631,21 @@ class i2c_buspirate(twi_interface):
             slave device. Then it must follow that command with a repeated START condition to denote a read from
             that device’s address. The slave then returns one byte of data.
             Note that there is no STOP condition before the repeated START condition, and that a NACK signifies the
-            end of the read transfer.'''
+            end of the read transfer.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cCommandCodeAcknowledgeError: On error condition.
+            i2cMasterError: On error condition.
+            i2cReadAddressAcknowledgeError: On error condition.
+            i2cWriteAddressAcknowledgeError: On error condition.
+        '''
         self.ser.write(bytearray([self.commands['start'],
                                   self.commands['writeword'],
                                   self.write_addr(addr7),
@@ -1273,7 +1694,21 @@ class i2c_buspirate(twi_interface):
             slave device. Then it must follow that command with a repeated START condition to denote a read from
             that device’s address. The slave then returns two bytes of data.
             Note that there is no STOP condition before the repeated START condition, and that a NACK signifies the
-            end of the read transfer.'''
+            end of the read transfer.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cCommandCodeAcknowledgeError: On error condition.
+            i2cMasterError: On error condition.
+            i2cReadAddressAcknowledgeError: On error condition.
+            i2cWriteAddressAcknowledgeError: On error condition.
+        '''
         self.ser.write(bytearray([self.commands['start'],
                                   self.commands['writeword'],
                                   self.write_addr(addr7),
@@ -1416,7 +1851,21 @@ class i2c_pic(twi_interface):
 
     # overload for faster access
     def read_word(self, addr7, commandCode):
-        '''faster way to do an smbus read word'''
+        '''faster way to do an smbus read word
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cCommandCodeAcknowledgeError: On error condition.
+            i2cMasterError: On error condition.
+            i2cReadAddressAcknowledgeError: On error condition.
+            i2cWriteAddressAcknowledgeError: On error condition.
+        '''
         addr_w = hex(self.write_addr(addr7))[2:].rjust(2, "0")
         addr_r = hex(self.read_addr(addr7))[2:].rjust(2, "0")
         commandCode = hex(commandCode)[2:].rjust(2, "0")
@@ -1561,7 +2010,19 @@ class i2c_scpi(twi_interface):
     # SMBus Overloads###
 
     def read_word(self, addr7, commandCode):
-        '''faster way to do an smbus read word'''
+        '''faster way to do an smbus read word
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cAcknowledgeError: On error condition.
+            i2cMasterError: On error condition.
+        '''
         addr_w = hex(self.write_addr(addr7))[2:].rjust(2, "0")
         _addr_r = hex(self.read_addr(addr7))[2:].rjust(2, "0")  # noqa: F841
         commandCode = hex(commandCode)[2:].rjust(2, "0")
@@ -1580,7 +2041,20 @@ class i2c_scpi(twi_interface):
         return int(ret_str[4:8], 16)
 
     def read_word_pec(self, addr7, commandCode):
-        '''faster way to do an smbus read word'''
+        '''faster way to do an smbus read word
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cAcknowledgeError: On error condition.
+            i2cMasterError: On error condition.
+            i2cPECError: On error condition.
+        '''
         addr_w = hex(self.write_addr(addr7))[2:].rjust(2, "0")
         _addr_r = hex(self.read_addr(addr7))[2:].rjust(2, "0")  # noqa: F841
         commandCodeStr = hex(commandCode)[2:].rjust(2, "0")
@@ -1606,7 +2080,19 @@ class i2c_scpi(twi_interface):
         return int(ret_str[4:8], 16)
 
     def read_byte(self, addr7, commandCode):
-        '''faster way to do an smbus read byte'''
+        '''faster way to do an smbus read byte
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cAcknowledgeError: On error condition.
+            i2cMasterError: On error condition.
+        '''
         addr_w = hex(self.write_addr(addr7))[2:].rjust(2, "0")
         _addr_r = hex(self.read_addr(addr7))[2:].rjust(2, "0")  # noqa: F841
         commandCode = hex(commandCode)[2:].rjust(2, "0")
@@ -1625,7 +2111,20 @@ class i2c_scpi(twi_interface):
         return int(ret_str[4:6], 16)
 
     def read_byte_pec(self, addr7, commandCode):
-        '''faster way to do an smbus read byte'''
+        '''faster way to do an smbus read byte
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cAcknowledgeError: On error condition.
+            i2cMasterError: On error condition.
+            i2cPECError: On error condition.
+        '''
         addr_w = hex(self.write_addr(addr7))[2:].rjust(2, "0")
         _addr_r = hex(self.read_addr(addr7))[2:].rjust(2, "0")  # noqa: F841
         commandCodeStr = hex(commandCode)[2:].rjust(2, "0")
@@ -1650,7 +2149,20 @@ class i2c_scpi(twi_interface):
         return data8
 
     def write_byte(self, addr7, commandCode, data8):
-        '''faster way to do an smbus write byte'''
+        '''faster way to do an smbus write byte
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+            data8: 8-bit data value.
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cAcknowledgeError: On error condition.
+            i2cMasterError: On error condition.
+        '''
         data8 = int(data8) & 0xFF
         addr_w = hex(self.write_addr(addr7))[2:].rjust(2, "0")
         commandCode = hex(commandCode)[2:].rjust(2, "0")
@@ -1670,7 +2182,20 @@ class i2c_scpi(twi_interface):
         return True
 
     def write_byte_pec(self, addr7, commandCode, data8):
-        '''faster way to do an smbus write byte'''
+        '''faster way to do an smbus write byte
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+            data8: 8-bit data value.
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cAcknowledgeError: On error condition.
+            i2cMasterError: On error condition.
+        '''
         data8 = int(data8) & 0xFF
         addr_w = hex(self.write_addr(addr7))[2:].rjust(2, "0")
         commandCodeStr = hex(commandCode)[2:].rjust(2, "0")
@@ -1693,7 +2218,20 @@ class i2c_scpi(twi_interface):
         return True
 
     def write_word(self, addr7, commandCode, data16):
-        '''faster way to do an smbus write word'''
+        '''faster way to do an smbus write word
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+            data16: 16-bit data value.
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cAcknowledgeError: On error condition.
+            i2cMasterError: On error condition.
+        '''
         data16 = int(data16) & 0xFFFF
         addr_w = hex(self.write_addr(addr7))[2:].rjust(2, "0")
         commandCode = hex(commandCode)[2:].rjust(2, "0")
@@ -1713,7 +2251,20 @@ class i2c_scpi(twi_interface):
         return True
 
     def write_word_pec(self, addr7, commandCode, data16):
-        '''faster way to do an smbus write word'''
+        '''faster way to do an smbus write word
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+            data16: 16-bit data value.
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cAcknowledgeError: On error condition.
+            i2cMasterError: On error condition.
+        '''
         data16 = int(data16) & 0xFFFF
         addr_w = hex(self.write_addr(addr7))[2:].rjust(2, "0")
         commandCodeStr = hex(commandCode)[2:].rjust(2, "0")
@@ -1747,7 +2298,14 @@ class i2c_scpi(twi_interface):
         transmit device is placed in the 7 most significant bits of the byte. The eighth bit can be a zero or one.
 
         Returns 7 bit address of responding device.
-        Returns None if no response to ARA'''
+        Returns None if no response to ARA
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cMasterError: On error condition.
+        '''
         self.interface.write(':SMB:ARA?;')
         ret_str = self.interface.readline()
         if len(ret_str) < 9:
@@ -1764,7 +2322,15 @@ class i2c_scpi(twi_interface):
     def alert_response_pec(self):
         '''Alert Response Query to SMBALERT# interrupt with Packet Error Check
             Returns 7 bit address of responding device.
-            Returns None if no response to ARA'''
+            Returns None if no response to ARA
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cMasterError: On error condition.
+            i2cPECError: On error condition.
+        '''
         self.interface.write(':SMB:ARA:PEC?;')
         ret_str = self.interface.readline()
         if len(ret_str) < 12:
@@ -1887,7 +2453,17 @@ class i2c_scpi(twi_interface):
                 self, addr7, cc_list, data_size, use_pec)
 
     def read_register(self, addr7, commandCode, data_size, use_pec):
-        '''read data (8,16,32, or 64b) with optional additional PEC byte read from slave.'''
+        '''read data (8,16,32, or 64b) with optional additional PEC byte read from slave.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+            data_size: Data size.
+            use_pec: If True, use PEC (Packet Error Checking).
+
+        Returns:
+            Result value.
+        '''
         if data_size == 8 and use_pec:
             return self.read_byte_pec(addr7, commandCode)
         elif data_size == 8 and not use_pec:
@@ -1901,7 +2477,15 @@ class i2c_scpi(twi_interface):
                 self, addr7, commandCode, data_size, use_pec)
 
     def write_register(self, addr7, commandCode, data, data_size, use_pec):
-        '''write_word with optional additional PEC byte written to slave.'''
+        '''write_word with optional additional PEC byte written to slave.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+            data: Data to write.
+            data_size: Data size.
+            use_pec: If True, use PEC (Packet Error Checking).
+        '''
         if data_size == 8 and use_pec:
             self.write_byte_pec(addr7, commandCode, data)
         elif data_size == 8 and not use_pec:
@@ -1923,7 +2507,16 @@ class i2c_scpi_sp(twi_interface):
     def __init__(self, visa_interface, portnum,
                  sclpin, sdapin, pullup_en, **kwargs):
         '''create I2C software port out of any GPIO pins
-        visa_interface'''
+        visa_interface
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            portnum: Portnum.
+            pullup_en: Pullup en.
+            sclpin: Sclpin.
+            sdapin: Sdapin.
+            visa_interface: Visa interface.
+        '''
         self.interface = visa_interface
         self.cmd = f":I2CSP{portnum}"
         self.configure_twi(sclpin=sclpin, sdapin=sdapin, pullup_en=pullup_en)
@@ -2040,7 +2633,18 @@ class i2c_scpi_sp(twi_interface):
 
     def receive_byte(self, addr7):
         '''Sent data looks like: "I2CSPx:SMB:RECE?(@AA,00);"
-        The 00 command code is ignored for receive_byte.'''
+        The 00 command code is ignored for receive_byte.
+
+        Args:
+            addr7: 7-bit I2C device address.
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cAcknowledgeError: On error condition.
+            i2cMasterError: On error condition.
+        '''
         self.interface.write(
             # 00 is ignored but needed.
             f'{self.cmd}:SMB:RECE?(@{self.write_addr(addr7):02x},00);')
@@ -2064,7 +2668,19 @@ class i2c_scpi_sp(twi_interface):
 
     def send_byte(self, addr7, data8):
         '''Sent data looks like: "I2CSPx:SMB:SEND?(@AA,00,DD);"
-        The 00 command code is ignored for sendbyte and the data is _NOT_ moved to the command code location at at the firmware interface.'''
+        The 00 command code is ignored for sendbyte and the data is _NOT_ moved to the command code location at at the firmware interface.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            data8: 8-bit data value.
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cAcknowledgeError: On error condition.
+            i2cMasterError: On error condition.
+        '''
         try:
             ret_str = self.interface.ask(
                 f'{self.cmd}:SMB:SEND?(@{hex(self.write_addr(addr7))[2:].rjust(2, "0")},00,{hex(int(data8) & 0xFF)[2:].rjust(2, "0")});')
@@ -2089,7 +2705,19 @@ class i2c_scpi_sp(twi_interface):
 
     def send_byte_pec(self, addr7, data8):
         '''Sent data looks like: "I2CSPx:SMB:SEND:PEC?(@AA,00,DD);"
-        The 00 command code is ignored for sendbyte and the data is _NOT_ moved to the command code location at at the firmware interface.'''
+        The 00 command code is ignored for sendbyte and the data is _NOT_ moved to the command code location at at the firmware interface.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            data8: 8-bit data value.
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cAcknowledgeError: On error condition.
+            i2cMasterError: On error condition.
+        '''
         print("\nWarning, send_byte_pec from inside i2c_scpi_sp never tested. If you find it works, please ask PyICe-developers@analog.com to remove this line.\n")
         try:
             ret_str = self.interface.ask(
@@ -2114,7 +2742,19 @@ class i2c_scpi_sp(twi_interface):
         return True
 
     def read_word(self, addr7, commandCode):
-        '''faster way to do an smbus read word'''
+        '''faster way to do an smbus read word
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cAcknowledgeError: On error condition.
+            i2cMasterError: On error condition.
+        '''
         addr_w = hex(self.write_addr(addr7))[2:].rjust(2, "0")
         commandCode = hex(commandCode)[2:].rjust(2, "0")
         write_str = ':SMB:RW?(@{},{});'.format(addr_w, commandCode)
@@ -2134,7 +2774,19 @@ class i2c_scpi_sp(twi_interface):
         return data16
 
     def read_byte(self, addr7, commandCode):
-        '''faster way to do an smbus read byte'''
+        '''faster way to do an smbus read byte
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cAcknowledgeError: On error condition.
+            i2cMasterError: On error condition.
+        '''
         addr_w = hex(self.write_addr(addr7))[2:].rjust(2, "0")
         commandCode = hex(commandCode)[2:].rjust(2, "0")
         write_str = ':SMB:RB?(@{},{});'.format(addr_w, commandCode)
@@ -2154,7 +2806,20 @@ class i2c_scpi_sp(twi_interface):
         return data8
 
     def write_byte(self, addr7, commandCode, data8):
-        '''faster way to do an smbus write byte'''
+        '''faster way to do an smbus write byte
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+            data8: 8-bit data value.
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cAcknowledgeError: On error condition.
+            i2cMasterError: On error condition.
+        '''
         data8 = int(data8) & 0xFF
         addr_w = hex(self.write_addr(addr7))[2:].rjust(2, "0")
         commandCode = hex(commandCode)[2:].rjust(2, "0")
@@ -2174,7 +2839,20 @@ class i2c_scpi_sp(twi_interface):
         return True
 
     def write_word(self, addr7, commandCode, data16):
-        '''faster way to do an smbus write word'''
+        '''faster way to do an smbus write word
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+            data16: 16-bit data value.
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cAcknowledgeError: On error condition.
+            i2cMasterError: On error condition.
+        '''
         data16 = int(data16) & 0xFFFF
         addr_w = hex(self.write_addr(addr7))[2:].rjust(2, "0")
         commandCode = hex(commandCode)[2:].rjust(2, "0")
@@ -2211,7 +2889,17 @@ class i2c_scpi_sp(twi_interface):
                     counts_to_freq(255), counts_to_freq(0)))
 
     def read_register(self, addr7, commandCode, data_size, use_pec):
-        '''read data (8,16,32, or 64b) with optional additional PEC byte read from slave.'''
+        '''read data (8,16,32, or 64b) with optional additional PEC byte read from slave.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+            data_size: Data size.
+            use_pec: If True, use PEC (Packet Error Checking).
+
+        Returns:
+            Result value.
+        '''
         if data_size == 8 and not use_pec:
             return self.read_byte(addr7, commandCode)
         elif data_size == 16 and not use_pec:
@@ -2227,7 +2915,18 @@ class i2c_scpi_sp(twi_interface):
                 self, addr7, commandCode, data_size, use_pec)
 
     def write_register(self, addr7, commandCode, data, data_size, use_pec):
-        '''write_word with optional additional PEC byte written to slave.'''
+        '''write_word with optional additional PEC byte written to slave.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+            data: Data to write.
+            data_size: Data size.
+            use_pec: If True, use PEC (Packet Error Checking).
+
+        Returns:
+            Result value.
+        '''
         if data_size == 8 and not use_pec:
             self.write_byte(addr7, commandCode, data)
         elif data_size == 16 and not use_pec:
@@ -2259,7 +2958,12 @@ class i2c_scpi_testhook(i2c_scpi):
         When written to, the pin state is changed.
         Valid pin_names are: HOOK1, HOOK2, HOOK3, HOOK4,
         PAD_TP_1, PAD_TP_2, PAD_TP_3, PAD_TP_4, PAD_TP_5,
-        PAD_TP_6, PAD_TP_7, PAD_TP_8, PAD_TP_9, GPIO'''
+        PAD_TP_6, PAD_TP_7, PAD_TP_8, PAD_TP_9, GPIO
+
+        Args:
+            channel_name: Name for the new channel.
+            pin_name: Pin name.
+        '''
         pin_name = self.check_name(pin_name)
         self.channels[channel_name] = pin_name
 
@@ -2268,7 +2972,14 @@ class i2c_scpi_testhook(i2c_scpi):
         Possible responses are:
         0,1,Z,P
         Where Z is high-z
-        and P is weak pullup'''
+        and P is weak pullup
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         return self.read_pin(
             # perhaps this should return what the pin was set to, not what was
             # read-back (wired-nor)?
@@ -2279,7 +2990,12 @@ class i2c_scpi_testhook(i2c_scpi):
         Valid values are:
         0,1,Z,P
         Where Z is high-z
-        and P is weak pullup'''
+        and P is weak pullup
+
+        Args:
+            channel_name: Name for the new channel.
+            value: Value to set.
+        '''
         self.set_pin(self.channels[channel_name], value)
     # purple-board specific hardware driver methods###
 
@@ -2298,6 +3014,14 @@ class i2c_scpi_testhook(i2c_scpi):
         Value is 0,1,Z,P
         Where Z is high-z
         and P is weak pullup
+
+        Args:
+            pin_name: Pin name.
+            value: Value to set.
+
+        Raises:
+            Exception: On error condition.
+            i2cMasterError: On error condition.
         '''
         if value is True or value == 1 or value == '1':
             value = 1
@@ -2445,7 +3169,11 @@ class i2c_dc590(twi_interface):
             print(e)
 
     def i2c_mode(self):
-        '''Switch DC590 I2C/SPI mux to SPI'''
+        '''Switch DC590 I2C/SPI mux to SPI
+
+        Raises:
+            i2cMasterError: On error condition.
+        '''
         self.iface.write('MI')  # Switch to isolated I2C Mode
         time.sleep(0.1)
         buffer = self.iface.read(None)[0]
@@ -2454,7 +3182,14 @@ class i2c_dc590(twi_interface):
                 'Error switching DC590 to I2C Mode. Unexpected data in buffer:{}'.format(buffer))
 
     def _hex_str(self, integer):
-        '''return integer formatted correctly for transmission over DC590 serial link'''
+        '''return integer formatted correctly for transmission over DC590 serial link
+
+        Args:
+            integer: Integer.
+
+        Returns:
+            Result value.
+        '''
         return hex(integer).rstrip("L")[2:].rjust(2, "0").upper()
 
     def start(self):
@@ -2522,7 +3257,17 @@ class i2c_dc590(twi_interface):
             self.iface.write("g")
 
     def read_register(self, addr7, commandCode, data_size, use_pec):
-        '''read data (8,16,32, or 64b) with optional additional PEC byte read from slave.'''
+        '''read data (8,16,32, or 64b) with optional additional PEC byte read from slave.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+            data_size: Data size.
+            use_pec: If True, use PEC (Packet Error Checking).
+
+        Returns:
+            Result value.
+        '''
         if data_size == 8 and use_pec:
             return self.read_byte_pec(addr7, commandCode)
         elif data_size == 8 and not use_pec:
@@ -2540,7 +3285,15 @@ class i2c_dc590(twi_interface):
                 self, addr7, commandCode, data_size, use_pec)
 
     def write_register(self, addr7, commandCode, data, data_size, use_pec):
-        '''write_word with optional additional PEC byte written to slave.'''
+        '''write_word with optional additional PEC byte written to slave.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+            data: Data to write.
+            data_size: Data size.
+            use_pec: If True, use PEC (Packet Error Checking).
+        '''
         if data_size == 8 and use_pec:
             self.write_byte_pec(addr7, commandCode, data)
         elif data_size == 8 and not use_pec:
@@ -2581,7 +3334,20 @@ class i2c_dc590(twi_interface):
     def read_byte_pec(self, addr7, commandCode):
         '''SMBus Read Byte Protocol with Packet Error Checking.
         Slave device address specified in 7-bit format.
-        Returns 8-bit data from slave.'''
+        Returns 8-bit data from slave.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cAcknowledgeError: On error condition.
+            i2cMasterError: On error condition.
+            i2cPECError: On error condition.
+        '''
         self.check_size(commandCode, 8)
         byteList = [self.write_addr(addr7), commandCode, self.read_addr(addr7)]
         write_str = 'sS{}S{}sS{}QRp'.format(
@@ -2651,7 +3417,20 @@ class i2c_dc590(twi_interface):
     def read_word_pec(self, addr7, commandCode):
         '''SMBus Read Word Protocol with Packet Error Checking.
         Slave device address specified in 7-bit format.
-        Returns 16-bit data from slave.'''
+        Returns 16-bit data from slave.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cAcknowledgeError: On error condition.
+            i2cMasterError: On error condition.
+            i2cPECError: On error condition.
+        '''
         self.check_size(commandCode, 8)
         byteList = [self.write_addr(addr7), commandCode, self.read_addr(addr7)]
         write_str = 'sS{}S{}sS{}QQRp'.format(
@@ -2690,7 +3469,19 @@ class i2c_dc590(twi_interface):
     def read_32(self, addr7, commandCode):
         '''SMBus Read 32-bit Protocol without Packet Error Checking.
         Slave device address specified in 7-bit format.
-        Returns 32-bit data from slave.'''
+        Returns 32-bit data from slave.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cAcknowledgeError: On error condition.
+            i2cMasterError: On error condition.
+        '''
         self.check_size(commandCode, 8)
         byteList = [self.write_addr(addr7), commandCode, self.read_addr(addr7)]
         write_str = 'sS{}S{}sS{}QQQRp'.format(
@@ -2726,7 +3517,20 @@ class i2c_dc590(twi_interface):
     def read_32_pec(self, addr7, commandCode):
         '''SMBus Read 32-bit Protocol with Packet Error Checking.
         Slave device address specified in 7-bit format.
-        Returns 32-bit data from slave.'''
+        Returns 32-bit data from slave.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cAcknowledgeError: On error condition.
+            i2cMasterError: On error condition.
+            i2cPECError: On error condition.
+        '''
         self.check_size(commandCode, 8)
         byteList = [self.write_addr(addr7), commandCode, self.read_addr(addr7)]
         write_str = 'sS{}S{}sS{}QQQQRp'.format(
@@ -2904,7 +3708,11 @@ class i2c_firmata(twi_interface):
     '''
 
     def __init__(self, firmata_instance):
-        '''Because of shared serial port, twi driver requires an existing instance of lab_instruments.firmata (PyMata wrapper)'''
+        '''Because of shared serial port, twi driver requires an existing instance of lab_instruments.firmata (PyMata wrapper)
+
+        Args:
+            firmata_instance: Firmata instance.
+        '''
         print("Consider switching from Firmata to Telemetrix")
         self.firmata = firmata_instance.firmata_board
         self.init_i2c()
@@ -2934,7 +3742,18 @@ class i2c_firmata(twi_interface):
     # SMBus Overloads###
 
     def read_word(self, addr7, commandCode):
-        '''smbus read word'''
+        '''smbus read word
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cAcknowledgeError: On error condition.
+        '''
         error = self.firmata.i2c_read(
             addr7,
             commandCode,
@@ -2950,7 +3769,19 @@ class i2c_firmata(twi_interface):
         return self.word([lsb, msb])
 
     def read_word_pec(self, addr7, commandCode):
-        '''smbus read word with PEC'''
+        '''smbus read word with PEC
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cAcknowledgeError: On error condition.
+            i2cPECError: On error condition.
+        '''
         error = self.firmata.i2c_read(
             addr7,
             commandCode,
@@ -2972,7 +3803,18 @@ class i2c_firmata(twi_interface):
         return self.word([lsb, msb])
 
     def read_byte(self, addr7, commandCode):
-        '''smbus read byte'''
+        '''smbus read byte
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cAcknowledgeError: On error condition.
+        '''
         error = self.firmata.i2c_read(
             addr7,
             commandCode,
@@ -2987,7 +3829,19 @@ class i2c_firmata(twi_interface):
         return data[1]
 
     def read_byte_pec(self, addr7, commandCode):
-        '''smbus read byte with PEC'''
+        '''smbus read byte with PEC
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cAcknowledgeError: On error condition.
+            i2cPECError: On error condition.
+        '''
         error = self.firmata.i2c_read(
             addr7,
             commandCode,
@@ -3009,18 +3863,45 @@ class i2c_firmata(twi_interface):
         return data8
 
     def write_byte(self, addr7, commandCode, data8):
-        '''smbus write byte'''
+        '''smbus write byte
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+            data8: 8-bit data value.
+
+        Returns:
+            Result value.
+        '''
         self.firmata.i2c_write(addr7, commandCode, data8)
         return True
 
     def write_byte_pec(self, addr7, commandCode, data8):
-        '''smbus write byte with PEC'''
+        '''smbus write byte with PEC
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+            data8: 8-bit data value.
+
+        Returns:
+            Result value.
+        '''
         self.firmata.i2c_write(addr7, commandCode, data8, self.pec(
             [self.write_addr(addr7), commandCode, data8]))
         return True
 
     def write_word(self, addr7, commandCode, data16):
-        '''smbus write word'''
+        '''smbus write word
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+            data16: 16-bit data value.
+
+        Returns:
+            Result value.
+        '''
         self.firmata.i2c_write(
             addr7, commandCode, self.get_byte(
                 data16, 0), self.get_byte(
@@ -3028,7 +3909,16 @@ class i2c_firmata(twi_interface):
         return True
 
     def write_word_pec(self, addr7, commandCode, data16):
-        '''smbus write word with PEC'''
+        '''smbus write word with PEC
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+            data16: 16-bit data value.
+
+        Returns:
+            Result value.
+        '''
         self.firmata.i2c_write(
             addr7, commandCode, self.get_byte(
                 data16, 0), self.get_byte(
@@ -3040,7 +3930,11 @@ class i2c_firmata(twi_interface):
         return True
 
     def alert_response(self):
-        '''smbus ARA'''
+        '''smbus ARA
+
+        Raises:
+            i2cUnimplementedError: On error condition.
+        '''
         raise i2cUnimplementedError('Firmata ARA not implemented')
         '''# self.interface.write(':SMB:ARA?;')
         # ret_str = self.interface.readline()
@@ -3056,7 +3950,11 @@ class i2c_firmata(twi_interface):
     def alert_response_pec(self):
         '''Alert Response Query to SMBALERT# interrupt with Packet Error Check
             Returns 7 bit address of responding device.
-            Returns None if no response to ARA'''
+            Returns None if no response to ARA
+
+        Raises:
+            i2cUnimplementedError: On error condition.
+        '''
         raise i2cUnimplementedError('Firmata ARA not implemented')
         '''# self.interface.write(':SMB:ARA:PEC?;')
         # ret_str = self.interface.readline()
@@ -3178,7 +4076,17 @@ class i2c_bobbytalk(twi_interface):
                  recv_timeout=1.0, cmd_tries=2, per_cmd_recv_tries=4, debug=False):
         '''Create an i2c_bobbytalk object by specifying the bobbytalk interface, packet source id to use
         in command packets, and optionally the destination module id to use to communicate
-        (which must be an SMBUS module).'''
+        (which must be an SMBUS module).
+
+        Args:
+            bobbytalk_interface: Bobbytalk interface.
+            cmd_tries: Cmd tries.
+            debug: If True, enable debug output.
+            dest_id: Destination identifier.
+            per_cmd_recv_tries: Per cmd recv tries.
+            recv_timeout: Recv timeout.
+            src_id: Source identifier.
+        '''
         from . import lab_interfaces, bobbytalk
         assert isinstance(
             bobbytalk_interface,
@@ -3278,6 +4186,15 @@ class i2c_bobbytalk(twi_interface):
             uint16_t data[0];                                     // data words read, number of words is as requested
             uint8_t bitmap_success[(UINT8_MAX+1)/BITS_PER_BYTE];  // bitmap of success reading registers.
           } read_list_and_data_response_struct;
+
+        Args:
+            addr7: 7-bit I2C device address.
+            command_codes: Command codes.
+            data_size: Data size.
+            use_pec: If True, use PEC (Packet Error Checking).
+
+        Returns:
+            Result value.
         """
         if not (data_size == 16 and use_pec is True):
             return super(i2c_bobbytalk, self).read_register_list(
@@ -3730,23 +4647,46 @@ class i2c_bobbytalk(twi_interface):
     #
 
     def start(self):
-        '''UNIMPLEMENTED - I2C Start primitive - Falling SDA with SCL high.  Returns True or False to indicate successful arbitration'''
+        '''UNIMPLEMENTED - I2C Start primitive - Falling SDA with SCL high.  Returns True or False to indicate successful arbitration
+
+        Raises:
+            i2cUnimplementedError: On error condition.
+        '''
         raise i2cUnimplementedError()
 
     def stop(self):
-        '''UNIMPLEMENTED - I2C Stop primitive - Rising SDA with SCL high.  Returns True or False to indicate successful arbitration'''
+        '''UNIMPLEMENTED - I2C Stop primitive - Rising SDA with SCL high.  Returns True or False to indicate successful arbitration
+
+        Raises:
+            i2cUnimplementedError: On error condition.
+        '''
         raise i2cUnimplementedError()
 
     def write(self, data8):
-        '''UNIMPLEMENTED - I2C primitive to transmit 8 bits plus 9th acknowledge clock.  Returns True or False to indicate slave acknowledge'''
+        '''UNIMPLEMENTED - I2C primitive to transmit 8 bits plus 9th acknowledge clock.  Returns True or False to indicate slave acknowledge
+
+        Args:
+            data8: 8-bit data value.
+
+        Raises:
+            i2cUnimplementedError: On error condition.
+        '''
         raise i2cUnimplementedError()
 
     def read_ack(self):
-        '''UNIMPLEMENTED - I2C primitive to read 8 bits from slave transmitter  and assert SDA during 9th acknowledge clock.  Returns 8 bit data'''
+        '''UNIMPLEMENTED - I2C primitive to read 8 bits from slave transmitter  and assert SDA during 9th acknowledge clock.  Returns 8 bit data
+
+        Raises:
+            i2cUnimplementedError: On error condition.
+        '''
         raise i2cUnimplementedError()
 
     def read_nack(self):
-        '''UNIMPLEMENTED - I2C primitive to read 8 bits from slave transmitter  and release SDA during 9th acknowledge clock to request end of transmission.  Returns 8 bit data'''
+        '''UNIMPLEMENTED - I2C primitive to read 8 bits from slave transmitter  and release SDA during 9th acknowledge clock to request end of transmission.  Returns 8 bit data
+
+        Raises:
+            i2cUnimplementedError: On error condition.
+        '''
         raise i2cUnimplementedError()
 
 
@@ -3821,6 +4761,13 @@ class i2c_labcomm(twi_interface):
         '''will return either:
                                 [command_code, [status, Lo-byte]]
                                 [command_code, [status, Lo-byte, Hi-byte]]
+
+        Args:
+            iterable: Iterable.
+            size: Size in bits.
+
+        Returns:
+            Result value.
         '''
         args = [iter(iterable)] * size
         return list(itertools.zip_longest(fillvalue=None, *args))
@@ -3945,23 +4892,46 @@ class i2c_labcomm(twi_interface):
         print("write_byte_pec in twi_interface unimplemented.")
 
     def start(self):
-        '''UNIMPLEMENTED - I2C Start primitive - Falling SDA with SCL high.  Returns True or False to indicate successful arbitration'''
+        '''UNIMPLEMENTED - I2C Start primitive - Falling SDA with SCL high.  Returns True or False to indicate successful arbitration
+
+        Raises:
+            i2cUnimplementedError: On error condition.
+        '''
         raise i2cUnimplementedError()
 
     def stop(self):
-        '''UNIMPLEMENTED - I2C Stop primitive - Rising SDA with SCL high.  Returns True or False to indicate successful arbitration'''
+        '''UNIMPLEMENTED - I2C Stop primitive - Rising SDA with SCL high.  Returns True or False to indicate successful arbitration
+
+        Raises:
+            i2cUnimplementedError: On error condition.
+        '''
         raise i2cUnimplementedError()
 
     def write(self, data8):
-        '''UNIMPLEMENTED - I2C primitive to transmit 8 bits plus 9th acknowledge clock.  Returns True or False to indicate slave acknowledge'''
+        '''UNIMPLEMENTED - I2C primitive to transmit 8 bits plus 9th acknowledge clock.  Returns True or False to indicate slave acknowledge
+
+        Args:
+            data8: 8-bit data value.
+
+        Raises:
+            i2cUnimplementedError: On error condition.
+        '''
         raise i2cUnimplementedError()
 
     def read_ack(self):
-        '''UNIMPLEMENTED - I2C primitive to read 8 bits from slave transmitter  and assert SDA during 9th acknowledge clock.  Returns 8 bit data'''
+        '''UNIMPLEMENTED - I2C primitive to read 8 bits from slave transmitter  and assert SDA during 9th acknowledge clock.  Returns 8 bit data
+
+        Raises:
+            i2cUnimplementedError: On error condition.
+        '''
         raise i2cUnimplementedError()
 
     def read_nack(self):
-        '''UNIMPLEMENTED - I2C primitive to read 8 bits from slave transmitter  and release SDA during 9th acknowledge clock to request end of transmission.  Returns 8 bit data'''
+        '''UNIMPLEMENTED - I2C primitive to read 8 bits from slave transmitter  and release SDA during 9th acknowledge clock to request end of transmission.  Returns 8 bit data
+
+        Raises:
+            i2cUnimplementedError: On error condition.
+        '''
         raise i2cUnimplementedError()
         # TODO ensure packet is intended for us and not unsynched ????!!!!!
 

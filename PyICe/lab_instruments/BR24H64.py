@@ -28,6 +28,13 @@ class BR24H64(instrument):
         addr7 is the 7-bit I2C address of the BR24H64 set by pinstrapping.
         Choose addr7 from 0x50 - 0x57 only.
         Device uses 16bit internal addressing for 8 bit memory so had to play some protocol games.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            interface_twi: TWI/I2C interface instance.
+
+        Raises:
+            ValueError: On error condition.
         '''
         instrument.__init__(
             self,

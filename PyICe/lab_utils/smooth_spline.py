@@ -7,7 +7,17 @@ def smooth_spline(rec_array, rms_error, verbose=True, **kwargs):
     set rms_error to change number of knots to bound smoothed data rms deviation from original data points.
     Set rms_error to 0 to interpolate through all points.
     rec_array is modified in place
-    returns number of knots used to construct spline'''
+    returns number of knots used to construct spline
+
+    Args:
+        **kwargs: Additional keyword arguments.
+        rec_array: Rec array.
+        rms_error: Rms error.
+        verbose: If True, print debug output.
+
+    Returns:
+        Result value.
+    '''
     point_count = len(rec_array)
     rss = rms_error * point_count**0.5
     spl = scipy.interpolate.UnivariateSpline(

@@ -42,7 +42,14 @@ class krohnhite_526(instrument):
         self._current = 0
 
     def add_channel_current(self, channel_name):
-        '''Write channel to switch instrument to current mode and program current. Default current range is +/-10mA.  Create a irange channel to adjust range to (10, 100)mA '''
+        '''Write channel to switch instrument to current mode and program current. Default current range is +/-10mA.  Create a irange channel to adjust range to (10, 100)mA
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         self.i_channel = channel(
             channel_name, write_function=self._write_current)
         self.i_channel.set_max_write_limit(self._irange)
@@ -50,7 +57,14 @@ class krohnhite_526(instrument):
         return self._add_channel(self.i_channel)
 
     def add_channel_irange(self, channel_name):
-        '''Write channel to set current mode full scale range to +/-(10,100)mA.  Won't take effect until the current is programmed.'''
+        '''Write channel to set current mode full scale range to +/-(10,100)mA.  Won't take effect until the current is programmed.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_channel = channel(channel_name, write_function=self._set_irange)
         return self._add_channel(new_channel)
 
@@ -99,7 +113,14 @@ class krohnhite_526(instrument):
         return self._add_channel(self.v_channel)
 
     def add_channel_vrange(self, channel_name):
-        '''Write channel to set voltage mode full scale range to +/-(0.1,1,10,100)V or +/-(10,100)mA.  Won't take effect until the voltage is programmed.'''
+        '''Write channel to set voltage mode full scale range to +/-(0.1,1,10,100)V or +/-(10,100)mA.  Won't take effect until the voltage is programmed.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_channel = channel(channel_name, write_function=self._set_vrange)
         return self._add_channel(new_channel)
 

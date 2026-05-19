@@ -13,6 +13,14 @@ def vector_transform(rec_array, column_vector_functions, column_names=None):
     To smooth data, use something like scipy.signal.filtfilt and scipy.signal.butter for the column_vector_functions
     http://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html
     http://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.signal.butter.html
+
+    Args:
+        column_names: Column names.
+        column_vector_functions: Column vector functions.
+        rec_array: Rec array.
+
+    Returns:
+        Result value.
     '''
     assert len(rec_array.dtype.names) == len(column_vector_functions)
     if column_names is None:

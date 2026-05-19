@@ -8,6 +8,17 @@ def expand_tabs(string, *column_widths, **default_column_width):
     'a    b    c    '
     >>> expand_tabs('hi\\tthere', default_column_width=8)
     'hi      there   '
+
+    Args:
+        **default_column_width: Additional keyword arguments.
+        *column_widths: Additional positional arguments.
+        string: String data.
+
+    Returns:
+        Result value.
+
+    Raises:
+        Exception: On error condition.
     '''
     for key in default_column_width:
         if key != "default_column_width" and key != "verbose":

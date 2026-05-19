@@ -7,6 +7,16 @@ def safe_divide(a, b):
     True
     >>> safe_divide('x', 2) is None
     True
+
+    Args:
+        a: A.
+        b: B.
+
+    Returns:
+        Result value.
+
+    Raises:
+        BaseException: On error condition.
     '''
     try:
         return a / b

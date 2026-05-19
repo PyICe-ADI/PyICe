@@ -81,7 +81,11 @@ class interpolator(object):
 
     def add_points(self, point_list):
         '''expects 2d list of the form [[x0,y0],[x1,y1],...[xn,yn]]
-        the points must be strictly monotonic, but not necessarily sorted'''
+        the points must be strictly monotonic, but not necessarily sorted
+
+        Args:
+            point_list: Point list.
+        '''
         for point in point_list:
             self.add_point(point[0], point[1])
 
@@ -90,6 +94,17 @@ class interpolator(object):
         expects sorted_key_list to increase strictly monotonically
         will return linear combination of two values from value list weighted
         by distance from two enclosing points of key in sorted_key_list
+
+        Args:
+            key: Key.
+            sorted_key_list: Sorted key list.
+            value_list: Value list.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
         '''
         points = list(zip(sorted_key_list, value_list))
         if len(points) < 2:

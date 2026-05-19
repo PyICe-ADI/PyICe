@@ -13,6 +13,15 @@ def clean_ascii_code(ustr):
     '_3volts'
     >>> clean_ascii_code('x+y')
     'x_PLS_y'
+
+    Args:
+        ustr: Ustr.
+
+    Returns:
+        Result value.
+
+    Raises:
+        Exception: On error condition.
     '''
     astr = clean_unicode(ustr)
     astr = astr.replace("\t", "_")  # 0x09

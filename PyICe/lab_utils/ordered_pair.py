@@ -8,7 +8,12 @@ class ordered_pair(list):
         '''executes x_transform function on first (x) element of each ordered pair data point
            executes y_transform function on second (y) element of each ordered pair data point
            returns None, data changed in place
-           not appropriate for filtering functions that require access to adjacent (in time or space) data point values'''
+           not appropriate for filtering functions that require access to adjacent (in time or space) data point values
+
+        Args:
+            x_transform: X transform.
+            y_transform: Y transform.
+        '''
         if x_transform is None:
             def x_transform(x):
                 return x
@@ -22,7 +27,17 @@ class ordered_pair(list):
                            minutes=False, hours=False, days=False):
         '''convert SQLite database datetime string in x-axis data to python timedelta object
         access properties of days, seconds (0 to 86399 inclusive) and microseconds (0 to 999999 inclusive) or method total_seconds()
-        optionally, instead return numeric total seconds, minutes, hours or days by setting respective argument to True'''
+        optionally, instead return numeric total seconds, minutes, hours or days by setting respective argument to True
+
+        Args:
+            days: Days.
+            hours: Hours.
+            minutes: Minutes.
+            seconds: Seconds.
+
+        Raises:
+            Exception: On error condition.
+        '''
         start_time = self[0][0]
         self.transform(x_transform=lambda t: t - start_time)
         if not (seconds or minutes or hours or days):
@@ -40,11 +55,19 @@ class ordered_pair(list):
                 'Specify at most one of (seconds, minutes, hours, days)')
 
     def xscale(self, x_scale):
-        '''changes list in place with x points multiplied by x_scale and y points unaltered'''
+        '''changes list in place with x points multiplied by x_scale and y points unaltered
+
+        Args:
+            x_scale: X scale.
+        '''
         self.transform(x_transform=lambda x: x * x_scale)
 
     def yscale(self, y_scale):
-        '''changes list in place with x points unaltered and y points multiplied by y_scale'''
+        '''changes list in place with x points unaltered and y points multiplied by y_scale
+
+        Args:
+            y_scale: Y scale.
+        '''
         self.transform(y_transform=lambda y: y * y_scale)
 
     def xoffset(self, x_offset):
@@ -54,7 +77,12 @@ class ordered_pair(list):
         self.transform(y_transform=lambda y: y + y_offset)
 
     def xyscale(self, x_scale, y_scale):
-        '''changes list in place with x points multiplied by x_scale and y points multiplied by y_scale'''
+        '''changes list in place with x points multiplied by x_scale and y points multiplied by y_scale
+
+        Args:
+            x_scale: X scale.
+            y_scale: Y scale.
+        '''
         self.transform(
             x_transform=lambda x: x * x_scale,
             y_transform=lambda y: y * y_scale)
@@ -114,6 +142,16 @@ class ordered_pair(list):
         Use automatic column names, but force data type to float with force_float_dtype boolean argument.
         Override automatic column names and data types (first row) by specifying data_type iterable of (column_name,example_contents) for each column matching query order.
         http://docs.scipy.org/doc/numpy-1.10.1/reference/generated/numpy.recarray.html
+
+        Args:
+            data_types: Data types.
+            force_float_dtype: Force float dtype.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
         '''
         if force_float_dtype and data_types is None:
             dtype = numpy.dtype([('x', type(float())), ('y', type(float()))])
@@ -132,7 +170,17 @@ class ordered_pair(list):
     def ramer_douglas_peucker(
             self, epsilon, verbose=True, force_float_dtype=False, data_types=None):
         '''reduce number of points in line-segment curve such that reduced line segment count approximates original curve within epsilon tolerance.
-        https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm'''
+        https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm
+
+        Args:
+            data_types: Data types.
+            epsilon: Epsilon.
+            force_float_dtype: Force float dtype.
+            verbose: If True, print debug output.
+
+        Returns:
+            Result value.
+        '''
         return ramer_douglas_peucker(self.numpy_recarray(
             force_float_dtype, data_types), epsilon, verbose)
 
@@ -195,7 +243,13 @@ class ordered_pair(list):
             **** WARNING ****
             *****************
             Iterations should be used judiciously as it can lead to large phase shifting which moves the data a great distance on the independent axis.
-            It's a good idea to always plot the original data and the massaged data together to ensure that the massaged data has not been seriously distorted.'''
+            It's a good idea to always plot the original data and the massaged data together to ensure that the massaged data has not been seriously distorted.
+
+        Args:
+            extrapolation_window: Extrapolation window.
+            iterations: Iterations.
+            window: Window.
+        '''
         if extrapolation_window is None:
             extrapolation_window = window
         for i in range(iterations):
@@ -220,7 +274,13 @@ class ordered_pair(list):
             **** WARNING ****
             *****************
             Iterations should be used judiciously as it can lead to large phase shifting which moves the data a great distance on the independent axis.
-            It's a good idea to always plot the original data and the massaged data together to ensure that the massaged data has not been seriously distorted.'''
+            It's a good idea to always plot the original data and the massaged data together to ensure that the massaged data has not been seriously distorted.
+
+        Args:
+            extrapolation_window: Extrapolation window.
+            iterations: Iterations.
+            window: Window.
+        '''
         if extrapolation_window is None:
             extrapolation_window = window
         for i in range(iterations):
@@ -233,7 +293,14 @@ class ordered_pair(list):
                    extrapolation_window=None):
         '''This method implements a box filter with the specified 3db frequency and filter order.  Based on the sampling interval it will calculate
            the window size, N, to pass to the smooth_y filter function defined in this class.  If the sampling interval is not provided, it will
-           be calculated using the first two x data points and round to the nearest 10ps'''
+           be calculated using the first two x data points and round to the nearest 10ps
+
+        Args:
+            extrapolation_window: Extrapolation window.
+            f3db: F3db.
+            order: Order.
+            sampling_interval: Sampling interval.
+        '''
         if sampling_interval is None:
             # round to 10ps - scope at 4GSa/s is 250ps.  5GSa/s is 200ps.
             time_step = round(self[1][0] - self[0][0], 11)

@@ -3,7 +3,11 @@ from PyICe.lab_core import *  # noqa: F403
 
 class chroma_63600(scpi_instrument):
     def __init__(self, interface_visa):
-        '''interface_visa'''
+        '''interface_visa
+
+        Args:
+            interface_visa: VISA interface instance.
+        '''
         self._base_name = 'chroma_63600'
         scpi_instrument.__init__(self, f"chroma_63600 @ {interface_visa}")
         self.add_interface_visa(interface_visa)
@@ -13,6 +17,11 @@ class chroma_63600(scpi_instrument):
         '''Sets the mode and range.
             Mode: a string of either CC, CR, CV, CP, or CZ
             Range: a string of either L, M, or H
+
+        Args:
+            mode: Operating mode.
+            num: Count or number.
+            range: Measurement or output range.
         '''
         self._select_load_channel(num)
         self.get_interface().write(((f"MODE {mode}{range}").upper()))
@@ -29,6 +38,9 @@ class chroma_63600(scpi_instrument):
             Figure 2-3 shows the channel assignments for a Chroma 63600-5 Mainframe containing two Loads of 63630-80-60 single channel module, and two Loads of 63610-80-20 dual channel module.
             Channel number is automatically assigned to 1, 3, 5, 6, 7, and 8.
             Channel 2 and 4 are skipped as single module is applied.
+
+        Args:
+            num: Count or number.
         '''
         self.get_interface().write((f"CHAN {num}"))
     # def add_channel_enable(self, channel_name, num):

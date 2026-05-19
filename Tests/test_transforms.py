@@ -7,7 +7,11 @@ from PyICe.lab_utils.sqlite_data import sqlite_data
 
 
 def make_recarray():
-    """Create a simple numpy recarray for testing."""
+    """Create a simple numpy recarray for testing.
+
+    Returns:
+        Result value.
+    """
     return np.rec.fromarrays(
         [[1.0, 2.0, 3.0, 4.0, 5.0],
          [10.0, 20.0, 30.0, 40.0, 50.0],

@@ -24,6 +24,14 @@ def present_menu(intro_msg, prompt_msg, item_list):
     so it is important that each item in item_list has a descriptive __str__() method.
 
     Returns the chosen item from item_list.
+
+    Args:
+        intro_msg: Intro msg.
+        item_list: Item list.
+        prompt_msg: Prompt msg.
+
+    Returns:
+        Result value.
     """
     assert hasattr(item_list, "__getitem__") and hasattr(item_list, "__len__")
     assert len(item_list) > 0 and hasattr(item_list[0], "__str__")

@@ -90,7 +90,12 @@ class communication_node(object):
     def __init__(self, *args, **kwargs):
         '''this should never explicity take arguments since it is silently created many ways.
         However, subclasses with multiple inheritance will have constructors needing to
-        be called. We forward whatever arguments we get to the superclass constructor.'''
+        be called. We forward whatever arguments we get to the superclass constructor.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            *args: Additional positional arguments.
+        '''
         super().__init__(*args, **kwargs)
         self._parent = None
         self._thread_safe = False
@@ -137,7 +142,14 @@ class communication_node(object):
 
     def group_com_nodes_for_threads(self, sets=None):
         '''returns a list of sets of com_nodes, each set must be communicated with in 1 thread
-        because upstream interfaces are not thread safe'''
+        because upstream interfaces are not thread safe
+
+        Args:
+            sets: Sets.
+
+        Returns:
+            Result value.
+        '''
         if sets is None:
             sets = list()
         if self._thread_safe:
@@ -154,7 +166,17 @@ class communication_node(object):
         '''takes a list of interfaces and returns a list of lists
         the returned list are interfaces that cannot be used concurrently
         each is an ideal candidate for a thread to handle
-        make sure all interface's root resolves back here'''
+        make sure all interface's root resolves back here
+
+        Args:
+            com_node_list: Com node list.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        '''
         if len(set([interface.com_node_get_root()
                for interface in com_node_list])) > 1:
             print('lab_interfaces: ERROR, Too many COM node parents, either:')
@@ -180,7 +202,11 @@ class communication_node(object):
 
     def lock(self):
         '''Lock this communication node to prevent concurrent use, then recursively
-        acquire locks of this communication node's parents.'''
+        acquire locks of this communication node's parents.
+
+        Raises:
+            TypeError: On error condition.
+        '''
         self._lock.acquire()
         parent_com_node = self.get_com_parent()
         if isinstance(parent_com_node, communication_node):
@@ -192,7 +218,11 @@ class communication_node(object):
                             "Expected 'communication_node' or 'None'")
 
     def unlock(self):
-        '''Release all parent locks starting with this node's oldest ancestor. Finish by unlocking this com node.'''
+        '''Release all parent locks starting with this node's oldest ancestor. Finish by unlocking this com node.
+
+        Raises:
+            TypeError: On error condition.
+        '''
         parent_com_node = self.get_com_parent()
         if isinstance(parent_com_node, communication_node):
             parent_com_node.unlock()
@@ -253,7 +283,16 @@ class interface_bobbytalk(interface):
            Returns SUCCESS if buffer successfully sent to the
            underlying interface.
            Otherwise FAIL, meaning the underlying interface
-           couldn't accept buffer for some reason.'''
+           couldn't accept buffer for some reason.
+
+        Args:
+            buffer: Buffer.
+            dest_id: Destination identifier.
+            src_id: Source identifier.
+
+        Raises:
+            NotImplementedError: On error condition.
+        '''
         raise NotImplementedError("Subclass must implement this.")
 
     def recv_packet(self, dest_id, timeout, src_id=None):
@@ -261,18 +300,39 @@ class interface_bobbytalk(interface):
            and optionally src_id, continuing to receive and dispatch other
            incoming packets.
            Upon success, returns a bobbytalk_packet object.
-           Upon timeout, returns None.'''
+           Upon timeout, returns None.
+
+        Args:
+            dest_id: Destination identifier.
+            src_id: Source identifier.
+            timeout: Timeout in seconds.
+
+        Raises:
+            NotImplementedError: On error condition.
+        '''
         raise NotImplementedError("Subclass must implement this.")
 
     def handle_comms(self):
         '''Call this periodically to receive packets from the underlying interface
-           and dispatch to any registered packet handlers (or "modules")'''
+           and dispatch to any registered packet handlers (or "modules")
+
+        Raises:
+            NotImplementedError: On error condition.
+        '''
         raise NotImplementedError("Subclass must implement this.")
 
     def register_handler(self, dest_id, handler_function):
         '''Sets the handler function for received packets with dest_id.
            handler_function will be called like this:
-           handler_function(bobbytalk_packet)'''
+           handler_function(bobbytalk_packet)
+
+        Args:
+            dest_id: Destination identifier.
+            handler_function: Handler function.
+
+        Raises:
+            NotImplementedError: On error condition.
+        '''
         raise NotImplementedError("Subclass must implement this.")
 
 
@@ -285,6 +345,14 @@ class interface_libusb(interface):
     def __init__(self, idVendor, idProduct, timeout):
         '''PyUSB requires installation of WinUSB filter driver. Use install-filter-win.exe under PyICe/deps/Direct590.
         Untested on linux; filter driver probably not required.
+
+        Args:
+            idProduct: Idproduct.
+            idVendor: Idvendor.
+            timeout: Timeout in seconds.
+
+        Raises:
+            ValueError: On error condition.
         '''
         interface.__init__(self, 'WinUSB Communication Interface')
         self.timeout = 1000 * timeout  # ms
@@ -322,7 +390,11 @@ class interface_libusb(interface):
         print(self.dev)
 
     def read(self):
-        ''''''
+        '''
+
+        Returns:
+            Result value.
+        '''
         resp = self.dev.read(self.ep_in, self.read_packet_size, self.timeout)
         while len(resp) == self.read_packet_size:  # response split across packets
             resp += self.dev.read(self.ep_in,
@@ -331,7 +403,11 @@ class interface_libusb(interface):
         return resp.tostring()  # (resp,remain)
 
     def write(self, byte_list):
-        '''Send byte_list across subclass-specific communication interface.'''
+        '''Send byte_list across subclass-specific communication interface.
+
+        Args:
+            byte_list: Byte list.
+        '''
         self.dev.write(self.ep_out, byte_list)
 
 
@@ -370,6 +446,12 @@ class interface_stream_serial(interface_stream):
         '''Read and return tuple  (byte_count bytes, byte_count remaining_bytes) from subclass-specific communication interface.
         If fewer than byte_count bytes are available, return all available.
         If byte_count is None, return all available.
+
+        Args:
+            byte_count: Byte count.
+
+        Returns:
+            Result value.
         '''
         if byte_count is None:
             byte_count = self.ser.inWaiting()
@@ -378,7 +460,11 @@ class interface_stream_serial(interface_stream):
         return (resp, remain)
 
     def write(self, byte_list):
-        '''Send byte_list across subclass-specific communication interface.'''
+        '''Send byte_list across subclass-specific communication interface.
+
+        Args:
+            byte_list: Byte list.
+        '''
         self.ser.write(byte_list)
 
     def close(self):
@@ -602,7 +688,14 @@ class SerialTestHarness(object):
 
     def read(self, numbytes):
         '''Returns up to numbytes bytes from our test suite's
-        bytestream generator, with random delay that's within timeout.'''
+        bytestream generator, with random delay that's within timeout.
+
+        Args:
+            numbytes: Numbytes.
+
+        Returns:
+            Result value.
+        '''
         # First note by what wallclock time we have to
         # return the requested bytes:
         treturn = time.time() + self.timeout * random.uniform(0, 1.0)
@@ -754,6 +847,12 @@ class interface_bobbytalk_raw_serial(interface_bobbytalk):
         which must be an instance of interface_raw_serial or SerialTestHarness.
         junk_bytes_dump is an optional argument. It's a function of one argument that receives
         all the bytes discarded by the bobbytalk parser as non-packet-bytes.
+
+        Args:
+            debug: If True, enable debug output.
+            fifo_size: Fifo size.
+            junk_bytes_dump: Junk bytes dump.
+            raw_serial_interface: Raw serial interface.
         '''
         # Can't be interface_stream_serial because we need to be
         # able to change timeouts on every recv_packet() call.
@@ -792,7 +891,11 @@ class interface_bobbytalk_raw_serial(interface_bobbytalk):
                |<-- FIFO head       ----> FIFO tail
         Case 1: {0 or more non-SOP bytes}LT{0 or more bytes of any kind}
         Case 2: {0 or more non-SOP bytes}L
-        Case 3: {0 or more non-SOP bytes}'''
+        Case 3: {0 or more non-SOP bytes}
+
+        Returns:
+            Result value.
+        '''
         psbl_SOP_position = self.fifo.find(
             bobbytalk.packet.START_OF_PACKET_BYTEARRAY)
         if psbl_SOP_position > -1:
@@ -813,7 +916,16 @@ class interface_bobbytalk_raw_serial(interface_bobbytalk):
            Returns SUCCESS if buffer successfully sent to the
            underlying interface.
            Otherwise FAIL, meaning the underlying interface
-           couldn't accept buffer for some reason.'''
+           couldn't accept buffer for some reason.
+
+        Args:
+            buffer: Buffer.
+            dest_id: Destination identifier.
+            src_id: Source identifier.
+
+        Returns:
+            Result value.
+        '''
         pktbytes = bobbytalk.packet(
             src_id=src_id,
             dest_id=dest_id,
@@ -832,7 +944,17 @@ class interface_bobbytalk_raw_serial(interface_bobbytalk):
            and optionally src_id, continuing to receive and dispatch other
            incoming packets.
            Upon success, returns a bobbytalk_packet object.
-           Upon timeout, returns None.'''
+           Upon timeout, returns None.
+
+        Args:
+            dest_id: Destination identifier.
+            receive_tries: Receive tries.
+            src_id: Source identifier.
+            timeout: Timeout in seconds.
+
+        Returns:
+            Result value.
+        '''
         # Stuff we'll use from Python's standard library.
         from numbers import Real
         from struct import unpack
@@ -934,13 +1056,25 @@ class interface_bobbytalk_raw_serial(interface_bobbytalk):
     def handle_comms(self):
         '''Call this periodically to receive packets from the serial line
            and dispatch to any registered packet handlers ("modules") in
-           the module_table.'''
+           the module_table.
+
+        Raises:
+            NotImplementedError: On error condition.
+        '''
         raise NotImplementedError("Subclass must implement this.")
 
     def register_handler(self, dest_id, handler_function):
         '''Sets the handler function for received packets with dest_id.
            handler_function will be called like this:
-           handler_function(bobbytalk_packet)'''
+           handler_function(bobbytalk_packet)
+
+        Args:
+            dest_id: Destination identifier.
+            handler_function: Handler function.
+
+        Raises:
+            NotImplementedError: On error condition.
+        '''
         raise NotImplementedError("Subclass must implement this.")
 
 
@@ -1198,7 +1332,11 @@ class interface_factory(communication_node):
         return new_interface
 
     def set_gpib_adapter_visa(self, adapter_number):
-        '''Deprectaed, I put this stuff in .get_visa_gpib_interface() since it asked for an adapter number anyway.'''
+        '''Deprectaed, I put this stuff in .get_visa_gpib_interface() since it asked for an adapter number anyway.
+
+        Args:
+            adapter_number: Adapter number.
+        '''
 
     def _get_gpib_interface(
             self, gpib_adapter, gpib_adapter_number, gpib_address_number, timeout):
@@ -1287,7 +1425,17 @@ class interface_factory(communication_node):
         '''Get a PyICified SerialTestHarness, a hardware-free PySerial serial.Serial
         emulator that provides a read() method and a writable timeout property.
         bytestream is a generator function that yields one byte
-        of test stimulus each time its next() method is called.'''
+        of test stimulus each time its next() method is called.
+
+        Args:
+            bytestream: Bytestream.
+            max_bytes_returned_per_read: Max bytes returned per read.
+            serial_port_name: Serial port name.
+            timeout: Timeout in seconds.
+
+        Returns:
+            Result value.
+        '''
         timeout = self._set_timeout(timeout)
         new_interface = interface_test_harness_serial(
             serial_port_name, bytestream, max_bytes_returned_per_read)
@@ -1394,7 +1542,22 @@ class interface_factory(communication_node):
                      recv_timeout, cmd_retries, per_cmd_recv_retries...
             For testing purposes, if a lab_interface.interface object is passed as the serial_port_name
             argument, it will be used as if it were a PySerial serial.Serial object. This allows
-            injection of test bytes and other stimuli to the bobbytalk parser.'''
+            injection of test bytes and other stimuli to the bobbytalk parser.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            baudrate: Baudrate.
+            debug: If True, enable debug output.
+            fifo_size: Fifo size.
+            serial_port_name: Serial port name.
+            src_id: Source identifier.
+
+        Returns:
+            Result value.
+
+        Raises:
+            ValueError: On error condition.
+        '''
         if baudrate is None:
             baudrate = 115200  # bobbytalk Firmware default
         if isinstance(serial_port_name, str):
@@ -1430,7 +1593,20 @@ class interface_factory(communication_node):
                      recv_timeout, cmd_retries, per_cmd_recv_retries...
             For testing purposes, if a lab_interface.interface object is passed as the dest_ip_address
             argument, it will be used as if it were a PySerial serial.Serial object, and the dest_tcp_portnum
-            is ignored. This allows injection of test bytes and other stimuli to the bobbytalk parser.'''
+            is ignored. This allows injection of test bytes and other stimuli to the bobbytalk parser.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            debug: If True, enable debug output.
+            dest_ip_address: Dest ip address.
+            dest_tcp_portnum: Dest tcp portnum.
+            fifo_size: Fifo size.
+            src_id: Source identifier.
+            timeout: Timeout in seconds.
+
+        Returns:
+            Result value.
+        '''
         if isinstance(dest_ip_address, str):
             serial_intf = self.get_tcp_serial_interface(
                 dest_ip_address, dest_tcp_portnum, timeout)
@@ -1479,7 +1655,19 @@ class interface_factory(communication_node):
 
     def get_spi_cfgpro_interface(
             self, serial_port_name, uart_timeout=None, CPOL=0, CPHA=0, spi_baudrate=1e6, ss_ctrl=None):
-        '''The configurator Pro (or XT) is an ADI specific breakout board that interfaces test equipment and ICs in a semi-standardized manner.'''
+        '''The configurator Pro (or XT) is an ADI specific breakout board that interfaces test equipment and ICs in a semi-standardized manner.
+
+        Args:
+            CPHA: Clock phase.
+            CPOL: Clock polarity.
+            serial_port_name: Serial port name.
+            spi_baudrate: Spi baudrate.
+            ss_ctrl: Ss ctrl.
+            uart_timeout: Uart timeout.
+
+        Returns:
+            Result value.
+        '''
         iface_visa_serial = self.get_visa_serial_interface(
             serial_port_name, timeout=uart_timeout)
         iface_spi = interface_spi_cfgpro(
@@ -1488,7 +1676,15 @@ class interface_factory(communication_node):
         return iface_spi
 
     def get_dummy_interface(self, parent=None, name='dummy interface'):
-        '''used only for testing the core lab functions'''
+        '''used only for testing the core lab functions
+
+        Args:
+            name: Name identifier.
+            parent: Parent.
+
+        Returns:
+            Result value.
+        '''
         new_interface = interface(name)
         if parent is None:
             new_interface.set_com_node_parent(self)

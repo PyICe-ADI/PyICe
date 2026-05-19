@@ -20,7 +20,11 @@ class saleae(instrument, delegator):
 
     def set_num_samples(self, num_samples_per_channel):
         '''set number of samples to average and sample rate
-        because valid sample rates change with ???number of configured channels???, may need to call after adding all channels.'''
+        because valid sample rates change with ???number of configured channels???, may need to call after adding all channels.
+
+        Args:
+            num_samples_per_channel: Num samples per channel.
+        '''
         self._saleae.set_num_samples(num_samples_per_channel)
 
     def get_sample_rates(self):
@@ -44,7 +48,16 @@ class saleae(instrument, delegator):
 
     def add_channel_scalar(self, channel_name, channel_number, scaling=1.0):
         '''Add analog scalar (DMM) DAQ channel to instrument.
-        channel_number is 0-7 or 0-15 for Logic Pro 8 and Logic Pro 16 respectively.'''
+        channel_number is 0-7 or 0-15 for Logic Pro 8 and Logic Pro 16 respectively.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+            scaling: Scaling.
+
+        Returns:
+            Result value.
+        '''
         assert isinstance(channel_number, int)
         assert channel_number < 16
         assert channel_number not in self._channels
@@ -62,7 +75,16 @@ class saleae(instrument, delegator):
 
     def add_channel_trace(self, channel_name, channel_number, scaling=1.0):
         '''Add analog vector trace (scope) DAQ channel to instrument.
-        channel_number is 0-7 or 0-15 for Logic Pro 8 and Logic Pro 16 respectively.'''
+        channel_number is 0-7 or 0-15 for Logic Pro 8 and Logic Pro 16 respectively.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+            scaling: Scaling.
+
+        Returns:
+            Result value.
+        '''
         assert isinstance(channel_number, int)
         assert channel_number < 16
         assert channel_number not in self._channels
@@ -82,7 +104,19 @@ class saleae(instrument, delegator):
         raise Exception("Shouldn't be here...")
 
     def _read_from_file(self, file, bytes, timeout=10):
-        '''intermittently, data is slow to flush to disk...'''
+        '''intermittently, data is slow to flush to disk...
+
+        Args:
+            bytes: Bytes.
+            file: File.
+            timeout: Timeout in seconds.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        '''
         start_time = time.time()
         str = file.read(bytes)
         while len(str) < bytes:
@@ -92,7 +126,17 @@ class saleae(instrument, delegator):
         return str
 
     def read_delegated_channel_list(self, channels):
-        '''private'''
+        '''private
+
+        Args:
+            channels: List of channel objects.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        '''
         results_dict = results_ord_dict()
         temp_dir = tempfile.mkdtemp(prefix='saleae_tmp')
         temp_file = temp_dir + '\\capture.logicdata'

@@ -10,6 +10,12 @@ def dBV(voltageRMS):
     -20.0
     >>> float(dBV(0.0))
     -inf
+
+    Args:
+        voltageRMS: Voltagerms.
+
+    Returns:
+        Result value.
     '''
     with numpy.errstate(divide='ignore'):
         return 20 * numpy.log10(voltageRMS)
@@ -22,6 +28,12 @@ def dBm(voltageRMS):
     13.01
     >>> float(round(dBm(0.1), 2))
     -6.99
+
+    Args:
+        voltageRMS: Voltagerms.
+
+    Returns:
+        Result value.
     '''
     return 10 * numpy.log10(voltageRMS**2 / 50 / 0.001)
 
@@ -33,6 +45,12 @@ def Vpp_to_VRMS(Vpp):
     0.7071
     >>> round(Vpp_to_VRMS(1.0), 4)
     0.3536
+
+    Args:
+        Vpp: Vpp.
+
+    Returns:
+        Result value.
     '''
     return Vpp / 2 / 2**0.5
 
@@ -44,5 +62,11 @@ def VRMS_to_Vpp(VRMS):
     2.0
     >>> round(VRMS_to_Vpp(1.0), 4)
     2.8284
+
+    Args:
+        VRMS: Vrms.
+
+    Returns:
+        Result value.
     '''
     return VRMS * 2 * 2**0.5

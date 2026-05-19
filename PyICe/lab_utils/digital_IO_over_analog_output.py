@@ -45,7 +45,14 @@ class digital_IO_over_analog_output(object):
         any of (False, 0, 0.0) to set output to VOL, and
         any of ("testhook", 2, 2.0) to set output to VOH+delta_Vhook.
         You can pass this method as the write_function argument
-        to master.add_channel_virtual()"""
+        to master.add_channel_virtual()
+
+        Args:
+            value: Value to set.
+
+        Raises:
+            NotImplementedError: On error condition.
+        """
         if isinstance(value, str) and value.lower() in (
                 "z", "hiz", "hi-z", "high-z"):
             raise NotImplementedError(

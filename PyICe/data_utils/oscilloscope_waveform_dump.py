@@ -34,7 +34,11 @@ class dict_print(dict):
 
 class oscilloscope_waveform_dump(oscilloscope):
     def __init__(self, interface_visa):
-        '''interface_visa'''
+        '''interface_visa
+
+        Args:
+            interface_visa: VISA interface instance.
+        '''
         self._base_name = "agilent_3034a"
         lab_core.scpi_instrument.__init__(
             self, "agilent_3034a @ {}".format(interface_visa))

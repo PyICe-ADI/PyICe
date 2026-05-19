@@ -10,6 +10,13 @@ def interpolating_spline(rec_array, **kwargs):
     returns spline function named tuple for each y-column.
     for small point count, consider scipy.interpolate.Akima1DInterpolator instead
     https://docs.scipy.org/doc/scipy-0.19.1/reference/generated/scipy.interpolate.Akima1DInterpolator.html#scipy.interpolate.Akima1DInterpolator
+
+    Args:
+        **kwargs: Additional keyword arguments.
+        rec_array: Rec array.
+
+    Returns:
+        Result value.
     '''
     if 's' in kwargs:
         s = kwargs['s']

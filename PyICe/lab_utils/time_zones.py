@@ -12,18 +12,39 @@ class US_Time_Zone(datetime.tzinfo):
     '''
 
     def first_sunday_on_or_after(self, dt):
-        '''return date of first Sunday on or after dt.'''
+        '''return date of first Sunday on or after dt.
+
+        Args:
+            dt: Dt.
+
+        Returns:
+            Result value.
+        '''
         days_to_go = 6 - dt.weekday()
         # if days_to_go:
         dt += datetime.timedelta(days_to_go)
         return dt
 
     def utcoffset(self, dt):
-        '''return DST aware offset from GMT/UTC based on calendar date.'''
+        '''return DST aware offset from GMT/UTC based on calendar date.
+
+        Args:
+            dt: Dt.
+
+        Returns:
+            Result value.
+        '''
         return datetime.timedelta(hours=self.gmt_offset) + self.dst(dt)
 
     def dst(self, dt):
-        '''return DST offset from standard local time based on calendar date.'''
+        '''return DST offset from standard local time based on calendar date.
+
+        Args:
+            dt: Dt.
+
+        Returns:
+            Result value.
+        '''
         # DST starts second Sunday in March
         # ends first Sunday in November
         self.dston = self.first_sunday_on_or_after(
@@ -36,7 +57,14 @@ class US_Time_Zone(datetime.tzinfo):
             return datetime.timedelta(0)
 
     def tzname(self, dt):
-        '''return DST aware local time zone name based on calendar date.'''
+        '''return DST aware local time zone name based on calendar date.
+
+        Args:
+            dt: Dt.
+
+        Returns:
+            Result value.
+        '''
         if self.dst(dt):
             return self.tz_name_dst
         return self.tz_name

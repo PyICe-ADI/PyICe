@@ -27,16 +27,32 @@ class powermux(scpi_instrument):
 
     def add_column(self, column_name, num):
         '''register named column. num is physical column number.  valid range is [1-8] and [0] for auxiliary channels
-            column "aux" is predefined '''
+            column "aux" is predefined
+
+        Args:
+            column_name: Column name.
+            num: Count or number.
+        '''
         self.columns[column_name] = num
 
     def add_row(self, row_name, num):
         '''register named row. num is physical row number.  valid range is [1-8] and [1-4] for auxiliary channels
-            column "aux" is predefined '''
+            column "aux" is predefined
+
+        Args:
+            num: Count or number.
+            row_name: Row name.
+        '''
         self.rows[row_name] = num
 
     def set_relay(self, column_name, row_name, closed):
-        '''open and close a relay by row/column names'''
+        '''open and close a relay by row/column names
+
+        Args:
+            closed: Closed.
+            column_name: Column name.
+            row_name: Row name.
+        '''
         if closed:
             self.close_relay(column_name, row_name)
         else:
@@ -50,21 +66,37 @@ class powermux(scpi_instrument):
             self.get_interface().write((f"OPEN (@{cmd})"))
 
     def close_relay(self, column_name, row_name):
-        '''close relay at named (column, row)'''
+        '''close relay at named (column, row)
+
+        Args:
+            column_name: Column name.
+            row_name: Row name.
+        '''
         self._set_relay(
             self.columns[column_name],
             self.rows[row_name],
             closed=True)
 
     def open_relay(self, column_name, row_name):
-        '''open relay at named (column, row)'''
+        '''open relay at named (column, row)
+
+        Args:
+            column_name: Column name.
+            row_name: Row name.
+        '''
         self._set_relay(
             self.columns[column_name],
             self.rows[row_name],
             closed=False)
 
     def _set_relay_wdelay(self, delay, relay_list, closed):
-        '''close or open list of relays at named (column, row) with delay between each'''
+        '''close or open list of relays at named (column, row) with delay between each
+
+        Args:
+            closed: Closed.
+            delay: Delay time in seconds.
+            relay_list: Relay list.
+        '''
         if closed:
             command_string = "CLOSe"
         else:
@@ -78,15 +110,29 @@ class powermux(scpi_instrument):
         self.get_interface().write((command_string))
 
     def close_relay_wdelay(self, delay, relay_list):
-        '''close list of relays at named (column, row) with delay between each'''
+        '''close list of relays at named (column, row) with delay between each
+
+        Args:
+            delay: Delay time in seconds.
+            relay_list: Relay list.
+        '''
         self._set_relay_wdelay(delay, relay_list, closed=True)
 
     def open_relay_wdelay(self, delay, relay_list):
-        '''open list of relays at named (column, row) with delay between each'''
+        '''open list of relays at named (column, row) with delay between each
+
+        Args:
+            delay: Delay time in seconds.
+            relay_list: Relay list.
+        '''
         self._set_relay_wdelay(delay, relay_list, closed=False)
 
     def open_all(self, sync_channels=False):
-        '''open all relays, set sync_channels to true to keep the channels synced (no need to do this if shutting down)'''
+        '''open all relays, set sync_channels to true to keep the channels synced (no need to do this if shutting down)
+
+        Args:
+            sync_channels: Sync channels.
+        '''
         if sync_channels:
             for relay_channel in self.get_all_channels_list():
                 relay_channel.write(False)

@@ -26,7 +26,14 @@ class TestEquity_115(temperature_chamber):
         return temp_channel
 
     def add_channel_enable_output(self, channel_name):
-        '''Enable/Disable heat and cool outputs.'''
+        '''Enable/Disable heat and cool outputs.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_register = register(f'{channel_name}_enable',
                                 size=1,
                                 read_function=lambda: False if self.modbus_pid.read_register(

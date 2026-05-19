@@ -103,14 +103,31 @@ class memory_decoder():
         return self.slice(reg_data)
 
     def slice(self, reg_data):
-        '''expect dictionary of {addr_a: data_a, addr_b:, data_b, ...addr_n: data_n}'''
+        '''expect dictionary of {addr_a: data_a, addr_b:, data_b, ...addr_n: data_n}
+
+        Args:
+            reg_data: Reg data.
+
+        Returns:
+            Result value.
+        '''
         self.twii.get_interface().set_data_source(reg_data)
         bf_data = self._parse_bitfields()
         self.prettyprint(bf_data)
         return bf_data
 
     def read(self, ascii_dump_file):
-        '''Expects data already sliced to named bitfields. Applies enumerations and format transforms.'''
+        '''Expects data already sliced to named bitfields. Applies enumerations and format transforms.
+
+        Args:
+            ascii_dump_file: Ascii dump file.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        '''
         # Warning, this modifies the twii, making it incompatible with binary
         # decode()
         for bf in self.twii:

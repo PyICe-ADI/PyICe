@@ -34,27 +34,65 @@ class NTCS0402E3103FLT():
             list(reversed(self.values)), list(reversed(self.temps)))
 
     def r_from_tdegc_func(self):
-        '''Returns a callable function that can be passed a temperature and will return the corresponding resistance.'''
+        '''Returns a callable function that can be passed a temperature and will return the corresponding resistance.
+
+        Returns:
+            Result value.
+        '''
         return self.NTCS0402E3103FLT_func
 
     def r_from_tdegc(self, tdegc):
-        '''Returns a single resistance value for a given temperature value.'''
+        '''Returns a single resistance value for a given temperature value.
+
+        Args:
+            tdegc: Tdegc.
+
+        Returns:
+            Result value.
+        '''
         return self.NTCS0402E3103FLT_func(tdegc)
 
     def tdegc_from_r_func(self):
-        '''Returns a callable function that can be passed a resistance and will return the corresponding temperature.'''
+        '''Returns a callable function that can be passed a resistance and will return the corresponding temperature.
+
+        Returns:
+            Result value.
+        '''
         return self.NTCS0402E3103FLT_reverse_func
 
     def tdegc_from_r(self, r):
-        '''Returns a single temperature value for a given resistance value.'''
+        '''Returns a single temperature value for a given resistance value.
+
+        Args:
+            r: R.
+
+        Returns:
+            Result value.
+        '''
         return self.NTCS0402E3103FLT_reverse_func(r)
 
     def voltage_ratio_from_tdegc(self, rbias, tdegc):
-        '''Returns a single value of the voltage ratio of this thermistor grounded with a bias resistor feeding it.'''
+        '''Returns a single value of the voltage ratio of this thermistor grounded with a bias resistor feeding it.
+
+        Args:
+            rbias: Rbias.
+            tdegc: Tdegc.
+
+        Returns:
+            Result value.
+        '''
         rthermistor = self.r_from_tdegc(tdegc)
         return rthermistor / (rthermistor + rbias)
 
     def tdegc_from_voltage_ratio(self, rbias, ratio):
-        '''Returns a single value of the temperature ratio of this thermistor grounded with a bias resistor feeding it.'''
+        '''Returns a single value of the temperature ratio of this thermistor grounded with a bias resistor feeding it.
+
+        Args:
+            ratio: Ratio.
+            rbias: Rbias.
+
+        Returns:
+            Result value.
+        '''
         rthermistor = rbias * ratio / (1 - ratio)
         return self.tdegc_from_r(rthermistor)

@@ -31,6 +31,12 @@ def freeze(o):
 def make_hash(o):
     """
     makes a hash out of anything that contains only list,dict and hashable types including string and numeric types
+
+    Args:
+        o: O.
+
+    Returns:
+        Result value.
     """
     return hash(freeze(o))
 
@@ -172,7 +178,14 @@ class Test_Results(generic_results):
                        'test_name', 'conditions', 'min_data', 'max_data', 'passes', 'failure_reason', 'collected_data', 'plot', 'query'])):
         '''add some helper moethods for easy summary'''
         def __new__(cls, **kwargs):
-            '''fix (allowed) missing fields. For instance, original JSON didn't retain SQL query string.'''
+            '''fix (allowed) missing fields. For instance, original JSON didn't retain SQL query string.
+
+            Args:
+                **kwargs: Additional keyword arguments.
+
+            Returns:
+                Result value.
+            '''
             if 'query' not in kwargs:
                 kwargs['query'] = None
             if 'outerclass' in kwargs.keys():
@@ -309,7 +322,11 @@ class Test_Results(generic_results):
 
         def factored(self):
             '''returns new object; doesn't modifiy existing one in place
-            merges all resutls from like conditions'''
+            merges all resutls from like conditions
+
+            Returns:
+                Result value.
+            '''
             ret = type(self)(
                 self.name,
                 self.upper_limit,
@@ -324,7 +341,12 @@ class Test_Results(generic_results):
             return ret
 
     def __init__(self, name, module):
-        '''TODO'''
+        '''TODO
+
+        Args:
+            module: Module.
+            name: Name identifier.
+        '''
 
         self._test_results = collections.OrderedDict()
         self._ate_results = collections.OrderedDict()
@@ -341,7 +363,11 @@ class Test_Results(generic_results):
         return self._test_declarations
 
     def __str__(self):
-        '''printable regression results'''
+        '''printable regression results
+
+        Returns:
+            Result value.
+        '''
         # TODO more concise summary when passing, grouped results, etc.
         resp = ''
         passes = bool(len(self._test_declarations))
@@ -359,7 +385,11 @@ class Test_Results(generic_results):
                     [bool(self[k]) for k in self]))
 
     def __iter__(self):
-        '''test declaration names'''
+        '''test declaration names
+
+        Returns:
+            Result value.
+        '''
         return iter(self._test_declarations)
 
     def __len__(self):

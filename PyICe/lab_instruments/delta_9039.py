@@ -20,7 +20,11 @@ class delta_9039(temperature_chamber):
         time.sleep(1)
 
     def _write_temperature(self, value):
-        '''Set named channel to new temperature "value"'''
+        '''Set named channel to new temperature "value"
+
+        Args:
+            value: Value to set.
+        '''
         self.setpoint = value
         self._enable(False)
         time.sleep(1)
@@ -31,11 +35,19 @@ class delta_9039(temperature_chamber):
         self._wait_settle()
 
     def _read_temperature_sense(self):
-        '''read back actual chamber temperature'''
+        '''read back actual chamber temperature
+
+        Returns:
+            Result value.
+        '''
         return float(self.get_interface().ask("Temperature?"))
 
     def _enable(self, enable):
-        '''enable/disable temperature chamber heating and cooling'''
+        '''enable/disable temperature chamber heating and cooling
+
+        Args:
+            enable: Enable or disable.
+        '''
         if enable:
             self.get_interface().write("Active")
         else:

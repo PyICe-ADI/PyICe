@@ -3,7 +3,15 @@ from PyICe.lab_core import register, integer_channel
 
 
 def make_register(size=8, init_value=0):
-    """Create a register with in-memory read/write backing store."""
+    """Create a register with in-memory read/write backing store.
+
+    Args:
+        init_value: Init value.
+        size: Size in bits.
+
+    Returns:
+        Result value.
+    """
     store = [init_value]
 
     def read_fn():

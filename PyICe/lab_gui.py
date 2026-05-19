@@ -1928,7 +1928,12 @@ class tab_group(QtWidgets.QTabWidget):
         '''Create a group of tabs in the Qt5 GUI given a PyICe channel_group.
         background_call is an optional argument. If offered, it must be a function that takes
         a function of no arguments to be enqueued to run on another thread, such as
-        the background_worker thread.'''
+        the background_worker thread.
+
+        Args:
+            background_call: Background call.
+            channel_group: Channel group.
+        '''
         assert isinstance(channel_group, lab_core.channel_group)
         assert callable(background_call) or (background_call is None)
         QtWidgets.QTabWidget.__init__(self)
@@ -2690,7 +2695,12 @@ class ltc_lab_gui_main_window(QtWidgets.QMainWindow):
         '''Create the GUI's main window given a PyICe channel_group.
         background_call is an optional argument. If offered, it must be a function that takes
         a function of no arguments to be enqueued to run on another thread, such as
-        the background_worker thread.'''
+        the background_worker thread.
+
+        Args:
+            background_call: Background call.
+            channel_group: Channel group.
+        '''
         assert isinstance(channel_group, lab_core.channel_group)
         assert callable(background_call) or (background_call is None)
         QtWidgets.QMainWindow.__init__(self)

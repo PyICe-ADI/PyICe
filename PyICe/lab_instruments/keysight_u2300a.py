@@ -75,7 +75,14 @@ class u2300a_scope(scpi_instrument, delegator):
         self.get_interface().write(f'ACQuire:BURSt {"ON" if state else "OFF"}')
 
     def add_channel_timeout(self, channel_name):
-        '''add trigger timeout control channel'''
+        '''add trigger timeout control channel
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_ch = channel(
             channel_name,
             write_function=lambda v: setattr(
@@ -88,7 +95,14 @@ class u2300a_scope(scpi_instrument, delegator):
         return self._add_channel(new_ch)
 
     def add_channel_time(self, channel_name):
-        '''add timebase readback channel'''
+        '''add timebase readback channel
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         new_ch = channel(channel_name, read_function=self.dummy_read)
         new_ch.set_attribute('u2300a_type', 'ain_time')
         new_ch.set_delegator(self)
@@ -101,6 +115,14 @@ class u2300a_scope(scpi_instrument, delegator):
             self, channel_name, channel_num, sig_range):
         '''Add single ended, bipolar, channel to u23xx instrument.
             TODO: Better docstring.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_num: Physical channel number.
+            sig_range: Sig range.
+
+        Returns:
+            Result value.
         '''
         assert channel_num not in self._configured_channels
         assert channel_num in self._ai_channels['single_ended']
@@ -125,6 +147,14 @@ class u2300a_scope(scpi_instrument, delegator):
             self, channel_name, channel_num, sig_range):
         '''Add differential, bipolar, channel to u23xx instrument.
             TODO: Better docstring.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_num: Physical channel number.
+            sig_range: Sig range.
+
+        Returns:
+            Result value.
         '''
         assert channel_num not in self._configured_channels
         assert channel_num in self._ai_channels['differential']
@@ -148,6 +178,14 @@ class u2300a_scope(scpi_instrument, delegator):
             self, channel_name, channel_num, sig_range):
         '''Add single ended, unipolar, channel to u23xx instrument.
             TODO: Better docstring.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_num: Physical channel number.
+            sig_range: Sig range.
+
+        Returns:
+            Result value.
         '''
         assert channel_num not in self._configured_channels
         assert channel_num in self._ai_channels['single_ended']
@@ -172,6 +210,14 @@ class u2300a_scope(scpi_instrument, delegator):
             self, channel_name, channel_num, sig_range):
         '''Add differential, unipolar, channel to u23xx instrument.
             TODO: Better docstring.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_num: Physical channel number.
+            sig_range: Sig range.
+
+        Returns:
+            Result value.
         '''
         assert channel_num not in self._configured_channels
         assert channel_num in self._ai_channels['differential']
@@ -193,7 +239,19 @@ class u2300a_scope(scpi_instrument, delegator):
 
     def set_trigger(self, trigger_channel, mode='POST', delay_count=None,
                     polarity_condition='AHIG', high_threshold=1, low_threshold=1):
-        ''''''
+        '''
+
+        Args:
+            delay_count: Delay count.
+            high_threshold: High threshold.
+            low_threshold: Low threshold.
+            mode: Operating mode.
+            polarity_condition: Polarity condition.
+            trigger_channel: Trigger channel.
+
+        Raises:
+            Exception: On error condition.
+        '''
         # TRIGger:SOURce <mode>
         # This command is used to set the trigger source for input operations.
         # The valid options are:
@@ -318,7 +376,14 @@ class u2300a_scope(scpi_instrument, delegator):
         self.check_errors()
 
     def add_channels_trigger(self, base_name):
-        '''Channel-ize options otherwise availabe from set_trigger() method. Unclear if there's a required order of operations that complicates this process. Untested.'''
+        '''Channel-ize options otherwise availabe from set_trigger() method. Unclear if there's a required order of operations that complicates this process. Untested.
+
+        Args:
+            base_name: Base name.
+
+        Returns:
+            Result value.
+        '''
         def trigger_config_ch_write(write_channel, value):
             vals = {}
             for other_channel in write_channel.get_attribute(
@@ -517,7 +582,11 @@ class u2300a_scope(scpi_instrument, delegator):
         return trigger_arm_ch
 
     def add_channel_acquisition_time(self, name):
-        '''Channel-ize option otherwise availabe from set_acquisition_time() method.'''
+        '''Channel-ize option otherwise availabe from set_acquisition_time() method.
+
+        Args:
+            name: Name identifier.
+        '''
         self.acq_time_ch = channel(
             name, write_function=self.set_acquisition_time)
         self.acq_time_ch.set_attribute(
@@ -527,7 +596,11 @@ class u2300a_scope(scpi_instrument, delegator):
         self._add_channel(self.acq_time_ch)
 
     def set_acquisition_time(self, acquisition_time):
-        '''additional option "MAX", to auto-compute max record length'''
+        '''additional option "MAX", to auto-compute max record length
+
+        Args:
+            acquisition_time: Acquisition time.
+        '''
         # Don't do any configuration until trigger time to make sure
         # configuration is fully self-consistent.
         self._ain_configuration['acquisition_time'] = acquisition_time
@@ -552,7 +625,11 @@ class u2300a_scope(scpi_instrument, delegator):
         self._point_count = point_count
 
     def add_channel_sample_rate(self, name):
-        '''Channel-ize option otherwise availabe from set_sample_rate() method.'''
+        '''Channel-ize option otherwise availabe from set_sample_rate() method.
+
+        Args:
+            name: Name identifier.
+        '''
         sample_rate_ch = channel(name, write_function=self.set_sample_rate)
         sample_rate_ch.set_attribute('u2300a_type', 'ain_acquisition_control')
         sample_rate_ch.set_description(
@@ -562,6 +639,9 @@ class u2300a_scope(scpi_instrument, delegator):
     def set_sample_rate(self, sample_rate):
         '''units of Hz
         additional option "MAX", to auto-compute max performace
+
+        Args:
+            sample_rate: Sample rate.
         '''
         # Don't do any configuration until trigger time to make sure
         # configuration is fully self-consistent.
@@ -639,7 +719,14 @@ class u2300a_scope(scpi_instrument, delegator):
             f'ROUTe:CHANnel:STYPe {sig_mode}, (@{channel.get_attribute("internal_address")})')
 
     def _scale_fn(self, channel):
-        '''speed up. Closure around immutable variables to aviod a whole bunch of attribute lookups inside a tight time-critical loop'''
+        '''speed up. Closure around immutable variables to aviod a whole bunch of attribute lookups inside a tight time-critical loop
+
+        Args:
+            channel: Channel object.
+
+        Returns:
+            Result value.
+        '''
         gains = self._ai_channels[channel.get_attribute(
             'polarity')]['range'][channel.get_attribute('sig_range')]
         offset = 0.5 * (gains['max'] + gains['min'])
@@ -1034,6 +1121,14 @@ class u2300a_DVM(scpi_instrument, delegator):
             self, channel_name, channel_num, sig_range):
         '''Add single ended, bipolar, channel to u23xx instrument.
             TODO: Better docstring.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_num: Physical channel number.
+            sig_range: Sig range.
+
+        Returns:
+            Result value.
         '''
         assert channel_num not in self._configured_channels
         assert channel_num in self._ai_channels['single_ended']
@@ -1060,6 +1155,14 @@ class u2300a_DVM(scpi_instrument, delegator):
             self, channel_name, channel_num, sig_range):
         '''Add differential, bipolar, channel to u23xx instrument.
             TODO: Better docstring.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_num: Physical channel number.
+            sig_range: Sig range.
+
+        Returns:
+            Result value.
         '''
         assert channel_num not in self._configured_channels
         assert channel_num in self._ai_channels['differential']
@@ -1084,6 +1187,14 @@ class u2300a_DVM(scpi_instrument, delegator):
             self, channel_name, channel_num, sig_range):
         '''Add single ended, unipolar, channel to u23xx instrument.
             TODO: Better docstring.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_num: Physical channel number.
+            sig_range: Sig range.
+
+        Returns:
+            Result value.
         '''
         assert channel_num not in self._configured_channels
         assert channel_num in self._ai_channels['single_ended']
@@ -1109,6 +1220,14 @@ class u2300a_DVM(scpi_instrument, delegator):
             self, channel_name, channel_num, sig_range):
         '''Add differential, unipolar, channel to u23xx instrument.
             TODO: Better docstring.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_num: Physical channel number.
+            sig_range: Sig range.
+
+        Returns:
+            Result value.
         '''
         assert channel_num not in self._configured_channels
         assert channel_num in self._ai_channels['differential']
@@ -1132,7 +1251,21 @@ class u2300a_DVM(scpi_instrument, delegator):
     def add_channel_current_sense(
             self, channel_name, channel_num, sig_range='AUTO', gain=1, resistance=None):
         '''Configure channel to return current measurement by scaling voltage measured across
-            user-supplied sense resistor.  Specify either gain or its reciprocal resistance.'''
+            user-supplied sense resistor.  Specify either gain or its reciprocal resistance.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_num: Physical channel number.
+            gain: Gain value.
+            resistance: Resistance.
+            sig_range: Sig range.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        '''
         channel = self.add_channel_ain_diff_bipolar(channel_name=channel_name,
                                                     channel_num=channel_num,
                                                     sig_range=sig_range)

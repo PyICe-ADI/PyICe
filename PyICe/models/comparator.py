@@ -32,6 +32,14 @@ class comparator(object):
         >>> comp.write(3.0)
         >>> comp.read()
         1
+
+        Args:
+            falling_threshold: Falling threshold.
+            out_high: Out high.
+            out_low: Out low.
+            rising_threshold: Rising threshold.
+            verbose: If True, print debug output.
+            write_overshoot: Write overshoot.
         '''
         self.state = False
         self.input = None
@@ -58,6 +66,10 @@ class comparator(object):
         >>> comp.write(1.5)
         >>> comp.read()
         1
+
+        Args:
+            falling_threshold: Falling threshold.
+            rising_threshold: Rising threshold.
         '''
         self.falling_threshold = falling_threshold
         self.rising_threshold = rising_threshold
@@ -125,5 +137,8 @@ class comparator(object):
         >>> comp.write(2.5)
         >>> comp.read()
         3.3
+
+        Returns:
+            Result value.
         '''
         return self.out_high if self.state else self.out_low

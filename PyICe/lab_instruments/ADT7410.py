@@ -11,6 +11,10 @@ class ADT7410(instrument):
         '''interface_twi is a interface_twi
         addr7 is the 7-bit I2C address of the ADT7410 set by pinstrapping.
         Choose addr7 from 0x48, 0x49, 0x4A, 0x4B
+
+        Args:
+            addr7: 7-bit I2C device address.
+            interface_twi: TWI/I2C interface instance.
         '''
         instrument.__init__(
             self,
@@ -37,7 +41,11 @@ class ADT7410(instrument):
 
     def enable(self, enabled=True):
         '''Place ADT7410 into shutdown by writing enabled=False
-        Re-enable by writing enabled=True'''
+        Re-enable by writing enabled=True
+
+        Args:
+            enabled: Enabled.
+        '''
         if enabled:
             # self.twi.write_byte(self.addr7, self.registers['config'],
             # (0b1<<7)) #16-bit mode
@@ -62,7 +70,11 @@ class ADT7410(instrument):
 
     def read_temp(self):
         '''Return free-running temperature conversion result.
-        16-bit conversion result scaled to signed degrees Celsius'''
+        16-bit conversion result scaled to signed degrees Celsius
+
+        Returns:
+            Result value.
+        '''
         # data = self.twi.read_word(self.addr7, self.registers['t_msb'])
         # #command code counter autoincrements
         data = self.twi.read_register(
@@ -76,7 +88,11 @@ class ADT7410(instrument):
         return data / 128.0  # lsb size adjustment
 
     def read_id(self):
-        '''Return Manufacturer ID and chip revision ID'''
+        '''Return Manufacturer ID and chip revision ID
+
+        Returns:
+            Result value.
+        '''
         # data = self.twi.read_byte(self.addr7, self.registers['ID'])
         data = self.twi.read_register(
             addr7=self.addr7,

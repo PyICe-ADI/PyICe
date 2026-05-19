@@ -14,7 +14,15 @@ class agilent_3034a(oscilloscope):
     # 10 seconds recommended in programmer's manual page 63
     def __init__(self, interface_visa, force_trigger=False,
                  reset=False, verbose=False, timeout=10):
-        '''interface_visa'''
+        '''interface_visa
+
+        Args:
+            force_trigger: Force trigger.
+            interface_visa: VISA interface instance.
+            reset: Reset.
+            timeout: Timeout in seconds.
+            verbose: If True, print debug output.
+        '''
         self._base_name = "agilent_3034a"
         scpi_instrument.__init__(self, f"agilent_3034a @ {interface_visa}")
         # Clears self._interfaces list, so must happen before
@@ -50,11 +58,18 @@ class agilent_3034a(oscilloscope):
         It just doesn't help with scope synchronization.
         The Programmer's guide a offers a little advice on determining if the scope is stopped (see scope_stopped() below) but it doesn't cover all synchronization issues.
         This method was created, in lieu of just a time.sleep(), as a way of possibly adding additional value to some scope operations going forward.
+
+        Args:
+            duration: Duration.
         '''
         time.sleep(duration)
 
     def scope_stopped(self):
-        '''From the Keysight Programmer's Guide regarding Status Reporting (Chapter 37) pages 205 and 1114.'''
+        '''From the Keysight Programmer's Guide regarding Status Reporting (Chapter 37) pages 205 and 1114.
+
+        Returns:
+            Result value.
+        '''
         return (int(self.get_interface().ask(
             ":OPERegister:CONDition?")) & 1 << 3) != 1 << 3
 
@@ -78,7 +93,11 @@ class agilent_3034a(oscilloscope):
     def resync_scope(self):
         '''call at the top of collect to reconfigure physical instrument to the test's used channels. Resets the scope.
         Requires every single oscilloscope channel be loaded with the channel attribute 'dependent_physical_channels', in turn
-        containing a tuple of all channels required to be turned on. (None,) is acceptable for timebase channels, etc.'''
+        containing a tuple of all channels required to be turned on. (None,) is acceptable for timebase channels, etc.
+
+        Raises:
+            Exception: On error condition.
+        '''
         self.get_interface().clear()  # Clear command in \deps\usbtmc\usmtmc.py. Helps if the scope is not responding because it was asked about data that isn't there because it didn't trigger.
         self.reset()
         self.delay(1)
@@ -105,14 +124,27 @@ class agilent_3034a(oscilloscope):
         self.enable_channels(enabled_unique)
 
     def setup_channels(self, scope_channels, prefix="scope"):
-        '''Shortcut to quickly setup scope channels for most common use cases.  If vector data is not desired when using a measurement channels, manual setup of channels is required.'''
+        '''Shortcut to quickly setup scope channels for most common use cases.  If vector data is not desired when using a measurement channels, manual setup of channels is required.
+
+        Args:
+            prefix: Name prefix string.
+            scope_channels: Scope channels.
+        '''
         for channel in scope_channels:
             self.add_Ychannel_waveform(
                 name=channel, number=scope_channels[channel])
         self.add_all_timebase_trigger_aquisition_channels(prefix=prefix)
 
     def add_Ychannel_waveform(self, name, number):
-        '''Add named waveform channels to instrument. num is 1-4.  Add all control and readback channels by calling add_Ycontrol_Yreadback_channels()'''
+        '''Add named waveform channels to instrument. num is 1-4.  Add all control and readback channels by calling add_Ycontrol_Yreadback_channels()
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+
+        Returns:
+            Result value.
+        '''
         assert number in range(1, 5)
         new_channel = channel(
             name, read_function=lambda: self._read_scope_channel(number))
@@ -125,7 +157,12 @@ class agilent_3034a(oscilloscope):
 
     def add_Ycontrol_Yreadback_channels(self, name, number):
         '''Add named channel control and readback channels to instrument. num is 1-4.
-        Use if control and readback channels are needed to set up a measurment and the actual waveform data is not logged.'''
+        Use if control and readback channels are needed to set up a measurment and the actual waveform data is not logged.
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+        '''
         assert number in range(1, 5)
         self.add_channel_probe_gain(name=f"{name}_probe_gain", number=number)
         self.add_channel_BWLimit(name=f"{name}_BWlimit", number=number)
@@ -197,7 +234,14 @@ class agilent_3034a(oscilloscope):
         def compute_x_points(self):
             '''Data conversion:
             voltage = [(data value - yreference) * yincrement] + yorigin
-            time = [(data point number - xreference) * xincrement] + xorigin'''
+            time = [(data point number - xreference) * xincrement] + xorigin
+
+            Args:
+                self: Self.
+
+            Returns:
+                Result value.
+            '''
             self._read_scope_time_info()
             xpoints_gen = map(
                 lambda x: (
@@ -256,7 +300,14 @@ class agilent_3034a(oscilloscope):
         self.add_channel_timebase(name=f"{prefix}_timedata")
 
     def set_points(self, points):
-        '''set the number of points returned by read_channel() or read_channels() points must be in range [100,250,500] or [1000,2000,5000]*10^[0-4] or [8000000]'''
+        '''set the number of points returned by read_channel() or read_channels() points must be in range [100,250,500] or [1000,2000,5000]*10^[0-4] or [8000000]
+
+        Args:
+            points: Points.
+
+        Raises:
+            ValueError: On error condition.
+        '''
         allowed_points = [100, 250, 500]
         allowed_points.extend(decadeListRange([1000, 2000, 5000], 4))
         allowed_points.extend((8000000,))
@@ -316,6 +367,12 @@ class agilent_3034a(oscilloscope):
         List will be datalogged by logger as a string in a single cell in the table.
         trigger=False can by used to suppress acquisition of new data by the instrument so that
         data from a single trigger may be retrieved from each of the four channels in turn by read_channels()
+
+        Args:
+            scope_channel_number: Scope channel number.
+
+        Returns:
+            Result value.
         '''
         self.get_interface().write(
             f':WAVeform:SOURce CHANnel{scope_channel_number}')
@@ -1445,7 +1502,14 @@ class agilent_3034a(oscilloscope):
         def compute_x_points(self):
             '''Data conversion:
             voltage = [(data value - yreference) * yincrement] + yorigin
-            time = [(data point number - xreference) * xincrement] + xorigin'''
+            time = [(data point number - xreference) * xincrement] + xorigin
+
+            Args:
+                self: Self.
+
+            Returns:
+                Result value.
+            '''
             xpoints = [
                 (x -
                  self.time_info["reference"]) *

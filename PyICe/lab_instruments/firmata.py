@@ -36,6 +36,12 @@ class firmata(instrument):
 
         2) inherit from delegator and aggregate pin states with single query???
 
+
+        Args:
+            serial_port_name: Serial port name.
+
+        Raises:
+            ImportError: On error condition.
         '''
         print("Consider switching from Firmata to Telemetrix")
         try:
@@ -193,6 +199,14 @@ class firmata(instrument):
         A5=19
 
         Set enable_pullup=True to enable on-board uC pullups. (~20k in Arduino Uno/Linduino AtMega328P)
+
+        Args:
+            channel_name: Name for the new channel.
+            enable_pullup: Enable pullup.
+            pin: Pin number.
+
+        Returns:
+            Result value.
         '''
         new_channel = integer_channel(
             channel_name,
@@ -222,6 +236,13 @@ class firmata(instrument):
         A3=17
         A4=18
         A5=19
+
+        Args:
+            channel_name: Name for the new channel.
+            pin: Pin number.
+
+        Returns:
+            Result value.
         '''
         new_channel = integer_channel(
             channel_name,
@@ -242,7 +263,15 @@ class firmata(instrument):
         # raise Exception('Not yet implemented')
 
     def add_channel_analog_input(self, channel_name, pin):
-        '''Analog input pin.'''
+        '''Analog input pin.
+
+        Args:
+            channel_name: Name for the new channel.
+            pin: Pin number.
+
+        Returns:
+            Result value.
+        '''
         new_channel = integer_channel(channel_name, size=10, read_function=lambda: self.firmata_board.analog_read(
             pin))  # don't really know size, but it doesn't matter. 10-bit answer on Arduino hardware
         new_channel.set_attribute('channel_type', 'ANALOG_INPUT')
@@ -276,6 +305,13 @@ class firmata(instrument):
     def add_channel_pwm_output(self, channel_name, pin):
         '''PWM output pin.
         Arduino UNO (Atmega328) compatible with digital pins 3,5,6,9,10,11.
+
+        Args:
+            channel_name: Name for the new channel.
+            pin: Pin number.
+
+        Returns:
+            Result value.
         '''
         new_channel = integer_channel(
             channel_name,
@@ -318,7 +354,15 @@ class firmata(instrument):
         return self._add_channel(new_channel)
 
     def add_channel_servo(self, channel_name, pin):
-        '''RC servo control (544ms-2400ms PWM) output.'''
+        '''RC servo control (544ms-2400ms PWM) output.
+
+        Args:
+            channel_name: Name for the new channel.
+            pin: Pin number.
+
+        Raises:
+            Exception: On error condition.
+        '''
         raise Exception('Not yet implemented')
         # self.firmata_board.servo_config(pin, min_pulse=544, max_pulse=2400)
 
@@ -329,6 +373,14 @@ class firmata(instrument):
         Pass channel object instance to digital_input_channel argument.
         latches rising edge by default. Set threshold_high=False to set latch sensitivity to logic low.
         this doesn't appear to have access to analog pins (A0-A5) used as digital IO.
+
+        Args:
+            channel_name: Name for the new channel.
+            digital_input_channel: Digital input channel.
+            threshold_high: Threshold high.
+
+        Returns:
+            Result value.
         '''
         def read_latch_status(latch_channel):
             latch_status = self.firmata_board.get_digital_latch_data(
@@ -369,6 +421,18 @@ class firmata(instrument):
         Pass channel object instance to analog_input_channel argument.
         threshold is in Volts, assuming 5V Arduino ADC full scale (1023). Change format setting of _thresold channel to use raw (0-1023) or 3.3V ADC scales.
         latches high signal levels by default. Set threshold_type='>=', '<' or  to set latch sensitivity to logic low.
+
+        Args:
+            analog_input_channel: Analog input channel.
+            channel_name: Name for the new channel.
+            threshold: Threshold.
+            threshold_type: Threshold type.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
         '''
         def read_latch_status(latch_channel):
             latch_status = self.firmata_board.get_analog_latch_data(

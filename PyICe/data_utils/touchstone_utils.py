@@ -72,6 +72,9 @@ class touchstone_utils():
         -----------
         file_name: str
             Touchstone file to be imported, extension ".s?p"
+
+        Args:
+            file_name: File name.
         '''
         self.network = None
 
@@ -105,6 +108,14 @@ class touchstone_utils():
         output_form: str, optional
             Output form based on skrf.network.Network.write_touchstone.
             Common forms are 'ri' for real & imaginary and 'ma' for magnitude & angle (degrees).
+
+        Args:
+            input_network: Input network.
+            output_file_dir: Output file dir.
+            output_file_name: Output file name.
+            output_form: Output form.
+            start: Start bit position.
+            stop: If True, send stop condition.
         '''
         # TODO: Add model type option to choose S, Y, or Z parameters.
         # TODO: Make the output file name automatic based on the current or input network
@@ -136,6 +147,12 @@ class touchstone_utils():
             M-port port numbers 1-M are assigned in order of port_nums, so port_nums = [2, 1] will give
                 M-port port 1 as N-port port 2 and M-port port 2 as N-port port 1.
             Common forms are 'ri' for real & imaginary and 'ma' for magnitude & angle (degrees).
+
+        Args:
+            port_nums: Port nums.
+
+        Returns:
+            Result value.
         '''
         # TODO: Add input network
         # TODO: Add error handling for port_nums outside of N-port port count
@@ -195,6 +212,13 @@ class touchstone_utils():
             Port number from the current N-port network to be used as the input port for the 1-port network.
         output_port_num: int
             Port number from the current N-port network to be shorted for the simplification to a 1-port network.
+
+        Args:
+            load_port_num: Load port num.
+            source_port_num: Source port num.
+
+        Returns:
+            Result value.
         '''
         # TODO: Add functionality for load_port_num to be multiple load ports
         # that get shorted.
@@ -235,6 +259,9 @@ class touchstone_utils():
     def set_network(self, network):
         '''
         TODO: Make an error checking network setter.
+
+        Args:
+            network: Network.
         '''
 
     def test_make_Nport_Mport_reference_networks(self, N, M=None):
@@ -248,6 +275,13 @@ class touchstone_utils():
             Port number from the current N-port network to be used as the input port for the 1-port network.
         output_port_num: int
             Port number from the current N-port network to be shorted for the simplification to a 1-port network.
+
+        Args:
+            M: M.
+            N: N.
+
+        Returns:
+            Result value.
         '''
         # TODO: Complete the M-port portion of this function. Currently just made N-port and used Adice to verify the simplification.
         # TODO: Find a way to compare the networks locally without Adice
@@ -317,6 +351,11 @@ def sweep_plots_to_pptx(ts_plots_dir, output_pptx_path, date_time_flag=1):
         TODO: Add a way to input presentation templates
         TODO Ben: Change adice script to print SVG
         TODO: Make a from archive workflow that can take the datetime the plots were recorded not the current datetime.
+
+    Args:
+        date_time_flag: Date time flag.
+        output_pptx_path: Output pptx path.
+        ts_plots_dir: Ts plots dir.
     '''
 
     # TODO: Check that ts_plots_dir exists and has an image
@@ -1084,6 +1123,16 @@ def _parallel(Ra, Rb):
             List of T(s) transfer function numerator coefficients.
         x
             List of T(s) transfer function denominator coefficients.
+
+        Args:
+            a: A.
+            b: B.
+            k: K.
+            model_type: Model type.
+            z0: Z0.
+
+        Returns:
+            Result value.
         '''
         r = np.multiply(a, b) * (-1)
         y, x = signal.invres(r=r, p=b, k=k)
@@ -1135,6 +1184,14 @@ def _parallel(Ra, Rb):
             List of T(s) transfer function numerator coefficients.
         x
             List of T(s) transfer function denominator coefficients.
+
+        Args:
+            a: A.
+            b: B.
+            k: K.
+
+        Returns:
+            Result value.
         '''
         r = np.multiply(a, b) * (-1)
         y, x = signal.invres(r=r, p=b, k=k)
@@ -1233,12 +1290,18 @@ def _parallel(Ra, Rb):
     def plot_smith_chart(self):
         '''
         Plots a smith chart to investigate the complex impedance over frequency.
+
+        Args:
+            self: Self.
         '''
         self.network.plot_s_smith()
 
     def get_resistor_skin_effect_model():
         '''
         Returns the approximate DC resistance and the scaling coefficient for the sqrt(2*pi*freq) skin effect term.
+
+        Returns:
+            Result value.
         '''
         return dc_res, ac_res_coefficient  # noqa: F821
 

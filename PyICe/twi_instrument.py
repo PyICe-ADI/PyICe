@@ -92,7 +92,14 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
 
     def get_readable_command_codes(self, register_list):
         '''returns list of command codes required to read all readable registers within register_list
-        not used for normal delegated reads. helpful to construct command code list for use with other tools (Linduino streaming for example)'''
+        not used for normal delegated reads. helpful to construct command code list for use with other tools (Linduino streaming for example)
+
+        Args:
+            register_list: Register list.
+
+        Returns:
+            Result value.
+        '''
         return self.get_command_codes([channel for channel in register_list if channel.is_readable(
         ) and 'command_code' in channel.get_attributes()])
 
@@ -241,6 +248,22 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
         -------
         Exception
             Various consistency errors. Abnormal.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            command_code: Command code.
+            data: Data to write.
+            is_readable: Is readable.
+            offset: Offset value.
+            overwrite_others: Overwrite others.
+            size: Size in bits.
+            word_size: Word size.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
         '''
         # Step 1: get existing data across whole register width
         if data is None and word_size == 0:
@@ -323,7 +346,11 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
 
     def enable_cached_read(self, include_readable_registers=False):
         '''disable remote read of writable register and instead return cached previous write.
-        only affects write-only register by default. include_readable_registers argument also includes read-write registers.'''
+        only affects write-only register by default. include_readable_registers argument also includes read-write registers.
+
+        Args:
+            include_readable_registers: Include readable registers.
+        '''
         for register in self:
             if register.is_writeable():
                 if not register.is_readable() or include_readable_registers:
@@ -362,6 +389,17 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
     <!ATTLIST use name CDATA #REQUIRED>
     <!ATTLIST format_definition name ID #REQUIRED signed (True | False | 1 | 0) #REQUIRED>
     <!ATTLIST point native CDATA #REQUIRED transformed CDATA #REQUIRED>
+
+        Args:
+            access_list: Access list.
+            channel_prefix: Channel prefix.
+            channel_suffix: Channel suffix.
+            format_dict: Format dict.
+            use_case: Use case.
+            xml_file: Xml file.
+
+        Raises:
+            Exception: On error condition.
     '''
         if format_dict is None:
             format_dict = {}
@@ -616,6 +654,15 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
         unformat_function should take a single argument of data in real units and return an integer version of the data scaled to the register LSB weight.
         If the data is signed in two's-complement format, set signed=True.
         After creating format, use set_active_format method to make the new format active.
+
+        Args:
+            description: Description string.
+            format_function: Format function.
+            format_name: Name of the format.
+            signed: If True, interpret as signed value.
+            unformat_function: Unformat function.
+            units: Unit string.
+            xypoints: Xypoints.
         '''
         if xypoints is None:
             xypoints = []
@@ -628,16 +675,32 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
             'xypoints': xypoints}
 
     def set_constant(self, constant, value):
-        '''Sets the constants found in the datasheet used by the formatters to convert from real world values to digital value and back.'''
+        '''Sets the constants found in the datasheet used by the formatters to convert from real world values to digital value and back.
+
+        Args:
+            constant: Constant.
+            value: Value to set.
+        '''
         self._constants[constant] = value
         self._update_xml_formatters()
 
     def get_constant(self, constant):
-        '''Sets the constants found in the datasheet used by the formatters to convert from real world values to digital value and back.'''
+        '''Sets the constants found in the datasheet used by the formatters to convert from real world values to digital value and back.
+
+        Args:
+            constant: Constant.
+
+        Returns:
+            Result value.
+        '''
         return self._constants[constant]
 
     def list_constants(self):
-        '''Returns the list of constants found in the datasheet used by the formatters to convert from real world values to digital value and back.'''
+        '''Returns the list of constants found in the datasheet used by the formatters to convert from real world values to digital value and back.
+
+        Returns:
+            Result value.
+        '''
         return self._constants
 
     def _update_xml_formatters(self):
@@ -661,7 +724,18 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
                                xypoints=xyevalpoints)
 
     def _transform_from_points(self, xyevalpoints, direction):
-        '''Used internally to convert from register values to real world values and back again.'''
+        '''Used internally to convert from register values to real world values and back again.
+
+        Args:
+            direction: Direction.
+            xyevalpoints: Xyevalpoints.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        '''
         if not SCIPY_MISSING:
             x_evaled, y_evaled = list(zip(*xyevalpoints))
             if direction == "format":

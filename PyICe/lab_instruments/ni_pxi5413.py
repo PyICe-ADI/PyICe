@@ -10,7 +10,12 @@ class ni_pxi5413(scpi_instrument, delegator):
     '''NI PXI5413 16bit 20MHz AWG'''
 
     def __init__(self, interface_visa, force_trigger=True):
-        '''interface_visa e.g. PXI1SLOT2"'''
+        '''interface_visa e.g. PXI1SLOT2"
+
+        Args:
+            force_trigger: Force trigger.
+            interface_visa: VISA interface instance.
+        '''
         self._base_name = 'NI_PXI5413'
         delegator.__init__(self)
         scpi_instrument.__init__(self, f"NI_PXI5413 @ {interface_visa}")

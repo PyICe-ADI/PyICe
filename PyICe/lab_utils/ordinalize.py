@@ -13,6 +13,12 @@ def ordinalize(num):
     '112th'
     >>> ordinalize(122)
     '122nd'
+
+    Args:
+        num: Count or number.
+
+    Returns:
+        Result value.
     '''
     assert num >= 0 and isinstance(num, int)
     rem_10, rem_100 = num % 10, num % 100

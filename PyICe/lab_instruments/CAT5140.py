@@ -56,7 +56,11 @@ class CAT5140(instrument):
                         "CAT5140 Communication Failed.") from e
 
     def _write_percent(self, percent):
-        '''value is between 0 and 1. DAC is biased toward 0 so that full scale is not achievable'''
+        '''value is between 0 and 1. DAC is biased toward 0 so that full scale is not achievable
+
+        Args:
+            percent: Percent.
+        '''
         assert percent >= 0
         assert percent <= 1
         code = min(int(round(percent * 2**8)), 2**8 - 1)

@@ -10,6 +10,10 @@ class keithley_7002_meter(keithley_7002):
         '''interface_visa for the Keithley 7002 mux system
             multimeter_channel is channel object, lb.get_channel(channel_name) or some_meter.get_channel(channel_name) will return ones
             delay is the number of seconds between closing the channel relay and triggering the meter measurement.
+
+        Args:
+            interface_visa: VISA interface instance.
+            multimeter_channel: Multimeter channel.
         '''
         keithley_7002.__init__(self, interface_visa)
         self._base_name = 'keithley_7002_meter'
@@ -24,6 +28,18 @@ class keithley_7002_meter(keithley_7002):
             pre_calls is a list of functions taking exactly 0 arguments to call after closing channel relay but before triggering multimeter measurement
             post_calls is a list of functions taking exactly 0 arguments to call after triggering multimeter measurement but before opening channel relay
             multimeter_channel is a channel with the meter on it, if not specified the instrument meter is used
+
+        Args:
+            bay: Instrument bay number.
+            channel_name: Name for the new channel.
+            delay: Delay time in seconds.
+            multimeter_channel: Multimeter channel.
+            num: Count or number.
+            post_calls: Post calls.
+            pre_calls: Pre calls.
+
+        Returns:
+            Result value.
         '''
         if pre_calls is None:
             pre_calls = []
@@ -47,6 +63,17 @@ class keithley_7002_meter(keithley_7002):
 
             pre_ and post_calls can be used, for example, to set different ranges
             or integration powerline cycles for different channels using the same multimeter.
+
+        Args:
+            bay: Instrument bay number.
+            delay: Delay time in seconds.
+            multimeter_channel: Multimeter channel.
+            num: Count or number.
+            post_calls: Post calls.
+            pre_calls: Pre calls.
+
+        Returns:
+            Result value.
         '''
         self.open_all()  # just to be sure...
         self._close_relay(bay, num)

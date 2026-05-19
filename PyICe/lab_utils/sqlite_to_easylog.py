@@ -12,7 +12,15 @@ class sqlite_to_easylog(sqlite_to_csv):
         table_name is the sqlite database table name
         y1_axis_units controls the left-side y-axis label
         y2_axis_units controls the right-side y-axis label
-        database_file is the filename of the sqlite database'''
+        database_file is the filename of the sqlite database
+
+        Args:
+            chart_name: Chart name.
+            database_file: Database file.
+            table_name: Database table name.
+            y1_axis_units: Y1 axis units.
+            y2_axis_units: Y2 axis units.
+        '''
         self.y1_axis_units = y1_axis_units
         self.y2_axis_units = y2_axis_units
         sqlite_to_csv.__init__(self, table_name, database_file)
@@ -35,7 +43,15 @@ class sqlite_to_easylog(sqlite_to_csv):
         '''query name is the name of the sqlite column
         second_y_axis is a boolean.  Setting to True places data on the right-side y-axis scale
         display_name, if not None, sets csv column header title differently from database column name
-        format controls appearance of queried data. Ex: "3.2f"'''
+        format controls appearance of queried data. Ex: "3.2f"
+
+        Args:
+            display_name: Display name.
+            format: Format name string.
+            query_name: Query name.
+            second_y_axis: Second y axis.
+            transform: Transform.
+        '''
         if display_name is None:
             display_name = query_name
         # Data goes to first or second y-axis based on parenthesized units in
@@ -53,6 +69,11 @@ class sqlite_to_easylog(sqlite_to_csv):
         '''adds a list of sqlite column names at once
         all columns will be placed on left-side y-axis scale unless second_y_axis is True
         format controls appearance of queried data. Ex: "3.2f"
+
+        Args:
+            column_list: Column list.
+            format: Format name string.
+            second_y_axis: Second y axis.
         '''
         for column in column_list:
             self.add_column(
@@ -63,7 +84,12 @@ class sqlite_to_easylog(sqlite_to_csv):
         # raise Exception("Elapsed time not supported yet. Is it really needed?")
 
     def write(self, output_file, append=False):
-        '''write queried data to output_file after column setup is complete'''
+        '''write queried data to output_file after column setup is complete
+
+        Args:
+            append: Append.
+            output_file: Output file.
+        '''
         sqlite_to_csv.write(
             self,
             output_file=output_file,

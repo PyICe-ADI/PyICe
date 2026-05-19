@@ -7,6 +7,16 @@ def twosComplementToSigned(binary, bitCount):
     -1
     >>> twosComplementToSigned(128, 8)
     -128
+
+    Args:
+        binary: Binary/integer data.
+        bitCount: Bitcount.
+
+    Returns:
+        Result value.
+
+    Raises:
+        ValueError: On error condition.
     '''
     if binary >= 2**bitCount:
         raise ValueError(

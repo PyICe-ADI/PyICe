@@ -37,6 +37,18 @@ def isclose(a, b, rel_tol=1e-9, abs_tol=0.0):
     True
     >>> isclose(float('inf'), float('inf'))
     True
+
+    Args:
+        a: A.
+        abs_tol: Abs tol.
+        b: B.
+        rel_tol: Rel tol.
+
+    Returns:
+        Result value.
+
+    Raises:
+        ValueError: On error condition.
     """
 
     if a == b:  # short-circuit exact equality

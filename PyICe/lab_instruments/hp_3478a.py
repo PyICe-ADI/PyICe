@@ -28,10 +28,21 @@ class hp_3478a(instrument):
         self.get_interface().write(("F6"))
 
     def add_channel(self, channel_name):
-        '''Add named channel to instrument without configuring measurement type.'''
+        '''Add named channel to instrument without configuring measurement type.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         meter_channel = channel(channel_name, read_function=self._read_meter)
         return self._add_channel(meter_channel)
 
     def _read_meter(self):
-        '''Return float representing meter measurement.  Units are V,A,Ohm, etc depending on meter configuration.'''
+        '''Return float representing meter measurement.  Units are V,A,Ohm, etc depending on meter configuration.
+
+        Returns:
+            Result value.
+        '''
         return float(self.get_interface().read())

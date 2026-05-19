@@ -83,6 +83,10 @@ class stdf_reader():
         The main attribute self.parts is a dictionary of devices with part numbers as the key.
         The part number will be a string as that's what pystdf returned.
         A secondary attribute self.metadata is a dictionary of metadata objects like "SETUPTIME" and "STARTTIME".
+
+        Args:
+            exit_if_malformed: Exit if malformed.
+            filename: File path.
         '''
         self.exit_if_malformed = exit_if_malformed
         self.scan_file(filename)
@@ -198,12 +202,21 @@ class stdf_reader():
         Takes a part number <int> or <string>.
         Returns its PASS/FAIL status as a boolean.
         True is passing, False failing.
+
+        Args:
+            device: Device.
+
+        Returns:
+            Result value.
         '''
         return self.parts[str(device)]["PASSING"]
 
     def get_all_passing_parts(self):
         '''
         Returns a list of all parts with a Passing flag.
+
+        Returns:
+            Result value.
         '''
         passing_parts = []
         for part in self.parts:
@@ -215,6 +228,12 @@ class stdf_reader():
         '''
         Takes a bin number list.
         Returns a list of device numbers found with a bin number within the bins_list.
+
+        Args:
+            bins_list: Bins list.
+
+        Returns:
+            Result value.
         '''
         parts_in_bins = []
         for part in self.parts:
@@ -226,6 +245,12 @@ class stdf_reader():
         '''
         Takes a part number list <int>s or <string>s.
         Returns an list of dictionaries of the part numbers <string>s and their bin numbers <int>s with keys: {"PART", "BIN"}
+
+        Args:
+            device_list: Device list.
+
+        Returns:
+            Result value.
         '''
         results = []
         for part in device_list:
@@ -237,6 +262,12 @@ class stdf_reader():
         '''
         Takes a part number <int> or <string>.
         Returns its bin number <int>.
+
+        Args:
+            device: Device.
+
+        Returns:
+            Result value.
         '''
         return self.get_bin_numbers(device_list=[str(device)])[0]["BIN"]
 
@@ -245,6 +276,9 @@ class stdf_reader():
         Takes no arguments.
         Returns a simple Python list of part numbers found in the STDF file.
         It is a list of strings because that is what pystdf returned.
+
+        Returns:
+            Result value.
         '''
         parts_list = []
         for part in self.parts:
@@ -257,7 +291,14 @@ class stdf_reader():
         In some testers the test and subtest numbers are represented as the T.S or test and subtest format.
         Usually the left 5 digits of the returned value represent the major test number (lefft padded with 0s) and the right 5 digits represent the subordinate test number (right justified).
         Your mileage may vary. See to_eagle_testnumber and from_eagle_testnumber at the bottom of this file.
-        Returns a python dictionary with the device number (a string as returned by pystdf) and the value (usually float?) as the tester reading for that device.'''
+        Returns a python dictionary with the device number (a string as returned by pystdf) and the value (usually float?) as the tester reading for that device.
+
+        Args:
+            testnum: Testnum.
+
+        Returns:
+            Result value.
+        '''
         results = {}
         for part in self.parts:
             for test in self.parts[part]["TESTS"]:
@@ -271,6 +312,13 @@ class stdf_reader():
         Returns a single scalar result.
         devnum accepts integers or strings.
         testnum is in the stdf 9 digit format.
+
+        Args:
+            devnum: Devnum.
+            testnum: Testnum.
+
+        Returns:
+            Result value.
         '''
         for test in self.parts[str(devnum)]["TESTS"]:
             if test[PTR_TEST_NUM] == testnum:
@@ -283,6 +331,9 @@ class stdf_reader():
         The date and time field used in this specification is defined as a four byte (32 bit) unsigned integer field measuring the number of seconds since midnight on January 1st, 1970, in the local time zone.
         This is the UNIX standard base time, adjusted to the local time zone.
         The string version is converted to human readable as '%Y-%m-%d %H:%M:%S'.
+
+        Returns:
+            Result value.
         '''
         return self.metadata["SETUPTIME"]
 
@@ -293,6 +344,9 @@ class stdf_reader():
         The date and time field used in this specification is defined as a four byte (32 bit) unsigned integer field measuring the number of seconds since midnight on January 1st, 1970, in the local time zone.
         This is the UNIX standard base time, adjusted to the local time zone.
         The string version is converted to human readable as '%Y-%m-%d %H:%M:%S'.
+
+        Returns:
+            Result value.
         '''
         return self.metadata["STARTTIME"]
 
@@ -301,6 +355,12 @@ class stdf_reader():
         Takes the argument devnum and returns the x location on the wafer as an integer.
         devnum accepts integers or strings.
         Returned value is an integer.
+
+        Args:
+            devnum: Devnum.
+
+        Returns:
+            Result value.
         '''
         return self.parts[str(devnum)]["XLOC"]
 
@@ -309,6 +369,12 @@ class stdf_reader():
         Takes the argument devnum and returns the y location on the wafer as an integer.
         devnum accepts integers or strings.
         Returned value is an integer.
+
+        Args:
+            devnum: Devnum.
+
+        Returns:
+            Result value.
         '''
         return self.parts[str(devnum)]["YLOC"]
 
@@ -317,6 +383,12 @@ def to_eagle_testnumber(test_number):
     '''
     Returns a dictionary with keys {"TESTNUM", "SUBTESTNUM"} from a natively stored test number which is a U*4 or unsigned 4 byte value.
     The test number is the left 5 digits shifted down to the decimal point and the subtest number is the 5 rightmost digits.
+
+    Args:
+        test_number: Test number.
+
+    Returns:
+        Result value.
     '''
     subtestnum, testnum = math.modf(test_number / 1e5)
     return {"TESTNUM": round(testnum), "SUBTESTNUM": round(subtestnum * 1e5)}
@@ -325,5 +397,12 @@ def to_eagle_testnumber(test_number):
 def from_eagle_testnumber(test_number, subtest_number):
     '''
     Returns an integer comprised of the arguments test_number time 100,000 plus the argument subtest_number to get back to the natively stored value of the U*4, 32 bit number, in the stdf file.
+
+    Args:
+        subtest_number: Subtest number.
+        test_number: Test number.
+
+    Returns:
+        Result value.
     '''
     return round(test_number * 1e5 + subtest_number)

@@ -236,6 +236,14 @@ class TWI_Pattern():
         '''
         Build up the compound record of instrument Channels 1, 2 and 3 (Strobe).
         On the HP8110a, for example, the two output channels and the Strobe channel are binarily weighted so it takes values of 0-7 for 3 bits.
+
+        Args:
+            SCL_channel: Scl channel.
+            SDA_channel: Sda channel.
+            STB_channel: Stb channel.
+
+        Returns:
+            Result value.
         '''
         values = []
         for position in range(len(self.SCL)):

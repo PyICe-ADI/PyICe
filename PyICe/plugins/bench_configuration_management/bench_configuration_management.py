@@ -11,7 +11,11 @@ class Diagram_Reconstructor():
         self.blocked_terminals = blocked_terminals
 
     def get_connection_diagram(self):
-        ''''Returns a presentable diagram centrally aligned. Becomes difficult to read if not enough window width is provided.'''
+        ''''Returns a presentable diagram centrally aligned. Becomes difficult to read if not enough window width is provided.
+
+        Returns:
+            Result value.
+        '''
         connection_diagram = ""
         for connection in self.connections:
             connection_diagram += (35 - len(f"{connection[0][0]}:{connection[0][1]}")) * " " + \
@@ -172,7 +176,11 @@ class connection_collection():
             self.connections.append(connection(terminals, owner=self.name))
 
     def remove_connection_by_terminals(self, *terminals):
-        '''If a connection exists between the given terminal objects, that connection is removed from the list of connections.'''
+        '''If a connection exists between the given terminal objects, that connection is removed from the list of connections.
+
+        Args:
+            *terminals: Additional positional arguments.
+        '''
         for connextion in self.connections:
             if connextion.has_terminals([terminals[0], terminals[1]]):
                 self.connections.remove(connextion)
@@ -182,7 +190,11 @@ class connection_collection():
                 f'\n\n***\n* WARNING\n***\nPYICE BENCH CONFIG MANAGEMENT: Attempt to remove connection between terminals ({terminals[0].owner},{terminals[0].type}) and ({terminals[1].owner},{terminals[1].type}) failed. Such a connection does not exist in the list of connections.\n\n')
 
     def remove_connection(self, connextion):
-        '''If the provided connections object exists in the connection list, it shall be removed.'''
+        '''If the provided connections object exists in the connection list, it shall be removed.
+
+        Args:
+            connextion: Connextion.
+        '''
         if connextion in self.connections:
             self.connections.remove(connextion)
         else:
@@ -190,11 +202,19 @@ class connection_collection():
                 f'\n\n***\n* WARNING\n***\nPYICE BENCH CONFIG MANAGEMENT: Attempt to remove connection between terminals ({connextion.get_terminals()[0].owner},{connextion.get_terminals()[0].type}) and ({connextion.get_terminals()[1].owner},{connextion.get_terminals()[1].type}) failed. Such a connection does not exist in the list of connections.\n\n')
 
     def get_connections(self):
-        '''Returns itself.'''
+        '''Returns itself.
+
+        Returns:
+            Result value.
+        '''
         return self
 
     def get_readable_connections(self):
-        '''Returns a parsable list of instrument terminal connections that is also human readable.'''
+        '''Returns a parsable list of instrument terminal connections that is also human readable.
+
+        Returns:
+            Result value.
+        '''
         if not self.readable_list:
             for connection in self.connections:
                 self.readable_list.append(([connection.get_terminals()[0].owner, connection.get_terminals(
@@ -202,14 +222,25 @@ class connection_collection():
         return self.readable_list
 
     def get_readable_blocked_terminals(self):
-        '''Returns a parsable list of instrument terminal connections that is also human readable.'''
+        '''Returns a parsable list of instrument terminal connections that is also human readable.
+
+        Returns:
+            Result value.
+        '''
         if not self.readable_blocked:
             for blocked in self.blocked_terminals:
                 self.readable_blocked.append((blocked.owner, blocked.type))
         return self.readable_blocked
 
     def print_connections(self, exclude=None):
-        ''''Returns a presentable diagram centrally aligned. Becomes difficult to read if not enough window width is provided.'''
+        ''''Returns a presentable diagram centrally aligned. Becomes difficult to read if not enough window width is provided.
+
+        Args:
+            exclude: Exclude.
+
+        Returns:
+            Result value.
+        '''
         connection_diagram = ""
         for connextion in self.connections:
             ok = True

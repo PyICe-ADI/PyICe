@@ -28,7 +28,17 @@ class agilent_e364xa(agilent_e36xxa):
         '''Register a named channel with the instrument.
             channel_name is a user-supplied string
             num must be either "OUT1" or "OUT2"
-            optionally add _ilim, _isense and _vsense channels'''
+            optionally add _ilim, _isense and _vsense channels
+
+        Args:
+            add_extended_channels: If True, add sense and mode channels.
+            channel_name: Name for the new channel.
+            ilim: Current limit.
+            num: Count or number.
+
+        Raises:
+            Exception: On error condition.
+        '''
         num = num.upper()
         if num not in ['OUT1', 'OUT2']:
             raise Exception(f'Invalid channel number "{num}"')

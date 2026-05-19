@@ -18,6 +18,18 @@ def column_formatter(rows_of_columns, padding=3,
     padding sets spacing between columns
     first_line_justification and justification control aligment for first and subsequent lines respectively.
         valid arguments are 'left','right' and 'center'
+
+    Args:
+        fist_line_justification: Fist line justification.
+        justification: Justification.
+        padding: Padding.
+        rows_of_columns: Rows of columns.
+
+    Returns:
+        Result value.
+
+    Raises:
+        Exception: On error condition.
     '''
     # TODO: decimal alignment. Need to know decimal position apriori.
     # def dot_aligned(seq, width):

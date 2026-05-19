@@ -23,6 +23,12 @@ class polling_delay(object):
             Raise TimeoutError if timeout exceeded. Default True
         timeout_str_prefix: str, optional
             Set begining of timeout printed or raised message to aid in log parsing. Default "*Error*"
+
+        Args:
+            dly_fn: Dly fn.
+            except_on_timeout: Except on timeout.
+            time_readback_fn: Time readback fn.
+            timeout_str_prefix: Timeout str prefix.
         """
 
         if dly_fn is None:
@@ -105,6 +111,16 @@ class polling_delay(object):
         -------
         TimeoutError
             Acuumulated delay exceeds timout before exit criteria satisfied, if self.except_on_timeout.
+
+        Args:
+            expect: Expected value.
+            poll_fn: Poll fn.
+            poll_interval: Poll interval.
+            test_initial: Test initial.
+            timeout: Timeout in seconds.
+
+        Returns:
+            Result value.
         """
         self._continue_condition = expect
 
@@ -148,6 +164,17 @@ class polling_delay(object):
         -------
         TimeoutError
             Acuumulated delay exceeds timout before exit criteria satisfied, if self.except_on_timeout.
+
+        Args:
+            max: Max.
+            min: Min.
+            poll_fn: Poll fn.
+            poll_interval: Poll interval.
+            test_initial: Test initial.
+            timeout: Timeout in seconds.
+
+        Returns:
+            Result value.
         """
         self._continue_condition = (min, max)
 
@@ -176,6 +203,9 @@ class polling_delay(object):
         -------
         dict
             keys: ['accumulated_delay':<float>, 'iterations':<int>, 'initial_time':<numeric>, 'final_time':<numeric>, 'last_value', 'continue_condition', 'success':<bool>]
+
+        Returns:
+            Result value.
         """
         return {'accumulated_delay': self._accumulated_dly,
                 'iterations': self._iterations,

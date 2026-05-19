@@ -37,7 +37,11 @@ class agilent_e53181a(scpi_instrument):
         self.get_interface().write((":INPut1:IMPedance 1e6"))
 
     def config_expect(self, expected_frequency):
-        '''specify expected frequency to help with counting very low frequencies.'''
+        '''specify expected frequency to help with counting very low frequencies.
+
+        Args:
+            expected_frequency: Expected frequency.
+        '''
         t = 1000 * 1 / float(expected_frequency)
         if t > 30:
             self.get_interface().timeout = int(t)
@@ -46,23 +50,51 @@ class agilent_e53181a(scpi_instrument):
         self.expect = expected_frequency
 
     def add_channel(self, channel_name):
-        '''Add named channels to instrument.'''
+        '''Add named channels to instrument.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         self.add_channel_dutycycle(channel_name + "_dutycycle")
         return self.add_channel_freq(channel_name)
 
     def add_channel_freq(self, channel_name):
-        '''Add named frequency channel to instrument'''
+        '''Add named frequency channel to instrument
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         freq_channel = channel(channel_name, read_function=self.read_frequency)
         return self._add_channel(freq_channel)
 
     def add_channel_dutycycle(self, channel_name):
-        '''Add named dutycycle channel to instrument'''
+        '''Add named dutycycle channel to instrument
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         dutycycle_channel = channel(
             channel_name, read_function=self.read_dutycycle)
         return self._add_channel(dutycycle_channel)
 
     def read_frequency(self, channel_name):
-        '''Return float representing measured frequency of named channel.'''
+        '''Return float representing measured frequency of named channel.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         txt = ":MEASure:FREQuency? %3.0f, 1, (@1)" % self.expect
         while True:
             try:
@@ -73,7 +105,14 @@ class agilent_e53181a(scpi_instrument):
                 print(e)
 
     def read_dutycycle(self, channel_name):
-        '''Return float representing measured duty cycle of named channel.'''
+        '''Return float representing measured duty cycle of named channel.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        '''
         txt = ":MEASure:DCYCle? %3.0f, 1, (@1)" % self.expect
         while True:
             try:

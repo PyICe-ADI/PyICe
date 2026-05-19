@@ -8,7 +8,12 @@ class database_archive():
         '''This class is part of the archive plugin for the PyICe Infrastructure Extensions and manipulates tables in a given SQlite database. Specifically, it can copy, move, or delete a table.
         args:
             test_script_file - str. File location of the test that collected the data.
-            db_source_file - str. Path to the database that will be manipulated.'''
+            db_source_file - str. Path to the database that will be manipulated.
+
+        Args:
+            db_source_file: Db source file.
+            test_script_file: Test script file.
+        '''
         self.test_script_file = test_script_file
         self.db_source_file = os.path.abspath(db_source_file)
         (self.db_source_abspath, self.db_source_filename) = os.path.split(
@@ -21,7 +26,11 @@ class database_archive():
         args:
             tablename - str. Name of the table to be reviewed.
         Returns:
-            True if there is at least one row of data, and False if not.'''
+            True if there is at least one row of data, and False if not.
+
+        Args:
+            tablename: Tablename.
+        '''
         cur = self.source_conn.cursor()
         res = cur.execute(f'SELECT * FROM {tablename}').fetchall()
         cur.close()
@@ -37,7 +46,14 @@ class database_archive():
             db_source_table - str. The name of the table to be copied.
             db_dest_table - str. What the copy table will be called.
             db_dest_file - str. The path to the new database.
-            db_indices - list. A list of lists consisting of column names in the database as strings. Each list will be used to create an index in the new database.'''
+            db_indices - list. A list of lists consisting of column names in the database as strings. Each list will be used to create an index in the new database.
+
+        Args:
+            db_dest_file: Db dest file.
+            db_dest_table: Db dest table.
+            db_indices: Db indices.
+            db_source_table: Db source table.
+        '''
         if db_indices is None:
             db_indices = []
         conn = sqlite3.connect(db_dest_file)
@@ -127,7 +143,12 @@ class database_archive():
     def delete_table(self, db_source_table, commit=True):
         '''Deletes the given table from the database.
         args:
-            db_source_table - str. Name of the table to be deleted.'''
+            db_source_table - str. Name of the table to be deleted.
+
+        Args:
+            commit: Commit.
+            db_source_table: Db source table.
+        '''
         self.source_conn.execute(f'DROP TABLE {db_source_table}')
         self.source_conn.execute(
             f'DROP VIEW IF EXISTS {db_source_table}_formatted')
@@ -136,7 +157,11 @@ class database_archive():
             self.source_conn.commit()
 
     def get_table_names(self):
-        '''Returns the names of all the tables in the initially given database.'''
+        '''Returns the names of all the tables in the initially given database.
+
+        Returns:
+            Result value.
+        '''
         table_query = "SELECT name FROM sqlite_master WHERE type ='table'"
         return [row[0] for row in self.source_conn.execute(table_query)]
 
@@ -162,7 +187,11 @@ class database_archive():
         args:
             archive_folder - str. The name for the folder that will house the archived data under the archive folder.
         Returns:
-            Returns an os path to the new database.'''
+            Returns an os path to the new database.
+
+        Args:
+            archive_folder: Archive folder.
+        '''
         db_dest_folder = os.path.join(
             self.test_script_file, 'archives', archive_folder)
         db_dest_file = os.path.join(db_dest_folder, self.db_source_filename)
@@ -174,7 +203,11 @@ class database_archive():
         args:
             archive_folder - str. Default None. The name of the directory inside the archive folder where data in question will be stored.
         Returns:
-            A list of tuples is returned consisting of the names of original tables and the names of their copies.'''
+            A list of tuples is returned consisting of the names of original tables and the names of their copies.
+
+        Args:
+            archive_folder: Archive folder.
+        '''
         copied_tables_files = []
         table_names = self.get_table_names()
         if len(table_names):
@@ -211,7 +244,13 @@ class database_archive():
             db_dest_file - str. Path to the archived database.
             db_indices - list. Default []. A list of lists comprising string names of columns. Each list becomes an index in the archived database.
         Returns:
-            If the user elects to skip or delete a table, None is returned. If a copy is instead either copied or outright moved, a tuple is returned of the original name and the name given to the new archived table.'''
+            If the user elects to skip or delete a table, None is returned. If a copy is instead either copied or outright moved, a tuple is returned of the original name and the name given to the new archived table.
+
+        Args:
+            db_dest_file: Db dest file.
+            db_indices: Db indices.
+            table_name: Database table name.
+        '''
         if db_indices is None:
             db_indices = []
         while True:

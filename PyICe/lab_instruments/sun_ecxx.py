@@ -10,5 +10,9 @@ class sun_ecxx(temperature_chamber):
         self.add_interface_visa(interface_visa)
 
     def _read_temperature_sense(self):
-        '''read back actual chamber temperature'''
+        '''read back actual chamber temperature
+
+        Returns:
+            Result value.
+        '''
         return float(self.get_interface().ask("TEMP?"))
