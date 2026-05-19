@@ -3,6 +3,7 @@ from .temperature_chamber import temperature_chamber
 
 
 class manual_oven(temperature_chamber, instrument_humanoid):
+    """Manual_oven."""
     def __init__(self, temp_sense_channel=None):
         self._base_name = 'manually controlled oven'
         temperature_chamber.__init__(self)

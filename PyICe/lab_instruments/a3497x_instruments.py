@@ -230,10 +230,12 @@ class agilent_3497xa_chassis(a3497xa_instrument):
 
 
 class agilent_34970a_chassis(agilent_3497xa_chassis):
+    """Agilent_34970a_chassis (agilent_3497xa_chassis subclass)."""
     pass
 
 
 class agilent_34972a_chassis(agilent_3497xa_chassis):
+    """Agilent_34972a_chassis (agilent_3497xa_chassis subclass)."""
     pass
 
 
@@ -1312,10 +1314,12 @@ class agilent_3497xa_20ch(agilent_3497xa_20ch_40ch):
 
 
 class agilent_34970a_20ch(agilent_3497xa_20ch):
+    """Agilent_34970a_20ch (agilent_3497xa_20ch subclass)."""
     pass
 
 
 class agilent_34972a_20ch(agilent_3497xa_20ch):
+    """Agilent_34972a_20ch (agilent_3497xa_20ch subclass)."""
     pass
 
 
@@ -1328,10 +1332,12 @@ class agilent_3497xa_40ch(agilent_3497xa_20ch_40ch):
 
 
 class agilent_34970a_40ch(agilent_3497xa_40ch):
+    """Agilent_34970a_40ch (agilent_3497xa_40ch subclass)."""
     pass
 
 
 class agilent_34972a_40ch(agilent_3497xa_40ch):
+    """Agilent_34972a_40ch (agilent_3497xa_40ch subclass)."""
     pass
 
 
@@ -1407,10 +1413,12 @@ class agilent_3497xa_dacs(a3497xa_instrument):
 
 
 class agilent_34970a_dacs(agilent_3497xa_dacs):
+    """Agilent_34970a_dacs (agilent_3497xa_dacs subclass)."""
     pass
 
 
 class agilent_34972a_dacs(agilent_3497xa_dacs):
+    """Agilent_34972a_dacs (agilent_3497xa_dacs subclass)."""
     pass
 
 
@@ -1488,10 +1496,12 @@ class agilent_3497xa_actuator(a3497xa_instrument):
 
 
 class agilent_34970a_actuator(agilent_3497xa_actuator):
+    """Agilent_34970a_actuator (agilent_3497xa_actuator subclass)."""
     pass
 
 
 class agilent_34972a_actuator(agilent_3497xa_actuator):
+    """Agilent_34972a_actuator (agilent_3497xa_actuator subclass)."""
     pass
 
 
@@ -1582,10 +1592,12 @@ class agilent_3497xa_dig_out8(a3497xa_instrument):
 
 
 class agilent_34970a_dig_out8(agilent_3497xa_dig_out8):
+    """Agilent_34970a_dig_out8 (agilent_3497xa_dig_out8 subclass)."""
     pass
 
 
 class agilent_34972a_dig_out8(agilent_3497xa_dig_out8):
+    """Agilent_34972a_dig_out8 (agilent_3497xa_dig_out8 subclass)."""
     pass
 
 
@@ -1684,10 +1696,12 @@ class agilent_3497xa_dig_in8(a3497xa_instrument):
 
 
 class agilent_34970a_dig_in8(agilent_3497xa_dig_in8):
+    """Agilent_34970a_dig_in8 (agilent_3497xa_dig_in8 subclass)."""
     pass
 
 
 class agilent_34972a_dig_in8(agilent_3497xa_dig_in8):
+    """Agilent_34972a_dig_in8 (agilent_3497xa_dig_in8 subclass)."""
     pass
 
 
@@ -1700,8 +1714,10 @@ class agilent_3497xa_totalizer(a3497xa_instrument):
 
 
 class agilent_34970a_totalizer(agilent_3497xa_totalizer):
+    """Agilent_34970a_totalizer (agilent_3497xa_totalizer subclass)."""
     pass
 
 
 class agilent_34972a_totalizer(agilent_3497xa_totalizer):
+    """Agilent_34972a_totalizer (agilent_3497xa_totalizer subclass)."""
     pass

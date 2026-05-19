@@ -17,6 +17,7 @@ def make_recarray(x, y):
 
 
 class TestDetrendConstant:
+    """Tests for Detrend Constant."""
 
     def test_removes_mean(self):
         """Perform test removes mean operation."""
@@ -45,6 +46,7 @@ class TestDetrendConstant:
 
 
 class TestDetrendLinear:
+    """Tests for Detrend Linear."""
 
     def test_removes_linear_trend(self):
         """Perform test removes linear trend operation."""
@@ -74,6 +76,7 @@ class TestDetrendLinear:
 
 
 class TestDecimate:
+    """Tests for Decimate."""
 
     def test_reduces_length(self):
         """Perform test reduces length operation."""

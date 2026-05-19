@@ -1,4 +1,5 @@
 class TestChannelGroup:
+    """Tests for Channel Group."""
     def test_copy(self):
         """Perform test copy operation."""
         assert False

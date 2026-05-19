@@ -3,6 +3,7 @@ from .modbus_instrument import modbus_register
 
 
 class autonicstk(instrument):
+    """Autonicstk (instrument subclass)."""
     def __init__(self, interface_raw_serial, modbus_address):
         import minimalmodbus
         # minimalmodbus.BAUDRATE = 38400

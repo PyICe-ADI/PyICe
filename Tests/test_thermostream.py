@@ -15,6 +15,7 @@ import time
 
 
 class temptronic_4310(instrument):
+    """Temptronic_4310 (instrument subclass)."""
     def __init__(self, addr):
         instrument.__init__(self, addr)
         self.instrument = visa.instrument(addr)

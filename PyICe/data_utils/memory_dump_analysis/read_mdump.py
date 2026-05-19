@@ -12,6 +12,7 @@ import os
 
 
 class memory_decoder():
+    """Memory_decoder."""
     def __init__(self, twii=None):
         self.twii = twii
 

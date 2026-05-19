@@ -21,6 +21,7 @@ Test_Results_Reload.__test__ = False
 # --- Utility Functions ---
 
 class TestFreeze:
+    """Tests for Freeze."""
 
     def test_freeze_dict(self):
         """Perform test freeze dict operation."""
@@ -56,12 +57,14 @@ class TestFreeze:
     def test_freeze_unhashable_raises(self):
         """Perform test freeze unhashable raises operation."""
         class Unhashable:
+            """Unhashable."""
             __hash__ = None
         with pytest.raises(TypeError, match="FREEZE"):
             freeze(Unhashable())
 
 
 class TestMakeHash:
+    """Tests for Make Hash."""
 
     def test_same_dict_same_hash(self):
         """Perform test same dict same hash operation."""
@@ -87,6 +90,7 @@ class TestMakeHash:
 
 
 class TestNoneOperations:
+    """Tests for None Operations."""
 
     def test_none_min_both_none(self):
         """Perform test none min both none operation."""
@@ -158,6 +162,7 @@ def make_test_results():
 
 
 class TestTestResult:
+    """Tests for Test Result."""
 
     def test_create_result(self):
         """Perform test create result operation."""
@@ -269,6 +274,7 @@ class TestTestResult:
 
 
 class TestTestResultsList:
+    """Tests for Test Results List."""
 
     def test_bool_all_pass(self):
         """Perform test bool all pass operation."""
@@ -348,6 +354,7 @@ class TestTestResultsList:
 # --- Evaluation Logic ---
 
 class TestEvaluateList:
+    """Tests for Evaluate List."""
 
     def setup_method(self):
         """Perform setup method operation."""
@@ -485,6 +492,7 @@ class TestEvaluateList:
 
 
 class TestRegisterTestFailure:
+    """Tests for Register Test Failure."""
 
     def test_registers_failure(self):
         """Perform test registers failure operation."""
@@ -509,6 +517,7 @@ class TestRegisterTestFailure:
 # --- JSON Encoder ---
 
 class TestCustomJSONEncoder:
+    """Tests for Custom J S O N Encoder."""
 
     def get_encoder(self):
         """Extract the CustomJSONizer class from _json_report.
@@ -519,6 +528,7 @@ class TestCustomJSONEncoder:
         from numpy import bool_, ndarray
 
         class CustomJSONizer(json.JSONEncoder):
+            """Custom j s o nizer (j s o n encoder subclass)."""
             def default(self, obj):
                 """Return default result.
 

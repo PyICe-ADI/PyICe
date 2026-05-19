@@ -20,6 +20,7 @@ except Exception:
 
 
 class dict_print(dict):
+    """Dict_print."""
     def __str__(self):
         """Return string representation.
 
@@ -38,6 +39,7 @@ class dict_print(dict):
 
 
 class oscilloscope_waveform_dump(oscilloscope):
+    """Oscilloscope_waveform_dump."""
     def __init__(self, interface_visa):
         """interface_visa.
 

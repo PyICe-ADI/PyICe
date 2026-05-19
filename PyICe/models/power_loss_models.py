@@ -2,6 +2,7 @@
 # https://fscdn.rohm.com/en/products/databook/applinote/ic/power/switching_regulator/buck_converter_efficiency_app-e.pdf
 
 class buck_power_loss(object):
+    """Buck_power_loss (object subclass)."""
     def __init__(self, **kwargs):
         self.params = kwargs
         # Reference temperature for temperature dependent things
@@ -216,6 +217,7 @@ class buck_power_loss(object):
 
 
 class copper_resistor(object):
+    """Copper_resistor (object subclass)."""
     # No self heating solver
     def __init__(self, **kwargs):
         self.params = kwargs

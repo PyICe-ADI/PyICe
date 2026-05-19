@@ -24,6 +24,7 @@ debug_logging = logging.getLogger(__name__)
 
 
 class twi_instrument(lab_core.instrument, lab_core.delegator):
+    """Twi_instrument."""
     def __init__(self, interface_twi, except_on_i2cInitError=True,
                  except_on_i2cCommError=False, retry_count=5, PEC=False):
         lab_core.instrument.__init__(self, name="twi_instrument")
@@ -824,6 +825,7 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
 
 
 class twi_register(lab_core.register):
+    """Twi_register."""
     pass
     # 2024/05/07 DJS: This code appears unused. Prove me wrong.
     # def calculate_cc_merge_bf(self, bf_data):
@@ -842,6 +844,7 @@ class twi_register(lab_core.register):
 
 
 class pmbus_instrument(twi_instrument):
+    """Pmbus_instrument (twi_instrument subclass)."""
     def __init__(self, interface_twi, except_on_i2cInitError=True,
                  except_on_i2cCommError=False, retry_count=5, PEC=False):
         twi_instrument.__init__(

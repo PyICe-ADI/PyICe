@@ -14,6 +14,7 @@ except ModuleNotFoundError as e:
 
 
 class record_order_parser:
+    """Record_order_parser."""
     def __init__(self):
         self._indent = 0  # todo
         self._last_record_type = None
@@ -31,6 +32,7 @@ class record_order_parser:
             Result value.
         """
         class pretty_dict(dict):
+            """Pretty_dict."""
             def __str__(self):
                 """Return string representation.
 

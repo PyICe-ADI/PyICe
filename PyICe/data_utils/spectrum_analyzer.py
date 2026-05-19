@@ -4,6 +4,7 @@ import numpy
 
 
 class spectrum_analyzer():
+    """Spectrum_analyzer."""
     def __init__(self):
         """This class uses the scipy FFT to emulate a spectrum analyzer.
 

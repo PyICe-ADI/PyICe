@@ -11,6 +11,7 @@ from PyICe.lab_utils.ranges import (floatRange, floatRangeInc,
 
 
 class TestFloatNext:
+    """Tests for Float Next."""
 
     def test_zero_returns_denorm_min(self):
         """Perform test zero returns denorm min operation."""
@@ -51,6 +52,7 @@ class TestFloatNext:
 
 
 class TestFloatPrior:
+    """Tests for Float Prior."""
 
     def test_zero_returns_negative_denorm_min(self):
         """Perform test zero returns negative denorm min operation."""
@@ -85,6 +87,7 @@ class TestFloatPrior:
 
 
 class TestFloatDistance:
+    """Tests for Float Distance."""
 
     def test_same_value(self):
         """Perform test same value operation."""
@@ -123,6 +126,7 @@ class TestFloatDistance:
 
 
 class TestSafeDivide:
+    """Tests for Safe Divide."""
 
     def test_normal_division(self):
         """Perform test normal division operation."""
@@ -150,6 +154,7 @@ class TestSafeDivide:
 
 
 class TestInterpolator:
+    """Tests for Interpolator."""
 
     @pytest.fixture
     def linear(self):
@@ -253,6 +258,7 @@ class TestInterpolator:
 
 
 class TestFloatRange:
+    """Tests for Float Range."""
 
     def test_basic(self):
         """Perform test basic operation."""
@@ -274,6 +280,7 @@ class TestFloatRange:
 
 
 class TestFloatRangeInc:
+    """Tests for Float Range Inc."""
 
     def test_includes_endpoint(self):
         """Perform test includes endpoint operation."""
@@ -287,6 +294,7 @@ class TestFloatRangeInc:
 
 
 class TestLogRange:
+    """Tests for Log Range."""
 
     def test_steps_per_decade(self):
         """Perform test steps per decade operation."""
@@ -313,6 +321,7 @@ class TestLogRange:
 
 
 class TestLogRangeInc:
+    """Tests for Log Range Inc."""
 
     def test_includes_endpoint(self):
         """Perform test includes endpoint operation."""
@@ -321,6 +330,7 @@ class TestLogRangeInc:
 
 
 class TestDecadeListRange:
+    """Tests for Decade List Range."""
 
     def test_single_decade(self):
         """Perform test single decade operation."""

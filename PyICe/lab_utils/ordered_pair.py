@@ -4,6 +4,7 @@ from .ramer_douglas_peucker import ramer_douglas_peucker
 
 
 class ordered_pair(list):
+    """Ordered_pair (list subclass)."""
     def transform(self, x_transform=None, y_transform=None):
         """Executes x_transform function on first (x) element of each ordered pair data point.
 

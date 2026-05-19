@@ -13,6 +13,7 @@ else:
 
 
 class visualizer():
+    """Visualizer."""
     def __init__(self, connections, locations):
         self.locations = locations
         self.connections = connections

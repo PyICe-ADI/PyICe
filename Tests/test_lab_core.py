@@ -38,6 +38,7 @@ def chan():
 
 
 class TestChannelBaseFunctionality:
+    """Tests for Channel Base Functionality."""
 
     def test_exception_read_write_defined(self):
         """Perform test exception read write defined operation."""
@@ -90,6 +91,7 @@ class TestChannelBaseFunctionality:
 
 
 class TestReadChannel:
+    """Tests for Read Channel."""
     @pytest.fixture(scope='function')
     def chan_read(self):
         """Return chan read result.
@@ -165,6 +167,7 @@ class TestReadChannel:
 
 
 class TestWriteChannel:
+    """Tests for Write Channel."""
     @pytest.fixture(scope='function')
     def simple_write(self):
         """Return simple write result.
@@ -469,6 +472,7 @@ def int_write_chan():
 
 
 class TestIntegerReadChannel:
+    """Tests for Integer Read Channel."""
 
     def test_get_size(self, int_read_chan):
         """Perform test get size operation.
@@ -800,6 +804,7 @@ def thread_group(group):
 
 
 class TestChannelGroup:
+    """Tests for Channel Group."""
     def test_copy(self, loaded_group):
         """Perform test copy operation.
 

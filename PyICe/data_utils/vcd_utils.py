@@ -7,6 +7,7 @@ import numpy
 
 
 class vcd_reader():
+    """Vcd_reader."""
     def __init__(self, file):
         self.vcd = VCDVCD(file)
 

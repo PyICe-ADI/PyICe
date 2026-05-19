@@ -32,6 +32,7 @@ def bind_to_base(self, base_func, *args, **kwargs):
 
 
 class LTCPlotBokehAdapter:
+    """L t c plot bokeh adapter."""
     def __init__(self, *args, **kwargs):
         print(
             f"A call to undefined constructor of: '{type(self)}' was made with arguments: {args}, {kwargs}.")

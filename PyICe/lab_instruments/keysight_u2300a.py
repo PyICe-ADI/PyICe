@@ -941,6 +941,7 @@ class u2300a_scope(scpi_instrument, delegator):
 
 
 class u2300a_datalogger(u2300a_scope):
+    """U2300a_datalogger (u2300a_scope subclass)."""
     def __init__(self, interface_visa, table_name,
                  database_file="data_log.sqlite", timeout=10):
         super().__init__(

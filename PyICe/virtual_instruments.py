@@ -4744,6 +4744,7 @@ class vector_to_scalar_converter(instrument):
 
 
 class smart_battery_emulator(instrument):
+    """Smart_battery_emulator (instrument subclass)."""
     def __init__(self, voltage_channel_name, current_channel_name,
                  voltage_interval, current_interval, verbose=False):
         """Smart Battery emulator to kick out voltage and current requests to keep a smart-battery charger alive.
@@ -5133,6 +5134,7 @@ class simple_servo(instrument):
 
 
 class dummy_quantum_twin(instrument):
+    """Dummy_quantum_twin (instrument subclass)."""
     def __init__(self, name=None):
         """Creates dummy channels that opportunistically mirror the state of the live originals.
 
@@ -5199,6 +5201,7 @@ class dummy_quantum_twin(instrument):
 
 
 class Virtual_Oven(temperature_chamber):
+    """Virtual_ oven (temperature_chamber subclass)."""
     def __init__(self):
         self._base_name = 'Virtual_Oven'
         temperature_chamber.__init__(self)

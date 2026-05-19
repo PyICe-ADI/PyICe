@@ -10,6 +10,7 @@ except ImportError:
 
 
 class oscilloscope(scpi_instrument, delegator):
+    """Oscilloscope."""
     pass
     # binary unpack
     # scaling

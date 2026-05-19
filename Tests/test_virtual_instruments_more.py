@@ -6,6 +6,7 @@ from PyICe.virtual_instruments import (
 
 
 class TestTimer:
+    """Tests for Timer."""
 
     @pytest.fixture
     def tmr(self):
@@ -108,6 +109,7 @@ class TestTimer:
 
 
 class TestIntegrator:
+    """Tests for Integrator."""
 
     @pytest.fixture
     def integ(self):
@@ -167,6 +169,7 @@ class TestIntegrator:
 
 
 class TestDifferentiator:
+    """Tests for Differentiator."""
 
     @pytest.fixture
     def diff(self):
@@ -228,6 +231,7 @@ class TestDifferentiator:
 
 
 class TestRampTo:
+    """Tests for Ramp To."""
 
     @pytest.fixture
     def ramp_system(self, master_instance):

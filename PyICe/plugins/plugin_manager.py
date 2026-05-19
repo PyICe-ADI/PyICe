@@ -44,6 +44,7 @@ class Callback_logger(logger):
 
 
 class Plugin_Manager():
+    """Plugin_ manager."""
     def __init__(self, scratch_folder='scratch', settings={}):
         self.tests = []
         self.operator = getpass.getuser().lower()

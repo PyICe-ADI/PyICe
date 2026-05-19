@@ -329,6 +329,7 @@ import csv
 
 
 class PyICe_data_base():
+    """Py i ce_data_base."""
     def __init__(self, table_name, file_name="data_log.sqlite"):
         print()
         print()
@@ -341,6 +342,7 @@ class PyICe_data_base():
 
 
 class plot(object):
+    """Plot (object subclass)."""
     def __init__(self, plot_title, plot_name, xaxis_label, yaxis_label,
                  xlims, ylims, xminor, xdivs, yminor, ydivs, logx, logy):
         """A plot is just a record of what you want to plot and how you want it to look.
@@ -823,6 +825,7 @@ class plot(object):
 
 
 class scope_plot(plot):
+    """Scope_plot."""
     def __init__(self, plot_title, plot_name, xaxis_label, xlims, ylims):
         """A plot is just a record of what you want to plot and how you want it to look.
 
@@ -1049,6 +1052,7 @@ class scope_plot(plot):
 
 
 class Page():
+    """Page."""
     def __init__(self, rows_x_cols=None, page_size=None, plot_count=None):
         """A Page containing one or more plots can be exported as a PDF or SVG.
 

@@ -9,6 +9,7 @@ from PyICe.virtual_instruments import (
 
 
 class TestDummy:
+    """Tests for Dummy."""
 
     def test_dummy_write_channel(self):
         """Perform test dummy write channel operation."""
@@ -79,6 +80,7 @@ class TestDummy:
 
 
 class TestExpectComparisons:
+    """Tests for Expect Comparisons."""
 
     def test_compare_exact_pass(self):
         """Perform test compare exact pass operation."""
@@ -136,6 +138,7 @@ class TestExpectComparisons:
 
 
 class TestExpectChecks:
+    """Tests for Expect Checks."""
 
     @pytest.fixture
     def exp(self):
@@ -227,6 +230,7 @@ class TestExpectChecks:
 
 
 class TestExpectChannels:
+    """Tests for Expect Channels."""
 
     def test_expect_channel_pct_immediate(self, master_instance):
         """Perform test expect channel pct immediate operation.
@@ -314,6 +318,7 @@ class TestExpectChannels:
 
 
 class TestAccumulator:
+    """Tests for Accumulator."""
 
     def test_basic_accumulation(self):
         """Perform test basic accumulation operation."""
@@ -363,6 +368,7 @@ class TestAccumulator:
 
 
 class TestDifferencer:
+    """Tests for Differencer."""
 
     def test_basic_difference(self):
         """Perform test basic difference operation."""
@@ -409,6 +415,7 @@ class TestDifferencer:
 
 
 class TestServo:
+    """Tests for Servo."""
 
     @pytest.fixture
     def linear_system(self, master_instance):

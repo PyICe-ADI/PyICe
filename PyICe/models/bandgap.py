@@ -3,6 +3,7 @@ import numpy
 
 
 class bandgap():
+    """Bandgap."""
     def __init__(self):
         self.vbe27 = random.gauss(mu=0.66, sigma=250e-6)
         self.Nemit = random.gauss(mu=12, sigma=0.1)

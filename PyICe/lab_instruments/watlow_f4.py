@@ -4,6 +4,7 @@ from .modbus_instrument import modbus_instrument, register_description as rd
 
 
 class watlow_f4(temperature_chamber, modbus_instrument):
+    """Watlow_f4."""
     REGISTERS = [
         rd('SV1', 300, readable=True, writeable=True,
            number_of_decimals=1, signed=True),

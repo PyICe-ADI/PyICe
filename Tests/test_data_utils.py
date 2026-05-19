@@ -10,6 +10,7 @@ from PyICe.data_utils.spectrum_analyzer import spectrum_analyzer
 
 
 class TestUnitsConversions:
+    """Tests for Units Conversions."""
 
     def test_dBV_1V(self):
         """Perform test dBV 1V operation."""
@@ -55,6 +56,7 @@ class TestUnitsConversions:
 
 
 class TestEMICharLevels:
+    """Tests for E M I Char Levels."""
 
     def test_uppercase_A(self):
         """Perform test uppercase A operation."""
@@ -108,6 +110,7 @@ class TestEMICharLevels:
 
 
 class TestSignalGenerator:
+    """Tests for Signal Generator."""
 
     @pytest.fixture
     def gen(self):
@@ -213,6 +216,7 @@ class TestSignalGenerator:
 
 
 class TestLFSRPeriodGenerator:
+    """Tests for L F S R Period Generator."""
 
     def test_generates_periods(self):
         """Perform test generates periods operation."""
@@ -248,6 +252,7 @@ class TestLFSRPeriodGenerator:
 
 
 class TestSpectrumAnalyzer:
+    """Tests for Spectrum Analyzer."""
 
     @pytest.fixture
     def pure_tone(self):

@@ -61,6 +61,7 @@ PTR_TEST_FLG_TEST_FAILED = 2**7
 
 
 class FileReader:
+    """File reader."""
     def __init__(self):
         self.data = []
 
@@ -87,6 +88,7 @@ class FileReader:
 
 
 class stdf_reader():
+    """Stdf_reader."""
     def __init__(self, filename, exit_if_malformed=True):
         """Creates an object that can be interrogated for both stdf metadata like test setup time and device numbers as well as any individual test.
 

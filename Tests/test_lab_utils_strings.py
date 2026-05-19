@@ -9,6 +9,7 @@ from PyICe.lab_utils.clean_sql import clean_sql
 
 
 class TestEngString:
+    """Tests for Eng String."""
 
     @pytest.mark.parametrize('value, expected', [
         (1230, '1.23k'),
@@ -68,6 +69,7 @@ class TestEngString:
 
 
 class TestStr2Num:
+    """Tests for Str2 Num."""
 
     def test_int_passthrough(self):
         """Perform test int passthrough operation."""
@@ -125,6 +127,7 @@ class TestStr2Num:
 
 
 class TestOrdinalize:
+    """Tests for Ordinalize."""
 
     @pytest.mark.parametrize('num, expected', [
         (0, '0th'),
@@ -168,6 +171,7 @@ class TestOrdinalize:
 
 
 class TestCleanUnicode:
+    """Tests for Clean Unicode."""
 
     @pytest.mark.parametrize('char, replacement', [
         ('®', '_REG_'),
@@ -201,6 +205,7 @@ class TestCleanUnicode:
 
 
 class TestCleanAsciiCode:
+    """Tests for Clean Ascii Code."""
 
     @pytest.mark.parametrize('char, replacement', [
         (' ', '_'),
@@ -244,6 +249,7 @@ class TestCleanAsciiCode:
 
 
 class TestCleanSql:
+    """Tests for Clean Sql."""
 
     def test_valid_name_passes(self):
         """Perform test valid name passes operation."""

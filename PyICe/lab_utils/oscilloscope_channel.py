@@ -3,6 +3,7 @@ from .ordered_pair import ordered_pair
 
 
 class oscilloscope_channel(ordered_pair):
+    """Oscilloscope_channel (ordered_pair subclass)."""
     def __init__(self, time_points, channel_data):
         list.__init__(self)
         '''takes string data, likely from a two-column sql database query of an oscilloscope trace

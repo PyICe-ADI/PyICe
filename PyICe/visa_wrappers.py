@@ -83,10 +83,12 @@ def byteify(s):
 
 
 class visaWrapperException(Exception):
+    """Visa wrapper exception."""
     pass
 
 
 class visa_wrapper(object):
+    """Visa_wrapper (object subclass)."""
     #    def __init__(self, address, timeout=5):
     #        raise NotImplementedError('Interface Not Fully Implemented: __init__()')
     def read(self):
@@ -249,6 +251,7 @@ str_encoding = 'latin-1'
 
 
 class visa_wrapper_serial(visa_wrapper):
+    """Visa_wrapper_serial."""
     def __init__(self, address_or_serial_obj,
                  timeout=5, baudrate=9600, **kwargs):
         serial_port_name = "(nameless serial port)"
@@ -508,6 +511,7 @@ class visa_wrapper_serial(visa_wrapper):
 
 
 class visa_wrapper_tcp(visa_wrapper_serial):
+    """Visa_wrapper_tcp (visa_wrapper_serial subclass)."""
     def __init__(self, ip_address, port, timeout=5, **kwargs):
         port = serial.serial_for_url(
             'socket://{}:{}'.format(ip_address, port), timeout=timeout)
@@ -546,6 +550,7 @@ class visa_wrapper_tcp(visa_wrapper_serial):
 
 
 class visa_wrapper_telnet(visa_wrapper_serial):
+    """Visa_wrapper_telnet (visa_wrapper_serial subclass)."""
     # TODO?: migrate telnet library to use serial_for_url
     # rfc2217://<host>:<port>[?<option>[&<option>]] class rfc2217.Serial
     def __init__(self, ip_address, port, timeout=5):
@@ -583,6 +588,7 @@ class visa_wrapper_telnet(visa_wrapper_serial):
 
 
 class visa_wrapper_vxi11(visa_wrapper):
+    """Visa_wrapper_vxi11."""
     def __init__(self, address, timeout=5):
         self.terminationCharacter = None
         self.vxi_interface = vxi11.Instrument(
@@ -678,6 +684,7 @@ class visa_wrapper_vxi11(visa_wrapper):
 
 
 class visa_wrapper_usbtmc(visa_wrapper):
+    """Visa_wrapper_usbtmc."""
     def __init__(self, address, timeout=5):
         if usbtmcMissing:
             raise Exception(

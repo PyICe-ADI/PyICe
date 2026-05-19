@@ -5,6 +5,7 @@ from ..lab_core import *  # noqa: F403
 
 
 class smu(instrument):
+    """Smu (instrument subclass)."""
     def _fix_exclusive(self, ch, value):
         """Fix write cache of exclusive channel pair sibling.
 
@@ -374,6 +375,7 @@ class smu(instrument):
             channel: Channel object.
         """
 class keithley_smu(smu):
+    """Keithley_smu."""
     def _parse_float(self, val):
         f = float(val)
         if f == 9.91E37:  # Keithley NaN

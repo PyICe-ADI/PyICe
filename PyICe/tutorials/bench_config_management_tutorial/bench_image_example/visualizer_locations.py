@@ -2,6 +2,7 @@ import pathlib
 
 
 class component_locations:
+    """Component_locations."""
     def __init__(self):
         path = pathlib.Path(__file__).parent.resolve(
         ).as_posix() + "/visualizer_images/"

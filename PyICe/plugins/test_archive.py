@@ -4,6 +4,7 @@ import sqlite3
 
 
 class database_archive():
+    """Database_archive."""
     def __init__(self, test_script_file, db_source_file):
         """Initialize database archive for manipulating tables in a given SQLite database.
 
@@ -304,6 +305,7 @@ class database_archive():
 
 
 class manual_archive():
+    """Manual_archive."""
     def __init__(self, archive_location=None, db_location=None):
         if archive_location is None:
             archive_location = input(

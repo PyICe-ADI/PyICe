@@ -235,10 +235,12 @@ class data_store():
 
 
 class DataStoreException(Exception):
+    """Data store exception."""
     pass
 
 
 class channel_wrapper(object):
+    """Channel_wrapper (object subclass)."""
     def __init__(self, channel=None):
         # channel=None default is required because of Python's cooperative multiple-inheritance
         # (MRO) behaviour with Qt classes.  When a subclass like display_item inherits from both
@@ -486,6 +488,7 @@ class channel_wrapper(object):
 
 
 class display_item(QtWidgets.QLabel, channel_wrapper):
+    """Display_item."""
     SI_request_read_channel_list = QtCore.Signal(object)
     SI_request_write_channel_list = QtCore.Signal(object)
 
@@ -1210,6 +1213,7 @@ class display_item(QtWidgets.QLabel, channel_wrapper):
 
 
 class display_tag(QtWidgets.QLabel):
+    """Display_tag (q label subclass)."""
     SI_request_read_tag = QtCore.Signal(object)
 
     def __init__(self, tag_name):
@@ -1354,6 +1358,7 @@ class display_tag(QtWidgets.QLabel):
 
 
 class write_channel_dialog(QtWidgets.QDialog, channel_wrapper):
+    """Write_channel_dialog."""
     SI_request_write_channel_list = QtCore.Signal(object)
 
     def __init__(self, channel_object, current_raw_data,
@@ -1652,6 +1657,7 @@ class write_channel_dialog(QtWidgets.QDialog, channel_wrapper):
 
 
 class display_item_group(QtWidgets.QWidget):
+    """Display_item_group (q widget subclass)."""
     SI_request_read_channel_list = QtCore.Signal(object)
     SI_request_write_channel_list = QtCore.Signal(object)
     SI_change_font_size = QtCore.Signal(int)
@@ -2153,6 +2159,7 @@ class display_item_group(QtWidgets.QWidget):
 
 
 class display_tag_group(QtWidgets.QWidget):
+    """Display_tag_group (q widget subclass)."""
     SI_stateChanged = QtCore.Signal()
 
     def __init__(self, channel_group_object):
@@ -2755,6 +2762,7 @@ class tab_group(QtWidgets.QTabWidget):
             old_tab.cleanup_upon_disconnect()
 
             class TabSwitchingAgent(object):
+                """Tab switching agent (object subclass)."""
                 def __init__(self, the_tab_group, old_tab, new_tab, retries=3):
                     self.tries_so_far = 0
                     self.the_tab_group = the_tab_group
@@ -2905,6 +2913,7 @@ class tab_group(QtWidgets.QTabWidget):
 
 
 class gui_logger(QtCore.QObject):
+    """Gui_logger (q object subclass)."""
     SI_request_background_call = QtCore.Signal(object)
     SI_channel_data_ready = QtCore.Signal(object)
 
@@ -3092,6 +3101,7 @@ class gui_logger(QtCore.QObject):
 
 
 class logger_item(QtWidgets.QCheckBox, channel_wrapper):
+    """Logger_item."""
     def __init__(self, channel_object):
         QtWidgets.QCheckBox.__init__(self)
         channel_wrapper.__init__(self, channel_object)
@@ -3154,6 +3164,7 @@ class logger_item(QtWidgets.QCheckBox, channel_wrapper):
 
 
 class logger_item_group(QtWidgets.QWidget):
+    """Logger_item_group (q widget subclass)."""
     def __init__(self, channel_group_object):
         QtWidgets.QWidget.__init__(self)
         self.logger_items = []
@@ -3395,6 +3406,7 @@ class logger_view(QtWidgets.QWidget):
 
 
 class background_worker(QtCore.QThread):
+    """Background_worker (q thread subclass)."""
     SI_channel_data_ready = QtCore.Signal(object)
     SI_dump_data_ready = QtCore.Signal(object)
     # background worker thread, it is the only thing that read and writes
@@ -3568,6 +3580,7 @@ class background_worker(QtCore.QThread):
 
 
 class ltc_lab_gui_main_window(QtWidgets.QMainWindow):
+    """Ltc_lab_gui_main_window (q main window subclass)."""
     SI_request_background_call = QtCore.Signal(object)
     SI_request_read_channel_list = QtCore.Signal(object)
     SI_request_dump_channel_list = QtCore.Signal(object)
@@ -4126,6 +4139,7 @@ QApp = QtWidgets.QApplication(sys.argv)
 
 
 class ltc_lab_gui_app(QObject):
+    """Ltc_lab_gui_app (q object subclass)."""
     SI_queue_overflow = Signal()
     SI_passive_observer_data = Signal(object)
 

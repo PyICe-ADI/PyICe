@@ -5,6 +5,7 @@ from PyICe.spi_interface import shift_register
 
 
 class TestTwiInterfaceUtilities:
+    """Tests for Twi Interface Utilities."""
 
     def test_read_addr(self):
         """Perform test read addr operation."""
@@ -41,6 +42,7 @@ class TestTwiInterfaceUtilities:
 
 
 class TestI2CDummy:
+    """Tests for I2 C Dummy."""
 
     @pytest.fixture
     def dummy(self):
@@ -136,6 +138,7 @@ class TestI2CDummy:
 
 
 class TestShiftRegister:
+    """Tests for Shift Register."""
 
     @pytest.fixture
     def reg(self):

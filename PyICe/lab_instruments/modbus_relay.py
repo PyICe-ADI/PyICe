@@ -3,6 +3,7 @@ from .modbus_instrument import modbus_register
 
 
 class modbus_relay(instrument):
+    """Modbus_relay (instrument subclass)."""
     def __init__(self, serial_port, modbus_address):
         import minimalmodbus
         minimalmodbus.BAUDRATE = 9600

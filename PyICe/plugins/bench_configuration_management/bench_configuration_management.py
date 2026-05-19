@@ -6,6 +6,7 @@ BLOCKED_STRING = "◄――――――――■ [BLOCKED]"
 
 
 class Diagram_Reconstructor():
+    """Diagram_ reconstructor."""
     def __init__(self, connections, blocked_terminals):
         self.connections = connections
         self.blocked_terminals = blocked_terminals

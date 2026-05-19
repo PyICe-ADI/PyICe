@@ -27,6 +27,7 @@ def simple_logger(tmp_path):
 
 @pytest.mark.database
 class TestLoggerInit:
+    """Tests for Logger Init."""
 
     def test_creates_database_file(self, tmp_path):
         """Perform test creates database file operation.
@@ -85,6 +86,7 @@ class TestLoggerInit:
 
 @pytest.mark.database
 class TestLoggerTableManagement:
+    """Tests for Logger Table Management."""
 
     def test_new_table(self, simple_logger):
         """Perform test new table operation.
@@ -140,6 +142,7 @@ class TestLoggerTableManagement:
 
 @pytest.mark.database
 class TestLoggerLogging:
+    """Tests for Logger Logging."""
 
     def test_log_returns_dict(self, simple_logger):
         """Perform test log returns dict operation.
@@ -268,6 +271,7 @@ class TestLoggerLogging:
 
 @pytest.mark.database
 class TestLoggerDataChannels:
+    """Tests for Logger Data Channels."""
 
     def test_add_data_channels_and_log_data(self, tmp_path):
         """Perform test add data channels and log data operation.

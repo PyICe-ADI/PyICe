@@ -325,14 +325,17 @@ class interface(communication_node):
 
 
 class interface_visa(interface):
+    """Interface_visa."""
     pass
 
 
 class interface_twi(interface):
+    """Interface_twi."""
     pass
 
 
 class interface_spi(interface):
+    """Interface_spi."""
     pass
 
 
@@ -574,6 +577,7 @@ if serial.VERSION == '3.4' and PYSERIAL_DEBUG:
     from serial.urlhandler.protocol_spy import Serial as SpySerial  # <--- UNDOCUMENTED CALL
 
     class serial_from_name_or_url(SpySerial):
+        """Serial_from_name_or_url (spy serial subclass)."""
         _has_PyICe_debug_capability = True
     '''     # def __init__(self, *args, **kwargs):
             #     if len(args) > 0:
@@ -586,10 +590,12 @@ if serial.VERSION == '3.4' and PYSERIAL_DEBUG:
             #     self.port = self._PyICe_port'''
 else:
     class serial_from_name_or_url(serial.Serial):
+        """Serial_from_name_or_url."""
         _has_PyICe_debug_capability = False
 
 
 class interface_raw_serial(interface, serial_from_name_or_url):
+    """Interface_raw_serial."""
     def __init__(self, port_name_or_url, baudrate, timeout, **kwargs):
         super().__init__(name=port_name_or_url, **kwargs)
         from urllib.parse import urlparse
@@ -1016,6 +1022,7 @@ class SerialTestHarness(object):
 
 
 class interface_test_harness_serial(interface, SerialTestHarness):
+    """Interface_test_harness_serial."""
     def __init__(self, serial_port_name, bytestream,
                  max_bytes_returned_per_read=4096):
         SerialTestHarness.__init__(self, bytestream,
@@ -1036,6 +1043,7 @@ class interface_test_harness_serial(interface, SerialTestHarness):
 
 
 class interface_visa_tcp_ip(interface_visa, visa_wrappers.visa_wrapper_tcp):
+    """Interface_visa_tcp_ip."""
     def __init__(self, host_address, port, timeout, **kwargs):
         visa_wrappers.visa_wrapper_tcp.__init__(
             self, host_address, port, timeout, **kwargs)
@@ -1044,6 +1052,7 @@ class interface_visa_tcp_ip(interface_visa, visa_wrappers.visa_wrapper_tcp):
 
 
 class interface_visa_telnet(interface_visa, visa_wrappers.visa_wrapper_telnet):
+    """Interface_visa_telnet."""
     def __init__(self, host_address, port, timeout):
         visa_wrappers.visa_wrapper_telnet.__init__(
             self, host_address, port, timeout)
@@ -1052,6 +1061,7 @@ class interface_visa_telnet(interface_visa, visa_wrappers.visa_wrapper_telnet):
 
 
 class interface_visa_serial(visa_wrappers.visa_wrapper_serial, interface_visa):
+    """Interface_visa_serial."""
     def __init__(self, interface_raw_serial_object):
         super().__init__(interface_raw_serial_object)
         # visa_wrappers.visa_wrapper_serial.__init__(self,interface_raw_serial_object)
@@ -1059,18 +1069,21 @@ class interface_visa_serial(visa_wrappers.visa_wrapper_serial, interface_visa):
 
 
 class interface_visa_vxi11(interface_visa, visa_wrappers.visa_wrapper_vxi11):
+    """Interface_visa_vxi11."""
     def __init__(self, address, timeout):
         visa_wrappers.visa_wrapper_vxi11.__init__(self, address, timeout)
         interface_visa.__init__(self, f'interface_visa_vxi11 @ {address}')
 
 
 class interface_visa_usbtmc(interface_visa, visa_wrappers.visa_wrapper_usbtmc):
+    """Interface_visa_usbtmc."""
     def __init__(self, address, timeout):
         visa_wrappers.visa_wrapper_usbtmc.__init__(self, address, timeout)
         interface_visa.__init__(self, f'interface_visa_usbtmc @ {address}')
 
 
 class interface_visa_direct(interface_visa, visa_wrappers.visa_interface):
+    """Interface_visa_direct."""
     def __init__(self, visa_address_string, timeout):
         super().__init__(
             visa_address_string,
@@ -1336,12 +1349,14 @@ class interface_bobbytalk_raw_serial(interface_bobbytalk):
 
 
 class interface_twi_dummy(interface_twi, twi_interface.i2c_dummy):
+    """Interface_twi_dummy."""
     def __init__(self, delay, **kwargs):
         twi_interface.i2c_dummy.__init__(self, delay, **kwargs)
         interface_twi.__init__(self, 'interface_twi_dummy @ fake')
 
 
 class interface_twi_mdump(interface_twi, twi_interface.mem_dict):
+    """Interface_twi_mdump."""
     def __init__(self, data_source=None, **kwargs):
         # twi_interface.mem_dict.__init__(self,data_source,**kwargs) #happens
         # through super() below
@@ -1350,6 +1365,7 @@ class interface_twi_mdump(interface_twi, twi_interface.mem_dict):
 
 
 class interface_twi_scpi(twi_interface.i2c_scpi, interface_twi):
+    """Interface_twi_scpi."""
     def __init__(self, interface_serial, timeout):
         super().__init__(interface_serial)
         # twi_interface.i2c_scpi.__init__(self, interface_serial)
@@ -1358,6 +1374,7 @@ class interface_twi_scpi(twi_interface.i2c_scpi, interface_twi):
 
 
 class interface_twi_scpi_sp(twi_interface.i2c_scpi_sp, interface_twi):
+    """Interface_twi_scpi_sp."""
     def __init__(self, interface_serial, portnum, sclpin,
                  sdapin, pullup_en=False, timeout=1):
         super().__init__(interface_serial, portnum, sclpin, sdapin, pullup_en)
@@ -1368,6 +1385,7 @@ class interface_twi_scpi_sp(twi_interface.i2c_scpi_sp, interface_twi):
 
 class interface_twi_scpi_testhook(
         twi_interface.i2c_scpi_testhook, interface_twi):
+    """Interface_twi_scpi_testhook."""
     def __init__(self, interface_serial, timeout):
         twi_interface.i2c_scpi.__init__(self, interface_serial)
         interface_twi.__init__(
@@ -1377,6 +1395,7 @@ class interface_twi_scpi_testhook(
 
 # DJS TODO: fix interfaces to reconcile with DC590 cleanup
 class interface_twi_dc590_serial(twi_interface.i2c_dc590, interface_twi):
+    """Interface_twi_dc590_serial."""
     def __init__(self, interface_serial, timeout):
         # DJS TODO: fix interfaces to reconcile with DC590 cleanup
         twi_interface.i2c_dc590.__init__(self, interface_serial)
@@ -1386,6 +1405,7 @@ class interface_twi_dc590_serial(twi_interface.i2c_dc590, interface_twi):
 
 
 class interface_twi_buspirate(twi_interface.i2c_buspirate, interface_twi):
+    """Interface_twi_buspirate."""
     def __init__(self, interface_serial, timeout):
         twi_interface.i2c_buspirate.__init__(self, interface_serial)
         interface_twi.__init__(
@@ -1394,6 +1414,7 @@ class interface_twi_buspirate(twi_interface.i2c_buspirate, interface_twi):
 
 
 class interface_twi_firmata(twi_interface.i2c_firmata, interface_twi):
+    """Interface_twi_firmata."""
     # Old. Consider Telemetrix instead.
     def __init__(self, firmata_instance):
         twi_interface.i2c_firmata.__init__(self, firmata_instance)
@@ -1402,6 +1423,7 @@ class interface_twi_firmata(twi_interface.i2c_firmata, interface_twi):
 
 
 class interface_twi_bobbytalk(twi_interface.i2c_bobbytalk, interface_twi):
+    """Interface_twi_bobbytalk."""
     def __init__(self, bobbytalk_interface, src_id, **kwargs):
         twi_interface.i2c_bobbytalk.__init__(
             self, bobbytalk_interface, src_id, **kwargs)
@@ -1458,6 +1480,7 @@ class interface_labcomm_raw_serial(interface):
 
 
 class interface_labcomm_twi_serial(twi_interface.i2c_labcomm, interface_twi):
+    """Interface_labcomm_twi_serial."""
     def __init__(self, raw_serial_interface, comport_name, src_id, dest_id):
         twi_interface.i2c_labcomm.__init__(self, raw_serial_interface)
         interface_twi.__init__(self, name='interface_labcomm_twi_port')
@@ -1488,12 +1511,14 @@ class interface_labcomm_twi_serial(twi_interface.i2c_labcomm, interface_twi):
 
 
 class interface_spi_dummy(interface_spi, spi_interface.spi_dummy):
+    """Interface_spi_dummy."""
     def __init__(self, delay=0):
         spi_interface.spi_dummy.__init__(self, delay)
         interface_spi.__init__(self, 'interface_spi_dummy @ fake')
 
 
 class interface_spi_dc590(interface_spi, spi_interface.spi_dc590):
+    """Interface_spi_dc590."""
     def __init__(self, interface_stream, ss_ctrl=None):
         spi_interface.spi_dc590.__init__(self, interface_stream, ss_ctrl)
         interface_spi.__init__(
@@ -1501,6 +1526,7 @@ class interface_spi_dc590(interface_spi, spi_interface.spi_dc590):
 
 
 class interface_spi_cfgpro(interface_spi, spi_interface.spi_cfgpro):
+    """Interface_spi_cfgpro."""
     def __init__(self, visa_interface, CPOL, CPHA, baudrate=1e6, ss_ctrl=None):
         spi_interface.spi_cfgpro.__init__(
             self, visa_interface, CPOL, CPHA, baudrate, ss_ctrl)
@@ -1509,10 +1535,12 @@ class interface_spi_cfgpro(interface_spi, spi_interface.spi_cfgpro):
 
 
 class gpib_adapter(communication_node):
+    """Gpib_adapter (communication_node subclass)."""
     pass
 
 
 class gpib_adapter_visa(gpib_adapter):
+    """Gpib_adapter_visa."""
     pass
 
 

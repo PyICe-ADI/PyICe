@@ -2,6 +2,7 @@ from ..lab_core import *  # noqa: F403
 
 
 class PCF8574(instrument):
+    """P c f8574 (instrument subclass)."""
     def __init__(self, interface_twi, addr7):
         """Multi-vendor 8bit I2C GPIO on Configurator XT. http://www.ti.com/lit/ds/symlink/pcf8574.pdf.
 

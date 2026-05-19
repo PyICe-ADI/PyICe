@@ -2,6 +2,7 @@ import time
 
 
 class dlog(object):
+    """Dlog (object subclass)."""
     def __init__(self, filename="output.txt"):
         """Open filehandle to filename.  If omitted, filename defaults to "output.txt.
 

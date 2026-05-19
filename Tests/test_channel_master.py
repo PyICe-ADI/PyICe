@@ -5,6 +5,7 @@ from PyICe.lab_interfaces import interface_factory
 
 
 class TestChannelMasterFactoryMethods:
+    """Tests for Channel Master Factory Methods."""
 
     def test_add_channel_dummy(self, master_instance):
         """Perform test add channel dummy operation.
@@ -165,6 +166,7 @@ class TestChannelMasterFactoryMethods:
 
 
 class TestChannelMasterCaching:
+    """Tests for Channel Master Caching."""
 
     def test_caching_channel_uses_cached_value(self, master_instance):
         """Return test caching channel uses cached value result.
@@ -215,6 +217,7 @@ class TestChannelMasterCaching:
 
 
 class TestChannelMasterCallbacks:
+    """Tests for Channel Master Callbacks."""
 
     def test_add_read_callback(self, master_instance):
         """Perform test add read callback operation.
@@ -302,6 +305,7 @@ class TestChannelMasterCallbacks:
 
 
 class TestChannelMasterThreading:
+    """Tests for Channel Master Threading."""
 
     @pytest.mark.threading
     def test_threaded_read_multiple_channels(self, master_instance):
@@ -353,6 +357,7 @@ class TestChannelMasterThreading:
 
 
 class TestMaster:
+    """Tests for Master."""
 
     def test_master_inherits_channel_master(self, master_instance):
         """Perform test master inherits channel master operation.
@@ -406,6 +411,7 @@ class TestMaster:
 
 
 class TestResultsOrdDict:
+    """Tests for Results Ord Dict."""
 
     def test_is_ordered_dict(self):
         """Perform test is ordered dict operation."""

@@ -32,6 +32,7 @@ def twi_inst(twi_inter):
 
 
 class TestTwiInstrument:
+    """Tests for Twi Instrument."""
 
     def test_add_register(self, twi_inst):
         """Perform test add register operation.

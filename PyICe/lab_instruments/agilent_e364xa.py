@@ -79,8 +79,10 @@ class agilent_e364xa(agilent_e36xxa):
 
 
 class agilent_e3648a(agilent_e364xa):
+    """Agilent_e3648a (agilent_e364xa subclass)."""
     pass
 
 
 class agilent_e3649a(agilent_e364xa):
+    """Agilent_e3649a (agilent_e364xa subclass)."""
     pass

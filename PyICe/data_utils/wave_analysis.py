@@ -9,6 +9,7 @@ warned_2_already = False
 
 
 class waveform(object):
+    """Waveform (object subclass)."""
     # @profile
     def __init__(self, data, trigger_sigma=10, trigger_level=None,
                  leader_size=0.099, debug=False, stationarity_check=False):

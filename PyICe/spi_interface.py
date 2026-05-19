@@ -295,6 +295,7 @@ class shift_register(object):
 
 
 class spiInterface(object, metaclass=ABCMeta):
+    """Spi interface (object subclass)."""
     def __init__(self, CPOL, CPHA, ss_ctrl, word_size):
         """Mode controls polarity and phase: 0 => CPOL=0, CPHA=0.
 
@@ -542,6 +543,7 @@ class spi_bbone(spiInterface):
 
 
 class spi_cfgpro(spiInterface):
+    """Spi_cfgpro (spi interface subclass)."""
     def __init__(self, visa_interface, CPOL, CPHA, baudrate=1e6, ss_ctrl=None):
         self.interface = visa_interface
         if ss_ctrl is None:
@@ -611,6 +613,7 @@ class spi_cfgpro(spiInterface):
 
 
 class spi_dc590(spiInterface):
+    """Spi_dc590 (spi interface subclass)."""
     def __init__(self, interface_stream, ss_ctrl=None):
         """No remote computer control over CPOL/CPHA mode or baudrate using DC590 sketch...
 
@@ -717,6 +720,7 @@ class spi_dc590(spiInterface):
 
 
 class spi_buspirate(spiInterface):
+    """Spi_buspirate (spi interface subclass)."""
     def __init__(self, interface_raw_serial, CPOL=0,
                  CPHA=0, baudrate=1e6, ss_ctrl=None):
         self.ser = interface_raw_serial
@@ -885,6 +889,7 @@ class spi_buspirate(spiInterface):
 
 
 class spi_bitbang(spiInterface):
+    """Spi_bitbang (spi interface subclass)."""
     def __init__(self, SCK_channel, MOSI_channel=None, MISO_channel=None,
                  SS_channel=None, CPOL=0, CPHA=0, SS_POL=0, low_level=0, high_level=1):
         """Bit-bangable SPI port made of any writeable channels (power supply, gpio, etc).
@@ -976,6 +981,7 @@ class spi_bitbang(spiInterface):
 
 
 class spi_dummy(spiInterface):
+    """Spi_dummy (spi interface subclass)."""
     def __init__(self, delay=0, word_size=1):
         self.delay = delay
         spiInterface.__init__(
@@ -1017,6 +1023,7 @@ class spi_dummy(spiInterface):
 
 
 class SPIMasterError(Exception):
+    """S p i master error (exception subclass)."""
     pass
 
 

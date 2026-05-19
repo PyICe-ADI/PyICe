@@ -6,6 +6,7 @@ import abc
 
 
 class relay(instrument):
+    """Relay (instrument subclass)."""
     @abc.abstractmethod
     def add_channel(self, channel_name, channel_number):
         """Placeholder.
@@ -35,6 +36,7 @@ class relay(instrument):
 
 
 class ftdi_relay(relay):
+    """Ftdi_relay."""
     def __init__(self, serial_number=None):
         self.VID = 0x0403                   # USB Vendor ID of FT245R and FT232
         self.PID = 0x6001                   # USB Product ID of FT245R and FT232
@@ -388,6 +390,7 @@ Then reload the udev rules with
 PyRelayCtl is licensed under a modified BSD license.
 """
 class FT245R:
+    """F t245 r."""
     def __init__(self):
         self.VID = 0x0403                   # USB Vendor ID of FT245R and FT232
         self.PID = 0x6001                   # USB Product ID of FT245R and FT232

@@ -2,6 +2,7 @@ from ..lab_core import *  # noqa: F403
 
 
 class sorensen_generic_supply(instrument):
+    """Sorensen_generic_supply (instrument subclass)."""
     def __init__(self, interface_visa):
         """interface_visa.
 

@@ -1,4 +1,5 @@
 class Units_Parser():
+    """Units_ parser."""
     def __init__(self):
         self.symbols = {
             # ETS DLOG

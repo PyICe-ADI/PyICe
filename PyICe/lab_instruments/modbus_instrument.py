@@ -5,6 +5,7 @@ import minimalmodbus
 
 
 class modbus_reg_type(Enum):
+    """Modbus_reg_type (enum subclass)."""
     bit = auto()
     register = auto()
     long = auto()

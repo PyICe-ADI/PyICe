@@ -1,4 +1,5 @@
 class Master_Test_Template():
+    """Master_ test_ template."""
     ###
     # SCRIPT METHODS
     ###

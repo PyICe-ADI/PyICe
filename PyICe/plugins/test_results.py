@@ -142,6 +142,7 @@ class generic_results():
             ate_results = []
 
         class CustomJSONizer(json.JSONEncoder):
+            """Custom j s o nizer (j s o n encoder subclass)."""
             def default(self, obj):
                 """Return default result.
 
@@ -231,6 +232,7 @@ class generic_results():
 
 
 class Test_Results(generic_results):
+    """Tests for Results."""
     class _test_result(collections.namedtuple('test_result', [
                        'test_name', 'conditions', 'min_data', 'max_data', 'passes', 'failure_reason', 'collected_data', 'plot', 'query'])):
         """Add some helper moethods for easy summary."""
@@ -765,6 +767,7 @@ class Test_Results_Reload(Test_Results):
 
 
 class Failed_Eval(Test_Results):
+    """Failed_ eval (test_ results subclass)."""
     def __init__(self, test):
         self.test = test
 

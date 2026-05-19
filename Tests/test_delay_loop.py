@@ -4,6 +4,7 @@ from PyICe.lab_utils.delay_loop import delay_loop
 
 
 class TestDelayLoop:
+    """Tests for Delay Loop."""
 
     def test_basic_delay(self):
         """Perform test basic delay operation."""

@@ -3,6 +3,7 @@ import collections
 
 
 class Traceability_items():
+    """Traceability_items."""
     def __init__(self, test):
         self.item_list = []
         self.test = test

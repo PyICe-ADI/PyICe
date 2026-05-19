@@ -4,6 +4,7 @@ import numpy
 
 
 class LTspice_wavereader():
+    """L tspice_wavereader."""
     def __init__(self, file_name):
         """Initialize LTspice waveform reader from exported text file.
 

@@ -40,6 +40,7 @@ def twi(master_instance):
 
 
 class TestTMP117:
+    """Tests for T M P117."""
 
     @pytest.fixture
     def tmp117(self, twi):
@@ -155,6 +156,7 @@ class TestTMP117:
 
 
 class TestAD5259:
+    """Tests for A D5259."""
 
     @pytest.fixture
     def pot(self, twi):
@@ -302,6 +304,7 @@ class TestAD5259:
 
 
 class TestADT7410:
+    """Tests for A D T7410."""
 
     @pytest.fixture
     def sensor(self, twi):
@@ -405,6 +408,7 @@ class TestADT7410:
 
 
 class TestAD5693R:
+    """Tests for A D5693 R."""
 
     @pytest.fixture
     def dac(self, twi):
@@ -520,6 +524,7 @@ class TestAD5693R:
 
 
 class TestAD5272:
+    """Tests for A D5272."""
 
     @pytest.fixture
     def pot(self, twi):
@@ -589,6 +594,7 @@ class TestAD5272:
 
 
 class TestAD5667R:
+    """Tests for A D5667 R."""
 
     @pytest.fixture
     def dac(self, twi):
@@ -668,6 +674,7 @@ class TestAD5667R:
 
 
 class TestPCF8574:
+    """Tests for P C F8574."""
 
     @pytest.fixture
     def gpio(self, twi):
@@ -739,6 +746,7 @@ class TestPCF8574:
 
 
 class TestCAT5140:
+    """Tests for C A T5140."""
 
     @pytest.fixture
     def pot(self, twi):
@@ -827,6 +835,7 @@ class TestCAT5140:
 
 
 class TestAgilent34401a:
+    """Tests for Agilent34401a."""
 
     @pytest.fixture
     def dmm(self, master_instance):
@@ -915,6 +924,7 @@ class TestAgilent34401a:
 
 
 class TestBR24H64:
+    """Tests for B R24 H64."""
 
     @pytest.fixture
     def eeprom(self, twi):
@@ -988,6 +998,7 @@ class TestBR24H64:
 
 
 class TestAgilentE36xxa:
+    """Tests for Agilent E36xxa."""
 
     @pytest.fixture
     def supply(self, master_instance):
@@ -1081,6 +1092,7 @@ class TestAgilentE36xxa:
 
 
 class TestScpiSmu:
+    """Tests for Scpi Smu."""
 
     @pytest.fixture
     def smu_inst(self, master_instance):
@@ -1201,6 +1213,7 @@ class TestScpiSmu:
 
 
 class TestHameg4040:
+    """Tests for Hameg4040."""
 
     @pytest.fixture
     def supply(self, master_instance):
@@ -1331,6 +1344,7 @@ class TestHameg4040:
 
 
 class TestRigolDG800:
+    """Tests for Rigol D G800."""
 
     @pytest.fixture
     def funcgen(self, master_instance):
@@ -1422,6 +1436,7 @@ class TestRigolDG800:
 
 
 class TestKeithley2400:
+    """Tests for Keithley2400."""
 
     @pytest.fixture
     def smu(self, master_instance):
@@ -1509,6 +1524,7 @@ class TestKeithley2400:
 
 
 class TestKeithley2600:
+    """Tests for Keithley2600."""
 
     @pytest.fixture
     def smu(self, master_instance):

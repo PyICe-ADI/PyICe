@@ -35,6 +35,7 @@ def make_register(size=8, init_value=0):
 
 
 class TestRegisterBasics:
+    """Tests for Register Basics."""
 
     def test_register_is_integer_channel(self):
         """Perform test register is integer channel operation."""
@@ -90,6 +91,7 @@ class TestRegisterBasics:
 
 
 class TestRegisterCachedRead:
+    """Tests for Register Cached Read."""
 
     def test_enable_cached_read(self):
         """Perform test enable cached read operation."""
@@ -115,6 +117,7 @@ class TestRegisterCachedRead:
 
 
 class TestRegisterSpecialAccess:
+    """Tests for Register Special Access."""
 
     def test_RO(self):
         """Perform test RO operation."""
@@ -203,6 +206,7 @@ class TestRegisterSpecialAccess:
 
 
 class TestRegisterRMW:
+    """Tests for Register R M W."""
 
     def test_no_special_access_returns_data(self):
         """Perform test no special access returns data operation."""
@@ -235,6 +239,7 @@ class TestRegisterRMW:
 
 
 class TestRegisterExpectReadback:
+    """Tests for Register Expect Readback."""
 
     def test_no_special_access(self):
         """Perform test no special access operation."""

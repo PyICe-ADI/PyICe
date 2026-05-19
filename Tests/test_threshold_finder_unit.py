@@ -31,6 +31,7 @@ def make_comparator_system(m, threshold=2.5, hysteresis=0.0):
 
 
 class TestThresholdFinderBinarySearch:
+    """Tests for Threshold Finder Binary Search."""
 
     @pytest.fixture
     def tf_no_hyst(self, master_instance):
@@ -83,6 +84,7 @@ class TestThresholdFinderBinarySearch:
 
 
 class TestThresholdFinderWithHysteresis:
+    """Tests for Threshold Finder With Hysteresis."""
 
     def test_find_binary_converges_with_hysteresis(self, master_instance):
         """Perform test find binary converges with hysteresis operation.
@@ -119,6 +121,7 @@ class TestThresholdFinderWithHysteresis:
 
 
 class TestThresholdFinderLinearSearch:
+    """Tests for Threshold Finder Linear Search."""
 
     @pytest.fixture
     def tf_linear(self, master_instance):
@@ -166,6 +169,7 @@ class TestThresholdFinderLinearSearch:
 
 
 class TestThresholdFinderPolarity:
+    """Tests for Threshold Finder Polarity."""
 
     def test_inverted_polarity(self, master_instance):
         """Comparator output goes LOW when input exceeds threshold.
@@ -191,6 +195,7 @@ class TestThresholdFinderPolarity:
 
 
 class TestThresholdFinderChannels:
+    """Tests for Threshold Finder Channels."""
 
     def test_add_channel_all(self, master_instance):
         """Perform test add channel all operation.

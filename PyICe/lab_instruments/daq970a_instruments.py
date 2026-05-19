@@ -853,6 +853,7 @@ class agilent_a970a_20ch(agilent_a970a_20ch_40ch):
 
 
 class agilent_a970a_20ch(agilent_a970a_20ch):
+    """Agilent_a970a_20ch."""
     pass
 
 
@@ -865,10 +866,12 @@ class agilent_a970a_40ch(agilent_a970a_20ch_40ch):
 
 
 class agilent_a970a_40ch(agilent_a970a_40ch):
+    """Agilent_a970a_40ch."""
     pass
 
 
 class agilent_a970a_40ch(agilent_a970a_40ch):
+    """Agilent_a970a_40ch."""
     pass
 
 
@@ -936,6 +939,7 @@ class agilent_a970a_dacs(daq970a_instrument):
 
 
 class agilent_a970a_dacs(agilent_a970a_dacs):
+    """Agilent_a970a_dacs."""
     pass
 
 
@@ -1099,6 +1103,7 @@ class agilent_a970a_dig_out8(daq970a_instrument):
 
 
 class agilent_a970a_dig_out8(agilent_a970a_dig_out8):
+    """Agilent_a970a_dig_out8."""
     pass
 
 

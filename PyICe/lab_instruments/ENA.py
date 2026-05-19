@@ -891,6 +891,7 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
 
 
 class keysight_e5061b(keysight_e5061b_base):
+    """Keysight_e5061b (keysight_e5061b_base subclass)."""
     # def __init__(self, interface_visa):
     # super(keysight_e5061b, self).__init__(interface_visa)
     def add_channels(self, channel_name, channel_number=1):
@@ -1312,6 +1313,7 @@ class keysight_e5061b(keysight_e5061b_base):
 
 
 class keysight_e5061b_impedance(keysight_e5061b_base):
+    """Keysight_e5061b_impedance (keysight_e5061b_base subclass)."""
     # def __init__(self, interface_visa):
     # super(keysight_e5061b, self).__init__(interface_visa)
 

@@ -3331,6 +3331,7 @@ class i2c_scpi_sp(twi_interface):
 
 
 class i2c_scpi_testhook(i2c_scpi):
+    """I2c_scpi_testhook."""
     def __init__(self, serial_port):
         i2c_scpi.__init__(self, serial_port)
         self.channels = {}
@@ -4674,6 +4675,7 @@ class x0020_SMBUS:
     } module_0x0020_SMBUS_command;
     """
     class noun:
+        """Noun."""
         BYTE = 0x00
         WORD = 0x01
         BYTE_PEC = 0x02
@@ -4696,6 +4698,7 @@ class x0020_SMBUS:
         STATELESS_BYTE_LIST_PEC_V2 = 0x10
 
     class verb:
+        """Verb."""
         READ = 0
         WRITE = 1
         RESET = 2
@@ -5448,6 +5451,7 @@ class i2c_bobbytalk(twi_interface):
 
 
 class i2c_labcomm(twi_interface):
+    """I2c_labcomm (twi_interface subclass)."""
     def __init__(self, raw_serial_interface):
         self.interface = raw_serial_interface
         # Straight Through SMBus Transactions and Alternate Commands
@@ -5783,6 +5787,7 @@ class i2c_labcomm(twi_interface):
 
 
 class mem_dict(twi_interface):
+    """Mem_dict (twi_interface subclass)."""
     def __init__(self, data_source=None):
         self.set_data_source(data_source)
 

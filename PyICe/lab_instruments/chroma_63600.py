@@ -2,6 +2,7 @@ from PyICe.lab_core import *  # noqa: F403
 
 
 class chroma_63600(scpi_instrument):
+    """Chroma_63600 (scpi_instrument subclass)."""
     def __init__(self, interface_visa):
         """interface_visa.
 

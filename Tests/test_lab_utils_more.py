@@ -10,6 +10,7 @@ from PyICe.lab_utils.ordered_pair import ordered_pair
 
 
 class TestSwapEndian:
+    """Tests for Swap Endian."""
 
     def test_two_bytes(self):
         """Perform test two bytes operation."""
@@ -53,6 +54,7 @@ class TestSwapEndian:
 
 
 class TestSignedToTwosComplement:
+    """Tests for Signed To Twos Complement."""
 
     def test_positive_value(self):
         """Perform test positive value operation."""
@@ -90,6 +92,7 @@ class TestSignedToTwosComplement:
 
 
 class TestTwosComplementToSigned:
+    """Tests for Twos Complement To Signed."""
 
     def test_positive_value(self):
         """Perform test positive value operation."""
@@ -151,6 +154,7 @@ class TestRoundtrip:
 
 
 class TestBounded:
+    """Tests for Bounded."""
 
     def test_within_range(self):
         """Perform test within range operation."""
@@ -188,6 +192,7 @@ class TestBounded:
 
 
 class TestIsClose:
+    """Tests for Is Close."""
 
     def test_equal_values(self):
         """Perform test equal values operation."""
@@ -244,6 +249,7 @@ class TestIsClose:
 
 
 class TestParseList:
+    """Tests for Parse List."""
 
     def test_simple_list(self):
         """Perform test simple list operation."""
@@ -273,6 +279,7 @@ class TestParseList:
 
 
 class TestOrderedPair:
+    """Tests for Ordered Pair."""
 
     @pytest.fixture
     def sample(self):
