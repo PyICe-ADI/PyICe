@@ -638,11 +638,11 @@ class Plugin_Manager():
                 archive_folder = test.get_archive_folder_name()
                 break
             except AttributeError:
-                archive_folder = datetime.datetime.utcnow().strftime("%Y_%m_%d_%H_%M")
+                archive_folder = datetime.datetime.now(datetime.timezone.utc).strftime("%Y_%m_%d_%H_%M")
                 break
             except Exception:
                 continue
-            archive_folder = datetime.datetime.utcnow().strftime("%Y_%m_%d_%H_%M")
+            archive_folder = datetime.datetime.now(datetime.timezone.utc).strftime("%Y_%m_%d_%H_%M")
         archived_tables = []
         for test in self.tests:
             if not hasattr(test, "_logger"):
@@ -790,12 +790,12 @@ class Plugin_Manager():
                 archive_folder = test.get_archive_folder_name()
                 break
             except AttributeError:
-                archive_folder = datetime.datetime.utcnow().strftime("%Y_%m_%d_%H_%M")
+                archive_folder = datetime.datetime.now(datetime.timezone.utc).strftime("%Y_%m_%d_%H_%M")
                 break
             except Exception:
                 continue
         else:
-            archive_folder = datetime.datetime.utcnow().strftime("%Y_%m_%d_%H_%M")
+            archive_folder = datetime.datetime.now(datetime.timezone.utc).strftime("%Y_%m_%d_%H_%M")
         archived_tables = []
         for test in self.tests:
             archiver = test_archive.database_archive(

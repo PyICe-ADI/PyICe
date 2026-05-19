@@ -16,7 +16,7 @@ pip install pytest pytest-mock pytest-cov
 
 ## Running Tests
 
-From the project root (`pyice_qt6/`):
+From the project root:
 
 ```bash
 # Run all tests

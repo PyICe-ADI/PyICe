@@ -161,19 +161,19 @@ class threaded_writer(object):
                 print(
                     "Executing {} at time {}".format(
                         function,
-                        datetime.datetime.utcnow()))
+                        datetime.datetime.now(datetime.timezone.utc)))
             try:
                 function()
             except StopIteration:
                 if self.verbose:
                     print(
                         "Thread {} terminating - reached end of sequence at time {}".format(
-                            function, datetime.datetime.utcnow()))
+                            function, datetime.datetime.now(datetime.timezone.utc)))
                 stopped_event.set()
                 return
             dly.delay(params['time_interval'])
         if self.verbose:
             print(
                 "Thread {} terminating - received stop event at time {}".format(
-                    function, datetime.datetime.utcnow()))
+                    function, datetime.datetime.now(datetime.timezone.utc)))
         stopped_event.set()

@@ -15,15 +15,26 @@ try:
     from PySide2 import QtCore
     from PySide2.QtCore import SIGNAL, SLOT, QObject, Signal
 except ImportError:
-    # PySide6 is required for Python >=3.11.
-    # QAction moved from QtWidgets to QtGui in Qt6; monkey-patch it back into
-    # QtWidgets so that all existing code that references QtWidgets.QAction keeps
-    # working without a wholesale rewrite.
-    from PySide6 import QtGui
-    from PySide6 import QtWidgets
-    from PySide6 import QtCore
-    from PySide6.QtCore import SIGNAL, SLOT, QObject, Signal
-    QtWidgets.QAction = QtGui.QAction
+    try:
+        # PySide6 is required for Python >=3.11.
+        # QAction moved from QtWidgets to QtGui in Qt6; monkey-patch it back into
+        # QtWidgets so that all existing code that references QtWidgets.QAction keeps
+        # working without a wholesale rewrite.
+        from PySide6 import QtGui
+        from PySide6 import QtWidgets
+        from PySide6 import QtCore
+        from PySide6.QtCore import SIGNAL, SLOT, QObject, Signal
+        QtWidgets.QAction = QtGui.QAction
+    except ImportError as e:
+        import warnings
+        warnings.warn(f"Neither PySide2 nor PySide6 could be imported; GUI functionality is unavailable: {e}")
+        QtGui = None
+        QtWidgets = None
+        QtCore = None
+        SIGNAL = None
+        SLOT = None
+        QObject = None
+        Signal = None
 import queue
 import datetime
 import collections
@@ -712,7 +723,7 @@ class display_item(QtWidgets.QLabel, channel_wrapper):
                     raise e
             self._prev_raw_data = raw_data
             if self._data_changed:
-                self._history.append([datetime.datetime.utcnow(), raw_data, 1])
+                self._history.append([datetime.datetime.now(datetime.timezone.utc), raw_data, 1])
             else:
                 try:
                     # incremement value-unchanged read count
@@ -721,7 +732,7 @@ class display_item(QtWidgets.QLabel, channel_wrapper):
                     # if first channel read is None, _data_changed detection
                     # doesn't worker
                     self._history.append(
-                        [datetime.datetime.utcnow(), raw_data, 1])
+                        [datetime.datetime.now(datetime.timezone.utc), raw_data, 1])
             try:
                 if self._iir_setting == "Disabled":
                     self._current_raw_data = raw_data
@@ -936,7 +947,7 @@ class display_item(QtWidgets.QLabel, channel_wrapper):
 
     def print_history(self):
         """Return print history result."""
-        request_time = datetime.datetime.utcnow()
+        request_time = datetime.datetime.now(datetime.timezone.utc)
         if not len(self._history):
             debug_logging.info(("{} has no change history at "
                                 "{}").format(self.get_name(), request_time.strftime('%Y-%m-%dT%H:%M:%S.%fZ')))
@@ -2946,7 +2957,7 @@ class gui_logger(QtCore.QObject):
             self.SI_request_background_call.emit(self._logger.log)
             # self.emit(SIGNAL('request_background_call(PyQt_PyObject)'),self._logger.log)
             debug_logging.info(("Logging selected channel data to SQLite database at "
-                                "{}").format(datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')))
+                                "{}").format(datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%fZ')))
         else:
             raise Exception('Logger is not connected')
 
@@ -3423,7 +3434,7 @@ class background_worker(QtCore.QThread):
             self.log.write("\n\n###############################\n")
             self.log.write(
                 "# {} #\n".format(
-                    datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')))
+                    datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%fZ')))
             self.log.write("###############################\n\n")
         self.running = True
         self.run_loop_has_quit = False
