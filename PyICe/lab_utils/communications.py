@@ -5,11 +5,14 @@ from email.mime.application import MIMEApplication
 from PyICe.lab_utils.clean_unicode import clean_unicode
 
 class email(object):
-    '''sends email to specified destination from ADI mail server. Only works on ADI trusted internal network.'''
-    def __init__(self, destination): #ADI internal network only
-        '''destination is the recipient's email address'''
+    '''Sends email to specified destination via SMTP server.'''
+    def __init__(self, destination, smtp_server, sender):
+        '''destination is the recipient's email address.
+        smtp_server is the SMTP server address (e.g. 'smtp.example.com:25').
+        sender is the From address for outgoing messages.'''
         self.destination = destination
-        self.sender = 'PyICe_noreply@analog.com'
+        self.smtp_server = smtp_server
+        self.sender = sender
     def send_raw(self, body, subject=None, attachment_filenames=None, attachment_MIMEParts=None, _subtype='html'):
         '''compose MIME message with proper headers and send'''
         if attachment_filenames is None: attachment_filenames = []
@@ -31,7 +34,7 @@ class email(object):
             message['Subject'] = subject
         message['To'] = self.destination
         message['From'] = self.sender
-        server = smtplib.SMTP('mailhost.analog.com:25')
+        server = smtplib.SMTP(self.smtp_server)
         server.ehlo()
         server.sendmail(self.sender, self.destination, message.as_string())
         server.quit()
@@ -75,7 +78,7 @@ class email(object):
 
 class sms(email):
     '''Extends email class to send sms messages through several carriers' email to sms gateways'''
-    def __init__(self, mobile_number, carrier):
+    def __init__(self, mobile_number, carrier, smtp_server, sender):
         '''carrier is 'verizon', 'tmobile', 'att', 'sprint', or 'nextel' '''
         sms_email = ''
         for digit in str(mobile_number):
@@ -98,6 +101,6 @@ class sms(email):
         else:
             #look up additional sms email gateways here: http://en.wikipedia.org/wiki/List_of_SMS_gateways
             raise Exception('carrier argument must be "verizon", "t-mobile", "att", "sprint", or "nextel" unless you add your carrier to the list')
-        email.__init__(self, sms_email)
+        email.__init__(self, sms_email, smtp_server, sender)
     def send(self, body, subject = None, attachments = []):
         email.send(self, clean_unicode(body) if body is not None else None, clean_unicode(subject) if subject is not None else None, attachments)

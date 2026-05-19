@@ -163,8 +163,8 @@ class instrument_humanoid(instrument, delegator):
         '''Notification will be sent to notification_function when a write occurs to any channel in this instrument.  The function should take a single string argument and deliver it to the user as appropriate (sms, email, etc).
         Hint: Use a lambda function to include a subject line in the email:
         from PyICe.lab_utils.communications import email
-        myemail = email(destination='myemail@mycompany.com')
-        notification_function=lambda msg: myemail.send(msg,subject="LTC lab requires attention!")
+        myemail = email(destination='myemail@mycompany.com', smtp_server='smtp.example.com:25', sender='noreply@example.com')
+        notification_function=lambda msg: myemail.send(msg,subject="Lab requires attention!")
         If notification_function is None, messages will only be sent to the terminal.'''
         self._base_name = 'Humanoid Virtual Instrument'
         delegator.__init__(self)
@@ -180,8 +180,8 @@ class instrument_humanoid(instrument, delegator):
         Notification will be sent to notification_function when a write occurs to any channel in this instrument.  The function should take a single string argument and deliver it to the user as appropriate (sms, email, etc).
         Hint: Use a lambda function to include a subject line in the email:
         from PyICe.lab_utils.communications import email
-        myemail = email(destination='myemail@mycompany.com')
-        notification_function=lambda msg: myemail.send(msg,subject="LTC lab requires attention!")'''
+        myemail = email(destination='myemail@mycompany.com', smtp_server='smtp.example.com:25', sender='noreply@example.com')
+        notification_function=lambda msg: myemail.send(msg,subject="Lab requires attention!")'''
         self.notification_functions.append(notification_function)
     def add_channel_notification_enable(self, channel_name):
         '''Hook to temporarily suspend notifications, ex for initial setup.'''
