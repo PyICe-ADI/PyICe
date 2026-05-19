@@ -2954,8 +2954,8 @@ class scpi_instrument(instrument):
             this method retries query until a character is returned in cas of premature timeout
             EDIT - delet retry for now
 
-        Returns:
-            Result value.
+            Returns:
+                Result value.
             '''
         return self.get_interface().ask('*OPC?')
 
@@ -4311,7 +4311,14 @@ class logger_backend(object):
 
     @classmethod
     def db_clean(cls, column_data):
-        '''help database to store lists, dictionaries and any other future datatype that doesn't fit natively'''
+        '''help database to store lists, dictionaries and any other future datatype that doesn't fit natively.
+
+        Args:
+            column_data: The data to clean for database storage.
+
+        Returns:
+            Cleaned data suitable for SQLite storage.
+        '''
         # perhaps better implemented using sqlite.register_adapter?
         # https://docs.python.org/2/library/sqlite3.html#registering-an-adapter-callable
         # https://docs.python.org/2/library/sqlite3.html#sqlite3.register_adapter

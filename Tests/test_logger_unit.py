@@ -6,7 +6,14 @@ from PyICe.lab_core import logger, master
 
 @pytest.fixture
 def simple_logger(tmp_path):
-    """Logger with a few dummy channels and temp database."""
+    """Logger with a few dummy channels and temp database.
+
+    Args:
+        tmp_path: Tmp path.
+
+    Yields:
+        Next value.
+    """
     m = master()
     m.add_channel_dummy('voltage')
     m.add_channel_dummy('current')

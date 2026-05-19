@@ -503,35 +503,35 @@ class keysight_e4440a(scpi_SA):
 
     def add_channel_VBW(self, channel_name):
         '''2.3.2 Video BW
-Enables you to change the analyzer post-detection filter from 1 Hz to 8 MHz in approximately 10% steps
-between 1 Hz and 3 MHz plus the bandwidths of 4, 5, 6, and
-8 MHz. In addition, a wide-open video filter bandwidth (VBW) may be chosen by selecting 50 MHz.
-Video BW (Auto) selects automatic coupling of the Video BW filter to the resolution bandwidth filter
-using the VBW/RBW ratio set by the VBW/RBW key.
-NOTE Sweep Time is coupled to Video Bandwidth (VBW). As the VBW is changed, the sweep
-time (when set to Auto) is changed to maintain amplitude calibration. This occurs
-because of common hardware between the two circuits, even though the Video BW filter
-is not actually “in-circuit” when the detector is set to Average. Because the purpose of the
-average detector and the VBW filter are the same, either can be used to reduce the
-variance of the result.
-Although the VBW filter is not “in-circuit” when using the average detector, the Video
-BW key can have an effect on (Auto) sweep time, and is not disabled. In this case,
-reducing the VBW setting increases the sweep time, which increases the averaging time,
-producing a lower-variance trace.
-However, when the EMI Average detector is selected, the Video BW is restricted to 1 Hz
-while the sweep time is set to Auto.
-When using the average detector with either Sweep Time set to Man, or in zero span, the
-VBW setting has no effect and is disabled (grayed out).
+            Enables you to change the analyzer post-detection filter from 1 Hz to 8 MHz in approximately 10% steps
+            between 1 Hz and 3 MHz plus the bandwidths of 4, 5, 6, and
+            8 MHz. In addition, a wide-open video filter bandwidth (VBW) may be chosen by selecting 50 MHz.
+            Video BW (Auto) selects automatic coupling of the Video BW filter to the resolution bandwidth filter
+            using the VBW/RBW ratio set by the VBW/RBW key.
+            NOTE Sweep Time is coupled to Video Bandwidth (VBW). As the VBW is changed, the sweep
+            time (when set to Auto) is changed to maintain amplitude calibration. This occurs
+            because of common hardware between the two circuits, even though the Video BW filter
+            is not actually “in-circuit” when the detector is set to Average. Because the purpose of the
+            average detector and the VBW filter are the same, either can be used to reduce the
+            variance of the result.
+            Although the VBW filter is not “in-circuit” when using the average detector, the Video
+            BW key can have an effect on (Auto) sweep time, and is not disabled. In this case,
+            reducing the VBW setting increases the sweep time, which increases the averaging time,
+            producing a lower-variance trace.
+            However, when the EMI Average detector is selected, the Video BW is restricted to 1 Hz
+            while the sweep time is set to Auto.
+            When using the average detector with either Sweep Time set to Man, or in zero span, the
+            VBW setting has no effect and is disabled (grayed out).
 
-2.3.3 VBW/RBW
-Selects the ratio between the video and resolution bandwidths in a 1, 3, 10 sequence. A Video bandwidth
-wider than the resolution bandwidth (VBW/RBW ratio > 1.000), provides the best peak measurements of
-signals such as wideband radar pulses. A VBW narrower than the RBW (VBW/RBW ratio < 1.000)
-reduces the variance of noise-like signals and makes spectral components close to the noise floor easier
-to view. The knob and step keys change the ratio in a 1, 3, 10 sequence. If the numbered keys are used,
-the VBW/RBW ratio will be rounded to the nearest 1, 3, or 10 response. Pressing Preset or selecting
-Auto Couple, Auto All sets the ratio to 1.000 X. When VBW/RBW (Auto) is selected, the ratio is
-determined as indicated in Table 2-1 on page 70
+            2.3.3 VBW/RBW
+            Selects the ratio between the video and resolution bandwidths in a 1, 3, 10 sequence. A Video bandwidth
+            wider than the resolution bandwidth (VBW/RBW ratio > 1.000), provides the best peak measurements of
+            signals such as wideband radar pulses. A VBW narrower than the RBW (VBW/RBW ratio < 1.000)
+            reduces the variance of noise-like signals and makes spectral components close to the noise floor easier
+            to view. The knob and step keys change the ratio in a 1, 3, 10 sequence. If the numbered keys are used,
+            the VBW/RBW ratio will be rounded to the nearest 1, 3, or 10 response. Pressing Preset or selecting
+            Auto Couple, Auto All sets the ratio to 1.000 X. When VBW/RBW (Auto) is selected, the ratio is
+            determined as indicated in Table 2-1 on page 70
 
         Args:
             channel_name: Name for the new channel.
@@ -705,57 +705,53 @@ determined as indicated in Table 2-1 on page 70
 
     def add_channel_detector(self, channel_name):
         '''2.4.1 Detector
-This menu allows you to select a specific type of detector, or choose Auto to let the instrument select the
-appropriate detector for a particular measurement.
-When discussing detectors, it is important to understand the concept of a trace “bucket.” For every trace
-point displayed in swept and zero-span analysis, there is a finite time during which the data for that point
-is collected. The analyzer has the ability to look at all of the data collected during that time and present a
-single point of trace data based on the detector mode. We call the interval during which the data for that
-trace point is being collected, the “bucket.” The data is sampled rapidly enough within a “bucket” that it
-must be reduced in some fashion to yield a single data point for each bucket. There are a number of ways
-to do this and which way is used depends on the detector selected. Details on how each detector does this
-are presented below.
-In FFT analysis, the bucket represents just a frequency interval. The detector in an FFT mode determines
-the relationship between the spectrum computed by the FFT and the single data point displayed for the
-bucket.
-When the Detector choice is Auto, the detector selected depends on marker functions, trace functions,
-and the trace averaging function.
-See “Auto Rules For Detector Selection” on page 80 for information on the Auto detector selection.
-When you manually select a detector (instead of selecting Auto), that detector is used regardless of other
-analyzer settings.
-The detector choices are:
-• Normal − displays the peak of CW-like signals and maximums and minimums of noise-like signals.
-• Average − displays the average of the signal within the bucket. The averaging method depends upon
-Avg Type selection (voltage, power or log scales).
-• Peak − displays the maximum of the signal within the bucket.
-• Sample − displays the instantaneous level of the signal at the center of the bucket represented by
-each display point.
-• Negative Peak − displays the minimum of the signal within the bucket.
-• Quasi Peak − a fast-rise, slow-fall detector used in making CISPR compliant EMI measurements.
-• EMI Average − displays the instantaneous level of the signal at the center of the bucket, just like the
-sample detector. It also changes the auto coupling of VBW, RBW and Avg/VBW Type and the set of
-available RBWs. This detector is used in making CISPR-compliant measurements.
-• EMI Peak − the same as the Peak detector but uses CISPR related bandwidths.
-• MIL Peak − the same as the Peak detector but uses MIL related bandwidths.
-Because they may not find the true peak of a spectral component, neither average nor sample detectors
-measure amplitudes of CW signals as accurately as peak or normal, but they do measure noise without
-the biases of peak detection.
-The detector in use is indicated on the left side of the display, just below Reference level. The
- 78 Chapter 2
-Instrument Functions: A - L
-Det/Demod
-Instrument Functions: A - L
-designators are:
-• Norm − Normal detector
-• Avg − Average detector
-• Peak − Peak detector
-• Samp − Sample detector
-• NPk − Negative Peak detector
-• EmiQP − Quasi Peak detector
-• EmiAv − ΕMI Average detector
-• EmiPk − Peak detector with CISPR bandwidths
-• MILPk − Peak detector with MIL bandwidths
-If the detector has been manually selected, a # appears next to it.
+            This menu allows you to select a specific type of detector, or choose Auto to let the instrument select the
+            appropriate detector for a particular measurement.
+            When discussing detectors, it is important to understand the concept of a trace “bucket.” For every trace
+            point displayed in swept and zero-span analysis, there is a finite time during which the data for that point
+            is collected. The analyzer has the ability to look at all of the data collected during that time and present a
+            single point of trace data based on the detector mode. We call the interval during which the data for that
+            trace point is being collected, the “bucket.” The data is sampled rapidly enough within a “bucket” that it
+            must be reduced in some fashion to yield a single data point for each bucket. There are a number of ways
+            to do this and which way is used depends on the detector selected. Details on how each detector does this
+            are presented below.
+            In FFT analysis, the bucket represents just a frequency interval. The detector in an FFT mode determines
+            the relationship between the spectrum computed by the FFT and the single data point displayed for the
+            bucket.
+            When the Detector choice is Auto, the detector selected depends on marker functions, trace functions,
+            and the trace averaging function.
+            See “Auto Rules For Detector Selection” on page 80 for information on the Auto detector selection.
+            When you manually select a detector (instead of selecting Auto), that detector is used regardless of other
+            analyzer settings.
+            The detector choices are:
+            • Normal − displays the peak of CW-like signals and maximums and minimums of noise-like signals.
+            • Average − displays the average of the signal within the bucket. The averaging method depends upon
+            Avg Type selection (voltage, power or log scales).
+            • Peak − displays the maximum of the signal within the bucket.
+            • Sample − displays the instantaneous level of the signal at the center of the bucket represented by
+            each display point.
+            • Negative Peak − displays the minimum of the signal within the bucket.
+            • Quasi Peak − a fast-rise, slow-fall detector used in making CISPR compliant EMI measurements.
+            • EMI Average − displays the instantaneous level of the signal at the center of the bucket, just like the
+            sample detector. It also changes the auto coupling of VBW, RBW and Avg/VBW Type and the set of
+            available RBWs. This detector is used in making CISPR-compliant measurements.
+            • EMI Peak − the same as the Peak detector but uses CISPR related bandwidths.
+            • MIL Peak − the same as the Peak detector but uses MIL related bandwidths.
+            Because they may not find the true peak of a spectral component, neither average nor sample detectors
+            measure amplitudes of CW signals as accurately as peak or normal, but they do measure noise without
+            the biases of peak detection.
+            The detector in use is indicated on the left side of the display, just below Reference level. The
+            designators are:
+            • Norm − Normal detector
+            • Avg − Average detector
+            • Peak − Peak detector
+            • Samp − Sample detector
+            • NPk − Negative Peak detector
+            • EmiQP − Quasi Peak detector
+            • EmiAv − ΕMI Average detector
+            • EmiPk − Peak detector with CISPR bandwidths
+            • MILPk − Peak detector with MIL bandwidths
+            If the detector has been manually selected, a # appears next to it.
 
         Args:
             channel_name: Name for the new channel.
@@ -914,15 +910,15 @@ If the detector has been manually selected, a # appears next to it.
 
     def add_channel_preamp(self, channel_name):
         '''(Options 1DS and 110 only.) Turns the internal preamp on and off. Option 1DS preamp functions over a
-frequency range of 100 kHz to 3 GHz. Option 110 preamp functions over a frequency range of 100 kHz
-to 50 GHz. When the preamp is on, an automatic adjustment compensates for the gain of the preamp so
-that the displayed amplitude readings still accurately reflect the value at the analyzer input connector.
-The Option 1DS preamp is switched off for frequencies above 3 GHz, and the correction is not applied,
-even though the PA annotation remains on screen. For signal frequencies below 100 kHz, the preamp is
-not automatically switched out, but signal amplitude roll-off occurs even in the “DC” setting of the RF
-Coupling control.
-The gain of the preamp is nominally 30 dB. This functionality is not available when using external
-mixing.
+            frequency range of 100 kHz to 3 GHz. Option 110 preamp functions over a frequency range of 100 kHz
+            to 50 GHz. When the preamp is on, an automatic adjustment compensates for the gain of the preamp so
+            that the displayed amplitude readings still accurately reflect the value at the analyzer input connector.
+            The Option 1DS preamp is switched off for frequencies above 3 GHz, and the correction is not applied,
+            even though the PA annotation remains on screen. For signal frequencies below 100 kHz, the preamp is
+            not automatically switched out, but signal amplitude roll-off occurs even in the “DC” setting of the RF
+            Coupling control.
+            The gain of the preamp is nominally 30 dB. This functionality is not available when using external
+            mixing.
 
         Args:
             channel_name: Name for the new channel.
@@ -1539,17 +1535,17 @@ mixing.
 
     def add_channel_coupling(self, channel_name):
         '''Specifies alternating current (AC) or direct current (DC) coupling at the analyzer RF input port.
-Selecting AC coupling switches in a blocking capacitor that blocks any DC voltage present at the
-analyzer input. This decreases the input frequency range of the analyzer, but prevents damage to the
-input circuitry of the analyzer if there is a DC voltage present at the RF input.
-In AC coupling mode, signals less than 20 MHz are not calibrated. You must switch to DC coupling to
-see calibrated frequencies of less than 20 MHz. Note that the message DC Coupled will be displayed
-on the analyzer when DC is selected.
-Some amplitude specifications apply only when coupling is set to DC. Refer to the appropriate
-amplitude specifications and characteristics for your analyzer.
-CAUTION When operating in DC coupled mode, ensure protection of the input mixer by limiting the
-input level to within 200 mV of 0 Vdc. In AC or DC coupling, limit the input RF power to
-+30 dBm
+            Selecting AC coupling switches in a blocking capacitor that blocks any DC voltage present at the
+            analyzer input. This decreases the input frequency range of the analyzer, but prevents damage to the
+            input circuitry of the analyzer if there is a DC voltage present at the RF input.
+            In AC coupling mode, signals less than 20 MHz are not calibrated. You must switch to DC coupling to
+            see calibrated frequencies of less than 20 MHz. Note that the message DC Coupled will be displayed
+            on the analyzer when DC is selected.
+            Some amplitude specifications apply only when coupling is set to DC. Refer to the appropriate
+            amplitude specifications and characteristics for your analyzer.
+            CAUTION When operating in DC coupled mode, ensure protection of the input mixer by limiting the
+            input level to within 200 mV of 0 Vdc. In AC or DC coupling, limit the input RF power to
+            +30 dBm
 
         Args:
             channel_name: Name for the new channel.

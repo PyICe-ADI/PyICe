@@ -2640,7 +2640,11 @@ class background_worker(QtCore.QThread):
         return results
 
     def _read_channel_list(self, read_list):
-        "Called in background_worker thread to do the actual instrument/HW/DUT reading"
+        '''Called in background_worker thread to do the actual instrument/HW/DUT reading
+
+        Args:
+            read_list: Read list.
+        '''
         results = self._read_channel_list_core(read_list)
         self.SI_channel_data_ready.emit(results)
         # self.emit(SIGNAL('channel_data_ready(PyQt_PyObject)'),results)

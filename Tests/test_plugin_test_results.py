@@ -624,7 +624,14 @@ class TestJSONRoundTrip:
 
     @pytest.fixture
     def round_trip(self, tmp_path):
-        """Build results, serialize to JSON, reload, return both."""
+        """Build results, serialize to JSON, reload, return both.
+
+        Args:
+            tmp_path: Tmp path.
+
+        Returns:
+            Result value.
+        """
         original = build_populated_test_results()
         json_path = str(tmp_path / "test_results.json")
         json_str = write_json_report(original, json_path)

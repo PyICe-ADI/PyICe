@@ -359,12 +359,28 @@ class spiInterface(object, metaclass=ABCMeta):
         pack and unpack methods may be helpful to break integer data into interface hardware-aligned chunks.
         shift_register class may be helpful to pack DUT bit field chunks into full shift register width integer
         Subclass implementation should raise SPIMasterError exception if unable to send message of length clk_count
-        (ie hardware limited to byte-aligned messages)'''
+        (ie hardware limited to byte-aligned messages)
+
+        Args:
+            clk_count: Number of clock cycles.
+            data_out: Data out.
+
+        Raises:
+            SPIMasterError: On error condition.
+        '''
         raise SPIMasterError('Overload required.')
 
     @staticmethod
     def _check_size(data, bits):
-        '''make sure data fits within word of length  "bits"'''
+        '''make sure data fits within word of length  "bits"
+
+        Args:
+            bits: Bits.
+            data: Data to write.
+
+        Returns:
+            Result value.
+        '''
         assert isinstance(data, numbers.Integral)
         assert isinstance(bits, numbers.Integral)
         assert data >= 0
@@ -374,7 +390,15 @@ class spiInterface(object, metaclass=ABCMeta):
     @staticmethod
     def pack(data_list, word_size=8):
         '''pack byte,word aligned pieces (list) from communication hardware into single integer comprising full shift register width.
-        integer can then be broken up by shift_register object into bit field aligned pieces.'''
+        integer can then be broken up by shift_register object into bit field aligned pieces.
+
+        Args:
+            data_list: Data list.
+            word_size: Word size.
+
+        Returns:
+            Result value.
+        '''
         res = 0
         offset = 0
         for i in reversed(data_list):

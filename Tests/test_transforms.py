@@ -111,7 +111,14 @@ class TestSqliteData:
 
     @pytest.fixture
     def populated_db(self, tmp_path):
-        """Create a SQLite database with test data."""
+        """Create a SQLite database with test data.
+
+        Args:
+            tmp_path: Tmp path.
+
+        Returns:
+            Result value.
+        """
         db_path = str(tmp_path / "test.sqlite")
         conn = sqlite3.connect(db_path)
         conn.execute("""CREATE TABLE measurements (

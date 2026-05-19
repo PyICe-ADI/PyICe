@@ -504,50 +504,132 @@ class expect(instrument):
 
     @staticmethod
     def compare_exact(measured, expect):
-        '''check that measured is equal to expect'''
+        '''check that measured is equal to expect
+
+        Args:
+            expect: Expected value.
+            measured: Measured value.
+
+        Returns:
+            Result value.
+        '''
         return measured == expect
 
     @staticmethod
     def compare_pct_not_above(measured, expect, tolerance):
-        '''check that measured is below expect * (1 + tolerance)'''
+        '''check that measured is below expect * (1 + tolerance)
+
+        Args:
+            expect: Expected value.
+            measured: Measured value.
+            tolerance: Tolerance value.
+
+        Returns:
+            Result value.
+        '''
         return measured <= expect * (1 + tolerance)
 
     @staticmethod
     def compare_pct_not_below(measured, expect, tolerance):
-        '''check that measured is above expect * (1 - tolerance)'''
+        '''check that measured is above expect * (1 - tolerance)
+
+        Args:
+            expect: Expected value.
+            measured: Measured value.
+            tolerance: Tolerance value.
+
+        Returns:
+            Result value.
+        '''
         return measured >= expect * (1 - tolerance)
 
     @staticmethod
     def compare_abs_not_above(measured, expect, tolerance):
-        '''check that measured is below (expect + tolerance)'''
+        '''check that measured is below (expect + tolerance)
+
+        Args:
+            expect: Expected value.
+            measured: Measured value.
+            tolerance: Tolerance value.
+
+        Returns:
+            Result value.
+        '''
         return measured <= expect + tolerance
 
     @staticmethod
     def compare_abs_not_below(measured, expect, tolerance):
-        '''check that measured is above (expect - tolerance)'''
+        '''check that measured is above (expect - tolerance)
+
+        Args:
+            expect: Expected value.
+            measured: Measured value.
+            tolerance: Tolerance value.
+
+        Returns:
+            Result value.
+        '''
         return measured >= expect - tolerance
 
     @classmethod
     def compare_pct(cls, measured, expect, tolerance):
-        '''check that measured is within expect * (1 +/- tolerance)'''
+        '''check that measured is within expect * (1 +/- tolerance)
+
+        Args:
+            expect: Expected value.
+            measured: Measured value.
+            tolerance: Tolerance value.
+
+        Returns:
+            Result value.
+        '''
         return cls.compare_pct_not_above(
             measured, expect, tolerance) and cls.compare_pct_not_below(measured, expect, tolerance)
 
     @classmethod
     def compare_abs(cls, measured, expect, tolerance):
-        '''check that measured is within expect +/- tolerance'''
+        '''check that measured is within expect +/- tolerance
+
+        Args:
+            expect: Expected value.
+            measured: Measured value.
+            tolerance: Tolerance value.
+
+        Returns:
+            Result value.
+        '''
         return cls.compare_abs_not_above(
             measured, expect, tolerance) and cls.compare_abs_not_below(measured, expect, tolerance)
 
     @classmethod
     def compare_strict(cls, measured, expect, pct_tolerance, abs_tolerance):
-        '''check that both absolute tolerance and percentage tolerance is met'''
+        '''check that both absolute tolerance and percentage tolerance is met
+
+        Args:
+            abs_tolerance: Abs tolerance.
+            expect: Expected value.
+            measured: Measured value.
+            pct_tolerance: Pct tolerance.
+
+        Returns:
+            Result value.
+        '''
         return cls.compare_pct(measured, expect, pct_tolerance) and cls.compare_abs(
             measured, expect, abs_tolerance)
 
     @classmethod
     def compare_lenient(cls, measured, expect, pct_tolerance, abs_tolerance):
-        '''check that either absolute tolerance or percentage tolerance is met'''
+        '''check that either absolute tolerance or percentage tolerance is met
+
+        Args:
+            abs_tolerance: Abs tolerance.
+            expect: Expected value.
+            measured: Measured value.
+            pct_tolerance: Pct tolerance.
+
+        Returns:
+            Result value.
+        '''
         return cls.compare_pct(measured, expect, pct_tolerance) or cls.compare_abs(
             measured, expect, abs_tolerance)
 
@@ -4402,18 +4484,39 @@ class vector_to_scalar_converter(instrument):
 
     @staticmethod
     def sum(sequence):
-        '''arithmetic sum'''
+        '''arithmetic sum
+
+        Args:
+            sequence: Sequence.
+
+        Returns:
+            Result value.
+        '''
         return math.fsum(sequence) if sequence is not None else None
 
     @classmethod
     def mean(cls, sequence):
-        '''arithmetic mean of sequence'''
+        '''arithmetic mean of sequence
+
+        Args:
+            sequence: Sequence.
+
+        Returns:
+            Result value.
+        '''
         return cls.sum(sequence) / \
             len(sequence) if sequence is not None else None
 
     @classmethod
     def stdev(cls, sequence):
-        '''sample std deviation'''
+        '''sample std deviation
+
+        Args:
+            sequence: Sequence.
+
+        Returns:
+            Result value.
+        '''
         if sequence is None:
             return None
         mean = cls.mean(sequence)
@@ -4422,14 +4525,28 @@ class vector_to_scalar_converter(instrument):
 
     @classmethod
     def pstdev(cls, sequence):
-        '''population std deviation'''
+        '''population std deviation
+
+        Args:
+            sequence: Sequence.
+
+        Returns:
+            Result value.
+        '''
         if sequence is None:
             return None
         return cls.stdev(sequence) * ((len(sequence) - 1) / len(sequence))**0.5
 
     @classmethod
     def rms(cls, sequence):
-        '''RMS (root mean square). To instead subtract sample mean, use pstdev'''
+        '''RMS (root mean square). To instead subtract sample mean, use pstdev
+
+        Args:
+            sequence: Sequence.
+
+        Returns:
+            Result value.
+        '''
         if sequence is None:
             return None
         mean = cls.mean([x**2 for x in sequence])**0.5

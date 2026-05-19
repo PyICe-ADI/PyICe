@@ -28,7 +28,14 @@ from PyICe.lab_interfaces import interface_visa
 
 @pytest.fixture
 def twi(master_instance):
-    """Create a deterministic TWI dummy interface via the interface factory."""
+    """Create a deterministic TWI dummy interface via the interface factory.
+
+    Args:
+        master_instance: Master instance.
+
+    Returns:
+        Result value.
+    """
     iface = master_instance.get_twi_dummy_interface(delay=0, p_change=0)
     return iface
 

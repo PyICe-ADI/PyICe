@@ -358,49 +358,19 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
 
     def populate_from_file(self, xml_file, format_dict=None, access_list=None,
                            use_case=None, channel_prefix="", channel_suffix=""):
-        '''
-        xml_register parsing accepts xml input complying with the following DTD (register_map.dtd):
-
-    <!-- Visit http://en.wikipedia.org/wiki/Document_Type_Definition for an excellent explanation of DTD syntax -->
-    <!ELEMENT register_map (chip+, use*, format_definitions?)>
-    <!ELEMENT chip (description, address+, command_code*)>
-    <!ELEMENT address EMPTY>
-    <!ELEMENT command_code (description?, access+, bit_field+)>
-    <!ELEMENT access EMPTY>
-    <!ELEMENT bit_field (description, default?, preset*, format*)>
-    <!ELEMENT description (#PCDATA)>
-    <!ELEMENT default (#PCDATA)>
-    <!ELEMENT preset (description?)>
-    <!ELEMENT format EMPTY>
-    <!ELEMENT use (category+)>
-    <!ELEMENT category (#PCDATA)>
-    <!ELEMENT format_definitions (format_definition+)>
-    <!ELEMENT format_definition (description, transformed_units?, piecewise_linear_points?)>
-    <!ELEMENT transformed_units (#PCDATA)>
-    <!ELEMENT piecewise_linear_points (point,point+)>
-    <!ELEMENT point EMPTY>
-    <!ATTLIST chip name CDATA #REQUIRED word_size CDATA #REQUIRED>
-    <!ATTLIST address address_7bit CDATA #REQUIRED>
-    <!ATTLIST command_code name ID #REQUIRED value CDATA #REQUIRED>
-    <!ATTLIST bit_field name ID #REQUIRED size CDATA #REQUIRED offset CDATA #REQUIRED category CDATA #REQUIRED>
-    <!ATTLIST access mode CDATA #REQUIRED type (read | write) #REQUIRED>
-    <!ATTLIST preset name CDATA #REQUIRED value CDATA #REQUIRED>
-    <!ATTLIST format name IDREF #REQUIRED>
-    <!ATTLIST use name CDATA #REQUIRED>
-    <!ATTLIST format_definition name ID #REQUIRED signed (True | False | 1 | 0) #REQUIRED>
-    <!ATTLIST point native CDATA #REQUIRED transformed CDATA #REQUIRED>
+        '''Parse xml_register file complying with register_map.dtd and populate instrument channels.
 
         Args:
-            access_list: Access list.
-            channel_prefix: Channel prefix.
-            channel_suffix: Channel suffix.
-            format_dict: Format dict.
-            use_case: Use case.
-            xml_file: Xml file.
+            xml_file: Path to XML register map file.
+            format_dict: Dictionary of format definitions. Default empty dict.
+            access_list: List of access modes to include. Default all.
+            use_case: Use case name to filter by, or None for all.
+            channel_prefix: Prefix string for channel names.
+            channel_suffix: Suffix string for channel names.
 
         Raises:
-            Exception: On error condition.
-    '''
+            Exception: On XML parsing or register configuration errors.
+        '''
         if format_dict is None:
             format_dict = {}
         if access_list is None:

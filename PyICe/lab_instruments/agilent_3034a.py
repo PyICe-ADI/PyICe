@@ -1370,7 +1370,15 @@ class agilent_3034a(oscilloscope):
 
     @deprecated(version='47', reason="You are using old scope driver methods.  Consider updating to new scope binding.  See https://confluence.analog.com/display/stowe/Preferred+Practices")
     def add_Ychannel(self, name, number):
-        '''Add named channel to instrument. num is 1-4.'''
+        '''Add named channel to instrument. num is 1-4.
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+
+        Returns:
+            Result value.
+        '''
         assert number in range(1, 5)
         self.Ychannels[number] = {}
         self.Ychannels[number]["main_channel"] = channel(

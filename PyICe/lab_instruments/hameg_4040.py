@@ -645,7 +645,11 @@ class hameg_4040(scpi_instrument):
             time.sleep(self.hameg_suck_time)
 
     def _write_master_enable(self, state):
-        "True -> turn on all enabled channels / False -> turn off all channels"
+        '''True -> turn on all enabled channels / False -> turn off all channels
+
+        Args:
+            state: State.
+        '''
         if state:
             self.get_interface().write("OUTPut:GENeral ON")
             time.sleep(self.hameg_suck_time)

@@ -223,7 +223,15 @@ def mux_streams(selection_sequence, *streams):
 
 
 def get_this_many(howmany, stream):
-    "Get exactly this many elements from the given stream."
+    '''Get exactly this many elements from the given stream.
+
+    Args:
+        howmany: Howmany.
+        stream: Stream.
+
+    Yields:
+        Next value.
+    '''
     assert isinstance(howmany, int) and howmany >= 0
     i = howmany
     while i > 0:

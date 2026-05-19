@@ -188,7 +188,11 @@ class TestSpectrumAnalyzer:
 
     @pytest.fixture
     def pure_tone(self):
-        """Generate a 1 kHz pure sine wave sampled at 100 kHz for 100 cycles."""
+        """Generate a 1 kHz pure sine wave sampled at 100 kHz for 100 cycles.
+
+        Returns:
+            Result value.
+        """
         gen = signal_generator(
             hi_value=1.0, lo_value=-1.0,
             period=1e-3, cyclecount=100,

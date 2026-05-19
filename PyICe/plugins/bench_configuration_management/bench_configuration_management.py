@@ -271,7 +271,14 @@ class connection_collection():
 
     @classmethod
     def distill(cls, connection_collections):
-        '''Checks compatibility, assert if conflicts. Vacuums down duplicates.'''
+        '''Checks compatibility, assert if conflicts. Vacuums down duplicates.
+
+        Args:
+            connection_collections: Connection collections.
+
+        Returns:
+            Result value.
+        '''
         aggregate_collection = connection_collection("aggregate_collection")
         # Make a dictionary whose keys are the connections, and whose values
         # are the names of the scripts that supplied those connections
@@ -304,7 +311,15 @@ class connection_collection():
 
     @classmethod
     def reload_from_string(cls, string, components):
-        '''Recreates the visualizer from the bench_configuration string that is logged in the database'''
+        '''Recreates the visualizer from the bench_configuration string that is logged in the database
+
+        Args:
+            components: Components.
+            string: String data.
+
+        Returns:
+            Result value.
+        '''
         logged_connections = connection_collection("logged_connections")
         connection_list_w_arrow = string.strip().split('\n')
         connection_list_of_lists = []

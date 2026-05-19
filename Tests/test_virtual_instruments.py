@@ -301,7 +301,14 @@ class TestServo:
 
     @pytest.fixture
     def linear_system(self, master_instance):
-        """Simulate a linear system: output = 2 * forcing."""
+        """Simulate a linear system: output = 2 * forcing.
+
+        Args:
+            master_instance: Master instance.
+
+        Returns:
+            Result value.
+        """
         m = master_instance
         forcing = m.add_channel_dummy('force')
         forcing.write(0)

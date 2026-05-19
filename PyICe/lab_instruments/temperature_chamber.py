@@ -250,7 +250,11 @@ class temperature_chamber(instrument, metaclass=ABCMeta):
 
     @abstractmethod
     def _write_temperature(self, value):
-        '''Program tempertaure setpoint to value. Implement for specific hardware.'''
+        '''Program tempertaure setpoint to value. Implement for specific hardware.
+
+        Args:
+            value: Value to set.
+        '''
         self.setpoint = value
 
     @abstractmethod
@@ -258,7 +262,11 @@ class temperature_chamber(instrument, metaclass=ABCMeta):
         '''read back actual chamber temperature.  Implement for specific hardware.'''
     @abstractmethod
     def _enable(self, enable):
-        '''enable/disable temperature chamber heating and cooling. Also accepts heat/cool only arguments if chamber supports it.'''
+        '''enable/disable temperature chamber heating and cooling. Also accepts heat/cool only arguments if chamber supports it.
+
+        Args:
+            enable: Enable or disable.
+        '''
 
     def shutdown(self, shutdown):
         '''separate method to turn off temperature chamber.

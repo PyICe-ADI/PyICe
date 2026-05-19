@@ -380,7 +380,11 @@ class visa_wrapper_serial(visa_wrapper):
         self.ser.close()
 
     def get_serial_port(self):
-        "Returns the underlying serial port object."
+        '''Returns the underlying serial port object.
+
+        Returns:
+            Result value.
+        '''
         return self.ser
 
     def __getTimeout(self):

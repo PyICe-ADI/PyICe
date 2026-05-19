@@ -8,15 +8,29 @@ import abc
 class relay(instrument):
     @abc.abstractmethod
     def add_channel(self, channel_name, channel_number):
-        '''placeholder'''
+        '''placeholder
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+        '''
 
     @abc.abstractmethod
     def _set_relay(self, channel_number, state):
-        '''placeholder'''
+        '''placeholder
+
+        Args:
+            channel_number: Physical channel number.
+            state: State.
+        '''
 
     @abc.abstractmethod
     def _get_state(self, channel_number):
-        '''placeholder'''
+        '''placeholder
+
+        Args:
+            channel_number: Physical channel number.
+        '''
 
     @abc.abstractmethod
     def _all_off(self):
@@ -414,7 +428,7 @@ class FT245R:
 
         Raises:
             RuntimeError: On error condition.
-                """
+        """
         self.is_connected = False
         if platform.system() != 'Windows':
             # If Linux OS already has control, there's nothing to do

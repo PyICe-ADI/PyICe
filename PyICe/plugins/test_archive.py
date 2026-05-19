@@ -23,13 +23,12 @@ class database_archive():
 
     def has_data(self, tablename):
         '''A quick check that the given table has some data in it.
-        args:
-            tablename - str. Name of the table to be reviewed.
-        Returns:
-            True if there is at least one row of data, and False if not.
 
         Args:
-            tablename: Tablename.
+            tablename: Name of the table to be reviewed.
+
+        Returns:
+            True if there is at least one row of data, and False if not.
         '''
         cur = self.source_conn.cursor()
         res = cur.execute(f'SELECT * FROM {tablename}').fetchall()
@@ -168,10 +167,13 @@ class database_archive():
     @classmethod
     def ask_archive_folder(cls, suggestion=None):
         '''Asks the user for a name for a folder in the archive folder to store the archived data.
-        args:
-            suggestion - str.Default None. A default answer that will be offered to the user.
+
+        Args:
+            suggestion: Default answer offered to the user, or None.
+
         Returns:
-            If a suggestion was provided and no alternative was given by the user, the suggestion is returned. Otherwise, returns the input provided by the user.'''
+            The suggestion if no alternative was given, otherwise the user's input.
+        '''
         while True:
             suggestion_str = '' if suggestion is None else f'[{suggestion}]'
             archive_folder = input(
@@ -184,13 +186,12 @@ class database_archive():
 
     def compute_db_destination(self, archive_folder):
         '''Creates the path to the archived database.
-        args:
-            archive_folder - str. The name for the folder that will house the archived data under the archive folder.
-        Returns:
-            Returns an os path to the new database.
 
         Args:
-            archive_folder: Archive folder.
+            archive_folder: Name of the folder under the archive folder for the archived data.
+
+        Returns:
+            OS path to the new database file.
         '''
         db_dest_folder = os.path.join(
             self.test_script_file, 'archives', archive_folder)
@@ -199,14 +200,13 @@ class database_archive():
         return db_dest_file
 
     def copy_interactive(self, archive_folder=None):
-        '''A manual version of the archiving process automatically used after a test has finished collecting data. Useful for when something goes catastrophically wrong in a test and the archiving failed to complete.
-        args:
-            archive_folder - str. Default None. The name of the directory inside the archive folder where data in question will be stored.
-        Returns:
-            A list of tuples is returned consisting of the names of original tables and the names of their copies.
+        '''A manual version of the archiving process. Useful when something goes wrong and archiving failed to complete.
 
         Args:
-            archive_folder: Archive folder.
+            archive_folder: Name of the directory inside the archive folder for the data. Default None.
+
+        Returns:
+            List of tuples of (original table name, copy table name).
         '''
         copied_tables_files = []
         table_names = self.get_table_names()
@@ -238,18 +238,15 @@ class database_archive():
         return copied_tables_files
 
     def disposition_table(self, table_name, db_dest_file, db_indices=None):
-        '''This asks the user what action is to be performed on a given table, and executes that action immediately.
-        args:
-            table_name - str. Name of a table in the initially declared database.
-            db_dest_file - str. Path to the archived database.
-            db_indices - list. Default []. A list of lists comprising string names of columns. Each list becomes an index in the archived database.
-        Returns:
-            If the user elects to skip or delete a table, None is returned. If a copy is instead either copied or outright moved, a tuple is returned of the original name and the name given to the new archived table.
+        '''Asks the user what action to perform on a given table and executes it immediately.
 
         Args:
-            db_dest_file: Db dest file.
-            db_indices: Db indices.
-            table_name: Database table name.
+            table_name: Name of a table in the initially declared database.
+            db_dest_file: Path to the archived database.
+            db_indices: List of lists of column name strings. Each list becomes an index in the archived database.
+
+        Returns:
+            None if the user skips or deletes the table, or a tuple of (original name, archived name) if copied or moved.
         '''
         if db_indices is None:
             db_indices = []
@@ -287,7 +284,16 @@ class database_archive():
     def write_plot_script(cls, import_str, db_table, db_file):
         '''This creates a file that can be run to replot data in an adjacent database using a given test's plot method.
         args:
-            import_str - str. Folder path from a PYTHONPATH to the directory containing the test script.'''
+            import_str - str. Folder path from a PYTHONPATH to the directory containing the test script.
+
+        Args:
+            db_file: Db file.
+            db_table: Db table.
+            import_str: Import str.
+
+        Returns:
+            Result value.
+        '''
         (dest_folder, f) = os.path.split(os.path.abspath(db_file))
         dest_file = os.path.join(dest_folder, "replot_data.py")
         plot_script_src = "if __name__ == '__main__':\n"

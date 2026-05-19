@@ -49,7 +49,14 @@ class StreamWindow(object):
         self.buf[:self.buffer_size - num_bytes] = self.buf[num_bytes:]
 
     def _read_buffer(self, num_bytes):
-        "Consumes bytes from the FIFO buffer."
+        '''Consumes bytes from the FIFO buffer.
+
+        Args:
+            num_bytes: Number of bytes.
+
+        Returns:
+            Result value.
+        '''
         assert num_bytes <= self.content_size
         # Save result bytes into new bytearray.
         result = bytearray(self.buf[:num_bytes])
@@ -217,5 +224,9 @@ class StreamWindow(object):
         return result
 
     def close(self):
-        "Closes the underlying stream."
+        '''Closes the underlying stream.
+
+        Returns:
+            Result value.
+        '''
         return self.stream.close()

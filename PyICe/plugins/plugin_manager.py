@@ -890,11 +890,9 @@ class Plugin_Manager():
 
     def collect(self, temperatures):
         '''This method aggregates the channels that will be logged and calls the collect method in every test added via self.add_test.
-        args:
-            temperatures (list): What values will be written to the temp_control_channel.
 
         Args:
-            temperatures: Temperatures.
+            temperatures: List of values to write to the temp_control_channel.
         '''
         try:
             self.far_enough = False
@@ -914,7 +912,7 @@ class Plugin_Manager():
                     try:
                         test._declare_bench_connections()
                     except Exception:
-                        raise ("TEST_MANAGER ERROR: This project indicated bench configuration data would be stored. Test template requires a _declare_bench_connections method that gathers the data.")
+                        raise Exception("TEST_MANAGER ERROR: This project indicated bench configuration data would be stored. Test template requires a _declare_bench_connections method that gathers the data.")
                     self.all_benches.append(self.test_connections)
             if 'bench_config_management' in self.plugins:
                 self.all_connections = connection_collection.distill(
@@ -1029,20 +1027,14 @@ class Plugin_Manager():
     def plot(self, database=None, table_name=None, plot_filepath=None,
              test_list=None, skip_email_input=False):
         '''Run the plot method of each test in self.tests. Any plots returned by a test script's plot method will be emailed if the notifications plugin is used.
-        args:
-            database - string. The location of the database with the data to plot If left blank, the plot will continue with the database in the same directory as the test script.
-            table_name - string. The name of the table in the database with the data to plot. If left blank, the plot will continue with the table named after the test script.
-            plot_filepath - string. This is where the plots will be placed upon creation. If left blank, a directory name plots will be created in the directory with the plot script and and the plots will be placed in there.
-            test_list - list. List of test class objects that have plot methods you want to run. If left blank, will default to every test added to the plugin manager.
-            skip_email_input: boolean. Set to true, will not empty the _plots list and will not extend it. Useful in replotting during archive.
 
         Args:
-            database: Database.
-            plot_filepath: Plot filepath.
-            skip_email_input: Skip email input.
-            table_name: Database table name.
-            test_list: Test list.
-            '''
+            database: The location of the database with the data to plot. If left blank, uses the database in the same directory as the test script.
+            table_name: The name of the table in the database with the data to plot. If left blank, uses the table named after the test script.
+            plot_filepath: Where the plots will be placed upon creation. If left blank, a plots directory is created next to the plot script.
+            test_list: List of test class objects that have plot methods you want to run. Defaults to every test added to the plugin manager.
+            skip_email_input: If True, will not empty the _plots list. Useful in replotting during archive.
+        '''
         if not skip_email_input:
             self._plots = []
             self._linked_plots = {}
@@ -1267,7 +1259,11 @@ class Plugin_Manager():
                 print(f"Skipping correlation for {test.get_name()}.")
 
     def display_connections(self):
-        '''Distills the connections of all added tests and prints the diagram'''
+        '''Distills the connections of all added tests and prints the diagram.
+
+        Raises:
+            Exception: If a test lacks a _declare_bench_connections method.
+        '''
         if 'bench_config_management' in self.plugins:
             self.test_components = component_collection()
             self._add_components()
@@ -1278,7 +1274,7 @@ class Plugin_Manager():
                 try:
                     test._declare_bench_connections()
                 except Exception:
-                    raise ("TEST_MANAGER ERROR: This project indicated bench configuration data would be stored. Test template requires a _declare_bench_connections method that gathers the data.")
+                    raise Exception("TEST_MANAGER ERROR: This project indicated bench configuration data would be stored. Test template requires a _declare_bench_connections method that gathers the data.")
                 self.all_benches.append(self.test_connections)
             self.all_connections = connection_collection.distill(
                 self.all_benches)

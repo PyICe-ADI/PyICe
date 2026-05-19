@@ -46,6 +46,9 @@ class sqlite_to_xlsx(object):
         '''return xlsxwriter workbook object so that user script can add additioanl chartsheets, etc
 
         See: http://xlsxwriter.readthedocs.io/workbook.html
+
+        Returns:
+            Result value.
         '''
         return self._workbook
 

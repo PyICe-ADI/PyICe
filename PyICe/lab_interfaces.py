@@ -421,12 +421,19 @@ class interface_stream(
     def read(self, byte_count):
         '''Read and return tuple  (byte_count bytes, byte_count remaining_bytes) from subclass-specific communication interface.
         If fewer than byte_count bytes are available, return all available.
+
+        Args:
+            byte_count: Byte count.
         '''
         pass
 
     @abc.abstractmethod
     def write(self, byte_list):
-        '''Send byte_list across subclass-specific communication interface.'''
+        '''Send byte_list across subclass-specific communication interface.
+
+        Args:
+            byte_list: Byte list.
+        '''
         pass
 
     @abc.abstractmethod
@@ -639,7 +646,11 @@ class interface_tcp_serial(interface):
             return self.ser.inWaiting()
 
     def inWaiting(self):
-        "Returns in_waiting. Added for PySerial <3.0 compatibility."
+        '''Returns in_waiting. Added for PySerial <3.0 compatibility.
+
+        Returns:
+            Result value.
+        '''
         return self.in_waiting
 
 
@@ -762,7 +773,11 @@ class SerialTestHarness(object):
         '''How many bytes we promise are available for reading.
         Generated randomly upon request, this
         will never exceed the max_bytes_returned_per_read
-        optionally set during object instantiation.'''
+        optionally set during object instantiation.
+
+        Returns:
+            Result value.
+        '''
         if self._in_waiting is not None:
             return self._in_waiting
         if self._max_bytes_returned_per_read is None:
@@ -773,7 +788,11 @@ class SerialTestHarness(object):
         return self._in_waiting
 
     def inWaiting(self):
-        "Returns in_waiting. Added for PySerial <3.0 compatibility."
+        '''Returns in_waiting. Added for PySerial <3.0 compatibility.
+
+        Returns:
+            Result value.
+        '''
         return self.in_waiting
 
 

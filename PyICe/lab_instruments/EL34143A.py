@@ -446,11 +446,19 @@ class EL34143A(scpi_instrument):
         self.get_interface().write("INP 0")
 
     def SetRemoteControl(self):
-        "Sets the load to remote control"
+        """Set the load to remote control.
+
+        Returns:
+            str: Write response.
+        """
         return self.get_interface().write("SYST:COMM:RLST REM")
 
     def SetLocalControl(self):
-        "Sets the load to local control"
+        """Set the load to local control.
+
+        Returns:
+            str: Write response.
+        """
         return self.get_interface().write("SYST:COMM:RLST LOC")
 
     def _find_current_range(self, value):
@@ -494,11 +502,19 @@ class EL34143A(scpi_instrument):
                 f'CURR:RANG {self.curr_ranges[curr_range][1]}')
 
     def SetMaxCurrent(self, current):
-        "Sets the maximum current the load will sink"
+        """Set the maximum current the load will sink.
+
+        Args:
+            current: Maximum current value.
+        """
         self.get_interface().write(f"CURR:RANG {current}")
 
     def GetMaxCurrent(self):
-        "Returns the maximum current the load will sink"
+        """Return the maximum current the load will sink.
+
+        Returns:
+            str: Maximum current value.
+        """
         return self.get_interface().ask("CURR:RANG?")
 
     def _SetVoltRange(self, volt_range):
@@ -508,11 +524,19 @@ class EL34143A(scpi_instrument):
                 f'VOLT:RANG {self.volt_ranges[volt_range][1]}')
 
     def SetMaxVoltage(self, voltage):
-        "Sets the maximum voltage the load will allow"
+        """Set the maximum voltage the load will allow.
+
+        Args:
+            voltage: Maximum voltage value.
+        """
         self.get_interface().write(f"VOLT:RANG {voltage}")
 
     def GetMaxVoltage(self):
-        "Gets the maximum voltage the load will allow"
+        """Get the maximum voltage the load will allow.
+
+        Returns:
+            str: Maximum voltage value.
+        """
         return self.get_interface().ask("VOLT:RANG?")
 
     def _SetPowRange(self, pow_range):
@@ -522,15 +546,33 @@ class EL34143A(scpi_instrument):
                 f'POW:RANG {self.pow_ranges[pow_range][1]}')
 
     def SetMaxPower(self, power):
-        "Sets the maximum power the load will allow"
+        """Set the maximum power the load will allow.
+
+        Args:
+            power: Maximum power value.
+        """
         self.get_interface().write(f"POW:RANG {power}")
 
     def GetMaxPower(self):
-        "Gets the maximum power the load will allow"
+        """Get the maximum power the load will allow.
+
+        Returns:
+            str: Maximum power value.
+        """
         return self.get_interface().ask("POW:RANG?")
 
     def SetMode(self, mode):
-        "Sets the mode (constant current, constant voltage, etc."
+        """Set the mode (constant current, constant voltage, etc.).
+
+        Args:
+            mode: Operating mode (CURR, VOLT, POW, or RES).
+
+        Returns:
+            str: Write response.
+
+        Raises:
+            Exception: If mode is not a recognized value.
+        """
         if mode not in self.modes:
             raise Exception(
                 f"Unknown mode. Expecting CURR, VOLT, POW, or RES. Not {mode}.")
@@ -541,31 +583,59 @@ class EL34143A(scpi_instrument):
         return self.get_interface().write(f"MODE {mode}")
 
     def GetMode(self):
-        "Gets the mode (constant current, constant voltage, etc."
+        """Get the mode (constant current, constant voltage, etc.).
+
+        Returns:
+            str: Current operating mode.
+        """
         return self.get_interface().ask("MODE?")
 
     def SetCCCurrent(self, current):
-        "Sets the constant current mode's current level"
+        """Set the constant current mode's current level.
+
+        Args:
+            current: Current level to set.
+        """
         self.get_interface().write(f"CURR {current}")
 
     def GetCCCurrent(self):
-        "Gets the constant current mode's current level"
+        """Get the constant current mode's current level.
+
+        Returns:
+            str: Current level.
+        """
         return self.get_interface().ask("CURR?")
 
     def SetCVVoltage(self, voltage):
-        "Sets the constant voltage mode's voltage level"
+        """Set the constant voltage mode's voltage level.
+
+        Args:
+            voltage: Voltage level to set.
+        """
         self.get_interface().write(f"VOLT {voltage}")
 
     def GetCVVoltage(self):
-        "Gets the constant voltage mode's voltage level"
+        """Get the constant voltage mode's voltage level.
+
+        Returns:
+            str: Voltage level.
+        """
         return self.get_interface().ask("VOLT?")
 
     def SetCWPower(self, power):
-        "Sets the constant power mode's power level"
+        """Set the constant power mode's power level.
+
+        Args:
+            power: Power level to set.
+        """
         self.get_interface().write(f"POW {power}")
 
     def GetCWPower(self):
-        "Gets the constant power mode's power level"
+        """Get the constant power mode's power level.
+
+        Returns:
+            str: Power level.
+        """
         return self.get_interface().ask("POW?")
 
     def _SetResRange(self, res_range):
@@ -573,15 +643,27 @@ class EL34143A(scpi_instrument):
         self.get_interface().write(f'RES:RANG {self.res_range}')
 
     def SetCRResistance(self, resistance):
-        "Sets the constant resistance mode's resistance level"
+        """Set the constant resistance mode's resistance level.
+
+        Args:
+            resistance: Resistance level to set.
+        """
         self.get_interface().write(f"RES {resistance}")
 
     def GetCRResistance(self):
-        "Gets the constant resistance mode's resistance level"
+        """Get the constant resistance mode's resistance level.
+
+        Returns:
+            str: Resistance level.
+        """
         return self.get_interface().ask("RES?")
 
     def SetRemoteSense(self, enabled=0):
-        "Enable or disable remote sensing"
+        """Enable or disable remote sensing.
+
+        Args:
+            enabled: Enable (1/True/'EXT') or disable (0/False/'INT') remote sensing.
+        """
         ernal = {
             0: 'INT',
             1: 'EXT',
@@ -592,5 +674,9 @@ class EL34143A(scpi_instrument):
         self.get_interface().write(f"VOLT:SENS {ernal[enabled]}")
 
     def GetRemoteSense(self):
-        "Get the state of remote sensing"
+        """Get the state of remote sensing.
+
+        Returns:
+            str: Remote sensing state.
+        """
         return self.get_interface().ask("VOLT:SENS?")

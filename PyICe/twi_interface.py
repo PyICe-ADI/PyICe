@@ -35,7 +35,11 @@ class twi_interface(object, metaclass=abc.ABCMeta):
     '''I2C Generic Protocol Methods - Must be implemented in hardware/firmware specific classes'''
     @abc.abstractmethod
     def start(self):
-        '''I2C Start  - Falling SDA with SCL high.  Returns True or False to indicate successful arbitration'''
+        '''I2C Start  - Falling SDA with SCL high.  Returns True or False to indicate successful arbitration.
+
+        Raises:
+            i2cUnimplementedError: If not implemented by subclass.
+        '''
         raise i2cUnimplementedError()
 
     def restart(self):
@@ -50,22 +54,41 @@ class twi_interface(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def stop(self):
-        '''I2C Stop  - Rising SDA with SCL high.  Returns True or False to indicate successful arbitration'''
+        '''I2C Stop  - Rising SDA with SCL high.  Returns True or False to indicate successful arbitration.
+
+        Raises:
+            i2cUnimplementedError: If not implemented by subclass.
+        '''
         raise i2cUnimplementedError()
 
     @abc.abstractmethod
     def write(self, data8):
-        '''Transmit 8 bits plus 9th acknowledge clock.  Returns True or False to indicate slave acknowledge'''
+        '''Transmit 8 bits plus 9th acknowledge clock.  Returns True or False to indicate slave acknowledge.
+
+        Args:
+            data8: 8-bit data to transmit.
+
+        Raises:
+            i2cUnimplementedError: If not implemented by subclass.
+        '''
         raise i2cUnimplementedError()
 
     @abc.abstractmethod
     def read_ack(self):
-        '''Read 8 bits from slave transmitter  and assert SDA during 9th acknowledge clock.  Returns 8 bit data'''
+        '''Read 8 bits from slave transmitter  and assert SDA during 9th acknowledge clock.  Returns 8 bit data.
+
+        Raises:
+            i2cUnimplementedError: If not implemented by subclass.
+        '''
         raise i2cUnimplementedError()
 
     @abc.abstractmethod
     def read_nack(self):
-        '''Read 8 bits from slave transmitter  and release SDA during 9th acknowledge clock to request end of transmission.  Returns 8 bit data'''
+        '''Read 8 bits from slave transmitter  and release SDA during 9th acknowledge clock to request end of transmission.  Returns 8 bit data.
+
+        Raises:
+            i2cUnimplementedError: If not implemented by subclass.
+        '''
         raise i2cUnimplementedError()
 
     def resync_communication(self):
@@ -95,6 +118,13 @@ class twi_interface(object, metaclass=abc.ABCMeta):
     def check_size(cls, data, bits):
         '''make sure data fits within word of length  "bits"
 
+        Args:
+            data: Data value to check.
+            bits: Number of bits the data must fit within.
+
+        Returns:
+            True if data fits.
+
         >>> twi_interface.check_size(255, 8)
         True
         >>> twi_interface.check_size(0, 8)
@@ -112,6 +142,12 @@ class twi_interface(object, metaclass=abc.ABCMeta):
     def read_addr(cls, addr7):
         '''compute 8-bit read address from 7-bit address
 
+        Args:
+            addr7: 7-bit I2C device address.
+
+        Returns:
+            8-bit read address.
+
         >>> hex(twi_interface.read_addr(0x48))
         '0x91'
         >>> hex(twi_interface.read_addr(0x50))
@@ -123,6 +159,12 @@ class twi_interface(object, metaclass=abc.ABCMeta):
     @classmethod
     def write_addr(cls, addr7):
         '''compute 8-bit write address from 7-bit address
+
+        Args:
+            addr7: 7-bit I2C device address.
+
+        Returns:
+            8-bit write address.
 
         >>> hex(twi_interface.write_addr(0x48))
         '0x90'
@@ -172,6 +214,12 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         0
         >>> twi_interface.pec([0x01])
         7
+
+        Args:
+            byteList: Bytelist.
+
+        Returns:
+            Result value.
         '''
         # byteList is an ordered list of every byte in the transaction including address, command code (subaddr) and data
         # http://en.wikipedia.org/wiki/Cyclic_redundancy_check
@@ -204,6 +252,13 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         '0xab'
         >>> twi_interface.get_byte(0x123456, 2)
         18
+
+        Args:
+            bytenum: Bytenum.
+            data: Data to write.
+
+        Returns:
+            Result value.
         '''
         return (data >> (bytenum * 8)) & 0xFF
 
@@ -218,6 +273,12 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         1193046
         >>> twi_interface.word([0xFF])
         255
+
+        Args:
+            byteList: Bytelist.
+
+        Returns:
+            Result value.
         '''
         assert isinstance(byteList, (list, tuple))
         word_value = 0
@@ -4110,7 +4171,11 @@ class i2c_bobbytalk(twi_interface):
 
     @property
     def src_id(self):
-        "Source ID to use when sending bobbytalk packets to the remote SMBUS module."
+        '''Source ID to use when sending bobbytalk packets to the remote SMBUS module.
+
+        Returns:
+            Result value.
+        '''
         return self._src_id
 
     @src_id.setter
@@ -4122,7 +4187,11 @@ class i2c_bobbytalk(twi_interface):
 
     @property
     def dest_id(self):
-        "Destination ID to use when sending bobbytalk packets to the remote SMBUS module."
+        '''Destination ID to use when sending bobbytalk packets to the remote SMBUS module.
+
+        Returns:
+            Result value.
+        '''
         return self._dest_id
 
     @dest_id.setter
@@ -4134,7 +4203,11 @@ class i2c_bobbytalk(twi_interface):
 
     @property
     def recv_timeout(self):
-        "Total amount of time to spend waiting to receive packets per method call before giving up."
+        '''Total amount of time to spend waiting to receive packets per method call before giving up.
+
+        Returns:
+            Result value.
+        '''
         return self._recv_timeout
 
     @recv_timeout.setter
@@ -4147,7 +4220,11 @@ class i2c_bobbytalk(twi_interface):
     def cmd_tries(self):
         '''The max number of times to try to send a command packet over the bobbytalk link
         for each SMBUS operation (e.g. read word, read byte, write word, etc.).
-        Must be at least 1.'''
+        Must be at least 1.
+
+        Returns:
+            Result value.
+        '''
         return self._cmd_tries
 
     @cmd_tries.setter
@@ -4158,7 +4235,11 @@ class i2c_bobbytalk(twi_interface):
     @property
     def recv_tries(self):
         '''The max number of times to try to receive a response packet over the bobbytalk link
-        for each command packet we've sent. Must be at least 1.'''
+        for each command packet we've sent. Must be at least 1.
+
+        Returns:
+            Result value.
+        '''
         return self._recv_tries
 
     @recv_tries.setter
@@ -4170,7 +4251,11 @@ class i2c_bobbytalk(twi_interface):
     #
 
     def get_bobbytalk_interface(self):
-        "Returns my underlying bobbytalk packet interface."
+        '''Returns my underlying bobbytalk packet interface.
+
+        Returns:
+            Result value.
+        '''
         return self.intf
 
     def read_register_list(self, addr7, command_codes, data_size, use_pec):
@@ -4354,7 +4439,18 @@ class i2c_bobbytalk(twi_interface):
                 return None
 
     def read_word_pec(self, addr7, commandCode):
-        "SMBUS read word with PEC"
+        '''SMBUS read word with PEC
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cPECError: On error condition.
+        '''
         self.check_size(commandCode, bits=8)
         self.check_size(addr7, bits=8)
         import struct
@@ -4438,7 +4534,20 @@ class i2c_bobbytalk(twi_interface):
                 return None
 
     def write_word_pec(self, addr7, commandCode, data16):
-        "SMBUS write word with PEC"
+        '''SMBUS write word with PEC
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+            data16: 16-bit data value.
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cError: On error condition.
+            i2cPECError: On error condition.
+        '''
         self.check_size(commandCode, bits=8)
         self.check_size(addr7, bits=8)
         import struct
@@ -4503,7 +4612,15 @@ class i2c_bobbytalk(twi_interface):
         return rcvd_data16
 
     def read_byte_pec(self, addr7, commandCode):
-        "SMBUS read byte with PEC"
+        '''SMBUS read byte with PEC
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+
+        Returns:
+            Result value.
+        '''
         self.check_size(commandCode, bits=8)
         self.check_size(addr7, bits=8)
         import struct
@@ -4571,7 +4688,19 @@ class i2c_bobbytalk(twi_interface):
         return data8
 
     def write_byte_pec(self, addr7, commandCode, data8):
-        "SMBUS write word with PEC"
+        '''SMBUS write word with PEC
+
+        Args:
+            addr7: 7-bit I2C device address.
+            commandCode: SMBus command code (register address).
+            data8: 8-bit data value.
+
+        Returns:
+            Result value.
+
+        Raises:
+            i2cError: On error condition.
+        '''
         self.check_size(commandCode, bits=8)
         self.check_size(addr7, bits=8)
         import struct

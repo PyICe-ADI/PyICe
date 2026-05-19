@@ -1219,7 +1219,11 @@ class PCF8574_on_ConfiguratorXT(instrument):
             self._add_channel(new_channel)
 
     def read_port(self):
-        "Return integer representing a byte value, the bits of which correspond to the logic states of NS1 (lsb) through NS8 (msb)."
+        '''Return integer representing a byte value, the bits of which correspond to the logic states of NS1 (lsb) through NS8 (msb).
+
+        Returns:
+            Result value.
+        '''
         resp_str = self.get_interface().ask(b"GPIOX:READ?")
         return int(resp_str, base=16)
 
@@ -1264,13 +1268,21 @@ class PCF8574_on_ConfiguratorXT(instrument):
         return _read_pin
 
     def set_pins(self, pin_list):
-        "Force the listed pins logic high. Valid pin names are NS1 through NS8."
+        '''Force the listed pins logic high. Valid pin names are NS1 through NS8.
+
+        Args:
+            pin_list: Pin list.
+        '''
         self.validate_pin_list(pin_list)
         cmd_str = f'GPIOX:SETP:H? (@{",".join(pin_list)})'
         self.get_interface().ask(cmd_str)
 
     def clear_pins(self, pin_list):
-        "Force the listed pins logic low. Valid pin names are NS1 through NS8."
+        '''Force the listed pins logic low. Valid pin names are NS1 through NS8.
+
+        Args:
+            pin_list: Pin list.
+        '''
         self.validate_pin_list(pin_list)
         cmd_str = f'GPIOX:SETP:L? (@{",".join(pin_list)})'
         try:
@@ -1281,7 +1293,17 @@ class PCF8574_on_ConfiguratorXT(instrument):
             breakpoint()
 
     def validate_pin_list(self, pin_list):
-        "Validates list of pin names. Raises ValueError if invalid pin(s) found."
+        '''Validates list of pin names. Raises ValueError if invalid pin(s) found.
+
+        Args:
+            pin_list: Pin list.
+
+        Returns:
+            Result value.
+
+        Raises:
+            ValueError: On error condition.
+        '''
         unknown_pins = set(pin_list) - self.valid_pin_names_set
         if unknown_pins:
             unknown_pins_str = ", ".join(list(unknown_pins).sort())

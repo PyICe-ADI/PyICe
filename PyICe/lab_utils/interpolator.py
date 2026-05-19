@@ -144,5 +144,13 @@ class interpolator(object):
 
 
 def cmp(a, b):
-    "Returns -1, 0, +1 if a < b, a == b, or a > b, respectively. (was built-in in Python 2)"
+    '''Returns -1, 0, +1 if a < b, a == b, or a > b, respectively. (was built-in in Python 2)
+
+    Args:
+        a: A.
+        b: B.
+
+    Returns:
+        Result value.
+    '''
     return (a > b) - (a < b)
