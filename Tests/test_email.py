@@ -23,10 +23,14 @@ pic3.add_header('Content-Disposition', 'inline')
 pic3.add_header('Content-ID', '<waves>')
 
 
-
-
 # pic.add_header('Content-ID', '<myimg>')
 
 
 # dave_mail.send('<html><body>asdf <img src="cid:myimg"\></body></html>', subject="image test", attachment_objects=[pic])
-dave_mail.send('<html><body>1<img src="cid:dice"/>2<img src="cid:waves"/></body></html>', subject="image test", attachment_objects=[pic1, pic2, pic3])
+dave_mail.send(
+    '<html><body>1<img src="cid:dice"/>2<img src="cid:waves"/></body></html>',
+    subject="image test",
+    attachment_objects=[
+        pic1,
+        pic2,
+        pic3])

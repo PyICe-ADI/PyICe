@@ -1,3 +1,16 @@
+from .signedToTwosComplement import signedToTwosComplement
+from .twosComplementToSigned import twosComplementToSigned
+
+
 def signExtend(binary, inBitCount, outBitCount):
-    '''change width of two's complement binary number'''
-    return signedToTwosComplement(twosComplementToSigned(binary, inBitCount), outBitCount)
+    '''change width of two's complement binary number
+
+    >>> signExtend(5, 8, 16)
+    5
+    >>> signExtend(0xFF, 8, 16)
+    65535
+    >>> signExtend(0b1000, 4, 8)
+    248
+    '''
+    return signedToTwosComplement(
+        twosComplementToSigned(binary, inBitCount), outBitCount)

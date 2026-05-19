@@ -1,4 +1,5 @@
-def column_formatter(rows_of_columns, padding=3, justification="left", fist_line_justification="center"):
+def column_formatter(rows_of_columns, padding=3,
+                     justification="left", fist_line_justification="center"):
     '''takes data of form: [['ID:', 'REL_NOW_TIME', 'DURATION', 'FMT', 'RAW ', 'COUNT'],
                             [u'00:', '-00:00:35.290 ', ' 00:00:00.431 ', u'41.974488V', 28438, 1],
                             [u'01:', '-00:00:34.859 ', ' 00:00:07.216 ', u'-20.675808V', 51528, 1],
@@ -18,12 +19,12 @@ def column_formatter(rows_of_columns, padding=3, justification="left", fist_line
     first_line_justification and justification control aligment for first and subsequent lines respectively.
         valid arguments are 'left','right' and 'center'
     '''
-    #TODO: decimal alignment. Need to know decimal position apriori.
+    # TODO: decimal alignment. Need to know decimal position apriori.
     # def dot_aligned(seq, width):
-        # snums = [str(n) for n in seq]
-        # dots = [len(s.split('.', 1)[0]) for s in snums]
-        # m = max(dots)
-        # return [' '*(m - d) + s for s, d in zip(snums, dots)]
+    # snums = [str(n) for n in seq]
+    # dots = [len(s.split('.', 1)[0]) for s in snums]
+    # m = max(dots)
+    # return [' '*(m - d) + s for s, d in zip(snums, dots)]
 
     if justification == "left":
         sljmethod = str.ljust
@@ -32,7 +33,8 @@ def column_formatter(rows_of_columns, padding=3, justification="left", fist_line
     elif justification == "center":
         sljmethod = str.center
     else:
-        raise Exception("Valid justification arguments are 'left','right' and 'center'")
+        raise Exception(
+            "Valid justification arguments are 'left','right' and 'center'")
     if fist_line_justification == "left":
         fljmethod = str.ljust
     elif fist_line_justification == "right":
@@ -40,15 +42,16 @@ def column_formatter(rows_of_columns, padding=3, justification="left", fist_line
     elif fist_line_justification == "center":
         fljmethod = str.center
     else:
-        raise Exception("Valid fist_line_justification arguments are 'left','right' and 'center'")
+        raise Exception(
+            "Valid fist_line_justification arguments are 'left','right' and 'center'")
     col_widths = [0] * len(rows_of_columns[0])
     for row in rows_of_columns:
         for idx, col in enumerate(row):
             col_widths[idx] = max(col_widths[idx], len(str(col)))
     ret_str = ''
-    for idx,row in enumerate(rows_of_columns):
+    for idx, row in enumerate(rows_of_columns):
         jmethod = fljmethod if idx == 0 else sljmethod
-        for idx,col in enumerate(row):
+        for idx, col in enumerate(row):
             ret_str += "".join(jmethod(str(col), col_widths[idx]))
             ret_str += " " * padding
         ret_str += "\n"

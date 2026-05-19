@@ -1,12 +1,15 @@
 from PyICe import lab_core
-from PyICe.lab_instruments import *
-
+from PyICe.lab_instruments.PSA import keysight_e4440a
 
 
 m = lab_core.master()
 m.set_allow_threading(False)
 # sa = keysight_e4440a(m.get_visa_interface('TCPIP::192.168.100.101::5025::SOCKET'))
-sa = keysight_e4440a(m.get_visa_interface('TCPIP1::192.168.100.101::inst0::INSTR'), reset=False)
+sa = keysight_e4440a(
+    m.get_visa_interface('TCPIP1::192.168.100.101::inst0::INSTR'),
+    'psa',
+    reset=False
+)
 m.add(sa)
 # foo = sa.add_channel_xdata('test_x')
 # bar = sa.add_channel_ydata('test_y', trace_number=1)

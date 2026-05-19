@@ -1,14 +1,16 @@
 import pytest
 from PyICe.twi_instrument import twi_instrument
-from PyICe.lab_core import channel_master
 from PyICe.lab_interfaces import interface_factory
 
 
 fact = interface_factory()
+
+
 @pytest.fixture()
 def twi_inter():
     interface = fact.get_twi_dummy_interface()
     return interface
+
 
 @pytest.fixture()
 def twi_inst(twi_inter):
@@ -55,12 +57,3 @@ class TestTwiInstrument:
         chan = twi_inst.get_channel('alert')
         result = chan.read()
         assert type(result) is int  # bad practice to return random numbers
-
-
-
-
-
-
-
-
-

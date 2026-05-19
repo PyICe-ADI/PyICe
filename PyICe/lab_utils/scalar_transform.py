@@ -1,3 +1,6 @@
+from .vector_transform import vector_transform
+
+
 def scalar_transform(rec_array, column_scalar_functions, column_names=None):
     '''Transform column data by processing through user-supplied function
     column_scalar_functions is a list of functions for each column and should have a length equal to the number of columns.
@@ -15,5 +18,7 @@ def scalar_transform(rec_array, column_scalar_functions, column_names=None):
         if csf is None:
             column_vector_functions.append(None)
         else:
-            column_vector_functions.append(lambda column, func=csf: [func(x) for x in column])
+            column_vector_functions.append(
+                lambda column, func=csf: [
+                    func(x) for x in column])
     return vector_transform(rec_array, column_vector_functions, column_names)
