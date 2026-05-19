@@ -82,7 +82,15 @@ class hameg_4040(scpi_instrument):
         return voltage_channel
 
     def add_channel_voltage(self, channel_name, num):
-        """Add a channel voltage."""
+        """Add a channel voltage.
+
+        Args:
+            channel_name: Name for the new channel.
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             write_function=lambda voltage: self._write_voltage(
@@ -95,7 +103,15 @@ class hameg_4040(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_current(self, channel_name, num):
-        """Add a channel current."""
+        """Add a channel current.
+
+        Args:
+            channel_name: Name for the new channel.
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             write_function=lambda current: self._write_current(
@@ -108,21 +124,45 @@ class hameg_4040(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_vsense(self, channel_name, num):
-        """Add a channel vsense."""
+        """Add a channel vsense.
+
+        Args:
+            channel_name: Name for the new channel.
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name,
                               read_function=lambda: self._read_vsense(num))
         new_channel.set_attribute('hameg_number', num)
         return self._add_channel(new_channel)
 
     def add_channel_isense(self, channel_name, num):
-        """Add a channel isense."""
+        """Add a channel isense.
+
+        Args:
+            channel_name: Name for the new channel.
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name,
                               read_function=lambda: self._read_isense(num))
         new_channel.set_attribute('hameg_number', num)
         return self._add_channel(new_channel)
 
     def add_channel_voltage_readback(self, channel_name, num):
-        """Add a channel voltage readback."""
+        """Add a channel voltage readback.
+
+        Args:
+            channel_name: Name for the new channel.
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._read_voltage_readback(num))
@@ -130,7 +170,15 @@ class hameg_4040(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_current_readback(self, channel_name, num):
-        """Add a channel current readback."""
+        """Add a channel current readback.
+
+        Args:
+            channel_name: Name for the new channel.
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._read_current_readback(num))
@@ -138,7 +186,15 @@ class hameg_4040(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_measured_voltage(self, channel_name, num):
-        """Add a channel measured voltage."""
+        """Add a channel measured voltage.
+
+        Args:
+            channel_name: Name for the new channel.
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._read_measured_voltage(num))
@@ -146,7 +202,15 @@ class hameg_4040(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_measured_current(self, channel_name, num):
-        """Add a channel measured current."""
+        """Add a channel measured current.
+
+        Args:
+            channel_name: Name for the new channel.
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._read_measured_current(num))
@@ -154,7 +218,15 @@ class hameg_4040(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_ovp(self, channel_name, num):
-        """Add a channel ovp."""
+        """Add a channel ovp.
+
+        Args:
+            channel_name: Name for the new channel.
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             write_function=lambda voltage: self._write_ovp(
@@ -164,7 +236,15 @@ class hameg_4040(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_ovp_status(self, channel_name, num):
-        """Add a channel ovp status."""
+        """Add a channel ovp status.
+
+        Args:
+            channel_name: Name for the new channel.
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         new_channel = integer_channel(
             channel_name,
             size=1,
@@ -173,7 +253,15 @@ class hameg_4040(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_fuse_status(self, channel_name, num):
-        """Add a channel fuse status."""
+        """Add a channel fuse status.
+
+        Args:
+            channel_name: Name for the new channel.
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         new_channel = integer_channel(
             channel_name,
             size=1,
@@ -182,7 +270,15 @@ class hameg_4040(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_enable(self, channel_name, num):
-        """Add a channel enable."""
+        """Add a channel enable.
+
+        Args:
+            channel_name: Name for the new channel.
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         new_channel = integer_channel(
             channel_name,
             size=1,
@@ -193,7 +289,16 @@ class hameg_4040(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_fuse_enable(self, channel_name, num, fuse_delay=0):
-        """Add a channel fuse enable."""
+        """Add a channel fuse enable.
+
+        Args:
+            channel_name: Name for the new channel.
+            fuse_delay: Fuse delay.
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         new_channel = integer_channel(
             channel_name,
             size=1,
@@ -206,7 +311,15 @@ class hameg_4040(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_fuse_link(self, channel_name, num):
-        """Add a channel fuse link."""
+        """Add a channel fuse link.
+
+        Args:
+            channel_name: Name for the new channel.
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             write_function=lambda link_list: self._write_fuse_links(
@@ -217,14 +330,29 @@ class hameg_4040(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_master_enable(self, channel_name):
-        """Add a channel master enable."""
+        """Add a channel master enable.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = integer_channel(
             channel_name, size=1, write_function=self._write_master_enable)
         new_channel.set_write_delay(0.5)
         return self._add_channel(new_channel)
 
     def add_channel_AWG(self, channel_name, num):
-        """Add a channel AWG."""
+        """Add a channel AWG.
+
+        Args:
+            channel_name: Name for the new channel.
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         trigger_channel = channel(
             channel_name + "_trigger",
             write_function=lambda value: self._run_arb(

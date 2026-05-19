@@ -28,15 +28,39 @@ class memory_decoder():
         return mem_dict
 
     def parse_srec(self, srec_str, offset=0):
-        """Return parse srec result."""
+        """Return parse srec result.
+
+        Args:
+            offset: Offset value.
+            srec_str: Srec str.
+
+        Returns:
+            Result value.
+        """
         return self._parse_mdump(srec_str, fmt='srec', offset=offset)
 
     def parse_ihex(self, ihex_str, offset=0):
-        """Return parse ihex result."""
+        """Return parse ihex result.
+
+        Args:
+            ihex_str: Ihex str.
+            offset: Offset value.
+
+        Returns:
+            Result value.
+        """
         return self._parse_mdump(ihex_str, fmt='ihex', offset=offset)
 
     def parse_hexdump(self, rfc4194_str, offset=0):
-        """Return parse hexdump result."""
+        """Return parse hexdump result.
+
+        Args:
+            offset: Offset value.
+            rfc4194_str: Rfc4194 str.
+
+        Returns:
+            Result value.
+        """
         return self._parse_mdump(rfc4194_str, fmt='shf', offset=offset)
 
     # def parse_ascii_hex(ascii_hex_str, offset=0):
@@ -62,7 +86,15 @@ class memory_decoder():
         return bf_data
 
     def prettify(self, bf_name, bf_value):  # , twii=None
-        """Return prettify result."""
+        """Return prettify result.
+
+        Args:
+            bf_name: Bf name.
+            bf_value: Bf value.
+
+        Returns:
+            Result value.
+        """
         if self.twii is None:
             try:
                 pkey = f'0x{bf_name:X}'
@@ -88,14 +120,28 @@ class memory_decoder():
         return (pkey, pvalue)
 
     def prettyprint(self, dict):  # twii=None
-        """Perform prettyprint operation."""
+        """Perform prettyprint operation.
+
+        Args:
+            dict: Dict.
+        """
         for k in sorted(dict):
             (pkey, pvalue) = self.prettify(
                 bf_name=k, bf_value=dict[k])  # , twii=twii
             print(f'{pkey}: {pvalue}')
 
     def decode(self, memdump_file):
-        """Return decode result."""
+        """Return decode result.
+
+        Args:
+            memdump_file: Memdump file.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         file_ext = os.path.splitext(memdump_file)[1]
         with open(memdump_file, 'r') as f:
             if file_ext == '.srec' or file_ext == '.s19':

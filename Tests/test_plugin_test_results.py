@@ -354,7 +354,13 @@ class TestEvaluateList:
         self.tr = make_test_results()
 
     def declare_test(self, name, lower=None, upper=None):
-        """Perform declare test operation."""
+        """Perform declare test operation.
+
+        Args:
+            lower: Lower.
+            name: Name identifier.
+            upper: Upper.
+        """
         self.tr.test_limits[name] = {
             'upper_limit': upper,
             'lower_limit': lower,
@@ -514,7 +520,14 @@ class TestCustomJSONEncoder:
 
         class CustomJSONizer(json.JSONEncoder):
             def default(self, obj):
-                """Return default result."""
+                """Return default result.
+
+                Args:
+                    obj: Obj.
+
+                Returns:
+                    Result value.
+                """
                 if isinstance(obj, bool_):
                     return bool(obj)
                 elif isinstance(obj, datetime.datetime):
@@ -611,14 +624,25 @@ class TestJSONSchema:
 
     @pytest.fixture
     def report(self, tmp_path):
-        """Return report result."""
+        """Return report result.
+
+        Args:
+            tmp_path: Tmp path.
+
+        Returns:
+            Result value.
+        """
         tr = build_populated_test_results()
         json_path = str(tmp_path / "test_results.json")
         json_str = write_json_report(tr, json_path)
         return json.loads(json_str)
 
     def test_top_level_keys(self, report):
-        """Perform test top level keys operation."""
+        """Perform test top level keys operation.
+
+        Args:
+            report: Report.
+        """
         assert 'test_module' in report
         assert 'test_crashed' in report
         assert 'report_date' in report
@@ -626,40 +650,68 @@ class TestJSONSchema:
         assert 'summary' in report
 
     def test_test_module_name(self, report):
-        """Perform test test module name operation."""
+        """Perform test test module name operation.
+
+        Args:
+            report: Report.
+        """
         assert report['test_module'] == 'test_module'
 
     def test_test_crashed_is_bool(self, report):
-        """Perform test test crashed is bool operation."""
+        """Perform test test crashed is bool operation.
+
+        Args:
+            report: Report.
+        """
         assert isinstance(report['test_crashed'], bool)
 
     def test_report_date_format(self, report):
-        """Perform test report date format operation."""
+        """Perform test report date format operation.
+
+        Args:
+            report: Report.
+        """
         dt = datetime.datetime.strptime(report['report_date'],
                                         '%Y-%m-%dT%H:%M:%S.%fZ')
         assert isinstance(dt, datetime.datetime)
 
     def test_summary_has_passes(self, report):
-        """Perform test summary has passes operation."""
+        """Perform test summary has passes operation.
+
+        Args:
+            report: Report.
+        """
         assert 'passes' in report['summary']
         assert isinstance(report['summary']['passes'], bool)
 
     def test_tests_contain_declarations(self, report):
-        """Perform test tests contain declarations operation."""
+        """Perform test tests contain declarations operation.
+
+        Args:
+            report: Report.
+        """
         for test_name, test_data in report['tests'].items():
             assert 'declaration' in test_data
             assert 'upper_limit' in test_data['declaration']
             assert 'lower_limit' in test_data['declaration']
 
     def test_tests_contain_results(self, report):
-        """Perform test tests contain results operation."""
+        """Perform test tests contain results operation.
+
+        Args:
+            report: Report.
+        """
         for test_name, test_data in report['tests'].items():
             assert 'results' in test_data
             assert 'cases' in test_data['results']
             assert 'summary' in test_data['results']
 
     def test_case_structure(self, report):
-        """Perform test case structure operation."""
+        """Perform test case structure operation.
+
+        Args:
+            report: Report.
+        """
         cases = report['tests']['vout_accuracy']['results']['cases']
         assert len(cases) == 3  # three temperature conditions
         for case in cases:
@@ -668,7 +720,11 @@ class TestJSONSchema:
             assert 'summary' in case
 
     def test_case_results_fields(self, report):
-        """Perform test case results fields operation."""
+        """Perform test case results fields operation.
+
+        Args:
+            report: Report.
+        """
         cases = report['tests']['vout_accuracy']['results']['cases']
         for case in cases:
             for result in case['case_results']:
@@ -680,12 +736,20 @@ class TestJSONSchema:
                 assert 'plot' not in result
 
     def test_exact_match_limits(self, report):
-        """Perform test exact match limits operation."""
+        """Perform test exact match limits operation.
+
+        Args:
+            report: Report.
+        """
         decl = report['tests']['register_readback']['declaration']
         assert decl['upper_limit'] == decl['lower_limit'] == 0xAB
 
     def test_null_condition_case(self, report):
-        """Perform test null condition case operation."""
+        """Perform test null condition case operation.
+
+        Args:
+            report: Report.
+        """
         cases = report['tests']['register_readback']['results']['cases']
         assert cases[0]['conditions'] is None
 
@@ -719,14 +783,22 @@ class TestJSONRoundTrip:
         return original, reloaded, json_path
 
     def test_test_declarations_preserved(self, round_trip):
-        """Perform test test declarations preserved operation."""
+        """Perform test test declarations preserved operation.
+
+        Args:
+            round_trip: Round trip.
+        """
         original, reloaded, _ = round_trip
         assert list(
             reloaded._test_declarations) == list(
             original._test_declarations)
 
     def test_test_limits_preserved(self, round_trip):
-        """Perform test test limits preserved operation."""
+        """Perform test test limits preserved operation.
+
+        Args:
+            round_trip: Round trip.
+        """
         original, reloaded, _ = round_trip
         for test_name in original._test_declarations:
             assert reloaded.test_limits[test_name]['upper_limit'] == \
@@ -735,7 +807,11 @@ class TestJSONRoundTrip:
                 original.test_limits[test_name]['lower_limit']
 
     def test_collected_data_preserved(self, round_trip):
-        """Perform test collected data preserved operation."""
+        """Perform test collected data preserved operation.
+
+        Args:
+            round_trip: Round trip.
+        """
         original, reloaded, _ = round_trip
         for test_name in original._test_declarations:
             orig_results = original._test_results[test_name]
@@ -749,14 +825,22 @@ class TestJSONRoundTrip:
             assert reload_all_data == orig_all_data
 
     def test_pass_fail_preserved(self, round_trip):
-        """Perform test pass fail preserved operation."""
+        """Perform test pass fail preserved operation.
+
+        Args:
+            round_trip: Round trip.
+        """
         original, reloaded, _ = round_trip
         for test_name in original._test_declarations:
             assert bool(reloaded._test_results[test_name]) == \
                 bool(original._test_results[test_name])
 
     def test_conditions_preserved(self, round_trip):
-        """Perform test conditions preserved operation."""
+        """Perform test conditions preserved operation.
+
+        Args:
+            round_trip: Round trip.
+        """
         original, reloaded, _ = round_trip
         orig_results = original._test_results['vout_accuracy']
         reload_results = reloaded._test_results['vout_accuracy']
@@ -765,7 +849,11 @@ class TestJSONRoundTrip:
         assert reload_conds == orig_conds
 
     def test_min_max_preserved(self, round_trip):
-        """Perform test min max preserved operation."""
+        """Perform test min max preserved operation.
+
+        Args:
+            round_trip: Round trip.
+        """
         original, reloaded, _ = round_trip
         for test_name in original._test_declarations:
             orig_results = original._test_results[test_name]
@@ -775,7 +863,11 @@ class TestJSONRoundTrip:
                 assert reloaded_r.max_data == orig.max_data
 
     def test_failure_reason_preserved(self, round_trip):
-        """Perform test failure reason preserved operation."""
+        """Perform test failure reason preserved operation.
+
+        Args:
+            round_trip: Round trip.
+        """
         original, reloaded, _ = round_trip
         for test_name in original._test_declarations:
             for orig, reloaded_r in zip(original._test_results[test_name],
@@ -783,14 +875,22 @@ class TestJSONRoundTrip:
                 assert reloaded_r.failure_reason == orig.failure_reason
 
     def test_plot_reset_to_empty(self, round_trip):
-        """Perform test plot reset to empty operation."""
+        """Perform test plot reset to empty operation.
+
+        Args:
+            round_trip: Round trip.
+        """
         _, reloaded, _ = round_trip
         for test_name in reloaded._test_declarations:
             for r in reloaded._test_results[test_name]:
                 assert r.plot == []
 
     def test_query_preserved_or_none(self, round_trip):
-        """Perform test query preserved or none operation."""
+        """Perform test query preserved or none operation.
+
+        Args:
+            round_trip: Round trip.
+        """
         original, reloaded, _ = round_trip
         for test_name in original._test_declarations:
             for orig, reloaded_r in zip(original._test_results[test_name],
@@ -801,14 +901,22 @@ class TestJSONRoundTrip:
                     assert reloaded_r.query == orig.query
 
     def test_traceability_preserved(self, round_trip):
-        """Perform test traceability preserved operation."""
+        """Perform test traceability preserved operation.
+
+        Args:
+            round_trip: Round trip.
+        """
         _, reloaded, _ = round_trip
         info = reloaded.get_traceability_info()
         assert info['dut_serial'] == 'SN001'
         assert info['board_rev'] == 'A'
 
     def test_overall_bool_preserved(self, round_trip):
-        """Perform test overall bool preserved operation."""
+        """Perform test overall bool preserved operation.
+
+        Args:
+            round_trip: Round trip.
+        """
         original, reloaded, _ = round_trip
         assert bool(reloaded) == bool(original)
 

@@ -53,7 +53,11 @@ class comparator(object):
         assert falling_threshold is not None or rising_threshold is not None
 
     def debug_print(self, msg):
-        """Perform debug print operation."""
+        """Perform debug print operation.
+
+        Args:
+            msg: Msg.
+        """
         if self.verbose:
             print("*COMPARATOR*, {}".format(msg))
 
@@ -77,7 +81,11 @@ class comparator(object):
         self.rising_threshold = rising_threshold
 
     def write(self, value):
-        """Write a value to the channel."""
+        """Write a value to the channel.
+
+        Args:
+            value: Value to set.
+        """
         if self.input is not None:
             # overshoot changes polarity naturally?
             overshoot = self.write_overshoot * (value - self.input)

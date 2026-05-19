@@ -390,7 +390,14 @@ class firmata(instrument):
             Result value.
         """
         def read_latch_status(latch_channel):
-            """Return read latch status result."""
+            """Return read latch status result.
+
+            Args:
+                latch_channel: Latch channel.
+
+            Returns:
+                Result value.
+            """
             latch_status = self.firmata_board.get_digital_latch_data(
                 latch_channel.get_attribute('pin'))
             latch_state = True if latch_status[1] == self.firmata_board.LATCH_LATCHED else False
@@ -444,7 +451,14 @@ class firmata(instrument):
             Exception: On error condition.
         """
         def read_latch_status(latch_channel):
-            """Return read latch status result."""
+            """Return read latch status result.
+
+            Args:
+                latch_channel: Latch channel.
+
+            Returns:
+                Result value.
+            """
             latch_status = self.firmata_board.get_analog_latch_data(
                 latch_channel.get_attribute('pin'))
             latch_state = True if latch_status[1] == self.firmata_board.LATCH_LATCHED else False
@@ -512,5 +526,9 @@ class firmata(instrument):
         return self._add_channel(latch_channel)
 
     def reset_serial_communications(self):
-        """Return reset serial communications result."""
+        """Return reset serial communications result.
+
+        Returns:
+            Result value.
+        """
         return (self.firmata_board.reset_serial_communications())

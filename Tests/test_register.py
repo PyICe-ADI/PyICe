@@ -15,11 +15,19 @@ def make_register(size=8, init_value=0):
     store = [init_value]
 
     def read_fn():
-        """Return read fn result."""
+        """Return read fn result.
+
+        Returns:
+            Result value.
+        """
         return store[0]
 
     def write_fn(val):
-        """Perform write fn operation."""
+        """Perform write fn operation.
+
+        Args:
+            val: Val.
+        """
         store[0] = val
 
     return register('test_reg', size=size,
@@ -167,14 +175,22 @@ class TestRegisterSpecialAccess:
 
     @pytest.mark.parametrize('access', ['RC', 'RS', 'WRC', 'WRS'])
     def test_unimplemented_read_side_effects_raise(self, access):
-        """Perform test unimplemented read side effects raise operation."""
+        """Perform test unimplemented read side effects raise operation.
+
+        Args:
+            access: Access.
+        """
         reg, _ = make_register()
         with pytest.raises(Exception, match="unimplemented"):
             reg.set_special_access(access)
 
     @pytest.mark.parametrize('access', ['WC', 'WS', 'W1T', 'W0T'])
     def test_unimplemented_write_side_effects_raise(self, access):
-        """Perform test unimplemented write side effects raise operation."""
+        """Perform test unimplemented write side effects raise operation.
+
+        Args:
+            access: Access.
+        """
         reg, _ = make_register()
         with pytest.raises(Exception, match="not yet implemented"):
             reg.set_special_access(access)

@@ -55,40 +55,89 @@ class kikusui_pbz(scpi_instrument):
         return voltage_channel
 
     def add_channel_voltage(self, channel_name):
-        """Add a channel voltage."""
+        """Add a channel voltage.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name, write_function=self._write_voltage)
         return self._add_channel(new_channel)
 
     def add_channel_current_source(self, channel_name):
-        """Add a channel current source."""
+        """Add a channel current source.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name,
                               write_function=self._write_current_source)
         return self._add_channel(new_channel)
 
     def add_channel_current_sink(self, channel_name):
-        """Add a channel current sink."""
+        """Add a channel current sink.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name,
                               write_function=self._write_current_sink)
         return self._add_channel(new_channel)
 
     def add_channel_output_enable(self, channel_name):
-        """Add a channel output enable."""
+        """Add a channel output enable.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name,
                               write_function=self._write_output_enable)
         return self._add_channel(new_channel)
 
     def add_channel_vsense(self, channel_name):
-        """Add a channel vsense."""
+        """Add a channel vsense.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name, read_function=self._read_vsense)
         return self._add_channel(new_channel)
 
     def add_channel_isense(self, channel_name):
-        """Add a channel isense."""
+        """Add a channel isense.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name, read_function=self._read_isense)
         return self._add_channel(new_channel)
 
     def add_channel_voltage_readback(self, channel_name):
-        """Add a channel voltage readback."""
+        """Add a channel voltage readback.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name,
                               read_function=self._read_voltage_readback)
         return self._add_channel(new_channel)

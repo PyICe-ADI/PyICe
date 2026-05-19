@@ -53,7 +53,11 @@ class u2300a_scope(scpi_instrument, delegator):
 
     def check_errors(self):
         # Check that nothing has gone wrong with configuration
-        """Perform check errors operation."""
+        """Perform check errors operation.
+
+        Raises:
+            Exception: On error condition.
+        """
         err = self.get_interface().ask("SYST:ERR?")
         if err != '+0,"No error"':
             raise Exception(f"U2300: {err}")
@@ -74,7 +78,11 @@ class u2300a_scope(scpi_instrument, delegator):
         # mode enables the DAQ device to simulate in simultaneous mode. It would perform
         # sampling measurements at the highest speed of the product capabilities.
         # mode Boolean 0|OFF|1|ON 0
-        """Set the burst mode."""
+        """Set the burst mode.
+
+        Args:
+            state: State.
+        """
         self.get_interface().write(f'ACQuire:BURSt {"ON" if state else "OFF"}')
 
     def add_channel_timeout(self, channel_name):
@@ -392,7 +400,12 @@ class u2300a_scope(scpi_instrument, delegator):
             Result value.
         """
         def trigger_config_ch_write(write_channel, value):
-            """Perform trigger config ch write operation."""
+            """Perform trigger config ch write operation.
+
+            Args:
+                value: Value to set.
+                write_channel: Write channel.
+            """
             vals = {}
             for other_channel in write_channel.get_attribute(
                     'trigger_related_channels'):
@@ -402,7 +415,11 @@ class u2300a_scope(scpi_instrument, delegator):
             self.set_trigger(**vals)
 
         def trigger_arm_ch_write(value):
-            """Perform trigger arm ch write operation."""
+            """Perform trigger arm ch write operation.
+
+            Args:
+                value: Value to set.
+            """
             if value == "ARM":
                 dwell_time = {"PRE": 1.02 * self.acq_time_ch.read(),   # Alot time to acquire (at least) the entire record.
                               # No dwell needed, all data to be acquired post
@@ -685,7 +702,11 @@ class u2300a_scope(scpi_instrument, delegator):
         return sample_rate
 
     def dummy_read(self):
-        """Perform dummy read operation."""
+        """Perform dummy read operation.
+
+        Raises:
+            Exception: On error condition.
+        """
         raise Exception(
             'Delegation failure. Contact PyICe-developers@analog.com for more information.')
 
@@ -745,7 +766,11 @@ class u2300a_scope(scpi_instrument, delegator):
             x >> shift) + offset
 
     def arm_trigger(self, channel_list=None):
-        """Perform arm trigger operation."""
+        """Perform arm trigger operation.
+
+        Args:
+            channel_list: Channel list.
+        """
         if channel_list is None:
             # Without channel list, let's compromise and acquire every channel
             # that this instrument has registered to date
@@ -790,7 +815,17 @@ class u2300a_scope(scpi_instrument, delegator):
         self.get_interface().write('DIGitize')
 
     def read_delegated_channel_list(self, channel_list):
-        """Return read delegated channel list result."""
+        """Return read delegated channel list result.
+
+        Args:
+            channel_list: Channel list.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         if self._get_state() == 'ARMED':
             pass  # Already armed manually!
         else:
@@ -876,7 +911,11 @@ class u2300a_scope(scpi_instrument, delegator):
         return results
 
     def get_all_settings(self):
-        """Return the all settings."""
+        """Return the all settings.
+
+        Returns:
+            Result value.
+        """
         result = results_ord_dict()
         result["syst_error"] = self.get_interface().ask("SYST:ERR?")
         result["trigger_condition"] = self.get_interface().ask(
@@ -918,7 +957,14 @@ class u2300a_datalogger(u2300a_scope):
         self.set_burst_mode(True)
 
     def log(self, record_time=0):
-        """Perform log operation."""
+        """Perform log operation.
+
+        Args:
+            record_time: Record time.
+
+        Raises:
+            Exception: On error condition.
+        """
         self.logger.add_data_channels(
             {ch.get_name(): None for ch in self.get_all_channels_list()})
         self.logger.new_table(
@@ -1028,7 +1074,18 @@ class u2300a_datalogger(u2300a_scope):
             f'WAVeform:POINts {self._point_count}')  # Target ~1s update??
 
     def read_delegated_channel_list(self, channel_list):
-        """Return read delegated channel list result."""
+        """Return read delegated channel list result.
+
+        Args:
+            channel_list: Channel list.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+            u2300aBufferOverflowError: On error condition.
+        """
         if self.stopped and not self.stopping:  # This is just flushing the python queue into the database without talking to the instrument anymore. RHM
             return self._read_assist(channel_list)
         data_in_waiting = bool(len(next(iter(self.data_buffer.values()))))
@@ -1123,7 +1180,11 @@ class u2300a_DVM(scpi_instrument, delegator):
 
     def check_errors(self):
         # Check that nothing has gone wrong with configuration
-        """Perform check errors operation."""
+        """Perform check errors operation.
+
+        Raises:
+            Exception: On error condition.
+        """
         err = self.get_interface().ask("SYST:ERR?")
         if err != '+0,"No error"':
             raise Exception(f"U2300: {err}")
@@ -1307,7 +1368,11 @@ class u2300a_DVM(scpi_instrument, delegator):
         return channel
 
     def dummy_read(self):
-        """Perform dummy read operation."""
+        """Perform dummy read operation.
+
+        Raises:
+            Exception: On error condition.
+        """
         raise Exception(
             'Delegation failure. Contact PyICe-developers@analog.com for more information.')
 
@@ -1384,7 +1449,14 @@ class u2300a_DVM(scpi_instrument, delegator):
             f'SENSe:VOLTage:STYPe {sig_mode}, (@{channel.get_attribute("internal_address")})')
 
     def read_delegated_channel_list(self, channel_list):
-        """Return read delegated channel list result."""
+        """Return read delegated channel list result.
+
+        Args:
+            channel_list: Channel list.
+
+        Returns:
+            Result value.
+        """
         channels = [
             f'{ch.get_attribute("internal_address")}' for ch in channel_list]
         ch_str = f'(@{",".join(channels)})'

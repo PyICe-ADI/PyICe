@@ -111,7 +111,11 @@ class TestSignalGenerator:
 
     @pytest.fixture
     def gen(self):
-        """Return gen result."""
+        """Return gen result.
+
+        Returns:
+            Result value.
+        """
         return signal_generator(
             hi_value=1.0, lo_value=0.0,
             period=1e-3, cyclecount=10,
@@ -119,14 +123,22 @@ class TestSignalGenerator:
         )
 
     def test_pulse_wave_generates_data(self, gen):
-        """Perform test pulse wave generates data operation."""
+        """Perform test pulse wave generates data operation.
+
+        Args:
+            gen: Gen.
+        """
         data = list(gen.pulse_wave(duty_cycle=0.5))
         assert len(data) > 0
         times, values = zip(*data)
         assert all(v in (0.0, 1.0) for v in values)
 
     def test_pulse_wave_duty_cycle(self, gen):
-        """Perform test pulse wave duty cycle operation."""
+        """Perform test pulse wave duty cycle operation.
+
+        Args:
+            gen: Gen.
+        """
         data = list(gen.pulse_wave(duty_cycle=0.5))
         times, values = zip(*data)
         hi_count = sum(1 for v in values if v == 1.0)
@@ -135,13 +147,21 @@ class TestSignalGenerator:
         assert ratio == pytest.approx(0.5, abs=0.05)
 
     def test_pulse_wave_100_pct_duty(self, gen):
-        """Perform test pulse wave 100 pct duty operation."""
+        """Perform test pulse wave 100 pct duty operation.
+
+        Args:
+            gen: Gen.
+        """
         data = list(gen.pulse_wave(duty_cycle=1.0))
         _, values = zip(*data)
         assert all(v == 1.0 for v in values)
 
     def test_sine_wave_generates_data(self, gen):
-        """Perform test sine wave generates data operation."""
+        """Perform test sine wave generates data operation.
+
+        Args:
+            gen: Gen.
+        """
         data = list(gen.sine_wave())
         assert len(data) > 0
 
@@ -149,21 +169,33 @@ class TestSignalGenerator:
         # sine formula: (hi+lo)/2 + (hi-lo)*sin(...)
         # with hi=1.0, lo=0.0: midpoint=0.5, amplitude=1.0
         # so max = 0.5 + 1.0 = 1.5, min = 0.5 - 1.0 = -0.5
-        """Perform test sine wave amplitude operation."""
+        """Perform test sine wave amplitude operation.
+
+        Args:
+            gen: Gen.
+        """
         data = list(gen.sine_wave())
         _, values = zip(*data)
         assert max(values) == pytest.approx(1.5, abs=0.05)
         assert min(values) == pytest.approx(-0.5, abs=0.05)
 
     def test_sine_wave_mean(self, gen):
-        """Perform test sine wave mean operation."""
+        """Perform test sine wave mean operation.
+
+        Args:
+            gen: Gen.
+        """
         data = list(gen.sine_wave())
         _, values = zip(*data)
         mean = sum(values) / len(values)
         assert mean == pytest.approx(0.5, abs=0.05)
 
     def test_sine_wave_point_count(self, gen):
-        """Perform test sine wave point count operation."""
+        """Perform test sine wave point count operation.
+
+        Args:
+            gen: Gen.
+        """
         data = list(gen.sine_wave())
         expected_points = int(gen.cyclecount * gen.period / gen.timestep)
         assert len(data) == pytest.approx(expected_points, rel=0.05)
@@ -232,14 +264,22 @@ class TestSpectrumAnalyzer:
         return list(gen.sine_wave())
 
     def test_compute_fft_returns_frequencies_and_magnitudes(self, pure_tone):
-        """Perform test compute fft returns frequencies and magnitudes operation."""
+        """Perform test compute fft returns frequencies and magnitudes operation.
+
+        Args:
+            pure_tone: Pure tone.
+        """
         sa = spectrum_analyzer()
         xf, yf = sa.compute_fft(pure_tone)
         assert len(xf) == len(yf)
         assert len(xf) > 0
 
     def test_fft_peak_at_signal_frequency(self, pure_tone):
-        """Perform test fft peak at signal frequency operation."""
+        """Perform test fft peak at signal frequency operation.
+
+        Args:
+            pure_tone: Pure tone.
+        """
         sa = spectrum_analyzer()
         xf, yf = sa.compute_fft(pure_tone)
         peak_idx = numpy.argmax(yf)
@@ -247,7 +287,11 @@ class TestSpectrumAnalyzer:
         assert peak_freq == pytest.approx(1000, rel=0.05)
 
     def test_get_RBW(self, pure_tone):
-        """Perform test get RBW operation."""
+        """Perform test get RBW operation.
+
+        Args:
+            pure_tone: Pure tone.
+        """
         sa = spectrum_analyzer()
         sa.compute_fft(pure_tone)
         rbw = sa.get_RBW()
@@ -255,14 +299,22 @@ class TestSpectrumAnalyzer:
         assert rbw == pytest.approx(expected_rbw, rel=0.01)
 
     def test_get_record_duration(self, pure_tone):
-        """Perform test get record duration operation."""
+        """Perform test get record duration operation.
+
+        Args:
+            pure_tone: Pure tone.
+        """
         sa = spectrum_analyzer()
         sa.compute_fft(pure_tone)
         duration = sa.get_record_duration()
         assert duration == pytest.approx(0.1, rel=0.05)
 
     def test_get_record_length(self, pure_tone):
-        """Perform test get record length operation."""
+        """Perform test get record length operation.
+
+        Args:
+            pure_tone: Pure tone.
+        """
         sa = spectrum_analyzer()
         sa.compute_fft(pure_tone)
         length = sa.get_record_length()

@@ -17,11 +17,25 @@ class ordered_pair(list):
         """
         if x_transform is None:
             def x_transform(x):
-                """Return x transform result."""
+                """Return x transform result.
+
+                Args:
+                    x: X.
+
+                Returns:
+                    Result value.
+                """
                 return x
         if y_transform is None:
             def y_transform(y):
-                """Return y transform result."""
+                """Return y transform result.
+
+                Args:
+                    y: Y.
+
+                Returns:
+                    Result value.
+                """
                 return y
         for i in range(len(self)):
             self[i] = [x_transform(self[i][0]), y_transform(self[i][1])]
@@ -75,11 +89,19 @@ class ordered_pair(list):
         self.transform(y_transform=lambda y: y * y_scale)
 
     def xoffset(self, x_offset):
-        """Perform xoffset operation."""
+        """Perform xoffset operation.
+
+        Args:
+            x_offset: X offset.
+        """
         self.transform(x_transform=lambda x: x + x_offset)
 
     def yoffset(self, y_offset):
-        """Perform yoffset operation."""
+        """Perform yoffset operation.
+
+        Args:
+            y_offset: Y offset.
+        """
         self.transform(y_transform=lambda y: y + y_offset)
 
     def xyscale(self, x_scale, y_scale):
@@ -94,7 +116,15 @@ class ordered_pair(list):
             y_transform=lambda y: y * y_scale)
 
     def truncate(self, length=None, offset=0):
-        """Perform truncate operation."""
+        """Perform truncate operation.
+
+        Args:
+            length: Length.
+            offset: Offset value.
+
+        Raises:
+            Exception: On error condition.
+        """
         orig_len = len(self)
         del self[0:offset]  # offset or offset+1?
         if length is None:
@@ -121,7 +151,11 @@ class ordered_pair(list):
                 'length argument should be 0-1 percentage of original record length or integer desired record length.')
 
     def decimate(self, scale):
-        """Perform decimate operation."""
+        """Perform decimate operation.
+
+        Args:
+            scale: Scale.
+        """
         assert scale > 0
         assert scale <= 1
         old_len = len(self)
@@ -332,17 +366,32 @@ class ordered_pair(list):
             iterations=order)
 
     def x_extents(self):
-        """Return x extents result."""
+        """Return x extents result.
+
+        Returns:
+            Result value.
+        """
         xdata = list(zip(*self))[0]
         return {"min": min(xdata), "max": max(
             xdata), "diff": max(xdata) - min(xdata)}
 
     def y_extents(self):
-        """Return y extents result."""
+        """Return y extents result.
+
+        Returns:
+            Result value.
+        """
         ydata = list(zip(*self))[1]
         return {"min": min(ydata), "max": max(
             ydata), "diff": max(ydata) - min(ydata)}
 
     def interpolated_y_value(self, xvalue):
-        """Return interpolated y value result."""
+        """Return interpolated y value result.
+
+        Args:
+            xvalue: Xvalue.
+
+        Returns:
+            Result value.
+        """
         return numpy.interp(xvalue, list(zip(*self))[0], list(zip(*self))[1])

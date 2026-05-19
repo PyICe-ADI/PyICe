@@ -3,7 +3,17 @@ from .clean_ascii_code import clean_ascii_code
 
 
 def clean_c(str):
-    """Return clean c result."""
+    """Return clean c result.
+
+    Args:
+        str: Str.
+
+    Returns:
+        Result value.
+
+    Raises:
+        Exception: On error condition.
+    """
     str = clean_ascii_code(str)
 
     c_reserved = [

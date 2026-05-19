@@ -8,7 +8,11 @@ timer.add_channel_delta_seconds('delta_s')
 
 
 def sleep(sleep_time):
-    """Perform sleep operation."""
+    """Perform sleep operation.
+
+    Args:
+        sleep_time: Sleep time.
+    """
     print("Sleeping {}s".format(sleep_time))
     time.sleep(sleep_time)
 

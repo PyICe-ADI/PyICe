@@ -21,7 +21,11 @@ except Exception:
 
 class dict_print(dict):
     def __str__(self):
-        """Return string representation."""
+        """Return string representation.
+
+        Returns:
+            Result value.
+        """
         ret_str = ""
         max_key_len = 0
         for key, value in self.items():
@@ -85,7 +89,11 @@ class oscilloscope_waveform_dump(oscilloscope):
         return self.time_info
 
     def fetch_active_scope_channels(self):
-        """Return fetch active scope channels result."""
+        """Return fetch active scope channels result.
+
+        Returns:
+            Result value.
+        """
         results_dict = dict_print()
         for num in [1, 2, 3, 4]:
             displayed = int(
@@ -104,14 +112,28 @@ class oscilloscope_waveform_dump(oscilloscope):
         return results_dict
 
     def user_query_waveform_name(self, channel_number):
-        """Return user query waveform name result."""
+        """Return user query waveform name result.
+
+        Args:
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         resp = ""
         while not len(resp):
             resp = input(f"What's channel_{channel_number} measuring: ")
         return resp
 
     def data_to_sqlite(self, db_filename='scope_data.sqlite'):
-        """Return data to sqlite result."""
+        """Return data to sqlite result.
+
+        Args:
+            db_filename: Db filename.
+
+        Returns:
+            Result value.
+        """
         logger = lab_core.logger(database=db_filename, use_threads=False)
         scope_data = self.fetch_active_scope_channels()
         logger.add_data_channels(scope_data)
@@ -131,7 +153,12 @@ class oscilloscope_waveform_dump(oscilloscope):
 
 
 def plot_dumped_waveform(db_tablename, db_filename='scope_data.sqlite'):
-    """Perform plot dumped waveform operation."""
+    """Perform plot dumped waveform operation.
+
+    Args:
+        db_filename: Db filename.
+        db_tablename: Db tablename.
+    """
     db = sqlite_data(
         table_name=db_tablename,
         database_file=db_filename,
@@ -169,7 +196,13 @@ def plot_dumped_waveform(db_tablename, db_filename='scope_data.sqlite'):
 
 def write_waveform_data(
         db_tablename, db_filename='scope_data.sqlite', output_filename=None):
-    """Return write waveform data result."""
+    """Return write waveform data result.
+
+    Args:
+        db_filename: Db filename.
+        db_tablename: Db tablename.
+        output_filename: Output filename.
+    """
     if output_filename is None:
         output_filename = f'{db_tablename}.json'
     db = sqlite_data(
@@ -191,7 +224,14 @@ def write_waveform_data(
         """Special json encoder for numpy types."""
 
         def default(self, obj):
-            """Return default result."""
+            """Return default result.
+
+            Args:
+                obj: Obj.
+
+            Returns:
+                Result value.
+            """
             if isinstance(obj, numpy.integer):
                 return int(obj)
             elif isinstance(obj, numpy.floating):

@@ -100,6 +100,13 @@ class TMP117(instrument):
         return results
 
     def add_channel(self, channel_name):
-        """Add a channel."""
+        """Add a channel.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         temp_channel = channel(channel_name, read_function=self.read_temp)
         return self._add_channel(temp_channel)

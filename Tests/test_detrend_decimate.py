@@ -4,7 +4,15 @@ from PyICe.lab_utils.decimate import decimate
 
 
 def make_recarray(x, y):
-    """Return make recarray result."""
+    """Return make recarray result.
+
+    Args:
+        x: X.
+        y: Y.
+
+    Returns:
+        Result value.
+    """
     return np.rec.fromarrays([x, y], names=['x', 'y'])
 
 

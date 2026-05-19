@@ -8,14 +8,25 @@ fact = interface_factory()
 
 @pytest.fixture()
 def twi_inter():
-    """Return twi inter result."""
+    """Return twi inter result.
+
+    Returns:
+        Result value.
+    """
     interface = fact.get_twi_dummy_interface()
     return interface
 
 
 @pytest.fixture()
 def twi_inst(twi_inter):
-    """Return twi inst result."""
+    """Return twi inst result.
+
+    Args:
+        twi_inter: Twi inter.
+
+    Returns:
+        Result value.
+    """
     inst = twi_instrument(twi_inter)
     return inst
 
@@ -23,7 +34,11 @@ def twi_inst(twi_inter):
 class TestTwiInstrument:
 
     def test_add_register(self, twi_inst):
-        """Perform test add register operation."""
+        """Perform test add register operation.
+
+        Args:
+            twi_inst: Twi inst.
+        """
         print('test)')
         twi_inst.add_register(name='ex_register',
                               addr7='0x70',
@@ -56,7 +71,11 @@ class TestTwiInstrument:
         # chan.write('Send') This should have worked? non in "Send"?
 
     def test_add_channel_ARA(self, twi_inst):
-        """Perform test add channel ARA operation."""
+        """Perform test add channel ARA operation.
+
+        Args:
+            twi_inst: Twi inst.
+        """
         twi_inst.add_channel_ARA('alert')
         chan = twi_inst.get_channel('alert')
         result = chan.read()

@@ -76,7 +76,11 @@ class keithley_4200(semiconductor_parameter_analyzer):
 
     def get_slot_configuration(self):
         # only works in EM 1 (4200 extended command mode)
-        """Return the slot configuration."""
+        """Return the slot configuration.
+
+        Raises:
+            Exception: On error condition.
+        """
         self.slot_conf = self.get_interface().ask("*OPT?").strip('"').split(",")
         self.smu_numbers = []
         self.vs_numbers = []
@@ -158,51 +162,117 @@ class keithley_4200(semiconductor_parameter_analyzer):
     def add_channels_smu_voltage(
             self, smu_number, voltage_force_channel_name, current_compliance_channel_name):
         # check smu_number is valid
-        """Add a channels smu voltage."""
+        """Add a channels smu voltage.
+
+        Args:
+            current_compliance_channel_name: Current compliance channel name.
+            smu_number: Smu number.
+            voltage_force_channel_name: Voltage force channel name.
+
+        Returns:
+            Result value.
+        """
         return self._add_channels_smu_voltage(
             smu_number, voltage_force_channel_name, current_compliance_channel_name)
 
     def add_channel_smu_voltage_output_range(
             self, smu_number, output_range_channel_name):
         # check smu_number is valid
-        """Add a channel smu voltage output range."""
+        """Add a channel smu voltage output range.
+
+        Args:
+            output_range_channel_name: Output range channel name.
+            smu_number: Smu number.
+
+        Returns:
+            Result value.
+        """
         return self._add_channel_smu_voltage_output_range(
             smu_number, output_range_channel_name)
 
     def add_channels_smu_current(
             self, smu_number, current_force_channel_name, voltage_compliance_channel_name):
         # check smu_number is valid
-        """Add a channels smu current."""
+        """Add a channels smu current.
+
+        Args:
+            current_force_channel_name: Current force channel name.
+            smu_number: Smu number.
+            voltage_compliance_channel_name: Voltage compliance channel name.
+
+        Returns:
+            Result value.
+        """
         return self._add_channels_smu_current(
             smu_number, current_force_channel_name, voltage_compliance_channel_name)
 
     def add_channel_smu_current_output_range(
             self, smu_number, output_range_channel_name):
         # check smu_number is valid
-        """Add a channel smu current output range."""
+        """Add a channel smu current output range.
+
+        Args:
+            output_range_channel_name: Output range channel name.
+            smu_number: Smu number.
+
+        Returns:
+            Result value.
+        """
         return self._add_channel_smu_current_output_range(
             smu_number, output_range_channel_name)
 
     def add_channel_smu_voltage_sense(
             self, smu_number, voltage_sense_channel_name):
         # check smu_number is valid
-        """Add a channel smu voltage sense."""
+        """Add a channel smu voltage sense.
+
+        Args:
+            smu_number: Smu number.
+            voltage_sense_channel_name: Voltage sense channel name.
+
+        Returns:
+            Result value.
+        """
         return self._add_channel_smu_voltage_sense(
             smu_number, voltage_sense_channel_name)
 
     def add_channel_smu_current_sense(
             self, smu_number, current_sense_channel_name):
         # check smu_number is valid
-        """Add a channel smu current sense."""
+        """Add a channel smu current sense.
+
+        Args:
+            current_sense_channel_name: Current sense channel name.
+            smu_number: Smu number.
+
+        Returns:
+            Result value.
+        """
         return self._add_channel_smu_current_sense(
             smu_number, current_sense_channel_name)
 
     def add_channel_vsource(self, vsource_number, vsource_channel_name):
         # check vsource_number is valid
-        """Add a channel vsource."""
+        """Add a channel vsource.
+
+        Args:
+            vsource_channel_name: Vsource channel name.
+            vsource_number: Vsource number.
+
+        Returns:
+            Result value.
+        """
         return self._add_channel_vsource(vsource_number, vsource_channel_name)
 
     def add_channel_vmeter(self, vmeter_number, vmeter_channel_name):
         # check vmeter_number is valid
-        """Add a channel vmeter."""
+        """Add a channel vmeter.
+
+        Args:
+            vmeter_channel_name: Vmeter channel name.
+            vmeter_number: Vmeter number.
+
+        Returns:
+            Result value.
+        """
         return self._add_channel_vmeter(vmeter_number, vmeter_channel_name)

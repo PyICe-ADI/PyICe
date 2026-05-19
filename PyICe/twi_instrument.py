@@ -43,7 +43,25 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
 
     def add_register(self, name, addr7, command_code, size, offset,
                      word_size, is_readable, is_writable, overwrite_others=False):
-        """Add a register."""
+        """Add a register.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            command_code: Command code.
+            is_readable: Is readable.
+            is_writable: Is writable.
+            name: Name identifier.
+            offset: Offset value.
+            overwrite_others: Overwrite others.
+            size: Size in bits.
+            word_size: Word size.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         if self._addr7 != addr7:
             if self._addr7 is None:
                 self._addr7 = addr7  # first time
@@ -75,7 +93,14 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
         return self._add_channel(new_register)
 
     def add_channel_ARA(self, name):
-        """Add a channel ARA."""
+        """Add a channel ARA.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         ARA_channel = lab_core.channel(
             name, read_function=self._interface.alert_response)
         return self._add_channel(ARA_channel)
@@ -84,7 +109,17 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
         raise Exception("Shouldn't be here!")
 
     def get_command_codes(self, register_list):
-        """Return the command codes."""
+        """Return the command codes.
+
+        Args:
+            register_list: Register list.
+
+        Returns:
+            Result value.
+
+        Raises:
+            ChannelAccessException: On error condition.
+        """
         command_codes = []
         for register in register_list:
             if register.is_readable() and not register.get_attribute('read_caching'):
@@ -109,7 +144,14 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
         ) and 'command_code' in channel.get_attributes()])
 
     def read_delegated_channel_list(self, register_list):
-        """Return read delegated channel list result."""
+        """Return read delegated channel list result.
+
+        Args:
+            register_list: Register list.
+
+        Returns:
+            Result value.
+        """
         start_streaming = False
         cc_data = {}
         for data_size in set([ch.get_attribute('word_size')
@@ -131,7 +173,11 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
             # start_streaming = True
 
             def function():
-                """Return function result."""
+                """Return function result.
+
+                Returns:
+                    Result value.
+                """
                 return self._interface.read_register_list(
                     self._addr7, command_codes, data_size, self._PEC)
             debug_logging.debug(
@@ -218,7 +264,19 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
 
     def get_bitfield_writeback_data(
             self, addr7, data, command_code, size, offset, word_size):
-        """Return the bitfield writeback data."""
+        """Return the bitfield writeback data.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            command_code: Command code.
+            data: Data to write.
+            offset: Offset value.
+            size: Size in bits.
+            word_size: Word size.
+
+        Raises:
+            Exception: On error condition.
+        """
         raise Exception(
             'Code cleanup 2024/05/08. Switch to new method name compute_rmw_writeback_data() with new calling and return signature.')
 
@@ -282,7 +340,11 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
             raise Exception('quick_cmd not yet fully implemented.')
         else:
             def function():
-                """Return function result."""
+                """Return function result.
+
+                Returns:
+                    Result value.
+                """
                 return self._interface.read_register(
                     addr7, command_code, word_size, self._PEC)
             # read the data
@@ -503,7 +565,16 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
 
     def populate_from_yoda_json_bridge(
             self, filename, i2c_addr7, extended_addressing=False):
-        """Perform populate from yoda json bridge operation."""
+        """Perform populate from yoda json bridge operation.
+
+        Args:
+            extended_addressing: Extended addressing.
+            filename: File path.
+            i2c_addr7: I2c addr7.
+
+        Raises:
+            Exception: On error condition.
+        """
         with open(filename, 'r') as fp:
             registers = json.load(fp)
         for reg in registers:
@@ -788,9 +859,32 @@ class pmbus_instrument(twi_instrument):
 
     def add_register(self, name, addr7, page, command_code,
                      size, offset, word_size, is_readable, is_writable):
-        """Add a register."""
+        """Add a register.
+
+        Args:
+            addr7: 7-bit I2C device address.
+            command_code: Command code.
+            is_readable: Is readable.
+            is_writable: Is writable.
+            name: Name identifier.
+            offset: Offset value.
+            page: Page.
+            size: Size in bits.
+            word_size: Word size.
+
+        Returns:
+            Result value.
+        """
         def paged_write(data, channel):
-            """Return paged write result."""
+            """Return paged write result.
+
+            Args:
+                channel: Channel object.
+                data: Data to write.
+
+            Returns:
+                Result value.
+            """
             self.set_page(channel.get_attribute('page'))
             return channel.pmbus_unpaged_write(data)
         new_register = twi_instrument.add_register(
@@ -810,7 +904,11 @@ class pmbus_instrument(twi_instrument):
         return new_register
 
     def set_page(self, page):
-        """Set the page."""
+        """Set the page.
+
+        Args:
+            page: Page.
+        """
         if page is not None:
             self._interface.write_register(
                 addr7=self._addr7,
@@ -824,7 +922,14 @@ class pmbus_instrument(twi_instrument):
                 page)
 
     def read_delegated_channel_list(self, register_list):
-        """Return read delegated channel list result."""
+        """Return read delegated channel list result.
+
+        Args:
+            register_list: Register list.
+
+        Returns:
+            Result value.
+        """
         results = lab_core.results_ord_dict()
         pages = set([ch.get_attribute('page') for ch in register_list])
         if len(pages) > 1 and None in pages:

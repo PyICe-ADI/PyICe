@@ -21,7 +21,15 @@ class agilent_35670a(scpi_instrument):
 
     def add_channel_noise(self, channel_name, channel_num=1,
                           freqs=None, res=None, count=None):
-        """Add a channel noise."""
+        """Add a channel noise.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_num: Physical channel number.
+            count: Count.
+            freqs: Freqs.
+            res: Res.
+        """
         if freqs is None:
             freqs = [0, 12.5, 100, 1000, 10000, 100000]
         if res is None:

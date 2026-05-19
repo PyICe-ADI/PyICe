@@ -35,11 +35,24 @@ class sqlite_to_xlsx(object):
         atexit.register(self.close)
 
     def __enter__(self):
-        """Enter the context manager."""
+        """Enter the context manager.
+
+        Returns:
+            Result value.
+        """
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        """Exit the context manager."""
+        """Exit the context manager.
+
+        Args:
+            exc_type: Exc type.
+            exc_value: Exc value.
+            traceback: Traceback.
+
+        Returns:
+            Result value.
+        """
         self.close()
         return None
 
@@ -330,7 +343,15 @@ class sqlite_to_xlsx(object):
             {'type': 'scatter', 'subtype': subtype})
 
     def add_chartsheet(self, name, chart):
-        """Add a chartsheet."""
+        """Add a chartsheet.
+
+        Args:
+            chart: Chart.
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         chartsheet = self._workbook.add_chartsheet(name)
         chartsheet.set_chart(chart)
         return chartsheet

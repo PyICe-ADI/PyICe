@@ -46,18 +46,36 @@ class sqlite_data(
             self.sql_query = "SELECT * from {}".format(table_name)
 
     def set_table(self, table_name):
-        """Set the table."""
+        """Set the table.
+
+        Args:
+            table_name: Database table name.
+        """
         self.table_name = table_name
 
     def convert_timestring(self, time_bytes):
-        """Return convert timestring result."""
+        """Return convert timestring result.
+
+        Args:
+            time_bytes: Time bytes.
+
+        Returns:
+            Result value.
+        """
         time_string = time_bytes.decode('ascii')
         return datetime.datetime.strptime(
             time_string, '%Y-%m-%dT%H:%M:%S.%fZ').replace(tzinfo=UTC()).astimezone(self.timezone)
 
     @classmethod
     def convert_vector(cls, col_data_bytes):
-        """Return convert vector result."""
+        """Return convert vector result.
+
+        Args:
+            col_data_bytes: Col data bytes.
+
+        Returns:
+            Result value.
+        """
         col_data_str = col_data_bytes.decode('utf-8')
         if re.match(r'^\[.*\]$', col_data_str):
             return ast.literal_eval(col_data_str)  # This is slow!
@@ -71,7 +89,14 @@ class sqlite_data(
     def convert_ndarray(self, col_data_bytes):
         # Expect flat (1d) array of homogeneous dtype
         # uint8; support up to 255 format string characters to follow
-        """Return convert ndarray result."""
+        """Return convert ndarray result.
+
+        Args:
+            col_data_bytes: Col data bytes.
+
+        Returns:
+            Result value.
+        """
         fmt_str_size = col_data_bytes[0]
         # ascii dtype format string, ex "<d" little endian double precision
         # float 64.
@@ -135,15 +160,32 @@ class sqlite_data(
         return len(self.conn.execute(self.sql_query, self.params).fetchall())
 
     def __enter__(self):
-        """Enter the context manager."""
+        """Enter the context manager.
+
+        Returns:
+            Result value.
+        """
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        """Exit the context manager."""
+        """Exit the context manager.
+
+        Args:
+            exc_tb: Exc tb.
+            exc_type: Exc type.
+            exc_val: Exc val.
+        """
         self.conn.close()
 
     def get_table_names(self, include_views=True):
-        """Return the table names."""
+        """Return the table names.
+
+        Args:
+            include_views: Include views.
+
+        Returns:
+            Result value.
+        """
         view_where = "OR type == 'view'" if include_views else ''
         tables = self.conn.execute(
             f"SELECT name FROM sqlite_master WHERE type == 'table'{view_where}").fetchall()

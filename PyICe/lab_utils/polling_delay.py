@@ -225,7 +225,11 @@ def test():
     from PyICe.lab_utils.polling_delay import polling_delay
 
     def thinking_of_a_number():
-        """Return thinking of a number result."""
+        """Return thinking of a number result.
+
+        Returns:
+            Result value.
+        """
         resp = random.randrange(100)
         print(f'testing {resp}')
         return resp
@@ -235,12 +239,20 @@ def test():
             self._time = 0
 
         def delay(self, dly_time):
-            """Perform delay operation."""
+            """Perform delay operation.
+
+            Args:
+                dly_time: Dly time.
+            """
             print(f'waiting {dly_time} at time {self._time}')
             self._time += dly_time
 
         def get_time(self):
-            """Return the time."""
+            """Return the time.
+
+            Returns:
+                Result value.
+            """
             return self._time
     vt = virt_time()
 

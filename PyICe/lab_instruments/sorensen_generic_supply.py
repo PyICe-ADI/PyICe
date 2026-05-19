@@ -43,22 +43,38 @@ class sorensen_generic_supply(instrument):
         return voltage_channel
 
     def add_channel_voltage(self, channel_name):
-        """Add a channel voltage."""
+        """Add a channel voltage.
+
+        Args:
+            channel_name: Name for the new channel.
+        """
         new_channel = channel(channel_name, write_function=self._write_voltage)
         self._add_channel(new_channel)
 
     def add_channel_current(self, channel_name):
-        """Add a channel current."""
+        """Add a channel current.
+
+        Args:
+            channel_name: Name for the new channel.
+        """
         new_channel = channel(channel_name, write_function=self._write_current)
         self._add_channel(new_channel)
 
     def add_channel_vsense(self, channel_name):
-        """Add a channel vsense."""
+        """Add a channel vsense.
+
+        Args:
+            channel_name: Name for the new channel.
+        """
         new_channel = channel(channel_name, read_function=self._read_vsense)
         self._add_channel(new_channel)
 
     def add_channel_isense(self, channel_name):
-        """Add a channel isense."""
+        """Add a channel isense.
+
+        Args:
+            channel_name: Name for the new channel.
+        """
         new_channel = channel(channel_name, read_function=self._read_isense)
         self._add_channel(new_channel)
 

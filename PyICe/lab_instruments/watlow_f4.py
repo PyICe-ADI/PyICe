@@ -33,7 +33,14 @@ class watlow_f4(temperature_chamber, modbus_instrument):
         self._pv = self['PV1']
 
     def add_channels(self, channel_name):
-        """Add a channels."""
+        """Add a channels.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         self.remove_channel(self._sv)
         self.remove_channel(self._pv)
         return super(watlow_f4, self).add_channels(channel_name)

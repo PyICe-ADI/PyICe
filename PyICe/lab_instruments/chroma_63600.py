@@ -57,7 +57,15 @@ class chroma_63600(scpi_instrument):
             self.get_interface().write(("LOAD OFF"))
 
     def add_channel_current(self, channel_name, num):
-        """Add a channel current."""
+        """Add a channel current.
+
+        Args:
+            channel_name: Name for the new channel.
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             write_function=lambda current: self._write_current(
@@ -73,7 +81,15 @@ class chroma_63600(scpi_instrument):
         self.get_interface().write((f"CURR:STAT:L1 {current}"))
 
     def add_channel_voltage(self, channel_name, num):
-        """Add a channel voltage."""
+        """Add a channel voltage.
+
+        Args:
+            channel_name: Name for the new channel.
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             write_function=lambda voltage: self._write_voltage(
@@ -90,7 +106,15 @@ class chroma_63600(scpi_instrument):
 
     # current limit in CV  mode
     def add_channel_current_limit(self, channel_name, num):
-        """Add a channel current limit."""
+        """Add a channel current limit.
+
+        Args:
+            channel_name: Name for the new channel.
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             write_function=lambda current_limit: self._write_current_limit(
@@ -106,7 +130,15 @@ class chroma_63600(scpi_instrument):
         self.get_interface().write((f"VOLT:STAT:ILIM {current_limit}"))
 
     def add_channel_resistance(self, channel_name, num):
-        """Add a channel resistance."""
+        """Add a channel resistance.
+
+        Args:
+            channel_name: Name for the new channel.
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             write_function=lambda resistance: self._write_resistance(
@@ -124,7 +156,15 @@ class chroma_63600(scpi_instrument):
         self.get_interface().write((f"RES:STAT:L1 {resistance}"))  # TODO
 
     def add_channel_power(self, channel_name, num):
-        """Add a channel power."""
+        """Add a channel power.
+
+        Args:
+            channel_name: Name for the new channel.
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             write_function=lambda power: self._write_power(
@@ -144,7 +184,15 @@ class chroma_63600(scpi_instrument):
         # self.get_interface().write((f"MEAS:INP {num}"))
 
     def add_channel_measured_current(self, channel_name, num):
-        """Add a channel measured current."""
+        """Add a channel measured current.
+
+        Args:
+            channel_name: Name for the new channel.
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._read_measured_current(num))
@@ -158,7 +206,15 @@ class chroma_63600(scpi_instrument):
         return float(self.get_interface().ask("MEAS:CURR?"))
 
     def add_channel_measured_voltage(self, channel_name, num):
-        """Add a channel measured voltage."""
+        """Add a channel measured voltage.
+
+        Args:
+            channel_name: Name for the new channel.
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._read_measured_voltage(num))
@@ -173,7 +229,15 @@ class chroma_63600(scpi_instrument):
         return float(self.get_interface().ask("MEAS:VOLT?"))
 
     def add_channel_measured_power(self, channel_name, num):
-        """Add a channel measured power."""
+        """Add a channel measured power.
+
+        Args:
+            channel_name: Name for the new channel.
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._read_measured_power(num))

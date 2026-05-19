@@ -118,9 +118,26 @@ class Units_Parser():
         }
 
     def parse(self, units):
-        """Return parse result."""
+        """Return parse result.
+
+        Args:
+            units: Unit string.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         def viable_symbol(string):
-            """Return viable symbol result."""
+            """Return viable symbol result.
+
+            Args:
+                string: String data.
+
+            Returns:
+                Result value.
+            """
             if string == "":
                 return True
             for symbol in self.symbols:

@@ -30,7 +30,11 @@ class threaded_writer(object):
             self.stop_event.set()
 
         def set_time_interval(self, time_interval):
-            """Set the time interval."""
+            """Set the time interval.
+
+            Args:
+                time_interval: Time interval.
+            """
             self.queue.put(("time_interval", time_interval))
 
     def __init__(self, verbose=False):
@@ -85,7 +89,14 @@ class threaded_writer(object):
                     self.sequence = self.generator(sequence)
 
                 def generator(self, sequence):
-                    """Perform generator operation."""
+                    """Perform generator operation.
+
+                    Args:
+                        sequence: Sequence.
+
+                    Yields:
+                        Next value.
+                    """
                     for i in sequence:
                         yield i
 

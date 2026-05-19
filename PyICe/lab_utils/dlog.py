@@ -17,11 +17,24 @@ class dlog(object):
         self.log_notime(time.strftime("%a, %d %b %Y %H:%M:%S"))
 
     def __enter__(self):
-        """Enter the context manager."""
+        """Enter the context manager.
+
+        Returns:
+            Result value.
+        """
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        """Exit the context manager."""
+        """Exit the context manager.
+
+        Args:
+            exc_tb: Exc tb.
+            exc_type: Exc type.
+            exc_val: Exc val.
+
+        Returns:
+            Result value.
+        """
         self.f.close()
         return None
 

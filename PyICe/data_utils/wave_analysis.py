@@ -108,7 +108,11 @@ class waveform(object):
         # if self._trigger_polarity == 0:
             # raise ValueError("\nWaveform Analyser: No discernable trigger found within data record.\n")
     def dump_data(self, filename='waveform_analyzer_debug_data.pkl'):
-        """Perform dump data operation."""
+        """Perform dump data operation.
+
+        Args:
+            filename: File path.
+        """
         import pickle
         with open(filename, 'ab') as f:
             pickle.dump(self.data, f)
@@ -227,7 +231,18 @@ class waveform(object):
         self.trigger_10_90_value = 0
 
     def settling_time(self, low_limit, high_limit):
-        """Return settling time result."""
+        """Return settling time result.
+
+        Args:
+            high_limit: High limit.
+            low_limit: Low limit.
+
+        Returns:
+            Result value.
+
+        Raises:
+            ValueError: On error condition.
+        """
         self.trigger()
         if self._trigger_polarity == 0:
             raise ValueError(
@@ -251,7 +266,18 @@ class waveform(object):
         # This method calculates the time difference between the max deviation
         # point (positive or negative) and the last time the waveform iss
         # outside the limit
-        """Return settling time from max deviation result."""
+        """Return settling time from max deviation result.
+
+        Args:
+            deviation: Deviation.
+            limit: Limit.
+
+        Returns:
+            Result value.
+
+        Raises:
+            ValueError: On error condition.
+        """
         if deviation is None:
             raise ValueError("\ndeviation should be 'pos' or 'neg'\n")
         elif deviation.lower() == 'neg':
@@ -311,7 +337,14 @@ class waveform(object):
         # This method calculates the time difference between the first time the
         # waveform is outside limit to the last time the waveform is outside
         # the limit.
-        """Return settling time outside limit result."""
+        """Return settling time outside limit result.
+
+        Args:
+            limit: Limit.
+
+        Returns:
+            Result value.
+        """
         xreverse = list(self.xdata)
         yreverse = list(self.ydata)
         xreverse.reverse()
@@ -370,7 +403,11 @@ class waveform(object):
         return -1
 
     def undershoot(self):
-        """Return undershoot result."""
+        """Return undershoot result.
+
+        Returns:
+            Result value.
+        """
         from bokeh.models import Span
         self.plt.add_layout(Span(location=self._average_in,
                                  dimension='width',
@@ -389,7 +426,11 @@ class waveform(object):
         return min(self.ydata) - self._average_in
 
     def overshoot(self):
-        """Return overshoot result."""
+        """Return overshoot result.
+
+        Returns:
+            Result value.
+        """
         from bokeh.models import Span
         self.plt.add_layout(Span(location=self._average_in,
                                  dimension='width',
@@ -408,7 +449,15 @@ class waveform(object):
         return max(self.ydata) - self._average_in
 
     def slew_rate(self):
-        """Return slew rate result."""
+        """Return slew rate result.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+            ValueError: On error condition.
+        """
         self.trigger_10_90()
         if self.trigger_10_90_polarity == 0:
             raise ValueError(
@@ -464,7 +513,15 @@ class waveform(object):
         return self.ramp_slope
 
     def rise_time(self, low_percentage=0.1, high_percentage=0.9):
-        """Return rise time result."""
+        """Return rise time result.
+
+        Args:
+            high_percentage: High percentage.
+            low_percentage: Low percentage.
+
+        Returns:
+            Result value.
+        """
         from bokeh.models import Span
         amplitude = self._average_out - self._average_in
         for idx, value in enumerate(self.ydata):
@@ -504,7 +561,15 @@ class waveform(object):
         return self.xdata[self.index_90] - self.xdata[self.index_10]
 
     def fall_time(self, low_percentage=0.1, high_percentage=0.9):
-        """Return fall time result."""
+        """Return fall time result.
+
+        Args:
+            high_percentage: High percentage.
+            low_percentage: Low percentage.
+
+        Returns:
+            Result value.
+        """
         from bokeh.models import Span
         amplitude = self._average_in - self._average_out
         for idx, value in enumerate(self.ydata):
@@ -544,40 +609,82 @@ class waveform(object):
         return self.xdata[self.index_10] - self.xdata[self.index_90]
 
     def average_in(self):
-        """Return average in result."""
+        """Return average in result.
+
+        Returns:
+            Result value.
+        """
         return self._average_in
 
     def average_out(self):
-        """Return average out result."""
+        """Return average out result.
+
+        Returns:
+            Result value.
+        """
         return self._average_out
 
     def trigger_polarity(self):
-        """Return trigger polarity result."""
+        """Return trigger polarity result.
+
+        Returns:
+            Result value.
+        """
         return self._trigger_polarity
 
     def trigger_value(self):
-        """Return trigger value result."""
+        """Return trigger value result.
+
+        Returns:
+            Result value.
+        """
         return self._trigger_value
 
     def trigger_index(self):
-        """Return trigger index result."""
+        """Return trigger index result.
+
+        Returns:
+            Result value.
+        """
         return self._trigger_index
 
     def trigger_sigma(self):
-        """Return trigger sigma result."""
+        """Return trigger sigma result.
+
+        Returns:
+            Result value.
+        """
         return self._trigger_sigma
 
     def trigger_level(self):
-        """Return trigger level result."""
+        """Return trigger level result.
+
+        Returns:
+            Result value.
+        """
         return self._trigger_level
 
     def amplitude(self):
-        """Return amplitude result."""
+        """Return amplitude result.
+
+        Returns:
+            Result value.
+        """
         return max(self.ydata) - min(self.ydata)
 
     def find_grt_than_or_equal_to(
             self, vth, start_index, stop_index, increment):
-        """Return find grt than or equal to result."""
+        """Return find grt than or equal to result.
+
+        Args:
+            increment: Increment.
+            start_index: Start index.
+            stop_index: Stop index.
+            vth: Vth.
+
+        Returns:
+            Result value.
+        """
         for i in range(start_index, stop_index + increment, increment):
             if self.ydata[i] >= vth:
                 return i
@@ -585,7 +692,17 @@ class waveform(object):
 
     def find_less_than_or_equal_to(
             self, vth, start_index, stop_index, increment):
-        """Return find less than or equal to result."""
+        """Return find less than or equal to result.
+
+        Args:
+            increment: Increment.
+            start_index: Start index.
+            stop_index: Stop index.
+            vth: Vth.
+
+        Returns:
+            Result value.
+        """
         for i in range(start_index, stop_index + increment, increment):
             if self.ydata[i] <= vth:
                 return i
@@ -597,7 +714,20 @@ class waveform(object):
         # Input arg lvl should specified as a ratio of [vhigh-vlow], The default is 0.5 of [vhigh-vlow]
         # Optional start_index sets the starting point for the search and must
         # be within the range of waveform indexes
-        """Return find first rising edge result."""
+        """Return find first rising edge result.
+
+        Args:
+            lvl: Lvl.
+            start_index: Start index.
+            vhigh: Vhigh.
+            vlow: Vlow.
+
+        Returns:
+            Result value.
+
+        Raises:
+            ValueError: On error condition.
+        """
         if vhigh is None:
             raise ValueError(
                 "\nWaveform Analyser: input args vhigh must be specified.\n")
@@ -629,7 +759,20 @@ class waveform(object):
         # Input arg lvl should specified as a ratio of [vhigh-vlow], The default is 0.5 of [vhigh-vlow]
         # Optional start_index sets the starting point for the search and must
         # be within the range of waveform indexes
-        """Return find first falling edge result."""
+        """Return find first falling edge result.
+
+        Args:
+            lvl: Lvl.
+            start_index: Start index.
+            vhigh: Vhigh.
+            vlow: Vlow.
+
+        Returns:
+            Result value.
+
+        Raises:
+            ValueError: On error condition.
+        """
         if vhigh is None:
             raise ValueError(
                 "\nWaveform Analyser: input args vhigh must be specified.\n")
@@ -661,7 +804,20 @@ class waveform(object):
         # hi_lvl = High threshold as a ratio of the [vhigh-vlow] to find the stop time of rise time
         # If successful, returns (real_lo_lvl, real_hi_lvl, rise time). If
         # unable to find the 50%, lo_lvl or hi_lvl returns (-1,-1,-1)
-        """Return sw rise time result."""
+        """Return sw rise time result.
+
+        Args:
+            hi_lvl: Hi lvl.
+            lo_lvl: Lo lvl.
+            vhigh: Vhigh.
+            vlow: Vlow.
+
+        Returns:
+            Result value.
+
+        Raises:
+            ValueError: On error condition.
+        """
         if lo_lvl is None or hi_lvl is None:
             raise ValueError(
                 "\nWaveform Analyser: input args lo_lvl and hi_lvl must be specified as a ratio of the amplitude (vhigh-vlow).\n")
@@ -734,7 +890,20 @@ class waveform(object):
         # lo_lvl = Low threshold as a ratio of the [vhigh-vlow] to find the stop time of fall time
         # If successful, returns (real_lo_lvl, real_hi_lvl, fall time). If
         # unable to find the 50%, lo_lvl or hi_lvl returns (-1,-1,-1)
-        """Return sw fall time result."""
+        """Return sw fall time result.
+
+        Args:
+            hi_lvl: Hi lvl.
+            lo_lvl: Lo lvl.
+            vhigh: Vhigh.
+            vlow: Vlow.
+
+        Returns:
+            Result value.
+
+        Raises:
+            ValueError: On error condition.
+        """
         if lo_lvl is None or hi_lvl is None:
             raise ValueError(
                 "\nWaveform Analyser: input args lo_lvl and hi_lvl must be specified as a ratio of the amplitude (vhigh-vlow).\n")
@@ -810,7 +979,19 @@ class waveform(object):
         # vth           = see the definitions for nol_low_side and nol_high_side
         # If successful, returns (nol_low_side, nol_high_side). If not, returns
         # (-1,-1)
-        """Return sw nol rise result."""
+        """Return sw nol rise result.
+
+        Args:
+            vhigh: Vhigh.
+            vlow: Vlow.
+            vth: Vth.
+
+        Returns:
+            Result value.
+
+        Raises:
+            ValueError: On error condition.
+        """
         from bokeh.models import Span
         if vth is None:
             raise ValueError(
@@ -916,7 +1097,19 @@ class waveform(object):
         # vth           = see the definitions for nol_low_side and nol_high_side
         # If successful, returns (nol_low_side, nol_high_side). If not, returns
         # (-1,-1)
-        """Return sw nol fall result."""
+        """Return sw nol fall result.
+
+        Args:
+            vhigh: Vhigh.
+            vlow: Vlow.
+            vth: Vth.
+
+        Returns:
+            Result value.
+
+        Raises:
+            ValueError: On error condition.
+        """
         from bokeh.models import Span
         if vth is None:
             raise ValueError(
@@ -1018,7 +1211,14 @@ class waveform(object):
 
     def read_xdata(self, index):
         # This method returns the xdata value for a given index.
-        """Return read xdata result."""
+        """Return read xdata result.
+
+        Args:
+            index: Index.
+
+        Returns:
+            Result value.
+        """
         from bokeh.models import Span
         self.plt.add_layout(Span(location=self.xdata[index],
                                  dimension='height',
@@ -1031,7 +1231,14 @@ class waveform(object):
 
     def read_ydata(self, index):
         # This method returns the ydata value for a given index.
-        """Return read ydata result."""
+        """Return read ydata result.
+
+        Args:
+            index: Index.
+
+        Returns:
+            Result value.
+        """
         from bokeh.models import Span
         self.plt.add_layout(Span(location=self.ydata[index],
                                  dimension='width',

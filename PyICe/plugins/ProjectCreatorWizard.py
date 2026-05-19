@@ -48,7 +48,11 @@ if __name__ == '__main__':
         os.mkdir(folder)
 
     def traceability_script_maker():
-        """Return traceability script maker result."""
+        """Return traceability script maker result.
+
+        Returns:
+            Result value.
+        """
         script_str = '''from PyICe.plugins.traceability_items import traceability_items
 import os
 
@@ -62,7 +66,11 @@ def get_traceability_items(test):
         return script_str
 
     def bench_connection_addon():
-        """Return bench connection addon result."""
+        """Return bench connection addon result.
+
+        Returns:
+            Result value.
+        """
         bench_method = '''
     def _declare_bench_connections(self):
         #Here user has the option to add project specific components to self.pm.test_components and default connections to self.pm.test_connections before adding the test's changes.
@@ -70,7 +78,11 @@ def get_traceability_items(test):
         return bench_method
 
     def user_script_maker():
-        """Return user script maker result."""
+        """Return user script maker result.
+
+        Returns:
+            Result value.
+        """
         user_script_str = '''def get_notification_targets():
     targets =   {
                 # 'emails':['your.email@analog.com'],

@@ -156,14 +156,22 @@ class TestSqliteData:
         return db_path
 
     def test_basic_query(self, populated_db):
-        """Perform test basic query operation."""
+        """Perform test basic query operation.
+
+        Args:
+            populated_db: Populated db.
+        """
         db = sqlite_data(table_name='measurements',
                          database_file=populated_db)
         rows = list(db)
         assert len(rows) == 5
 
     def test_row_access_by_name(self, populated_db):
-        """Perform test row access by name operation."""
+        """Perform test row access by name operation.
+
+        Args:
+            populated_db: Populated db.
+        """
         db = sqlite_data(table_name='measurements',
                          database_file=populated_db)
         row = db[0]
@@ -171,27 +179,43 @@ class TestSqliteData:
         assert row['current'] == 0.001
 
     def test_row_access_by_index(self, populated_db):
-        """Perform test row access by index operation."""
+        """Perform test row access by index operation.
+
+        Args:
+            populated_db: Populated db.
+        """
         db = sqlite_data(table_name='measurements',
                          database_file=populated_db)
         row = db[0]
         assert row['voltage'] == 3.3
 
     def test_length(self, populated_db):
-        """Perform test length operation."""
+        """Perform test length operation.
+
+        Args:
+            populated_db: Populated db.
+        """
         db = sqlite_data(table_name='measurements',
                          database_file=populated_db)
         assert len(db) == 5
 
     def test_slicing(self, populated_db):
-        """Perform test slicing operation."""
+        """Perform test slicing operation.
+
+        Args:
+            populated_db: Populated db.
+        """
         db = sqlite_data(table_name='measurements',
                          database_file=populated_db)
         rows = db[1:3]
         assert len(rows) == 2
 
     def test_custom_query(self, populated_db):
-        """Perform test custom query operation."""
+        """Perform test custom query operation.
+
+        Args:
+            populated_db: Populated db.
+        """
         db = sqlite_data(table_name='measurements',
                          database_file=populated_db)
         db.query("SELECT voltage FROM measurements WHERE current > ?", 0.003)
@@ -200,7 +224,11 @@ class TestSqliteData:
         assert all(row['voltage'] <= 3.0 for row in rows)
 
     def test_get_column_names(self, populated_db):
-        """Perform test get column names operation."""
+        """Perform test get column names operation.
+
+        Args:
+            populated_db: Populated db.
+        """
         db = sqlite_data(table_name='measurements',
                          database_file=populated_db)
         names = db.get_column_names()
@@ -209,14 +237,22 @@ class TestSqliteData:
         assert 'status' in names
 
     def test_get_table_names(self, populated_db):
-        """Perform test get table names operation."""
+        """Perform test get table names operation.
+
+        Args:
+            populated_db: Populated db.
+        """
         db = sqlite_data(table_name='measurements',
                          database_file=populated_db)
         tables = db.get_table_names()
         assert 'measurements' in tables
 
     def test_get_distinct(self, populated_db):
-        """Perform test get distinct operation."""
+        """Perform test get distinct operation.
+
+        Args:
+            populated_db: Populated db.
+        """
         db = sqlite_data(table_name='measurements',
                          database_file=populated_db)
         statuses = db.get_distinct('status')
@@ -225,21 +261,33 @@ class TestSqliteData:
         assert 'fail' in statuses
 
     def test_context_manager(self, populated_db):
-        """Perform test context manager operation."""
+        """Perform test context manager operation.
+
+        Args:
+            populated_db: Populated db.
+        """
         with sqlite_data(table_name='measurements',
                          database_file=populated_db) as db:
             rows = list(db)
             assert len(rows) == 5
 
     def test_iteration(self, populated_db):
-        """Perform test iteration operation."""
+        """Perform test iteration operation.
+
+        Args:
+            populated_db: Populated db.
+        """
         db = sqlite_data(table_name='measurements',
                          database_file=populated_db)
         voltages = [row['voltage'] for row in db]
         assert voltages == [3.3, 3.2, 3.1, 3.0, 2.9]
 
     def test_numpy_recarray(self, populated_db):
-        """Perform test numpy recarray operation."""
+        """Perform test numpy recarray operation.
+
+        Args:
+            populated_db: Populated db.
+        """
         db = sqlite_data(table_name='measurements',
                          database_file=populated_db)
         db.query("SELECT voltage, current FROM measurements")

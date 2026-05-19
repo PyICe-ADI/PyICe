@@ -185,7 +185,17 @@ def infinite_sequential_chunk_generator(start, step, stop=None):
 
 
 def infinite_random_chunkstream(max_size, min_size=0, max_int=255, min_int=0):
-    """Perform infinite random chunkstream operation."""
+    """Perform infinite random chunkstream operation.
+
+    Args:
+        max_int: Max int.
+        max_size: Max size.
+        min_int: Min int.
+        min_size: Min size.
+
+    Yields:
+        Next value.
+    """
     for v in (min_int, max_int, min_size, max_size):
         assert isinstance(v, int) and v >= 0
     assert max_int >= min_int
@@ -198,7 +208,14 @@ def infinite_random_chunkstream(max_size, min_size=0, max_int=255, min_int=0):
 
 
 def chunkstream_to_bytestream(*chunkstreams):
-    """Perform chunkstream to bytestream operation."""
+    """Perform chunkstream to bytestream operation.
+
+    Args:
+        *chunkstreams: Additional positional arguments.
+
+    Yields:
+        Next value.
+    """
     while True:
         for chunkstrm in chunkstreams:
             chunk = next(chunkstrm)
@@ -355,7 +372,11 @@ if __name__ == '__main__':
     print("=" * 78)
 
     def print_junk_bytes(junk_bytes):
-        """Perform print junk bytes operation."""
+        """Perform print junk bytes operation.
+
+        Args:
+            junk_bytes: Junk bytes.
+        """
         print_hex_bytes(
             the_bytes=junk_bytes,
             prefix="JUNKED bytes ",

@@ -21,10 +21,22 @@ class record_order_parser:
         self._repeat_count = 0
 
     def map_data(self, record_type, data):
-        """Return map data result."""
+        """Return map data result.
+
+        Args:
+            data: Data to write.
+            record_type: Record type.
+
+        Returns:
+            Result value.
+        """
         class pretty_dict(dict):
             def __str__(self):
-                """Return string representation."""
+                """Return string representation.
+
+                Returns:
+                    Result value.
+                """
                 hex_fields = ('TEST_FLG', 'PARM_FLG',)
                 bin_fields = (),
                 dcopy = pretty_dict(self)  # don't mess up data!
@@ -40,14 +52,23 @@ class record_order_parser:
         return dmap
 
     def after_begin(self, dataSrc):
-        """Perform after begin operation."""
+        """Perform after begin operation.
+
+        Args:
+            dataSrc: Datasrc.
+        """
         self.dataSrc = dataSrc
         self.inp_file = self.dataSrc.inp.name
         print(f'Processing {self.inp_file}')
         self._dut_count = 0
 
     def after_send(self, dataSrc, data):
-        """Perform after send operation."""
+        """Perform after send operation.
+
+        Args:
+            data: Data to write.
+            dataSrc: Datasrc.
+        """
         if data is None:
             breakpoint()
         record_type = type(data[0])
@@ -85,12 +106,20 @@ class record_order_parser:
             self._dut_count += 1
 
     def after_complete(self, dataSrc):
-        """Perform after complete operation."""
+        """Perform after complete operation.
+
+        Args:
+            dataSrc: Datasrc.
+        """
         print(f'Processed {self._dut_count} DUTs.')
 
 
 def process_file(filename):
-    """Perform process file operation."""
+    """Perform process file operation.
+
+    Args:
+        filename: File path.
+    """
     with open(filename, 'rb') as f:
         p = Parser(inp=f, reopen_fn=None)
         p.addSink(record_order_parser())
@@ -99,7 +128,11 @@ def process_file(filename):
 
 
 def process_dir(top_dir):
-    """Perform process dir operation."""
+    """Perform process dir operation.
+
+    Args:
+        top_dir: Top dir.
+    """
     if os.path.splitext(top_dir)[1] in ['.std_1', '.stdf']:
         # Single file
         process_file(top_dir)

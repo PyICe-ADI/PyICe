@@ -153,37 +153,69 @@ class TestInterpolator:
 
     @pytest.fixture
     def linear(self):
-        """Return linear result."""
+        """Return linear result.
+
+        Returns:
+            Result value.
+        """
         return interpolator([[0, 0], [10, 100]])
 
     @pytest.fixture
     def multi_point(self):
-        """Return multi point result."""
+        """Return multi point result.
+
+        Returns:
+            Result value.
+        """
         return interpolator([[0, 0], [1, 10], [2, 20], [3, 30]])
 
     def test_interpolate_midpoint(self, linear):
-        """Perform test interpolate midpoint operation."""
+        """Perform test interpolate midpoint operation.
+
+        Args:
+            linear: Linear.
+        """
         assert linear(5) == 50.0
 
     def test_interpolate_at_point(self, linear):
-        """Perform test interpolate at point operation."""
+        """Perform test interpolate at point operation.
+
+        Args:
+            linear: Linear.
+        """
         assert linear(0) == 0.0
         assert linear(10) == 100.0
 
     def test_extrapolate_below(self, linear):
-        """Perform test extrapolate below operation."""
+        """Perform test extrapolate below operation.
+
+        Args:
+            linear: Linear.
+        """
         assert linear(-5) == -50.0
 
     def test_extrapolate_above(self, linear):
-        """Perform test extrapolate above operation."""
+        """Perform test extrapolate above operation.
+
+        Args:
+            linear: Linear.
+        """
         assert linear(15) == 150.0
 
     def test_get_x_val(self, linear):
-        """Perform test get x val operation."""
+        """Perform test get x val operation.
+
+        Args:
+            linear: Linear.
+        """
         assert linear.get_x_val(50) == 5.0
 
     def test_multi_point_interpolation(self, multi_point):
-        """Perform test multi point interpolation operation."""
+        """Perform test multi point interpolation operation.
+
+        Args:
+            multi_point: Multi point.
+        """
         assert multi_point(1.5) == 15.0
 
     def test_add_point(self):

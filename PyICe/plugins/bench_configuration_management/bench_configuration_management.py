@@ -38,15 +38,27 @@ class terminal():
         self.instrument = instrument
 
     def get_type(self):
-        """Return the type."""
+        """Return the type.
+
+        Returns:
+            Result value.
+        """
         return self.type
 
     def get_owner(self):
-        """Return the owner."""
+        """Return the owner.
+
+        Returns:
+            Result value.
+        """
         return self.owner
 
     def get_ownerclass(self):
-        """Return the ownerclass."""
+        """Return the ownerclass.
+
+        Returns:
+            Result value.
+        """
         return self.instrument
 
 
@@ -71,7 +83,15 @@ class bench_config_component():
         self.is_a_kind_of = generic_instrument_class
 
     def add_terminal(self, name, instrument=None):
-        """Add a terminal."""
+        """Add a terminal.
+
+        Args:
+            instrument: Instrument.
+            name: Name identifier.
+
+        Raises:
+            ValueError: On error condition.
+        """
         if name in self._terminals:
             raise ValueError(
                 f"\n\n*** ERROR: Bad component definition in {self.type}. Duplicate terminal name: '{name}'.\n")
@@ -83,23 +103,49 @@ class bench_config_component():
         """Prototype. Make repeated calls to self.add_terminal."""
 
     def get_terminals(self):
-        """Return the terminals."""
+        """Return the terminals.
+
+        Returns:
+            Result value.
+        """
         return self._terminals
 
     def get_name(self):
-        """Return the name."""
+        """Return the name.
+
+        Returns:
+            Result value.
+        """
         return self.name
 
     def __getitem__(self, item):
-        """Get item by key or index."""
+        """Get item by key or index.
+
+        Args:
+            item: Item.
+
+        Returns:
+            Result value.
+        """
         return self._terminals[item]
 
     def __contains__(self, item):
-        """Check if item is contained."""
+        """Check if item is contained.
+
+        Args:
+            item: Item.
+
+        Returns:
+            Result value.
+        """
         return item in self._terminals
 
     def __iter__(self):
-        """Return iterator over items."""
+        """Return iterator over items.
+
+        Returns:
+            Result value.
+        """
         return self._terminals.keys()
 
 
@@ -110,11 +156,19 @@ class component_collection():
         self.components = {}
 
     def add_component(self, component):
-        """Add a component."""
+        """Add a component.
+
+        Args:
+            component: Component.
+        """
         self.components[component.get_name()] = component
 
     def get_components(self):
-        """Return the components."""
+        """Return the components.
+
+        Returns:
+            Result value.
+        """
         return self.components
 
     def print_components(self):
@@ -126,7 +180,11 @@ class component_collection():
         print("\n")
 
     def print_terminals_by_component(self):
-        """Return print terminals by component result."""
+        """Return print terminals by component result.
+
+        Returns:
+            Result value.
+        """
         text = ''
         for component in self.components:
             text += f'{component}\n'
@@ -144,19 +202,41 @@ class connection():
         self.owner = owner
 
     def get_terminals(self):
-        """Return the terminals."""
+        """Return the terminals.
+
+        Returns:
+            Result value.
+        """
         return self.terminals
 
     def get_script_name(self):
-        """Return the script name."""
+        """Return the script name.
+
+        Returns:
+            Result value.
+        """
         return self.owner
 
     def has_terminals(self, terminal_list):
-        """Return whether terminals exists."""
+        """Return whether terminals exists.
+
+        Args:
+            terminal_list: Terminal list.
+
+        Returns:
+            Result value.
+        """
         return terminal_list[0] in self.terminals and terminal_list[1] in self.terminals
 
     def has_terminal(self, terminal):
-        """Return whether terminal exists."""
+        """Return whether terminal exists.
+
+        Args:
+            terminal: Terminal.
+
+        Returns:
+            Result value.
+        """
         return terminal in self.terminals
 
 
@@ -176,17 +256,32 @@ class connection_collection():
         self._invalid_config = True
 
     def block_connection(self, terminal):
-        """Perform block connection operation."""
+        """Perform block connection operation.
+
+        Args:
+            terminal: Terminal.
+        """
         if terminal not in self.blocked_terminals:
             self.blocked_terminals.append(terminal)
 
     def unblock_connection(self, terminal):
-        """Perform unblock connection operation."""
+        """Perform unblock connection operation.
+
+        Args:
+            terminal: Terminal.
+        """
         if terminal in self.blocked_terminals:
             self.blocked_terminals.remove(terminal)
 
     def add_connection(self, *terminals):
-        """Add a connection."""
+        """Add a connection.
+
+        Args:
+            *terminals: Additional positional arguments.
+
+        Raises:
+            ValueError: On error condition.
+        """
         if len(terminals) != 2:
             raise ValueError(
                 "\nConnections must specify precisely 2 terminals.\n")
@@ -357,9 +452,27 @@ class connection_collection():
         return logged_connections
 
     def check_consistency(self, connection_source):
-        """Perform check consistency operation."""
+        """Perform check consistency operation.
+
+        Args:
+            connection_source: Connection source.
+
+        Raises:
+            bench_configuration_error: On error condition.
+        """
         def raise_error(terminal1, terminal2a, terminal2b, script1, script2):
-            """Perform raise error operation."""
+            """Perform raise error operation.
+
+            Args:
+                script1: Script1.
+                script2: Script2.
+                terminal1: Terminal1.
+                terminal2a: Terminal2a.
+                terminal2b: Terminal2b.
+
+            Raises:
+                bench_configuration_error: On error condition.
+            """
             print_banner("*** CONNECTION ERROR ***",
                          f'"{terminal1.get_owner()}:{terminal1.get_type()}" is assigned differently in',
                          f'{script1}({terminal2a.get_owner()}:{terminal2a.get_type()})',
@@ -505,7 +618,11 @@ class configuration_parser():
         self.config_string = config_string
 
     def parse(self):
-        """Return parse result."""
+        """Return parse result.
+
+        Returns:
+            Result value.
+        """
         connections = []
         for conn in self.config_string.split(
                 "\n")[:-1]:  # last one is always an empty line

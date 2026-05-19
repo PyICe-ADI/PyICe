@@ -469,7 +469,14 @@ class bk8500(instrument):
         return checksum
 
     def StartCommand(self, byte):
-        """Return StartCommand result."""
+        """Return StartCommand result.
+
+        Args:
+            byte: Byte.
+
+        Returns:
+            Result value.
+        """
         assert byte >= 0 and byte <= 255
         return bytes((0xaa, self.address, byte))
 
@@ -657,7 +664,14 @@ class bk8500(instrument):
             raise Exception("Bad number of bytes:  %d" % num_bytes)
 
     def Reserved(self, num_used):
-        """Return Reserved result."""
+        """Return Reserved result.
+
+        Args:
+            num_used: Num used.
+
+        Returns:
+            Result value.
+        """
         assert (num_used >= 3 and num_used < self.length_packet - 1)
         return b'\x00' * (self.length_packet - num_used - 1)
 
@@ -1322,5 +1336,9 @@ class bk8500(instrument):
         return demand_state
 
     def identify(self):
-        """Return identify result."""
+        """Return identify result.
+
+        Returns:
+            Result value.
+        """
         return self.GetProductInformation()

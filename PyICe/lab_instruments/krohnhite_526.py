@@ -107,7 +107,14 @@ class krohnhite_526(instrument):
         self.get_interface().write((command))
 
     def add_channel_voltage(self, channel_name):
-        """Add a channel voltage."""
+        """Add a channel voltage.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         self.v_channel = channel(
             channel_name, write_function=self._write_voltage)
         self.v_channel.set_max_write_limit(self._vrange)

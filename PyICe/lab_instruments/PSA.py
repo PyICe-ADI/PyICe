@@ -7,7 +7,15 @@ import socket
 
 
 def bit_is_set(value, bit):
-    """Return bit is set result."""
+    """Return bit is set result.
+
+    Args:
+        bit: Bit.
+        value: Value to set.
+
+    Returns:
+        Result value.
+    """
     return value & 2**bit == 2**bit
 
 
@@ -885,7 +893,14 @@ class keysight_e4440a(scpi_SA):
         ]
 
         def pmax_of_freqs():
-            """Return pmax of freqs result."""
+            """Return pmax of freqs result.
+
+            Returns:
+                Result value.
+
+            Raises:
+                Exception: On error condition.
+            """
             if self.maximum_frequency > 50e12:
                 raise Exception(
                     f"PSA: You said you wanted to run the PSA at {self.maximum_frequency}Hz. The PSA series signal analyzer isn't rated to go above 50GHz.")
@@ -904,11 +919,26 @@ class keysight_e4440a(scpi_SA):
             return pmax
 
         def nearest_even_value(value):
-            """Return nearest even value result."""
+            """Return nearest even value result.
+
+            Args:
+                value: Value to set.
+
+            Returns:
+                Result value.
+            """
             return math.ceil(value / 2) * 2
 
         def attenuation_level(pmax, power_in):
-            """Return attenuation level result."""
+            """Return attenuation level result.
+
+            Args:
+                pmax: Pmax.
+                power_in: Power in.
+
+            Returns:
+                Result value.
+            """
             print(
                 f"Returning attenuation level of {nearest_even_value(max(min(power_in - pmax, 70), 0))}")
             return nearest_even_value(max(min(power_in - pmax, 70), 0))
@@ -954,7 +984,12 @@ class keysight_e4440a(scpi_SA):
 
         def maxp_atten_cb(ch, val):
             # preamp setting change. Force attenuator recomputation.
-            """Perform maxp atten cb operation."""
+            """Perform maxp atten cb operation.
+
+            Args:
+                ch: Ch.
+                val: Val.
+            """
             if self.max_power_ch is not None and self.max_power_ch.read() is not None:
                 self.max_power_ch.write(self.max_power_ch.read())
         self.preamp_channel.add_write_callback(maxp_atten_cb)
@@ -1603,7 +1638,11 @@ class keysight_e4440a(scpi_SA):
         message1, message2, message3 = '*** ERROR ***', 'PSA indicates an overload on the 1st IF stage.', 'Correct the attenuation level!'
 
         def get_status():
-            """Return the status."""
+            """Return the status.
+
+            Returns:
+                Result value.
+            """
             error = bit_is_set(int(self.get_interface().ask(scpi)), decode_bit)
             if error:
                 print_banner(message1, message2, message3)
@@ -1632,7 +1671,11 @@ class keysight_e4440a(scpi_SA):
         message1, message2, message3 = '*** ERROR ***', 'PSA indicates an overload on the final IF stage.', 'Correct the attenuation level!'
 
         def get_status():
-            """Return the status."""
+            """Return the status.
+
+            Returns:
+                Result value.
+            """
             error = bit_is_set(int(self.get_interface().ask(scpi)), decode_bit)
             if error:
                 print_banner(message1, message2, message3)
@@ -1661,7 +1704,11 @@ class keysight_e4440a(scpi_SA):
         message1, message2, message3 = '*** ERROR ***', 'PSA indicates measurement uncalibrated.', 'Correct the attenuation level!'
 
         def get_status():
-            """Return the status."""
+            """Return the status.
+
+            Returns:
+                Result value.
+            """
             error = bit_is_set(int(self.get_interface().ask(scpi)), decode_bit)
             if error:
                 print_banner(message1, message2, message3)
@@ -1690,7 +1737,11 @@ class keysight_e4440a(scpi_SA):
         message1, message2, message3 = '*** ERROR ***', 'PSA indicates measurement uncalibrated.', 'Correct the attenuation level!'
 
         def get_status():
-            """Return the status."""
+            """Return the status.
+
+            Returns:
+                Result value.
+            """
             error = bit_is_set(int(self.get_interface().ask(scpi)), decode_bit)
             if error:
                 print_banner(message1, message2, message3)
@@ -1719,7 +1770,11 @@ class keysight_e4440a(scpi_SA):
         message1, message2, message3 = '*** ERROR ***', 'PSA indicates generally questionable data.', 'Correct the attenuation level!'
 
         def get_status():
-            """Return the status."""
+            """Return the status.
+
+            Returns:
+                Result value.
+            """
             error = int(self.get_interface().ask(scpi))
             if error:
                 print_banner(message1, message2, message3)

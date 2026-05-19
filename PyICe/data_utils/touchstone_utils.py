@@ -160,7 +160,14 @@ class touchstone_utils():
         # TODO: Add input network
         # TODO: Add error handling for port_nums outside of N-port port count
         def open_terminator(name):  # implicit freqs, z0
-            """Return open terminator result."""
+            """Return open terminator result.
+
+            Args:
+                name: Name identifier.
+
+            Returns:
+                Result value.
+            """
             open_port = skrf.Circuit.Port(
                 frequency=freqs, name='open_term_port', z0=z0)
             open_series = skrf.Circuit.Open(
@@ -228,7 +235,14 @@ class touchstone_utils():
         # TODO: Add functionality for load_port_num to be multiple load ports
         # that get shorted.
         def short_terminator(name):  # implicit freqs
-            """Return short terminator result."""
+            """Return short terminator result.
+
+            Args:
+                name: Name identifier.
+
+            Returns:
+                Result value.
+            """
             short_port = skrf.Circuit.Port(
                 frequency=freqs, name='short_term_port', z0=z0)
             shunt = skrf.Circuit.Ground(frequency=freqs, name='GND', z0=z0)
@@ -298,11 +312,26 @@ class touchstone_utils():
         # Use python 'difflib' to diff the two touchstone files
         # Or use Adice or some other simulators to compare the networks
         def port_terminator(name):
-            """Return port terminator result."""
+            """Return port terminator result.
+
+            Args:
+                name: Name identifier.
+
+            Returns:
+                Result value.
+            """
             return skrf.Circuit.Port(frequency=freqs, name=name, z0=z0)
 
         def series_resistor(name, resistance):
-            """Return series resistor result."""
+            """Return series resistor result.
+
+            Args:
+                name: Name identifier.
+                resistance: Resistance.
+
+            Returns:
+                Result value.
+            """
             return skrf.Circuit.SeriesImpedance(
                 frequency=freqs, name=name, z0=z0, Z=resistance)
         freqs = skrf.frequency.Frequency(start=10, stop=10e6,
@@ -415,7 +444,16 @@ def sweep_plots_to_pptx(ts_plots_dir, output_pptx_path, date_time_flag=1):
 
 
 def resistor_ladder_coefficient(r_dc, r_hf, num_stages):
-    """Return resistor ladder coefficient result."""
+    """Return resistor ladder coefficient result.
+
+    Args:
+        num_stages: Num stages.
+        r_dc: R dc.
+        r_hf: R hf.
+
+    Returns:
+        Result value.
+    """
     r_coeff = sympy.symbols('a')
     r_inv = 1 / r_hf
     for i in range(num_stages):
@@ -428,7 +466,15 @@ def resistor_ladder_coefficient(r_dc, r_hf, num_stages):
 
 
 def inductor_ladder_coefficient(z_hf, z_lf, r_hf, r_coeff, num_stages):
-    """Perform inductor ladder coefficient operation."""
+    """Perform inductor ladder coefficient operation.
+
+    Args:
+        num_stages: Num stages.
+        r_coeff: R coeff.
+        r_hf: R hf.
+        z_hf: Z hf.
+        z_lf: Z lf.
+    """
     pass
 
 
@@ -449,7 +495,14 @@ def _parallel(Ra, Rb):
 
     def dev_make_series_LR_model(self, outputFileName=None, R=1e3, L=1e-3):
         # Makes a zero for Z(1,1) at 160K Hz
-        """Perform dev make series LR model operation."""
+        """Perform dev make series LR model operation.
+
+        Args:
+            L: L.
+            R: R.
+            outputFileName: Outputfilename.
+            self: Self.
+        """
         freqs = skrf.frequency.Frequency(start=10, stop=10e6,
                                          npoints=1000, unit='Hz',
                                          sweep_type='log'
@@ -482,12 +535,28 @@ def _parallel(Ra, Rb):
         # if self.network == None:
         # print('No network to fit\n')
         # return
-        """Return dev series LR curve fit result."""
+        """Return dev series LR curve fit result.
+
+        Args:
+            self: Self.
+
+        Returns:
+            Result value.
+        """
         z11 = np.abs(self.network.z[:, 0, 0])
         freqs = self.network.f
 
         def estimator_fun(x, R, L):
-            """Return estimator fun result."""
+            """Return estimator fun result.
+
+            Args:
+                L: L.
+                R: R.
+                x: X.
+
+            Returns:
+                Result value.
+            """
             return np.abs(R + 1j * 2 * 3.14 * x * L)
         params, covariance = optimize.curve_fit(f=estimator_fun,
                                                 xdata=freqs,
@@ -497,7 +566,15 @@ def _parallel(Ra, Rb):
         return params
 
     def dev_curve_fit_3stage_ladder(self, points):
-        """Return dev curve fit 3stage ladder result."""
+        """Return dev curve fit 3stage ladder result.
+
+        Args:
+            points: Points.
+            self: Self.
+
+        Returns:
+            Result value.
+        """
         range = int(points / 2)
         z11 = self.network.z[:, 0, 0]
         freqs = self.network.f
@@ -523,11 +600,31 @@ def _parallel(Ra, Rb):
         print(f"index_f0:{index_f0}, f0: {freqs[index_f0]}")
 
         def parallel(z1, z2):
-            """Return parallel result."""
+            """Return parallel result.
+
+            Args:
+                z1: Z1.
+                z2: Z2.
+
+            Returns:
+                Result value.
+            """
             return z1 * z2 / (z1 + z2)
 
         def estimator_fun(x, L0, R1, L1, LL, RR):
-            """Return estimator fun result."""
+            """Return estimator fun result.
+
+            Args:
+                L0: L0.
+                L1: L1.
+                LL: Ll.
+                R1: R1.
+                RR: Rr.
+                x: X.
+
+            Returns:
+                Result value.
+            """
             s = x * 2j * 3.14
             ladder = s * L1 * (LL**2) + R1 * (RR**3)
             ladder = parallel(ladder, R1 * (RR**2))
@@ -548,7 +645,15 @@ def _parallel(Ra, Rb):
         return (params1)
 
     def dev_curve_fit_2stage_ladder(self, fmax):
-        """Return dev curve fit 2stage ladder result."""
+        """Return dev curve fit 2stage ladder result.
+
+        Args:
+            fmax: Fmax.
+            self: Self.
+
+        Returns:
+            Result value.
+        """
         z11 = self.network.z[:, 0, 0]
         freqs = self.network.f
         zero_array = np.zeros(len(freqs))
@@ -573,11 +678,32 @@ def _parallel(Ra, Rb):
         # mplt.legend()
 
         def parallel(z1, z2):
-            """Return parallel result."""
+            """Return parallel result.
+
+            Args:
+                z1: Z1.
+                z2: Z2.
+
+            Returns:
+                Result value.
+            """
             return z1 * z2 / (z1 + z2)
 
         def estimator_fun(x, L0, R1, L1, R2, L2, R3):
-            """Return estimator fun result."""
+            """Return estimator fun result.
+
+            Args:
+                L0: L0.
+                L1: L1.
+                L2: L2.
+                R1: R1.
+                R2: R2.
+                R3: R3.
+                x: X.
+
+            Returns:
+                Result value.
+            """
             s = x * 2j * 3.14
             ladder = s * L1 + R2
             ladder = parallel(ladder, R1)
@@ -596,7 +722,15 @@ def _parallel(Ra, Rb):
         return (params3)
 
     def dev_curve_fit_1stage_ladder(self, points):
-        """Return dev curve fit 1stage ladder result."""
+        """Return dev curve fit 1stage ladder result.
+
+        Args:
+            points: Points.
+            self: Self.
+
+        Returns:
+            Result value.
+        """
         range = int(points / 2)
         z11 = self.network.z[:, 0, 0]
         freqs = self.network.f
@@ -608,11 +742,30 @@ def _parallel(Ra, Rb):
         print(f"index_f0:{index_f0}, f0: {freqs[index_f0]}")
 
         def parallel(z1, z2):
-            """Return parallel result."""
+            """Return parallel result.
+
+            Args:
+                z1: Z1.
+                z2: Z2.
+
+            Returns:
+                Result value.
+            """
             return z1 * z2 / (z1 + z2)
 
         def estimator_fun(x, L0, R1, L1, R2):
-            """Return estimator fun result."""
+            """Return estimator fun result.
+
+            Args:
+                L0: L0.
+                L1: L1.
+                R1: R1.
+                R2: R2.
+                x: X.
+
+            Returns:
+                Result value.
+            """
             s = x * 2j * 3.14
             ladder = s * L1 + R2
             ladder = parallel(ladder, R1)
@@ -629,7 +782,12 @@ def _parallel(Ra, Rb):
         return (params2)
 
     def dev_minimize_2stage_ladder(self, fmax):
-        """Perform dev minimize 2stage ladder operation."""
+        """Perform dev minimize 2stage ladder operation.
+
+        Args:
+            fmax: Fmax.
+            self: Self.
+        """
         _z11 = self.network.z[:, 0, 0]  # noqa: F841
         # freqs = self.network.f
         # zero_array = np.zeros(len(freqs))
@@ -660,9 +818,21 @@ def _parallel(Ra, Rb):
         # return x, success
 
     def dev_plot_parallel(Req):
-        """Return dev plot parallel result."""
+        """Return dev plot parallel result.
+
+        Args:
+            Req: Req.
+        """
         def dev_parallel_solver(Req, R2):
-            """Return dev parallel solver result."""
+            """Return dev parallel solver result.
+
+            Args:
+                R2: R2.
+                Req: Req.
+
+            Returns:
+                Result value.
+            """
             R1 = R2 * Req / (R2 - Req)
             return R1
         R1 = np.linspace(12e-3, 50e-3, 100)
@@ -721,7 +891,12 @@ def _parallel(Ra, Rb):
         print(res)
 
     def dev_plot_series_LR_error(self, params):
-        """Perform dev plot series LR error operation."""
+        """Perform dev plot series LR error operation.
+
+        Args:
+            params: Params.
+            self: Self.
+        """
         R, L = params
         freq_obj = self.network.frequency
         freqs = self.network.f
@@ -761,7 +936,12 @@ def _parallel(Ra, Rb):
         mplt.legend()
 
     def dev_plot_3stage_ladder(self, params):
-        """Perform dev plot 3stage ladder operation."""
+        """Perform dev plot 3stage ladder operation.
+
+        Args:
+            params: Params.
+            self: Self.
+        """
         L0, R1, L1, LL, RR = params
         freq_obj = self.network.frequency
         freqs = self.network.f
@@ -823,7 +1003,12 @@ def _parallel(Ra, Rb):
         mplt.legend()
 
     def dev_plot_2stage_ladder(self, params):
-        """Perform dev plot 2stage ladder operation."""
+        """Perform dev plot 2stage ladder operation.
+
+        Args:
+            params: Params.
+            self: Self.
+        """
         L0, R1, L1, R2, L2, R3 = params
         freq_obj = self.network.frequency
         freqs = self.network.f
@@ -874,7 +1059,12 @@ def _parallel(Ra, Rb):
         mplt.legend()
 
     def dev_plot_1stage_ladder(self, params):
-        """Perform dev plot 1stage ladder operation."""
+        """Perform dev plot 1stage ladder operation.
+
+        Args:
+            params: Params.
+            self: Self.
+        """
         L0, R1, L1, R2 = params
         freq_obj = self.network.frequency
         freqs = self.network.f
@@ -920,7 +1110,11 @@ def _parallel(Ra, Rb):
         mplt.legend()
 
     def dev_LR_minimize_fit(self):
-        """Return dev LR minimize fit result."""
+        """Return dev LR minimize fit result.
+
+        Args:
+            self: Self.
+        """
         if self.network is None:
             print('No network to fit\n')
             return
@@ -928,7 +1122,14 @@ def _parallel(Ra, Rb):
         freqs = self.network.f
 
         def error_fun(params):
-            """Return error fun result."""
+            """Return error fun result.
+
+            Args:
+                params: Params.
+
+            Returns:
+                Result value.
+            """
             print(params.shape)
             R, L = params
             tf = R + 2j * 3.14 * freqs * L
@@ -951,11 +1152,28 @@ def _parallel(Ra, Rb):
         ####
 
     def dev_aprx_ckt_values(corners, Rdc, Rhf):
-        """Return dev aprx ckt values result."""
+        """Return dev aprx ckt values result.
+
+        Args:
+            Rdc: Rdc.
+            Rhf: Rhf.
+            corners: Corners.
+
+        Returns:
+            Result value.
+        """
         z1, p1, z2, p2, z3 = corners
 
         def parallel(z1, z2):
-            """Return parallel result."""
+            """Return parallel result.
+
+            Args:
+                z1: Z1.
+                z2: Z2.
+
+            Returns:
+                Result value.
+            """
             return z1 * z2 / (z1 + z2)
         R1 = Rhf
         L0 = R1 / (2 * 3.14 * z3)
@@ -971,7 +1189,15 @@ def _parallel(Ra, Rb):
         # Z11 = Zo*(1+S11)/(1-S11)
         # TODO: instead of returning the numerator and denominator coefficients, just use the substitution stuff
         #   to put in values for s and plot locally
-        """Return dev S11 coefficients Z11 result."""
+        """Return dev S11 coefficients Z11 result.
+
+        Args:
+            x: X.
+            y: Y.
+
+        Returns:
+            Result value.
+        """
         s = sympy.symbols('s')
         z0 = 0.1
         s11_numerator = 0
@@ -1017,7 +1243,13 @@ def _parallel(Ra, Rb):
         return z_num_coeff, z_den_coeff, r, p, k
 
     def dev_plot_rational_coefficients(self, y, x):
-        """Perform dev plot rational coefficients operation."""
+        """Perform dev plot rational coefficients operation.
+
+        Args:
+            self: Self.
+            x: X.
+            y: Y.
+        """
         freqs = np.logspace(3, 8, num=51)
         s = 2j * 3.14 * freqs
 
@@ -1056,7 +1288,15 @@ def _parallel(Ra, Rb):
         # mplt.legend()
 
     def plot_residue_impedance(self, r, p, k, fstop=10e6):
-        """Perform plot residue impedance operation."""
+        """Perform plot residue impedance operation.
+
+        Args:
+            fstop: Fstop.
+            k: K.
+            p: P.
+            r: R.
+            self: Self.
+        """
         freqs = self.network.f
         s = 2j * 3.14 * freqs
         # assert len(r) == len(p), "\nPole and residue numbers dont match\n\n"
@@ -1241,7 +1481,12 @@ def _parallel(Ra, Rb):
         return y, x
 
     def dev_parse_RPC(input_file_name, port_num=1):
-        """Perform dev parse RPC operation."""
+        """Perform dev parse RPC operation.
+
+        Args:
+            input_file_name: Input file name.
+            port_num: Port num.
+        """
         pass
         # open file
         # file.readlines()
@@ -1249,16 +1494,39 @@ def _parallel(Ra, Rb):
         # while first character is '.' keep iteratiting
 
     def dev_make_N_port_touchstone(self, output_file_name, num_ports):
-        """Return dev make N port touchstone result."""
+        """Return dev make N port touchstone result.
+
+        Args:
+            num_ports: Num ports.
+            output_file_name: Output file name.
+            self: Self.
+
+        Returns:
+            Result value.
+        """
         freq_obj = self.network.frequency
         _freqs = self.network.f  # noqa: F841
 
         def make_port(name):
-            """Return make port result."""
+            """Return make port result.
+
+            Args:
+                name: Name identifier.
+
+            Returns:
+                Result value.
+            """
             return skrf.Circuit.Port(frequency=freq_obj, name=name, z0=50)
 
         def make_resistor(name):
-            """Return make resistor result."""
+            """Return make resistor result.
+
+            Args:
+                name: Name identifier.
+
+            Returns:
+                Result value.
+            """
             return skrf.Circuit.SeriesImpedance(
                 frequency=freq_obj, name=name, z0=50, Z=50)
         connections = []
@@ -1295,7 +1563,11 @@ def _parallel(Ra, Rb):
     # Below are some functions that could get implemented ###
 
     def plot_Sbode(self):
-        """Perform plot Sbode operation."""
+        """Perform plot Sbode operation.
+
+        Args:
+            self: Self.
+        """
         if self.network is None:
             print("No 2 port network stored, please input or create a network")
             return
@@ -1303,7 +1575,11 @@ def _parallel(Ra, Rb):
         network.plot_s_db(m=1, n=0, logx=True, z0=.1)
 
     def plot_Zbode(self):
-        """Perform plot Zbode operation."""
+        """Perform plot Zbode operation.
+
+        Args:
+            self: Self.
+        """
         network = self.network
         if self.network is None:
             print("No 2 port network stored, please input or create a network")
@@ -1316,13 +1592,23 @@ def _parallel(Ra, Rb):
         # curve fit equation to get R and C, real version will have more
         # complicated math with LL and RR ratios for ladder and constraints
         # like @DC R1||R2||..||Rn = Rdc
-        """Perform model fit RC LPF operation."""
+        """Perform model fit RC LPF operation.
+
+        Args:
+            self: Self.
+            touchstone_file_name: Touchstone file name.
+        """
         input_network = skrf.Network(touchstone_file_name)
         _z0 = input_network.z0[0][0]  # per freq,port array  # noqa: F841
         _freqs = input_network.frequency  # noqa: F841
 
     def LR_modelfit(self, f_max=30e6):  # This is Dave's algorithm
-        """Perform LR modelfit operation."""
+        """Perform LR modelfit operation.
+
+        Args:
+            f_max: F max.
+            self: Self.
+        """
         model_params = {}
         model_z_thru = 1. / self.network.y[:, 0, 0]
         model_params['Rdc'] = model_z_thru.real[0]  # Lowest frequency
@@ -1357,7 +1643,11 @@ def _parallel(Ra, Rb):
         return dc_res, ac_res_coefficient  # noqa: F821
 
     def get_series_LR(self):
-        """Return the series LR."""
+        """Return the series LR.
+
+        Args:
+            self: Self.
+        """
         y_admittance = self.network.y[:, 0, 0]
         y_mag = abs(y_admittance)
         y_dc = y_mag[0]

@@ -44,15 +44,31 @@ class TestTMP117:
 
     @pytest.fixture
     def tmp117(self, twi):
-        """Return tmp117 result."""
+        """Return tmp117 result.
+
+        Args:
+            twi: Twi.
+
+        Returns:
+            Result value.
+        """
         return TMP117(interface_twi=twi, addr7=0x48)
 
     def test_instantiation(self, tmp117):
-        """Perform test instantiation operation."""
+        """Perform test instantiation operation.
+
+        Args:
+            tmp117: Tmp117.
+        """
         assert tmp117.get_name().startswith('Analog Devices TMP117')
 
     def test_enable_writes_config(self, twi, tmp117):
-        """Perform test enable writes config operation."""
+        """Perform test enable writes config operation.
+
+        Args:
+            tmp117: Tmp117.
+            twi: Twi.
+        """
         data = twi._cc_data.get(0x01)
         assert data is not None
 
@@ -60,7 +76,12 @@ class TestTMP117:
         # 25.0°C = 25.0 * 128 = 3200 = 0x0C80
         # TMP117 returns MSB-first, so register holds swap_endian(0x0C80, 2) =
         # 0x800C
-        """Perform test read temp positive operation."""
+        """Perform test read temp positive operation.
+
+        Args:
+            tmp117: Tmp117.
+            twi: Twi.
+        """
         raw = swap_endian(3200, elementCount=2)
         twi._cc_data[0x00] = raw
         temp = tmp117.read_temp()
@@ -70,7 +91,12 @@ class TestTMP117:
         # -10.0°C = -10 * 128 = -1280
         # Two's complement 16-bit: 65536 - 1280 = 64256 = 0xFB00
         # Swap endian for MSB-first: swap_endian(0xFB00, 2) = 0x00FB
-        """Perform test read temp negative operation."""
+        """Perform test read temp negative operation.
+
+        Args:
+            tmp117: Tmp117.
+            twi: Twi.
+        """
         from PyICe.lab_utils.signedToTwosComplement import signedToTwosComplement
         code = signedToTwosComplement(-1280, 16)
         raw = swap_endian(code, elementCount=2)
@@ -79,7 +105,12 @@ class TestTMP117:
         assert temp == pytest.approx(-10.0)
 
     def test_read_temp_zero(self, twi, tmp117):
-        """Perform test read temp zero operation."""
+        """Perform test read temp zero operation.
+
+        Args:
+            tmp117: Tmp117.
+            twi: Twi.
+        """
         twi._cc_data[0x00] = 0x0000
         temp = tmp117.read_temp()
         assert temp == 0.0
@@ -87,14 +118,25 @@ class TestTMP117:
     def test_read_id(self, twi, tmp117):
         # Device ID register: revision in [15:12], device in [11:0]
         # Example: revision=0x1, device=0x117
-        """Perform test read id operation."""
+        """Perform test read id operation.
+
+        Args:
+            tmp117: Tmp117.
+            twi: Twi.
+        """
         twi._cc_data[0x0F] = (0x1 << 12) | 0x117
         result = tmp117.read_id()
         assert result['revision'] == 1
         assert result['device'] == 0x117
 
     def test_add_channel(self, twi, tmp117, master_instance):
-        """Perform test add channel operation."""
+        """Perform test add channel operation.
+
+        Args:
+            master_instance: Master instance.
+            tmp117: Tmp117.
+            twi: Twi.
+        """
         tmp117.add_channel('temperature')
         master_instance.add(tmp117)
         twi._cc_data[0x00] = swap_endian(3200, elementCount=2)
@@ -102,7 +144,12 @@ class TestTMP117:
         assert temp == pytest.approx(25.0)
 
     def test_shutdown_writes_config(self, twi, tmp117):
-        """Perform test shutdown writes config operation."""
+        """Perform test shutdown writes config operation.
+
+        Args:
+            tmp117: Tmp117.
+            twi: Twi.
+        """
         tmp117.enable(False)
         config = twi._cc_data[0x01]
         assert (config >> 10) & 0x03 == 0b01
@@ -112,34 +159,64 @@ class TestAD5259:
 
     @pytest.fixture
     def pot(self, twi):
-        """Return pot result."""
+        """Return pot result.
+
+        Args:
+            twi: Twi.
+
+        Returns:
+            Result value.
+        """
         return AD5259(interface_twi=twi, addr7=0x18,
                       full_scale_ohms=10000)
 
     def test_instantiation(self, pot):
-        """Perform test instantiation operation."""
+        """Perform test instantiation operation.
+
+        Args:
+            pot: Pot.
+        """
         assert pot.get_name().startswith('Analog Devices')
 
     def test_invalid_address_raises(self, twi):
-        """Perform test invalid address raises operation."""
+        """Perform test invalid address raises operation.
+
+        Args:
+            twi: Twi.
+        """
         with pytest.raises(ValueError, match="only supports"):
             AD5259(interface_twi=twi, addr7=0x99, full_scale_ohms=10000)
 
     def test_write_code(self, twi, pot):
-        """Perform test write code operation."""
+        """Perform test write code operation.
+
+        Args:
+            pot: Pot.
+            twi: Twi.
+        """
         pot.add_channel_code('code')
         pot['code'].write(128)
         assert twi._cc_data[pot.WRITE_TO_RDAC] == 128
 
     def test_read_code(self, twi, pot):
-        """Perform test read code operation."""
+        """Perform test read code operation.
+
+        Args:
+            pot: Pot.
+            twi: Twi.
+        """
         pot.add_channel_code_readback('readback')
         twi._cc_data[pot.READ_FROM_RDAC] = 200
         val = pot['readback'].read()
         assert val == 200
 
     def test_write_read_roundtrip(self, twi, pot):
-        """Perform test write read roundtrip operation."""
+        """Perform test write read roundtrip operation.
+
+        Args:
+            pot: Pot.
+            twi: Twi.
+        """
         pot.add_channel_code('code')
         pot.add_channel_code_readback('readback')
         pot['code'].write(100)
@@ -149,35 +226,61 @@ class TestAD5259:
         assert val == 100
 
     def test_wiper_write_scaled(self, twi, pot):
-        """Perform test wiper write scaled operation."""
+        """Perform test wiper write scaled operation.
+
+        Args:
+            pot: Pot.
+            twi: Twi.
+        """
         pot.add_channel_wiper('wiper')
         pot['wiper'].write(0.5)
         code = twi._cc_data[pot.WRITE_TO_RDAC]
         assert code == 128
 
     def test_wiper_write_zero(self, twi, pot):
-        """Perform test wiper write zero operation."""
+        """Perform test wiper write zero operation.
+
+        Args:
+            pot: Pot.
+            twi: Twi.
+        """
         pot.add_channel_wiper('wiper')
         pot['wiper'].write(0.0)
         code = twi._cc_data[pot.WRITE_TO_RDAC]
         assert code == 0
 
     def test_wiper_write_full_scale(self, twi, pot):
-        """Perform test wiper write full scale operation."""
+        """Perform test wiper write full scale operation.
+
+        Args:
+            pot: Pot.
+            twi: Twi.
+        """
         pot.add_channel_wiper('wiper')
         pot['wiper'].write(1.0)
         code = twi._cc_data[pot.WRITE_TO_RDAC]
         assert code == 255
 
     def test_wiper_read(self, twi, pot):
-        """Perform test wiper read operation."""
+        """Perform test wiper read operation.
+
+        Args:
+            pot: Pot.
+            twi: Twi.
+        """
         pot.add_channel_wiper('wiper')
         twi._cc_data[pot.READ_FROM_RDAC] = 128
         val = pot['wiper'].read()
         assert val == pytest.approx(0.5)
 
     def test_add_all_channels(self, twi, pot, master_instance):
-        """Perform test add all channels operation."""
+        """Perform test add all channels operation.
+
+        Args:
+            master_instance: Master instance.
+            pot: Pot.
+            twi: Twi.
+        """
         pot.add_all_channels('pot')
         master_instance.add(pot)
         names = master_instance.get_all_channel_names()
@@ -186,7 +289,12 @@ class TestAD5259:
         assert 'pot_code_readback' in names
 
     def test_wiper_out_of_range_raises(self, twi, pot):
-        """Perform test wiper out of range raises operation."""
+        """Perform test wiper out of range raises operation.
+
+        Args:
+            pot: Pot.
+            twi: Twi.
+        """
         pot.add_channel_wiper('wiper')
         with pytest.raises(AssertionError):
             pot['wiper'].write(1.5)
@@ -198,45 +306,87 @@ class TestADT7410:
 
     @pytest.fixture
     def sensor(self, twi):
-        """Return sensor result."""
+        """Return sensor result.
+
+        Args:
+            twi: Twi.
+
+        Returns:
+            Result value.
+        """
         return ADT7410(interface_twi=twi, addr7=0x48)
 
     def test_instantiation(self, sensor):
-        """Perform test instantiation operation."""
+        """Perform test instantiation operation.
+
+        Args:
+            sensor: Sensor.
+        """
         assert sensor.get_name().startswith('Analog Devices ADT7410')
 
     def test_enable_writes_config(self, twi, sensor):
-        """Perform test enable writes config operation."""
+        """Perform test enable writes config operation.
+
+        Args:
+            sensor: Sensor.
+            twi: Twi.
+        """
         assert twi._cc_data[0x03] == (0b1 << 7)
 
     def test_read_temp_positive(self, twi, sensor):
         # 25.0°C = 25.0 * 128 = 3200; MSB-first → swap_endian
-        """Perform test read temp positive operation."""
+        """Perform test read temp positive operation.
+
+        Args:
+            sensor: Sensor.
+            twi: Twi.
+        """
         twi._cc_data[0x00] = swap_endian(3200, elementCount=2)
         assert sensor.read_temp() == pytest.approx(25.0)
 
     def test_read_temp_negative(self, twi, sensor):
-        """Perform test read temp negative operation."""
+        """Perform test read temp negative operation.
+
+        Args:
+            sensor: Sensor.
+            twi: Twi.
+        """
         from PyICe.lab_utils.signedToTwosComplement import signedToTwosComplement
         code = signedToTwosComplement(-1280, 16)  # -10.0°C
         twi._cc_data[0x00] = swap_endian(code, elementCount=2)
         assert sensor.read_temp() == pytest.approx(-10.0)
 
     def test_read_temp_zero(self, twi, sensor):
-        """Perform test read temp zero operation."""
+        """Perform test read temp zero operation.
+
+        Args:
+            sensor: Sensor.
+            twi: Twi.
+        """
         twi._cc_data[0x00] = 0x0000
         assert sensor.read_temp() == 0.0
 
     def test_read_id(self, twi, sensor):
         # revision in [2:0], manufacturer in [7:3]
-        """Perform test read id operation."""
+        """Perform test read id operation.
+
+        Args:
+            sensor: Sensor.
+            twi: Twi.
+        """
         twi._cc_data[0x0B] = (0x19 << 3) | 0x05
         result = sensor.read_id()
         assert result['revision'] == 5
         assert result['manufacturer'] == 0x19
 
     def test_add_channel(self, twi, sensor, master_instance):
-        """Perform test add channel operation."""
+        """Perform test add channel operation.
+
+        Args:
+            master_instance: Master instance.
+            sensor: Sensor.
+            twi: Twi.
+        """
         sensor.add_channel('temperature')
         master_instance.add(sensor)
         twi._cc_data[0x00] = swap_endian(3200, elementCount=2)
@@ -244,7 +394,12 @@ class TestADT7410:
             'temperature') == pytest.approx(25.0)
 
     def test_shutdown(self, twi, sensor):
-        """Perform test shutdown operation."""
+        """Perform test shutdown operation.
+
+        Args:
+            sensor: Sensor.
+            twi: Twi.
+        """
         sensor.enable(False)
         config = twi._cc_data[0x03]
         assert (config >> 5) & 0x03 == 0b11
@@ -254,51 +409,97 @@ class TestAD5693R:
 
     @pytest.fixture
     def dac(self, twi):
-        """Return dac result."""
+        """Return dac result.
+
+        Args:
+            twi: Twi.
+
+        Returns:
+            Result value.
+        """
         return AD5693R(interface_twi=twi, addr7=0x4C)
 
     def test_instantiation(self, dac):
-        """Perform test instantiation operation."""
+        """Perform test instantiation operation.
+
+        Args:
+            dac: Dac.
+        """
         assert dac.get_name().startswith('Analog Devices AD5693R')
 
     def test_init_writes_control_reg(self, twi, dac):
-        """Perform test init writes control reg operation."""
+        """Perform test init writes control reg operation.
+
+        Args:
+            dac: Dac.
+            twi: Twi.
+        """
         assert 0x40 in twi._cc_data
 
     def test_set_code(self, twi, dac):
-        """Perform test set code operation."""
+        """Perform test set code operation.
+
+        Args:
+            dac: Dac.
+            twi: Twi.
+        """
         dac._set_code(0x8000)
         assert twi._cc_data[0x30] == swap_endian(0x8000, elementCount=2)
 
     def test_set_voltage_midscale(self, twi, dac):
         # Default gain=2, vref=2.5 → full scale=5.0V, midscale=2.5V →
         # code=32768
-        """Perform test set voltage midscale operation."""
+        """Perform test set voltage midscale operation.
+
+        Args:
+            dac: Dac.
+            twi: Twi.
+        """
         dac._set_voltage(2.5)
         expected_code = int(2.5 / 2.0 / 2.5 * 65536)
         assert twi._cc_data[0x30] == swap_endian(expected_code, elementCount=2)
 
     def test_gain_setting(self, twi, dac):
-        """Perform test gain setting operation."""
+        """Perform test gain setting operation.
+
+        Args:
+            dac: Dac.
+            twi: Twi.
+        """
         dac._set_gain(1)
         assert dac.gain_code == 0x0000
         dac._set_gain(2)
         assert dac.gain_code == 0x0800
 
     def test_invalid_gain_raises(self, dac):
-        """Perform test invalid gain raises operation."""
+        """Perform test invalid gain raises operation.
+
+        Args:
+            dac: Dac.
+        """
         with pytest.raises(Exception, match="gain setting"):
             dac._set_gain(3)
 
     def test_output_impedance(self, twi, dac):
-        """Perform test output impedance operation."""
+        """Perform test output impedance operation.
+
+        Args:
+            dac: Dac.
+            twi: Twi.
+        """
         dac._set_outputz("Z")
         assert dac.impedance == 0x6000
         dac._set_outputz(0)
         assert dac.impedance == 0x0000
 
     def test_add_channel_voltage(self, twi, dac, master_instance):
-        """Perform test add channel voltage operation."""
+        """Perform test add channel voltage operation.
+
+        Args:
+            dac: Dac.
+            master_instance: Master instance.
+            twi: Twi.
+        """
         dac.add_channel('vout')
         master_instance.add(dac)
         master_instance['vout'].write(1.0)
@@ -306,7 +507,13 @@ class TestAD5693R:
         assert twi._cc_data[0x30] == swap_endian(expected_code, elementCount=2)
 
     def test_add_channel_code(self, twi, dac, master_instance):
-        """Perform test add channel code operation."""
+        """Perform test add channel code operation.
+
+        Args:
+            dac: Dac.
+            master_instance: Master instance.
+            twi: Twi.
+        """
         dac.add_channel_code('code')
         master_instance.add(dac)
         master_instance['code'].write(1000)
@@ -317,33 +524,64 @@ class TestAD5272:
 
     @pytest.fixture
     def pot(self, twi):
-        """Return pot result."""
+        """Return pot result.
+
+        Args:
+            twi: Twi.
+
+        Returns:
+            Result value.
+        """
         return AD5272(interface_twi=twi, addr7=0x2C, full_scale_ohms=100000)
 
     def test_instantiation(self, pot):
-        """Perform test instantiation operation."""
+        """Perform test instantiation operation.
+
+        Args:
+            pot: Pot.
+        """
         assert pot.get_name().startswith('Analog Devices')
 
     def test_invalid_address_raises(self, twi):
-        """Perform test invalid address raises operation."""
+        """Perform test invalid address raises operation.
+
+        Args:
+            twi: Twi.
+        """
         with pytest.raises(ValueError, match="only supports"):
             AD5272(interface_twi=twi, addr7=0x30, full_scale_ohms=100000)
 
     def test_write_code(self, twi, pot):
-        """Perform test write code operation."""
+        """Perform test write code operation.
+
+        Args:
+            pot: Pot.
+            twi: Twi.
+        """
         pot.set_output(512)
         # msbyte = 0x1<<2 | 512>>8 = 0x06, lsbyte = 0x00
         # Written via _write_byte → write_register(addr7, msbyte, lsbyte, 8)
         assert twi._cc_data[0x06] == 0x00
 
     def test_write_percent(self, twi, pot):
-        """Perform test write percent operation."""
+        """Perform test write percent operation.
+
+        Args:
+            pot: Pot.
+            twi: Twi.
+        """
         pot._write_percent(0.5)
         # 0.5 * 1024 = 512 → msbyte=0x06, lsbyte=0x00
         assert twi._cc_data[0x06] == 0x00
 
     def test_add_channel_code(self, twi, pot, master_instance):
-        """Perform test add channel code operation."""
+        """Perform test add channel code operation.
+
+        Args:
+            master_instance: Master instance.
+            pot: Pot.
+            twi: Twi.
+        """
         pot.add_channel_code('code')
         master_instance.add(pot)
         master_instance['code'].write(100)
@@ -355,15 +593,31 @@ class TestAD5667R:
 
     @pytest.fixture
     def dac(self, twi):
-        """Return dac result."""
+        """Return dac result.
+
+        Args:
+            twi: Twi.
+
+        Returns:
+            Result value.
+        """
         return AD5667R(interface_twi=twi, addr7=0x0C)
 
     def test_instantiation(self, dac):
-        """Perform test instantiation operation."""
+        """Perform test instantiation operation.
+
+        Args:
+            dac: Dac.
+        """
         assert dac.get_name().startswith('Analog Devices AD5667R')
 
     def test_write_dac_a_code(self, twi, dac):
-        """Perform test write dac a code operation."""
+        """Perform test write dac a code operation.
+
+        Args:
+            dac: Dac.
+            twi: Twi.
+        """
         dac._write_dac_A_code(0x8000)
         # command = WRITE_DACn_UPDATE_DACn(0b011<<3) | DAC_A(0b000) = 0x18
         cmd = (0b011 << 3) | 0b000
@@ -371,23 +625,42 @@ class TestAD5667R:
 
     def test_write_dac_a_voltage(self, twi, dac):
         # 2.5V → code = 2.5 / 2.0 / 2.5 * 65536 = 32768
-        """Perform test write dac a voltage operation."""
+        """Perform test write dac a voltage operation.
+
+        Args:
+            dac: Dac.
+            twi: Twi.
+        """
         dac._set_dac_A_voltage(2.5)
         cmd = (0b011 << 3) | 0b000  # WRITE_DACn_UPDATE_DACn | DAC_A
         assert cmd in twi._cc_data
 
     def test_volts_to_code(self, dac):
-        """Perform test volts to code operation."""
+        """Perform test volts to code operation.
+
+        Args:
+            dac: Dac.
+        """
         assert dac._volts_to_code(0.0) == 0
         assert dac._volts_to_code(2.5) == 32768
 
     def test_volts_out_of_range_raises(self, dac):
-        """Perform test volts out of range raises operation."""
+        """Perform test volts out of range raises operation.
+
+        Args:
+            dac: Dac.
+        """
         with pytest.raises(Exception, match="out of range"):
             dac._volts_to_code(6.0)
 
     def test_add_channel_dac_a(self, twi, dac, master_instance):
-        """Perform test add channel dac a operation."""
+        """Perform test add channel dac a operation.
+
+        Args:
+            dac: Dac.
+            master_instance: Master instance.
+            twi: Twi.
+        """
         dac.add_channel_DAC_A('dac_a')
         master_instance.add(dac)
         master_instance['dac_a'].write(1.0)
@@ -399,27 +672,52 @@ class TestPCF8574:
 
     @pytest.fixture
     def gpio(self, twi):
-        """Return gpio result."""
+        """Return gpio result.
+
+        Args:
+            twi: Twi.
+
+        Returns:
+            Result value.
+        """
         return PCF8574(interface_twi=twi, addr7=0x20)
 
     def test_instantiation(self, gpio):
-        """Perform test instantiation operation."""
+        """Perform test instantiation operation.
+
+        Args:
+            gpio: Gpio.
+        """
         assert gpio.get_name().startswith('PCF8574')
 
     def test_invalid_address_raises(self, twi):
-        """Perform test invalid address raises operation."""
+        """Perform test invalid address raises operation.
+
+        Args:
+            twi: Twi.
+        """
         with pytest.raises(ValueError):
             PCF8574(interface_twi=twi, addr7=0x30)
 
     def test_write_pin_high(self, twi, gpio):
-        """Perform test write pin high operation."""
+        """Perform test write pin high operation.
+
+        Args:
+            gpio: Gpio.
+            twi: Twi.
+        """
         gpio.add_channel_writepin('pin0', 0)
         gpio['pin0'].write(1)
         # state should be 0x01, written as commandCode via send_byte
         assert twi._cc_data[0x01] is None  # data_size=0 stores None as data
 
     def test_write_multiple_pins(self, twi, gpio):
-        """Perform test write multiple pins operation."""
+        """Perform test write multiple pins operation.
+
+        Args:
+            gpio: Gpio.
+            twi: Twi.
+        """
         gpio.add_channel_writepin('p0', 0)
         gpio.add_channel_writepin('p3', 3)
         gpio['p0'].write(1)
@@ -429,7 +727,12 @@ class TestPCF8574:
         assert 0x09 in twi._cc_data
 
     def test_write_pin_low_clears_bit(self, twi, gpio):
-        """Perform test write pin low clears bit operation."""
+        """Perform test write pin low clears bit operation.
+
+        Args:
+            gpio: Gpio.
+            twi: Twi.
+        """
         gpio.add_channel_writepin('p0', 0)
         gpio['p0'].write(1)
         gpio['p0'].write(0)
@@ -440,42 +743,84 @@ class TestCAT5140:
 
     @pytest.fixture
     def pot(self, twi):
-        """Return pot result."""
+        """Return pot result.
+
+        Args:
+            twi: Twi.
+
+        Returns:
+            Result value.
+        """
         return CAT5140(interface_twi=twi)
 
     def test_instantiation(self, pot):
-        """Perform test instantiation operation."""
+        """Perform test instantiation operation.
+
+        Args:
+            pot: Pot.
+        """
         assert pot.addr7 == 0x28
 
     def test_write_code(self, twi, pot):
-        """Perform test write code operation."""
+        """Perform test write code operation.
+
+        Args:
+            pot: Pot.
+            twi: Twi.
+        """
         pot.set_output(128)
         assert twi._cc_data[0x00] == 128
 
     def test_read_code(self, twi, pot):
-        """Perform test read code operation."""
+        """Perform test read code operation.
+
+        Args:
+            pot: Pot.
+            twi: Twi.
+        """
         pot.set_output(200)
         assert pot.get_output() == 200
 
     def test_write_percent_half(self, twi, pot):
-        """Perform test write percent half operation."""
+        """Perform test write percent half operation.
+
+        Args:
+            pot: Pot.
+            twi: Twi.
+        """
         pot._write_percent(0.5)
         assert twi._cc_data[0x00] == 128
 
     def test_write_percent_full(self, twi, pot):
-        """Perform test write percent full operation."""
+        """Perform test write percent full operation.
+
+        Args:
+            pot: Pot.
+            twi: Twi.
+        """
         pot._write_percent(1.0)
         assert twi._cc_data[0x00] == 255
 
     def test_add_channel_code(self, twi, pot, master_instance):
-        """Perform test add channel code operation."""
+        """Perform test add channel code operation.
+
+        Args:
+            master_instance: Master instance.
+            pot: Pot.
+            twi: Twi.
+        """
         pot.add_channel_code('wiper')
         master_instance.add(pot)
         master_instance['wiper'].write(100)
         assert twi._cc_data[0x00] == 100
 
     def test_add_channel_percent_readback(self, twi, pot):
-        """Perform test add channel percent readback operation."""
+        """Perform test add channel percent readback operation.
+
+        Args:
+            pot: Pot.
+            twi: Twi.
+        """
         pot.add_channel_percent_readback('pct')
         twi._cc_data[0x00] = 128
         val = pot['pct'].read()
@@ -486,7 +831,14 @@ class TestAgilent34401a:
 
     @pytest.fixture
     def dmm(self, master_instance):
-        """Return dmm result."""
+        """Return dmm result.
+
+        Args:
+            master_instance: Master instance.
+
+        Returns:
+            Result value.
+        """
         mock_iface = MagicMock()
         mock_iface.__class__ = interface_visa
         mock_iface.ask.return_value = "3.300000E+00"
@@ -495,28 +847,44 @@ class TestAgilent34401a:
         return instrument, mock_iface
 
     def test_instantiation_sends_config(self, dmm):
-        """Perform test instantiation sends config operation."""
+        """Perform test instantiation sends config operation.
+
+        Args:
+            dmm: Dmm.
+        """
         _, mock = dmm
         # __init__ calls config_dc_voltage which writes several SCPI commands
         write_calls = [str(c) for c in mock.write.call_args_list]
         assert any('VOLT:DC' in c for c in write_calls)
 
     def test_read_meter(self, dmm):
-        """Perform test read meter operation."""
+        """Perform test read meter operation.
+
+        Args:
+            dmm: Dmm.
+        """
         instrument, mock = dmm
         result = instrument.read_meter()
         mock.ask.assert_called_with("READ?")
         assert result == pytest.approx(3.3)
 
     def test_read_meter_negative(self, dmm):
-        """Perform test read meter negative operation."""
+        """Perform test read meter negative operation.
+
+        Args:
+            dmm: Dmm.
+        """
         instrument, mock = dmm
         mock.ask.return_value = "-1.234567E-03"
         result = instrument.read_meter()
         assert result == pytest.approx(-0.001234567)
 
     def test_config_dc_current(self, dmm):
-        """Perform test config dc current operation."""
+        """Perform test config dc current operation.
+
+        Args:
+            dmm: Dmm.
+        """
         instrument, mock = dmm
         mock.reset_mock()
         instrument.config_dc_current(NPLC=10)
@@ -525,13 +893,21 @@ class TestAgilent34401a:
         assert any('10' in c for c in write_calls)
 
     def test_invalid_nplc_raises(self, dmm):
-        """Perform test invalid nplc raises operation."""
+        """Perform test invalid nplc raises operation.
+
+        Args:
+            dmm: Dmm.
+        """
         instrument, _ = dmm
         with pytest.raises(Exception, match="Not a valid NPLC"):
             instrument.config_dc_voltage(NPLC=5)
 
     def test_add_channel_read(self, dmm):
-        """Perform test add channel read operation."""
+        """Perform test add channel read operation.
+
+        Args:
+            dmm: Dmm.
+        """
         instrument, mock = dmm
         instrument.add_channel('voltage')
         mock.ask.return_value = "5.000000E+00"
@@ -543,38 +919,71 @@ class TestBR24H64:
 
     @pytest.fixture
     def eeprom(self, twi):
-        """Return eeprom result."""
+        """Return eeprom result.
+
+        Args:
+            twi: Twi.
+
+        Returns:
+            Result value.
+        """
         return BR24H64(interface_twi=twi, addr7=0x50)
 
     def test_instantiation(self, eeprom):
-        """Perform test instantiation operation."""
+        """Perform test instantiation operation.
+
+        Args:
+            eeprom: Eeprom.
+        """
         assert eeprom.get_name().startswith('64KBit')
 
     def test_invalid_address_raises(self, twi):
-        """Perform test invalid address raises operation."""
+        """Perform test invalid address raises operation.
+
+        Args:
+            twi: Twi.
+        """
         with pytest.raises(ValueError):
             BR24H64(interface_twi=twi, addr7=0x60)
 
     def test_write_location(self, twi, eeprom):
-        """Perform test write location operation."""
+        """Perform test write location operation.
+
+        Args:
+            eeprom: Eeprom.
+            twi: Twi.
+        """
         eeprom.write_location(0, 0xAB)
         # commandCode = location >> 8 = 0, data = (location & 0xff) + (data <<
         # 8)
         assert twi._cc_data[0x00] == (0x00) + (0xAB << 8)
 
     def test_write_location_high_address(self, twi, eeprom):
-        """Perform test write location high address operation."""
+        """Perform test write location high address operation.
+
+        Args:
+            eeprom: Eeprom.
+            twi: Twi.
+        """
         eeprom.write_location(0x0100, 0x42)
         # commandCode = 0x0100 >> 8 = 1, data = (0x00) + (0x42 << 8)
         assert twi._cc_data[0x01] == (0x00) + (0x42 << 8)
 
     def test_write_out_of_range_raises(self, eeprom):
-        """Perform test write out of range raises operation."""
+        """Perform test write out of range raises operation.
+
+        Args:
+            eeprom: Eeprom.
+        """
         with pytest.raises(Exception, match="outside physical media"):
             eeprom.write_location(9000, 0x00)
 
     def test_write_data_out_of_range_raises(self, eeprom):
-        """Perform test write data out of range raises operation."""
+        """Perform test write data out of range raises operation.
+
+        Args:
+            eeprom: Eeprom.
+        """
         with pytest.raises(Exception, match="outside the range"):
             eeprom.write_location(0, 256)
 
@@ -583,7 +992,14 @@ class TestAgilentE36xxa:
 
     @pytest.fixture
     def supply(self, master_instance):
-        """Return supply result."""
+        """Return supply result.
+
+        Args:
+            master_instance: Master instance.
+
+        Returns:
+            Result value.
+        """
         mock_iface = MagicMock()
         mock_iface.__class__ = interface_visa
         mock_iface.ask.return_value = "3.300000E+00"
@@ -597,7 +1013,11 @@ class TestAgilentE36xxa:
         return psu, mock_iface
 
     def test_set_voltage(self, supply):
-        """Perform test set voltage operation."""
+        """Perform test set voltage operation.
+
+        Args:
+            supply: Supply.
+        """
         psu, mock = supply
         psu.set_voltage("OUT1", 3.3)
         calls = [str(c) for c in mock.write.call_args_list]
@@ -605,28 +1025,44 @@ class TestAgilentE36xxa:
         assert any('VOLTage 3.3' in c for c in calls)
 
     def test_set_current(self, supply):
-        """Perform test set current operation."""
+        """Perform test set current operation.
+
+        Args:
+            supply: Supply.
+        """
         psu, mock = supply
         psu.set_current("OUT1", 0.5)
         calls = [str(c) for c in mock.write.call_args_list]
         assert any('CURRent 0.5' in c for c in calls)
 
     def test_read_vsense(self, supply):
-        """Perform test read vsense operation."""
+        """Perform test read vsense operation.
+
+        Args:
+            supply: Supply.
+        """
         psu, mock = supply
         mock.ask.return_value = "5.000000E+00"
         result = psu.read_vsense("OUT1")
         assert result == pytest.approx(5.0)
 
     def test_read_isense(self, supply):
-        """Perform test read isense operation."""
+        """Perform test read isense operation.
+
+        Args:
+            supply: Supply.
+        """
         psu, mock = supply
         mock.ask.return_value = "1.234000E-01"
         result = psu.read_isense("OUT1")
         assert result == pytest.approx(0.1234)
 
     def test_add_channel_voltage(self, supply):
-        """Perform test add channel voltage operation."""
+        """Perform test add channel voltage operation.
+
+        Args:
+            supply: Supply.
+        """
         psu, mock = supply
         psu.add_channel_voltage('vout', 'OUT1')
         psu['vout'].write(1.8)
@@ -634,7 +1070,11 @@ class TestAgilentE36xxa:
         assert any('VOLTage 1.8' in c for c in calls)
 
     def test_enable_output(self, supply):
-        """Perform test enable output operation."""
+        """Perform test enable output operation.
+
+        Args:
+            supply: Supply.
+        """
         psu, mock = supply
         psu.enable_output(True)
         calls = [str(c) for c in mock.write.call_args_list]
@@ -645,7 +1085,14 @@ class TestScpiSmu:
 
     @pytest.fixture
     def smu_inst(self, master_instance):
-        """Return smu inst result."""
+        """Return smu inst result.
+
+        Args:
+            master_instance: Master instance.
+
+        Returns:
+            Result value.
+        """
         mock_iface = MagicMock()
         mock_iface.__class__ = interface_visa
         mock_iface.ask.return_value = "1.000E+00,2.000E-03,9.91E+37,0.0,0"
@@ -660,7 +1107,11 @@ class TestScpiSmu:
         return inst, mock_iface
 
     def test_add_channels(self, smu_inst):
-        """Perform test add channels operation."""
+        """Perform test add channels operation.
+
+        Args:
+            smu_inst: Smu inst.
+        """
         inst, mock = smu_inst
         channels = inst.add_channels('smu')
         assert len(channels) == 6
@@ -673,7 +1124,11 @@ class TestScpiSmu:
         assert 'smu_icompl' in names
 
     def test_voltage_force(self, smu_inst):
-        """Perform test voltage force operation."""
+        """Perform test voltage force operation.
+
+        Args:
+            smu_inst: Smu inst.
+        """
         inst, mock = smu_inst
         inst.add_channel_voltage_force('vf')
         inst['vf'].write(3.3)
@@ -683,7 +1138,11 @@ class TestScpiSmu:
         assert any('OUTPut' in c and 'ON' in c for c in calls)
 
     def test_current_force(self, smu_inst):
-        """Perform test current force operation."""
+        """Perform test current force operation.
+
+        Args:
+            smu_inst: Smu inst.
+        """
         inst, mock = smu_inst
         inst.add_channel_current_force('if')
         inst['if'].write(0.001)
@@ -692,7 +1151,11 @@ class TestScpiSmu:
         assert any('FUNCtion:MODE CURRent' in c for c in calls)
 
     def test_voltage_sense(self, smu_inst):
-        """Perform test voltage sense operation."""
+        """Perform test voltage sense operation.
+
+        Args:
+            smu_inst: Smu inst.
+        """
         inst, mock = smu_inst
         inst.add_channel_voltage_sense('vs')
         mock.ask.return_value = "3.300E+00,1.000E-03,9.91E+37,0.0,0"
@@ -700,7 +1163,11 @@ class TestScpiSmu:
         assert val == pytest.approx(3.3)
 
     def test_current_sense(self, smu_inst):
-        """Perform test current sense operation."""
+        """Perform test current sense operation.
+
+        Args:
+            smu_inst: Smu inst.
+        """
         inst, mock = smu_inst
         inst.add_channel_current_sense('is_ch')
         mock.ask.return_value = "5.000E+00,2.500E-03,9.91E+37,0.0,0"
@@ -708,7 +1175,11 @@ class TestScpiSmu:
         assert val == pytest.approx(0.0025)
 
     def test_compliance_write(self, smu_inst):
-        """Perform test compliance write operation."""
+        """Perform test compliance write operation.
+
+        Args:
+            smu_inst: Smu inst.
+        """
         inst, mock = smu_inst
         inst.add_channel_voltage_compliance('vcompl')
         inst['vcompl'].write(20)
@@ -716,7 +1187,11 @@ class TestScpiSmu:
         assert any('VOLTage:DC:PROTection:LEVel 20' in c for c in calls)
 
     def test_exclusive_vforce_clears_iforce(self, smu_inst):
-        """Perform test exclusive vforce clears iforce operation."""
+        """Perform test exclusive vforce clears iforce operation.
+
+        Args:
+            smu_inst: Smu inst.
+        """
         inst, mock = smu_inst
         inst.add_channel_voltage_force('vf')
         inst.add_channel_current_force('if')
@@ -730,7 +1205,14 @@ class TestHameg4040:
 
     @pytest.fixture
     def supply(self, master_instance):
-        """Return supply result."""
+        """Return supply result.
+
+        Args:
+            master_instance: Master instance.
+
+        Returns:
+            Result value.
+        """
         mock_iface = MagicMock()
         mock_iface.__class__ = interface_visa
         mock_iface.ask.return_value = "1"
@@ -745,7 +1227,11 @@ class TestHameg4040:
         return inst, mock_iface
 
     def test_write_voltage(self, supply):
-        """Perform test write voltage operation."""
+        """Perform test write voltage operation.
+
+        Args:
+            supply: Supply.
+        """
         inst, mock = supply
         inst._write_voltage(1, 3.3)
         calls = [str(c) for c in mock.write.call_args_list]
@@ -753,7 +1239,11 @@ class TestHameg4040:
         assert any('SOURce:VOLTage 3.3' in c for c in calls)
 
     def test_write_current(self, supply):
-        """Perform test write current operation."""
+        """Perform test write current operation.
+
+        Args:
+            supply: Supply.
+        """
         inst, mock = supply
         inst._write_current(2, 0.5)
         calls = [str(c) for c in mock.write.call_args_list]
@@ -761,42 +1251,66 @@ class TestHameg4040:
         assert any('SOURce:CURRent 0.5' in c for c in calls)
 
     def test_read_vsense(self, supply):
-        """Perform test read vsense operation."""
+        """Perform test read vsense operation.
+
+        Args:
+            supply: Supply.
+        """
         inst, mock = supply
         mock.ask.return_value = "3.300"
         val = inst._read_vsense(1)
         assert val == pytest.approx(3.3)
 
     def test_read_isense(self, supply):
-        """Perform test read isense operation."""
+        """Perform test read isense operation.
+
+        Args:
+            supply: Supply.
+        """
         inst, mock = supply
         mock.ask.return_value = "0.125"
         val = inst._read_isense(1)
         assert val == pytest.approx(0.125)
 
     def test_write_enable(self, supply):
-        """Perform test write enable operation."""
+        """Perform test write enable operation.
+
+        Args:
+            supply: Supply.
+        """
         inst, mock = supply
         inst._write_enable(1, True)
         calls = [str(c) for c in mock.write.call_args_list]
         assert any('OUTPUT:STATE ON' in c for c in calls)
 
     def test_write_enable_off(self, supply):
-        """Perform test write enable off operation."""
+        """Perform test write enable off operation.
+
+        Args:
+            supply: Supply.
+        """
         inst, mock = supply
         inst._write_enable(1, False)
         calls = [str(c) for c in mock.write.call_args_list]
         assert any('OUTPUT:STATE OFF' in c for c in calls)
 
     def test_master_enable(self, supply):
-        """Perform test master enable operation."""
+        """Perform test master enable operation.
+
+        Args:
+            supply: Supply.
+        """
         inst, mock = supply
         inst._write_master_enable(True)
         calls = [str(c) for c in mock.write.call_args_list]
         assert any('OUTPut:GENeral ON' in c for c in calls)
 
     def test_add_channel_voltage(self, supply):
-        """Perform test add channel voltage operation."""
+        """Perform test add channel voltage operation.
+
+        Args:
+            supply: Supply.
+        """
         inst, mock = supply
         inst.add_channel_voltage('ch1_v', 1)
         mock.reset_mock()
@@ -806,7 +1320,11 @@ class TestHameg4040:
         assert any('SOURce:VOLTage 5.0' in c for c in calls)
 
     def test_voltage_limits(self, supply):
-        """Perform test voltage limits operation."""
+        """Perform test voltage limits operation.
+
+        Args:
+            supply: Supply.
+        """
         inst, mock = supply
         ch = inst.add_channel_voltage('ch1_v', 1)
         assert ch.get_max_write_limit() == 32.05
@@ -817,7 +1335,14 @@ class TestRigolDG800:
 
     @pytest.fixture
     def funcgen(self, master_instance):
-        """Return funcgen result."""
+        """Return funcgen result.
+
+        Args:
+            master_instance: Master instance.
+
+        Returns:
+            Result value.
+        """
         mock_iface = MagicMock()
         mock_iface.__class__ = interface_visa
         inst = rigol_DG800.__new__(rigol_DG800)
@@ -830,35 +1355,55 @@ class TestRigolDG800:
         return inst, mock_iface
 
     def test_write_high_voltage(self, funcgen):
-        """Perform test write high voltage operation."""
+        """Perform test write high voltage operation.
+
+        Args:
+            funcgen: Funcgen.
+        """
         inst, mock = funcgen
         inst._write_high_voltage(1, 3.3)
         calls = [str(c) for c in mock.write.call_args_list]
         assert any('VOLTage:LEVel:IMMediate:HIGH 3.3' in c for c in calls)
 
     def test_write_low_voltage(self, funcgen):
-        """Perform test write low voltage operation."""
+        """Perform test write low voltage operation.
+
+        Args:
+            funcgen: Funcgen.
+        """
         inst, mock = funcgen
         inst._write_low_voltage(1, 0)
         calls = [str(c) for c in mock.write.call_args_list]
         assert any('VOLTage:LEVel:IMMediate:LOW 0' in c for c in calls)
 
     def test_write_pulse_width(self, funcgen):
-        """Perform test write pulse width operation."""
+        """Perform test write pulse width operation.
+
+        Args:
+            funcgen: Funcgen.
+        """
         inst, mock = funcgen
         inst._write_pulse_width(1, 50e-6)
         calls = [str(c) for c in mock.write.call_args_list]
         assert any('PULSe:WIDTh 5e-05' in c for c in calls)
 
     def test_write_output_enable(self, funcgen):
-        """Perform test write output enable operation."""
+        """Perform test write output enable operation.
+
+        Args:
+            funcgen: Funcgen.
+        """
         inst, mock = funcgen
         inst._write_output_enable(1, 'ON')
         calls = [str(c) for c in mock.write.call_args_list]
         assert any('OUTPut1:STATE ON' in c for c in calls)
 
     def test_add_channel_enable(self, funcgen):
-        """Perform test add channel enable operation."""
+        """Perform test add channel enable operation.
+
+        Args:
+            funcgen: Funcgen.
+        """
         inst, mock = funcgen
         ch = inst.add_channel_enable('out1', 1)
         mock.reset_mock()
@@ -867,7 +1412,11 @@ class TestRigolDG800:
         assert any('OUTPut1:STATE ON' in c for c in calls)
 
     def test_add_channel_pulse_width(self, funcgen):
-        """Perform test add channel pulse width operation."""
+        """Perform test add channel pulse width operation.
+
+        Args:
+            funcgen: Funcgen.
+        """
         inst, mock = funcgen
         ch = inst.add_channel_pulse_width('pw', 1)
         assert ch.get_min_write_limit() == 30e-9
@@ -877,7 +1426,14 @@ class TestKeithley2400:
 
     @pytest.fixture
     def smu(self, master_instance):
-        """Return smu result."""
+        """Return smu result.
+
+        Args:
+            master_instance: Master instance.
+
+        Returns:
+            Result value.
+        """
         mock_iface = MagicMock()
         mock_iface.__class__ = interface_visa
         mock_iface.ask.return_value = "1.000E+00,2.000E-03,9.91E+37,0.0,0"
@@ -891,7 +1447,11 @@ class TestKeithley2400:
         return inst, mock_iface
 
     def test_add_channel_voltage_force(self, smu):
-        """Perform test add channel voltage force operation."""
+        """Perform test add channel voltage force operation.
+
+        Args:
+            smu: Smu.
+        """
         inst, mock = smu
         ch = inst.add_channel_voltage_force('vf')
         assert ch.get_min_write_limit() == -200
@@ -900,14 +1460,22 @@ class TestKeithley2400:
         assert any('RANGe:AUTO ON' in c for c in calls)
 
     def test_add_channel_current_force(self, smu):
-        """Perform test add channel current force operation."""
+        """Perform test add channel current force operation.
+
+        Args:
+            smu: Smu.
+        """
         inst, mock = smu
         ch = inst.add_channel_current_force('if')
         assert ch.get_min_write_limit() == -1
         assert ch.get_max_write_limit() == 1
 
     def test_voltage_force_sends_scpi(self, smu):
-        """Perform test voltage force sends scpi operation."""
+        """Perform test voltage force sends scpi operation.
+
+        Args:
+            smu: Smu.
+        """
         inst, mock = smu
         inst.add_channel_voltage_force('vf')
         mock.reset_mock()
@@ -917,7 +1485,11 @@ class TestKeithley2400:
         assert any('OUTPut' in c and 'ON' in c for c in calls)
 
     def test_voltage_sense(self, smu):
-        """Perform test voltage sense operation."""
+        """Perform test voltage sense operation.
+
+        Args:
+            smu: Smu.
+        """
         inst, mock = smu
         inst.add_channel_voltage_sense('vs')
         mock.ask.return_value = "3.300E+00,1.000E-03,9.91E+37,0.0,0"
@@ -925,7 +1497,11 @@ class TestKeithley2400:
         assert val == pytest.approx(3.3)
 
     def test_current_sense(self, smu):
-        """Perform test current sense operation."""
+        """Perform test current sense operation.
+
+        Args:
+            smu: Smu.
+        """
         inst, mock = smu
         inst.add_channel_current_sense('is_ch')
         mock.ask.return_value = "5.000E+00,2.500E-03,9.91E+37,0.0,0"
@@ -937,7 +1513,14 @@ class TestKeithley2600:
 
     @pytest.fixture
     def smu(self, master_instance):
-        """Return smu result."""
+        """Return smu result.
+
+        Args:
+            master_instance: Master instance.
+
+        Returns:
+            Result value.
+        """
         mock_iface = MagicMock()
         mock_iface.__class__ = interface_visa
         mock_iface.ask.return_value = "3.300000e+00"
@@ -952,13 +1535,21 @@ class TestKeithley2600:
         return inst, mock_iface
 
     def test_channel_id(self, smu):
-        """Perform test channel id operation."""
+        """Perform test channel id operation.
+
+        Args:
+            smu: Smu.
+        """
         inst, _ = smu
         assert inst._channel_id(1) == 'a'
         assert inst._channel_id(2) == 'b'
 
     def test_voltage_force(self, smu):
-        """Perform test voltage force operation."""
+        """Perform test voltage force operation.
+
+        Args:
+            smu: Smu.
+        """
         inst, mock = smu
         inst.add_channel_voltage_force('vf', channel_number=1)
         mock.reset_mock()
@@ -969,7 +1560,11 @@ class TestKeithley2600:
         assert any('OUTPUT_ON' in c for c in calls)
 
     def test_current_force_channel_b(self, smu):
-        """Perform test current force channel b operation."""
+        """Perform test current force channel b operation.
+
+        Args:
+            smu: Smu.
+        """
         inst, mock = smu
         inst.add_channel_current_force('if', channel_number=2)
         mock.reset_mock()
@@ -979,7 +1574,11 @@ class TestKeithley2600:
         assert any('OUTPUT_DCAMPS' in c for c in calls)
 
     def test_voltage_sense(self, smu):
-        """Perform test voltage sense operation."""
+        """Perform test voltage sense operation.
+
+        Args:
+            smu: Smu.
+        """
         inst, mock = smu
         inst.add_channel_voltage_sense('vs', channel_number=1)
         mock.ask.return_value = "3.300000e+00"
@@ -987,7 +1586,11 @@ class TestKeithley2600:
         assert val == pytest.approx(3.3)
 
     def test_compliance_write(self, smu):
-        """Perform test compliance write operation."""
+        """Perform test compliance write operation.
+
+        Args:
+            smu: Smu.
+        """
         inst, mock = smu
         inst.add_channel_current_compliance('icompl', channel_number=1)
         mock.reset_mock()

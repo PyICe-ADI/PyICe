@@ -39,7 +39,14 @@ class htx9000(scpi_instrument):
         return self.add_channel_current(channel_name)
 
     def add_channel_current(self, channel_name):
-        """Add a channel current."""
+        """Add a channel current.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name, write_function=self._write_current)
         # new_channel.set_min_write_warning(0.0) # set_min_write_limit too draconian. Crashes scripts that could have otherwise cleaned up. Caveat Emptor.
         # new_channel.set_max_write_warning(2.5) # set_max_write_limit too
@@ -59,13 +66,27 @@ class htx9000(scpi_instrument):
         # time.sleep((20e-6/data + 0.025) if data > 0 else 0.025)
 
     def add_channel_current_readback(self, channel_name):
-        """Add a channel current readback."""
+        """Add a channel current readback.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name,
                               read_function=self._readback_current)
         return self._add_channel(new_channel)
 
     def add_channel_dropout(self, channel_name):
-        """Add a channel dropout."""
+        """Add a channel dropout.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = integer_channel(
             name=channel_name,
             size=1,
@@ -73,20 +94,41 @@ class htx9000(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_temp_heatsink(self, channel_name):
-        """Add a channel temp heatsink."""
+        """Add a channel temp heatsink.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name,
                               read_function=self._read_heatsink_temp)
         return self._add_channel(new_channel)
 
     def add_channel_temp_board(self, channel_name):
-        """Add a channel temp board."""
+        """Add a channel temp board.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=self._read_board_temp)
         return self._add_channel(new_channel)
 
     def add_channel_swipepad_lock(self, channel_name):
-        """Add a channel swipepad lock."""
+        """Add a channel swipepad lock.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = integer_channel(
             name=channel_name,
             size=1,
@@ -95,7 +137,14 @@ class htx9000(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_manual_range(self, channel_name):
-        """Add a channel manual range."""
+        """Add a channel manual range.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name, write_function=lambda rng: setattr(
                 self, '_forced_range', rng))
@@ -105,7 +154,14 @@ class htx9000(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_range_readback(self, channel_name):
-        """Add a channel range readback."""
+        """Add a channel range readback.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self.get_interface().ask(':SOURce:CURRent:RANGe?'))
@@ -223,7 +279,11 @@ class htx9000(scpi_instrument):
                 f"saw {len(flush_chars)} extra characters: {flush_chars} during SYSTem:LOCK or SYSTem:LOCK:RELease")
 
     def get_serial_number(self):
-        """Return the serial number."""
+        """Return the serial number.
+
+        Returns:
+            Result value.
+        """
         ident = self.get_interface().ask("*IDN?")
         return ident.split(",")[2].strip()
 
@@ -242,7 +302,14 @@ class htx9000SE_5A(htx9000):
         self._forced_range = None
 
     def add_channel_current(self, channel_name):
-        """Add a channel current."""
+        """Add a channel current.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name, write_function=self._write_current)
         new_channel.set_min_write_limit(0.0)
         new_channel.set_max_write_limit(5)

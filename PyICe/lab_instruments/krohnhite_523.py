@@ -25,17 +25,38 @@ class krohnhite_523(instrument):
         self.get_interface().write(("v"))
 
     def add_channel_voltage(self, channel_name):
-        """Add a channel voltage."""
+        """Add a channel voltage.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name, write_function=self._write_voltage)
         return self._add_channel(new_channel)
 
     def add_channel_current(self, channel_name):
-        """Add a channel current."""
+        """Add a channel current.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name, write_function=self._write_current)
         return self._add_channel(new_channel)
 
     def add_channel_voltage_compliance(self, channel_name):
-        """Add a channel voltage compliance."""
+        """Add a channel voltage compliance.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name,
                               write_function=self._write_compliance_voltage)
         return self._add_channel(new_channel)

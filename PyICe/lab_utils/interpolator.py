@@ -53,11 +53,22 @@ class interpolator(object):
             self.sort()
 
     def __call__(self, x_value):
-        """Call the instance."""
+        """Call the instance.
+
+        Args:
+            x_value: X value.
+
+        Returns:
+            Result value.
+        """
         return self.get_y_val(x_value)
 
     def check_monotonicity(self):
-        """Perform check monotonicity operation."""
+        """Perform check monotonicity operation.
+
+        Raises:
+            Exception: On error condition.
+        """
         if len(self._points) > 1:
             x_pts = [x[0] for x in self._points]
             y_pts = [y[1] for y in self._points]
@@ -79,7 +90,12 @@ class interpolator(object):
         # increasing values in y
 
     def add_point(self, x_val, y_val):
-        """Add a point."""
+        """Add a point.
+
+        Args:
+            x_val: X val.
+            y_val: Y val.
+        """
         self._points.append([x_val, y_val])
         self.sort()
         self.check_monotonicity()
@@ -142,12 +158,26 @@ class interpolator(object):
             return low_pt[1] + (key - low_pt[0]) * slope
 
     def get_x_val(self, y_val):
-        """Return the x val."""
+        """Return the x val.
+
+        Args:
+            y_val: Y val.
+
+        Returns:
+            Result value.
+        """
         [x_pts, y_pts] = list(zip(*self._points_ysort))
         return self.find(y_val, y_pts, x_pts)
 
     def get_y_val(self, x_val):
-        """Return the y val."""
+        """Return the y val.
+
+        Args:
+            x_val: X val.
+
+        Returns:
+            Result value.
+        """
         [x_pts, y_pts] = list(zip(*self._points))
         return self.find(x_val, x_pts, y_pts)
 

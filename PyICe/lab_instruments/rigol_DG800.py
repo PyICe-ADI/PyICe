@@ -23,7 +23,17 @@ class rigol_DG800(scpi_instrument):
 
     def add_channel(self, channel_name, channel_number,
                     function="PULSe", add_extended_channels=True):
-        """Add a channel."""
+        """Add a channel.
+
+        Args:
+            add_extended_channels: If True, add sense and mode channels.
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+            function: Function.
+
+        Returns:
+            Result value.
+        """
         if function == "PULSe":
             self._config_pulse_func(channel_number, function)
         output_enable_channel = self.add_channel_enable(
@@ -114,7 +124,15 @@ class rigol_DG800(scpi_instrument):
         pass
 
     def add_channel_enable(self, channel_name, channel_number):
-        """Add a channel enable."""
+        """Add a channel enable.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             write_function=lambda output_enable: self._write_output_enable(
@@ -125,7 +143,15 @@ class rigol_DG800(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_low_voltage(self, channel_name, channel_number):
-        """Add a channel low voltage."""
+        """Add a channel low voltage.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             write_function=lambda low_voltage: self._write_low_voltage(
@@ -135,7 +161,15 @@ class rigol_DG800(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_high_voltage(self, channel_name, channel_number):
-        """Add a channel high voltage."""
+        """Add a channel high voltage.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             write_function=lambda high_voltage: self._write_high_voltage(
@@ -145,7 +179,15 @@ class rigol_DG800(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_pulse_width(self, channel_name, channel_number):
-        """Add a channel pulse width."""
+        """Add a channel pulse width.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             write_function=lambda pulse_width: self._write_pulse_width(
@@ -156,7 +198,15 @@ class rigol_DG800(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_pulse_period(self, channel_name, channel_number):
-        """Add a channel pulse period."""
+        """Add a channel pulse period.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             write_function=lambda period: self._write_pulse_period(
@@ -166,7 +216,15 @@ class rigol_DG800(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_rise_time(self, channel_name, channel_number):
-        """Add a channel rise time."""
+        """Add a channel rise time.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             write_function=lambda transition: self._write_pulse_transition_leading(
@@ -177,7 +235,15 @@ class rigol_DG800(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_fall_time(self, channel_name, channel_number):
-        """Add a channel fall time."""
+        """Add a channel fall time.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             write_function=lambda transition: self._write_pulse_transition_trailing(
@@ -188,7 +254,15 @@ class rigol_DG800(scpi_instrument):
         return self._add_channel(new_channel)
 
     def add_channel_trigger(self, channel_name, channel_number):
-        """Add a channel trigger."""
+        """Add a channel trigger.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         self.trigger_channel = channel(
             channel_name, write_function=lambda value: self._send_trigger(
                 channel_number, value))
@@ -197,7 +271,15 @@ class rigol_DG800(scpi_instrument):
         return self._add_channel(self.trigger_channel)
 
     def add_channel_cycle_count(self, channel_name, channel_number):
-        """Add a channel cycle count."""
+        """Add a channel cycle count.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             write_function=lambda cycle_count: self._write_cycle_count(

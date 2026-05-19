@@ -131,13 +131,21 @@ class TestRoundtrip:
 
     @pytest.mark.parametrize('value', [-128, -1, 0, 1, 127])
     def test_roundtrip_8bit(self, value):
-        """Perform test roundtrip 8bit operation."""
+        """Perform test roundtrip 8bit operation.
+
+        Args:
+            value: Value to set.
+        """
         binary = signedToTwosComplement(value, 8)
         assert twosComplementToSigned(binary, 8) == value
 
     @pytest.mark.parametrize('value', [-32768, -1, 0, 1, 32767])
     def test_roundtrip_16bit(self, value):
-        """Perform test roundtrip 16bit operation."""
+        """Perform test roundtrip 16bit operation.
+
+        Args:
+            value: Value to set.
+        """
         binary = signedToTwosComplement(value, 16)
         assert twosComplementToSigned(binary, 16) == value
 
@@ -268,96 +276,160 @@ class TestOrderedPair:
 
     @pytest.fixture
     def sample(self):
-        """Return sample result."""
+        """Return sample result.
+
+        Returns:
+            Result value.
+        """
         return ordered_pair([[0, 0], [1, 10], [2, 20], [3, 30], [4, 40]])
 
     def test_is_list(self, sample):
-        """Perform test is list operation."""
+        """Perform test is list operation.
+
+        Args:
+            sample: Sample.
+        """
         assert isinstance(sample, list)
         assert len(sample) == 5
 
     def test_xscale(self, sample):
-        """Perform test xscale operation."""
+        """Perform test xscale operation.
+
+        Args:
+            sample: Sample.
+        """
         sample.xscale(2)
         assert sample[0] == [0, 0]
         assert sample[2] == [4, 20]
 
     def test_yscale(self, sample):
-        """Perform test yscale operation."""
+        """Perform test yscale operation.
+
+        Args:
+            sample: Sample.
+        """
         sample.yscale(0.5)
         assert sample[1] == [1, 5.0]
 
     def test_xoffset(self, sample):
-        """Perform test xoffset operation."""
+        """Perform test xoffset operation.
+
+        Args:
+            sample: Sample.
+        """
         sample.xoffset(10)
         assert sample[0] == [10, 0]
         assert sample[4] == [14, 40]
 
     def test_yoffset(self, sample):
-        """Perform test yoffset operation."""
+        """Perform test yoffset operation.
+
+        Args:
+            sample: Sample.
+        """
         sample.yoffset(-5)
         assert sample[0] == [0, -5]
         assert sample[2] == [2, 15]
 
     def test_xyscale(self, sample):
-        """Perform test xyscale operation."""
+        """Perform test xyscale operation.
+
+        Args:
+            sample: Sample.
+        """
         sample.xyscale(2, 3)
         assert sample[1] == [2, 30]
 
     def test_transform(self, sample):
-        """Perform test transform operation."""
+        """Perform test transform operation.
+
+        Args:
+            sample: Sample.
+        """
         sample.transform(x_transform=lambda x: x ** 2,
                          y_transform=lambda y: y + 1)
         assert sample[2] == [4, 21]
 
     def test_transform_x_only(self, sample):
-        """Perform test transform x only operation."""
+        """Perform test transform x only operation.
+
+        Args:
+            sample: Sample.
+        """
         sample.transform(x_transform=lambda x: x * 10)
         assert sample[1] == [10, 10]
         assert sample[3] == [30, 30]
 
     def test_truncate_by_count(self, sample):
-        """Perform test truncate by count operation."""
+        """Perform test truncate by count operation.
+
+        Args:
+            sample: Sample.
+        """
         sample.truncate(length=3)
         assert len(sample) == 3
         assert sample[0] == [0, 0]
 
     def test_truncate_with_offset(self, sample):
-        """Perform test truncate with offset operation."""
+        """Perform test truncate with offset operation.
+
+        Args:
+            sample: Sample.
+        """
         sample.truncate(length=2, offset=1)
         assert len(sample) == 2
         assert sample[0] == [1, 10]
 
     def test_decimate(self, sample):
-        """Perform test decimate operation."""
+        """Perform test decimate operation.
+
+        Args:
+            sample: Sample.
+        """
         original_len = len(sample)
         sample.decimate(0.6)
         assert len(sample) < original_len
         assert len(sample) == 3
 
     def test_numpy_recarray(self, sample):
-        """Perform test numpy recarray operation."""
+        """Perform test numpy recarray operation.
+
+        Args:
+            sample: Sample.
+        """
         arr = sample.numpy_recarray(force_float_dtype=True)
         assert arr.x[0] == 0.0
         assert arr.y[2] == 20.0
         assert len(arr) == 5
 
     def test_x_extents(self, sample):
-        """Perform test x extents operation."""
+        """Perform test x extents operation.
+
+        Args:
+            sample: Sample.
+        """
         ext = sample.x_extents()
         assert ext['min'] == 0
         assert ext['max'] == 4
         assert ext['diff'] == 4
 
     def test_y_extents(self, sample):
-        """Perform test y extents operation."""
+        """Perform test y extents operation.
+
+        Args:
+            sample: Sample.
+        """
         ext = sample.y_extents()
         assert ext['min'] == 0
         assert ext['max'] == 40
         assert ext['diff'] == 40
 
     def test_interpolated_y_value(self, sample):
-        """Perform test interpolated y value operation."""
+        """Perform test interpolated y value operation.
+
+        Args:
+            sample: Sample.
+        """
         assert sample.interpolated_y_value(1.5) == pytest.approx(15.0)
         assert sample.interpolated_y_value(0) == pytest.approx(0.0)
         assert sample.interpolated_y_value(4) == pytest.approx(40.0)

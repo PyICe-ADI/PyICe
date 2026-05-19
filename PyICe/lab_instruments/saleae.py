@@ -31,11 +31,25 @@ class saleae(instrument, delegator):
 
     def get_sample_rates(self):
         # why throw out analog rates Dave?
-        """Return the sample rates."""
+        """Return the sample rates.
+
+        Returns:
+            Result value.
+        """
         return [i[1] for i in self._saleae.get_all_sample_rates()]
 
     def set_sample_rates(self, sample_rates=None):
-        """Set the sample rates."""
+        """Set the sample rates.
+
+        Args:
+            sample_rates: Sample rates.
+
+        Returns:
+            Result value.
+
+        Raises:
+            ValueError: If the requested sample rate is not available.
+        """
         available_rates = self._saleae.get_all_sample_rates()
         if sample_rates is None:
             self._saleae.set_sample_rate(available_rates[0])
@@ -43,7 +57,7 @@ class saleae(instrument, delegator):
             if sample_rates in available_rates:
                 self._saleae.set_sample_rate(sample_rates)
             else:
-                raise (
+                raise ValueError(
                     f"\n\nSaleae: Sorry I can't support the sample rates {sample_rates}.\n\n")
         return self.get_sample_rates()
 

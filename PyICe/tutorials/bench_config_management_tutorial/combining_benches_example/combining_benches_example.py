@@ -7,7 +7,12 @@ if __name__ == "__main__":
     #
     #
     def configure_bench1(components, connections):
-        """Perform configure bench1 operation."""
+        """Perform configure bench1 operation.
+
+        Args:
+            components: Components.
+            connections: Connections.
+        """
         connections.add_connection(
             components["AGILENT_3497x"]["BAY1"],
             components["AGILENT_34908A"]["BAY"])
@@ -23,7 +28,12 @@ if __name__ == "__main__":
     #
 
     def configure_bench2(components, connections):
-        """Perform configure bench2 operation."""
+        """Perform configure bench2 operation.
+
+        Args:
+            components: Components.
+            connections: Connections.
+        """
         connections.add_connection(
             components["AGILENT_3497x"]["BAY1"],
             components["AGILENT_34908A"]["BAY"])
@@ -39,7 +49,12 @@ if __name__ == "__main__":
     #
     #
     def configure_bench3(components, connections):
-        """Perform configure bench3 operation."""
+        """Perform configure bench3 operation.
+
+        Args:
+            components: Components.
+            connections: Connections.
+        """
         connections.block_connection(components["AGILENT_3497x"]["BAY2"])
         connections.add_connection(
             components["CONFIGURATORXT"]["POWER1_MEAS"],

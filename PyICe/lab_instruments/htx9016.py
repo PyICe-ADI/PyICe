@@ -28,7 +28,14 @@ class htx9016(scpi_instrument):
                 f"*** HTX9016 RF MUX *** CAUTION: Multiple channels are on, return value {value} should be a power of 2!")
 
     def add_channel(self, channel_name):
-        """Add a channel."""
+        """Add a channel.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             write_function=lambda ch: self.get_interface().write(
@@ -46,5 +53,9 @@ class htx9016(scpi_instrument):
         return self._add_channel(new_channel)
 
     def get_serial_number(self):
-        """Return the serial number."""
+        """Return the serial number.
+
+        Returns:
+            Result value.
+        """
         return self.get_interface().ask(":STORe:SERIalnum?")

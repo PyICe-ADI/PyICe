@@ -52,19 +52,35 @@ class Master_Test_Template():
     # GET METHODS
     ###
     def get_channels(self):
-        """Return the channels."""
+        """Return the channels.
+
+        Returns:
+            Result value.
+        """
         return self._logger
 
     def get_name(self):
-        """Return the name."""
+        """Return the name.
+
+        Returns:
+            Result value.
+        """
         return self._name
 
     def get_project_folder_name(self):
-        """Return the project folder name."""
+        """Return the project folder name.
+
+        Returns:
+            Result value.
+        """
         return self.project_folder_name
 
     def get_module_path(self):
-        """Return the module path."""
+        """Return the module path.
+
+        Returns:
+            Result value.
+        """
         if hasattr(self, '_module_path'):
             return self._module_path
         else:
@@ -72,15 +88,27 @@ class Master_Test_Template():
                 f"Attempted to access the module path for {self.get_name()}. It would be created upon adding a test to the plugin manager but you didn't get that far.")
 
     def get_debug(self):
-        """Return the debug."""
+        """Return the debug.
+
+        Returns:
+            Result value.
+        """
         return self._debug
 
     def get_verbose(self):
-        """Return the verbose."""
+        """Return the verbose.
+
+        Returns:
+            Result value.
+        """
         return self.verbose
 
     def get_db_file(self):
-        """Return the db file."""
+        """Return the db file.
+
+        Returns:
+            Result value.
+        """
         if hasattr(self, '_db_file'):
             return self._db_file
         else:
@@ -88,7 +116,11 @@ class Master_Test_Template():
                 f"Attempted to access the database file for {self.get_name()}. It would be created upon adding a test to the plugin manager but you didn't get that far.")
 
     def get_database(self):
-        """Return the database."""
+        """Return the database.
+
+        Returns:
+            Result value.
+        """
         if hasattr(self, '_db'):
             return self._db
         else:
@@ -96,7 +128,11 @@ class Master_Test_Template():
                 f"Attempted to access the database for {self.get_name()}. It's only intended to be accessible from inside the plot() or evaluate() methods.")
 
     def get_table_name(self):
-        """Return the table name."""
+        """Return the table name.
+
+        Returns:
+            Result value.
+        """
         if hasattr(self, '_table_name'):
             return self._table_name
         else:
@@ -104,7 +140,11 @@ class Master_Test_Template():
                 f'No table name has been assigned to {self.get_name()} at this time.')
 
     def get_plot_filepath(self):
-        """Return the plot filepath."""
+        """Return the plot filepath.
+
+        Returns:
+            Result value.
+        """
         if hasattr(self, '_plot_filepath'):
             return self._plot_filepath
         else:
@@ -112,7 +152,14 @@ class Master_Test_Template():
                 f'No file path for plot locations has been assigned to {self.get_name()} at this time.')
 
     def get_bench_image_locations(self):
-        """Return the bench image locations."""
+        """Return the bench image locations.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         if hasattr(self, 'bench_image_locations'):
             return self.bench_image_locations
         else:
@@ -326,6 +373,13 @@ class Master_Test_Template():
         return res_str
 
     def get_test_limits(self, name):
-        """Return the test limits."""
+        """Return the test limits.
+
+        Args:
+            name: Name identifier.
+
+        Raises:
+            Exception: On error condition.
+        """
         raise Exception(
             "MASTER TEST TEMPLATE ERROR: This project indicated a use of the TEST_LIMIT plugin but no project specific 'get_test_limits' method was provided.")

@@ -185,7 +185,15 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
         return channels
 
     def add_channel_display_split(self, channel_name, channel_number):
-        """Add a channel display split."""
+        """Add a channel display split.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         f'''Configures the screen splitting of the display.
 {screen_configs}
 
@@ -887,7 +895,15 @@ class keysight_e5061b(keysight_e5061b_base):
     # def __init__(self, interface_visa):
     # super(keysight_e5061b, self).__init__(interface_visa)
     def add_channels(self, channel_name, channel_number=1):
-        """Add a channels."""
+        """Add a channels.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         channels = []
         channels.append(
             super(
@@ -1366,7 +1382,15 @@ class keysight_e5061b_impedance(keysight_e5061b_base):
     # {DCV|DCI|R|T} <newline><^END>
 
     def add_channels(self, channel_name, channel_number=1):
-        """Add a channels."""
+        """Add a channels.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         channels = []
         channels.append(
             super(
@@ -1608,7 +1632,12 @@ class keysight_e5061b_impedance(keysight_e5061b_base):
             The newly created Z correction collect channel.
         """
         def col_and_wait(cal_type, channel_number):
-            """Perform col and wait operation."""
+            """Perform col and wait operation.
+
+            Args:
+                cal_type: Cal type.
+                channel_number: Physical channel number.
+            """
             old_timeout = self.get_interface().timeout
             self.get_interface().write(
                 f':SENSe{channel_number}:Z:CORRection:COLLect:ACQuire {cal_type}')

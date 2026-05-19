@@ -3,7 +3,11 @@ import random
 
 
 def debug(val):
-    """Perform debug operation."""
+    """Perform debug operation.
+
+    Args:
+        val: Val.
+    """
     pass
     # print "Writing channel to {}".format(val)
 

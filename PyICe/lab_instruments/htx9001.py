@@ -203,7 +203,14 @@ class htx9001(scpi_instrument):
         raise e
 
     def read_channel_pin(self, channel_name):
-        """Return read channel pin result."""
+        """Return read channel pin result.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         return self.read_channel_generic(
             channel_name, function=self.read_pins_values)
 
@@ -374,7 +381,15 @@ class htx9001(scpi_instrument):
         return self._from_bit_list(output)
 
     def set_resistor_calibration(self, resistor_number, value):
-        """Set the resistor calibration."""
+        """Set the resistor calibration.
+
+        Args:
+            resistor_number: Resistor number.
+            value: Value to set.
+
+        Raises:
+            Exception: On error condition.
+        """
         try:
             float(value)
         except BaseException:
@@ -383,7 +398,14 @@ class htx9001(scpi_instrument):
         self.get_interface().write(write_str)
 
     def get_resistor_calibration(self, resistor_number):
-        """Return the resistor calibration."""
+        """Return the resistor calibration.
+
+        Args:
+            resistor_number: Resistor number.
+
+        Returns:
+            Result value.
+        """
         read_str = f"CAL:DATA?({resistor_number});"
         self.get_interface().write(read_str)
         data = self.get_interface().readline()
@@ -391,7 +413,11 @@ class htx9001(scpi_instrument):
 
     def get_calibration_date(self):
         # datetime.datetime.now().strftime("%Y-%m-%d")
-        """Return the calibration date."""
+        """Return the calibration date.
+
+        Returns:
+            Result value.
+        """
         datestr = self.get_interface().ask('CAL:DATE?')
         try:
             y, m, d = datestr.split('-')
@@ -402,13 +428,24 @@ class htx9001(scpi_instrument):
             return None
 
     def get_days_since_calibration(self):
-        """Return the days since calibration."""
+        """Return the days since calibration.
+
+        Returns:
+            Result value.
+        """
         cal_date = self.get_calibration_date()
         if cal_date is not None:
             return (datetime.date.today() - cal_date).days
 
     def check_calibration_valid(self, calibrating):
-        """Perform check calibration valid operation."""
+        """Perform check calibration valid operation.
+
+        Args:
+            calibrating: Calibrating.
+
+        Raises:
+            Exception: On error condition.
+        """
         cal_duration = 365  # days
         days = self.get_days_since_calibration()
         if days is None and not calibrating:
@@ -429,7 +466,11 @@ class htx9001(scpi_instrument):
                     f'HTX9001 Calibration Expired.  Calibration required every {cal_duration} days')
 
     def set_all_relays(self, value):
-        """Set the all relays."""
+        """Set the all relays.
+
+        Args:
+            value: Value to set.
+        """
         for relay in self.relay_pins:
             self._write_relay(relay, value)
 

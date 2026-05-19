@@ -79,7 +79,17 @@ def logRange(start, stop, stepsPerDecade=None, stepsPerOctave=None):
 
 
 def logRangeInc(start, stop, stepsPerDecade=None, stepsPerOctave=None):
-    """Return logRangeInc result."""
+    """Return logRangeInc result.
+
+    Args:
+        start: Start bit position.
+        stepsPerDecade: Stepsperdecade.
+        stepsPerOctave: Stepsperoctave.
+        stop: If True, send stop condition.
+
+    Returns:
+        Result value.
+    """
     lr = logRange(
         start,
         stop,

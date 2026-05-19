@@ -255,7 +255,14 @@ class semiconductor_parameter_analyzer(scpi_instrument):
         return vmeter_channel
 
     def add_channel_integration_time(self, integration_time_channel_name):
-        """Add a channel integration time."""
+        """Add a channel integration time.
+
+        Args:
+            integration_time_channel_name: Integration time channel name.
+
+        Returns:
+            Result value.
+        """
         integration_time_channel = channel(
             integration_time_channel_name,
             write_function=self._set_integration_time)

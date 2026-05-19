@@ -13,7 +13,11 @@ class bandgap():
         self.q = 1.602176634e-19
 
     def set_trimval(self, trimcode):
-        """Set the trimval."""
+        """Set the trimval.
+
+        Args:
+            trimcode: Trimcode.
+        """
         if not isinstance(trimcode, int):
             print(
                 f"\n\nSorry, my bandgap bits don't take the value: {trimcode}\n\n")
@@ -29,7 +33,11 @@ class bandgap():
             exit()
 
     def set_tdegc(self, tdegc):
-        """Set the tdegc."""
+        """Set the tdegc.
+
+        Args:
+            tdegc: Tdegc.
+        """
         self.tdegc = float(tdegc)
         if self.tdegc < -50:
             print(f"\n\nDie too cold at {self.tdegc}, cracked and broken!\n\n")
@@ -39,11 +47,19 @@ class bandgap():
             exit()
 
     def Tk(self):
-        """Return Tk result."""
+        """Return Tk result.
+
+        Returns:
+            Result value.
+        """
         return 273.15 + self.tdegc
 
     def Vbe(self):
-        """Return Vbe result."""
+        """Return Vbe result.
+
+        Returns:
+            Result value.
+        """
         m = (self.vbe27 - self.VTO) / (273.15 + 27)
         b = self.VTO
         parabola_offset = 211.0
@@ -53,10 +69,18 @@ class bandgap():
         return m * self.Tk() + b + parbola
 
     def Vt(self):
-        """Return Vt result."""
+        """Return Vt result.
+
+        Returns:
+            Result value.
+        """
         return self.K * (self.tdegc + 273.15) / self.q
 
     def get_vbg(self):
-        """Return the vbg."""
+        """Return the vbg.
+
+        Returns:
+            Result value.
+        """
         return self.Vbe() + self.dvbe_gain * self.Vt() * numpy.log(self.Nemit) + \
             self.trimcode * self.trim_lsb * (self.Vt() / 0.026)

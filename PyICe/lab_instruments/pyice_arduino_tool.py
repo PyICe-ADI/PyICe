@@ -29,7 +29,11 @@ class pyice_arduino_tool(instrument):
 
     def init_channels(self, base_name):  # ADD BASENAME INPUT ARG
         # chip_data
-        """Perform init channels operation."""
+        """Perform init channels operation.
+
+        Args:
+            base_name: Base name.
+        """
         self.chip_uses_pec_channel = self._add_channel_chip_uses_pec(
             f'{base_name}_chip_uses_pec')
         self.chip_register_size_channel = self._add_channel_chip_register_size(
@@ -189,7 +193,14 @@ class pyice_arduino_tool(instrument):
             Result value.
         """
         def read_mumbo(message):
-            """Return read mumbo result."""
+            """Return read mumbo result.
+
+            Args:
+                message: Message.
+
+            Returns:
+                Result value.
+            """
             resp = self.get_interface().ask(message)
             extra = self.get_interface().resync()
             assert extra == '', f"{message} unexpected response. Should be empty. Saw {resp} then {extra}."
@@ -214,7 +225,11 @@ class pyice_arduino_tool(instrument):
             Result value.
         """
         def write_magic(message):
-            """Perform write magic operation."""
+            """Perform write magic operation.
+
+            Args:
+                message: Message.
+            """
             resp = self.get_interface().ask(message)
             extra = self.get_interface().resync()
             assert extra == '', f"{message} unexpected response. Should be empty. Saw {resp} then {extra}."
@@ -231,7 +246,11 @@ class pyice_arduino_tool(instrument):
 
     def _add_write_channel(self, channel_name, command):
         def write_jumbo(message):
-            """Perform write jumbo operation."""
+            """Perform write jumbo operation.
+
+            Args:
+                message: Message.
+            """
             resp = self.get_interface().ask(message)
             extra = self.get_interface().resync()
             assert extra == '', f"{message} unexpected response. Should be empty. Saw {resp} then {extra}."
@@ -920,7 +939,15 @@ class pyice_arduino_tool(instrument):
 
     def set_chip_settings(self, uses_pec='True', register_size='8',
                           address='0x00', wd_q_cc='0x00', wd_a_cc='0x00'):
-        """Set the chip settings."""
+        """Set the chip settings.
+
+        Args:
+            address: Address.
+            register_size: Register size.
+            uses_pec: Uses pec.
+            wd_a_cc: Wd a cc.
+            wd_q_cc: Wd q cc.
+        """
         self.chip_uses_pec_channel.write(uses_pec)
         self.chip_register_size_channel.write(register_size)
         self.chip_address_channel.write(address)
@@ -928,13 +955,28 @@ class pyice_arduino_tool(instrument):
         self.chip_watchdog_a_command_code_channel.write(wd_a_cc)
 
     def write_chip(self, command_code, write_data):
-        """Return write chip result."""
+        """Return write chip result.
+
+        Args:
+            command_code: Command code.
+            write_data: Write data.
+
+        Returns:
+            Result value.
+        """
         self.control_command_code_channel.write(command_code)
         self.control_command_write_data_channel.write(write_data)
         return self.control_command_write_channel.write("TRIG")
 
     def read_chip(self, command_code):
-        """Return read chip result."""
+        """Return read chip result.
+
+        Args:
+            command_code: Command code.
+
+        Returns:
+            Result value.
+        """
         self.control_command_code_channel.write(command_code)
         return self.control_command_read_channel.read()
 
@@ -959,7 +1001,14 @@ class pyice_arduino_tool(instrument):
         register_read_data = int(self.read_chip(command_code))
 
         def size_to_bitmask(size):
-            """Return size to bitmask result."""
+            """Return size to bitmask result.
+
+            Args:
+                size: Size in bits.
+
+            Returns:
+                Result value.
+            """
             return 2**size - 1
         # bitmask the size of the register with relevant bits cleared
         bitmask = size_to_bitmask(word_size) - \
@@ -969,19 +1018,37 @@ class pyice_arduino_tool(instrument):
         return write_data
 
     def write_pin(self, pin_num, pin_edge):
-        """Perform write pin operation."""
+        """Perform write pin operation.
+
+        Args:
+            pin_edge: Pin edge.
+            pin_num: Pin num.
+        """
         self.control_pin_number_channel.write(pin_num)
         self.control_pin_edge_channel.write(pin_edge)
         self.control_pin_write_channel.write("TRIG")
 
     def read_pin(self, pin_num):
-        """Return read pin result."""
+        """Return read pin result.
+
+        Args:
+            pin_num: Pin num.
+
+        Returns:
+            Result value.
+        """
         self.control_pin_number_channel.write(pin_num)
         return self.control_pin_read_channel.write("TRIG")
 
     # mode is a string, 'INPUT' or 'OUTPUT'
     def set_pin_mode(self, pin_num, mode, output_state='LOW'):
-        """Set the pin mode."""
+        """Set the pin mode.
+
+        Args:
+            mode: Operating mode.
+            output_state: Output state.
+            pin_num: Pin num.
+        """
         if mode == 'OUTPUT':
             self.write_pin(pin_num, output_state)
         else:
@@ -989,12 +1056,25 @@ class pyice_arduino_tool(instrument):
             self.read_pin(pin_num)
 
     def enable_test_hook(self, enable=True):
-        """Enable test hook."""
+        """Enable test hook.
+
+        Args:
+            enable: Enable or disable.
+        """
         self.control_test_hook_enable.write(enable)
 
     def set_trigger(self, trigger, type, cc=None,
                     write_data=None, pin_num=None, pin_edge=None):
-        """Set the trigger."""
+        """Set the trigger.
+
+        Args:
+            cc: Cc.
+            pin_edge: Pin edge.
+            pin_num: Pin num.
+            trigger: Trigger.
+            type: Type.
+            write_data: Write data.
+        """
         self.trigger_select_channel.write(trigger)
         self.trigger_type_channel.write(type)
         if cc is not None:
@@ -1007,14 +1087,28 @@ class pyice_arduino_tool(instrument):
             self.trigger_pin_edge_channel.write(pin_edge)
 
     def set_trigger_cc(self, trigger, type, cc, write_data):
-        """Set the trigger cc."""
+        """Set the trigger cc.
+
+        Args:
+            cc: Cc.
+            trigger: Trigger.
+            type: Type.
+            write_data: Write data.
+        """
         self.trigger_select_channel.write(trigger)
         self.trigger_type_channel.write(type)
         self.trigger_command_code_channel.write(cc)
         self.trigger_command_write_data_channel.write(write_data)
 
     def set_trigger_pin_num(self, trigger, type, pin_num, pin_edge):
-        """Set the trigger pin num."""
+        """Set the trigger pin num.
+
+        Args:
+            pin_edge: Pin edge.
+            pin_num: Pin num.
+            trigger: Trigger.
+            type: Type.
+        """
         self.trigger_select_channel.write(trigger)
         self.trigger_type_channel.write(type)
         self.trigger_pin_number_channel.write(pin_num)
@@ -1023,7 +1117,16 @@ class pyice_arduino_tool(instrument):
     def queue_action(self, type, delay_us=0, cc=None,
                      write_data=None, pin_num=None, pin_edge=None):
         # switch to the action that is under edit
-        """Perform queue action operation."""
+        """Perform queue action operation.
+
+        Args:
+            cc: Cc.
+            delay_us: Delay us.
+            pin_edge: Pin edge.
+            pin_num: Pin num.
+            type: Type.
+            write_data: Write data.
+        """
         self.action_select_channel.write('NEXT')
         self.action_type_channel.write(type)
         if delay_us != 0:
@@ -1044,12 +1147,27 @@ class pyice_arduino_tool(instrument):
 
     # in microseconds
     def get_action_complete_timestamp_us(self, action_queue_index):
-        """Return the action complete timestamp us."""
+        """Return the action complete timestamp us.
+
+        Args:
+            action_queue_index: Action queue index.
+
+        Returns:
+            Result value.
+        """
         self.action_select_channel.write(action_queue_index)
         return int(self.action_timestamp_channel_us.read())
 
     def run_test(self, test_name, timeout_ms=None):
-        """Return run test result."""
+        """Return run test result.
+
+        Args:
+            test_name: Test name.
+            timeout_ms: Timeout ms.
+
+        Returns:
+            Result value.
+        """
         if timeout_ms is not None:
             self.test_timeout_channel_ms.write(timeout_ms)
         self.test_arm_channel.write(test_name)
@@ -1060,7 +1178,15 @@ class pyice_arduino_tool(instrument):
         return self.test_data_channel.read()
 
     def add_channel_pin_control(self, channel_name, pin_num):
-        """Add a channel pin control."""
+        """Add a channel pin control.
+
+        Args:
+            channel_name: Name for the new channel.
+            pin_num: Pin num.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             write_function=lambda value: self.write_pin(
@@ -1087,7 +1213,14 @@ class pyice_arduino_tool(instrument):
 
     def add_channels_pwm(self, logger_instance,
                          channel_name, pin_num, pwm_freq):
-        """Add a channels pwm."""
+        """Add a channels pwm.
+
+        Args:
+            channel_name: Name for the new channel.
+            logger_instance: Logger instance.
+            pin_num: Pin num.
+            pwm_freq: Pwm freq.
+        """
         gclk_div, tcc_div, steps = self._setup_pwm(
             pin_num=pin_num, freq=pwm_freq)
 

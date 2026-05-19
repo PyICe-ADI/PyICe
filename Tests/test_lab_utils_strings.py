@@ -21,7 +21,12 @@ class TestEngString:
         (1.23e12, '1.23T'),
     ])
     def test_si_suffixes(self, value, expected):
-        """Perform test si suffixes operation."""
+        """Perform test si suffixes operation.
+
+        Args:
+            expected: Expected.
+            value: Value to set.
+        """
         assert eng_string(value, fmt=':.3g', si=True) == expected
 
     def test_zero(self):
@@ -143,7 +148,12 @@ class TestOrdinalize:
         (122, '122nd'),
     ])
     def test_ordinals(self, num, expected):
-        """Perform test ordinals operation."""
+        """Perform test ordinals operation.
+
+        Args:
+            expected: Expected.
+            num: Count or number.
+        """
         assert ordinalize(num) == expected
 
     def test_negative_raises(self):
@@ -172,7 +182,12 @@ class TestCleanUnicode:
         ('≥', '_GTEQ_'),
     ])
     def test_unicode_replacements(self, char, replacement):
-        """Perform test unicode replacements operation."""
+        """Perform test unicode replacements operation.
+
+        Args:
+            char: Char.
+            replacement: Replacement.
+        """
         assert clean_unicode(f'test{char}val') == f'test{replacement}val'
 
     def test_ascii_passthrough(self):
@@ -204,7 +219,12 @@ class TestCleanAsciiCode:
         ('~', '_TIL_'),
     ])
     def test_ascii_replacements(self, char, replacement):
-        """Perform test ascii replacements operation."""
+        """Perform test ascii replacements operation.
+
+        Args:
+            char: Char.
+            replacement: Replacement.
+        """
         result = clean_ascii_code(f'A{char}B')
         assert replacement in result
 

@@ -36,7 +36,17 @@ class daq970a_instrument(scpi_instrument, delegator):
     def read_delegated_channel_list(self, channel_list):
         # channel_list is a list of channel objects
         # returns a dictionary of read data by channel name
-        """Return read delegated channel list result."""
+        """Return read delegated channel list result.
+
+        Args:
+            channel_list: Channel list.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         results = results_ord_dict()
         # special case for reading the moniotor
         # This doesn't work!!! Monitor update rate is also affected by channel
@@ -115,12 +125,27 @@ class daq970a_instrument(scpi_instrument, delegator):
 
     def read_raw(self, internal_address):
         # the scan list is in the delegator, not the creating instrument
-        """Return read raw result."""
+        """Return read raw result.
+
+        Args:
+            internal_address: Internal address.
+
+        Returns:
+            Result value.
+        """
         assert internal_address in self.resolve_delegator().scan_results
         return self.resolve_delegator().scan_results[internal_address]
 
     def read_apply_function(self, internal_address, function):
-        """Return read apply function result."""
+        """Return read apply function result.
+
+        Args:
+            function: Function.
+            internal_address: Internal address.
+
+        Returns:
+            Result value.
+        """
         return function(self.read_raw(internal_address))
 
     def _add_bay_number(self, channel_object, bay, number):
@@ -1126,11 +1151,22 @@ class agilent_a970a_dig_in8(daq970a_instrument):
             raise Exception(f"{self.get_name()}: only 8 bits allowed")
 
         def conversion_function(data):
-            """Return conversion function result."""
+            """Return conversion function result.
+
+            Args:
+                data: Data to write.
+
+            Returns:
+                Result value.
+            """
             return self._read_bits(start, size, data)
 
         def read_function():
-            """Return read function result."""
+            """Return read function result.
+
+            Returns:
+                Result value.
+            """
             return self.read_apply_function(
                 self.internal_address, conversion_function)
         new_channel = integer_channel(

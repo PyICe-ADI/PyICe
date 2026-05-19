@@ -58,7 +58,11 @@ MODULES_WITH_DOCTESTS = [
 @pytest.mark.parametrize("module", MODULES_WITH_DOCTESTS,
                          ids=lambda m: m.__name__)
 def test_doctest(module):
-    """Perform test doctest operation."""
+    """Perform test doctest operation.
+
+    Args:
+        module: Module.
+    """
     results = doctest.testmod(
         module, optionflags=doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS)
     assert results.failed == 0, f"{results.failed} doctest(s) failed in {module.__name__}"

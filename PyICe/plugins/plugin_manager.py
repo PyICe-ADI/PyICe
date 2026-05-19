@@ -32,7 +32,11 @@ class Callback_logger(logger):
         self.test = test
 
     def log(self):
-        """Return log result."""
+        """Return log result.
+
+        Returns:
+            Result value.
+        """
         readings = super().log()
         for channel, action in self.sp_ch_actions.items():
             action(channel, readings, self.test)
@@ -536,7 +540,11 @@ class Plugin_Manager():
                 f'Not sure what this plot is:\n{type(plot)}\n{plot}')
 
     def email_plots(self, plot_svg_source):
-        """Perform email plots operation."""
+        """Perform email plots operation.
+
+        Args:
+            plot_svg_source: Plot svg source.
+        """
         try:
             msg_body = ''
             attachment_MIMEParts = []
@@ -558,7 +566,11 @@ class Plugin_Manager():
             traceback.print_exc()
 
     def email_plot_dictionary(self, plot_svg_source):
-        """Perform email plot dictionary operation."""
+        """Perform email plot dictionary operation.
+
+        Args:
+            plot_svg_source: Plot svg source.
+        """
         msg_body = ''
         attachment_MIMEParts = []
         for plot_group in plot_svg_source:
@@ -776,7 +788,11 @@ class Plugin_Manager():
                 print_banner(f'Archiving for {test.get_name()} complete.')
 
     def archive_latest(self, destination_file=None):
-        """Perform archive latest operation."""
+        """Perform archive latest operation.
+
+        Args:
+            destination_file: Destination file.
+        """
         for test in self.tests:
             try:
                 archive_folder = test.get_archive_folder_name()

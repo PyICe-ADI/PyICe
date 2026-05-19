@@ -147,37 +147,69 @@ class buck_power_loss(object):
             self.params["tamb_ind"] = self.params["tamb_ind_new"]
 
     def write(self, parameter, value):
-        """Write a value to the channel."""
+        """Write a value to the channel.
+
+        Args:
+            parameter: Parameter.
+            value: Value to set.
+        """
         self.params[parameter] = value
 
     def read(self, parameter):
-        """Read and return the current channel value."""
+        """Read and return the current channel value.
+
+        Args:
+            parameter: Parameter.
+
+        Returns:
+            Result value.
+        """
         return self.params[parameter]
 
     def get_power_loss(self):
-        """Return the power loss."""
+        """Return the power loss.
+
+        Returns:
+            Result value.
+        """
         self._compute()
         return self.params["pdiss_chip"]                      \
             + self.params["pdiss_inductor"]                  \
             + self.params["pcin"] + self.params["pcout"]
 
     def get_ploss_chip(self):
-        """Return the ploss chip."""
+        """Return the ploss chip.
+
+        Returns:
+            Result value.
+        """
         self._compute()
         return self.params["pdiss_chip"]
 
     def get_ploss_inductor(self):
-        """Return the ploss inductor."""
+        """Return the ploss inductor.
+
+        Returns:
+            Result value.
+        """
         self._compute()
         return self.params["pdiss_inductor"]
 
     def get_efficiency(self):
-        """Return the efficiency."""
+        """Return the efficiency.
+
+        Returns:
+            Result value.
+        """
         power_out = self.params["vout"] * self.params["iout"]
         return power_out / (power_out + self.get_power_loss())
 
     def get_temperatures(self):
-        """Return the temperatures."""
+        """Return the temperatures.
+
+        Returns:
+            Result value.
+        """
         self._compute()
         return {"TDIE": self.params["tamb_die"],
                 "TINDUCTOR": self.params["tamb_ind"]}
@@ -191,14 +223,27 @@ class copper_resistor(object):
         self.params["tc"] = 3950e-6
 
     def write(self, parameter, value):
-        """Write a value to the channel."""
+        """Write a value to the channel.
+
+        Args:
+            parameter: Parameter.
+            value: Value to set.
+        """
         self.params[parameter] = value
 
     def get_resistance(self):
-        """Return the resistance."""
+        """Return the resistance.
+
+        Returns:
+            Result value.
+        """
         return self.params["r_nom"] * (1 + self.params["tc"]
                                        * (self.params["tdegc"] - self.params["tref"]))
 
     def get_power_loss(self):
-        """Return the power loss."""
+        """Return the power loss.
+
+        Returns:
+            Result value.
+        """
         return self.get_resistance() * self.params["current"]**2

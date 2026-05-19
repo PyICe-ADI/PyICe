@@ -21,13 +21,21 @@ class autonicstk(instrument):
         self.modbus_pid.serial.timeout = 5
 
     def add_basic_channels(self, channel_name):
-        """Add a basic channels."""
+        """Add a basic channels.
+
+        Args:
+            channel_name: Name for the new channel.
+        """
         self.add_channel_setpoint(channel_name)
         self.add_channel_measured(channel_name)
         self.add_channel_enable_output(channel_name)
 
     def add_advanced_channels(self, channel_name):
-        """Add a advanced channels."""
+        """Add a advanced channels.
+
+        Args:
+            channel_name: Name for the new channel.
+        """
         self.add_channel_mode(channel_name)
         self.add_channel_units(channel_name)
         self.add_channel_presets(channel_name)
@@ -41,7 +49,11 @@ class autonicstk(instrument):
         self.add_channels_alarm_config(channel_name)
 
     def get_decimal(self):
-        """Return the decimal."""
+        """Return the decimal.
+
+        Returns:
+            Result value.
+        """
         return self.modbus_pid.read_register(1001, functioncode=4)
 
     def add_channel_measured(self, channel_name):
@@ -436,7 +448,11 @@ class autonicstk(instrument):
         return new_channels
 
     def add_channel_sensor_type(self, channel_name):
-        """Add a channel sensor type."""
+        """Add a channel sensor type.
+
+        Args:
+            channel_name: Name for the new channel.
+        """
         new_register = register(f'{channel_name}_Sensor',
                                 size=16,
                                 read_function=lambda: self.modbus_pid.read_register(
@@ -471,7 +487,11 @@ class autonicstk(instrument):
             signed=True)
 
     def add_channels_alarm_config(self, channel_name):
-        """Add a channels alarm config."""
+        """Add a channels alarm config.
+
+        Args:
+            channel_name: Name for the new channel.
+        """
         new_register = modbus_register(f'{channel_name}_Alarm1_low_limit',
                                        read_function=lambda: self.modbus_pid.read_register(
             53, number_of_decimals=self.get_decimal(), functioncode=3, signed=True),
@@ -606,7 +626,18 @@ class autonicstk(instrument):
         self._add_channel(new_register)
 
     def retry(self, cmd, retry_count):
-        """Return retry result."""
+        """Return retry result.
+
+        Args:
+            cmd: Cmd.
+            retry_count: Retry count.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         try:
             return cmd()
         except Exception as e:
@@ -619,5 +650,9 @@ class autonicstk(instrument):
                 raise e
 
     def flush(self):
-        """Return flush result."""
+        """Return flush result.
+
+        Returns:
+            Result value.
+        """
         return self.modbus_pid.serial.read(self.modbus_pid.serial.inWaiting())

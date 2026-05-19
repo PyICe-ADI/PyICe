@@ -11,11 +11,19 @@ class vcd_reader():
         self.vcd = VCDVCD(file)
 
     def get_signals(self):
-        """Return the signals."""
+        """Return the signals.
+
+        Returns:
+            Result value.
+        """
         return self.vcd.get_signals()
 
     def get_raw_data(self, variable_name):
-        """Return the raw data."""
+        """Return the raw data.
+
+        Args:
+            variable_name: Variable name.
+        """
         if variable_name not in self.vcd.references_to_ids.keys():
             print(
                 f'{variable_name} was not found in the vcd file provided. Available variables are {self.vcd.get_signals()}')
@@ -23,7 +31,18 @@ class vcd_reader():
         return self.vcd[variable_name].tv
 
     def process_data(self, variable_name, add_staircase_points=False):
-        """Return process data result."""
+        """Return process data result.
+
+        Args:
+            add_staircase_points: Add staircase points.
+            variable_name: Variable name.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         raw_data = self.get_raw_data(variable_name)
         xdata, ydata = list(zip(*raw_data))
         real_ydata = []
@@ -66,12 +85,27 @@ class vcd_reader():
         return [real_xdata, real_ydata]
 
     def get_data_as_waveform(self, variable_name):
-        """Return the data as waveform."""
+        """Return the data as waveform.
+
+        Args:
+            variable_name: Variable name.
+
+        Returns:
+            Result value.
+        """
         return waveform(data=self.process_data(
             variable_name, add_staircase_points=True))
 
     def get_value(self, variable_name, at_time):
-        """Return the value."""
+        """Return the value.
+
+        Args:
+            at_time: At time.
+            variable_name: Variable name.
+
+        Returns:
+            Result value.
+        """
         arrayed_data = self.process_data(variable_name)
         for i, time in enumerate(arrayed_data[0]):
             if time == at_time:
@@ -86,14 +120,23 @@ class vcd_reader():
             return arrayed_data[1][-1]
 
     def plot_signal(self, variable_name):
-        """Perform plot signal operation."""
+        """Perform plot signal operation.
+
+        Args:
+            variable_name: Variable name.
+        """
         arrayed_data = self.process_data(variable_name)
         plt = figure(title=variable_name, frame_width=300, frame_height=300)
         plt.step(x=arrayed_data[0], y=arrayed_data[1], mode='after')
         show(plt)
 
     def plot_raw(self, variable_name, add_staircase_points=False):
-        """Perform plot raw operation."""
+        """Perform plot raw operation.
+
+        Args:
+            add_staircase_points: Add staircase points.
+            variable_name: Variable name.
+        """
         arrayed_data = self.process_data(
             variable_name=variable_name,
             add_staircase_points=add_staircase_points)
@@ -102,7 +145,12 @@ class vcd_reader():
         show(plt)
 
     def plot_data(self, title, data):
-        """Perform plot data operation."""
+        """Perform plot data operation.
+
+        Args:
+            data: Data to write.
+            title: Title.
+        """
         plt2 = figure(title=title, frame_width=300, frame_height=300)
         try:
             plt2.line(x=data[0], y=data[1])

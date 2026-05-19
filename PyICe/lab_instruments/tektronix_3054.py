@@ -24,7 +24,14 @@ class tektronix_3054(scpi_instrument, delegator):
         self.force_trigger = force_trigger
 
     def add_channel_time(self, channel_name):
-        """Add a channel time."""
+        """Add a channel time.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         time_channel = channel(
             channel_name,
             read_function=self._read_scope_time)
@@ -50,7 +57,17 @@ class tektronix_3054(scpi_instrument, delegator):
 
     def add_channel_dvm(self, channel_name,
                         scope_channel_number, measurement_time=2, mode='DC'):
-        """Add a channel dvm."""
+        """Add a channel dvm.
+
+        Args:
+            channel_name: Name for the new channel.
+            measurement_time: Measurement time.
+            mode: Operating mode.
+            scope_channel_number: Scope channel number.
+
+        Returns:
+            Result value.
+        """
         assert isinstance(scope_channel_number, int)
         mode = mode.upper()
         assert mode in ['ACRMS', 'ACDCRMS', 'DC', 'FREQ', 'FREQUENCY']  # 'OFF'
@@ -183,7 +200,14 @@ class tektronix_3054(scpi_instrument, delegator):
         return float(raw_data[1])
 
     def read_delegated_channel_list(self, channels):
-        """Return read delegated channel list result."""
+        """Return read delegated channel list result.
+
+        Args:
+            channels: List of channel objects.
+
+        Returns:
+            Result value.
+        """
         if self.force_trigger:
             self.trigger_force()
         results = results_ord_dict()

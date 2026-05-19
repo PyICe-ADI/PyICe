@@ -14,14 +14,32 @@ class powermux(scpi_instrument):
         self.board = 0
 
     def add_channel_relay_names(self, channel_name, column_name, row_name):
-        """Add a channel relay names."""
+        """Add a channel relay names.
+
+        Args:
+            channel_name: Name for the new channel.
+            column_name: Column name.
+            row_name: Row name.
+
+        Returns:
+            Result value.
+        """
         relay_channel = channel(
             channel_name, write_function=lambda closed: self.set_relay(
                 column_name, row_name, closed))
         return self._add_channel(relay_channel)
 
     def add_channel_relay(self, channel_name, column_number, row_number):
-        """Add a channel relay."""
+        """Add a channel relay.
+
+        Args:
+            channel_name: Name for the new channel.
+            column_number: Column number.
+            row_number: Row number.
+
+        Returns:
+            Result value.
+        """
         relay_channel = channel(
             channel_name, write_function=lambda closed: self._set_relay(
                 column_number, row_number, closed))

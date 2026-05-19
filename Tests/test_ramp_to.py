@@ -2,7 +2,11 @@ from PyICe import lab_core, lab_instruments
 
 
 def debug(val):
-    """Perform debug operation."""
+    """Perform debug operation.
+
+    Args:
+        val: Val.
+    """
     print("Writing channel to {}".format(val))
 
 

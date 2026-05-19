@@ -19,11 +19,24 @@ class csv_logger(csv_writer):
         self._row_id = -1
 
     def __enter__(self):
-        """Enter the context manager."""
+        """Enter the context manager.
+
+        Returns:
+            Result value.
+        """
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        """Exit the context manager."""
+        """Exit the context manager.
+
+        Args:
+            exc_tb: Exc tb.
+            exc_type: Exc type.
+            exc_val: Exc val.
+
+        Returns:
+            Result value.
+        """
         print("__exit__ closing CSV filehandle: {}".format(self.output_file))
         self.f.close()
         return None

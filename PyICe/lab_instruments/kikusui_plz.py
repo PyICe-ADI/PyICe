@@ -51,48 +51,84 @@ class kikusui_plz(scpi_instrument):
         self.write_channel(channel_name, 0)  # default to zero current
 
     def add_channel_current(self, channel_name):
-        """Add a channel current."""
+        """Add a channel current.
+
+        Args:
+            channel_name: Name for the new channel.
+        """
         new_channel = channel(channel_name, write_function=self._write_current)
         self._add_channel(new_channel)
 
     def add_channel_voltage(self, channel_name):
-        """Add a channel voltage."""
+        """Add a channel voltage.
+
+        Args:
+            channel_name: Name for the new channel.
+        """
         new_channel = channel(channel_name, write_function=self._write_voltage)
         self._add_channel(new_channel)
 
     def add_channel_vsense(self, channel_name):
-        """Add a channel vsense."""
+        """Add a channel vsense.
+
+        Args:
+            channel_name: Name for the new channel.
+        """
         new_channel = channel(channel_name, read_function=self._read_vsense)
         self._add_channel(new_channel)
 
     def add_channel_isense(self, channel_name):
-        """Add a channel isense."""
+        """Add a channel isense.
+
+        Args:
+            channel_name: Name for the new channel.
+        """
         new_channel = channel(channel_name, read_function=self._read_isense)
         self._add_channel(new_channel)
 
     def add_channel_power(self, channel_name):
-        """Add a channel power."""
+        """Add a channel power.
+
+        Args:
+            channel_name: Name for the new channel.
+        """
         new_channel = channel(channel_name, read_function=self._read_power)
         self._add_channel(new_channel)
 
     def add_channel_range_readback(self, channel_name):
-        """Add a channel range readback."""
+        """Add a channel range readback.
+
+        Args:
+            channel_name: Name for the new channel.
+        """
         new_channel = channel(channel_name, read_function=self._read_range)
         self._add_channel(new_channel)
 
     def add_channel_range(self, channel_name):
-        """Add a channel range."""
+        """Add a channel range.
+
+        Args:
+            channel_name: Name for the new channel.
+        """
         new_channel = channel(channel_name, write_function=self._write_range)
         self._add_channel(new_channel)
 
     def add_channel_slew_rate(self, channel_name):
-        """Add a channel slew rate."""
+        """Add a channel slew rate.
+
+        Args:
+            channel_name: Name for the new channel.
+        """
         new_channel = channel(channel_name,
                               write_function=self._write_slew_rate)
         self._add_channel(new_channel)
 
     def add_channel_pulse_on(self, channel_name):
-        """Add a channel pulse on."""
+        """Add a channel pulse on.
+
+        Args:
+            channel_name: Name for the new channel.
+        """
         new_channel = channel(
             channel_name,
             write_function=self._write_pulse_on)
@@ -100,19 +136,31 @@ class kikusui_plz(scpi_instrument):
 
     # Duty cycle, frequency and current level are used for Switch operation
     def add_channel_duty_cycle(self, channel_name):
-        """Add a channel duty cycle."""
+        """Add a channel duty cycle.
+
+        Args:
+            channel_name: Name for the new channel.
+        """
         new_channel = channel(channel_name,
                               write_function=self._write_duty_cycle)
         self._add_channel(new_channel)
 
     def add_channel_frequency(self, channel_name):
-        """Add a channel frequency."""
+        """Add a channel frequency.
+
+        Args:
+            channel_name: Name for the new channel.
+        """
         new_channel = channel(channel_name,
                               write_function=self._write_frequency)
         self._add_channel(new_channel)
 
     def add_channel_current_level(self, channel_name):
-        """Add a channel current level."""
+        """Add a channel current level.
+
+        Args:
+            channel_name: Name for the new channel.
+        """
         new_channel = channel(channel_name,
                               write_function=self._write_current_level)
         self._add_channel(new_channel)
@@ -122,12 +170,20 @@ class kikusui_plz(scpi_instrument):
     def add_channel_short(self, channel_name):
         # Remember to input a high current in your own code to force the change
         # in Range
-        """Add a channel short."""
+        """Add a channel short.
+
+        Args:
+            channel_name: Name for the new channel.
+        """
         new_channel = channel(channel_name, write_function=self._write_short)
         self._add_channel(new_channel)
 
     def add_channel_enable(self, channel_name):
-        """Add a channel enable."""
+        """Add a channel enable.
+
+        Args:
+            channel_name: Name for the new channel.
+        """
         new_channel = channel(channel_name, write_function=self._write_enable)
         self._add_channel(new_channel)
 

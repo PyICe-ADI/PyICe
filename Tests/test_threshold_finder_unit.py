@@ -34,7 +34,14 @@ class TestThresholdFinderBinarySearch:
 
     @pytest.fixture
     def tf_no_hyst(self, master_instance):
-        """Return tf no hyst result."""
+        """Return tf no hyst result.
+
+        Args:
+            master_instance: Master instance.
+
+        Returns:
+            Result value.
+        """
         m = master_instance
         forcing, output = make_comparator_system(m, threshold=2.5,
                                                  hysteresis=0.0)
@@ -44,19 +51,31 @@ class TestThresholdFinderBinarySearch:
         return tf
 
     def test_find_no_hysteresis_converges(self, tf_no_hyst):
-        """Perform test find no hysteresis converges operation."""
+        """Perform test find no hysteresis converges operation.
+
+        Args:
+            tf_no_hyst: Tf no hyst.
+        """
         tf = tf_no_hyst
         results = tf.find_no_hysteresis()
         assert results['threshold'] == pytest.approx(2.5, abs=0.02)
 
     def test_find_no_hysteresis_tries(self, tf_no_hyst):
-        """Perform test find no hysteresis tries operation."""
+        """Perform test find no hysteresis tries operation.
+
+        Args:
+            tf_no_hyst: Tf no hyst.
+        """
         tf = tf_no_hyst
         tf.find_no_hysteresis()
         assert tf.tries > 0
 
     def test_find_no_hysteresis_uncertainty(self, tf_no_hyst):
-        """Perform test find no hysteresis uncertainty operation."""
+        """Perform test find no hysteresis uncertainty operation.
+
+        Args:
+            tf_no_hyst: Tf no hyst.
+        """
         tf = tf_no_hyst
         tf.find_no_hysteresis()
         assert tf.rising_uncertainty <= 0.01
@@ -66,7 +85,11 @@ class TestThresholdFinderBinarySearch:
 class TestThresholdFinderWithHysteresis:
 
     def test_find_binary_converges_with_hysteresis(self, master_instance):
-        """Perform test find binary converges with hysteresis operation."""
+        """Perform test find binary converges with hysteresis operation.
+
+        Args:
+            master_instance: Master instance.
+        """
         m = master_instance
         forcing, output = make_comparator_system(m, threshold=2.5,
                                                  hysteresis=0.2)
@@ -77,7 +100,11 @@ class TestThresholdFinderWithHysteresis:
         assert 2.3 < results['threshold'] < 2.7
 
     def test_find_linear_detects_hysteresis(self, master_instance):
-        """Perform test find linear detects hysteresis operation."""
+        """Perform test find linear detects hysteresis operation.
+
+        Args:
+            master_instance: Master instance.
+        """
         m = master_instance
         forcing, output = make_comparator_system(m, threshold=2.5,
                                                  hysteresis=0.2)
@@ -95,7 +122,14 @@ class TestThresholdFinderLinearSearch:
 
     @pytest.fixture
     def tf_linear(self, master_instance):
-        """Return tf linear result."""
+        """Return tf linear result.
+
+        Args:
+            master_instance: Master instance.
+
+        Returns:
+            Result value.
+        """
         m = master_instance
         forcing, output = make_comparator_system(m, threshold=1.0,
                                                  hysteresis=0.0)
@@ -105,13 +139,21 @@ class TestThresholdFinderLinearSearch:
         return tf
 
     def test_find_linear_no_hysteresis(self, tf_linear):
-        """Perform test find linear no hysteresis operation."""
+        """Perform test find linear no hysteresis operation.
+
+        Args:
+            tf_linear: Tf linear.
+        """
         tf = tf_linear
         results = tf.find_linear_no_hysteresis()
         assert results['threshold'] == pytest.approx(1.0, abs=0.1)
 
     def test_find_linear_with_hysteresis(self, master_instance):
-        """Perform test find linear with hysteresis operation."""
+        """Perform test find linear with hysteresis operation.
+
+        Args:
+            master_instance: Master instance.
+        """
         m = master_instance
         forcing, output = make_comparator_system(m, threshold=1.0,
                                                  hysteresis=0.2)
@@ -151,7 +193,11 @@ class TestThresholdFinderPolarity:
 class TestThresholdFinderChannels:
 
     def test_add_channel_all(self, master_instance):
-        """Perform test add channel all operation."""
+        """Perform test add channel all operation.
+
+        Args:
+            master_instance: Master instance.
+        """
         m = master_instance
         forcing, output = make_comparator_system(m, threshold=2.5)
         tf = threshold_finder(forcing, output,
