@@ -1,3 +1,4 @@
+"""Relay instrument driver."""
 import platform
 import usb.util
 import usb.core

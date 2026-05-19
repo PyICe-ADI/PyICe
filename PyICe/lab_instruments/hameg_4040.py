@@ -1,3 +1,4 @@
+"""Hameg 4040 instrument driver."""
 from ..lab_core import *  # noqa: F403
 
 

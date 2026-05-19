@@ -1,3 +1,4 @@
+"""Tests for digital analog  I O."""
 from PyICe import lab_instruments, lab_core
 import random
 

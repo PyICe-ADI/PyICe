@@ -1,3 +1,4 @@
+"""Daq970a instruments instrument driver."""
 from ..lab_core import *  # noqa: F403
 from PyICe.lab_utils.banners import print_banner
 from PyICe.lab_utils.eng_string import eng_string

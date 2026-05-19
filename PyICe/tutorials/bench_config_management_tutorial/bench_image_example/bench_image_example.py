@@ -1,3 +1,4 @@
+"""Bench image example module."""
 from PyICe.bench_configuration_management import bench_configuration_management, bench_visualizer, lab_components
 from PyICe.tutorials.bench_config_management_tutorial.bench_image_example import visualizer_locations
 

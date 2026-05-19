@@ -1,3 +1,4 @@
+"""Siglent  S D G1000 X instrument driver."""
 from ..lab_core import *  # noqa: F403
 from PyICe.lab_utils.banners import print_banner
 # Not needed in Python 3 but signals to us that order matters.

@@ -1,3 +1,4 @@
+"""Tektronix afg3022 instrument driver."""
 from ..lab_core import *  # noqa: F403
 
 

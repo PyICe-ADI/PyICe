@@ -1,3 +1,4 @@
+"""Tests for delay loop."""
 import time
 import pytest
 from PyICe.lab_utils.delay_loop import delay_loop

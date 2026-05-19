@@ -1,3 +1,4 @@
+"""Agilent e53181a instrument driver."""
 from PyICe.lab_core import *  # noqa: F403
 
 

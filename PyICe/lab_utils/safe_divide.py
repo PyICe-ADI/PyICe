@@ -1,3 +1,4 @@
+"""Safe divide utility."""
 def safe_divide(a, b):
     """Try to divide a by b, returning None for ZeroDivision and Type errors.
 

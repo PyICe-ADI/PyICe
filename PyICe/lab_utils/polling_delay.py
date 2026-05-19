@@ -1,3 +1,4 @@
+"""Polling delay utility."""
 import time
 
 

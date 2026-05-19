@@ -1,3 +1,4 @@
+"""Kikusui plz instrument driver."""
 from PyICe.lab_core import *  # noqa: F403
 import time
 

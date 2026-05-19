@@ -1,3 +1,4 @@
+"""Bounded utility."""
 def bounded(value, min_value=None, max_value=None, key=None):
     """Clamp value between min_value and max_value.
 

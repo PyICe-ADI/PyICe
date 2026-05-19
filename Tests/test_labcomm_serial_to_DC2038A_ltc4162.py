@@ -1,3 +1,4 @@
+"""Tests for labcomm serial to  D C2038 A ltc4162."""
 from serial.tools.list_ports import comports
 import os
 baudrate = 115200

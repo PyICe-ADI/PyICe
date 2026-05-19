@@ -1,3 +1,4 @@
+"""Column formatter utility."""
 def column_formatter(rows_of_columns, padding=3,
                      justification="left", fist_line_justification="center"):
     """Takes data of form: [['ID:', 'REL_NOW_TIME', 'DURATION', 'FMT', 'RAW ', 'COUNT'],.

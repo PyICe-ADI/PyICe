@@ -1,3 +1,4 @@
+"""Krohnhite 526 instrument driver."""
 from ..lab_core import *  # noqa: F403
 
 

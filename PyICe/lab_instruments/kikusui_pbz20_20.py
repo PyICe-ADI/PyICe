@@ -1,3 +1,4 @@
+"""Kikusui pbz20 20 instrument driver."""
 from PyICe.lab_core import *  # noqa: F403
 from .kikusui_pbz import kikusui_pbz
 

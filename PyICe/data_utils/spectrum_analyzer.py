@@ -1,3 +1,4 @@
+"""Spectrum analyzer utilities."""
 from scipy.fft import fft, fftfreq
 from PyICe.data_utils.units_conversions import dBV
 import numpy

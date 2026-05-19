@@ -1,3 +1,4 @@
+"""Agilent 8110a instrument driver."""
 from PyICe.lab_core import *  # noqa: F403
 
 

@@ -1,3 +1,4 @@
+"""Loadpulser model."""
 try:
     import scipy
 except ImportError as e:

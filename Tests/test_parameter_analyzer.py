@@ -1,3 +1,4 @@
+"""Tests for parameter analyzer."""
 import time
 import PyICe.lab_instruments as lab_instruments
 import PyICe.lab_core as lab_core

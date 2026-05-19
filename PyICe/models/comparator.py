@@ -1,3 +1,4 @@
+"""Comparator model."""
 
 
 class comparator(object):

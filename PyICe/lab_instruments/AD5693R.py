@@ -1,3 +1,4 @@
+"""A D5693 R instrument driver."""
 from ..lab_core import *  # noqa: F403
 from PyICe.lab_utils.swap_endian import swap_endian
 

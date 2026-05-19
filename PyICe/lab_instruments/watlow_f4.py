@@ -1,3 +1,4 @@
+"""Watlow f4 instrument driver."""
 
 from .temperature_chamber import temperature_chamber
 from .modbus_instrument import modbus_instrument, register_description as rd

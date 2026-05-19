@@ -1,3 +1,4 @@
+"""Pytest configuration and fixtures."""
 import pytest
 
 # Legacy interactive test scripts that run module-level code (hardware, GUI).

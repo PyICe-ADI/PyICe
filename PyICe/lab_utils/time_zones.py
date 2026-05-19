@@ -1,3 +1,4 @@
+"""Time zones utility."""
 import datetime
 
 

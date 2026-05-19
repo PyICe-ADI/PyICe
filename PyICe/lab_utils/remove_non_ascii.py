@@ -1,3 +1,4 @@
+"""Remove non ascii utility."""
 def remove_non_ascii(text):
     """Remove a non ascii.
 

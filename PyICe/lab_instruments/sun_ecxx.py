@@ -1,3 +1,4 @@
+"""Sun ecxx instrument driver."""
 from .temperature_chamber import temperature_chamber
 
 

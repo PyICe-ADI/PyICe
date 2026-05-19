@@ -1,3 +1,4 @@
+"""Bench configuration management plugin."""
 from PyICe.lab_utils.banners import print_banner
 import abc
 

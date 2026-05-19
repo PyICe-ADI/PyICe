@@ -1,3 +1,4 @@
+"""Visualizer locations module."""
 import pathlib
 
 

@@ -1,3 +1,4 @@
+"""Ordinalize utility."""
 def ordinalize(num):
     """Convert positive integer to ordinal number.
 

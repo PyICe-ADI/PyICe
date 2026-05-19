@@ -1,3 +1,4 @@
+"""Oscilloscope channel utility."""
 import numpy
 from .ordered_pair import ordered_pair
 

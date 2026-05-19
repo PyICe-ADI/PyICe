@@ -1,3 +1,4 @@
+"""Float distance utility."""
 import math
 import sys
 

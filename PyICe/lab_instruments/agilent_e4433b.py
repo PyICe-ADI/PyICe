@@ -1,3 +1,4 @@
+"""Agilent e4433b instrument driver."""
 from ..lab_core import *  # noqa: F403
 
 

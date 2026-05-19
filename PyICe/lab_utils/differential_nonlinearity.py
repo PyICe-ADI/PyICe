@@ -1,3 +1,4 @@
+"""Differential nonlinearity utility."""
 import numpy
 from .scalar_transform import scalar_transform
 from .vector_transform import vector_transform

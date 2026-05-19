@@ -1,3 +1,4 @@
+"""Tests for servo."""
 from PyICe import lab_core, virtual_instruments
 
 OFFSET = 70

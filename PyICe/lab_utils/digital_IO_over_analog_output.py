@@ -1,3 +1,4 @@
+"""Digital  I O over analog output utility."""
 class digital_IO_over_analog_output(object):
     """###SCHEDULED FOR DELETION###.
 

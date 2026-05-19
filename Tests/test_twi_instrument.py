@@ -1,3 +1,4 @@
+"""Tests for twi instrument."""
 import pytest
 from PyICe.twi_instrument import twi_instrument
 from PyICe.lab_interfaces import interface_factory

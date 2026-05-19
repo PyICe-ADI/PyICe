@@ -1,3 +1,4 @@
+"""Oscilloscope tools utilities."""
 from PyICe.lab_utils.sqlite_data import sqlite_data
 from PyICe.lab_utils.eng_string import eng_string
 from PyICe.lab_utils.banners import print_banner

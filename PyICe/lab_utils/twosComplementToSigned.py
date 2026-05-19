@@ -1,3 +1,4 @@
+"""Twos Complement To Signed utility."""
 def twosComplementToSigned(binary, bitCount):
     """Take two's complement number with specified number of bits and convert to python int representation.
 

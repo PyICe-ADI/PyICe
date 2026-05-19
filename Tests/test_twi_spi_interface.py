@@ -1,3 +1,4 @@
+"""Tests for twi spi interface."""
 import pytest
 from collections import OrderedDict
 from PyICe.twi_interface import twi_interface, i2c_dummy

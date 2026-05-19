@@ -1,3 +1,4 @@
+"""Scalar transform utility."""
 from .vector_transform import vector_transform
 
 

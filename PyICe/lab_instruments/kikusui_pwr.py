@@ -1,3 +1,4 @@
+"""Kikusui pwr instrument driver."""
 from PyICe.lab_core import *  # noqa: F403
 
 

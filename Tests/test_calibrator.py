@@ -1,3 +1,4 @@
+"""Tests for calibrator."""
 
 from PyICe import lab_core, lab_instruments, lab_utils
 

@@ -1,3 +1,4 @@
+"""Tests for firmata."""
 from PyICe import spi_interface, spi_instrument
 from PyICe import lab_core, lab_instruments
 

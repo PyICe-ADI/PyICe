@@ -1,3 +1,4 @@
+"""E L34143 A instrument driver."""
 from ..lab_core import *  # noqa: F403
 
 

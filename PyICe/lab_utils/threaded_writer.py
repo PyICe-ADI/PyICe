@@ -1,3 +1,4 @@
+"""Threaded writer utility."""
 import datetime
 import threading
 import queue

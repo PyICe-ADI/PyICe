@@ -1,3 +1,4 @@
+"""Sqlite data utility."""
 import datetime
 import sqlite3
 import re

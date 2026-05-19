@@ -1,3 +1,4 @@
+"""B R24 H64 instrument driver."""
 from ..lab_core import *  # noqa: F403
 from .. import twi_interface
 from PyICe.lab_utils.banners import print_banner

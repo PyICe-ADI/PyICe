@@ -1,3 +1,4 @@
+"""Wave analysis utilities."""
 from PyICe.lab_utils.banners import print_banner
 from statsmodels.tsa.stattools import adfuller
 from operator import itemgetter

@@ -1,3 +1,4 @@
+"""A D5259 instrument driver."""
 from ..lab_core import *  # noqa: F403
 from .. import twi_interface
 

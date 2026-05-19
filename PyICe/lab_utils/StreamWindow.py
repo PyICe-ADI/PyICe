@@ -1,3 +1,4 @@
+"""Stream Window utility."""
 import sys
 from .print_hex_bytes import print_hex_bytes
 

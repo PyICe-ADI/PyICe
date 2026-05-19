@@ -1,3 +1,4 @@
+"""Tektronix 3054 instrument driver."""
 from ..lab_core import *  # noqa: F403
 import time
 

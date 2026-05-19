@@ -1,3 +1,4 @@
+"""Expand tabs utility."""
 def expand_tabs(string, *column_widths, **default_column_width):
     r"""Like string.expandtabs, but works only on a single line and allows for varying column widths.
 

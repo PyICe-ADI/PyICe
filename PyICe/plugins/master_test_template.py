@@ -1,3 +1,4 @@
+"""Master test template plugin."""
 class Master_Test_Template():
     """Master_ test_ template."""
     ###

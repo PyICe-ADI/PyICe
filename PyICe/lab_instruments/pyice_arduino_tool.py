@@ -1,3 +1,4 @@
+"""Pyice arduino tool instrument driver."""
 from PyICe.lab_core import *  # noqa: F403
 
 '''

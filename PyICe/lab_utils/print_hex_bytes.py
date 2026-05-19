@@ -1,3 +1,4 @@
+"""Print hex bytes utility."""
 import collections
 from .print_to_screen import print_to_screen
 

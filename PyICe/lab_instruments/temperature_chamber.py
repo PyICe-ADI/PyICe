@@ -1,3 +1,4 @@
+"""Temperature chamber instrument driver."""
 from ..lab_core import *  # noqa: F403
 from abc import ABCMeta, abstractmethod
 

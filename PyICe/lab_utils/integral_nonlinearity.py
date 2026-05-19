@@ -1,3 +1,4 @@
+"""Integral nonlinearity utility."""
 from .scalar_transform import scalar_transform
 from .detrend import detrend_linear
 

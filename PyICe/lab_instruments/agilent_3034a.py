@@ -1,3 +1,4 @@
+"""Agilent 3034a instrument driver."""
 from PyICe.lab_instruments.oscilloscope import oscilloscope
 from PyICe.lab_utils.ranges import decadeListRange
 from PyICe.lab_utils.banners import print_banner

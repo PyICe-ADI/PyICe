@@ -1,3 +1,4 @@
+"""Test results plugin."""
 import collections
 import datetime
 import functools

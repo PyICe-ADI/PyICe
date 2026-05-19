@@ -1,3 +1,4 @@
+"""Decimate utility."""
 import scipy
 from .vector_transform import vector_transform
 

@@ -1,3 +1,4 @@
+"""Hp 4155b instrument driver."""
 from ..lab_core import *  # noqa: F403
 from .semiconductor_parameter_analyzer import semiconductor_parameter_analyzer
 

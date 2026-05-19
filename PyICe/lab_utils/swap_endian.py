@@ -1,3 +1,4 @@
+"""Swap endian utility."""
 def swap_endian(word, elementCount, elementSize=8):
     """Reverse endianness of multi-byte word.
 

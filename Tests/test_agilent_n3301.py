@@ -1,3 +1,4 @@
+"""Tests for agilent n3301."""
 # test_agilent_n3301.py
 # Python test script to test class agilent_n3301 which provides a Python
 # interface to a GPIB enabled Agilent N3300 series electronic load.

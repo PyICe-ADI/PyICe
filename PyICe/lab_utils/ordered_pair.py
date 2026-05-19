@@ -1,3 +1,4 @@
+"""Ordered pair utility."""
 import math
 import numpy
 from .ramer_douglas_peucker import ramer_douglas_peucker

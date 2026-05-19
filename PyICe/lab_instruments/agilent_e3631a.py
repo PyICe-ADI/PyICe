@@ -1,3 +1,4 @@
+"""Agilent e3631a instrument driver."""
 from PyICe.lab_core import *  # noqa: F403
 from .agilent_e36xxa import agilent_e36xxa
 import time

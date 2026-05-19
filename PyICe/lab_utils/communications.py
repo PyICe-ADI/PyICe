@@ -1,3 +1,4 @@
+"""Communications utility."""
 import smtplib
 import re
 import os

@@ -1,3 +1,4 @@
+"""Agilent 35670a instrument driver."""
 import sys
 import time
 from ..lab_core import scpi_instrument, channel

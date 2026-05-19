@@ -1,3 +1,4 @@
+"""Delay loop utility."""
 import time
 import datetime
 

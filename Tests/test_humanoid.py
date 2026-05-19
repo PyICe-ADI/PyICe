@@ -1,3 +1,4 @@
+"""Tests for humanoid."""
 from PyICe import lab_instruments, lab_core, lab_utils
 
 # import logging

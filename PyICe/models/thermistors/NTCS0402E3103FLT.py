@@ -1,3 +1,4 @@
+"""N T C S0402 E3103 F L T model."""
 from scipy import interpolate
 
 

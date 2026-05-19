@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+"""Tests for shift register."""
 
 from PyICe import spi_interface, spi_instrument
 

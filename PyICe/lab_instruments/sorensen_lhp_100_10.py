@@ -1,3 +1,4 @@
+"""Sorensen lhp 100 10 instrument driver."""
 from ..lab_core import *  # noqa: F403
 from .sorensen_generic_supply import *  # noqa: F403
 

@@ -1,3 +1,4 @@
+"""Tests for thermostream."""
 import visa
 from lab import instrument
 import time

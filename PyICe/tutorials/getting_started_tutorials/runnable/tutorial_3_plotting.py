@@ -1,3 +1,4 @@
+"""Tutorial 3 plotting module."""
 # ========================
 # TUTORIAL 3 Plotting Data
 # ========================

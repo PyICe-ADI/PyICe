@@ -1,3 +1,4 @@
+"""Virtual instruments module."""
 from .lab_core import *  # noqa: F403
 from PyICe.lab_utils.str2num import str2num
 from PyICe.lab_instruments.temperature_chamber import temperature_chamber

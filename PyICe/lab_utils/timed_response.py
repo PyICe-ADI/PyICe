@@ -1,3 +1,4 @@
+"""Timed response utility."""
 import threading
 
 

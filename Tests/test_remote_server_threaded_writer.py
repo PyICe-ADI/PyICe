@@ -1,3 +1,4 @@
+"""Tests for remote server threaded writer."""
 from PyICe import lab_core, lab_utils
 import time
 

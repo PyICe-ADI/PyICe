@@ -1,3 +1,4 @@
+"""Egg timer utility."""
 import time
 
 

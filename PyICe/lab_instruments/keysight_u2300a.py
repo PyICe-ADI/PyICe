@@ -1,3 +1,4 @@
+"""Keysight u2300a instrument driver."""
 from PyICe.lab_utils.eng_string import eng_string
 from numpy import fromiter, dtype
 import struct

@@ -1,3 +1,4 @@
+"""Sign Extend utility."""
 from .signedToTwosComplement import signedToTwosComplement
 from .twosComplementToSigned import twosComplementToSigned
 

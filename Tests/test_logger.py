@@ -1,3 +1,4 @@
+"""Tests for logger."""
 
 from PyICe import lab_core, lab_utils
 import random

@@ -1,3 +1,4 @@
+"""Htx9001 instrument driver."""
 from ..lab_core import *  # noqa: F403
 import datetime
 

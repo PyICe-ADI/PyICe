@@ -1,3 +1,4 @@
+"""Clean ascii code utility."""
 import re
 from .clean_unicode import clean_unicode
 

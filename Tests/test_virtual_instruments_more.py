@@ -1,3 +1,4 @@
+"""Tests for virtual instruments more."""
 import time
 import pytest
 from PyICe.virtual_instruments import (

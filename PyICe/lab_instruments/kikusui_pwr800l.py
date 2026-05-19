@@ -1,3 +1,4 @@
+"""Kikusui pwr800l instrument driver."""
 from .kikusui_pwr import kikusui_pwr
 
 

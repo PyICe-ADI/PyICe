@@ -1,3 +1,4 @@
+"""Tests for scpi inst."""
 from PyICe import lab_core, lab_instruments, lab_utils
 
 m = lab_core.master()

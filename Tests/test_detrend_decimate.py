@@ -1,3 +1,4 @@
+"""Tests for detrend decimate."""
 import numpy as np
 from PyICe.lab_utils.detrend import detrend_constant, detrend_linear
 from PyICe.lab_utils.decimate import decimate

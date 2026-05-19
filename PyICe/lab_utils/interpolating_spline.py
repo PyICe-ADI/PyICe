@@ -1,3 +1,4 @@
+"""Interpolating spline utility."""
 import collections
 import scipy
 

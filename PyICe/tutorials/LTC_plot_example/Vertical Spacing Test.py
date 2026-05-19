@@ -1,3 +1,4 @@
+"""Vertical  Spacing  Test module."""
 from PyICe import LTC_plot
 
 ROWS = 2

@@ -1,3 +1,4 @@
+"""Tests for virtual instruments."""
 import pytest
 from PyICe.lab_core import integer_channel
 from PyICe.virtual_instruments import (

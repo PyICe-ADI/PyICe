@@ -1,3 +1,4 @@
+"""Tests for lab utils strings."""
 import math
 import pytest
 from PyICe.lab_utils.eng_string import eng_string

@@ -1,3 +1,4 @@
+"""Stdf utils utilities."""
 from pystdf.IO import Parser
 import pystdf.V4
 import time

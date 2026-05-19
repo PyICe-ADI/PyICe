@@ -1,3 +1,4 @@
+"""Csv to recarray utility."""
 import csv
 import numpy
 from .str2num import str2num

@@ -1,3 +1,4 @@
+"""Hp 3478a instrument driver."""
 from PyICe.lab_core import *  # noqa: F403
 
 

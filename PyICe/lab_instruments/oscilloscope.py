@@ -1,3 +1,4 @@
+"""Oscilloscope instrument driver."""
 from ..lab_core import *  # noqa: F403
 import struct
 import abc

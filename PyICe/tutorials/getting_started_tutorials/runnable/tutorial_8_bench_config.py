@@ -1,3 +1,4 @@
+"""Tutorial 8 bench config module."""
 if __name__ == '__main__':
     from PyICe.bench_configuration_management import bench_configuration_management, lab_components
 

@@ -1,3 +1,4 @@
+"""Ascii unicode approx table utility."""
 #
 # ASCII approximate translations for use in unicode.translate()
 #

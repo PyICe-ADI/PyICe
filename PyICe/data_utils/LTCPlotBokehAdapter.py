@@ -1,3 +1,4 @@
+"""L T C Plot Bokeh Adapter utilities."""
 from bokeh.plotting import figure, output_file, show
 from bokeh.layouts import column, row
 from bokeh.models import (CustomJS,

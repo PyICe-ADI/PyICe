@@ -1,3 +1,4 @@
+"""Eng string utility."""
 import math
 import numbers
 

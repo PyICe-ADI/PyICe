@@ -1,3 +1,4 @@
+"""Tests for hmp4040."""
 # test_hmp4040_serial.py
 # Simple test program for testing the Hameg 4040 lab supply software
 # John Cook August 2012

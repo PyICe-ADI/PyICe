@@ -1,3 +1,4 @@
+"""Remove html utility."""
 import re
 
 

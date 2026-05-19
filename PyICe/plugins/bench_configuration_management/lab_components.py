@@ -1,3 +1,4 @@
+"""Lab components plugin."""
 from PyICe.plugins.bench_configuration_management.bench_configuration_management import bench_config_component
 
 

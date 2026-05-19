@@ -1,3 +1,4 @@
+"""Signal generator utilities."""
 from PyICe.lab_utils.banners import print_banner
 import numpy
 

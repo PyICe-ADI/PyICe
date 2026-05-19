@@ -1,3 +1,4 @@
+"""Str2num utility."""
 def str2num(str_in, except_on_error=True):
     """Convert string to numeric type with automatic base detection.
 

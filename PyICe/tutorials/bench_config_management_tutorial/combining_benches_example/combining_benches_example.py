@@ -1,3 +1,4 @@
+"""Combining benches example module."""
 from PyICe.bench_configuration_management import bench_configuration_management, lab_components
 
 

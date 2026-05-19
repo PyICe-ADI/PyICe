@@ -1,3 +1,4 @@
+"""Tests for lab core."""
 import queue
 import pytest
 from unittest.mock import patch

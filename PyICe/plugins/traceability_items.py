@@ -1,3 +1,4 @@
+"""Traceability items plugin."""
 from PyICe.lab_core import channel
 import collections
 

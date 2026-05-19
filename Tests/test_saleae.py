@@ -1,3 +1,4 @@
+"""Tests for saleae."""
 
 from PyICe import lab_instruments, lab_core
 

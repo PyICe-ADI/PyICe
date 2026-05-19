@@ -1,3 +1,4 @@
+"""Bandgap model."""
 import random
 import numpy
 

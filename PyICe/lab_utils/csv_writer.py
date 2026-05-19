@@ -1,3 +1,4 @@
+"""Csv writer utility."""
 import collections
 
 

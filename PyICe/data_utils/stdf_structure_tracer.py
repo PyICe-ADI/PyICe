@@ -1,3 +1,4 @@
+"""Stdf structure tracer utilities."""
 
 import os
 import sys

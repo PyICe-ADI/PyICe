@@ -1,3 +1,4 @@
+"""Modulate utility."""
 import numpy
 
 

@@ -1,3 +1,4 @@
+"""Rigol  D G800 instrument driver."""
 from ..lab_core import *  # noqa: F403
 
 

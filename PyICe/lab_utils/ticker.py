@@ -1,3 +1,4 @@
+"""Ticker utility."""
 import time
 import csv
 import urllib.request

@@ -1,3 +1,4 @@
+"""Ramer douglas peucker utility."""
 import time
 import numpy
 

@@ -1,3 +1,4 @@
+"""Lab plots example module."""
 from PyICe import LTC_plot
 import os
 ###################################################################

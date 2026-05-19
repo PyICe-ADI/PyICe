@@ -1,3 +1,4 @@
+"""A3497x instruments instrument driver."""
 from PyICe.lab_utils.eng_string import eng_string
 from PyICe.lab_utils.banners import print_banner
 from ..lab_core import *  # noqa: F403

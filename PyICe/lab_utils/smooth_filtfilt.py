@@ -1,3 +1,4 @@
+"""Smooth filtfilt utility."""
 def smooth_filtfilt(rec_array):
     """Somebody finish this.
 

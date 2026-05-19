@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Conf module."""
 #
 # PyICe documentation build configuration file, created by
 # sphinx-quickstart on Thu May 11 15:34:15 2017.

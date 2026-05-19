@@ -1,3 +1,4 @@
+"""Csv logger utility."""
 import datetime
 import atexit
 from .csv_writer import csv_writer

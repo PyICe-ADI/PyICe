@@ -1,3 +1,4 @@
+"""Chroma 63600 instrument driver."""
 from PyICe.lab_core import *  # noqa: F403
 
 

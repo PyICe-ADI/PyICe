@@ -1,3 +1,4 @@
+"""Sqlite to easylog utility."""
 from .sqlite_to_csv import sqlite_to_csv
 
 

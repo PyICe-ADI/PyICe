@@ -1,3 +1,4 @@
+"""E M I char levels utilities."""
 from math import log10
 
 

@@ -1,3 +1,4 @@
+"""Logger time str utility."""
 from .time_zones import UTC
 
 

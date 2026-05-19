@@ -1,3 +1,4 @@
+"""Tests for threshold finder unit."""
 import pytest
 from PyICe.virtual_instruments import threshold_finder
 from PyICe.models.comparator import comparator

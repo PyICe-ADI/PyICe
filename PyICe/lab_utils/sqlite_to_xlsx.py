@@ -1,3 +1,4 @@
+"""Sqlite to xlsx utility."""
 import os
 import atexit
 import datetime

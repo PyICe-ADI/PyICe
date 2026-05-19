@@ -1,3 +1,4 @@
+"""Tests for lab utils numeric."""
 import math
 import sys
 import pytest

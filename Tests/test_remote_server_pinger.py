@@ -1,3 +1,4 @@
+"""Tests for remote server pinger."""
 from PyICe import lab_core, lab_utils
 import time
 

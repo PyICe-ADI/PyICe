@@ -1,3 +1,4 @@
+"""Parse list utility."""
 import ast
 
 

@@ -1,3 +1,4 @@
+"""Delete file utility."""
 import time
 import os
 

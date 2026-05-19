@@ -1,3 +1,4 @@
+"""Tests for oscilloscope."""
 
 import PyICe.lab_core as lab_core
 # from PyICe.lab_instruments import oscilloscope

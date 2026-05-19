@@ -1,3 +1,4 @@
+"""Test archive plugin."""
 import os
 import re
 import sqlite3

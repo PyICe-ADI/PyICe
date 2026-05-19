@@ -1,3 +1,4 @@
+"""Banners utility."""
 def print_banner(*message, offset=1, length=80):
     """Perform print banner operation.
 

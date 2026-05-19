@@ -1,3 +1,4 @@
+"""Sqlite to csv utility."""
 import sqlite3
 from .csv_writer import csv_writer
 

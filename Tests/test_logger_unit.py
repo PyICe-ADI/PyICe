@@ -1,3 +1,4 @@
+"""Tests for logger unit."""
 import os
 import sqlite3
 import pytest

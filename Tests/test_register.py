@@ -1,3 +1,4 @@
+"""Tests for register."""
 import pytest
 from PyICe.lab_core import register, integer_channel
 

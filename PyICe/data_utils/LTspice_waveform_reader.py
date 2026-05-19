@@ -1,3 +1,4 @@
+"""L Tspice waveform reader utilities."""
 from scipy.interpolate import interp1d
 from PyICe.lab_utils.eng_string import eng_string
 import numpy

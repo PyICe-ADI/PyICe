@@ -1,3 +1,4 @@
+"""Float prior utility."""
 import math
 import sys
 

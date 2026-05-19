@@ -1,3 +1,4 @@
+"""Smooth spline utility."""
 import numpy
 import scipy
 

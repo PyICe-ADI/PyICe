@@ -1,3 +1,4 @@
+"""Agilent 3458a instrument driver."""
 from ..lab_core import instrument, channel
 
 

@@ -1,3 +1,4 @@
+"""Polyfit utility."""
 import numpy
 
 

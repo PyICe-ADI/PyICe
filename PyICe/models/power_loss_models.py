@@ -1,3 +1,4 @@
+"""Power loss models model."""
 # This is based on the app note:
 # https://fscdn.rohm.com/en/products/databook/applinote/ic/power/switching_regulator/buck_converter_efficiency_app-e.pdf
 

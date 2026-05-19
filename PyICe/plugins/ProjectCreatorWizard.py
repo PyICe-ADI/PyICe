@@ -1,3 +1,4 @@
+"""Project Creator Wizard plugin."""
 import socket
 import os
 from PyICe.lab_utils import banners, select_string_menu

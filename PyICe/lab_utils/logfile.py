@@ -1,3 +1,4 @@
+"""Logfile utility."""
 import time
 from .print_to_screen import print_to_screen
 

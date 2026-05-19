@@ -1,3 +1,4 @@
+"""Clean sql utility."""
 import re
 from .clean_ascii_code import clean_ascii_code
 

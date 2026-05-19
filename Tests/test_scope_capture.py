@@ -1,3 +1,4 @@
+"""Tests for scope capture."""
 import datetime
 from PyICe import lab_core, lab_utils, lab_instruments, LTC_plot
 

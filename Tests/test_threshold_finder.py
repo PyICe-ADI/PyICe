@@ -1,3 +1,4 @@
+"""Tests for threshold finder."""
 from PyICe import lab_core, lab_instruments
 from PyICe.models.comparator import comparator
 

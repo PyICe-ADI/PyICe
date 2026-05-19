@@ -1,3 +1,4 @@
+"""Sun ec0x instrument driver."""
 from ..lab_core import *  # noqa: F403
 from .sun_ecxx import sun_ecxx
 

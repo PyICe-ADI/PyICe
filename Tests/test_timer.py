@@ -1,3 +1,4 @@
+"""Tests for timer."""
 from PyICe import lab_instruments
 import time
 

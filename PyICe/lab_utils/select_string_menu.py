@@ -1,3 +1,4 @@
+"""Select string menu utility."""
 from curses import panel
 import curses
 

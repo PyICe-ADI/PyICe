@@ -1,3 +1,4 @@
+"""Float next utility."""
 import math
 import sys
 

@@ -1,3 +1,4 @@
+"""Ranges utility."""
 import numpy
 
 

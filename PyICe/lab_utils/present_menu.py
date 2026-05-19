@@ -1,3 +1,4 @@
+"""Present menu utility."""
 def present_menu(intro_msg, prompt_msg, item_list):
     """Command-line interface. Presents item_list as a menu to the user, and prompts for a choice.
 

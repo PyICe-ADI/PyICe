@@ -1,3 +1,4 @@
+"""Units conversions utilities."""
 import numpy
 
 

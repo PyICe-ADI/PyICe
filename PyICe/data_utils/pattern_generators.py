@@ -1,3 +1,4 @@
+"""Pattern generators utilities."""
 from PyICe.lab_utils.eng_string import eng_string
 from PyICe import LTC_plot
 

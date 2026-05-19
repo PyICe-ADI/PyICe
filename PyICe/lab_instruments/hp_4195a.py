@@ -1,3 +1,4 @@
+"""Hp 4195a instrument driver."""
 from ..lab_core import *  # noqa: F403
 
 

@@ -1,3 +1,4 @@
+"""Keithley 7002 meter instrument driver."""
 from ..lab_core import *  # noqa: F403
 from .keithley_7002 import *  # noqa: F403
 import time

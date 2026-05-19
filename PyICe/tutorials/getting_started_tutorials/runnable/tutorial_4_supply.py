@@ -1,3 +1,4 @@
+"""Tutorial 4 supply module."""
 # ================================
 # TUTORIAL 4 Adding a Power Supply
 # ================================

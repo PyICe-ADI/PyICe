@@ -1,3 +1,4 @@
+"""Vcd utils utilities."""
 from vcdvcd import VCDVCD
 
 from PyICe.data_utils.wave_analysis import waveform

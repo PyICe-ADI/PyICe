@@ -1,3 +1,4 @@
+"""Hypertronix powermux instrument driver."""
 from ..lab_core import scpi_instrument, channel
 
 

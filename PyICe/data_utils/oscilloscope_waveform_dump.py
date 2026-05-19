@@ -1,3 +1,4 @@
+"""Oscilloscope waveform dump utilities."""
 from PyICe.lab_instruments.oscilloscope import oscilloscope
 from PyICe import lab_core
 from PyICe.lab_utils.sqlite_data import sqlite_data

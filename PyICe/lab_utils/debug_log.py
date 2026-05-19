@@ -1,3 +1,4 @@
+"""Debug log utility."""
 import time
 
 

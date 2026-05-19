@@ -1,3 +1,4 @@
+"""Dlog utility."""
 import time
 
 

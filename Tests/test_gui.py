@@ -1,3 +1,4 @@
+"""Tests for gui."""
 from PyICe import lab_core
 import random
 

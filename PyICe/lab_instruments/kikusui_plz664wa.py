@@ -1,3 +1,4 @@
+"""Kikusui plz664wa instrument driver."""
 from .kikusui_plz import kikusui_plz
 
 

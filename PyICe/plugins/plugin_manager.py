@@ -1,3 +1,4 @@
+"""Plugin manager plugin."""
 from PyICe.plugins.bench_configuration_management.bench_configuration_management import component_collection, connection_collection
 import os
 import inspect

@@ -1,3 +1,4 @@
+"""Tests for lab core."""
 class TestChannelGroup:
     """Tests for Channel Group."""
     def test_copy(self):

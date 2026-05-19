@@ -1,3 +1,4 @@
+"""Tests for email."""
 from PyICe import lab_utils
 from email.mime.image import MIMEImage
 import cairosvg

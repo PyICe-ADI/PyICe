@@ -1,3 +1,4 @@
+"""P S A instrument driver."""
 from ..lab_core import *  # noqa: F403
 from PyICe.lab_utils.banners import print_banner
 import math

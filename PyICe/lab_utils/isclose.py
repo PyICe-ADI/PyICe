@@ -1,3 +1,4 @@
+"""Isclose utility."""
 import math
 
 

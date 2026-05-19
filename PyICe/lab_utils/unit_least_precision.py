@@ -1,3 +1,4 @@
+"""Unit least precision utility."""
 from .float_next import float_next
 from .float_prior import float_prior
 

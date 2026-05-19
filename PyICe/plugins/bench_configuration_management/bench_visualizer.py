@@ -1,3 +1,4 @@
+"""Bench visualizer plugin."""
 from PyICe.lab_utils.banners import print_banner
 import traceback
 import subprocess

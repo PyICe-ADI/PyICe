@@ -1,3 +1,4 @@
+"""Tests for labcomm serial to  D C2709 A ltc4021."""
 demoboard_connection = ("serial", "COM8")  # Use serial port
 # demoboard_connection = ("tcp", 4510)  # Use TCP socket with port number
 baudrate = 115200

@@ -1,3 +1,4 @@
+"""Modbus instrument instrument driver."""
 import collections
 from ..lab_core import *  # noqa: F403
 from enum import Enum, auto

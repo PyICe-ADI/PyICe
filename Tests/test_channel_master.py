@@ -1,3 +1,4 @@
+"""Tests for channel master."""
 import time
 import pytest
 from PyICe.lab_core import (channel_master, integer_channel, results_ord_dict)

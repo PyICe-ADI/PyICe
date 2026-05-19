@@ -1,3 +1,4 @@
+"""Tests for  Franken oven."""
 from PyICe import lab_core, lab_instruments
 
 m = lab_core.master()
