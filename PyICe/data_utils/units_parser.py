@@ -209,7 +209,9 @@ if __name__ == "__main__":
         for arg in sys.argv[1:]:
             print(f"{arg}:", f"{parser(arg)}")
     else:
-        from examples import examples
+        try:
+            from examples import examples
+        except ImportError:
+            examples = ["1.5V", "100mA", "3.3kΩ", "10µF", "25°C"]
         for example in examples:
-            # parser(example)
             print(f"{example}:", f"{parser(example)}")
