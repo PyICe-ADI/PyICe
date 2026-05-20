@@ -55,7 +55,7 @@ class TestTimer:
         tmr.reset_timer()
         time.sleep(0.05)
         val = tmr['total_s'].read()
-        assert val < 0.5
+        assert val < 0.25
 
     def test_pause_resume(self, tmr):
         """Perform test pause resume operation.
