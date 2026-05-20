@@ -3640,20 +3640,19 @@ class background_worker(QtCore.QThread):
         # self.emit(SIGNAL('dump_data_ready(PyQt_PyObject)'),results)
 
     def _write_channel_list(self, write_list):
-        e = None
         # list is a list of tuples of channel_name and value to write
         for (channel_name, value) in write_list:
             debug_logging.info("Write {} to {}".format(channel_name, value))
             try:
                 self._channel_group[channel_name].write_unformatted(value)
-            except Exception:
+            except Exception as e:
                 debug_logging.warning(
                     "lab_gui.background_worker._write_channel_list() caught exception {}".format(e))
                 debug_logging.warning(
                     "while writing channel '{}' to {} from write_list {}".format(
                         channel_name, repr(value), repr(write_list)))
                 debug_logging.warning(traceback.format_exc())
-                raise e
+                raise
 
     def close(self, timeout=0.8):
         """Perform close operation.
