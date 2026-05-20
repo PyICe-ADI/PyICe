@@ -1,9 +1,18 @@
+"""Tests for servo."""
 from PyICe import lab_core, virtual_instruments
 
 OFFSET = 70
 
 
 def relU(input):
+    """Return relU result.
+
+    Args:
+        input: Input.
+
+    Returns:
+        Result value.
+    """
     return 0 if input < OFFSET else (input - OFFSET) * 0.2
 
 

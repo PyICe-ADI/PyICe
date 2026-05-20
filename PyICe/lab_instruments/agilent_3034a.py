@@ -1,3 +1,4 @@
+"""Agilent 3034a instrument driver."""
 from PyICe.lab_instruments.oscilloscope import oscilloscope
 from PyICe.lab_utils.ranges import decadeListRange
 from PyICe.lab_utils.banners import print_banner
@@ -9,12 +10,20 @@ import math
 
 
 class agilent_3034a(oscilloscope):
-    '''Agilent 4-channel mixed signal DSO'''
+    """Agilent 4-channel mixed signal DSO."""
 
     # 10 seconds recommended in programmer's manual page 63
     def __init__(self, interface_visa, force_trigger=False,
                  reset=False, verbose=False, timeout=10):
-        '''interface_visa'''
+        """Interface_visa.
+
+        Args:
+            force_trigger: Force trigger.
+            interface_visa: VISA interface instance.
+            reset: Reset.
+            timeout: Timeout in seconds.
+            verbose: If True, print debug output.
+        """
         self._base_name = "agilent_3034a"
         scpi_instrument.__init__(self, f"agilent_3034a @ {interface_visa}")
         # Clears self._interfaces list, so must happen before
@@ -45,24 +54,40 @@ class agilent_3034a(oscilloscope):
         self.verbose = verbose
 
     def delay(self, duration=0):
-        '''
-        *OPC? (self.operation_complete()) on this instrument isn't blocking of scope operations such as triggering and even entering RUN mode.
+        """*OPC? (self.operation_complete()) on this instrument isn't blocking of scope operations such as triggering and even entering RUN mode.
+
         It just doesn't help with scope synchronization.
         The Programmer's guide a offers a little advice on determining if the scope is stopped (see scope_stopped() below) but it doesn't cover all synchronization issues.
         This method was created, in lieu of just a time.sleep(), as a way of possibly adding additional value to some scope operations going forward.
-        '''
+
+        Args:
+            duration: Duration.
+        """
         time.sleep(duration)
 
     def scope_stopped(self):
-        '''From the Keysight Programmer's Guide regarding Status Reporting (Chapter 37) pages 205 and 1114.'''
+        """From the Keysight Programmer's Guide regarding Status Reporting (Chapter 37) pages 205 and 1114.
+
+        Returns:
+            Result value.
+        """
         return (int(self.get_interface().ask(
             ":OPERegister:CONDition?")) & 1 << 3) != 1 << 3
 
     def disable_all_Ychannels(self):
+        """Disable all Ychannels."""
         for number in [1, 2, 3, 4]:
             self.channel_display(number=number, value=False)
 
     def enable_channels(self, channels):
+        """Enable channels.
+
+        Args:
+            channels: List of channel objects.
+
+        Raises:
+            Exception: On error condition.
+        """
         if len(channels) > 4:
             raise Exception(
                 f"\n\nAgilent 3034a too many channels specified for displaying: {channels}")
@@ -76,9 +101,14 @@ class agilent_3034a(oscilloscope):
             self.channel_display(number=channel_number, value=False)
 
     def resync_scope(self):
-        '''call at the top of collect to reconfigure physical instrument to the test's used channels. Resets the scope.
+        """Call at the top of collect to reconfigure physical instrument to the test's used channels. Resets the scope.
+
         Requires every single oscilloscope channel be loaded with the channel attribute 'dependent_physical_channels', in turn
-        containing a tuple of all channels required to be turned on. (None,) is acceptable for timebase channels, etc.'''
+        containing a tuple of all channels required to be turned on. (None,) is acceptable for timebase channels, etc.
+
+        Raises:
+            Exception: On error condition.
+        """
         self.get_interface().clear()  # Clear command in \deps\usbtmc\usmtmc.py. Helps if the scope is not responding because it was asked about data that isn't there because it didn't trigger.
         self.reset()
         self.delay(1)
@@ -105,14 +135,27 @@ class agilent_3034a(oscilloscope):
         self.enable_channels(enabled_unique)
 
     def setup_channels(self, scope_channels, prefix="scope"):
-        '''Shortcut to quickly setup scope channels for most common use cases.  If vector data is not desired when using a measurement channels, manual setup of channels is required.'''
+        """Shortcut to quickly setup scope channels for most common use cases.  If vector data is not desired when using a measurement channels, manual setup of channels is required.
+
+        Args:
+            prefix: Name prefix string.
+            scope_channels: Scope channels.
+        """
         for channel in scope_channels:
             self.add_Ychannel_waveform(
                 name=channel, number=scope_channels[channel])
         self.add_all_timebase_trigger_aquisition_channels(prefix=prefix)
 
     def add_Ychannel_waveform(self, name, number):
-        '''Add named waveform channels to instrument. num is 1-4.  Add all control and readback channels by calling add_Ycontrol_Yreadback_channels()'''
+        """Add named waveform channels to instrument. num is 1-4.  Add all control and readback channels by calling add_Ycontrol_Yreadback_channels().
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+
+        Returns:
+            Result value.
+        """
         assert number in range(1, 5)
         new_channel = channel(
             name, read_function=lambda: self._read_scope_channel(number))
@@ -124,8 +167,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_Ycontrol_Yreadback_channels(self, name, number):
-        '''Add named channel control and readback channels to instrument. num is 1-4.
-        Use if control and readback channels are needed to set up a measurment and the actual waveform data is not logged.'''
+        """Add named channel control and readback channels to instrument. num is 1-4.
+
+        Use if control and readback channels are needed to set up a measurment and the actual waveform data is not logged.
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+        """
         assert number in range(1, 5)
         self.add_channel_probe_gain(name=f"{name}_probe_gain", number=number)
         self.add_channel_BWLimit(name=f"{name}_BWlimit", number=number)
@@ -142,6 +191,11 @@ class agilent_3034a(oscilloscope):
             name=f"{name}_Yoffset_readback", number=number)
 
     def add_Xcontrol_Xreadback_channels(self, prefix):
+        """Add a Xcontrol Xreadback channels.
+
+        Args:
+            prefix: Name prefix string.
+        """
         self.add_channel_Xrange(name=f"{prefix}_Xrange")
         self.add_channel_Xposition(name=f"{prefix}_Xposition")
         self.add_channel_Xreference(name=f"{prefix}_Xreference")
@@ -152,6 +206,11 @@ class agilent_3034a(oscilloscope):
             name=f"{prefix}_Xreference_readback")
 
     def add_trigger_channels(self, prefix):
+        """Add a trigger channels.
+
+        Args:
+            prefix: Name prefix string.
+        """
         self.add_channel_triggerlevel(name=f"{prefix}_trigger_level")
         self.add_channel_triggermode(name=f"{prefix}_trigger_mode")
         self.add_channel_triggerslope(name=f"{prefix}_trigger_slope")
@@ -190,14 +249,35 @@ class agilent_3034a(oscilloscope):
         self.add_channel_trigger_pattern_range(name=f"{prefix}_pattern_range")
 
     def add_aquire_channels(self, prefix):
+        """Add a aquire channels.
+
+        Args:
+            prefix: Name prefix string.
+        """
         self.add_channel_acquire_type(name=f"{prefix}_acquire_type")
         self.add_channel_acquire_count(name=f"{prefix}_acquire_count")
 
     def add_channel_timebase(self, name):
+        """Add a channel timebase.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         def compute_x_points(self):
-            '''Data conversion:
+            """Data conversion:.
+
             voltage = [(data value - yreference) * yincrement] + yorigin
-            time = [(data point number - xreference) * xincrement] + xorigin'''
+            time = [(data point number - xreference) * xincrement] + xorigin
+
+            Args:
+                self: Self.
+
+            Returns:
+                Result value.
+            """
             self._read_scope_time_info()
             xpoints_gen = map(
                 lambda x: (
@@ -246,6 +326,11 @@ class agilent_3034a(oscilloscope):
         self.time_info["enable_status"] = enable_status
 
     def add_all_timebase_trigger_aquisition_channels(self, prefix="scope"):
+        """Add a all timebase trigger aquisition channels.
+
+        Args:
+            prefix: Name prefix string.
+        """
         self.add_Xcontrol_Xreadback_channels(prefix)
         self.add_trigger_channels(prefix)
         self.add_aquire_channels(prefix)
@@ -256,7 +341,14 @@ class agilent_3034a(oscilloscope):
         self.add_channel_timebase(name=f"{prefix}_timedata")
 
     def set_points(self, points):
-        '''set the number of points returned by read_channel() or read_channels() points must be in range [100,250,500] or [1000,2000,5000]*10^[0-4] or [8000000]'''
+        """Set the number of points returned by read_channel() or read_channels() points must be in range [100,250,500] or [1000,2000,5000]*10^[0-4] or [8000000].
+
+        Args:
+            points: Points.
+
+        Raises:
+            ValueError: On error condition.
+        """
         allowed_points = [100, 250, 500]
         allowed_points.extend(decadeListRange([1000, 2000, 5000], 4))
         allowed_points.extend((8000000,))
@@ -266,9 +358,22 @@ class agilent_3034a(oscilloscope):
         self.get_interface().write(f":WAVeform:POINts {points}")
 
     def get_channel_enable_status(self, number):
+        """Return the channel enable status.
+
+        Args:
+            number: Channel or port number.
+
+        Returns:
+            Result value.
+        """
         return int(self.get_interface().ask(f":CHANnel{number}:DISPlay?"))
 
     def get_time_base(self):
+        """Return the time base.
+
+        Returns:
+            Result value.
+        """
         return float(self.get_interface().ask(":TIMebase:RANGe?")
                      ) / 10  # Always 10 horizontal divisions
 
@@ -301,6 +406,7 @@ class agilent_3034a(oscilloscope):
             self.delay()
 
     def trigger_force(self):
+        """Perform trigger force operation."""
         self._set_runmode('SINGLE')
         xrange = float(self.get_interface().ask(":TIMebase:RANGe?"))
         self.delay(1.5 * xrange)
@@ -311,17 +417,31 @@ class agilent_3034a(oscilloscope):
         self.delay(0.1)
 
     def _read_scope_channel(self, scope_channel_number):
-        '''
-        Return list of y-axis points for named channel.
+        """Return list of y-axis points for named channel.
+
         List will be datalogged by logger as a string in a single cell in the table.
         trigger=False can by used to suppress acquisition of new data by the instrument so that
         data from a single trigger may be retrieved from each of the four channels in turn by read_channels()
-        '''
+
+        Args:
+            scope_channel_number: Scope channel number.
+
+        Returns:
+            Result value.
+        """
         self.get_interface().write(
             f':WAVeform:SOURce CHANnel{scope_channel_number}')
         return self.fetch_waveform_data()
 
     def read_delegated_channel_list(self, channels):
+        """Return read delegated channel list result.
+
+        Args:
+            channels: List of channel objects.
+
+        Returns:
+            Result value.
+        """
         if self.force_trigger:
             self.trigger_force()
         results = results_ord_dict()
@@ -357,6 +477,15 @@ class agilent_3034a(oscilloscope):
                 self.delay(0.05)
 
     def add_channel_probe_gain(self, name, number):
+        """Add a channel probe gain.
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+
+        Returns:
+            Result value.
+        """
         def _set_probe_gain(number, value):
             self.get_interface().write(f":CHANnel{number}:PROBe {value}")
         new_channel = channel(
@@ -370,6 +499,15 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_BWLimit(self, name, number):
+        """Add a channel BWLimit.
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+
+        Returns:
+            Result value.
+        """
         def _set_BWLimit(number, value):
             self.get_interface().write(
                 f':CHANnel{number}:BWLimit {"ON" if value else "OFF"}')
@@ -383,6 +521,14 @@ class agilent_3034a(oscilloscope):
         return self._add_channel(new_channel)
 
     def add_channel_trigger_HFReject(self, name):
+        """Add a channel trigger HFReject.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         def _set_trigger_HFReject(value):
             self.get_interface().write(
                 f':TRIGger:HFReject {"ON" if value else "OFF"}')
@@ -393,6 +539,15 @@ class agilent_3034a(oscilloscope):
         return self._add_channel(new_channel)
 
     def add_channel_invert(self, name, number):
+        """Add a channel invert.
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+
+        Returns:
+            Result value.
+        """
         def _set_invert(number, value):
             self.get_interface().write(
                 f':CHANnel{number}:INVert {"ON" if value else "OFF"}')
@@ -406,6 +561,15 @@ class agilent_3034a(oscilloscope):
         return self._add_channel(new_channel)
 
     def add_channel_Yrange(self, name, number):
+        """Add a channel Yrange.
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+
+        Returns:
+            Result value.
+        """
         def _set_Yrange(number, value):
             self.get_interface().write(f":CHANnel{number}:RANGe {value}")
         new_channel = channel(
@@ -416,6 +580,15 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_Yoffset(self, name, number):
+        """Add a channel Yoffset.
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+
+        Returns:
+            Result value.
+        """
         def _set_Yoffset(number, value):
             self.get_interface().write(f":CHANnel{number}:OFFSet {-value}")
         new_channel = channel(
@@ -426,6 +599,15 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_Yrange_readback(self, name, number):
+        """Add a channel Yrange readback.
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             name, read_function=lambda: float(
                 self.get_interface().ask(
@@ -435,6 +617,15 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_Yoffset_readback(self, name, number):
+        """Add a channel Yoffset readback.
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             name,
             read_function=lambda: -
@@ -446,6 +637,15 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_impedance(self, name, number):
+        """Add a channel impedance.
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+
+        Returns:
+            Result value.
+        """
         def _set_impedance(number, value):
             if value in [50, "50", 1000000, 1e6, "1000000", "1e6", "1M"]:
                 value = "FIFTy" if value in [50, "50"] else "ONEMeg"
@@ -466,6 +666,15 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_units(self, name, number):
+        """Add a channel units.
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+
+        Returns:
+            Result value.
+        """
         def _set_units(number, value):
             if value.upper() in ["V", "A", "VOLTS", "AMPS"]:
                 value = "VOLT" if value.upper() in ["V", "VOLTS"] else "AMPere"
@@ -486,6 +695,15 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_coupling(self, name, number):
+        """Add a channel coupling.
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+
+        Returns:
+            Result value.
+        """
         def _set_coupling(number, value):
             if value.upper() not in ["AC", "DC"]:
                 raise ValueError(
@@ -504,6 +722,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_Xrange(self, name):
+        """Add a channel Xrange.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             name, write_function=lambda value: self.get_interface().write(
                 f":TIMebase:RANGe {value}"))
@@ -512,6 +738,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_Xposition(self, name):
+        """Add a channel Xposition.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(name, write_function=lambda value: self.get_interface(
         ).write(f":TIMebase:POSition {-value}"))
         new_channel._set_value(-float(self.get_interface().ask(":TIMebase:POSition?")))
@@ -520,6 +754,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_Xreference(self, name):
+        """Add a channel Xreference.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         def _set_xreference(value):
             if value.upper() not in ["LEFT", "CENTER",
                                      "RIGHT"]:  # Why not CUSTom??
@@ -544,6 +786,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_Xrange_readback(self, name):
+        """Add a channel Xrange readback.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             name, read_function=lambda: float(
                 self.get_interface().ask(
@@ -553,6 +803,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_Xposition_readback(self, name):
+        """Add a channel Xposition readback.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             name,
             read_function=lambda: -
@@ -564,6 +822,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_Xreference_readback(self, name):
+        """Add a channel Xreference readback.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             name, read_function=lambda: self.get_interface().ask(
                 ":TIMebase:REFerence?"))
@@ -572,6 +838,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_runmode(self, name):
+        """Add a channel runmode.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(name, write_function=self._set_runmode)
         new_channel.add_preset("RUN", "Free running mode")
         new_channel.add_preset("STOP", "Stopped")
@@ -581,6 +855,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_triggerlevel(self, name):
+        """Add a channel triggerlevel.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         def _set_trigger_level(value):
             self.get_interface().write(f":TRIGger:LEVel {value}")
             self.delay()
@@ -591,6 +873,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_triggermode(self, name):
+        """Add a channel triggermode.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         def _set_triggermode(value):
             if value.upper() not in ["AUTO", "NORMAL"]:
                 raise ValueError(
@@ -606,6 +896,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_triggerslope(self, name):
+        """Add a channel triggerslope.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         def _set_triggerslope(value):
             if value.upper() not in ["NEGATIVE",
                                      "POSITIVE", "EITHER", "ALTERNATE"]:
@@ -624,6 +922,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_triggersource(self, name):
+        """Add a channel triggersource.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         def _set_triggersource(value):
             valid_sources = [
                 "EXT",
@@ -652,6 +958,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_acquire_type(self, name):
+        """Add a channel acquire type.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         def _set_acquiretype(value):
             if value.upper() not in [
                     "NORMAL", "AVERAGE", "HRESOLUTION", "PEAK"]:
@@ -673,6 +987,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_acquire_count(self, name):
+        """Add a channel acquire count.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         def _set_acquirecount(value):
             if value not in range(2, 65536 + 1):
                 raise ValueError(
@@ -689,12 +1011,28 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_pointcount(self, name):
+        """Add a channel pointcount.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(name, write_function=self.set_points)
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
 
     def add_channel_pointcount_readback(self, name):
+        """Add a channel pointcount readback.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             name, read_function=lambda: self.time_info["points"])
         self._add_channel(new_channel)
@@ -702,6 +1040,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_triggertype(self, name):
+        """Add a channel triggertype.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         def _set_triggertype(value):
             if value.upper() not in ["EDGE", "GLITCH", "PATTERN", "TV", "DELAY",
                                      "EBURST", "OR", "RUNT", "SHOLD", "TRANSITION", "SBUS1", "SBUS2", "USB"]:
@@ -729,6 +1075,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_trigger_pattern(self, name):
+        """Add a channel trigger pattern.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         def _set_trigger_pattern(value):
             self.get_interface().write(f':TRIGger:PATTern "{value}"')
             self.delay()
@@ -739,6 +1093,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_trigger_pattern_qualifier(self, name):
+        """Add a channel trigger pattern qualifier.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         def _set_trigger_pattern_qualifier(value):
             if value not in ["ENTered", "GREaterthan",
                              "LESSthan", "INRange", "OUTRange", "TIMeout"]:
@@ -761,6 +1123,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_trigger_pattern_format(self, name):
+        """Add a channel trigger pattern format.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         def _set_trigger_pattern_format(value):
             if value.upper() not in ['ASCII', 'HEX']:
                 raise ValueError(
@@ -775,6 +1145,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_trigger_pattern_greaterthan(self, name):
+        """Add a channel trigger pattern greaterthan.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         def _set_trigger_pattern_greaterthan(value):
             self.get_interface().write(f":TRIGger:PATTern:GREaterthan {value}")
             self.delay()
@@ -787,6 +1165,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_trigger_pattern_lessthan(self, name):
+        """Add a channel trigger pattern lessthan.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         def _set_trigger_pattern_lessthan(value):
             self.get_interface().write(f":TRIGger:PATTern:LESSthan {value}")
             self.delay()
@@ -799,6 +1185,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_trigger_pattern_range(self, name):
+        """Add a channel trigger pattern range.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         def _set_trigger_pattern_range(less_than, greater_than):
             self.get_interface().write(
                 f":TRIGger:PATTern:RANGe {less_than:e},{greater_than:e}")
@@ -816,6 +1210,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_trigger_glitch_greaterthan(self, name):
+        """Add a channel trigger glitch greaterthan.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         def _set_trigger_glitch_greaterthan(value):
             self.get_interface().write(f":TRIGger:GLITch:GREaterthan {value}")
             self.delay()
@@ -828,6 +1230,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_trigger_glitch_lessthan(self, name):
+        """Add a channel trigger glitch lessthan.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         def _set_trigger_glitch_lessthan(value):
             self.get_interface().write(f":TRIGger:GLITch:LESSthan {value}")
             self.delay()
@@ -840,6 +1250,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_trigger_glitch_level(self, name):
+        """Add a channel trigger glitch level.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         def _set_trigger_glitch_level(value):
             self.get_interface().write(f":TRIGger:GLITch:LEVel {value}")
             self.delay()
@@ -851,6 +1269,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_trigger_glitch_source(self, name):
+        """Add a channel trigger glitch source.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         def _set_trigger_glitch_source(value):
             self.get_interface().write(f":TRIGger:GLITch:SOURce {value}")
             self.delay()
@@ -862,6 +1288,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_trigger_glitch_polarity(self, name):
+        """Add a channel trigger glitch polarity.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         def _set_trigger_glitch_polarity(value):
             if value.upper() not in ["POSITIVE", "NEGATIVE"]:
                 raise ValueError(
@@ -879,6 +1313,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_trigger_glitch_qualifier(self, name):
+        """Add a channel trigger glitch qualifier.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         def _set_trigger_glitch_qualifier(value):
             if value.upper() not in ["GREATERTHAN", "LESSTHAN", "RANGE"]:
                 raise ValueError(
@@ -897,6 +1339,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_trigger_glitch_range(self, name):
+        """Add a channel trigger glitch range.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         def _set_trigger_glitch_range(less_than, greater_than):
             self.get_interface().write(
                 f":TRIGger:GLITch:RANGe {less_than:e},{greater_than:e}")
@@ -914,6 +1364,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_trigger_runt_polarity(self, name):
+        """Add a channel trigger runt polarity.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         def _set_trigger_runt_polarity(value):
             if value.upper() not in ["POSITIVE", "NEGATIVE", "EITHER"]:
                 raise ValueError(
@@ -931,6 +1389,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_trigger_runt_qualifier(self, name):
+        """Add a channel trigger runt qualifier.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         def _set_trigger_runt_qualifier(value):
             if value.upper() not in ["GREATERTHAN", "LESSTHAN", "RANGE"]:
                 raise ValueError(
@@ -948,6 +1414,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_trigger_runt_source(self, name):
+        """Add a channel trigger runt source.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         def _set_trigger_runt_source(value):
             self.get_interface().write(f":TRIGger:RUNT:SOURce {value}")
             self.delay()
@@ -959,6 +1433,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_trigger_runt_time(self, name):
+        """Add a channel trigger runt time.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         def _set_trigger_runt_time(value):
             self.get_interface().write(f":TRIGger:RUNT:TIME {value}")
             self.delay()
@@ -969,6 +1451,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_trigger_runt_level_high(self, name):
+        """Add a channel trigger runt level high.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         def _set_trigger_level_high(value):
             source = self.get_interface().ask(":TRIGger:RUNT:SOURce?")
             self.get_interface().write(
@@ -980,6 +1470,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_trigger_runt_level_low(self, name):
+        """Add a channel trigger runt level low.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         def _set_trigger_level_low(value):
             source = self.get_interface().ask(":TRIGger:RUNT:SOURce?")
             self.get_interface().write(f":TRIGger:LEVel:LOW {value}, {source}")
@@ -990,6 +1488,15 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_meas_frequency(self, name, number):
+        """Add a channel meas frequency.
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+
+        Returns:
+            Result value.
+        """
         def _get_frequency_measurement(number):
             scope_was_not_stopped = not self.scope_stopped()
             if scope_was_not_stopped:
@@ -1009,6 +1516,15 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_meas_period(self, name, number):
+        """Add a channel meas period.
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+
+        Returns:
+            Result value.
+        """
         def _get_period_measurement():
             scope_was_not_stopped = not self.scope_stopped()
             if scope_was_not_stopped:
@@ -1034,6 +1550,15 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_meas_stats_current(self, name, number):
+        """Add a channel meas stats current.
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+
+        Returns:
+            Result value.
+        """
         def _get_stats_current():
             self.get_interface().write(":MEASure:STATistics CURRent")
             return float(self.get_interface().ask(":MEASure:RESults?"))
@@ -1043,6 +1568,15 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_meas_stats_minimum(self, name, number):
+        """Add a channel meas stats minimum.
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+
+        Returns:
+            Result value.
+        """
         def _get_stats_minimum():
             self.get_interface().write(":MEASure:STATistics MINimum")
             return float(self.get_interface().ask(":MEASure:RESults?"))
@@ -1052,6 +1586,15 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_meas_stats_maximum(self, name, number):
+        """Add a channel meas stats maximum.
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+
+        Returns:
+            Result value.
+        """
         def _get_stats_maximum():
             self.get_interface().write(":MEASure:STATistics MAXimum")
             return float(self.get_interface().ask(":MEASure:RESults?"))
@@ -1061,6 +1604,15 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_meas_stats_mean(self, name, number):
+        """Add a channel meas stats mean.
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+
+        Returns:
+            Result value.
+        """
         def _get_stats_mean():
             self.get_interface().write(":MEASure:STATistics MEAN")
             return float(self.get_interface().ask(":MEASure:RESults?"))
@@ -1070,6 +1622,15 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_meas_stats_stdev(self, name, number):
+        """Add a channel meas stats stdev.
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+
+        Returns:
+            Result value.
+        """
         def _get_stats_stdev():
             self.get_interface().write(":MEASure:STATistics STDDev")
             return float(self.get_interface().ask(":MEASure:RESults?"))
@@ -1079,6 +1640,15 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_meas_stats_count(self, name, number):
+        """Add a channel meas stats count.
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+
+        Returns:
+            Result value.
+        """
         def _get_stats_count():
             self.get_interface().write(":MEASure:STATistics COUNt")
             return float(self.get_interface().ask(":MEASure:RESults?"))
@@ -1088,6 +1658,15 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_meas_stats_reset(self, name, number):
+        """Add a channel meas stats reset.
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+
+        Returns:
+            Result value.
+        """
         def _reset_stats(unused):
             self.get_interface().write(":MEASure:STATistics:RESet")
         new_channel = channel(name, write_function=_reset_stats)
@@ -1096,6 +1675,15 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_meas_dutycycle(self, name, number):
+        """Add a channel meas dutycycle.
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+
+        Returns:
+            Result value.
+        """
         def _get_dutycycle_measurement(number):
             scope_was_not_stopped = not self.scope_stopped()
             if scope_was_not_stopped:
@@ -1112,6 +1700,15 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_meas_risetime(self, name, number):
+        """Add a channel meas risetime.
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+
+        Returns:
+            Result value.
+        """
         def _get_risetime_measurement(number):
             scope_was_not_stopped = not self.scope_stopped()
             if scope_was_not_stopped:
@@ -1128,6 +1725,15 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_meas_falltime(self, name, number):
+        """Add a channel meas falltime.
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+
+        Returns:
+            Result value.
+        """
         def _get_falltime_measurement(number):
             scope_was_not_stopped = not self.scope_stopped()
             if scope_was_not_stopped:
@@ -1144,11 +1750,26 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def channel_display(self, number, value):
+        """Perform channel display operation.
+
+        Args:
+            number: Channel or port number.
+            value: Value to set.
+        """
         self.get_interface().write(
             f':CHANnel{number}:DISPlay {"ON" if value else "OFF"}')
         self.delay()
 
     def add_channel_display(self, name, number):
+        """Add a channel display.
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             name, write_function=lambda value: self.channel_display(
                 number, value))
@@ -1157,6 +1778,16 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_meas_delay(self, name, first_channel, second_channel):
+        """Add a channel meas delay.
+
+        Args:
+            first_channel: First channel.
+            name: Name identifier.
+            second_channel: Second channel.
+
+        Returns:
+            Result value.
+        """
         def _get_delay_measurement(first_channel, second_channel):
             self.get_interface().write(
                 f":MEASure:SOURce CHANnel{first_channel},CHANnel{second_channel}")
@@ -1177,6 +1808,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_meas_delay_spec1(self, name):
+        """Add a channel meas delay spec1.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         def _set_define_delay(edge_spec1):
             edge_spec = self.get_interface().ask(":MEASure:DEFine?").split(",")
             self.get_interface().write(
@@ -1188,6 +1827,14 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_meas_delay_spec2(self, name):
+        """Add a channel meas delay spec2.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         def _set_define_delay(edge_spec2):
             edge_spec = self.get_interface().ask(":MEASure:DEFine?").split(",")
             self.get_interface().write(
@@ -1199,6 +1846,15 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_meas_define_abs_thresh(self, name, number):
+        """Add a channel meas define abs thresh.
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+
+        Returns:
+            Result value.
+        """
         def _set_define_absolute_threshold(number, thresh):
             self.get_interface().write(
                 f":MEASure:DEFine THResholds,ABSolute,{1.8 * thresh},{thresh},{0.2 * thresh},CHANnel{number}")
@@ -1211,6 +1867,15 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_meas_pwidth(self, name, number):
+        """Add a channel meas pwidth.
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+
+        Returns:
+            Result value.
+        """
         def _get_pwidth_measurement(number):
             scope_was_not_stopped = not self.scope_stopped()
             if scope_was_not_stopped:
@@ -1227,6 +1892,15 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_meas_nwidth(self, name, number):
+        """Add a channel meas nwidth.
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+
+        Returns:
+            Result value.
+        """
         def _get_nwidth_measurement(number):
             scope_was_not_stopped = not self.scope_stopped()
             if scope_was_not_stopped:
@@ -1243,6 +1917,15 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_meas_vmax(self, name, number):
+        """Add a channel meas vmax.
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+
+        Returns:
+            Result value.
+        """
         def _get_vmax_measurement(number):
             scope_was_not_stopped = not self.scope_stopped()
             if scope_was_not_stopped:
@@ -1259,6 +1942,15 @@ class agilent_3034a(oscilloscope):
         return new_channel
 
     def add_channel_meas_vaverage(self, name, number):
+        """Add a channel meas vaverage.
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+
+        Returns:
+            Result value.
+        """
         def _get_vaverage_measurement(number):
             scope_was_not_stopped = not self.scope_stopped()
             # Give the screen time to update, measurement is screen centric!
@@ -1279,6 +1971,15 @@ class agilent_3034a(oscilloscope):
 
     def save_to_usb(self, file_name, format):
         # todo (, referenceh5, multichh5, analysiscsv)
+        """Perform save to usb operation.
+
+        Args:
+            file_name: File name.
+            format: Format name string.
+
+        Raises:
+            Exception: On error condition.
+        """
         formats = ('setup', 'bmp8', 'bmp24', 'png', 'csv', 'asciixy', 'binary')
         assert format in formats, f'Format {format} not in set {formats}'
         if format == 'setup':
@@ -1313,7 +2014,15 @@ class agilent_3034a(oscilloscope):
 
     @deprecated(version='47', reason="You are using old scope driver methods.  Consider updating to new scope binding.  See https://confluence.analog.com/display/stowe/Preferred+Practices")
     def add_Ychannel(self, name, number):
-        '''Add named channel to instrument. num is 1-4.'''
+        """Add named channel to instrument. num is 1-4.
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+
+        Returns:
+            Result value.
+        """
         assert number in range(1, 5)
         self.Ychannels[number] = {}
         self.Ychannels[number]["main_channel"] = channel(
@@ -1351,12 +2060,14 @@ class agilent_3034a(oscilloscope):
     @deprecated(version='47',
                 reason="You are using old scope driver methods. Consider updating to new scope binding.")
     def purge_all_Xchannels(self):
+        """Perform purge all Xchannels operation."""
         for channel in self.Xchannels:
             self.remove_channel(self.Xchannels[channel])
 
     @deprecated(version='47',
                 reason="You are using old scope driver methods. Consider updating to new scope binding.")
     def purge_all_Ychannels(self):
+        """Perform purge all Ychannels operation."""
         remove_channels = []
         for channel_number in self.Ychannels:
             for channel_name in self.Ychannels[channel_number]:
@@ -1372,6 +2083,14 @@ class agilent_3034a(oscilloscope):
 
     @deprecated(version='47', reason="You are using old scope driver methods. Consider updating to new scope binding. See https://confluence.analog.com/display/stowe/Preferred+Practices")
     def add_Xchannels(self, prefix):
+        """Add a Xchannels.
+
+        Args:
+            prefix: Name prefix string.
+
+        Returns:
+            Result value.
+        """
         self.Xchannels["Xrange"] = self.add_channel_Xrange(
             name=f"{prefix}_Xrange")
         self.Xchannels["Xposition"] = self.add_channel_Xposition(
@@ -1438,14 +2157,35 @@ class agilent_3034a(oscilloscope):
 
     @deprecated(version='47', reason="You are using old scope driver methods. Consider updating to new scope binding. See https://confluence.analog.com/display/stowe/Preferred+Practices")
     def get_Xchannels(self):
+        """Return the Xchannels.
+
+        Returns:
+            Result value.
+        """
         return self.Xchannels
 
     @deprecated(version='47', reason="You are using old scope driver methods. Consider updating to new scope binding. See https://confluence.analog.com/display/stowe/Preferred+Practices")
     def add_channel_time(self, name):
+        """Add a channel time.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         def compute_x_points(self):
-            '''Data conversion:
+            """Data conversion:.
+
             voltage = [(data value - yreference) * yincrement] + yorigin
-            time = [(data point number - xreference) * xincrement] + xorigin'''
+            time = [(data point number - xreference) * xincrement] + xorigin
+
+            Args:
+                self: Self.
+
+            Returns:
+                Result value.
+            """
             xpoints = [
                 (x -
                  self.time_info["reference"]) *
@@ -1460,6 +2200,14 @@ class agilent_3034a(oscilloscope):
         time_channel.set_attribute('dependent_physical_channels', (None,))
 
         def get_time_info(self):
+            """Return the time info.
+
+            Args:
+                self: Self.
+
+            Returns:
+                Result value.
+            """
             return self.time_info
         time_info = channel(name + "_info",
                             read_function=lambda: get_time_info(self))

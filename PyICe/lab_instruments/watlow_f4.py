@@ -1,9 +1,11 @@
+"""Watlow f4 instrument driver."""
 
 from .temperature_chamber import temperature_chamber
 from .modbus_instrument import modbus_instrument, register_description as rd
 
 
 class watlow_f4(temperature_chamber, modbus_instrument):
+    """Watlow_f4."""
     REGISTERS = [
         rd('SV1', 300, readable=True, writeable=True,
            number_of_decimals=1, signed=True),
@@ -19,6 +21,13 @@ class watlow_f4(temperature_chamber, modbus_instrument):
     ]
 
     def __init__(self, interface_raw_serial, modbus_address, baudrate=19200):
+        """Initialize watlow_f4.
+
+        Args:
+            baudrate: Baudrate.
+            interface_raw_serial: Interface raw serial.
+            modbus_address: Modbus address.
+        """
         self._base_name = 'Watlow F4'
         temperature_chamber.__init__(self)
         modbus_instrument.__init__(self,
@@ -33,30 +42,54 @@ class watlow_f4(temperature_chamber, modbus_instrument):
         self._pv = self['PV1']
 
     def add_channels(self, channel_name):
+        """Add a channels.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         self.remove_channel(self._sv)
         self.remove_channel(self._pv)
         return super(watlow_f4, self).add_channels(channel_name)
 
     def _write_temperature(self, value):
-        '''Program tempertaure setpoint to value. Implement for specific hardware.'''
+        """Program tempertaure setpoint to value. Implement for specific hardware.
+
+        Args:
+            value: Value to set.
+        """
         self.setpoint = value
         self._sv.write(value)
         self._wait_settle()
 
     def _read_temperature_sense(self):
-        '''read back actual chamber temperature.  Implement for specific hardware.'''
+        """Read back actual chamber temperature.  Implement for specific hardware.
+
+        Returns:
+            Result value.
+        """
         return self._pv.read()
 
     def _enable(self, enable):
-        '''enable/disable temperature chamber heating and cooling. Also accepts heat/cool only arguments if chamber supports it.'''
+        """Enable/disable temperature chamber heating and cooling. Also accepts heat/cool only arguments if chamber supports it.
+
+        Args:
+            enable: Enable or disable.
+        """
         if enable:
             pass  # ?
         else:
             self._sv.write(25)
 
     def shutdown(self, shutdown):
-        '''separate method to turn off temperature chamber.
+        """Separate method to turn off temperature chamber.
+
         overload if possible for individual hardware.
         otherwise, default to disable heating and cooling.
-        '''
+
+        Args:
+            shutdown: Shutdown.
+        """
         self._enable(not shutdown)

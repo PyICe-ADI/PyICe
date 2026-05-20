@@ -1,3 +1,4 @@
+"""Tests for expect."""
 from PyICe import virtual_instruments, lab_core
 
 m = lab_core.master()

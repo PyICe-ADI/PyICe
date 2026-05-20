@@ -1,14 +1,26 @@
+"""Digital  I O over analog output utility."""
 class digital_IO_over_analog_output(object):
-    """###SCHEDULED FOR DELETION###
+    """###SCHEDULED FOR DELETION###.
+
     Use lab_instruments.digital_analog_io() virtual instrument instead.
 
     Wraps an analog output PyICe channel with a digital interface.
     domain_channel is the PyICe channel for the logic supply of the digital input
-    we're talking to, e.g. master['vin_supply'] or master['dvcc_supply']."""
-
+    we're talking to, e.g. master['vin_supply'] or master['dvcc_supply'].
+    """
     def __init__(self, channel, domain_channel, VOL=0.0,
                  delta_Vhook=1.5, tolerance=0.01, abs_max=None):
-        from . import lab_core
+        """Initialize digital_ i o_over_analog_output.
+
+        Args:
+            VOL: Vol.
+            abs_max: Abs max.
+            channel: Channel object.
+            delta_Vhook: Delta vhook.
+            domain_channel: Domain channel.
+            tolerance: Tolerance value.
+        """
+        from PyICe import lab_core
         assert isinstance(channel, lab_core.channel)
         assert isinstance(domain_channel, lab_core.channel)
         self.channel = channel
@@ -41,11 +53,19 @@ class digital_IO_over_analog_output(object):
                 self.channel.write(self._add_with_abs_max(voltage))
 
     def digital_write(self, value):
-        """Write any of (True, 1, 1.0) to set output to VOH,
+        """Write any of (True, 1, 1.0) to set output to VOH,.
+
         any of (False, 0, 0.0) to set output to VOL, and
         any of ("testhook", 2, 2.0) to set output to VOH+delta_Vhook.
         You can pass this method as the write_function argument
-        to master.add_channel_virtual()"""
+        to master.add_channel_virtual()
+
+        Args:
+            value: Value to set.
+
+        Raises:
+            NotImplementedError: On error condition.
+        """
         if isinstance(value, str) and value.lower() in (
                 "z", "hiz", "hi-z", "high-z"):
             raise NotImplementedError(

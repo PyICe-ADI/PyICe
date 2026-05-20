@@ -1,4 +1,6 @@
-from PyICe import lab_core, lab_instruments
+"""Tests for threshold finder."""
+from PyICe import lab_core
+from PyICe.virtual_instruments import threshold_finder
 from PyICe.models.comparator import comparator
 
 h = comparator(
@@ -14,7 +16,7 @@ i_s = m.add_channel_virtual_caching(
     1000.0)
 o = m.add_channel_virtual('output', read_function=h.read)
 
-tf = lab_instruments.threshold_finder(comparator_input_force_channel=i_f,
+tf = threshold_finder(comparator_input_force_channel=i_f,
                                       comparator_output_sense_channel=o,
                                       minimum=3,
                                       maximum=37,

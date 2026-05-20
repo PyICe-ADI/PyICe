@@ -1,7 +1,8 @@
+"""Tests for oscilloscope."""
 
 import PyICe.lab_core as lab_core
 # from PyICe.lab_instruments import oscilloscope
-from PyICe.lab_instruments import agilent_3034a
+from PyICe.lab_instruments.agilent_3034a import agilent_3034a
 
 
 m = lab_core.master()

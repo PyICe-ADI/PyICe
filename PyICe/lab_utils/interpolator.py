@@ -1,4 +1,4 @@
-"Linear interpolator implemented in pure Python"
+"""Linear interpolator implemented in pure Python."""
 # Copyright 2018 by Analog Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
@@ -23,7 +23,8 @@ import operator
 
 
 class interpolator(object):
-    '''linear interpolator/extrapolator between/beyond defined points
+    """Linear interpolator/extrapolator between/beyond defined points.
+
         see also interpolating_spline and smooth_spline for other options with
         additional filtering/compression
 
@@ -41,9 +42,13 @@ class interpolator(object):
     >>> multi = interpolator([[0, 0], [1, 10], [2, 40], [3, 90]])
     >>> multi(1.5)
     25.0
-    '''
-
+    """
     def __init__(self, points_list=None):
+        """Initialize interpolator.
+
+        Args:
+            points_list: Points list.
+        """
         self._points = []
         self._points_ysort = []
         self.y_slope = 0
@@ -52,9 +57,22 @@ class interpolator(object):
             self.sort()
 
     def __call__(self, x_value):
+        """Call the instance.
+
+        Args:
+            x_value: X value.
+
+        Returns:
+            Result value.
+        """
         return self.get_y_val(x_value)
 
     def check_monotonicity(self):
+        """Perform check monotonicity operation.
+
+        Raises:
+            Exception: On error condition.
+        """
         if len(self._points) > 1:
             x_pts = [x[0] for x in self._points]
             y_pts = [y[1] for y in self._points]
@@ -70,27 +88,51 @@ class interpolator(object):
                                                  self._points[i][1]))
 
     def sort(self):
+        """Perform sort operation."""
         self._points.sort(key=operator.itemgetter(0))  # increasing values in x
         self._points_ysort = sorted(self._points, key=operator.itemgetter(1))
         # increasing values in y
 
     def add_point(self, x_val, y_val):
+        """Add a point.
+
+        Args:
+            x_val: X val.
+            y_val: Y val.
+        """
         self._points.append([x_val, y_val])
         self.sort()
         self.check_monotonicity()
 
     def add_points(self, point_list):
-        '''expects 2d list of the form [[x0,y0],[x1,y1],...[xn,yn]]
-        the points must be strictly monotonic, but not necessarily sorted'''
+        """Expects 2d list of the form [[x0,y0],[x1,y1],...[xn,yn]].
+
+        the points must be strictly monotonic, but not necessarily sorted
+
+        Args:
+            point_list: Point list.
+        """
         for point in point_list:
             self.add_point(point[0], point[1])
 
     def find(self, key, sorted_key_list, value_list):
-        '''function operates independent of object internal data
+        """Function operates independent of object internal data.
+
         expects sorted_key_list to increase strictly monotonically
         will return linear combination of two values from value list weighted
         by distance from two enclosing points of key in sorted_key_list
-        '''
+
+        Args:
+            key: Key.
+            sorted_key_list: Sorted key list.
+            value_list: Value list.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         points = list(zip(sorted_key_list, value_list))
         if len(points) < 2:
             raise Exception('At least two points are required '
@@ -120,14 +162,38 @@ class interpolator(object):
             return low_pt[1] + (key - low_pt[0]) * slope
 
     def get_x_val(self, y_val):
+        """Return the x val.
+
+        Args:
+            y_val: Y val.
+
+        Returns:
+            Result value.
+        """
         [x_pts, y_pts] = list(zip(*self._points_ysort))
         return self.find(y_val, y_pts, x_pts)
 
     def get_y_val(self, x_val):
+        """Return the y val.
+
+        Args:
+            x_val: X val.
+
+        Returns:
+            Result value.
+        """
         [x_pts, y_pts] = list(zip(*self._points))
         return self.find(x_val, x_pts, y_pts)
 
 
 def cmp(a, b):
-    "Returns -1, 0, +1 if a < b, a == b, or a > b, respectively. (was built-in in Python 2)"
+    """Returns -1, 0, +1 if a < b, a == b, or a > b, respectively. (was built-in in Python 2).
+
+    Args:
+        a: A.
+        b: B.
+
+    Returns:
+        Result value.
+    """
     return (a > b) - (a < b)

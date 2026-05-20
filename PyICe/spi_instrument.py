@@ -1,21 +1,35 @@
-'''
-Channel Wrapper for SPI Devices
+"""Channel Wrapper for SPI Devices.
+
 ===============================
-'''
+"""
 from PyICe.lab_core import instrument, delegator, integer_channel
 from PyICe import spi_interface
 
 
 class spiInstrument(instrument, delegator):
-    '''Instrument wrapper for basic linear shift register SPI port.
-    Not appropriate for context-sensitive (sub addressed) memory directly.
-    Instead, use multiple spiInstrument copies with appropriate preamble_clk_cnt and preamble_data settings.'''
+    """Instrument wrapper for basic linear shift register SPI port.
 
+    Not appropriate for context-sensitive (sub addressed) memory directly.
+    Instead, use multiple spiInstrument copies with appropriate preamble_clk_cnt and preamble_data settings.
+    """
     def __init__(self, name, spiInterface, write_shift_register=None,
                  read_shift_register=None, preamble_clk_cnt=0, preamble_data=0):
-        '''Specify at lease one of (write_shift_register, read_shift_register arguments).
+        """Specify at lease one of (write_shift_register, read_shift_register arguments).
+
         If read data has the same meaning as write data (memory read-back), send same shift register object to write_shift_register and read_shift_register arguments.
-        If both (write_shift_register, read_shift_register) arguments are specified, they must be of the same length.'''
+        If both (write_shift_register, read_shift_register) arguments are specified, they must be of the same length.
+
+        Args:
+            name: Name identifier.
+            preamble_clk_cnt: Preamble clk cnt.
+            preamble_data: Preamble data.
+            read_shift_register: Read shift register.
+            spiInterface: Spiinterface.
+            write_shift_register: Write shift register.
+
+        Raises:
+            Exception: On error condition.
+        """
         delegator.__init__(self)
         instrument.__init__(self, '{} SPI instrument wrapper'.format(name))
         self._base_name = name
@@ -75,10 +89,18 @@ class spiInstrument(instrument, delegator):
                 self._add_channel(read_ch)
 
     def add_channel_transceive_enable(self, channel_name):
-        '''Add channel to enable/disable SPI port communication.
+        """Add channel to enable/disable SPI port communication.
+
         This can be used to serially change multiple bit fields before sending the data to the SPI slave with a single transaction.
         Note that communication is disabled independent of this setting if not all writable bit fields have been initialized.
-        Also note that after communication is enabled, a SPI transceive will not take place until a bit field is read or written.'''
+        Also note that after communication is enabled, a SPI transceive will not take place until a bit field is read or written.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         trans_en_ch = integer_channel(
             name=channel_name, size=1, write_function=lambda enable: setattr(
                 self, '_transceive_enabled', enable))
@@ -138,7 +160,14 @@ class spiInstrument(instrument, delegator):
         raise Exception("Shouldn't ever get here...")
 
     def read_delegated_channel_list(self, channels):
-        '''private'''
+        """Private.
+
+        Args:
+            channels: List of channel objects.
+
+        Returns:
+            Result value.
+        """
         results_dict = {}
         spi_data = None
         for channel in channels:

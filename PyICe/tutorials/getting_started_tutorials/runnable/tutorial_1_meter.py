@@ -1,3 +1,4 @@
+"""Tutorial 1 meter module."""
 # ============================================
 # TUTORIAL 1 Adding a Single Channel Voltmeter
 # ============================================

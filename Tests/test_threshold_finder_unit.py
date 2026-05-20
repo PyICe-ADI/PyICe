@@ -1,3 +1,4 @@
+"""Tests for threshold finder unit."""
 import pytest
 from PyICe.virtual_instruments import threshold_finder
 from PyICe.models.comparator import comparator
@@ -8,6 +9,14 @@ def make_comparator_system(m, threshold=2.5, hysteresis=0.0):
 
     Uses PyICe.models.comparator which properly models rising/falling
     thresholds, hysteresis, and output levels.
+
+    Args:
+        hysteresis: Hysteresis.
+        m: M.
+        threshold: Threshold.
+
+    Returns:
+        Result value.
     """
     rising_th = threshold + hysteresis / 2
     falling_th = threshold - hysteresis / 2
@@ -23,9 +32,18 @@ def make_comparator_system(m, threshold=2.5, hysteresis=0.0):
 
 
 class TestThresholdFinderBinarySearch:
+    """Tests for Threshold Finder Binary Search."""
 
     @pytest.fixture
     def tf_no_hyst(self, master_instance):
+        """Return tf no hyst result.
+
+        Args:
+            master_instance: Master instance.
+
+        Returns:
+            Result value.
+        """
         m = master_instance
         forcing, output = make_comparator_system(m, threshold=2.5,
                                                  hysteresis=0.0)
@@ -35,16 +53,31 @@ class TestThresholdFinderBinarySearch:
         return tf
 
     def test_find_no_hysteresis_converges(self, tf_no_hyst):
+        """Perform test find no hysteresis converges operation.
+
+        Args:
+            tf_no_hyst: Tf no hyst.
+        """
         tf = tf_no_hyst
         results = tf.find_no_hysteresis()
         assert results['threshold'] == pytest.approx(2.5, abs=0.02)
 
     def test_find_no_hysteresis_tries(self, tf_no_hyst):
+        """Perform test find no hysteresis tries operation.
+
+        Args:
+            tf_no_hyst: Tf no hyst.
+        """
         tf = tf_no_hyst
         tf.find_no_hysteresis()
         assert tf.tries > 0
 
     def test_find_no_hysteresis_uncertainty(self, tf_no_hyst):
+        """Perform test find no hysteresis uncertainty operation.
+
+        Args:
+            tf_no_hyst: Tf no hyst.
+        """
         tf = tf_no_hyst
         tf.find_no_hysteresis()
         assert tf.rising_uncertainty <= 0.01
@@ -52,8 +85,14 @@ class TestThresholdFinderBinarySearch:
 
 
 class TestThresholdFinderWithHysteresis:
+    """Tests for Threshold Finder With Hysteresis."""
 
     def test_find_binary_converges_with_hysteresis(self, master_instance):
+        """Perform test find binary converges with hysteresis operation.
+
+        Args:
+            master_instance: Master instance.
+        """
         m = master_instance
         forcing, output = make_comparator_system(m, threshold=2.5,
                                                  hysteresis=0.2)
@@ -64,6 +103,11 @@ class TestThresholdFinderWithHysteresis:
         assert 2.3 < results['threshold'] < 2.7
 
     def test_find_linear_detects_hysteresis(self, master_instance):
+        """Perform test find linear detects hysteresis operation.
+
+        Args:
+            master_instance: Master instance.
+        """
         m = master_instance
         forcing, output = make_comparator_system(m, threshold=2.5,
                                                  hysteresis=0.2)
@@ -78,9 +122,18 @@ class TestThresholdFinderWithHysteresis:
 
 
 class TestThresholdFinderLinearSearch:
+    """Tests for Threshold Finder Linear Search."""
 
     @pytest.fixture
     def tf_linear(self, master_instance):
+        """Return tf linear result.
+
+        Args:
+            master_instance: Master instance.
+
+        Returns:
+            Result value.
+        """
         m = master_instance
         forcing, output = make_comparator_system(m, threshold=1.0,
                                                  hysteresis=0.0)
@@ -90,11 +143,21 @@ class TestThresholdFinderLinearSearch:
         return tf
 
     def test_find_linear_no_hysteresis(self, tf_linear):
+        """Perform test find linear no hysteresis operation.
+
+        Args:
+            tf_linear: Tf linear.
+        """
         tf = tf_linear
         results = tf.find_linear_no_hysteresis()
         assert results['threshold'] == pytest.approx(1.0, abs=0.1)
 
     def test_find_linear_with_hysteresis(self, master_instance):
+        """Perform test find linear with hysteresis operation.
+
+        Args:
+            master_instance: Master instance.
+        """
         m = master_instance
         forcing, output = make_comparator_system(m, threshold=1.0,
                                                  hysteresis=0.2)
@@ -107,9 +170,14 @@ class TestThresholdFinderLinearSearch:
 
 
 class TestThresholdFinderPolarity:
+    """Tests for Threshold Finder Polarity."""
 
     def test_inverted_polarity(self, master_instance):
-        """Comparator output goes LOW when input exceeds threshold."""
+        """Comparator output goes LOW when input exceeds threshold.
+
+        Args:
+            master_instance: Master instance.
+        """
         m = master_instance
         comp = comparator(falling_threshold=2.5, rising_threshold=2.5,
                           out_high=0.0, out_low=5.0)
@@ -128,8 +196,14 @@ class TestThresholdFinderPolarity:
 
 
 class TestThresholdFinderChannels:
+    """Tests for Threshold Finder Channels."""
 
     def test_add_channel_all(self, master_instance):
+        """Perform test add channel all operation.
+
+        Args:
+            master_instance: Master instance.
+        """
         m = master_instance
         forcing, output = make_comparator_system(m, threshold=2.5)
         tf = threshold_finder(forcing, output,
@@ -148,7 +222,11 @@ class TestComparatorOvershoot:
     """Test threshold_finder with comparator overshoot modeling."""
 
     def test_overshoot_shifts_binary_threshold(self, master_instance):
-        """With large overshoot, the binary search finds a shifted threshold."""
+        """With large overshoot, the binary search finds a shifted threshold.
+
+        Args:
+            master_instance: Master instance.
+        """
         m = master_instance
         # Large overshoot: 50% of step magnitude
         comp = comparator(falling_threshold=2.5, rising_threshold=2.5,

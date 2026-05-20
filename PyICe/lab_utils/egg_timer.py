@@ -1,11 +1,20 @@
+"""Egg timer utility."""
 import time
 
 
 def egg_timer(timeout, message=None, length=30, display_callback=None):
-    '''Provides a blocking delay with a graphic to indicate progress so far so the computer doesn't look idle
+    """Provides a blocking delay with a graphic to indicate progress so far so the computer doesn't look idle.
+
     optionally, display a message on the line above the timer graphic
     optionally, specify a display_callback function to insert extra progress information after the timer display.
-    display_callback function should accept a single dictionary argument and return a string.'''
+    display_callback function should accept a single dictionary argument and return a string.
+
+    Args:
+        display_callback: Display callback.
+        length: Length.
+        message: Message.
+        timeout: Timeout in seconds.
+    """
     _light_shade = "▒"  # noqa: F841 - \u2592
     _dark_shade = "█"  # noqa: F841 - \u2588
     digits = len(str(int(timeout)))

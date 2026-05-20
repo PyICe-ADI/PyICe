@@ -1,3 +1,4 @@
+"""Tutorial 5 putting it all together module."""
 # ==================================
 # TUTORIAL 5 Putting it all Together
 # ==================================

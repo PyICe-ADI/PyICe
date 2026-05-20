@@ -1,15 +1,26 @@
+"""A D5259 instrument driver."""
 from ..lab_core import *  # noqa: F403
 from .. import twi_interface
 
 
 class AD5259(instrument):
-    '''Analog Devices Nonvolatile, I2C-Compatible 256-Position, Digital Potentiometer
-    https://www.analog.com/media/en/technical-documentation/data-sheets/ad5259.pdf'''
+    """Analog Devices Nonvolatile, I2C-Compatible 256-Position, Digital Potentiometer.
 
+    https://www.analog.com/media/en/technical-documentation/data-sheets/ad5259.pdf
+    """
     def __init__(self, interface_twi, addr7, full_scale_ohms):
-        '''interface_twi is a PyICe interface_twi
+        """Interface_twi is a PyICe interface_twi.
+
         addr7 is the 7-bit I2C address of the AD5259 set by pinstrapping.
-        '''
+
+        Args:
+            addr7: 7-bit I2C device address.
+            full_scale_ohms: Full scale ohms.
+            interface_twi: TWI/I2C interface instance.
+
+        Raises:
+            ValueError: On error condition.
+        """
         instrument.__init__(
             self, f'Analog Devices I2C-Compatible 256-Position, Digital Potentiometer at 0x{addr7:X}')
         self._base_name = 'AD5259'
@@ -31,6 +42,11 @@ class AD5259(instrument):
         self.READ_FROM_EEPROM = 1 << 5
 
     def add_all_channels(self, channel_base_name):
+        """Add a all channels.
+
+        Args:
+            channel_base_name: Channel base name.
+        """
         self.add_channel_wiper(channel_base_name + "_wiper")
         self.add_channel_code(channel_base_name + "_code")
         self.add_channel_code_readback(channel_base_name + "_code_readback")
@@ -77,8 +93,20 @@ class AD5259(instrument):
         return self._read_byte(subaddr=self.READ_FROM_EEPROM)
 
     def add_channel_wiper(self, channel_name):
+        """Add a channel wiper.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         def _write_wiper(value):
-            '''value is between 0 and 1. DAC is biased toward 0 so that full scale is not achievable'''
+            """Value is between 0 and 1. DAC is biased toward 0 so that full scale is not achievable.
+
+            Args:
+                value: Value to set.
+            """
             assert value >= 0 and value <= 1
             self._write_rdac(min(int(round(value * 2**8)), 2**8 - 1))
         self.wiper_channel = channel(channel_name, write_function=_write_wiper)
@@ -89,12 +117,28 @@ class AD5259(instrument):
         return self._add_channel(self.wiper_channel)
 
     def add_channel_code(self, channel_name):
+        """Add a channel code.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         self.code_channel = channel(
             channel_name, write_function=self._write_rdac)
         self.code_channel.set_description('Raw 8-bit DAC code input')
         return self._add_channel(self.code_channel)
 
     def add_channel_code_readback(self, channel_name):
+        """Add a channel code readback.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         self.code_readback_channel = channel(
             channel_name, read_function=self._read_rdac)
         return self._add_channel(self.code_readback_channel)

@@ -1,19 +1,26 @@
+"""Htx9016 instrument driver."""
 from ..lab_core import *  # noqa: F403
 import math
 
 
 class htx9016(scpi_instrument):
-    ''' 5 Channel RF MUX Hypertronix (Steve Martin) HTX9016
-        DC Coupled or AC Coupled versions available.
-        Should be good from 100Hz (AC) or 0Hz (DC) to about 1GHz.'''
+    """5 Channel RF MUX Hypertronix (Steve Martin) HTX9016.
 
+    DC Coupled or AC Coupled versions available.
+    Should be good from 100Hz (AC) or 0Hz (DC) to about 1GHz.
+    """
     def __init__(self, interface_visa):
+        """Initialize htx9016.
+
+        Args:
+            interface_visa: VISA interface instance.
+        """
         self._base_name = 'htx9016'
         scpi_instrument.__init__(self, f"HTX9016 {interface_visa}")
         self.add_interface_visa(interface_visa, timeout=0.5)
 
     def __del__(self):
-        '''Close interface (serial) port on exit'''
+        """Close interface (serial) port on exit."""
         self.get_interface().close()
 
     def _decode_readback(self):
@@ -27,6 +34,14 @@ class htx9016(scpi_instrument):
                 f"*** HTX9016 RF MUX *** CAUTION: Multiple channels are on, return value {value} should be a power of 2!")
 
     def add_channel(self, channel_name):
+        """Add a channel.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             write_function=lambda ch: self.get_interface().write(
@@ -44,4 +59,9 @@ class htx9016(scpi_instrument):
         return self._add_channel(new_channel)
 
     def get_serial_number(self):
+        """Return the serial number.
+
+        Returns:
+            Result value.
+        """
         return self.get_interface().ask(":STORe:SERIalnum?")

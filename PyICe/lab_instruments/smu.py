@@ -1,3 +1,9 @@
+"""Smu instrument driver."""
+# pylint: disable=E1101; this module defines abstract base classes (smu, scpi_smu) whose members
+# (_configured_channels, _vforce, _iforce, _vsense, _isense, _vcompl, _vcomplq, _icompl, _icomplq,
+# _remote_sense, _remote_senseq, _high_capacitance, _high_capacitanceq, _terminal_select,
+# _terminal_selectq, _parse_float) are implemented/initialized by concrete subclasses
+# (keithley_2400, keithley_smu, etc.) that combine these bases via multiple inheritance
 from ..lab_core import *  # noqa: F403
 
 # todo measure autorange
@@ -5,8 +11,17 @@ from ..lab_core import *  # noqa: F403
 
 
 class smu(instrument):
+    """Smu (instrument subclass)."""
     def _fix_exclusive(self, ch, value):
-        '''fix write cache of exclusive channel pair sibling'''
+        """Fix write cache of exclusive channel pair sibling.
+
+        Args:
+            ch: Ch.
+            value: Value to set.
+
+        Raises:
+            Exception: On error condition.
+        """
         if ch.get_attribute('channel_type') == 'vforce':
             pair_ch = self._configured_channels[ch.get_attribute(
                 'channel_number')]['i_force']
@@ -39,7 +54,15 @@ class smu(instrument):
                                                          }
 
     def add_channels(self, channel_name, channel_number=1):
-        '''shortcut'''
+        """Shortcut.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         # todo remote sense, high c?
         return (self.add_channel_voltage_force(f'{channel_name}_vforce', channel_number),
                 self.add_channel_current_force(
@@ -55,7 +78,15 @@ class smu(instrument):
         )
 
     def add_channel_voltage_force(self, channel_name, channel_number=1):
-        '''voltage force. Mutually exclusive at any moment with current force.'''
+        """Voltage force. Mutually exclusive at any moment with current force.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         self._init_channel(channel_number)
         new_channel = channel(
             channel_name,
@@ -74,7 +105,15 @@ class smu(instrument):
         return self._add_channel(new_channel)
 
     def add_channel_current_force(self, channel_name, channel_number=1):
-        '''current force. Mutually exclusive at any moment with voltage force.'''
+        """Current force. Mutually exclusive at any moment with voltage force.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         self._init_channel(channel_number)
         new_channel = channel(
             channel_name,
@@ -93,7 +132,15 @@ class smu(instrument):
         return self._add_channel(new_channel)
 
     def add_channel_voltage_sense(self, channel_name, channel_number=1):
-        '''voltage readback'''
+        """Voltage readback.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         # range, nplc?
         self._init_channel(channel_number)
         new_channel = channel(
@@ -110,7 +157,15 @@ class smu(instrument):
         return self._add_channel(new_channel)
 
     def add_channel_current_sense(self, channel_name, channel_number=1):
-        '''current readback'''
+        """Current readback.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         # range, nplc?
         self._init_channel(channel_number)
         new_channel = channel(
@@ -127,7 +182,15 @@ class smu(instrument):
         return self._add_channel(new_channel)
 
     def add_channel_voltage_compliance(self, channel_name, channel_number=1):
-        '''max voltage in current forcing modes'''
+        """Max voltage in current forcing modes.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         self._init_channel(channel_number)
         new_channel = channel(
             channel_name,
@@ -147,7 +210,15 @@ class smu(instrument):
         return self._add_channel(new_channel)
 
     def add_channel_current_compliance(self, channel_name, channel_number=1):
-        '''max current in voltage forcing modes'''
+        """Max current in voltage forcing modes.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         self._init_channel(channel_number)
         new_channel = channel(
             channel_name,
@@ -167,7 +238,15 @@ class smu(instrument):
         return self._add_channel(new_channel)
 
     def add_channel_remote_sense(self, channel_name, channel_number=1):
-        '''remote (4-wire) sense enable control'''
+        """Remote (4-wire) sense enable control.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         self._init_channel(channel_number)
         new_channel = channel(
             channel_name,
@@ -189,7 +268,15 @@ class smu(instrument):
         # todo initial value?
 
     def add_channel_high_capacitance(self, channel_name, channel_number):
-        '''stabilize forcing source for higher DUT capacitance, typically tens of uF'''
+        """Stabilize forcing source for higher DUT capacitance, typically tens of uF.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         self._init_channel(channel_number)
         new_channel = channel(
             channel_name,
@@ -211,7 +298,15 @@ class smu(instrument):
         # todo initial value?
 
     def add_channel_terminal_select(self, channel_name, channel_number):
-        '''select between front and rear panel terminals'''
+        """Select between front and rear panel terminals.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         self._init_channel(channel_number)
         new_channel = channel(
             channel_name,
@@ -232,34 +327,61 @@ class smu(instrument):
         return self._add_channel(new_channel)
 
     def _add_channel_voltage_force(self, channel):
-        '''voltage force. Mutually exclusive at any moment with current force.'''
+        """Voltage force. Mutually exclusive at any moment with current force.
 
+        Args:
+            channel: Channel object.
+        """
     def _add_channel_current_force(self, channel):
-        '''current force. Mutually exclusive at any moment with voltage force.'''
+        """Current force. Mutually exclusive at any moment with voltage force.
 
+        Args:
+            channel: Channel object.
+        """
     def _add_channel_voltage_sense(self, channel):
-        '''voltage readback'''
+        """Voltage readback.
 
+        Args:
+            channel: Channel object.
+        """
     def _add_channel_current_sense(self, channel):
-        '''current readback'''
+        """Current readback.
 
+        Args:
+            channel: Channel object.
+        """
     def _add_channel_voltage_compliance(self, channel):
-        '''max voltage in current forcing modes'''
+        """Max voltage in current forcing modes.
 
+        Args:
+            channel: Channel object.
+        """
     def _add_channel_current_compliance(self, channel):
-        '''max current in voltage forcing modes'''
+        """Max current in voltage forcing modes.
 
+        Args:
+            channel: Channel object.
+        """
     def _add_channel_remote_sense(self, channel):
-        '''remote (4-wire) sense enable control'''
+        """Remote (4-wire) sense enable control.
 
+        Args:
+            channel: Channel object.
+        """
     def _add_channel_high_capacitance(self, channel):
-        '''stabilize forcing source for higher DUT capacitance, typically tens of uF'''
+        """Stabilize forcing source for higher DUT capacitance, typically tens of uF.
 
+        Args:
+            channel: Channel object.
+        """
     def _add_channel_terminal_select(self, channel):
-        '''select front vs rear panel connection mux'''
+        """Select front vs rear panel connection mux.
 
-
+        Args:
+            channel: Channel object.
+        """
 class keithley_smu(smu):
+    """Keithley_smu."""
     def _parse_float(self, val):
         f = float(val)
         if f == 9.91E37:  # Keithley NaN
@@ -268,7 +390,7 @@ class keithley_smu(smu):
 
 
 class scpi_smu(scpi_instrument, smu):
-    ''''''
+    """TODO: Add docstring."""
     # todo abstract methods?
 
     def _output_off(self, channel_number):
@@ -338,13 +460,25 @@ class scpi_smu(scpi_instrument, smu):
             f':SENSe{channel_number}:CURRent:DC:PROTection:LEVel?')
 
     def _remote_sense(self, channel_number, value):
-        '''ignores channel number!!!!!!!!!!!!!!!!!!!'''
+        """Ignores channel number!!!!!!!!!!!!!!!!!!!
+
+        Args:
+            channel_number: Physical channel number.
+            value: Value to set.
+        """
         # print(f'{value}, {type(value)}')
         self.get_interface().write(
             f':SYSTem:RSENse {"OFF" if not value or value == "False" else "ON"}')
 
     def _remote_senseq(self, channel_number):
-        '''ignores channel number!!!!!!!!!!!!!!!!!!!'''
+        """Ignores channel number!!!!!!!!!!!!!!!!!!!
+
+        Args:
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         # print(f'{value}, {type(value)}')
         return self.get_interface().ask(':SYSTem:RSENse?')
 
@@ -352,11 +486,23 @@ class scpi_smu(scpi_instrument, smu):
         raise Exception('Unimplemented. Contact PyICe developers.')
 
     def _terminal_select(self, channel_number, value):
-        '''select between front and rear panel terminals'''
+        """Select between front and rear panel terminals.
+
+        Args:
+            channel_number: Physical channel number.
+            value: Value to set.
+        """
         self.get_interface().write(f':ROUTe:TERMinals {value}')
 
     def _terminal_selectq(self, channel_number):
-        '''query front vs rear panel terminals'''
+        """Query front vs rear panel terminals.
+
+        Args:
+            channel_number: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         resp_subst = {"FRON": "Front",
                       "REAR": "Rear",
                       }
@@ -364,14 +510,18 @@ class scpi_smu(scpi_instrument, smu):
 
 
 class keithley_2400(scpi_smu, keithley_smu):
-    ''''''
+    """TODO: Add docstring."""
     # todo NPLC config?
     # todo trigger source, pulse, sweep? Other instrument driver?
     # todo atexit cleanup?
     # todo V/I init to zero?, source off?
 
     def __init__(self, interface_visa):
-        '''interface_visa'''
+        """Interface_visa.
+
+        Args:
+            interface_visa: VISA interface instance.
+        """
         self._base_name = 'Keithley 2400'
         super(scpi_smu, self).__init__(f"Keithley 2400 @ {interface_visa}")
         self.add_interface_visa(interface_visa)
@@ -381,7 +531,11 @@ class keithley_2400(scpi_smu, keithley_smu):
         # atexit.register(self._output_off, channel_number=1) #TODO debug
 
     def _add_channel_voltage_force(self, channel):
-        '''voltage force. Mutually exclusive at any moment with current force.'''
+        """Voltage force. Mutually exclusive at any moment with current force.
+
+        Args:
+            channel: Channel object.
+        """
         self.get_interface().write(
             f':SOURce{channel.get_attribute("channel_number")}:VOLTage:RANGe:AUTO ON')
         self.get_interface().write(
@@ -394,7 +548,11 @@ class keithley_2400(scpi_smu, keithley_smu):
         # DC') #2430 only
 
     def _add_channel_current_force(self, channel):
-        '''current force. Mutually exclusive at any moment with voltage force.'''
+        """Current force. Mutually exclusive at any moment with voltage force.
+
+        Args:
+            channel: Channel object.
+        """
         self.get_interface().write(
             f':SOURce{channel.get_attribute("channel_number")}:CURRent:RANGe:AUTO ON')
         self.get_interface().write(
@@ -407,16 +565,28 @@ class keithley_2400(scpi_smu, keithley_smu):
         # DC') #2430 only
 
     def _add_channel_voltage_sense(self, channel):
-        '''voltage readback'''
+        """Voltage readback.
+
+        Args:
+            channel: Channel object.
+        """
         # [:SENSe[1]]:VOLTage[:DC]:NPLCycles <n> Set speed (PLC)
 
     def _add_channel_current_sense(self, channel):
-        '''current readback'''
+        """Current readback.
+
+        Args:
+            channel: Channel object.
+        """
         # range, nplc?
         # [:SENSe[1]]:CURRent[:DC]:NPLCycles <n> Set speed (PLC)
 
     def _add_channel_voltage_compliance(self, channel):
-        '''max voltage in current forcing modes'''
+        """Max voltage in current forcing modes.
+
+        Args:
+            channel: Channel object.
+        """
         # there are two thresholds. Source compliance (OVP) and Sense compliance (true compliance). Ignoring the former for now....
         # these are very coarse. ie
         # <n> = -210 to 210 Specify V-Source limit
@@ -436,18 +606,25 @@ class keithley_2400(scpi_smu, keithley_smu):
         # TODO if this is useful
 
     def _add_channel_current_compliance(self, channel):
-        '''max current in voltage forcing modes'''
+        """Max current in voltage forcing modes.
 
-
+        Args:
+            channel: Channel object.
+        """
 class keithley_2400_front_rear(keithley_2400):
-    '''make single 2400 instrument behave like muxed instrument via front and rear panel selection'''
+    """Make single 2400 instrument behave like muxed instrument via front and rear panel selection."""
     # WIP
 
 
 class keithley_2600(keithley_smu):
-    '''https://download.tek.com/manual/2600BS-901-01_C_Aug_2016_2.pdf'''
+    """Https://download.tek.com/manual/2600BS-901-01_C_Aug_2016_2.pdf."""
 
     def __init__(self, interface_visa):
+        """Initialize keithley_2600.
+
+        Args:
+            interface_visa: VISA interface instance.
+        """
         self._base_name = 'Keithley 2600'
         super(keithley_2600, self).__init__(
             f"{self._base_name} @ {interface_visa}")
@@ -549,14 +726,22 @@ class keithley_2600(keithley_smu):
             f'print(smu{self._channel_id(channel_number)}.source.limiti)')
 
     def _add_channel_voltage_force(self, channel):
-        '''voltage force. Mutually exclusive at any moment with current force.'''
+        """Voltage force. Mutually exclusive at any moment with current force.
+
+        Args:
+            channel: Channel object.
+        """
         self.get_interface().write(
             f'smu{self._channel_id(channel.get_attribute("channel_number"))}.source.autorangev =  smu{self._channel_id(channel.get_attribute("channel_number"))}.AUTORANGE_ON')
         channel.set_min_write_limit(-200)
         channel.set_max_write_limit(200)
 
     def _add_channel_current_force(self, channel):
-        '''current force. Mutually exclusive at any moment with voltage force.'''
+        """Current force. Mutually exclusive at any moment with voltage force.
+
+        Args:
+            channel: Channel object.
+        """
         self.get_interface().write(
             f'smu{self._channel_id(channel.get_attribute("channel_number"))}.source.autorangei =  smu{self._channel_id(channel.get_attribute("channel_number"))}.AUTORANGE_ON')
         channel.set_min_write_limit(-3)

@@ -1,17 +1,20 @@
+"""Select string menu utility."""
 from curses import panel
 import curses
 
 
 def select_string_menu(header, items):
-    """
-    Creates a menu in a new window that returns the selected item. If there are more than 25 items, multiple pages are
-    made and can be navigated with the 'back' and 'next' item selected.
+    """Creates a menu in a new window that returns the selected item.
+
+    If there are more than 25 items, multiple pages are made and can be
+    navigated with the 'back' and 'next' item selected.
+
     Args:
-        header: String. Comment that appears above the selectable items.
-        items: List. Can be of strings, numerals, functions, whatever.
+        header: Comment string that appears above the selectable items.
+        items: List of selectable items (strings, numerals, functions, etc.).
 
     Returns:
-    The highlighted item upon hitting Return.
+        The highlighted item upon hitting Return.
     """
     if len(items) == 0:
         print('No items to select from. Returning None')

@@ -1,3 +1,6 @@
+"""Keysight u2300a instrument driver."""
+# pylint: disable=no-member; _ai_channels and _scale_fn are provided by hardware-specific
+# mixin subclasses (u2331a_base, u2352a_base, etc.) combined via multiple inheritance
 from PyICe.lab_utils.eng_string import eng_string
 from numpy import fromiter, dtype
 import struct
@@ -15,10 +18,18 @@ class u2300aBufferUnderflowError(Exception):
 
 
 class u2300a_scope(scpi_instrument, delegator):
-    '''superclass of all Keysight U2300A series instruments treated as scope'''
+    """Superclass of all Keysight U2300A series instruments treated as scope."""
 
     def __init__(self, interface_visa, force_trigger=False,
                  timeout=1, trigger_timeout=15):
+        """Initialize u2300a_scope.
+
+        Args:
+            force_trigger: Force trigger.
+            interface_visa: VISA interface instance.
+            timeout: Timeout in seconds.
+            trigger_timeout: Trigger timeout.
+        """
         self._base_name = 'U2300A'
         scpi_instrument.__init__(self, f"{self._base_name} @ {interface_visa}")
         # Clears self._interfaces list, so must happen before
@@ -53,6 +64,11 @@ class u2300a_scope(scpi_instrument, delegator):
 
     def check_errors(self):
         # Check that nothing has gone wrong with configuration
+        """Perform check errors operation.
+
+        Raises:
+            Exception: On error condition.
+        """
         err = self.get_interface().ask("SYST:ERR?")
         if err != '+0,"No error"':
             raise Exception(f"U2300: {err}")
@@ -61,6 +77,7 @@ class u2300a_scope(scpi_instrument, delegator):
         return self._state
 
     def calibrate(self):
+        """Perform calibrate operation."""
         print(f'Begin {self.get_name()} calibration.')
         self.get_interface().write('CALibration:BEGin')
         self.get_interface().ask('*OPC?')
@@ -72,15 +89,27 @@ class u2300a_scope(scpi_instrument, delegator):
         # mode enables the DAQ device to simulate in simultaneous mode. It would perform
         # sampling measurements at the highest speed of the product capabilities.
         # mode Boolean 0|OFF|1|ON 0
+        """Set the burst mode.
+
+        Args:
+            state: State.
+        """
         self.get_interface().write(f'ACQuire:BURSt {"ON" if state else "OFF"}')
 
     def add_channel_timeout(self, channel_name):
-        '''add trigger timeout control channel'''
+        """Add trigger timeout control channel.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_ch = channel(
             channel_name,
             write_function=lambda v: setattr(
                 self,
-                _trigger_timeout,
+                '_trigger_timeout',
                 v))
         new_ch.set_attribute('u2300a_type', 'trigger_control')
         new_ch.set_description(
@@ -88,7 +117,14 @@ class u2300a_scope(scpi_instrument, delegator):
         return self._add_channel(new_ch)
 
     def add_channel_time(self, channel_name):
-        '''add timebase readback channel'''
+        """Add timebase readback channel.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_ch = channel(channel_name, read_function=self.dummy_read)
         new_ch.set_attribute('u2300a_type', 'ain_time')
         new_ch.set_delegator(self)
@@ -99,14 +135,23 @@ class u2300a_scope(scpi_instrument, delegator):
 
     def add_channel_ain_single_ended_bipolar(
             self, channel_name, channel_num, sig_range):
-        '''Add single ended, bipolar, channel to u23xx instrument.
+        """Add single ended, bipolar, channel to u23xx instrument.
+
             TODO: Better docstring.
-        '''
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_num: Physical channel number.
+            sig_range: Sig range.
+
+        Returns:
+            Result value.
+        """
         assert channel_num not in self._configured_channels
-        assert channel_num in self._ai_channels['single_ended']
+        assert channel_num in self._ai_channels['single_ended']  # pylint: disable=E1101; _ai_channels is a class-level dict defined in hardware-specific mixin subclasses (e.g. u2331a_base) combined via multiple inheritance
         assert channel_num - \
             max(self._ai_channels['differential']) + \
-            1 - 100 not in self._configured_channels
+            1 - 100 not in self._configured_channels  # pylint: disable=E1101; _ai_channels is provided by hardware-specific mixin subclasses at class level
         new_ch = channel(channel_name, read_function=self.dummy_read)
         self._configured_channels[channel_num] = new_ch
         new_ch.set_attribute('internal_address', channel_num)
@@ -123,9 +168,18 @@ class u2300a_scope(scpi_instrument, delegator):
 
     def add_channel_ain_diff_bipolar(
             self, channel_name, channel_num, sig_range):
-        '''Add differential, bipolar, channel to u23xx instrument.
+        """Add differential, bipolar, channel to u23xx instrument.
+
             TODO: Better docstring.
-        '''
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_num: Physical channel number.
+            sig_range: Sig range.
+
+        Returns:
+            Result value.
+        """
         assert channel_num not in self._configured_channels
         assert channel_num in self._ai_channels['differential']
         assert channel_num + \
@@ -146,14 +200,23 @@ class u2300a_scope(scpi_instrument, delegator):
 
     def add_channel_ain_single_ended_unipolar(
             self, channel_name, channel_num, sig_range):
-        '''Add single ended, unipolar, channel to u23xx instrument.
+        """Add single ended, unipolar, channel to u23xx instrument.
+
             TODO: Better docstring.
-        '''
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_num: Physical channel number.
+            sig_range: Sig range.
+
+        Returns:
+            Result value.
+        """
         assert channel_num not in self._configured_channels
-        assert channel_num in self._ai_channels['single_ended']
+        assert channel_num in self._ai_channels['single_ended']  # pylint: disable=E1101; _ai_channels is a class-level dict defined in hardware-specific mixin subclasses (e.g. u2331a_base) combined via multiple inheritance
         assert channel_num - \
             max(self._ai_channels['differential']) + \
-            1 - 100 not in self._configured_channels
+            1 - 100 not in self._configured_channels  # pylint: disable=E1101; _ai_channels is provided by hardware-specific mixin subclasses at class level
         new_ch = channel(channel_name, read_function=self.dummy_read)
         self._configured_channels[channel_num] = new_ch
         new_ch.set_attribute('internal_address', channel_num)
@@ -170,9 +233,18 @@ class u2300a_scope(scpi_instrument, delegator):
 
     def add_channel_ain_diff_unipolar(
             self, channel_name, channel_num, sig_range):
-        '''Add differential, unipolar, channel to u23xx instrument.
+        """Add differential, unipolar, channel to u23xx instrument.
+
             TODO: Better docstring.
-        '''
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_num: Physical channel number.
+            sig_range: Sig range.
+
+        Returns:
+            Result value.
+        """
         assert channel_num not in self._configured_channels
         assert channel_num in self._ai_channels['differential']
         assert channel_num + \
@@ -193,7 +265,19 @@ class u2300a_scope(scpi_instrument, delegator):
 
     def set_trigger(self, trigger_channel, mode='POST', delay_count=None,
                     polarity_condition='AHIG', high_threshold=1, low_threshold=1):
-        ''''''
+        """Configure the trigger settings.
+
+        Args:
+            trigger_channel: Trigger channel.
+            mode: Operating mode.
+            delay_count: Delay count.
+            polarity_condition: Polarity condition.
+            high_threshold: High threshold.
+            low_threshold: Low threshold.
+
+        Raises:
+            Exception: On error condition.
+        """
         # TRIGger:SOURce <mode>
         # This command is used to set the trigger source for input operations.
         # The valid options are:
@@ -318,8 +402,21 @@ class u2300a_scope(scpi_instrument, delegator):
         self.check_errors()
 
     def add_channels_trigger(self, base_name):
-        '''Channel-ize options otherwise availabe from set_trigger() method. Unclear if there's a required order of operations that complicates this process. Untested.'''
+        """Channel-ize options otherwise availabe from set_trigger() method. Unclear if there's a required order of operations that complicates this process. Untested.
+
+        Args:
+            base_name: Base name.
+
+        Returns:
+            Result value.
+        """
         def trigger_config_ch_write(write_channel, value):
+            """Perform trigger config ch write operation.
+
+            Args:
+                value: Value to set.
+                write_channel: Write channel.
+            """
             vals = {}
             for other_channel in write_channel.get_attribute(
                     'trigger_related_channels'):
@@ -329,6 +426,11 @@ class u2300a_scope(scpi_instrument, delegator):
             self.set_trigger(**vals)
 
         def trigger_arm_ch_write(value):
+            """Perform trigger arm ch write operation.
+
+            Args:
+                value: Value to set.
+            """
             if value == "ARM":
                 dwell_time = {"PRE": 1.02 * self.acq_time_ch.read(),   # Alot time to acquire (at least) the entire record.
                               # No dwell needed, all data to be acquired post
@@ -517,7 +619,11 @@ class u2300a_scope(scpi_instrument, delegator):
         return trigger_arm_ch
 
     def add_channel_acquisition_time(self, name):
-        '''Channel-ize option otherwise availabe from set_acquisition_time() method.'''
+        """Channel-ize option otherwise availabe from set_acquisition_time() method.
+
+        Args:
+            name: Name identifier.
+        """
         self.acq_time_ch = channel(
             name, write_function=self.set_acquisition_time)
         self.acq_time_ch.set_attribute(
@@ -527,7 +633,11 @@ class u2300a_scope(scpi_instrument, delegator):
         self._add_channel(self.acq_time_ch)
 
     def set_acquisition_time(self, acquisition_time):
-        '''additional option "MAX", to auto-compute max record length'''
+        """Additional option "MAX", to auto-compute max record length.
+
+        Args:
+            acquisition_time: Acquisition time.
+        """
         # Don't do any configuration until trigger time to make sure
         # configuration is fully self-consistent.
         self._ain_configuration['acquisition_time'] = acquisition_time
@@ -552,7 +662,11 @@ class u2300a_scope(scpi_instrument, delegator):
         self._point_count = point_count
 
     def add_channel_sample_rate(self, name):
-        '''Channel-ize option otherwise availabe from set_sample_rate() method.'''
+        """Channel-ize option otherwise availabe from set_sample_rate() method.
+
+        Args:
+            name: Name identifier.
+        """
         sample_rate_ch = channel(name, write_function=self.set_sample_rate)
         sample_rate_ch.set_attribute('u2300a_type', 'ain_acquisition_control')
         sample_rate_ch.set_description(
@@ -560,9 +674,13 @@ class u2300a_scope(scpi_instrument, delegator):
         self._add_channel(sample_rate_ch)
 
     def set_sample_rate(self, sample_rate):
-        '''units of Hz
+        """Units of Hz.
+
         additional option "MAX", to auto-compute max performace
-        '''
+
+        Args:
+            sample_rate: Sample rate.
+        """
         # Don't do any configuration until trigger time to make sure
         # configuration is fully self-consistent.
         self._ain_configuration['sample_rate'] = sample_rate
@@ -595,6 +713,11 @@ class u2300a_scope(scpi_instrument, delegator):
         return sample_rate
 
     def dummy_read(self):
+        """Perform dummy read operation.
+
+        Raises:
+            Exception: On error condition.
+        """
         raise Exception(
             'Delegation failure. Contact PyICe-developers@analog.com for more information.')
 
@@ -639,7 +762,14 @@ class u2300a_scope(scpi_instrument, delegator):
             f'ROUTe:CHANnel:STYPe {sig_mode}, (@{channel.get_attribute("internal_address")})')
 
     def _scale_fn(self, channel):
-        '''speed up. Closure around immutable variables to aviod a whole bunch of attribute lookups inside a tight time-critical loop'''
+        """Speed up. Closure around immutable variables to aviod a whole bunch of attribute lookups inside a tight time-critical loop.
+
+        Args:
+            channel: Channel object.
+
+        Returns:
+            Result value.
+        """
         gains = self._ai_channels[channel.get_attribute(
             'polarity')]['range'][channel.get_attribute('sig_range')]
         offset = 0.5 * (gains['max'] + gains['min'])
@@ -647,6 +777,11 @@ class u2300a_scope(scpi_instrument, delegator):
             x >> shift) + offset
 
     def arm_trigger(self, channel_list=None):
+        """Perform arm trigger operation.
+
+        Args:
+            channel_list: Channel list.
+        """
         if channel_list is None:
             # Without channel list, let's compromise and acquire every channel
             # that this instrument has registered to date
@@ -691,6 +826,17 @@ class u2300a_scope(scpi_instrument, delegator):
         self.get_interface().write('DIGitize')
 
     def read_delegated_channel_list(self, channel_list):
+        """Return read delegated channel list result.
+
+        Args:
+            channel_list: Channel list.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         if self._get_state() == 'ARMED':
             pass  # Already armed manually!
         else:
@@ -766,7 +912,7 @@ class u2300a_scope(scpi_instrument, delegator):
                     # failed trigger
                     results[ch.get_name()] = None
             elif ch.get_attribute('u2300a_type') == 'trigger_control':
-                if channel.get_attribute(
+                if ch.get_attribute(
                         'trigger_config_type') == 'trigger_channel':
                     results[ch.get_name()] = ch.read()
                 else:
@@ -776,6 +922,11 @@ class u2300a_scope(scpi_instrument, delegator):
         return results
 
     def get_all_settings(self):
+        """Return the all settings.
+
+        Returns:
+            Result value.
+        """
         result = results_ord_dict()
         result["syst_error"] = self.get_interface().ask("SYST:ERR?")
         result["trigger_condition"] = self.get_interface().ask(
@@ -801,8 +952,17 @@ class u2300a_scope(scpi_instrument, delegator):
 
 
 class u2300a_datalogger(u2300a_scope):
+    """U2300a_datalogger (u2300a_scope subclass)."""
     def __init__(self, interface_visa, table_name,
                  database_file="data_log.sqlite", timeout=10):
+        """Initialize u2300a_datalogger.
+
+        Args:
+            database_file: Database file.
+            interface_visa: VISA interface instance.
+            table_name: Database table name.
+            timeout: Timeout in seconds.
+        """
         super().__init__(
             interface_visa=interface_visa,
             force_trigger=False,
@@ -817,6 +977,14 @@ class u2300a_datalogger(u2300a_scope):
         self.set_burst_mode(True)
 
     def log(self, record_time=0):
+        """Perform log operation.
+
+        Args:
+            record_time: Record time.
+
+        Raises:
+            Exception: On error condition.
+        """
         self.logger.add_data_channels(
             {ch.get_name(): None for ch in self.get_all_channels_list()})
         self.logger.new_table(
@@ -925,6 +1093,18 @@ class u2300a_datalogger(u2300a_scope):
             f'WAVeform:POINts {self._point_count}')  # Target ~1s update??
 
     def read_delegated_channel_list(self, channel_list):
+        """Return read delegated channel list result.
+
+        Args:
+            channel_list: Channel list.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+            u2300aBufferOverflowError: On error condition.
+        """
         if self.stopped and not self.stopping:  # This is just flushing the python queue into the database without talking to the instrument anymore. RHM
             return self._read_assist(channel_list)
         data_in_waiting = bool(len(next(iter(self.data_buffer.values()))))
@@ -998,9 +1178,15 @@ class u2300a_datalogger(u2300a_scope):
 
 
 class u2300a_DVM(scpi_instrument, delegator):
-    '''superclass of all Keysight U2300A series instruments treated as DVM'''
+    """Superclass of all Keysight U2300A series instruments treated as DVM."""
 
     def __init__(self, interface_visa, timeout=1):
+        """Initialize u2300a_ d v m.
+
+        Args:
+            interface_visa: VISA interface instance.
+            timeout: Timeout in seconds.
+        """
         # self._base_name = str(type(self))
         self._base_name = 'u23xx_DVM_DAQ'
         scpi_instrument.__init__(self, f"{self._base_name} @ {interface_visa}")
@@ -1019,11 +1205,17 @@ class u2300a_DVM(scpi_instrument, delegator):
 
     def check_errors(self):
         # Check that nothing has gone wrong with configuration
+        """Perform check errors operation.
+
+        Raises:
+            Exception: On error condition.
+        """
         err = self.get_interface().ask("SYST:ERR?")
         if err != '+0,"No error"':
             raise Exception(f"U2300: {err}")
 
     def calibrate(self):
+        """Perform calibrate operation."""
         print(f'Begin {self.get_name()} calibration.')
         self.get_interface().write('CALibration:BEGin')
         self.get_interface().ask('*OPC?')
@@ -1031,14 +1223,23 @@ class u2300a_DVM(scpi_instrument, delegator):
 
     def add_channel_ain_single_ended_bipolar(
             self, channel_name, channel_num, sig_range):
-        '''Add single ended, bipolar, channel to u23xx instrument.
+        """Add single ended, bipolar, channel to u23xx instrument.
+
             TODO: Better docstring.
-        '''
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_num: Physical channel number.
+            sig_range: Sig range.
+
+        Returns:
+            Result value.
+        """
         assert channel_num not in self._configured_channels
-        assert channel_num in self._ai_channels['single_ended']
+        assert channel_num in self._ai_channels['single_ended']  # pylint: disable=E1101; _ai_channels is a class-level dict defined in hardware-specific mixin subclasses (e.g. u2331a_base) combined via multiple inheritance
         assert channel_num - \
             max(self._ai_channels['differential']) + \
-            1 - 100 not in self._configured_channels
+            1 - 100 not in self._configured_channels  # pylint: disable=E1101; _ai_channels is provided by hardware-specific mixin subclasses at class level
         new_ch = channel(channel_name, read_function=self.dummy_read)
         self._configured_channels[channel_num] = new_ch
         new_ch.set_attribute('internal_address', channel_num)
@@ -1057,9 +1258,18 @@ class u2300a_DVM(scpi_instrument, delegator):
 
     def add_channel_ain_diff_bipolar(
             self, channel_name, channel_num, sig_range):
-        '''Add differential, bipolar, channel to u23xx instrument.
+        """Add differential, bipolar, channel to u23xx instrument.
+
             TODO: Better docstring.
-        '''
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_num: Physical channel number.
+            sig_range: Sig range.
+
+        Returns:
+            Result value.
+        """
         assert channel_num not in self._configured_channels
         assert channel_num in self._ai_channels['differential']
         assert channel_num + \
@@ -1081,14 +1291,23 @@ class u2300a_DVM(scpi_instrument, delegator):
 
     def add_channel_ain_single_ended_unipolar(
             self, channel_name, channel_num, sig_range):
-        '''Add single ended, unipolar, channel to u23xx instrument.
+        """Add single ended, unipolar, channel to u23xx instrument.
+
             TODO: Better docstring.
-        '''
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_num: Physical channel number.
+            sig_range: Sig range.
+
+        Returns:
+            Result value.
+        """
         assert channel_num not in self._configured_channels
-        assert channel_num in self._ai_channels['single_ended']
+        assert channel_num in self._ai_channels['single_ended']  # pylint: disable=E1101; _ai_channels is a class-level dict defined in hardware-specific mixin subclasses (e.g. u2331a_base) combined via multiple inheritance
         assert channel_num - \
             max(self._ai_channels['differential']) + \
-            1 - 100 not in self._configured_channels
+            1 - 100 not in self._configured_channels  # pylint: disable=E1101; _ai_channels is provided by hardware-specific mixin subclasses at class level
         new_ch = channel(channel_name, read_function=self.dummy_read)
         self._configured_channels[channel_num] = new_ch
         new_ch.set_attribute('internal_address', channel_num)
@@ -1106,9 +1325,18 @@ class u2300a_DVM(scpi_instrument, delegator):
 
     def add_channel_ain_diff_unipolar(
             self, channel_name, channel_num, sig_range):
-        '''Add differential, unipolar, channel to u23xx instrument.
+        """Add differential, unipolar, channel to u23xx instrument.
+
             TODO: Better docstring.
-        '''
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_num: Physical channel number.
+            sig_range: Sig range.
+
+        Returns:
+            Result value.
+        """
         assert channel_num not in self._configured_channels
         assert channel_num in self._ai_channels['differential']
         assert channel_num + \
@@ -1130,8 +1358,23 @@ class u2300a_DVM(scpi_instrument, delegator):
 
     def add_channel_current_sense(
             self, channel_name, channel_num, sig_range='AUTO', gain=1, resistance=None):
-        '''Configure channel to return current measurement by scaling voltage measured across
-            user-supplied sense resistor.  Specify either gain or its reciprocal resistance.'''
+        """Configure channel to return current measurement by scaling voltage measured across.
+
+            user-supplied sense resistor.  Specify either gain or its reciprocal resistance.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_num: Physical channel number.
+            gain: Gain value.
+            resistance: Resistance.
+            sig_range: Sig range.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         channel = self.add_channel_ain_diff_bipolar(channel_name=channel_name,
                                                     channel_num=channel_num,
                                                     sig_range=sig_range)
@@ -1150,6 +1393,11 @@ class u2300a_DVM(scpi_instrument, delegator):
         return channel
 
     def dummy_read(self):
+        """Perform dummy read operation.
+
+        Raises:
+            Exception: On error condition.
+        """
         raise Exception(
             'Delegation failure. Contact PyICe-developers@analog.com for more information.')
 
@@ -1226,6 +1474,14 @@ class u2300a_DVM(scpi_instrument, delegator):
             f'SENSe:VOLTage:STYPe {sig_mode}, (@{channel.get_attribute("internal_address")})')
 
     def read_delegated_channel_list(self, channel_list):
+        """Return read delegated channel list result.
+
+        Args:
+            channel_list: Channel list.
+
+        Returns:
+            Result value.
+        """
         channels = [
             f'{ch.get_attribute("internal_address")}' for ch in channel_list]
         ch_str = f'(@{",".join(channels)})'
@@ -1254,7 +1510,7 @@ class u2300a_DVM(scpi_instrument, delegator):
 
 
 class u2331a_base():
-    '''12-bit analog input resolution with sampling rate up to 3 MSa/s per single channel'''
+    """12-bit analog input resolution with sampling rate up to 3 MSa/s per single channel."""
     # NOTE: LSB byte first, with upper nibble containing data. Reconstructed
     # word needs 4-bit right shift to recover 12-bit ADC code.
     _ai_channels = {}
@@ -1353,19 +1609,19 @@ class u2331a_base():
 
 
 class u2331a(u2300a_scope, u2331a_base):
-    '''Scope version of u2331'''
+    """Scope version of u2331."""
 
 
 class u2331a_DVM(u2300a_DVM, u2331a_base):
-    '''Voltmeter version of u2331'''
+    """Voltmeter version of u2331."""
 
 
 class u2331a_datalogger(u2300a_datalogger, u2331a_base):
-    '''Continuous datalogger version of u2331'''
+    """Continuous datalogger version of u2331."""
 
 
 class u2351a():
-    '''16-bit analog input resolution with sampling rate of 250 kSa/s'''
+    """16-bit analog input resolution with sampling rate of 250 kSa/s."""
     # ROUTe:SCAN <ch_list>
     _ai_channels_se = range(101, 116 + 1)
     _ai_channels_diff = range(101, 108 + 1)
@@ -1375,7 +1631,7 @@ class u2351a():
 
 
 class u2352a_base():
-    '''16-bit analog input resolution with sampling rate of 250 kSa/s'''
+    """16-bit analog input resolution with sampling rate of 250 kSa/s."""
     # ROUTe:SCAN <ch_list>
     _ai_channels_se = range(101, 116 + 1)
     _ai_channels_diff = range(101, 108 + 1)
@@ -1385,7 +1641,7 @@ class u2352a_base():
 
 
 class u2353a_base():
-    '''16-bit analog input resolution with sampling rate of 500 kSa/s'''
+    """16-bit analog input resolution with sampling rate of 500 kSa/s."""
     # ROUTe:SCAN <ch_list>
     _ai_channels_se = range(101, 116 + 1)
     _ai_channels_diff = range(101, 108 + 1)
@@ -1395,7 +1651,7 @@ class u2353a_base():
 
 
 class u2354a_base():
-    '''16-bit analog input resolution with sampling rate of 500 kSa/s'''
+    """16-bit analog input resolution with sampling rate of 500 kSa/s."""
     # ROUTe:SCAN <ch_list>
     _ai_channels_se = range(101, 116 + 1)
     _ai_channels_diff = range(101, 108 + 1)
@@ -1405,7 +1661,7 @@ class u2354a_base():
 
 
 class u2355a_base():
-    '''16-bit analog input resolution with sampling rate of 250 kSa/s'''
+    """16-bit analog input resolution with sampling rate of 250 kSa/s."""
     # ROUTe:SCAN <ch_list>
     _ai_channels_se = range(101, 164 + 1)
     _ai_channels_diff = range(101, 132 + 1)
@@ -1415,7 +1671,7 @@ class u2355a_base():
 
 
 class u2356a_base():
-    '''16-bit analog input resolution with sampling rate of 500 kSa/s'''
+    """16-bit analog input resolution with sampling rate of 500 kSa/s."""
     # ROUTe:SCAN <ch_list>
     _ai_channels_se = range(101, 164 + 1)
     _ai_channels_diff = range(101, 132 + 1)

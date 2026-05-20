@@ -1,3 +1,4 @@
+"""Tutorial 2 logging module."""
 # ========================================
 # TUTORIAL 2 Logging Data to a SQLite File
 # ========================================

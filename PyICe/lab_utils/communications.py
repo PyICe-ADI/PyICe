@@ -1,3 +1,4 @@
+"""Communications utility."""
 import smtplib
 import re
 import os
@@ -8,16 +9,27 @@ from PyICe.lab_utils.clean_unicode import clean_unicode
 
 
 class email(object):
-    '''sends email to specified destination from ADI mail server. Only works on ADI trusted internal network.'''
+    """Sends email to specified destination from ADI mail server. Only works on ADI trusted internal network."""
 
     def __init__(self, destination):  # ADI internal network only
-        '''destination is the recipient's email address'''
+        """Destination is the recipient's email address.
+
+        Args:
+            destination: Destination.
+        """
         self.destination = destination
         self.sender = 'PyICe_noreply@analog.com'
 
     def send_raw(self, body, subject=None, attachment_filenames=None,
                  attachment_MIMEParts=None, _subtype='html'):
-        '''compose MIME message with proper headers and send'''
+        """Compose MIME message with proper headers and send.
+
+        Args:
+            attachment_MIMEParts: Attachment mimeparts.
+            attachment_filenames: Attachment filenames.
+            body: Body.
+            subject: Subject.
+        """
         if attachment_filenames is None:
             attachment_filenames = []
         if attachment_MIMEParts is None:
@@ -52,6 +64,14 @@ class email(object):
 
     def send(self, body, subject=None, attachment_filenames=None,
              attachment_MIMEParts=None):
+        """Perform send operation.
+
+        Args:
+            attachment_MIMEParts: Attachment mimeparts.
+            attachment_filenames: Attachment filenames.
+            body: Body.
+            subject: Subject.
+        """
         self.send_html_monospace(
             body=body,
             subject=subject,
@@ -60,6 +80,14 @@ class email(object):
 
     def send_html_monospace(self, body, subject=None,
                             attachment_filenames=None, attachment_MIMEParts=None):
+        """Perform send html monospace operation.
+
+        Args:
+            attachment_MIMEParts: Attachment mimeparts.
+            attachment_filenames: Attachment filenames.
+            body: Body.
+            subject: Subject.
+        """
         if attachment_filenames is None:
             attachment_filenames = []
         if attachment_MIMEParts is None:
@@ -104,10 +132,18 @@ class email(object):
 
 
 class sms(email):
-    '''Extends email class to send sms messages through several carriers' email to sms gateways'''
+    """Extends email class to send sms messages through several carriers' email to sms gateways."""
 
     def __init__(self, mobile_number, carrier):
-        '''carrier is 'verizon', 'tmobile', 'att', 'sprint', or 'nextel' '''
+        """Carrier is 'verizon', 'tmobile', 'att', 'sprint', or 'nextel'.
+
+        Args:
+            carrier: Carrier.
+            mobile_number: Mobile number.
+
+        Raises:
+            Exception: On error condition.
+        """
         sms_email = ''
         for digit in str(mobile_number):
             if digit.isdigit():  # remove dashes, dots, spaces, and whatever other non-digits came in
@@ -135,6 +171,13 @@ class sms(email):
         email.__init__(self, sms_email)
 
     def send(self, body, subject=None, attachments=[]):
+        """Perform send operation.
+
+        Args:
+            attachments: Attachments.
+            body: Body.
+            subject: Subject.
+        """
         email.send(
             self,
             clean_unicode(body) if body is not None else None,

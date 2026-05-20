@@ -1,3 +1,4 @@
+"""Firmata instrument driver."""
 from ..lab_core import *  # noqa: F403
 import time
 
@@ -6,8 +7,8 @@ import time
 
 
 class firmata(instrument):
-    '''
-    Firmata is a protocol for communicating with microcontrollers from software on a host computer.
+    """Firmata is a protocol for communicating with microcontrollers from software on a host computer.
+
     The protocol can be implemented in firmware on any microcontroller architecture as well as software on any host computer software package.
     The Arduino repository described here is a Firmata library for Arduino and Arduino-compatible devices. If you would like to contribute to Firmata, please see the Contributing section below.
 
@@ -28,15 +29,19 @@ class firmata(instrument):
     https://github.com/firmata/arduino/blob/master/readme.md
 
     https://github.com/MrYsLab/PyMata/blob/master/README.md
-    '''
-
+    """
     def __init__(self, serial_port_name):
-        '''
-        1) note that this makes its own serial object. Can't use master.get_raw_serial_interface and this will read/write in its own thread.
+        """1) note that this makes its own serial object. Can't use master.get_raw_serial_interface and this will read/write in its own thread.
 
         2) inherit from delegator and aggregate pin states with single query???
 
-        '''
+
+        Args:
+            serial_port_name: Serial port name.
+
+        Raises:
+            ImportError: On error condition.
+        """
         print("Consider switching from Firmata to Telemetrix")
         try:
             from PyMata.pymata import PyMata
@@ -48,12 +53,12 @@ class firmata(instrument):
             raise e
 
         class PyMata_Extensions(PyMata):
-            """
-            This sub class simply adds a method to reset serial commuications to the base class PyMata.
+            """This sub class simply adds a method to reset serial commuications to the base class PyMata.
+
             Its done this way so when PyMata is updated to a newer version we keep the added functionality.
             """
-
             def reset_serial_communications(self):
+                """Perform reset serial communications operation."""
                 if self.verbose:
                     print('Resetting Serial Communications')
                 """
@@ -182,7 +187,8 @@ class firmata(instrument):
 
     def add_channel_digital_input(
             self, channel_name, pin, enable_pullup=False):
-        '''Digital input pin.
+        """Digital input pin.
+
         Use higher-numbered digital pin aliasing to use analog pins as digital.
         For Arduno Uno/Linduino:
         A0=14
@@ -193,7 +199,15 @@ class firmata(instrument):
         A5=19
 
         Set enable_pullup=True to enable on-board uC pullups. (~20k in Arduino Uno/Linduino AtMega328P)
-        '''
+
+        Args:
+            channel_name: Name for the new channel.
+            enable_pullup: Enable pullup.
+            pin: Pin number.
+
+        Returns:
+            Result value.
+        """
         new_channel = integer_channel(
             channel_name,
             size=1,
@@ -213,7 +227,8 @@ class firmata(instrument):
         # raise Exception('Not yet implemented')
 
     def add_channel_digital_output(self, channel_name, pin):
-        '''Digital output pin.
+        """Digital output pin.
+
         analog_pin argument doesn't function. Use higher-numbered digital pin aliasing to use analog pins as digital.
         For Arduno Uno/Linduino:
         A0=14
@@ -222,7 +237,14 @@ class firmata(instrument):
         A3=17
         A4=18
         A5=19
-        '''
+
+        Args:
+            channel_name: Name for the new channel.
+            pin: Pin number.
+
+        Returns:
+            Result value.
+        """
         new_channel = integer_channel(
             channel_name,
             size=1,
@@ -242,7 +264,15 @@ class firmata(instrument):
         # raise Exception('Not yet implemented')
 
     def add_channel_analog_input(self, channel_name, pin):
-        '''Analog input pin.'''
+        """Analog input pin.
+
+        Args:
+            channel_name: Name for the new channel.
+            pin: Pin number.
+
+        Returns:
+            Result value.
+        """
         new_channel = integer_channel(channel_name, size=10, read_function=lambda: self.firmata_board.analog_read(
             pin))  # don't really know size, but it doesn't matter. 10-bit answer on Arduino hardware
         new_channel.set_attribute('channel_type', 'ANALOG_INPUT')
@@ -274,9 +304,17 @@ class firmata(instrument):
         return self._add_channel(new_channel)
 
     def add_channel_pwm_output(self, channel_name, pin):
-        '''PWM output pin.
+        """PWM output pin.
+
         Arduino UNO (Atmega328) compatible with digital pins 3,5,6,9,10,11.
-        '''
+
+        Args:
+            channel_name: Name for the new channel.
+            pin: Pin number.
+
+        Returns:
+            Result value.
+        """
         new_channel = integer_channel(
             channel_name,
             size=8,
@@ -318,19 +356,44 @@ class firmata(instrument):
         return self._add_channel(new_channel)
 
     def add_channel_servo(self, channel_name, pin):
-        '''RC servo control (544ms-2400ms PWM) output.'''
+        """RC servo control (544ms-2400ms PWM) output.
+
+        Args:
+            channel_name: Name for the new channel.
+            pin: Pin number.
+
+        Raises:
+            Exception: On error condition.
+        """
         raise Exception('Not yet implemented')
         # self.firmata_board.servo_config(pin, min_pulse=544, max_pulse=2400)
 
     def add_channel_digital_latch(
             self, channel_name, digital_input_channel, threshold_high=True):
-        '''Latch transient signals on a digital input pin. Software logic appears to be edge-triggered.
+        """Latch transient signals on a digital input pin. Software logic appears to be edge-triggered.
+
         Input pin channel must have been previously configured with firmata.add_channel_digital_input().
         Pass channel object instance to digital_input_channel argument.
         latches rising edge by default. Set threshold_high=False to set latch sensitivity to logic low.
         this doesn't appear to have access to analog pins (A0-A5) used as digital IO.
-        '''
+
+        Args:
+            channel_name: Name for the new channel.
+            digital_input_channel: Digital input channel.
+            threshold_high: Threshold high.
+
+        Returns:
+            Result value.
+        """
         def read_latch_status(latch_channel):
+            """Return read latch status result.
+
+            Args:
+                latch_channel: Latch channel.
+
+            Returns:
+                Result value.
+            """
             latch_status = self.firmata_board.get_digital_latch_data(
                 latch_channel.get_attribute('pin'))
             latch_state = True if latch_status[1] == self.firmata_board.LATCH_LATCHED else False
@@ -364,13 +427,34 @@ class firmata(instrument):
 
     def add_channel_analog_latch(
             self, channel_name, analog_input_channel, threshold, threshold_type='>'):
-        '''Latch transient signals on an analog (ADC) input pin.
+        """Latch transient signals on an analog (ADC) input pin.
+
         Input pin channel must have been previously configured with firmata.add_channel_analog_input().
         Pass channel object instance to analog_input_channel argument.
         threshold is in Volts, assuming 5V Arduino ADC full scale (1023). Change format setting of _thresold channel to use raw (0-1023) or 3.3V ADC scales.
         latches high signal levels by default. Set threshold_type='>=', '<' or  to set latch sensitivity to logic low.
-        '''
+
+        Args:
+            analog_input_channel: Analog input channel.
+            channel_name: Name for the new channel.
+            threshold: Threshold.
+            threshold_type: Threshold type.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         def read_latch_status(latch_channel):
+            """Return read latch status result.
+
+            Args:
+                latch_channel: Latch channel.
+
+            Returns:
+                Result value.
+            """
             latch_status = self.firmata_board.get_analog_latch_data(
                 latch_channel.get_attribute('pin'))
             latch_state = True if latch_status[1] == self.firmata_board.LATCH_LATCHED else False
@@ -438,4 +522,9 @@ class firmata(instrument):
         return self._add_channel(latch_channel)
 
     def reset_serial_communications(self):
+        """Return reset serial communications result.
+
+        Returns:
+            Result value.
+        """
         return (self.firmata_board.reset_serial_communications())

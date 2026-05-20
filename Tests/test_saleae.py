@@ -1,8 +1,10 @@
+"""Tests for saleae."""
 
-from PyICe import lab_instruments, lab_core
+from PyICe import lab_core
+from PyICe.lab_instruments.saleae import saleae
 
 m = lab_core.master()
-s = lab_instruments.saleae()
+s = saleae()
 for ch in range(8):
     s.add_channel_scalar("ch{}".format(ch), ch)
 # for ch in range(8,16):

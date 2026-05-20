@@ -1,5 +1,7 @@
+"""Present menu utility."""
 def present_menu(intro_msg, prompt_msg, item_list):
     """Command-line interface. Presents item_list as a menu to the user, and prompts for a choice.
+
     For example:
 
         sweep_dac = dac_type(name="AD5693R DAC", bits=16, input_channel_name="sweep_dac", output_meter_channel_name="sweep_dac_meter")
@@ -24,6 +26,14 @@ def present_menu(intro_msg, prompt_msg, item_list):
     so it is important that each item in item_list has a descriptive __str__() method.
 
     Returns the chosen item from item_list.
+
+    Args:
+        intro_msg: Intro msg.
+        item_list: Item list.
+        prompt_msg: Prompt msg.
+
+    Returns:
+        Result value.
     """
     assert hasattr(item_list, "__getitem__") and hasattr(item_list, "__len__")
     assert len(item_list) > 0 and hasattr(item_list[0], "__str__")

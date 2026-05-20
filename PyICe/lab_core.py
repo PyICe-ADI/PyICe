@@ -1,11 +1,10 @@
-'''
-Channel and Threading Core Framework
+"""Channel and Threading Core Framework.
+
 ====================================
 
 changes to this file should be minimal!
 
-'''
-
+"""
 import logging
 import copy
 import os
@@ -60,7 +59,7 @@ if debug_logging.getEffectiveLevel() > print_logging_level:
 
 
 class results_ord_dict(collections.OrderedDict):
-    '''Ordered dictionary for channel results reporting with pretty print addition.
+    """Ordered dictionary for channel results reporting with pretty print addition.
 
     >>> from PyICe.lab_core import results_ord_dict
     >>> d = results_ord_dict([('voltage', 3.3), ('current', 0.01)])
@@ -68,9 +67,13 @@ class results_ord_dict(collections.OrderedDict):
     voltage: 3.3
     current: 0.01
     <BLANKLINE>
-    '''
-
+    """
     def __str__(self):
+        """Return column-aligned key: value listing of all results.
+
+        Returns:
+            Result value.
+        """
         s = ''
         max_channel_name_length = 0
         for k, v in self.items():
@@ -85,50 +88,94 @@ class results_ord_dict(collections.OrderedDict):
         return s
 
     def __getstate__(self):
+        """Return empty state for pickling support.
+
+        Returns:
+            Result value.
+        """
         return {}
 
 
 class delegator(object):
-    '''base class for a read delegator, this is the lowest level class in the library.
-    You will probably never use it directly.'''
+    """Base class for a read delegator, this is the lowest level class in the library.
 
+    You will probably never use it directly.
+    """
     def __init__(self):
+        """Initialize delegator with self-delegation, threading enabled, and empty interface list."""
         self.set_delegator(self)
         self._threadable = True
         self._interfaces = []
 
     def set_delegator(self, delegator):
+        """Set the delegator that handles read/write operations for this object.
+
+        Args:
+            delegator: Delegator.
+        """
         self._delegator = delegator
 
     def get_delegator(self):
+        """Return the current delegator.
+
+        Returns:
+            Result value.
+        """
         return self._delegator
 
     def set_allow_threading(self, state=True):
+        """Enable or disable threaded read operations.
+
+        Args:
+            state: State.
+        """
         self._threadable = state
 
     def threadable(self):
+        """Return whether this delegator allows threaded reads.
+
+        Returns:
+            Result value.
+        """
         return self._threadable
 
     def resolve_delegator(self):
+        """Walk the delegator chain and return the root delegator.
+
+        Returns:
+            Result value.
+        """
         if self._delegator == self:
             return self._delegator
         else:
             return self._delegator.resolve_delegator()
 
     def add_interface(self, interface):
+        """Register a communication interface with this delegator.
+
+        Args:
+            interface: Interface.
+        """
         self._interfaces.append(interface)
 
     def get_interfaces(self):
+        """Return the set of interfaces from the root delegator.
+
+        Returns:
+            Result value.
+        """
         if self.get_delegator() == self:
             return set(self._interfaces)
         else:
             return self.resolve_delegator().get_interfaces()
 
     def lock_interfaces(self):
+        """Acquire locks on all registered interfaces."""
         for interface in self._interfaces:
             interface.lock()
 
     def unlock_interfaces(self):
+        """Release locks on all registered interfaces."""
         for interface in self._interfaces:
             interface.unlock()
 
@@ -137,6 +184,14 @@ class delegator(object):
         # OVERLOAD THIS FUNCTION
         # takes a list of (channels, value) tuples
         # writes each channel to its corresponding value
+        """Perform write delegated channel list operation.
+
+        Args:
+            channel_value_list: Channel value list.
+
+        Raises:
+            Exception: On error condition.
+        """
         try:
             self.lock_interfaces()
             for (channel, value) in channel_value_list:
@@ -160,6 +215,14 @@ class delegator(object):
         # OVERLOAD THIS FUNCTION
         # takes a list of channels
         # returns a dictionary of read data by channel name
+        """Return read delegated channel list result.
+
+        Args:
+            channel_list: Channel list.
+
+        Returns:
+            Result value.
+        """
         results = results_ord_dict()
         for channel in channel_list:
             results[channel.get_name()] = channel.read_without_delegator()
@@ -167,16 +230,34 @@ class delegator(object):
 
 
 def retfirst(t):
+    """Return the first element of a tuple.
+
+    Args:
+        t: T.
+
+    Returns:
+        Result value.
+    """
     return (t[0])
 
 
 class channel(delegator):
-    '''The base channel object.
+    """The base channel object.
 
-        It can be read and/or written. Attributes can also be stored in it.
-        For example channel number in a multi channel instrument'''
-
+    It can be read and/or written. Attributes can also be stored in it.
+    For example channel number in a multi channel instrument
+    """
     def __init__(self, name, read_function=None, write_function=None):
+        """Initialize a channel with a name and optional read or write function.
+
+        Args:
+            name: Channel name (must match [_A-Za-z][_a-zA-Z0-9]*).
+            read_function: Callable that returns the channel value, or None.
+            write_function: Callable that accepts a value to write, or None.
+
+        Raises:
+            Exception: If both read_function and write_function are provided.
+        """
         delegator.__init__(self)
         self.set_name(name)
         if read_function is not None and write_function is not None:
@@ -214,14 +295,23 @@ class channel(delegator):
         self.set_display_format_str()
 
     def __str__(self):
+        """Return string representation.
+
+        Returns:
+            Result value.
+        """
         return "channel Object: {}".format(self.get_name())
 
     def get_name(self):
-        '''return channel name'''
+        """Return channel name.
+
+        Returns:
+            Result value.
+        """
         return self.name
 
     def set_name(self, name):
-        '''rename channel
+        """Rename channel.
 
         >>> from PyICe.lab_core import channel
         >>> ch = channel(name='my_chan')
@@ -229,9 +319,18 @@ class channel(delegator):
         'new_name'
         >>> ch.set_name('123bad')
         Traceback (most recent call last):
-            ...
+        ...
         PyICe.lab_core.ChannelNameException: Bad Channel Name "123bad"
-        '''
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+
+        Raises:
+            ChannelNameException: On error condition.
+        """
         name = str(name)
         if not re.match("[_A-Za-z][_a-zA-Z0-9]*$", name):
             raise ChannelNameException('Bad Channel Name "{}"'.format(name))
@@ -242,39 +341,79 @@ class channel(delegator):
         self._type_affinity = type
 
     def get_type_affinity(self):
+        """Return the type affinity.
+
+        Returns:
+            Result value.
+        """
         return self._type_affinity
 
     def get_size(self):
+        """Return the size.
+
+        Returns:
+            Result value.
+        """
         return None
 
     def set_write_delay(self, delay):
-        '''sets the automatic delay in seconds after channel write'''
+        """Sets the automatic delay in seconds after channel write.
+
+        Args:
+            delay: Delay time in seconds.
+
+        Returns:
+            Result value.
+        """
         self._write_delay = delay
         self.set_attribute("write_delay", self._write_delay)
         return self
 
     def get_write_delay(self):
-        '''return automatic delay after channel write'''
+        """Return automatic delay after channel write.
+
+        Returns:
+            Result value.
+        """
         return self._write_delay
 
     def get_description(self):
-        '''return channel description string.'''
+        """Return channel description string.
+
+        Returns:
+            Result value.
+        """
         return self._description
 
     def set_description(self, description):
-        '''sets the channel description. argument is string
+        """Sets the channel description. argument is string.
 
         >>> from PyICe.lab_core import channel
         >>> ch = channel(name='vout')
         >>> ch.set_description('Output voltage').get_description()
         'Output voltage'
-        '''
+
+        Args:
+            description: Description string.
+
+        Returns:
+            Result value.
+        """
         self._description = description
         return self
 
     def read(self):
         # setting delegate to false is reserved for the delegator and should
         # never be used otherwise
+        """Read and return the current channel value.
+
+        Returns:
+            Result value.
+
+        Raises:
+            ChannelAccessException: On error condition.
+            Exception: On error condition.
+        """
         if not self.is_readable():
             raise ChannelAccessException(
                 f'Read a non-readable channel:{self.name}')
@@ -291,6 +430,19 @@ class channel(delegator):
 
     def read_without_delegator(self, force_data=False, data=None, **kwargs):
         # do not use this function unless you are the delegator
+        """Return read without delegator result.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            data: Data to write.
+            force_data: Force data.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         self.lock_interfaces()
         if force_data:
             result = data
@@ -339,6 +491,19 @@ class channel(delegator):
         return result
 
     def write(self, value):
+        """Write a value to the channel.
+
+        Args:
+            value: Value to set.
+
+        Returns:
+            Result value.
+
+        Raises:
+            ChannelAccessException: On error condition.
+            ChannelValueException: On error condition.
+            Exception: On error condition.
+        """
         if not self.is_writeable():
             raise ChannelAccessException('Wrote a non-writeable channel')
         self.lock_interfaces()
@@ -402,13 +567,22 @@ class channel(delegator):
         return value
 
     def write_confirm(self, value):
-        '''
-        Read back value after writing to make sure it "took".
+        """Read back value after writing to make sure it "took".
+
         This is only useful for register-type channels that model remote memory.
         Basic writable channels pass this check trivially.
         returns value
         raises ChannelValueException
-        '''
+
+        Args:
+            value: Value to set.
+
+        Returns:
+            Result value.
+
+        Raises:
+            ChannelValueException: On error condition.
+        """
         v_w = self.write(value)
         v_r = self.read()
         try:
@@ -427,7 +601,16 @@ class channel(delegator):
         return v_w
 
     def add_preset(self, preset_value, preset_description=None):
-        '''base channels only have unnamed presets (not enumerations)'''
+        """Base channels only have unnamed presets (not enumerations).
+
+        Args:
+            preset_description: Human-readable description of the preset.
+            preset_value: Value to associate with the preset.
+
+        Raises:
+            ChannelAccessException: On error condition.
+            ChannelException: On error condition.
+        """
         if not self.is_writeable():
             raise ChannelAccessException(
                 'Basic channel presets are write-only.')
@@ -438,37 +621,76 @@ class channel(delegator):
         self._preset_descriptions[str(preset_value)] = preset_description
 
     def get_presets(self):
-        '''Returns a list of preset names'''
+        """Returns a list of preset names.
+
+        Returns:
+            Result value.
+        """
         return sorted(list(self._presets.keys()), key=lambda s: str(s).upper())
 
     def get_presets_dict(self):
-        '''Returns a dictionary of preset names and value'''
+        """Returns a dictionary of preset names and value.
+
+        Returns:
+            Result value.
+        """
         return results_ord_dict(self._presets)
 
     def get_preset_description(self, preset_name):
-        '''Returns description associated with preset_name'''
+        """Returns description associated with preset_name.
+
+        Args:
+            preset_name: Name of the preset.
+
+        Returns:
+            Result value.
+        """
         return self._preset_descriptions[preset_name]
 
     def has_preset_descriptions(self):
-        '''returns boolean value of whether any presets have a description'''
+        """Returns boolean value of whether any presets have a description.
+
+        Returns:
+            Result value.
+        """
         return set(self._preset_descriptions.values()) != set([None])
 
     def get_write_history(self):
+        """Return the write history.
+
+        Returns:
+            Result value.
+        """
         return list(self._write_history)
 
     def delay(self, dly_time):
-        '''delay method. Broken out of write method so that it can be sub-classed if necessary.'''
+        """Delay method. Broken out of write method so that it can be sub-classed if necessary.
+
+        Args:
+            dly_time: Dly time.
+        """
         if dly_time > 5:
             egg_timer(dly_time)
         else:
             time.sleep(dly_time)
 
     def write_unformatted(self, value):
-        '''bypass unformatting stub. Only useful for integer and register channels. intended for use by GUI.'''
+        """Bypass unformatting stub. Only useful for integer and register channels. intended for use by GUI.
+
+        Args:
+            value: Value to set.
+        """
         self.write(value)
 
     def _set_value(self, value):
-        '''private method to set channel cached value without actualy _write call or any checking for writability, limits, etc.'''
+        """Private method to set channel cached value without actualy _write call or any checking for writability, limits, etc.
+
+        Args:
+            value: Value to set.
+
+        Returns:
+            Result value.
+        """
         self._previous_value = self._value
         self._value = value
         try:
@@ -489,7 +711,11 @@ class channel(delegator):
         return value
 
     def is_changed(self):
-        '''returns boolean status of whether channel value is different from previously read/written value (once per change)'''
+        """Returns boolean status of whether channel value is different from previously read/written value (once per change).
+
+        Returns:
+            Result value.
+        """
         try:
             changed = (self.cached_value != self.previous_cached_value)
         except ValueError:
@@ -512,30 +738,52 @@ class channel(delegator):
         return False
 
     def set_attribute(self, attribute_name, value):
-        '''set attribute_name to value
+        """Set attribute_name to value.
+
         value can be retrived later with get_attribute(attribute_name)
 
         >>> from PyICe.lab_core import channel
         >>> ch = channel(name='temp')
         >>> ch.set_attribute('units', 'degC').get_attribute('units')
         'degC'
-        '''
+
+        Args:
+            attribute_name: Attribute name.
+            value: Value to set.
+
+        Returns:
+            Result value.
+        """
         self._attributes[attribute_name] = value
         return self
 
     def get_attribute(self, attribute_name):
-        '''retrieve value previously set with set_attribute(attribute_name, value)'''
+        """Retrieve value previously set with set_attribute(attribute_name, value).
+
+        Args:
+            attribute_name: Attribute name.
+
+        Returns:
+            Result value.
+
+        Raises:
+            ChannelAttributeException: On error condition.
+        """
         if attribute_name not in list(self._attributes.keys()):
             raise ChannelAttributeException
         return self._attributes[attribute_name]
 
     def get_attributes(self):
-        '''return dictionary of all channel attributes previously set with set_attribute(attribute_name, value)'''
+        """Return dictionary of all channel attributes previously set with set_attribute(attribute_name, value).
+
+        Returns:
+            Result value.
+        """
         return results_ord_dict(
             sorted(list(self._attributes.items()), key=lambda t: t[0]))
 
     def set_category(self, category):
-        '''each channel may be a member of a single category for sorting purposes. category argument is usually a string
+        """Each channel may be a member of a single category for sorting purposes. category argument is usually a string.
 
         >>> from PyICe.lab_core import channel
         >>> ch = channel(name='vout')
@@ -543,69 +791,133 @@ class channel(delegator):
         'power'
         >>> ch.set_category(123)
         Traceback (most recent call last):
-            ...
+        ...
         TypeError: Category must be a string
-        '''
+
+        Args:
+            category: Category.
+
+        Returns:
+            Result value.
+
+        Raises:
+            TypeError: On error condition.
+        """
         if not isinstance(category, str):
             raise TypeError("Category must be a string")
         self._category = category
         return self
 
     def get_category(self):
-        '''returns category membership.  should be a string.'''
+        """Returns category membership.  should be a string.
+
+        Returns:
+            Result value.
+        """
         return self._category
 
     def add_tag(self, tag):
-        '''each channel may receive several tags for sorting purposes. The tag is usually a string.'''
+        """Each channel may receive several tags for sorting purposes. The tag is usually a string.
+
+        Args:
+            tag: Tag.
+        """
         self._tags.append(tag)
 
     def add_tags(self, tag_list):
-        '''each channel may receive several tags for sorting purposes. This function adds a list of tags. The tags are usually strings.'''
+        """Each channel may receive several tags for sorting purposes. This function adds a list of tags. The tags are usually strings.
+
+        Args:
+            tag_list: Tag list.
+        """
         for tag in tag_list:
             self._tags.append(tag)
 
     def get_tags(self, include_category=True):
-        '''returns the list of tags for this channel.  If include_category is True the list will also include the category'''
+        """Returns the list of tags for this channel.  If include_category is True the list will also include the category.
+
+        Args:
+            include_category: Include category.
+
+        Returns:
+            Result value.
+        """
         return self._tags + [self._category] if include_category else []
 
     def is_readable(self):
-        '''return register readability boolean'''
+        """Return register readability boolean.
+
+        Returns:
+            Result value.
+        """
         return self._readable
 
     def set_read_access(self, readable=True):
-        '''set or unset register read access'''
+        """Set or unset register read access.
+
+        Args:
+            readable: Readable.
+
+        Returns:
+            Result value.
+        """
         self._readable = readable
         self.set_attribute("readable", readable)
         return self
 
     def is_writeable(self):
-        '''return register writability boolean'''
+        """Return register writability boolean.
+
+        Returns:
+            Result value.
+        """
         return self._writeable
 
     def set_write_access(self, writeable=True):
-        '''set or unset register write access'''
+        """Set or unset register write access.
+
+        Args:
+            writeable: Writeable.
+
+        Returns:
+            Result value.
+        """
         self._writeable = writeable
         self.set_attribute("writeable", writeable)
         return self
 
     def set_write_resolution(self, decimal_digits=None):
-        '''set automatic rounding to fixed number of decimal digits, appropriate to the instrument being controlled.
+        """Set automatic rounding to fixed number of decimal digits, appropriate to the instrument being controlled.
+
         for instance, it probably doesn't make much sense to set a power supply to much better than 1mV (3) resolution
         a frequency generator might not have better  than 1ns (9) or 100ps (10) digit resolution.
         One frequent cause of excessive apparent resolution is scaling numbers by multiplication/division, log-stepping, or other operations likely to create unrepresentable numbers.
         There are two known likely problems with excessive resolution:
-            1) It's possible to choke the input parsee of test equipment if it has limited input buffer size for the command
-            2) Recalling forced values from a SQLite database can be problematic. The answer returned from a get_distict() query can't be fed back into a WHERE clause to return the same data.
-                Something gets truncated inconsistently either in the SQLIte C library itself or in the SQLite Python bindings.
-                Avoiding getting close to machine epsilon (roughly 15 significant decimal digits for double-precision float) robustly addresses the problem.
+        1) It's possible to choke the input parsee of test equipment if it has limited input buffer size for the command
+        2) Recalling forced values from a SQLite database can be problematic. The answer returned from a get_distict() query can't be fed back into a WHERE clause to return the same data.
+        Something gets truncated inconsistently either in the SQLIte C library itself or in the SQLite Python bindings.
+        Avoiding getting close to machine epsilon (roughly 15 significant decimal digits for double-precision float) robustly addresses the problem.
         This decimal treatment might not be appropraite for all use cases. The same effect could be achieved with a more generalized function call if necessary (TBD/TODO).
-        '''
+
+        Args:
+            decimal_digits: Decimal digits.
+        """
         assert isinstance(
             decimal_digits, (type(None), int)), f'decimal_digits argument must be None or Int type. Received: {decimal_digits}, {type(decimal_digits)}.'
         self._write_resolution = decimal_digits
 
     def set_max_write_limit(self, max):
-        '''set channel's maximum writable value. None disables limit'''
+        """Set channel's maximum writable value. None disables limit.
+
+        Args:
+            max: Max.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         if max is None:
             self._write_max = None
         else:
@@ -618,7 +930,17 @@ class channel(delegator):
         return self
 
     def set_min_write_limit(self, min):
-        '''set channel's minimum writable value. None disables limit'''
+        """Set channel's minimum writable value. None disables limit.
+
+        Args:
+            min: Min.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         if min is None:
             self._write_min = None
         else:
@@ -631,15 +953,36 @@ class channel(delegator):
         return self
 
     def get_max_write_limit(self):
-        '''return max writable channel value.'''
+        """Return max writable channel value.
+
+        Returns:
+            Result value.
+        """
         return self._write_max
 
     def get_min_write_limit(self, formatted=False):
-        '''return min writable channel value.'''
+        """Return min writable channel value.
+
+        Args:
+            formatted: Formatted.
+
+        Returns:
+            Result value.
+        """
         return self._write_min
 
     def set_max_write_warning(self, max):
-        '''set channel's maximum writable warning value. None disables limit'''
+        """Set channel's maximum writable warning value. None disables limit.
+
+        Args:
+            max: Max.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         if max is None:
             self._write_max_warning = None
         else:
@@ -654,7 +997,17 @@ class channel(delegator):
         return self
 
     def set_min_write_warning(self, min):
-        '''set channel's minimum writable value warning. None disables limit'''
+        """Set channel's minimum writable value warning. None disables limit.
+
+        Args:
+            min: Min.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         if min is None:
             self._write_min_warning = None
         else:
@@ -669,26 +1022,43 @@ class channel(delegator):
         return self
 
     def get_max_write_warning(self):
-        '''return max warning channel value.'''
+        """Return max warning channel value.
+
+        Returns:
+            Result value.
+        """
         return self._write_max_warning
 
     def get_min_write_warning(self, formatted=False):
-        '''return min warngin channel value.'''
+        """Return min warngin channel value.
+
+        Args:
+            formatted: Formatted.
+
+        Returns:
+            Result value.
+        """
         return self._write_min_warning
 
-    def format_display(self, data):
-        '''converts data to string according to string formatting rule set by self.set_display_format_str()
+    def format_display(self, data):  # pylint: disable=method-hidden
+        """Converts data to string according to string formatting rule set by self.set_display_format_str().
 
         >>> from PyICe.lab_core import channel
         >>> ch = channel(name='vout')
         >>> _ = ch.set_display_format_str('3.2f', suffix=' V')
         >>> ch.format_display(3.3)
         '3.30 V'
-        '''
+
+        Args:
+            data: Data to write.
+
+        Returns:
+            Result value.
+        """
         return self._display_format_str.format(data)
 
     def set_display_format_str(self, fmt_str='', prefix='', suffix=''):
-        '''format string to alter how data is displayed.
+        """Format string to alter how data is displayed.
 
         example '3.2f', '04X', '#06X', '#18b', '.2%'
         prefix will be displayed immediately before the channel data, example '0x'
@@ -699,45 +1069,88 @@ class channel(delegator):
         >>> _ = ch.set_display_format_str('04X', prefix='0x')
         >>> ch.format_display(255)
         '0x00FF'
-        '''
+
+        Args:
+            fmt_str: Fmt str.
+            prefix: Name prefix string.
+            suffix: Suffix.
+
+        Returns:
+            Result value.
+        """
         self._display_format_str = '{prefix}{{:{fmt_str}}}{suffix}'.format(
             prefix=prefix, fmt_str=fmt_str, suffix=suffix)
         return self
 
     def set_display_format_function(self, function):
-        '''abandon string formatting and pass data through custom user-supplied function'''
+        """Abandon string formatting and pass data through custom user-supplied function.
+
+        Args:
+            function: Function.
+
+        Returns:
+            Result value.
+        """
         self.format_display = function
         return self
 
     def add_write_callback(self, write_callback):
-        '''Adds a write callback.
+        """Adds a write callback.
 
         This is a function that will be called any time the channel is written.
-        The callback function takes two arguments (channel_object, data)'''
+        The callback function takes two arguments (channel_object, data)
+
+        Args:
+            write_callback: Write callback.
+
+        Returns:
+            Result value.
+        """
         self._write_callbacks.append(write_callback)
         return self
 
     def add_read_callback(self, read_callback):
-        '''Adds a read callback.
+        """Adds a read callback.
 
         This is a function that will be called any time the channel is read.
-        The callback function takes two arguments (channel_object, data)'''
+        The callback function takes two arguments (channel_object, data)
+
+        Args:
+            read_callback: Read callback.
+
+        Returns:
+            Result value.
+        """
         self._read_callbacks.append(read_callback)
         return self
 
     def add_change_callback(self, change_callback=None):
-        '''Adds a change callback.
+        """Adds a change callback.
 
         This is a function that will be called any time the channel value changes due to a read or write.
         The callback function takes two arguments (channel_object, data).
-        If change_callback is unspecified, channel name, value and time will be printed to the terminal each time the channel value changes.'''
+        If change_callback is unspecified, channel name, value and time will be printed to the terminal each time the channel value changes.
 
+        Args:
+            change_callback: Change callback.
+
+        Returns:
+            Result value.
+        """
         if change_callback is None:
             change_callback = self.default_print_callback
         self._change_callbacks.append(change_callback)
         return self
 
     def remove_change_callback(self, change_callback=None):
+        """Remove a change callback.
+
+        Args:
+            change_callback: Change callback.
+
+        Raises:
+            Exception: On error condition.
+        """
         if change_callback is None:
             change_callback = self.default_print_callback
         try:
@@ -748,6 +1161,12 @@ class channel(delegator):
 
     @staticmethod
     def default_print_callback(channel, value):
+        """Perform default print callback operation.
+
+        Args:
+            channel: Channel object.
+            value: Value to set.
+        """
         try:
             preset_str = " ({})".format(channel._presets_reverse[value])
         except AttributeError:
@@ -776,52 +1195,68 @@ class channel(delegator):
 
 
 class ChannelException(Exception):
-    '''Parent of all channel exceptions. Not used directly.'''
+    """Parent of all channel exceptions. Not used directly."""
 
 
 class ChannelAccessException(ChannelException):
-    '''Attempt to write non-writable channel or read non-readable channel.'''
+    """Attempt to write non-writable channel or read non-readable channel."""
 
 
 class ChannelNameException(ChannelException):
-    '''Attempt to create invalid channel name.'''
+    """Attempt to create invalid channel name."""
 
 
 class ChannelAttributeException(ChannelException):
-    '''Attempt to read non-existent channel attribute.'''
+    """Attempt to read non-existent channel attribute."""
 
 
 class ChannelValueException(ChannelException):
-    '''Attempt to write a channel beyond min or max limits.'''
+    """Attempt to write a channel beyond min or max limits."""
 
 
 class IntegerChannelValueException(ChannelException):
-    '''Attempt to write an integer channel to a non-integer value.'''
+    """Attempt to write an integer channel to a non-integer value."""
 
 
 class ChannelReadException(ChannelException):
-    '''Out-of-band return value to signal that channel read failed. Should only be used to indicate partial failures within delegated reads. Not typically raised, just instantiated and returned.'''
+    """Out-of-band return value to signal that channel read failed. Should only be used to indicate partial failures within delegated reads. Not typically raised, just instantiated and returned."""
 
     def __eq__(self, other):
+        """Check equality.
+
+        Args:
+            other: Other.
+
+        Returns:
+            Result value.
+        """
         if isinstance(other, ChannelReadException):
             return self.args == other.args
         else:
             return False
 
     def __ne__(self, other):
+        """Check inequality.
+
+        Args:
+            other: Other.
+
+        Returns:
+            Result value.
+        """
         return not self.__eq__(other)
 
 
 class RemoteChannelGroupException(ChannelException):
-    '''Connection problem with remote channel group client.'''
+    """Connection problem with remote channel group client."""
 
 
 class RegisterFormatException(ChannelException):
-    '''Attempt to apply non-existent channel format.'''
+    """Attempt to apply non-existent channel format."""
 
 
 class integer_channel(channel):
-    '''Channel with integer value limitation.
+    """Channel with integer value limitation.
 
     Adds presets and formats but retains channel class's read/write restrictions.
 
@@ -839,9 +1274,16 @@ class integer_channel(channel):
     '0b00001100'
     >>> ic.unformat('0xFF', 'hex', use_presets=False)
     255
-    '''
-
+    """
     def __init__(self, name, size, read_function=None, write_function=None):
+        """Initialize an integer channel with a fixed bit width.
+
+        Args:
+            name: Channel name.
+            size: Bit width of the integer value.
+            read_function: Callable that returns the channel value, or None.
+            write_function: Callable that accepts a value to write, or None.
+        """
         channel.__init__(
             self,
             name,
@@ -864,10 +1306,26 @@ class integer_channel(channel):
         self.set_attribute("max", 2**size - 1)
 
     def __str__(self):
+        """Return string representation.
+
+        Returns:
+            Result value.
+        """
         return "integer_channel Object: {}".format(self.get_name())
 
     def _add_default_formats(self):
         def check_sign(data):
+            """Return check sign result.
+
+            Args:
+                data: Data to write.
+
+            Returns:
+                Result value.
+
+            Raises:
+                ValueError: On error condition.
+            """
             assert isinstance(data, numbers.Number)
             if data < 0:
                 raise ValueError('Negative binary/hex values not allowed.')
@@ -903,24 +1361,43 @@ class integer_channel(channel):
             raise Exception('Bad size: {}'.format(self._size))
 
     def get_size(self):
+        """Return the size.
+
+        Returns:
+            Result value.
+        """
         return self._size
 
     def get_max_write_limit(self, formatted=False):
-        '''return max writable channel value. If formatted, return max writeable value in transformed units accorting to set_format(format) active format.'''
+        """Return max writable channel value. If formatted, return max writeable value in transformed units accorting to set_format(format) active format.
+
+        Args:
+            formatted: Formatted.
+
+        Returns:
+            Result value.
+        """
         if formatted:
-            return self.format(self._write_max, self._format)
+            return self.format(self._write_max, self._format, use_presets=False)
         else:
             return int(self._write_max)
 
     def get_min_write_limit(self, formatted=False):
-        '''return min writable channel value. If formatted, return min writeable value in transformed units accorting to set_format(format) active format.'''
+        """Return min writable channel value. If formatted, return min writeable value in transformed units accorting to set_format(format) active format.
+
+        Args:
+            formatted: Formatted.
+
+        Returns:
+            Result value.
+        """
         if formatted:
-            return self.format(self._write_min, self._format)
+            return self.format(self._write_min, self._format, use_presets=False)
         else:
             return int(self._write_min)
 
     def add_preset(self, preset_name, preset_value, preset_description=None):
-        '''Adds a preset named preset_name with value preset_value
+        """Adds a preset named preset_name with value preset_value.
 
         >>> from PyICe.lab_core import integer_channel
         >>> ic = integer_channel(name='mux', size=4, write_function=lambda v: v)
@@ -930,7 +1407,15 @@ class integer_channel(channel):
         'CH_A'
         >>> ic.unformat('CH_B', 'dec', use_presets=True)
         1
-        '''
+
+        Args:
+            preset_description: Human-readable description of the preset.
+            preset_name: Name of the preset.
+            preset_value: Value to associate with the preset.
+
+        Returns:
+            Result value.
+        """
         if self._size == 1 and len(list(self._presets.keys(
         ))) == 2 and 'True' in self._presets and 'False' in self._presets:
             # remove True/False presets if custom presets are added
@@ -954,7 +1439,8 @@ class integer_channel(channel):
         self._preset_descriptions[preset_name] = preset_description
 
     def set_format(self, format):
-        '''set active transformation format. reads and writes happen in transformed (real) units instead of native integer.
+        """Set active transformation format. reads and writes happen in transformed (real) units instead of native integer.
+
         Set to None to disable formatting.
 
         >>> from PyICe.lab_core import integer_channel
@@ -963,7 +1449,16 @@ class integer_channel(channel):
         'hex'
         >>> ic.set_format(None).get_format() is None
         True
-        '''
+
+        Args:
+            format: Format name string.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         if format is not None and format not in self.get_formats():
             raise Exception(
                 'Invalid format "{}" for {}'.format(
@@ -972,54 +1467,93 @@ class integer_channel(channel):
         return self
 
     def get_format(self):
-        '''return active format as set by set_format(format)'''
+        """Return active format as set by set_format(format).
+
+        Returns:
+            Result value.
+        """
         return self._format
 
     def use_presets_read(self, bool):  # pragma: no cover
-        '''enable replacement of integer value with named enum when reading channel'''
+        """Enable replacement of integer value with named enum when reading channel.
+
+        Args:
+            bool: Bool.
+
+        Returns:
+            Result value.
+        """
         self._use_presets_read = bool
         return self
 
     def use_presets_write(self, bool):  # pragma: no cover
-        '''enable replacement of named enum with integer value when writing channel'''
+        """Enable replacement of named enum with integer value when writing channel.
+
+        Args:
+            bool: Bool.
+
+        Returns:
+            Result value.
+        """
         self._use_presets_write = bool
         return self
 
     def using_presets_read(self):  # pragma: no cover
-        '''return boolean denoting last setting of use_presets_read()'''
+        """Return boolean denoting last setting of use_presets_read().
+
+        Returns:
+            Result value.
+        """
         return self._use_presets_read
 
     def using_presets_write(self):  # pragma: no cover
-        '''return boolean denoting last setting of use_presets_write()'''
+        """Return boolean denoting last setting of use_presets_write().
+
+        Returns:
+            Result value.
+        """
         return self._use_presets_write
 
     def add_format(self, format_name, format_function=None, unformat_function=None, signed=False, units='', xypoints=None):  # pragma: no cover
-        '''Add a format to this register.  Formats convert a raw number into a more meaningful string and vice-versa.
-            Formats can be generic hex, bin, etc, or can be more complicated.
+        """Add a format to this register.  Formats convert a raw number into a more meaningful string and vice-versa.
 
-            format_name       - string key used to select this format in format() / unformat() calls.
-            format_function   - callable(raw_int) -> physical_value, or None to auto-derive from xypoints.
-            unformat_function - callable(physical_value) -> raw_int, or None to auto-derive from xypoints.
-            signed            - if True, raw integer is interpreted as two's complement before formatting.
-            units             - optional unit string appended to formatted values in the GUI.
-            xypoints          - list of (raw, physical) calibration pairs.
+        Formats can be generic hex, bin, etc, or can be more complicated.
 
-            Auto piecewise-linear (PWL) mode:
-                When format_function and unformat_function are both None and xypoints contains
-                two or more calibration points, format/unformat are automatically derived as a
-                piecewise-linear function through those points.
-                  - For N=2 this is a simple slope-intercept (y = m*x + b).
-                  - For N>2 each consecutive pair of points defines one linear segment.
-                  - Values outside the calibrated range are extrapolated using the nearest
-                    endpoint segment.
-                Constraints enforced by assertion:
-                  - x-coordinates (register values) must be strictly unique.
-                  - y-coordinates (physical values) must be strictly unique and monotonically
-                    ordered so that the inverse mapping is uniquely defined.
+        format_name       - string key used to select this format in format() / unformat() calls.
+        format_function   - callable(raw_int) -> physical_value, or None to auto-derive from xypoints.
+        unformat_function - callable(physical_value) -> raw_int, or None to auto-derive from xypoints.
+        signed            - if True, raw integer is interpreted as two's complement before formatting.
+        units             - optional unit string appended to formatted values in the GUI.
+        xypoints          - list of (raw, physical) calibration pairs.
 
-            Note on signed channels: when signed=True the raw integer is converted from two's
-            complement before being passed to format_function, so auto-PWL calibration points
-            should use the signed integer domain (e.g. -128..127 for an 8-bit signed channel).'''
+        Auto piecewise-linear (PWL) mode:
+        When format_function and unformat_function are both None and xypoints contains
+        two or more calibration points, format/unformat are automatically derived as a
+        piecewise-linear function through those points.
+        - For N=2 this is a simple slope-intercept (y = m*x + b).
+        - For N>2 each consecutive pair of points defines one linear segment.
+        - Values outside the calibrated range are extrapolated using the nearest
+        endpoint segment.
+        Constraints enforced by assertion:
+        - x-coordinates (register values) must be strictly unique.
+        - y-coordinates (physical values) must be strictly unique and monotonically
+        ordered so that the inverse mapping is uniquely defined.
+
+        Note on signed channels: when signed=True the raw integer is converted from two's
+        complement before being passed to format_function, so auto-PWL calibration points
+        should use the signed integer domain (e.g. -128..127 for an 8-bit signed channel).
+
+        Args:
+            format_function: Format function.
+            format_name: Name of the format.
+            signed: If True, interpret as signed value.
+            unformat_function: Unformat function.
+            units: Unit string.
+            xypoints: Xypoints.
+
+        Returns:
+            Result value.
+        """
         if xypoints is None:
             xypoints = []
         self._formats[format_name] = {}
@@ -1041,9 +1575,19 @@ class integer_channel(channel):
                 f'ERROR: {self.get_name()} format {format_name}: y-values are not monotonic — inverse would be ambiguous.'
 
             def _pwl_interp(val, in_pts, out_pts):
-                '''Piecewise-linear interpolation / extrapolation along N-point sequences.
+                """Piecewise-linear interpolation / extrapolation along N-point sequences.
+
                 Handles both ascending and descending in_pts. Values outside the range
-                are extrapolated from the nearest endpoint segment.'''
+                are extrapolated from the nearest endpoint segment.
+
+                Args:
+                    in_pts: In pts.
+                    out_pts: Out pts.
+                    val: Val.
+
+                Returns:
+                    Result value.
+                """
                 n = len(in_pts)
                 for i in range(n - 1):
                     lo = min(in_pts[i], in_pts[i + 1])
@@ -1060,10 +1604,20 @@ class integer_channel(channel):
                 dy = out_pts[i + 1] - out_pts[i]
                 return out_pts[i] + dy * (val - in_pts[i]) / dx
 
-            def format_function(x, xp=x_pts, yp=y_pts):
+            def format_function(x, xp=x_pts, yp=y_pts):  # pylint: disable=function-redefined
                 return _pwl_interp(x, xp, yp)
 
-            def unformat_function(y, xp=x_pts, yp=y_pts):
+            def unformat_function(y, xp=x_pts, yp=y_pts):  # pylint: disable=function-redefined
+                """Return unformat function result.
+
+                Args:
+                    xp: Xp.
+                    y: Y.
+                    yp: Yp.
+
+                Returns:
+                    Result value.
+                """
                 return int(round(_pwl_interp(y, yp, xp)))
         if signed:
             self._formats[format_name]['format_function'] = lambda x: format_function(
@@ -1079,16 +1633,37 @@ class integer_channel(channel):
         return self
 
     def remove_format(self, format_name):  # pragma: no cover
-        '''remove format_name from dictionary of available formats'''
+        """Remove format_name from dictionary of available formats.
+
+        Args:
+            format_name: Name of the format.
+        """
         del self._formats[format_name]
 
     def get_formats(self):
-        '''Return a list of format_names associate with this register.
-            The format_string elements of the returned list may be passed to the format or unformat methods'''
+        """Return a list of format_names associate with this register.
+
+        The format_string elements of the returned list may be passed to the format or unformat methods
+
+        Returns:
+            Result value.
+        """
         return list(self._formats.keys())
 
     def format(self, data, format, use_presets):
-        '''take in integer data, pass through specified formatting function, and return string/real representation.'''
+        """Take in integer data, pass through specified formatting function, and return string/real representation.
+
+        Args:
+            data: Data to write.
+            format: Format name string.
+            use_presets: Use presets.
+
+        Returns:
+            Result value.
+
+        Raises:
+            RegisterFormatException: On error condition.
+        """
         if data is None:
             return None
         if data is True:
@@ -1109,9 +1684,25 @@ class integer_channel(channel):
         return data
 
     def sql_format(self, format, use_presets):
-        '''return SQL legal column selection text for insertion into a query/view'''
+        """Return SQL legal column selection text for insertion into a query/view.
+
+        Args:
+            format: Format name string.
+            use_presets: Use presets.
+
+        Returns:
+            Result value.
+        """
         def _slope_int_str(p1, p2):
-            '''return line-defining slope and intercept for a particular piecewise segment between p1 and p2 points'''
+            """Return line-defining slope and intercept for a particular piecewise segment between p1 and p2 points.
+
+            Args:
+                p1: P1.
+                p2: P2.
+
+            Returns:
+                Result value.
+            """
             x1, y1 = p1
             x2, y2 = p2
             slope = 1.0 * (y2 - y1) / (x2 - x1)
@@ -1174,7 +1765,24 @@ class integer_channel(channel):
         return sql_txt
 
     def unformat(self, string, format, use_presets):
-        '''take in formatted string / real, pass through specified unformatting function, and return integer representation.'''
+        """Take in formatted string / real, pass through specified unformatting function, and return integer representation.
+
+        Args:
+            format: Format name string.
+            string: String data.
+            use_presets: Use presets.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+            IntegerChannelValueException: On error condition.
+            RegisterFormatException: On error condition.
+            TypeError: On error condition.
+            e: On error condition.
+            e1: On error condition.
+        """
         if string is None:
             debug_logging.debug(
                 "Channel %s unformat returning None.",
@@ -1275,11 +1883,25 @@ class integer_channel(channel):
                     self.get_name(), string, type(string), type(e)))
 
     def get_units(self, format):  # pragma: no cover
-        """return real units string for specified format. ex 'A' or 'V'"""
+        """Return real units string for specified format. ex 'A' or 'V'.
+
+        Args:
+            format: Format name string.
+
+        Returns:
+            Result value.
+        """
         return self._formats[format]['units']
 
     def format_read(self, raw_data):
-        '''transform from integer to real units according to using_presets_read() and active format'''
+        """Transform from integer to real units according to using_presets_read() and active format.
+
+        Args:
+            raw_data: Raw data.
+
+        Returns:
+            Result value.
+        """
         if isinstance(raw_data, int):
             if raw_data > self.get_max_write_limit():
                 print(
@@ -1307,19 +1929,47 @@ class integer_channel(channel):
             return raw_data
 
     def format_write(self, value):
-        '''transform from real units to integer according to using_presets_write() and active format'''
-        return self.unformat(value, self._format, self._use_presets_write)
+        """Transform from real units to integer according to using_presets_write() and active format.
+
+        Args:
+            value: Value to set.
+
+        Returns:
+            Result value.
+        """
+        return self.unformat(value, self._format, self._use_presets_write)  # pylint: disable=not-callable; unformat is defined in this class at line ~1767
 
     def twosComplementToSigned(self, binary):
-        '''transform two's complement formatted binary number to signed integer.  Requires register's size attribute to be set in __init__'''
+        """Transform two's complement formatted binary number to signed integer.  Requires register's size attribute to be set in __init__.
+
+        Args:
+            binary: Binary/integer data.
+
+        Returns:
+            Result value.
+        """
         return twosComplementToSigned(binary, self._size)
 
     def signedToTwosComplement(self, signed):
-        '''transform signed integer to two's complement formatted binary number.  Requires register's size attribute to be set in __init__'''
+        """Transform signed integer to two's complement formatted binary number.  Requires register's size attribute to be set in __init__.
+
+        Args:
+            signed: If True, interpret as signed value.
+
+        Returns:
+            Result value.
+        """
         return signedToTwosComplement(signed, self._size)
 
     def write(self, value):
-        '''write intercept to apply formats/presets before channel write. Coerce to integer and warn about rounding error. Also accepts None'''
+        """Write intercept to apply formats/presets before channel write. Coerce to integer and warn about rounding error. Also accepts None.
+
+        Args:
+            value: Value to set.
+
+        Returns:
+            Result value.
+        """
         if self._size == 1:
             # allow True,False values
             if value is True:
@@ -1341,7 +1991,14 @@ class integer_channel(channel):
         return int_data
 
     def write_unformatted(self, value):
-        '''bypass unformatting. intended for use by GUI.'''
+        """Bypass unformatting. intended for use by GUI.
+
+        Args:
+            value: Value to set.
+
+        Returns:
+            Result value.
+        """
         if self._size == 1:
             # allow True,False values
             if value is True:
@@ -1360,13 +2017,22 @@ class integer_channel(channel):
         return value
 
     def read_without_delegator(self, force_data=False, data=None, **kwargs):  # pragma: no cover
-        '''read intercept to apply formats/presets to channel (raw) read'''
+        """Read intercept to apply formats/presets to channel (raw) read.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            data: Data to write.
+            force_data: Force data.
+
+        Returns:
+            Result value.
+        """
         return self.format_read(channel.read_without_delegator(
             self, force_data, data, **kwargs))
 
 
 class register(integer_channel):
-    '''Integer channel with read/write restriction removed.
+    """Integer channel with read/write restriction removed.
 
     Models remote (volatile) memory. IE, reads must check remote copy rather than use cache like ordinary integer channels.
     This behavior can be modified on a channel-by-channel basis to speed up communication with the enable_cached_read method.
@@ -1377,10 +2043,16 @@ class register(integer_channel):
     8
     >>> reg.is_readable()
     True
-    '''
-
+    """
     def __init__(self, name, size, read_function=None, write_function=None):
-        '''if subclass overloads __init__, it should also call this one'''
+        """If subclass overloads __init__, it should also call this one.
+
+        Args:
+            name: Name identifier.
+            read_function: Callable for reading the channel.
+            size: Size in bits.
+            write_function: Callable for writing the channel.
+        """
         # channel doesn't allow both read and write so just do one, then force
         # in the other
         integer_channel.__init__(
@@ -1395,10 +2067,19 @@ class register(integer_channel):
             self.set_write_access()
 
     def __str__(self):
+        """Return string representation.
+
+        Returns:
+            Result value.
+        """
         return "Register Object: {}".format(self.get_name())
 
     def enable_cached_read(self):
-        '''return last written value rather than read remote memory contents. Essentially reverts from register to writable integer_channel.'''
+        """Return last written value rather than read remote memory contents. Essentially reverts from register to writable integer_channel.
+
+        Raises:
+            Exception: On error condition.
+        """
         if not self.is_writeable():
             raise Exception(
                 "ERROR: Can't set non-writable register to cache reads: {}.".format(self.get_name()))
@@ -1407,8 +2088,8 @@ class register(integer_channel):
         self.set_attribute('read_caching', True)
 
     def set_special_access(self, access):
-        '''
-        following uvm_reg_field convention
+        """Following uvm_reg_field convention.
+
         https://verificationacademy.com/verification-methodology-reference/uvm/docs_1.1a/html/files/reg/uvm_reg_field-svh.html
         access:
         ”RO”	W: no effect	R: no effect
@@ -1436,7 +2117,13 @@ class register(integer_channel):
         ”WOS”	W: sets all bits	R: error
         ”W1”	W: first one after HARD reset is as-is, other W have no effects	R: no effect
         ”WO1”	W: first one after HARD reset is as-is, other W have no effects	R: error
-        '''
+
+        Args:
+            access: Access.
+
+        Raises:
+            Exception: On error condition.
+        """
         # no side effect
         if access.upper() == "RO":
             self.set_attribute('special_access', None)
@@ -1494,22 +2181,18 @@ class register(integer_channel):
                 'Unknown register side effect special access.. Please contact PyICe developers.')
 
     def compute_rmw_writeback_data(self, data):
-        '''Bitfield level callback to modify writeback data for read-modify-write sub-atomic register access. This is useful primarily for bitfields with write side effects implemented.
+        """Bitfield level callback to modify writeback data for read-modify-write sub-atomic register access.
 
-        Parameters
-        ----------
-        data : int
-            Bitfield readback data, masked and shifted to LSB position.
+        This is useful primarily for bitfields with write side effects implemented.
 
-        Returns
-        -------
-        int
+        Args:
+            data: Bitfield readback data, masked and shifted to LSB position.
+
+        Returns:
             Bitfield writeback data. Usually the same as readback data.
 
-        Raises
-        -------
-        Exception
-            Unknown value contained in "special_access" channel attribute.
+        Raises:
+            Exception: Unknown value contained in "special_access" channel attribute.
 
         >>> from PyICe.lab_core import register
         >>> reg = register(name='FLAGS', size=8, read_function=lambda: 0)
@@ -1523,7 +2206,16 @@ class register(integer_channel):
         >>> w0c.set_special_access('W0C')
         >>> w0c.compute_rmw_writeback_data(0xAB)
         255
-        '''
+
+        Args:
+            data: Data to write.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         if self.get_attribute('special_access') is None:
             return data
         elif self.get_attribute('special_access') in ('W1C', 'W1S'):
@@ -1535,6 +2227,17 @@ class register(integer_channel):
                 f'Register special access {self.get_attribute("special_access")} improperly implemented. Contact PyICe developers.')
 
     def compute_expect_readback_data(self, data):
+        """Return compute expect readback data result.
+
+        Args:
+            data: Data to write.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         if self.get_attribute('special_access') is None:
             return self.format_write(data)
         elif self.get_attribute('special_access') in ('W1C',):
@@ -1554,7 +2257,7 @@ class register(integer_channel):
 
 
 class channel_group(object):
-    '''Collection of channels, optionally organized into sub-groups.
+    """Collection of channels, optionally organized into sub-groups.
 
     >>> from PyICe.lab_core import channel_group, channel
     >>> g = channel_group('my_instrument')
@@ -1565,9 +2268,13 @@ class channel_group(object):
     'voltage'
     >>> g.get_all_channel_names()
     ['voltage']
-    '''
-
+    """
     def __init__(self, name='Unnamed Channel Group'):
+        """Initialize a channel group with a name and empty channel/group collections.
+
+        Args:
+            name: Display name for this channel group.
+        """
         self.set_name(name)
         # a dictionary of channel objects, keyed by name, contained by this
         # channel_group
@@ -1580,19 +2287,50 @@ class channel_group(object):
         debug_logging.debug("Created new channel group: %s", self.get_name())
 
     def __str__(self):
+        """Return string representation.
+
+        Returns:
+            Result value.
+        """
         return "channel_group Object: {}".format(self.get_name())
 
     def __iter__(self):
+        """Return iterator over items.
+
+        Yields:
+            Next value.
+        """
         for channel in self.get_all_channels_list():
             yield channel  # this is inconsistent with dictionaries, which yield their keys when iterated!
 
     def __contains__(self, key):
+        """Check if item is contained.
+
+        Args:
+            key: Key.
+
+        Returns:
+            Result value.
+        """
         return key in self.get_all_channels_list()
 
     def __getitem__(self, channel_name):
+        """Get item by key or index.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         return self.get_channel(channel_name)
 
     def copy(self):
+        """Return copy result.
+
+        Returns:
+            Result value.
+        """
         copy_self = copy.copy(self)  # Make copy of the channel group object
         # Replace the channel dictionary with an empty one
         copy_self._channel_dict = results_ord_dict()
@@ -1606,16 +2344,37 @@ class channel_group(object):
         return copy_self
 
     def get_name(self):
+        """Return the name.
+
+        Returns:
+            Result value.
+        """
         return self._name
 
     def set_name(self, name):
+        """Set the name.
+
+        Args:
+            name: Name identifier.
+        """
         self._name = str(name)
 
     def get_categories(self):
+        """Return the categories.
+
+        Returns:
+            Result value.
+        """
         return set([ch.get_category() for ch in self.get_all_channels_list(
             categories=None)])  # TODO return list instead of set?
 
     def sort(self, deep=True, **kwargs):
+        """Perform sort operation.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            deep: Deep.
+        """
         if 'key' not in kwargs:
             # sort by channel name by default
             kwargs['key'] = lambda kv_tuple: kv_tuple[0]
@@ -1626,8 +2385,19 @@ class channel_group(object):
                 scg.sort(**kwargs)
 
     def add(self, channel_or_group):
-        '''If a channel object is given, the channel is added to the topmost level of the channel group.
-           If a channel group object is given, a subgroup is added to the channel group. When a parent group, but the channels are not considered to be part of the parent group.'''
+        """If a channel object is given, the channel is added to the topmost level of the channel group.
+
+        If a channel group object is given, a subgroup is added to the channel group. When a parent group, but the channels are not considered to be part of the parent group.
+
+        Args:
+            channel_or_group: Channel or group.
+
+        Returns:
+            Result value.
+
+        Raises:
+            TypeError: On error condition.
+        """
         if isinstance(channel_or_group, channel):
             return self._add_channel(channel_or_group)
         elif isinstance(channel_or_group, channel_group):
@@ -1664,7 +2434,14 @@ class channel_group(object):
         return channel_object
 
     def merge_in_channel_group(self, channel_group_object):
-        '''adds to the topmost level of this channel group all the channels of the given channel group.'''
+        """Adds to the topmost level of this channel group all the channels of the given channel group.
+
+        Args:
+            channel_group_object: Channel group object.
+
+        Raises:
+            Exception: On error condition.
+        """
         if not isinstance(channel_group_object, channel_group):
             raise Exception(
                 '\nAttempted to merge a non-channel_group to a channel_group')
@@ -1672,7 +2449,17 @@ class channel_group(object):
             self._add_channel(channel_object)
 
     def _add_sub_channel_group(self, channel_group_object):
-        '''adds a subgroup to this channel group. Subgroups are also resolved when the parents group is, but the channels of the subgroup are not considered to be part of the parent group.'''
+        """Adds a subgroup to this channel group. Subgroups are also resolved when the parents group is, but the channels of the subgroup are not considered to be part of the parent group.
+
+        Args:
+            channel_group_object: Channel group object.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         if not isinstance(channel_group_object, channel_group):
             raise Exception('\nAttempted to add a "{}" to a channel_group as a sub group'.format(
                 channel_group_object))
@@ -1686,15 +2473,49 @@ class channel_group(object):
         return channel_group_object
 
     def get_channel_groups(self):
+        """Return the channel groups.
+
+        Returns:
+            Result value.
+        """
         return list(self._sub_channel_groups)
 
     def read(self, channel_name):
+        """Read and return the current channel value.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         return self.read_channel(channel_name)
 
     def write(self, channel_name, value, confirm=False):
+        """Write a value to the channel.
+
+        Args:
+            channel_name: Name for the new channel.
+            confirm: Confirm.
+            value: Value to set.
+
+        Returns:
+            Result value.
+        """
         return self.write_channel(channel_name, value, confirm)
 
     def read_channel(self, channel_name):
+        """Return read channel result.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+
+        Raises:
+            ChannelAccessException: On error condition.
+        """
         channel = self._resolve_channel(channel_name)
         if channel is None:
             raise ChannelAccessException(
@@ -1702,21 +2523,57 @@ class channel_group(object):
         return self.read_channel_list([channel])[channel_name]
 
     def read_channels(self, item_list):
-        '''item list is a list of channel objects, names or channel_groups'''
+        """Item list is a list of channel objects, names or channel_groups.
+
+        Args:
+            item_list: Item list.
+
+        Returns:
+            Result value.
+        """
         channel_list = self.resolve_channel_list(item_list)
         return self.read_channel_list(channel_list)
 
     def write_channel(self, channel_name, value, confirm=False):
+        """Return write channel result.
+
+        Args:
+            channel_name: Name for the new channel.
+            confirm: Confirm.
+            value: Value to set.
+
+        Returns:
+            Result value.
+        """
         if confirm:
             return self.get_channel(channel_name).write_confirm(value)
         else:
             return self.get_channel(channel_name).write(value)
 
     def write_channels(self, item_list):
+        """Return write channels result.
+
+        Args:
+            item_list: Item list.
+
+        Returns:
+            Result value.
+        """
         return [self.write_channel(ch_name, ch_value)
                 for (ch_name, ch_value) in item_list]
 
     def get_channel(self, channel_name):
+        """Return the channel.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+
+        Raises:
+            ChannelAccessException: On error condition.
+        """
         channel = self._resolve_channel(channel_name)
         if channel is None:
             raise ChannelAccessException(
@@ -1724,7 +2581,14 @@ class channel_group(object):
         return channel
 
     def get_flat_channel_group(self, name=None):
-        '''returns a channel_group directly containing all channels this one can resolve'''
+        """Returns a channel_group directly containing all channels this one can resolve.
+
+        Args:
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         if name is None:
             name = '{}_flattened'.format(self.get_name())
         new_group = channel_group(name)
@@ -1751,6 +2615,14 @@ class channel_group(object):
 
     def get_all_channels_dict(self, categories=None):
         # returns a dictionary of all channels by name
+        """Return the all channels dict.
+
+        Args:
+            categories: List of category strings to filter by.
+
+        Returns:
+            Result value.
+        """
         all_channels = results_ord_dict(self._channel_dict)
         for sub_channel_group in self._sub_channel_groups:
             all_channels.update(sub_channel_group.get_all_channels_dict())
@@ -1761,17 +2633,49 @@ class channel_group(object):
         return all_channels
 
     def get_all_channel_names(self, categories=None):
+        """Return the all channel names.
+
+        Args:
+            categories: List of category strings to filter by.
+
+        Returns:
+            Result value.
+        """
         return list(self.get_all_channels_dict(categories).keys())
 
     def get_all_channels_list(self, categories=None):
+        """Return the all channels list.
+
+        Args:
+            categories: List of category strings to filter by.
+
+        Returns:
+            Result value.
+        """
         return list(self.get_all_channels_dict(categories).values())
 
     def get_all_channels_set(self, categories=None):
+        """Return the all channels set.
+
+        Args:
+            categories: List of category strings to filter by.
+
+        Returns:
+            Result value.
+        """
         return set(self.get_all_channels_dict(categories).values())
 
     def read_channel_list(self, channel_list):
         # reads a list of channel objects
         # create lists of threadable and non-threadable channels
+        """Return read channel list result.
+
+        Args:
+            channel_list: Channel list.
+
+        Returns:
+            Result value.
+        """
         threadable_channels = []
         non_threadable_channels = []
         self._partial_delegation_results = results_ord_dict()
@@ -1799,7 +2703,7 @@ class channel_group(object):
         if len(self._self_delegation_channels):
             self._partial_delegation_results.update(results)
             results.update(
-                self._read_delegated_channel_list(
+                self._read_delegated_channel_list(  # pylint: disable=no-member; inherited from delegator via multiple inheritance
                     self._self_delegation_channels))
         self._partial_delegation_results = results_ord_dict()
         self._self_delegation_channels = results_ord_dict()
@@ -1841,7 +2745,7 @@ class channel_group(object):
                 interfaces.append(interface)
 
         remaining_delegators = []
-        interface_thread_groups = self.group_com_nodes_for_threads_filter(
+        interface_thread_groups = self.group_com_nodes_for_threads_filter(  # pylint: disable=no-member; defined in master subclass, guarded by hasattr check above
             interfaces)
         work_units = 0
         if len(interface_thread_groups):
@@ -1895,6 +2799,14 @@ class channel_group(object):
         return results
 
     def start_threads(self, number):
+        """Perform start threads operation.
+
+        Args:
+            number: Channel or port number.
+
+        Raises:
+            Exception: On error condition.
+        """
         if self._threaded is False:
             self._threaded = True
             self._threads = number
@@ -1906,6 +2818,7 @@ class channel_group(object):
             raise Exception('Threads already started, do not start again')
 
     def threaded_read_function(self):
+        """Perform threaded read function operation."""
         while self._threaded:
             try:
                 channel_list = self._read_queue.get(block=True)
@@ -1922,6 +2835,17 @@ class channel_group(object):
                     self._read_results_queue.put(results)
 
     def get_threaded_results(self, work_units):
+        """Return the threaded results.
+
+        Args:
+            work_units: Work units.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         results = results_ord_dict()
         for i in range(work_units):
             thread_results = self._read_results_queue.get(block=True)
@@ -1937,7 +2861,15 @@ class channel_group(object):
         return results
 
     def read_all_channels(self, categories=None, exclusions=None):
-        '''read all readable channels in channel group and return orderd dictionary of results. Optionally filter by list of categories.'''
+        """Read all readable channels in channel group and return orderd dictionary of results. Optionally filter by list of categories.
+
+        Args:
+            categories: List of category strings to filter by.
+            exclusions: List of items to exclude.
+
+        Returns:
+            Result value.
+        """
         if exclusions is None:
             exclusions = []
         channels = [
@@ -1952,6 +2884,14 @@ class channel_group(object):
     def remove_channel(self, channel):
         # note this delete will only remove from this channel_group, not from
         # children
+        """Remove a channel.
+
+        Args:
+            channel: Channel object.
+
+        Raises:
+            Exception: On error condition.
+        """
         channel_name = channel.get_name()
         if channel_name not in list(self._channel_dict.keys()):
             raise Exception(
@@ -1960,32 +2900,64 @@ class channel_group(object):
         del self._channel_dict[channel_name]
 
     def remove_channel_group(self, channel_group_to_remove):
+        """Remove a channel group.
+
+        Args:
+            channel_group_to_remove: Channel group to remove.
+        """
         removed_channels = channel_group_to_remove.get_all_channels_list()
         for removed_channel in removed_channels:
             self.remove_channel(removed_channel)
 
     def remove_channel_by_name(self, channel_name):
+        """Remove a channel by name.
+
+        Args:
+            channel_name: Name for the new channel.
+        """
         channel = self.get_channel(channel_name)
         self.remove_channel(channel)
 
     def remove_all_channels_and_sub_groups(self):
+        """Remove a all channels and sub groups."""
         self._channel_dict = results_ord_dict()
         self._sub_channel_groups = []
 
     def remove_sub_channel_group(self, sub_channel_group):
+        """Remove a sub channel group.
+
+        Args:
+            sub_channel_group: Sub channel group.
+        """
         self._sub_channel_groups.remove(sub_channel_group)
 
     def remove_category(self, category):
         # note this delete will only remove from this channel_group, not from
         # children
+        """Remove a category.
+
+        Args:
+            category: Category.
+        """
         for channel in self.get_all_channels_list():
             if channel.get_category() == category:
                 self.remove_channel(channel)
 
     def remove_categories(self, *categories):
-        [self.remove_category(category) for category in categories]
+        """Remove a categories.
+
+        Args:
+            *categories: Additional positional arguments.
+        """
+        for category in categories:
+            self.remove_category(category)
 
     def debug_print(self, indent=" "):
+        """Perform debug print operation.
+
+        Args:
+            indent: Indent.
+        """
         for ch in list(self._channel_dict.values()):
             d = ""
             if ch.get_delegator() is not ch:
@@ -1997,12 +2969,27 @@ class channel_group(object):
             # remove the excluded items from the scan list
 
     def remove_channel_list(self, item_list):
+        """Remove a channel list.
+
+        Args:
+            item_list: Item list.
+        """
         channel_list = self.resolve_channel_list(item_list)
         for channel in channel_list:
             self.remove_channel(channel)
 
     def resolve_channel_list(self, item_list):
-        '''takes a list of channels, channel_names, or channel_groups and produces a single channel group'''
+        """Takes a list of channels, channel_names, or channel_groups and produces a single channel group.
+
+        Args:
+            item_list: Item list.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         ch_group = channel_group()
         for item in item_list:
             if isinstance(item, str):
@@ -2016,10 +3003,17 @@ class channel_group(object):
         return ch_group
 
     def clone(self, name=None, categories=None):
-        '''Builds a flattened group and tries to reconnect to the remote_channels
+        """Builds a flattened group and tries to reconnect to the remote_channels.
 
         If not None, categories list argument acts as a filter - including only channels matching elements of categories.
-        '''
+
+        Args:
+            categories: List of category strings to filter by.
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         channels = self.get_all_channels_list()
         if categories is not None:
             channels = [
@@ -2045,9 +3039,19 @@ class channel_group(object):
         return new_group
 
     def write_html(self, file_name=None, verbose=True, sort_categories=False):  # pragma: no cover
-        '''return html document string and optionally write to file_name
+        """Return html document string and optionally write to file_name.
+
         if verbose, include tables of presets and attributes for each channel
-        if sort_categories, group channel names first by category before alphabetical sort of channel name'''
+        if sort_categories, group channel names first by category before alphabetical sort of channel name
+
+        Args:
+            file_name: File name.
+            sort_categories: Sort categories.
+            verbose: If True, print debug output.
+
+        Returns:
+            Result value.
+        """
         txt = '<!DOCTYPE html/>'
         txt += '<HTML>\n'
         txt += '<HEAD>\n'
@@ -2126,61 +3130,105 @@ class channel_group(object):
 
 
 class instrument(channel_group):
-    '''Superclass for all lab instruments
-       To add an instrument to a lab_bench object, it must inherit from instrument or one of its specialized subclasses
-        Rules for adding instruments:
-          1) extend instrument class
-          2) call the instrument classes __init__ from its __init__
-          3) contain an add_channel (and/or add_channel_XXXXX) methods that:
-                a) create a channel object with a:
-                    1) name
-                    2) EITHER a read_function or write_function
-                b) call the _add_channel method with that channel as an argument
-          4) has a name attribute which is a meaningful string about the instrument
-          '''
+    """Superclass for all lab instruments.
 
+    To add an instrument to a lab_bench object, it must inherit from instrument or one of its specialized subclasses
+    Rules for adding instruments:
+    1) extend instrument class
+    2) call the instrument classes __init__ from its __init__
+    3) contain an add_channel (and/or add_channel_XXXXX) methods that:
+    a) create a channel object with a:
+    1) name
+    2) EITHER a read_function or write_function
+    b) call the _add_channel method with that channel as an argument
+    4) has a name attribute which is a meaningful string about the instrument
+    """
     def __init__(self, name):
-        '''Overload method in instrument specific class, the __init__ method should call instrument.__init__(self,name).
-        if an instrument uses an interface, it must call an add_interface_ function from this class of the appropriate type'''
+        """Initialize instrument base class.
+
+        Subclasses should call ``instrument.__init__(self, name)`` and
+        use add_interface methods if the instrument uses an interface.
+
+        Args:
+            name: Name identifier.
+        """
         channel_group.__init__(self, name)
         self._interfaces = []
         if not hasattr(self, '_base_name'):
             self._base_name = "unnamed instrument"
 
     def add_channel(self, channel_name):
-        '''Usage: Add channel name to instrument.  For multi-channel instruments,
-            typically also takes a second argument representing the physical
-            channel of the instrument. May also take channel configuration arguments specific to the instrument.
+        """Usage: Add channel name to instrument.  For multi-channel instruments,.
 
-           Operation:  This method should create the channel object then call self._add_channel(channel) to add it to the internal channel group
+        typically also takes a second argument representing the physical
+        channel of the instrument. May also take channel configuration arguments specific to the instrument.
 
-            Method must be overloaded by each instrument driver.
-        '''
+        Operation:  This method should create the channel object then call self._add_channel(channel) to add it to the internal channel group
+
+        Method must be overloaded by each instrument driver.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Raises:
+            Exception: On error condition.
+        """
         raise Exception(
             'Add channel method not implemented for instrument {}'.format(
                 self.get_name()))
 
     def get_error(self):
-        '''Return the first error from the instrument.  Overload in scpi_instrument or the actual instrument class'''
+        """Return the first error from the instrument.  Overload in scpi_instrument or the actual instrument class.
+
+        Returns:
+            Result value.
+        """
         return 'Error checking not implemented for this instrument'
 
     def get_errors(self):
-        '''Return a list of all errors from the instrument.  Overload in scpi_instrument or the actual instrument class'''
+        """Return a list of all errors from the instrument.  Overload in scpi_instrument or the actual instrument class.
+
+        Returns:
+            Result value.
+        """
         return ['Error checking not implemented for this instrument']
 
     def _add_interface(self, interface):
         self._interfaces.append(interface)
 
     def get_interface(self, num=0):
+        """Return the interface.
+
+        Args:
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         return self._interfaces[num]
 
     def set_category(self, category_name, update_existing_channels=False):
+        """Set the category.
+
+        Args:
+            category_name: Category name.
+            update_existing_channels: Update existing channels.
+        """
         self._base_name = category_name
         if update_existing_channels:
             for channel in self:
                 channel.set_category(category_name)
 
     def add_interface_visa(self, interface_visa, timeout=None):
+        """Add a interface visa.
+
+        Args:
+            interface_visa: VISA interface instance.
+            timeout: Timeout in seconds.
+
+        Raises:
+            Exception: On error condition.
+        """
         if not isinstance(interface_visa, lab_interfaces.interface_visa):
             raise Exception(
                 'Interface must be a visa interface,, interface is {}'.format(interface_visa))
@@ -2192,6 +3240,16 @@ class instrument(channel_group):
 
     def add_interface_raw_serial(
             self, interface_raw_serial, timeout=None, baudrate=None):
+        """Add a interface raw serial.
+
+        Args:
+            baudrate: Baudrate.
+            interface_raw_serial: Interface raw serial.
+            timeout: Timeout in seconds.
+
+        Raises:
+            Exception: On error condition.
+        """
         if not isinstance(interface_raw_serial,
                           lab_interfaces.interface_raw_serial):
             raise Exception('Interface must be a raw serial interface, interface is {}'.format(
@@ -2205,6 +3263,15 @@ class instrument(channel_group):
         self._add_interface(interface_raw_serial)
 
     def add_interface_twi(self, interface_twi, timeout=None):
+        """Add a interface twi.
+
+        Args:
+            interface_twi: TWI/I2C interface instance.
+            timeout: Timeout in seconds.
+
+        Raises:
+            Exception: On error condition.
+        """
         if not isinstance(interface_twi, lab_interfaces.interface_twi):
             raise Exception(
                 'Interface must be a twi interface, interface is {}'.format(interface_twi))
@@ -2215,6 +3282,16 @@ class instrument(channel_group):
         self._add_interface(interface_twi)
 
     def add_interface_spi(self, interface_spi, timeout=None, baudrate=None):
+        """Add a interface spi.
+
+        Args:
+            baudrate: Baudrate.
+            interface_spi: Interface spi.
+            timeout: Timeout in seconds.
+
+        Raises:
+            Exception: On error condition.
+        """
         if not isinstance(interface_spi, lab_interfaces.interface_spi):
             raise Exception(
                 'Interface must be an spi interface, interface is {}'.format(interface_spi))
@@ -2236,16 +3313,29 @@ class instrument(channel_group):
 
 
 class scpi_instrument(instrument):
-    """SCPI Instrument Base Class. Implements methods common to all SCPI instruments
-        Instruments which adhere to the SCPI specification should inherit from the
-        scpi_instrument class rather than the instrument class.
-    """
+    """SCPI Instrument Base Class. Implements methods common to all SCPI instruments.
 
+    Instruments which adhere to the SCPI specification should inherit from the
+    scpi_instrument class rather than the instrument class.
+    """
     def __init__(self, name):
+        """Initialize a SCPI instrument.
+
+        Args:
+            name: Instrument name.
+        """
         super(scpi_instrument, self).__init__(name)
         self._debug_comms = False
 
     def get_interface(self, num=0):
+        """Return the interface.
+
+        Args:
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         if not self._debug_comms:
             return super(scpi_instrument, self).get_interface(num=num)
         else:
@@ -2266,6 +3356,17 @@ class scpi_instrument(instrument):
                 _raw_if = copy.copy(self._debug_if)
 
                 def read_check(s):
+                    """Return read check result.
+
+                    Args:
+                        s: S.
+
+                    Returns:
+                        Result value.
+
+                    Raises:
+                        Exception: On error condition.
+                    """
                     resp = s._naked_read()
                     err_lst = self.get_errors(interface=_raw_if)
                     if len(err_lst) > 1:
@@ -2273,12 +3374,33 @@ class scpi_instrument(instrument):
                     return resp
 
                 def write_check(s, m):
+                    """Perform write check operation.
+
+                    Args:
+                        m: M.
+                        s: S.
+
+                    Raises:
+                        Exception: On error condition.
+                    """
                     s._naked_write(m)
                     err_lst = self.get_errors(interface=_raw_if)
                     if len(err_lst) > 1:
                         raise Exception(m, err_lst)
 
                 def ask_check(s, m):
+                    """Return ask check result.
+
+                    Args:
+                        m: M.
+                        s: S.
+
+                    Returns:
+                        Result value.
+
+                    Raises:
+                        Exception: On error condition.
+                    """
                     resp = s._naked_ask(m)
                     err_lst = self.get_errors(interface=_raw_if)
                     if len(err_lst) > 1:
@@ -2293,11 +3415,25 @@ class scpi_instrument(instrument):
                 return self.get_interface(num=num)
 
     def get_error(self, interface=None):
-        '''Return the first error from the SCPI instrument.  +0 is the errorcode for no error'''
+        """Return the first error from the SCPI instrument.  +0 is the errorcode for no error.
+
+        Args:
+            interface: Interface.
+
+        Returns:
+            Result value.
+        """
         return self.error(interface=interface)
 
     def get_errors(self, interface=None):
-        '''Return a list of all accumulated SCPI instrument errors.'''
+        """Return a list of all accumulated SCPI instrument errors.
+
+        Args:
+            interface: Interface.
+
+        Returns:
+            Result value.
+        """
         errors = []
         while (True):
             response = self.get_error(interface=interface)  # .decode('utf-8')
@@ -2308,33 +3444,37 @@ class scpi_instrument(instrument):
                 return errors
 
     def beep(self):
-        '''Send a beep command.'''
+        """Send a beep command."""
         self.get_interface().write('SYST:BEEP')
 
     def clear_status(self):
-        '''Send the *CLS command.'''
+        """Send the *CLS command."""
         self.get_interface().write('*CLS')
 
     def display_clear(self):
-        """Clear the instrument display"""
+        """Clear the instrument display."""
         self.get_interface().write('DISP:TEXT:CLE')
 
     def display_off(self):
-        '''Turn the instrument display off'''
+        """Turn the instrument display off."""
         self.get_interface().write('DISP OFF')
 
     def display_on(self):
-        '''Turn the instrument display on'''
+        """Turn the instrument display on."""
         self.get_interface().write('DISP ON')
 
     def display_text(self, text=""):
-        '''Display text on instrument front panel'''
+        """Display text on instrument front panel.
+
+        Args:
+            text: Text.
+        """
         # command=b"DISP:TEXT '"+text.encode('utf-8')+b"'"
         command = f"DISP:TEXT '{text}'"
         self.get_interface().write(command)
 
     def enable_serial_polling(self):
-        '''Enable the instrument to report operation complete via serial polling'''
+        """Enable the instrument to report operation complete via serial polling."""
         self.clear_status()  # clear the stauts register
         # enable the operation complete bit in the event register
         self.get_interface().write('*ESE 1')
@@ -2342,29 +3482,48 @@ class scpi_instrument(instrument):
         self.get_interface().write('*SRE 32')
 
     def error(self, interface=None):
-        '''Get error message.'''
+        """Get error message.
+
+        Args:
+            interface: Interface.
+
+        Returns:
+            Result value.
+        """
         if interface is None:
             interface = self.get_interface()
         return interface.ask('SYST:ERROR?')
 
     def operation_complete(self):
-        '''query if current operation is done
-            blocks i/o until operation is complete or timeout
-            this method retries query until a character is returned in cas of premature timeout
-            EDIT - delet retry for now
-            '''
+        """Query if current operation is done.
+
+        blocks i/o until operation is complete or timeout
+        this method retries query until a character is returned in cas of premature timeout
+        EDIT - delet retry for now
+
+        Returns:
+            Result value.
+        """
         return self.get_interface().ask('*OPC?')
 
     def fetch(self):
-        '''Send FETCH? query.'''
+        """Send FETCH? query.
+
+        Returns:
+            Result value.
+        """
         return self.get_interface().ask('FETCH?')
 
     def init(self):
-        '''Send INIT command.'''
+        """Send INIT command."""
         self.get_interface().write('INIT')
 
     def initiate_measurement(self, enable_polling=False):
-        '''Initiate a measurement'''
+        """Initiate a measurement.
+
+        Args:
+            enable_polling: Enable polling.
+        """
         if enable_polling:
             self.enable_serial_polling()  # enable serial polling
             self.clear_status()  # clear the status register
@@ -2377,30 +3536,51 @@ class scpi_instrument(instrument):
             self.init()
 
     def read_measurement(self):
-        '''Send FETCH? query.'''
+        """Send FETCH? query.
+
+        Returns:
+            Result value.
+        """
         return self.get_interface().ask('FETCH?')
 
     def reset(self):
-        '''Send the *RST command.'''
+        """Send the *RST command."""
         self.get_interface().write('*RST')
 
     def trigger(self):
-        '''Send the *TRG command.'''
+        """Send the *TRG command."""
         self.get_interface().write('*TRG')
 
     def identify(self):
-        '''Send the *IDN? command.'''
+        """Send the *IDN? command.
+
+        Returns:
+            Result value.
+        """
         return self.get_interface().ask('*IDN?')
 
     def flush(self, buffer):
+        """Perform flush operation.
+
+        Args:
+            buffer: Buffer.
+        """
         self.get_interface().flush(buffer)
 
 
 class remote_channel_group_server(object):
-    # this class takes a channel groups and makes it remotely accessible
-    # it currently does not support changing channels after creation
+    """Server that exposes a channel group for remote access over a network connection."""
+
     def __init__(self, channel_group_object, address='localhost',
                  port=5001, authkey=DEFAULT_AUTHKEY):
+        """Initialize the remote channel group server.
+
+        Args:
+            channel_group_object: The channel group to expose remotely.
+            address: Network address to bind to.
+            port: TCP port number.
+            authkey: Authentication key for the connection.
+        """
         self.channel_group = channel_group_object
 
         class channel_group_manager(multiprocessing.managers.BaseManager):
@@ -2415,6 +3595,7 @@ class remote_channel_group_server(object):
             address=(address, port), authkey=authkey)
 
     def serve_forever(self):
+        """Perform serve forever operation."""
         print(("Launching remote server listening at address {}:{}".format(
             self.cgm.address[0], self.cgm.address[1])))
         server = self.cgm.get_server()
@@ -2422,7 +3603,8 @@ class remote_channel_group_server(object):
 
 
 class remote_channel(channel):
-    # this handles both registers and channels
+    """Proxy channel that forwards method calls to a remote channel over a network connection."""
+
     methods_to_proxy = ['__str__',
                         # integer_channel methods:
                         'add_format',
@@ -2485,6 +3667,12 @@ class remote_channel(channel):
                         ]
 
     def __init__(self, proxy_channel, parent_delegator):
+        """Initialize a remote channel proxy by copying methods from the remote channel.
+
+        Args:
+            proxy_channel: The remote proxy channel object to wrap.
+            parent_delegator: The delegator that owns this channel.
+        """
         # this intentially does not call the init of channel,just delegator
         delegator.__init__(self)
         self.set_delegator(parent_delegator)
@@ -2495,8 +3683,20 @@ class remote_channel(channel):
 
 
 class remote_channel_group_client(channel_group, delegator):
+    """Client that connects to a remote channel group server and proxies its channels locally."""
+
     def __init__(self, address='localhost', port=5001,
                  authkey=DEFAULT_AUTHKEY):
+        """Initialize the remote channel group client.
+
+        Args:
+            address: Network address of the remote server.
+            port: TCP port number.
+            authkey: Authentication key for the connection.
+
+        Raises:
+            RemoteChannelGroupException: On error condition.
+        """
         self._address = address
         self._port = port
         self._authkey = authkey
@@ -2520,23 +3720,37 @@ class remote_channel_group_client(channel_group, delegator):
         self.cgm = channel_group_manager(
             address=(address, port), authkey=authkey)
         self.cgm.connect()
-        self.server = self.cgm.get_channel_server()
+        self.server = self.cgm.get_channel_server()  # pylint: disable=no-member; method added dynamically by BaseManager.register()
         names = self.server.get_all_channel_names()
         for i in names:
             ch = self.server.get_channel(i)
             self._add_channel(remote_channel(ch, self))
 
     def read_delegated_channel_list(self, channel_list):
+        """Return read delegated channel list result.
+
+        Args:
+            channel_list: Channel list.
+
+        Returns:
+            Result value.
+        """
         channel_names = [ch.get_name() for ch in channel_list]
         return self.server.read_channels(channel_names)
 
     def clone(self):
+        """Return clone result.
+
+        Returns:
+            Result value.
+        """
         return remote_channel_group_client(
             self._address, self._port, self._authkey)
 
 
 class channel_master(channel_group, delegator):
-    '''Master channel collection. There is typically only one. It replaces the old lab_bench
+    """Master channel collection. There is typically only one. It replaces the old lab_bench.
+
     as the main point of interaction with channels.  Channels and channel_groups (instruments) may
     be added to it.  It also creates dummy and virtual channels and adds them to its collection.  It also
     supports virtual_caching channels; these can use cached data if available during logging or other multiple channel read.
@@ -2552,9 +3766,13 @@ class channel_master(channel_group, delegator):
     42
     >>> 'test_voltage' in m.get_all_channel_names()
     True
-    '''
-
+    """
     def __init__(self, name=None):
+        """Initialize the channel master.
+
+        Args:
+            name: Optional name; defaults to the object's repr string.
+        """
         if name is None:
             # remove Python <> because Qt interpret's them as HTML tags
             name = object.__str__(self)[1:-1]
@@ -2566,15 +3784,34 @@ class channel_master(channel_group, delegator):
         self.start_threads(24)
 
     def add(self, channel_or_group):
+        """Return add result.
+
+        Args:
+            channel_or_group: Channel or group.
+
+        Returns:
+            Result value.
+        """
         return channel_group.add(self, channel_or_group)
 
     def add_channel_virtual(
             self, channel_name, read_function=None, write_function=None, integer_size=None):
-        '''Adds a channel named channel_name. Channel may have a read_function or a write_function but not both.
+        """Adds a channel named channel_name. Channel may have a read_function or a write_function but not both.
+
         If write_function is supplied, the write function is called with the value when written, and the last written value is returned when read.
         If read_function is supplied, this channel returns the return of read_function when read.
         If integer_size is not None, creates in integer_channel instead of a channel. integer_size should specify the number of data bits.
-        Integer channels can add presets, formats.'''
+        Integer channels can add presets, formats.
+
+        Args:
+            channel_name: Name for the new channel.
+            integer_size: Integer size.
+            read_function: Callable for reading the channel.
+            write_function: Callable for writing the channel.
+
+        Returns:
+            Result value.
+        """
         if integer_size is not None:
             new_channel = integer_channel(
                 channel_name,
@@ -2593,11 +3830,22 @@ class channel_master(channel_group, delegator):
 
     def add_channel_virtual_caching(
             self, channel_name, read_function=None, write_function=None, integer_size=None):
-        '''Adds a channel named channel_name. Channel may have a read_function or a write_function but not both.
+        """Adds a channel named channel_name. Channel may have a read_function or a write_function but not both.
+
         If write_function is supplied, the write function is called with the value when written, and the last written value is returned when read.
         If read_function is supplied, this channel returns the return of read_function when read.
         If the read_function calls the creating channel_master's read_channel on another channel,
-        a cached value may be used if part of a multi-channel channel read. This can improve logging speed in some cases.'''
+        a cached value may be used if part of a multi-channel channel read. This can improve logging speed in some cases.
+
+        Args:
+            channel_name: Name for the new channel.
+            integer_size: Integer size.
+            read_function: Callable for reading the channel.
+            write_function: Callable for writing the channel.
+
+        Returns:
+            Result value.
+        """
         if integer_size is not None:
             new_channel = integer_channel(
                 channel_name,
@@ -2616,9 +3864,18 @@ class channel_master(channel_group, delegator):
         return self._add_channel(new_channel)
 
     def add_channel_dummy(self, channel_name, integer_size=None):
-        '''Add a named dummy channel. This can be used if a single physical instrument channel is externally multiplexed to
+        """Add a named dummy channel. This can be used if a single physical instrument channel is externally multiplexed to.
+
         multiple measurement nodes. The user can store the multiple measurement results from a single instrument into
-        multiple dummy channels. Also it is useful for logging test conditions.'''
+        multiple dummy channels. Also it is useful for logging test conditions.
+
+        Args:
+            channel_name: Name for the new channel.
+            integer_size: Integer size.
+
+        Returns:
+            Result value.
+        """
         if integer_size is not None:
             new_channel = integer_channel(channel_name, size=integer_size)
         else:
@@ -2629,14 +3886,28 @@ class channel_master(channel_group, delegator):
         return self._add_channel(new_channel)
 
     def add_channel_delta_timer(self, channel_name, reciprocal=False):
-        '''Add a named timer channel. Returns the time elapsed since the prior channel read.
-        Optionally, compute 1/time to return frequency instead.'''
+        """Add a named timer channel. Returns the time elapsed since the prior channel read.
+
+        Optionally, compute 1/time to return frequency instead.
+
+        Args:
+            channel_name: Name for the new channel.
+            reciprocal: Reciprocal.
+
+        Returns:
+            Result value.
+        """
         class timer(object):
             def __init__(self, reciprocal):
                 self.reciprocal = reciprocal
                 self.last_time = datetime.datetime.now(datetime.timezone.utc)
 
             def __call__(self):
+                """Call the instance.
+
+                Returns:
+                    Result value.
+                """
                 self.this_time = datetime.datetime.now(datetime.timezone.utc)
                 elapsed = self.this_time - self.last_time
                 self.last_time = self.this_time
@@ -2657,12 +3928,24 @@ class channel_master(channel_group, delegator):
         return self._add_channel(new_channel)
 
     def add_channel_total_timer(self, channel_name):
-        '''Add a named timer channel. Returns the time elapsed since first channel read.'''
+        """Add a named timer channel. Returns the time elapsed since first channel read.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         class timer(object):
             def __init__(self):
                 self.beginning = None
 
             def __call__(self):
+                """Call the instance.
+
+                Returns:
+                    Result value.
+                """
                 if self.beginning is None:
                     self.beginning = datetime.datetime.now(datetime.timezone.utc)
                 # return native dimedelta instead?
@@ -2678,17 +3961,35 @@ class channel_master(channel_group, delegator):
         return self._add_channel(new_channel)
 
     def add_channel_counter(self, channel_name, **kwargs):
-        '''Add a named counter channel. Returns zero the first time channel is read and increments by one each time thereafter.'''
+        """Add a named counter channel. Returns zero the first time channel is read and increments by one each time thereafter.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         class counter(object):
             def __init__(self, init=0, inc=1):
                 self.inc = inc
                 self.count = init - self.inc
 
             def __call__(self):
+                """Call the instance.
+
+                Returns:
+                    Result value.
+                """
                 self.count += self.inc
                 return self.count
 
             def write(self, value):
+                """Write a value to the channel.
+
+                Args:
+                    value: Value to set.
+                """
                 self.count = value
         cnt_obj = counter(**kwargs)
         new_channel = channel(channel_name, read_function=cnt_obj)
@@ -2700,6 +4001,14 @@ class channel_master(channel_group, delegator):
         return self._add_channel(new_channel)
 
     def read_channel(self, channel_name):
+        """Return read channel result.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         debug_logging.debug(
             "Reading Channel (via channel_master.read_channel): %s",
             channel_name)
@@ -2729,6 +4038,14 @@ class channel_master(channel_group, delegator):
         return result
 
     def read_channel_list(self, channel_list):
+        """Return read channel list result.
+
+        Args:
+            channel_list: Channel list.
+
+        Returns:
+            Result value.
+        """
         results = channel_group.read_channel_list(self, channel_list)
         if not self._caching_mode:
             for function in self._read_callbacks:
@@ -2738,7 +4055,16 @@ class channel_master(channel_group, delegator):
         return results
 
     def write_channel(self, channel_name, value, confirm=False):
-        '''Delegates channel write to the appropriate registered instrument.'''
+        """Delegates channel write to the appropriate registered instrument.
+
+        Args:
+            channel_name: Name for the new channel.
+            confirm: Confirm.
+            value: Value to set.
+
+        Returns:
+            Result value.
+        """
         debug_logging.debug("Writing Channel %s to %s", channel_name, value)
         data = channel_group.write_channel(self, channel_name, value, confirm)
         debug_logging.debug(
@@ -2752,6 +4078,14 @@ class channel_master(channel_group, delegator):
         return data
 
     def read_delegated_channel_list(self, channel_list):
+        """Return read delegated channel list result.
+
+        Args:
+            channel_list: Channel list.
+
+        Returns:
+            Result value.
+        """
         results = results_ord_dict()
         if self._caching_mode:
             for channel in channel_list:
@@ -2778,10 +4112,27 @@ class channel_master(channel_group, delegator):
         return results
 
     def serve(self, address='localhost', port=5001, authkey=DEFAULT_AUTHKEY):
+        """Perform serve operation.
+
+        Args:
+            address: Address.
+            authkey: Authkey.
+            port: Port.
+        """
         rcgs = remote_channel_group_server(self, address, port, authkey)
         rcgs.serve_forever()
 
     def attach(self, address='localhost', port=5001, authkey=DEFAULT_AUTHKEY):
+        """Return attach result.
+
+        Args:
+            address: Address.
+            authkey: Authkey.
+            port: Port.
+
+        Returns:
+            Result value.
+        """
         try:
             rcgc = remote_channel_group_client(address, port, authkey)
         except RemoteChannelGroupException as e:
@@ -2791,26 +4142,56 @@ class channel_master(channel_group, delegator):
         return True
 
     def background_gui(self, cfg_file='default.guicfg'):
+        """Perform background gui operation.
+
+        Args:
+            cfg_file: Cfg file.
+        """
         _thread.start_new_thread(self._gui_launcher_passive, (cfg_file,))
 
     def gui(self, cfg_file='default.guicfg', log_history=False):
-        '''log_history - bool. Default False. If set to True, channel read and write commands will be logged in gui_cmd_history.log.'''
+        """Log_history - bool. Default False. If set to True, channel read and write commands will be logged in gui_cmd_history.log.
+
+        Args:
+            cfg_file: Cfg file.
+            log_history: Log history.
+        """
         self._gui_launcher(cfg_file, log_history=log_history)
 
     def add_read_callback(self, read_callback):
-        '''Adds a read callback. This is a function that will be called any time a channel(s) is read. the callback function should accept one argument: the dictionary of results.
-        If it is not important to group results by each batch read, consider adding a callback to an individual channel instead.'''
+        """Adds a read callback. This is a function that will be called any time a channel(s) is read. the callback function should accept one argument: the dictionary of results.
+
+        If it is not important to group results by each batch read, consider adding a callback to an individual channel instead.
+
+        Args:
+            read_callback: Read callback.
+        """
         self._read_callbacks.append(read_callback)
 
     def remove_read_callback(self, read_callback):
+        """Remove a read callback.
+
+        Args:
+            read_callback: Read callback.
+        """
         self._read_callbacks.remove(read_callback)
 
     def add_write_callback(self, write_callback):
-        '''Adds a write callback. This is a function that will be called any time a channel is written. the callback function should accept one argument: the dictionary of results.
-        In this case, the dictionary will only contain a key,value pair for the single channel that was written. For more flexibility, considering adding a callback to an individual channel instead.'''
+        """Adds a write callback. This is a function that will be called any time a channel is written. the callback function should accept one argument: the dictionary of results.
+
+        In this case, the dictionary will only contain a key,value pair for the single channel that was written. For more flexibility, considering adding a callback to an individual channel instead.
+
+        Args:
+            write_callback: Write callback.
+        """
         self._write_callbacks.append(write_callback)
 
     def remove_write_callback(self, write_callback):
+        """Remove a write callback.
+
+        Args:
+            write_callback: Write callback.
+        """
         self._write_callbacks.remove(write_callback)
 
     def _gui_launcher_passive(self, cfg_file):
@@ -2830,6 +4211,11 @@ class channel_master(channel_group, delegator):
         gui.exec_()
 
     def get_dummy_clone(self):
+        """Return the dummy clone.
+
+        Returns:
+            Result value.
+        """
         clone = channel_master()
         for channel in self:
             clone.add_channel_dummy(channel.get_name())
@@ -2840,31 +4226,61 @@ class channel_master(channel_group, delegator):
 
 
 class master(channel_master, lab_interfaces.interface_factory):
+    """Top-level instrument master combining channel management with interface creation."""
+
     def __init__(self, name=None):
+        """Initialize the master with channel management and interface factory.
+
+        Args:
+            name: Optional name; defaults to the object's repr string.
+        """
         channel_master.__init__(self, name)
         lab_interfaces.interface_factory.__init__(self)
 
 
 class channel_access_wrapper(object):
-    '''syntatic sugar object to access channels in a channel_group (or master)
+    """Syntatic sugar object to access channels in a channel_group (or master).
+
     a channel_group (or master) returns the channel object in response to indexing by channel name
     this gives an object that wraps a channel_group the the channels themselves are access by index names.
     master_instance['channel_name'] returns the channel object
     channel_access_wrapper_instance['channel_name'] returns the channel value
-    channel_access_wrapper_instance['channel_name']= value writes the value of channel to value'''
-
+    channel_access_wrapper_instance['channel_name']= value writes the value of channel to value
+    """
     def __init__(self, channel_group):
+        """Initialize the wrapper around a channel group.
+
+        Args:
+            channel_group: The channel group to wrap.
+        """
         self.channels = channel_group
 
     def __getitem__(self, channel_name):
+        """Get item by key or index.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         return self.channels[channel_name].read()
 
     def __setitem__(self, channel_name, value):
+        """Set item by key or index.
+
+        Args:
+            channel_name: Name for the new channel.
+            value: Value to set.
+
+        Returns:
+            Result value.
+        """
         return self.channels[channel_name].write(value)
 
 
 class logger(master):
-    '''SQLite-backed data logger for channel measurements.
+    """SQLite-backed data logger for channel measurements.
 
     >>> import tempfile, os
     >>> from PyICe.lab_core import master, logger
@@ -2882,16 +4298,22 @@ class logger(master):
     'measurements'
     >>> lg.stop()
     >>> os.unlink(db)
-    '''
-
+    """
     def __init__(self, channel_master_or_group=None,
                  database="data_log.sqlite", use_threads=True):
-        '''channel_group is a lab_bench object containing all instruments of interest for logging.
+        """Channel_group is a lab_bench object containing all instruments of interest for logging.
+
         database is the filename in which the sqlite database will be stored.
         Channels or channel groups added to the channel master after the master is added to the logger will not be registered for logging.
         Notice, however, that the logger inherits from the 'master' class, which means that channels can now be added to the LOGGER after the master has been added as if the logger is a master.
         Suppose a master object is created and channel A is added to it. A logger is then created and the master is added to the logger. Another channel, B, is added to the master, and a third channel, C, is added to the logger.
-        In this scenario, both the master and the logger can see and interact with channel A. The master can interact with B but not C, and the logger can interact with C but not B.'''
+        In this scenario, both the master and the logger can see and interact with channel A. The master can interact with B but not C, and the logger can interact with C but not B.
+
+        Args:
+            channel_master_or_group: Channel master or group.
+            database: Database.
+            use_threads: Use threads.
+        """
         master.__init__(self, name='logger')
         if channel_master_or_group is not None:
             self.merge_in_channel_group(channel_master_or_group)
@@ -2912,27 +4334,53 @@ class logger(master):
         self._previously_logged_data = None
 
     def __enter__(self):
+        """Enter the context manager.
+
+        Returns:
+            Result value.
+        """
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
+        """Exit the context manager.
+
+        Args:
+            exc_type: Exc type.
+            exc_value: Exc value.
+            traceback: Traceback.
+
+        Returns:
+            Result value.
+        """
         self.stop()
         return None
 
     def stop(self):
-        '''close sqlite database connection.'''
+        """Close sqlite database connection."""
         self._backend.stop()
 
     def add_channel(self, channel_object):
+        """Add a channel.
+
+        Args:
+            channel_object: Channel object.
+        """
         self._add_channel(channel_object)
 
     def append_table(self, table_name):
+        """Perform append table operation.
+
+        Args:
+            table_name: Database table name.
+        """
         self._table_name = table_name
         columns = {ch.get_name(): ch.get_type_affinity() for ch in self}
         self._backend.append_table(table_name, columns)
         self.create_format_view()
 
     def new_table(self, table_name, replace_table=False, warn=False):
-        '''create a new table with columns matching channels known to logger instance
+        """Create a new table with columns matching channels known to logger instance.
+
         if replace_table == 'copy', previously collected data to a new table with the date and time appended to the table name before overwriting
         if replace_table, allow previously collected data to be overwritten
         if not replace_table, raise an exception (or print to screen instead if warn) rather than overwrite existing data
@@ -2948,25 +4396,66 @@ class logger(master):
         >>> lg.new_table('test_data', replace_table=True)
         >>> lg.stop()
         >>> os.unlink(db)
-        '''
+
+        Args:
+            replace_table: Replace table.
+            table_name: Database table name.
+            warn: Warn.
+        """
         self._table_name = table_name
         columns = {ch.get_name(): ch.get_type_affinity() for ch in self}
         self._backend.new_table(table_name, columns, replace_table, warn)
         self.create_format_view()
 
     def switch_table(self, table_name):
+        """Return switch table result.
+
+        Args:
+            table_name: Database table name.
+
+        Returns:
+            Result value.
+        """
         self._table_name = table_name
         return self._backend.switch_table(table_name)
 
     def copy_table(self, old_table, new_table):
+        """Return copy table result.
+
+        Args:
+            new_table: New table.
+            old_table: Old table.
+
+        Returns:
+            Result value.
+        """
         return self._backend.copy_table(old_table, new_table)
 
     def check_format_name(self, format_name):
+        """Perform check format name operation.
+
+        Args:
+            format_name: Name of the format.
+
+        Raises:
+            ChannelNameException: On error condition.
+        """
         if format_name in self.get_all_channel_names():
             raise ChannelNameException(
                 'Formatted channel view name:{} conflicts with table column'.format(format_name))
 
     def create_format_view(self, use_presets=True):
+        """Return create format view result.
+
+        Args:
+            use_presets: Use presets.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         if self.get_table_name() is None:
             raise Exception(
                 'Table name unspecified!\nCall new_table() or append_table() before log_formats()')
@@ -3064,9 +4553,19 @@ class logger(master):
         # constants some day?
         # self.execute('CREATE TABLE IF NOT EXISTS {TABLE_NAME}_CONSTANTS (name TEXT PRIMARY KEY, value REAL')
     def get_database(self):
+        """Return the database.
+
+        Returns:
+            Result value.
+        """
         return self._database
 
     def get_table_name(self):
+        """Return the table name.
+
+        Returns:
+            Result value.
+        """
         return self._table_name
 
     def _fetch_channel_data(self, exclusions):
@@ -3086,7 +4585,7 @@ class logger(master):
         return channel_data
 
     def log(self, exclusions=None):
-        '''measure all non-excluded channels. Channels may be excluded by name, channel_group(instrument), or directly.  Returns a dictionary of what it logged.
+        """Measure all non-excluded channels. Channels may be excluded by name, channel_group(instrument), or directly.  Returns a dictionary of what it logged.
 
         >>> import tempfile, os
         >>> from PyICe.lab_core import master, logger
@@ -3104,7 +4603,13 @@ class logger(master):
         True
         >>> lg.stop()
         >>> os.unlink(db)
-        '''
+
+        Args:
+            exclusions: List of items to exclude.
+
+        Returns:
+            Result value.
+        """
         if exclusions is None:
             exclusions = []
         self._backend.check_exception()
@@ -3124,8 +4629,20 @@ class logger(master):
         return data
 
     def check_data_changed(self, data, compare_exclusions=None):
-        '''return True if data is different than self._previously_logged_data.
-        Shared test between several log_if_changed methods.'''
+        """Return True if data is different than self._previously_logged_data.
+
+        Shared test between several log_if_changed methods.
+
+        Args:
+            compare_exclusions: Compare exclusions.
+            data: Data to write.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         if compare_exclusions is None:
             compare_exclusions = []
         if self._previously_logged_data is None:
@@ -3153,11 +4670,20 @@ class logger(master):
             return old_data != new_data
 
     def log_if_changed(self, log_exclusions=None, compare_exclusions=None):
-        '''like log(), but only stores data to database if data in at least on channel/column has changed.
+        """Like log(), but only stores data to database if data in at least on channel/column has changed.
+
         log_exclusions is a list of logger channels which will not be read nor stored in the database.
         compare_exclusions is a list of logger channels which will not be used to decide if data has changed but which will be read and stored in the databased if something else changed.
         rowid and datetime are automatically excluded from change comparison.
-        returns channel data if logged, else None'''
+        returns channel data if logged, else None
+
+        Args:
+            compare_exclusions: Compare exclusions.
+            log_exclusions: Log exclusions.
+
+        Returns:
+            Result value.
+        """
         if log_exclusions is None:
             log_exclusions = []
         if compare_exclusions is None:
@@ -3177,10 +4703,19 @@ class logger(master):
             return None
 
     def log_data(self, data_dictionary, only_if_changed=False):
-        '''log previously collected data.
+        """Log previously collected data.
+
         data_dictionary should have channel name keys.
         set up logger and table using logger.add_data_channels()
-        alternately, data_dictionary can be an iterable containing dictionaries, each representing a single row.'''
+        alternately, data_dictionary can be an iterable containing dictionaries, each representing a single row.
+
+        Args:
+            data_dictionary: Data dictionary.
+            only_if_changed: Only if changed.
+
+        Returns:
+            Result value.
+        """
         self._backend.check_exception()
         try:
             if not only_if_changed or self.check_data_changed(
@@ -3204,10 +4739,22 @@ class logger(master):
                 self.log_data(row)
 
     def log_kwdata(self, **kwargs):
-        '''log previously collected data, but provided as keyword key,value pairs instead of dictionary.'''
+        """Log previously collected data, but provided as keyword key,value pairs instead of dictionary.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            Result value.
+        """
         return self.log_data(kwargs, only_if_changed=False)
 
     def log_many(self, data_iter_of_dictionaries):
+        """Perform log many operation.
+
+        Args:
+            data_iter_of_dictionaries: Data iter of dictionaries.
+        """
         self._backend.check_exception()
         # walrus comprehension not yet available in Python 3.7
         logtime = datetime.datetime.now(
@@ -3220,13 +4767,22 @@ class logger(master):
         self._backend.storemany(data_iter_of_dictionaries)
 
     def add_data_channels(self, data_dictionary):
-        '''prepare logger channel group with fake channels matching data_dictionary keys.
+        """Prepare logger channel group with fake channels matching data_dictionary keys.
+
         call before logger.new_table().
         use to log previously collected data in conjunction with logger.log_data()
-        '''
+
+        Args:
+            data_dictionary: Data dictionary.
+        """
         assert len(self.get_all_channel_names()) == 0
 
         def read_disable():
+            """Perform read disable operation.
+
+            Raises:
+                Exception: On error condition.
+            """
             raise Exception(
                 'Attempted to read fake channel designed to be used with logger.log_data()')
         for key in data_dictionary:
@@ -3234,30 +4790,60 @@ class logger(master):
             self.add_channel(fake_channel)
 
     def add_log_callback(self, log_callback):
-        '''Adds a read callback. This is a function that will be called any time a channel(s) is read. the callback function should accept one argument: the dictionary of results.
-        If it is not important to group results by each batch read, consider adding a callback to an individual channel instead.'''
+        """Adds a read callback. This is a function that will be called any time a channel(s) is read. the callback function should accept one argument: the dictionary of results.
+
+        If it is not important to group results by each batch read, consider adding a callback to an individual channel instead.
+
+        Args:
+            log_callback: Log callback.
+        """
         self._log_callbacks.append(log_callback)
 
     def remove_log_callback(self, log_callback):
+        """Remove a log callback.
+
+        Args:
+            log_callback: Log callback.
+        """
         self._log_callbacks.remove(log_callback)
 
     def get_master(self):
+        """Return the master.
+
+        Returns:
+            Result value.
+        """
         return self.master
 
     def get_data(self):
+        """Return the data.
+
+        Returns:
+            Result value.
+        """
         return sqlite_data(table_name=self.get_table_name(),
                            database_file=self.get_database())
 
     def query(self, sql_query, *params):
+        """Return query result.
+
+        Args:
+            *params: Additional positional arguments.
+            sql_query: Sql query.
+
+        Returns:
+            Result value.
+        """
         return self.get_data().query(sql_query, *params)
 
     def flush(self):
-        '''commit pending transactions and block until database thread queue is empty.'''
+        """Commit pending transactions and block until database thread queue is empty."""
         self._backend.sync_threads()
 
     def set_journal_mode(self, journal_mode='WAL',
                          synchronous='NORMAL', timeout_ms=10000):
-        '''configure database connection for more reliable concurrent read/write operations with high data throughput or large data sets.
+        """Configure database connection for more reliable concurrent read/write operations with high data throughput or large data sets.
+
         Three options are individually configurable:
 
         journal_mode changes the default rollback journal to other methods which read-lock the database less often and for less time.
@@ -3273,7 +4859,15 @@ class logger(master):
         timeout_ms changes the amount of time SQLite will wait for access to a locked database before giving up and failing.
         Timeouts are much less likely in WAL mode compated to normal rollback journal mode.
         https://www.sqlite.org/pragma.html#pragma_busy_timeout
-        '''
+
+        Args:
+            journal_mode: Journal mode.
+            synchronous: Synchronous.
+            timeout_ms: Timeout ms.
+
+        Raises:
+            Exception: On error condition.
+        """
         self._backend.execute("PRAGMA locking_mode = NORMAL")
         self._backend.execute("PRAGMA busy_timeout = {}".format(timeout_ms))
         journal_mode = journal_mode.upper()
@@ -3291,24 +4885,38 @@ class logger(master):
         self._backend.execute("PRAGMA synchronous = {}".format(synchronous))
 
     def optimize(self):
-        '''Defragment database file, reducing file size and speeding future queries.
+        """Defragment database file, reducing file size and speeding future queries.
+
         Also re-runs query plan optimizer to speed future queries.
         WARNING: May take a lot time to complete when operating on a large database.
         WARNING: May re-order rowid's
-        '''
+        """
         self.execute("VACUUM")
         self.execute("ANALYZE")
 
     def execute(self, sql_query, *params):
-        '''Execute arbitrary SQL statements on database.
+        """Execute arbitrary SQL statements on database.
+
         Not capable of returning results across thread boundary.
         Useful to set up views, indices, etc
-        '''
+
+        Args:
+            *params: Additional positional arguments.
+            sql_query: Sql query.
+        """
         self._backend.execute(sql_query, *params)
 
 
 class logger_backend(object):
+    """SQLite logging backend that records channel data to a database."""
+
     def __init__(self, database="data_log.sqlite", use_threads=True):
+        """Initialize the logger backend.
+
+        Args:
+            database: Path to the SQLite database file.
+            use_threads: If True, use a background thread for writes.
+        """
         self.table_name = None
         self._use_thread = use_threads
         self._max_lock_time = datetime.timedelta(seconds=10)
@@ -3353,6 +4961,7 @@ class logger_backend(object):
             debug_logging.error("{} {}".format(e, type(e)))
 
     def sync_threads(self):
+        """Perform sync threads operation."""
         if self._use_thread:
             self.storage_queue.put(self._commit)
             self.storage_queue.join()
@@ -3361,6 +4970,7 @@ class logger_backend(object):
             self._commit()
 
     def check_exception(self):
+        """Perform check exception operation."""
         self._check_exception()
 
     def _check_exception(self):
@@ -3368,8 +4978,14 @@ class logger_backend(object):
             raise self._thread_exception
 
     def execute(self, sql_query, *params):
-        '''not currently capable of returning the query result through the thread queue
-        useful for setting up the database with PRAGMA commands.'''
+        """Not currently capable of returning the query result through the thread queue.
+
+        useful for setting up the database with PRAGMA commands.
+
+        Args:
+            *params: Additional positional arguments.
+            sql_query: Sql query.
+        """
         if self._use_thread:
             self.storage_queue.put(lambda: self._execute(sql_query, *params))
         else:
@@ -3434,6 +5050,11 @@ class logger_backend(object):
         self._stopped = True
 
     def store(self, data):
+        """Perform store operation.
+
+        Args:
+            data: Data to write.
+        """
         if self._use_thread:
             self.storage_queue.put(lambda: self._store(data))
         else:
@@ -3441,6 +5062,11 @@ class logger_backend(object):
             self.conn.commit()
 
     def storemany(self, data):
+        """Perform storemany operation.
+
+        Args:
+            data: Data to write.
+        """
         if self._use_thread:
             self.storage_queue.put(lambda: self._storemany(data))
         else:
@@ -3448,8 +5074,19 @@ class logger_backend(object):
             self.conn.commit()
 
     def _new_table(self, table_name, columns, replace_table=False, warn=False):
-        '''create new table in the sqlite database with a column for each channel.
-            replace any existing table with the same name (delete data!).'''
+        """Create new table in the sqlite database with a column for each channel.
+
+        replace any existing table with the same name (delete data!).
+
+        Args:
+            columns: Columns.
+            replace_table: Replace table.
+            table_name: Database table name.
+            warn: Warn.
+
+        Raises:
+            e: On error condition.
+        """
         table_name = str(table_name).replace(" ", "_")
 
         try:
@@ -3504,7 +5141,12 @@ class logger_backend(object):
                     raise e
 
     def _create_table(self, table_name, columns):
-        '''create the actual sql table and commit to database.  Called by new_sweep_replace() (and new_sweep()?)'''
+        """Create the actual sql table and commit to database.  Called by new_sweep_replace() (and new_sweep()?).
+
+        Args:
+            columns: Columns.
+            table_name: Database table name.
+        """
         self.table_name = table_name
         self.columns = list(columns)
         self.columns.sort()
@@ -3528,7 +5170,14 @@ class logger_backend(object):
 
     @classmethod
     def db_clean(cls, column_data):
-        '''help database to store lists, dictionaries and any other future datatype that doesn't fit natively'''
+        """Help database to store lists, dictionaries and any other future datatype that doesn't fit natively.
+
+        Args:
+            column_data: The data to clean for database storage.
+
+        Returns:
+            Cleaned data suitable for SQLite storage.
+        """
         # perhaps better implemented using sqlite.register_adapter?
         # https://docs.python.org/2/library/sqlite3.html#registering-an-adapter-callable
         # https://docs.python.org/2/library/sqlite3.html#sqlite3.register_adapter
@@ -3554,7 +5203,15 @@ class logger_backend(object):
         return column_data
 
     def _store(self, data, num=0):
-        '''match data dictionary keys to table column names and commit new row to table.'''
+        """Match data dictionary keys to table column names and commit new row to table.
+
+        Args:
+            data: Data to write.
+            num: Count or number.
+
+        Raises:
+            Exception: On error condition.
+        """
         if self.table_name is None:
             raise Exception("Need to create a table before logging")
         if len(data) <= 999:
@@ -3625,9 +5282,18 @@ class logger_backend(object):
                     num += 1
 
     def _storemany(self, data_iter, num=0):
-        '''match data dictionary keys of each iter element to table column names and commit multiple new rows to table.
+        """Match data dictionary keys of each iter element to table column names and commit multiple new rows to table.
+
         all elements of iterable must have same dimention and type
-        column count above 999 not currently supported'''
+        column count above 999 not currently supported
+
+        Args:
+            data_iter: Data iter.
+            num: Count or number.
+
+        Raises:
+            Exception: On error condition.
+        """
         if self.table_name is None:
             raise Exception("Need to create a table before logging")
         set_of_data_lengths = {len(row) for row in data_iter}
@@ -3646,7 +5312,7 @@ class logger_backend(object):
             cursor.close()  # rapid garbage collection might speed things up
         except sqlite3.OperationalError as e:
             if num > 2:
-                debug_logging.warning(data)
+                debug_logging.warning(data_iter)
                 debug_logging.warning(e)
                 debug_logging.warning(
                     "Try {} failed. Trying again...".format(num))
@@ -3654,6 +5320,12 @@ class logger_backend(object):
             self._storemany(data_iter, num=num + 1)  # keep trying forever
 
     def copy_table(self, old_table, new_table):
+        """Perform copy table operation.
+
+        Args:
+            new_table: New table.
+            old_table: Old table.
+        """
         self._check_name(new_table)
         self._check_exception()
         if self._use_thread:
@@ -3717,6 +5389,11 @@ class logger_backend(object):
                 break
 
     def switch_table(self, table_name):
+        """Perform switch table operation.
+
+        Args:
+            table_name: Database table name.
+        """
         self._check_name(table_name)
         self._check_exception()
         if self._use_thread:
@@ -3729,6 +5406,12 @@ class logger_backend(object):
         self.table_name = table_name
 
     def append_table(self, table_name, columns):
+        """Perform append table operation.
+
+        Args:
+            columns: Columns.
+            table_name: Database table name.
+        """
         self._check_name(table_name)
         self._check_exception()
         if self._use_thread:
@@ -3768,6 +5451,14 @@ class logger_backend(object):
             raise Exception('Bad Table Name "{}"'.format(name))
 
     def new_table(self, table_name, columns, replace_table=False, warn=False):
+        """Perform new table operation.
+
+        Args:
+            columns: Columns.
+            replace_table: Replace table.
+            table_name: Database table name.
+            warn: Warn.
+        """
         self._check_name(table_name)
         self._check_exception()
         if self._use_thread:
@@ -3782,6 +5473,7 @@ class logger_backend(object):
         self.sync_threads()
 
     def stop(self):
+        """Perform stop operation."""
         if self._use_thread:
             if not self._stopped:
                 self.storage_queue.put(self._stop)
@@ -3808,6 +5500,11 @@ class logger_backend(object):
 
 if __name__ == "__main__":  # pragma: no cover
     def print_it(x):
+        """Perform print it operation.
+
+        Args:
+            x: X.
+        """
         print(x)
     # test of threaded delegation
     lb = master()

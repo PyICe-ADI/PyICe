@@ -1,21 +1,28 @@
+"""T M P117 instrument driver."""
 from ..lab_core import *  # noqa: F403
 from PyICe.lab_utils.swap_endian import swap_endian
 from PyICe.lab_utils.twosComplementToSigned import twosComplementToSigned
 
 
 class TMP117(instrument):
-    '''Analog Devices Silicon Temperature Sensor
-    https://www.ti.com/lit/gpn/tmp117'''
+    """Analog Devices Silicon Temperature Sensor.
 
+    https://www.ti.com/lit/gpn/tmp117
+    """
     def __init__(self, interface_twi, addr7):
-        '''interface_twi is a interface_twi
+        """Interface_twi is a interface_twi.
+
         addr7 is the 7-bit I2C address of the TMP117 set by pinstrapping ADD0.
         Choose addr7 from:
         ADD0 = GND:    0x48
         ADD0 = V+:     0x49
         ADD0 = SDA:    0x4A
         ADD0 = SCL:    0x4B
-        '''
+
+        Args:
+            addr7: 7-bit I2C device address.
+            interface_twi: TWI/I2C interface instance.
+        """
         instrument.__init__(
             self,
             f'Analog Devices TMP117 Silicon Temperature Sensor at 0x{addr7:X}')
@@ -37,8 +44,13 @@ class TMP117(instrument):
         self.enable()
 
     def enable(self, enable=True):
-        '''Place TMP117 into shutdown by writing enabled=False
-        Re-enable by writing enabled=True'''
+        """Place TMP117 into shutdown by writing enabled=False.
+
+        Re-enable by writing enabled=True
+
+        Args:
+            enable: Enable or disable.
+        """
         if enable:
             self.twi.write_register(
                 addr7=self.addr7,
@@ -55,8 +67,13 @@ class TMP117(instrument):
                 use_pec=False)
 
     def read_temp(self):
-        '''Return free-running temperature conversion result.
-        Temperature is the signed result at 7.8125m°C/lsb'''
+        """Return free-running temperature conversion result.
+
+        Temperature is the signed result at 7.8125m°C/lsb
+
+        Returns:
+            Result value.
+        """
         data = self.twi.read_register(
             addr7=self.addr7,
             commandCode=self.registers['Temp_Result'],
@@ -68,7 +85,11 @@ class TMP117(instrument):
             data, bitCount=16) / 128.0      # LSB size adjustment
 
     def read_id(self):
-        '''Return REV ID and Device ID'''
+        """Return REV ID and Device ID.
+
+        Returns:
+            Result value.
+        """
         data = self.twi.read_register(
             addr7=self.addr7,
             commandCode=self.registers['Device_ID'],
@@ -80,5 +101,13 @@ class TMP117(instrument):
         return results
 
     def add_channel(self, channel_name):
+        """Add a channel.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         temp_channel = channel(channel_name, read_function=self.read_temp)
         return self._add_channel(temp_channel)

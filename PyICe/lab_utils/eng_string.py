@@ -1,10 +1,11 @@
+"""Eng string utility."""
 import math
 import numbers
 
 
 def eng_string(x, fmt=':.3g', si=True, units=None):
-    '''
-    Returns float/int value <x> formatted in a simplified engineering format -
+    """Returns float/int value <x> formatted in a simplified engineering format -.
+
     using an exponent that is a multiple of 3.
 
     format: printf-style string used to format the value before the exponent.
@@ -14,7 +15,7 @@ def eng_string(x, fmt=':.3g', si=True, units=None):
 
     E.g. with format='%.2f':
         1.23e-08 => 12.30e-9
-             123 => 123.00
+        123 => 123.00
           1230.0 => 1.23e3
       -1230000.0 => -1.23e6
 
@@ -32,7 +33,16 @@ def eng_string(x, fmt=':.3g', si=True, units=None):
     '4.7kV'
     >>> eng_string(-0.000047)
     '-47µ'
-    '''
+
+    Args:
+        fmt: Fmt.
+        si: Si.
+        units: Unit string.
+        x: X.
+
+    Returns:
+        Result value.
+    """
     assert isinstance(x, numbers.Number)
     if x == 0 or not math.isfinite(x):
         return '{{{}}}'.format(fmt).format(x)

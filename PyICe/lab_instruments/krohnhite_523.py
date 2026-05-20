@@ -1,10 +1,16 @@
+"""Krohnhite 523 instrument driver."""
 from ..lab_core import *  # noqa: F403
 
 
 class krohnhite_523(instrument):
-    '''Krohn-Hite Model 523 Precision DC Source/Calibrator'''
+    """Krohn-Hite Model 523 Precision DC Source/Calibrator."""
 
     def __init__(self, interface_visa):
+        """Initialize krohnhite_523.
+
+        Args:
+            interface_visa: VISA interface instance.
+        """
         self._base_name = 'krohnhite_523'
         instrument.__init__(self, f"krohnhite_523 @ {interface_visa}")
         self.add_interface_visa(interface_visa)
@@ -13,23 +19,50 @@ class krohnhite_523(instrument):
         self.disable_crowbar()  # turn off crowbar by default
 
     def ground_lo_terminal(self):
+        """Perform ground lo terminal operation."""
         self.get_interface().write(("g"))
 
     def float_lo_terminal(self):
+        """Perform float lo terminal operation."""
         self.get_interface().write(("f"))
 
     def disable_crowbar(self):
+        """Disable crowbar."""
         self.get_interface().write(("v"))
 
     def add_channel_voltage(self, channel_name):
+        """Add a channel voltage.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name, write_function=self._write_voltage)
         return self._add_channel(new_channel)
 
     def add_channel_current(self, channel_name):
+        """Add a channel current.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name, write_function=self._write_current)
         return self._add_channel(new_channel)
 
     def add_channel_voltage_compliance(self, channel_name):
+        """Add a channel voltage compliance.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name,
                               write_function=self._write_compliance_voltage)
         return self._add_channel(new_channel)

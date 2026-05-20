@@ -1,3 +1,4 @@
+"""Tests for psa."""
 from PyICe import lab_core
 from PyICe.lab_instruments.PSA import keysight_e4440a
 
@@ -5,7 +6,7 @@ from PyICe.lab_instruments.PSA import keysight_e4440a
 m = lab_core.master()
 m.set_allow_threading(False)
 # sa = keysight_e4440a(m.get_visa_interface('TCPIP::192.168.100.101::5025::SOCKET'))
-sa = keysight_e4440a(
+sa = keysight_e4440a(  # pylint: disable=no-value-for-parameter; test is missing required maximum_frequency arg - known incomplete test script
     m.get_visa_interface('TCPIP1::192.168.100.101::inst0::INSTR'),
     'psa',
     reset=False
@@ -13,7 +14,7 @@ sa = keysight_e4440a(
 m.add(sa)
 # foo = sa.add_channel_xdata('test_x')
 # bar = sa.add_channel_ydata('test_y', trace_number=1)
-sa.add_chanels('test')
+sa.add_channels('test')
 print(m.get_all_channel_names())
 breakpoint()
 # m['test_trigger'].write('Single')

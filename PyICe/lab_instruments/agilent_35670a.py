@@ -1,21 +1,35 @@
+"""Agilent 35670a instrument driver."""
 import sys
 import time
 from ..lab_core import scpi_instrument, channel
 
 
 class agilent_35670a(scpi_instrument):
+    """Agilent 35670a 100kHz Signal Analyzer.
 
-    '''Agilent 35670a 100kHz Signal Analyzer
-        This driver is not complete and only supports noise measurements at this time.'''
-
+    This driver is not complete and only supports noise measurements at this time.
+    """
     def __init__(self, interface_visa):
-        '''interface_visa'''
+        """Interface_visa.
+
+        Args:
+            interface_visa: VISA interface instance.
+        """
         self._base_name = 'agilent_35670a'
         scpi_instrument.__init__(self, "a35670 @ " + str(interface_visa))
         self.add_interface_visa(interface_visa)
 
     def add_channel_noise(self, channel_name, channel_num=1,
                           freqs=None, res=None, count=None):
+        """Add a channel noise.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_num: Physical channel number.
+            count: Count.
+            freqs: Freqs.
+            res: Res.
+        """
         if freqs is None:
             freqs = [0, 12.5, 100, 1000, 10000, 100000]
         if res is None:
@@ -46,14 +60,29 @@ class agilent_35670a(scpi_instrument):
         self.add_channel(channel_name, channel_num)
 
     def add_channel(self, channel_name, channel_num):
-        '''Add named channel to instrument.'''
+        """Add named channel to instrument.
+
+        Args:
+            channel_name: Name for the new channel.
+            channel_num: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         meter_channel = channel(
             channel_name,
             read_function=lambda: self.read_channel(channel_num))
         return self._add_channel(meter_channel)
 
     def read_channel(self, channel_num):
-        '''Return float representing meter measurement.  Units are {} etc depending on meter configuration.'''
+        """Return float representing meter measurement.  Units are {} etc depending on meter configuration.
+
+        Args:
+            channel_num: Physical channel number.
+
+        Returns:
+            Result value.
+        """
         for ii in range(0, len(self.count)):
             print((f'Start : {self.freqs[ii]}, Stop : {self.freqs[ii + 1]}'))
             self.get_interface().write(

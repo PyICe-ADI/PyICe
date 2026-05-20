@@ -1,3 +1,4 @@
+"""Fft module."""
 from PyICe.data_utils.spectrum_analyzer import spectrum_analyzer
 from PyICe.lab_utils.ordered_pair import ordered_pair
 from PyICe.lab_utils.eng_string import eng_string

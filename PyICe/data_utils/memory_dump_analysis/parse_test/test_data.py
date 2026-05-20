@@ -1,3 +1,4 @@
+"""Tests for data."""
 import objutils
 
 sections = []

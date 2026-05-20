@@ -1,4 +1,6 @@
-from PyICe import lab_instruments, lab_core
+"""Tests for digital analog  I O."""
+from PyICe import lab_core
+from PyICe.virtual_instruments import ramp_to, digital_analog_io
 import random
 
 
@@ -14,16 +16,16 @@ d_read = m.add_channel_virtual(
     random.random() /
     100)
 
-rt = lab_instruments.ramp_to(verbose=True)
+rt = ramp_to(verbose=True)
 dr = rt.add_channel_linear('domain_ramp', forcing_channel=d, step_size=0.1)
 m.add(dr)
 o = m.add_channel_dummy('output')
 o.set_min_write_limit(0)
 o.set_max_write_limit(10)
 o.set_write_delay(0.01)
-daio = lab_instruments.digital_analog_io(domain_channel=d, verbose=True)
-# daio = lab_instruments.digital_analog_io(domain_channel=d_read, verbose=True)
-# daio = lab_instruments.digital_analog_io()
+daio = digital_analog_io(domain_channel=d, verbose=True)
+# daio = digital_analog_io(domain_channel=d_read, verbose=True)
+# daio = digital_analog_io()
 
 ch_d = daio.add_channel_digital_output("dig_out", output_channel=o)
 daio.add_digital_output_logic_state(ch_d, 2, vo_scale=1, vo_offset=1)

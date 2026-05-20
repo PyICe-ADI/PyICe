@@ -1,10 +1,16 @@
+"""Kikusui plz334w instrument driver."""
 from .kikusui_plz import kikusui_plz
 
 
 class kikusui_plz334w(kikusui_plz):
-    '''single channel kikusui_plz334w electronic load'''
+    """Single channel kikusui_plz334w electronic load."""
 
     def __init__(self, interface_visa):
+        """Initialize kikusui_plz334w.
+
+        Args:
+            interface_visa: VISA interface instance.
+        """
         self.kikusui_plz_name = 'kikusui_plz334w'
         self.kikusui_low_threshold = 0.66
         self.kikusui_high_threshold = 6.66

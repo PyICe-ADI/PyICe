@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+"""Tests for twi."""
 
 from PyICe import lab_core, twi_instrument
 

@@ -1,4 +1,4 @@
-"""Unit tests for PyICe plugins/test_results.py
+"""Unit tests for PyICe plugins/test_results.py.
 
 Tests the pure-logic utility functions, data structures, evaluation
 logic, and JSON round-trip serialization/deserialization.
@@ -21,99 +21,130 @@ Test_Results_Reload.__test__ = False
 # --- Utility Functions ---
 
 class TestFreeze:
+    """Tests for Freeze."""
 
     def test_freeze_dict(self):
+        """Perform test freeze dict operation."""
         result = freeze({'a': 1, 'b': 2})
         assert isinstance(result, frozenset)
 
     def test_freeze_list(self):
+        """Perform test freeze list operation."""
         result = freeze([1, 2, 3])
         assert result == (1, 2, 3)
 
     def test_freeze_nested_dict(self):
+        """Perform test freeze nested dict operation."""
         result = freeze({'a': [1, 2], 'b': {'c': 3}})
         assert hash(result)  # should be hashable
 
     def test_freeze_set(self):
+        """Perform test freeze set operation."""
         result = freeze({1, 2, 3})
         assert isinstance(result, frozenset)
 
     def test_freeze_tuple(self):
+        """Perform test freeze tuple operation."""
         result = freeze((1, [2, 3]))
         assert result == (1, (2, 3))
 
     def test_freeze_scalar(self):
+        """Perform test freeze scalar operation."""
         assert freeze(42) == 42
         assert freeze('hello') == 'hello'
         assert freeze(None) is None
 
     def test_freeze_unhashable_raises(self):
+        """Perform test freeze unhashable raises operation."""
         class Unhashable:
+            """Unhashable."""
             __hash__ = None
         with pytest.raises(TypeError, match="FREEZE"):
             freeze(Unhashable())
 
 
 class TestMakeHash:
+    """Tests for Make Hash."""
 
     def test_same_dict_same_hash(self):
+        """Perform test same dict same hash operation."""
         assert make_hash({'a': 1, 'b': 2}) == make_hash({'a': 1, 'b': 2})
 
     def test_different_dict_different_hash(self):
+        """Perform test different dict different hash operation."""
         assert make_hash({'a': 1}) != make_hash({'a': 2})
 
     def test_nested_structures(self):
+        """Perform test nested structures operation."""
         h = make_hash({'x': [1, 2, 3], 'y': {'z': 4}})
         assert isinstance(h, int)
 
     def test_list_order_matters(self):
+        """Perform test list order matters operation."""
         assert make_hash([1, 2, 3]) != make_hash([3, 2, 1])
 
     def test_none(self):
+        """Perform test none operation."""
         h = make_hash(None)
         assert isinstance(h, int)
 
 
 class TestNoneOperations:
+    """Tests for None Operations."""
 
     def test_none_min_both_none(self):
+        """Perform test none min both none operation."""
         assert none_min(None, None) is None
 
     def test_none_min_first_none(self):
+        """Perform test none min first none operation."""
         assert none_min(None, 5) == 5
 
     def test_none_min_second_none(self):
+        """Perform test none min second none operation."""
         assert none_min(3, None) == 3
 
     def test_none_min_normal(self):
+        """Perform test none min normal operation."""
         assert none_min(3, 5) == 3
 
     def test_none_max_both_none(self):
+        """Perform test none max both none operation."""
         assert none_max(None, None) is None
 
     def test_none_max_first_none(self):
+        """Perform test none max first none operation."""
         assert none_max(None, 5) == 5
 
     def test_none_max_second_none(self):
+        """Perform test none max second none operation."""
         assert none_max(3, None) == 3
 
     def test_none_max_normal(self):
+        """Perform test none max normal operation."""
         assert none_max(3, 5) == 5
 
     def test_none_abs_none(self):
+        """Perform test none abs none operation."""
         assert none_abs(None) is None
 
     def test_none_abs_positive(self):
+        """Perform test none abs positive operation."""
         assert none_abs(5) == 5
 
     def test_none_abs_negative(self):
+        """Perform test none abs negative operation."""
         assert none_abs(-3) == 3
 
 
 # --- Data Structures ---
 
 def make_test_results():
-    """Create a minimal Test_Results instance with a mock module."""
+    """Create a minimal Test_Results instance with a mock module.
+
+    Returns:
+        Result value.
+    """
     module = MagicMock()
     module.get_name.return_value = 'test_module'
     module.get_database.return_value = MagicMock()
@@ -131,8 +162,10 @@ def make_test_results():
 
 
 class TestTestResult:
+    """Tests for Test Result."""
 
     def test_create_result(self):
+        """Perform test create result operation."""
         tr = make_test_results()
         result = Test_Results._test_result(
             outerclass=tr,
@@ -149,6 +182,7 @@ class TestTestResult:
         assert result.passes is True
 
     def test_bool_pass(self):
+        """Perform test bool pass operation."""
         tr = make_test_results()
         result = Test_Results._test_result(
             outerclass=tr, test_name='t', conditions=None,
@@ -158,6 +192,7 @@ class TestTestResult:
         assert bool(result) is True
 
     def test_bool_fail(self):
+        """Perform test bool fail operation."""
         tr = make_test_results()
         result = Test_Results._test_result(
             outerclass=tr, test_name='t', conditions=None,
@@ -167,6 +202,7 @@ class TestTestResult:
         assert bool(result) is False
 
     def test_len(self):
+        """Perform test len operation."""
         tr = make_test_results()
         result = Test_Results._test_result(
             outerclass=tr, test_name='t', conditions=None,
@@ -176,6 +212,7 @@ class TestTestResult:
         assert len(result) == 3
 
     def test_min_max(self):
+        """Perform test min max operation."""
         tr = make_test_results()
         result = Test_Results._test_result(
             outerclass=tr, test_name='t', conditions=None,
@@ -186,6 +223,7 @@ class TestTestResult:
         assert result._max() == 5
 
     def test_min_max_empty(self):
+        """Perform test min max empty operation."""
         tr = make_test_results()
         result = Test_Results._test_result(
             outerclass=tr, test_name='t', conditions=None,
@@ -196,6 +234,7 @@ class TestTestResult:
         assert result._max() is None
 
     def test_add_combines_results(self):
+        """Perform test add combines results operation."""
         tr = make_test_results()
         r1 = Test_Results._test_result(
             outerclass=tr, test_name='t', conditions={'c': 1},
@@ -216,6 +255,7 @@ class TestTestResult:
         assert combined.passes is True
 
     def test_add_propagates_failure(self):
+        """Perform test add propagates failure operation."""
         tr = make_test_results()
         r1 = Test_Results._test_result(
             outerclass=tr, test_name='t', conditions=None,
@@ -234,8 +274,10 @@ class TestTestResult:
 
 
 class TestTestResultsList:
+    """Tests for Test Results List."""
 
     def test_bool_all_pass(self):
+        """Perform test bool all pass operation."""
         tr = make_test_results()
         rl = Test_Results._test_results_list('test', upper_limit=10,
                                              lower_limit=0, override=False)
@@ -247,6 +289,7 @@ class TestTestResultsList:
         assert bool(rl) is True
 
     def test_bool_one_fail(self):
+        """Perform test bool one fail operation."""
         tr = make_test_results()
         rl = Test_Results._test_results_list('test', upper_limit=10,
                                              lower_limit=0, override=False)
@@ -263,11 +306,13 @@ class TestTestResultsList:
         assert bool(rl) is False
 
     def test_bool_empty_is_false(self):
+        """Perform test bool empty is false operation."""
         rl = Test_Results._test_results_list('test', upper_limit=10,
                                              lower_limit=0, override=False)
         assert bool(rl) is False
 
     def test_filter_by_condition(self):
+        """Perform test filter by condition operation."""
         tr = make_test_results()
         rl = Test_Results._test_results_list('test', upper_limit=10,
                                              lower_limit=0, override=False)
@@ -288,6 +333,7 @@ class TestTestResultsList:
         assert filtered[0].conditions == cond_a
 
     def test_min_max_aggregate(self):
+        """Perform test min max aggregate operation."""
         tr = make_test_results()
         rl = Test_Results._test_results_list('test', upper_limit=10,
                                              lower_limit=0, override=False)
@@ -308,53 +354,69 @@ class TestTestResultsList:
 # --- Evaluation Logic ---
 
 class TestEvaluateList:
+    """Tests for Evaluate List."""
 
     def setup_method(self):
+        """Perform setup method operation."""
         self.tr = make_test_results()
 
     def declare_test(self, name, lower=None, upper=None):
+        """Perform declare test operation.
+
+        Args:
+            lower: Lower.
+            name: Name identifier.
+            upper: Upper.
+        """
         self.tr.test_limits[name] = {
             'upper_limit': upper,
             'lower_limit': lower,
         }
 
     def test_pass_within_range(self):
+        """Perform test pass within range operation."""
         self.declare_test('vout', lower=3.0, upper=3.6)
         result = self.tr._evaluate_list('vout', [3.1, 3.3, 3.5],
                                         conditions=None)
         assert result.passes is True
 
     def test_fail_above_upper(self):
+        """Perform test fail above upper operation."""
         self.declare_test('vout', lower=3.0, upper=3.6)
         result = self.tr._evaluate_list('vout', [3.1, 3.3, 3.7],
                                         conditions=None)
         assert result.passes is False
 
     def test_fail_below_lower(self):
+        """Perform test fail below lower operation."""
         self.declare_test('vout', lower=3.0, upper=3.6)
         result = self.tr._evaluate_list('vout', [2.9, 3.3, 3.5],
                                         conditions=None)
         assert result.passes is False
 
     def test_exact_match_pass(self):
+        """Perform test exact match pass operation."""
         self.declare_test('code', lower=42, upper=42)
         result = self.tr._evaluate_list('code', [42, 42, 42],
                                         conditions=None)
         assert result.passes is True
 
     def test_exact_match_fail(self):
+        """Perform test exact match fail operation."""
         self.declare_test('code', lower=42, upper=42)
         result = self.tr._evaluate_list('code', [42, 43, 42],
                                         conditions=None)
         assert result.passes is False
 
     def test_no_limits_always_passes(self):
+        """Perform test no limits always passes operation."""
         self.declare_test('info', lower=None, upper=None)
         result = self.tr._evaluate_list('info', [1, 2, 3],
                                         conditions=None)
         assert result.passes is True
 
     def test_upper_only(self):
+        """Perform test upper only operation."""
         self.declare_test('current', lower=None, upper=0.01)
         result = self.tr._evaluate_list('current', [0.005, 0.008],
                                         conditions=None)
@@ -364,6 +426,7 @@ class TestEvaluateList:
         assert result2.passes is False
 
     def test_lower_only(self):
+        """Perform test lower only operation."""
         self.declare_test('gain', lower=10.0, upper=None)
         result = self.tr._evaluate_list('gain', [12.0, 15.0],
                                         conditions=None)
@@ -373,18 +436,21 @@ class TestEvaluateList:
         assert result2.passes is False
 
     def test_single_number_input(self):
+        """Perform test single number input operation."""
         self.declare_test('scalar', lower=0, upper=10)
         result = self.tr._evaluate_list('scalar', 5, conditions=None)
         assert result.passes is True
         assert len(result) == 1
 
     def test_none_data_registers_failure(self):
+        """Perform test none data registers failure operation."""
         self.declare_test('bad', lower=0, upper=10)
         result = self.tr._evaluate_list('bad', None, conditions=None)
         assert result.passes is False
         assert 'None' in result.failure_reason
 
     def test_none_in_list_registers_failure(self):
+        """Perform test none in list registers failure operation."""
         self.declare_test('partial', lower=0, upper=10)
         self.tr._evaluate_list('partial', [5, None, 7],
                                conditions=None)
@@ -393,6 +459,7 @@ class TestEvaluateList:
         assert any(not r.passes for r in results_list)
 
     def test_nan_limit_treated_as_none(self):
+        """Perform test nan limit treated as none operation."""
         self.declare_test('nan_test', lower=float('nan'),
                           upper=float('nan'))
         result = self.tr._evaluate_list('nan_test', [1, 2, 3],
@@ -400,6 +467,7 @@ class TestEvaluateList:
         assert result.passes is True
 
     def test_min_max_tracked(self):
+        """Perform test min max tracked operation."""
         self.declare_test('stats', lower=0, upper=100)
         result = self.tr._evaluate_list('stats', [10, 50, 90],
                                         conditions=None)
@@ -407,12 +475,14 @@ class TestEvaluateList:
         assert result.max_data == 90
 
     def test_conditions_stored(self):
+        """Perform test conditions stored operation."""
         self.declare_test('cond', lower=0, upper=10)
         conds = {'temp': 25, 'vdd': 3.3}
         result = self.tr._evaluate_list('cond', [5], conditions=conds)
         assert result.conditions == conds
 
     def test_failure_override(self):
+        """Perform test failure override operation."""
         self.tr._failure_override = True
         self.declare_test('crashed', lower=0, upper=10)
         result = self.tr._evaluate_list('crashed', [5],
@@ -422,8 +492,10 @@ class TestEvaluateList:
 
 
 class TestRegisterTestFailure:
+    """Tests for Register Test Failure."""
 
     def test_registers_failure(self):
+        """Perform test registers failure operation."""
         tr = make_test_results()
         tr.test_limits['bad_test'] = {'upper_limit': 10, 'lower_limit': 0}
         result = tr._register_test_failure('bad_test', 'comm error',
@@ -433,6 +505,7 @@ class TestRegisterTestFailure:
         assert 'bad_test' in tr._test_declarations
 
     def test_failure_with_conditions(self):
+        """Perform test failure with conditions operation."""
         tr = make_test_results()
         tr.test_limits['t'] = {'upper_limit': 10, 'lower_limit': 0}
         conds = {'temp': -40}
@@ -444,13 +517,27 @@ class TestRegisterTestFailure:
 # --- JSON Encoder ---
 
 class TestCustomJSONEncoder:
+    """Tests for Custom J S O N Encoder."""
 
     def get_encoder(self):
-        """Extract the CustomJSONizer class from _json_report."""
+        """Extract the CustomJSONizer class from _json_report.
+
+        Returns:
+            Result value.
+        """
         from numpy import bool_, ndarray
 
         class CustomJSONizer(json.JSONEncoder):
+            """Custom j s o nizer (j s o n encoder subclass)."""
             def default(self, obj):
+                """Return default result.
+
+                Args:
+                    obj: Obj.
+
+                Returns:
+                    Result value.
+                """
                 if isinstance(obj, bool_):
                     return bool(obj)
                 elif isinstance(obj, datetime.datetime):
@@ -462,17 +549,20 @@ class TestCustomJSONEncoder:
         return CustomJSONizer
 
     def test_numpy_bool(self):
+        """Perform test numpy bool operation."""
         enc = self.get_encoder()
         result = json.dumps({'val': np.bool_(True)}, cls=enc)
         assert '"val": true' in result
 
     def test_datetime(self):
+        """Perform test datetime operation."""
         enc = self.get_encoder()
         dt = datetime.datetime(2024, 1, 15, 10, 30, 0)
         result = json.dumps({'dt': dt}, cls=enc)
         assert '2024-01-15' in result
 
     def test_numpy_array(self):
+        """Perform test numpy array operation."""
         enc = self.get_encoder()
         arr = np.array([1.0, 2.0, 3.0])
         result = json.dumps({'arr': arr}, cls=enc)
@@ -483,7 +573,11 @@ class TestCustomJSONEncoder:
 # --- JSON Schema & Round-Trip Tests ---
 
 def build_populated_test_results():
-    """Build a Test_Results with multiple tests, conditions, and results."""
+    """Build a Test_Results with multiple tests, conditions, and results.
+
+    Returns:
+        Result value.
+    """
     tr = make_test_results()
 
     # Declare test limits
@@ -511,7 +605,15 @@ def build_populated_test_results():
 
 
 def write_json_report(tr, path):
-    """Generate JSON report bypassing database metadata lookup."""
+    """Generate JSON report bypassing database metadata lookup.
+
+    Args:
+        path: Path.
+        tr: Tr.
+
+    Returns:
+        Result value.
+    """
     # Mock the module's database access for _json_report
     mock_db = MagicMock()
     mock_db.get_table_names.return_value = []
@@ -532,12 +634,25 @@ class TestJSONSchema:
 
     @pytest.fixture
     def report(self, tmp_path):
+        """Return report result.
+
+        Args:
+            tmp_path: Tmp path.
+
+        Returns:
+            Result value.
+        """
         tr = build_populated_test_results()
         json_path = str(tmp_path / "test_results.json")
         json_str = write_json_report(tr, json_path)
         return json.loads(json_str)
 
     def test_top_level_keys(self, report):
+        """Perform test top level keys operation.
+
+        Args:
+            report: Report.
+        """
         assert 'test_module' in report
         assert 'test_crashed' in report
         assert 'report_date' in report
@@ -545,33 +660,68 @@ class TestJSONSchema:
         assert 'summary' in report
 
     def test_test_module_name(self, report):
+        """Perform test test module name operation.
+
+        Args:
+            report: Report.
+        """
         assert report['test_module'] == 'test_module'
 
     def test_test_crashed_is_bool(self, report):
+        """Perform test test crashed is bool operation.
+
+        Args:
+            report: Report.
+        """
         assert isinstance(report['test_crashed'], bool)
 
     def test_report_date_format(self, report):
+        """Perform test report date format operation.
+
+        Args:
+            report: Report.
+        """
         dt = datetime.datetime.strptime(report['report_date'],
                                         '%Y-%m-%dT%H:%M:%S.%fZ')
         assert isinstance(dt, datetime.datetime)
 
     def test_summary_has_passes(self, report):
+        """Perform test summary has passes operation.
+
+        Args:
+            report: Report.
+        """
         assert 'passes' in report['summary']
         assert isinstance(report['summary']['passes'], bool)
 
     def test_tests_contain_declarations(self, report):
+        """Perform test tests contain declarations operation.
+
+        Args:
+            report: Report.
+        """
         for test_name, test_data in report['tests'].items():
             assert 'declaration' in test_data
             assert 'upper_limit' in test_data['declaration']
             assert 'lower_limit' in test_data['declaration']
 
     def test_tests_contain_results(self, report):
+        """Perform test tests contain results operation.
+
+        Args:
+            report: Report.
+        """
         for test_name, test_data in report['tests'].items():
             assert 'results' in test_data
             assert 'cases' in test_data['results']
             assert 'summary' in test_data['results']
 
     def test_case_structure(self, report):
+        """Perform test case structure operation.
+
+        Args:
+            report: Report.
+        """
         cases = report['tests']['vout_accuracy']['results']['cases']
         assert len(cases) == 3  # three temperature conditions
         for case in cases:
@@ -580,6 +730,11 @@ class TestJSONSchema:
             assert 'summary' in case
 
     def test_case_results_fields(self, report):
+        """Perform test case results fields operation.
+
+        Args:
+            report: Report.
+        """
         cases = report['tests']['vout_accuracy']['results']['cases']
         for case in cases:
             for result in case['case_results']:
@@ -591,10 +746,20 @@ class TestJSONSchema:
                 assert 'plot' not in result
 
     def test_exact_match_limits(self, report):
+        """Perform test exact match limits operation.
+
+        Args:
+            report: Report.
+        """
         decl = report['tests']['register_readback']['declaration']
         assert decl['upper_limit'] == decl['lower_limit'] == 0xAB
 
     def test_null_condition_case(self, report):
+        """Perform test null condition case operation.
+
+        Args:
+            report: Report.
+        """
         cases = report['tests']['register_readback']['results']['cases']
         assert cases[0]['conditions'] is None
 
@@ -604,7 +769,14 @@ class TestJSONRoundTrip:
 
     @pytest.fixture
     def round_trip(self, tmp_path):
-        """Build results, serialize to JSON, reload, return both."""
+        """Build results, serialize to JSON, reload, return both.
+
+        Args:
+            tmp_path: Tmp path.
+
+        Returns:
+            Result value.
+        """
         original = build_populated_test_results()
         json_path = str(tmp_path / "test_results.json")
         json_str = write_json_report(original, json_path)
@@ -621,12 +793,22 @@ class TestJSONRoundTrip:
         return original, reloaded, json_path
 
     def test_test_declarations_preserved(self, round_trip):
+        """Perform test test declarations preserved operation.
+
+        Args:
+            round_trip: Round trip.
+        """
         original, reloaded, _ = round_trip
         assert list(
             reloaded._test_declarations) == list(
             original._test_declarations)
 
     def test_test_limits_preserved(self, round_trip):
+        """Perform test test limits preserved operation.
+
+        Args:
+            round_trip: Round trip.
+        """
         original, reloaded, _ = round_trip
         for test_name in original._test_declarations:
             assert reloaded.test_limits[test_name]['upper_limit'] == \
@@ -635,6 +817,11 @@ class TestJSONRoundTrip:
                 original.test_limits[test_name]['lower_limit']
 
     def test_collected_data_preserved(self, round_trip):
+        """Perform test collected data preserved operation.
+
+        Args:
+            round_trip: Round trip.
+        """
         original, reloaded, _ = round_trip
         for test_name in original._test_declarations:
             orig_results = original._test_results[test_name]
@@ -648,12 +835,22 @@ class TestJSONRoundTrip:
             assert reload_all_data == orig_all_data
 
     def test_pass_fail_preserved(self, round_trip):
+        """Perform test pass fail preserved operation.
+
+        Args:
+            round_trip: Round trip.
+        """
         original, reloaded, _ = round_trip
         for test_name in original._test_declarations:
             assert bool(reloaded._test_results[test_name]) == \
                 bool(original._test_results[test_name])
 
     def test_conditions_preserved(self, round_trip):
+        """Perform test conditions preserved operation.
+
+        Args:
+            round_trip: Round trip.
+        """
         original, reloaded, _ = round_trip
         orig_results = original._test_results['vout_accuracy']
         reload_results = reloaded._test_results['vout_accuracy']
@@ -662,6 +859,11 @@ class TestJSONRoundTrip:
         assert reload_conds == orig_conds
 
     def test_min_max_preserved(self, round_trip):
+        """Perform test min max preserved operation.
+
+        Args:
+            round_trip: Round trip.
+        """
         original, reloaded, _ = round_trip
         for test_name in original._test_declarations:
             orig_results = original._test_results[test_name]
@@ -671,6 +873,11 @@ class TestJSONRoundTrip:
                 assert reloaded_r.max_data == orig.max_data
 
     def test_failure_reason_preserved(self, round_trip):
+        """Perform test failure reason preserved operation.
+
+        Args:
+            round_trip: Round trip.
+        """
         original, reloaded, _ = round_trip
         for test_name in original._test_declarations:
             for orig, reloaded_r in zip(original._test_results[test_name],
@@ -678,12 +885,22 @@ class TestJSONRoundTrip:
                 assert reloaded_r.failure_reason == orig.failure_reason
 
     def test_plot_reset_to_empty(self, round_trip):
+        """Perform test plot reset to empty operation.
+
+        Args:
+            round_trip: Round trip.
+        """
         _, reloaded, _ = round_trip
         for test_name in reloaded._test_declarations:
             for r in reloaded._test_results[test_name]:
                 assert r.plot == []
 
     def test_query_preserved_or_none(self, round_trip):
+        """Perform test query preserved or none operation.
+
+        Args:
+            round_trip: Round trip.
+        """
         original, reloaded, _ = round_trip
         for test_name in original._test_declarations:
             for orig, reloaded_r in zip(original._test_results[test_name],
@@ -694,17 +911,32 @@ class TestJSONRoundTrip:
                     assert reloaded_r.query == orig.query
 
     def test_traceability_preserved(self, round_trip):
+        """Perform test traceability preserved operation.
+
+        Args:
+            round_trip: Round trip.
+        """
         _, reloaded, _ = round_trip
         info = reloaded.get_traceability_info()
         assert info['dut_serial'] == 'SN001'
         assert info['board_rev'] == 'A'
 
     def test_overall_bool_preserved(self, round_trip):
+        """Perform test overall bool preserved operation.
+
+        Args:
+            round_trip: Round trip.
+        """
         original, reloaded, _ = round_trip
         assert bool(reloaded) == bool(original)
 
     def test_double_round_trip(self, round_trip, tmp_path):
-        """Serialize reloaded results back to JSON and compare structure."""
+        """Serialize reloaded results back to JSON and compare structure.
+
+        Args:
+            round_trip: Round trip.
+            tmp_path: Tmp path.
+        """
         original, reloaded, _ = round_trip
         # Re-export from reloaded object
         reloaded._module = MagicMock()

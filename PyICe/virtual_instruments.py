@@ -1,3 +1,4 @@
+"""Virtual instruments module."""
 from .lab_core import *  # noqa: F403
 from PyICe.lab_utils.str2num import str2num
 from PyICe.lab_instruments.temperature_chamber import temperature_chamber
@@ -54,10 +55,8 @@ dummy_quantum_twin
 virtual_oven
   Creates shell of an oven-like instrument. Useful for tests that require oven channels but lack an oven.
 '''
-
-
 class dummy(instrument):
-    '''Doesn't do anything. Use to replace missing equipment in a testbench, etc.
+    """Doesn't do anything. Use to replace missing equipment in a testbench, etc.
 
     >>> d = dummy()
     >>> ch = d.add_channel_write('vout')
@@ -66,11 +65,16 @@ class dummy(instrument):
     >>> rd = d.add_channel_read('vin')
     >>> rd.read() is None
     True
-    '''
+    """
     _add_channel_is_writeable_def = None
 
     def __init__(self, *args, **kwargs):
-        '''Match calling convention of other instruments. Accept interface, etc type positional and keyword args.'''
+        """Match calling convention of other instruments. Accept interface, etc type positional and keyword args.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            *args: Additional positional arguments.
+        """
         # keep init arguments just in case for future reference.
         self.init_args = args
         self.init_kwagrs = kwargs
@@ -89,16 +93,40 @@ class dummy(instrument):
         instrument.__init__(self, self._base_name)
 
     def set_verbose(self, verbose=True):
+        """Set the verbose.
+
+        Args:
+            verbose: If True, print debug output.
+        """
         self._verbose = verbose
 
     def set_add_channel_is_writeable(self, add_channel_is_writeable=None):
+        """Set the add channel is writeable.
+
+        Args:
+            add_channel_is_writeable: Add channel is writeable.
+        """
         self._add_channel_is_writeable = add_channel_is_writeable
 
     def set_random_read(self, channel_read_returns_random=True):
+        """Set the random read.
+
+        Args:
+            channel_read_returns_random: Channel read returns random.
+        """
         self._random_read = channel_read_returns_random
 
     def add_channel_write(self, channel_name, *args, **kwargs):
-        '''writeable do-nothing channel.'''
+        """Writeable do-nothing channel.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            *args: Additional positional arguments.
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         if "integer_size" in kwargs:
             new_channel = integer_channel(
                 channel_name, write_function=lambda value: self._write(
@@ -150,7 +178,16 @@ class dummy(instrument):
             print(f"Dummy write channel {channel_name} to {value}.")
 
     def add_channel_read(self, channel_name, *args, **kwargs):
-        '''Read-only do-nothing channel'''
+        """Read-only do-nothing channel.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            *args: Additional positional arguments.
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         if "integer_size" in kwargs:
             new_channel = integer_channel(
                 channel_name, size=kwargs["integer_size"])
@@ -190,7 +227,16 @@ class dummy(instrument):
         return value
 
     def add_channel(self, channel_name, *args, **kwargs):
-        '''match arguments of other instrument add_channel methods for easy temporary substitution'''
+        """Match arguments of other instrument add_channel methods for easy temporary substitution.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            *args: Additional positional arguments.
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         if self._add_channel_is_writeable:
             new_channel = self.add_channel_write(channel_name, *args, **kwargs)
         else:
@@ -199,25 +245,30 @@ class dummy(instrument):
 
 
 class dummy_read(dummy):
-    '''Dummy instrument with add_channel method defaulted to read-only.'''
+    """Dummy instrument with add_channel method defaulted to read-only."""
     _add_channel_is_writeable_def = False
 
 
 class dummy_write(dummy):
-    '''Dummy instrument with add_channel method defaulted to writeable.'''
+    """Dummy instrument with add_channel method defaulted to writeable."""
     _add_channel_is_writeable_def = True
 
 
 class instrument_humanoid(instrument, delegator):
-    '''Notification helper to put human control of a manual instrument into an otherwise automated measurement.'''
+    """Notification helper to put human control of a manual instrument into an otherwise automated measurement."""
 
     def __init__(self, notification_function=None):
-        '''Notification will be sent to notification_function when a write occurs to any channel in this instrument.  The function should take a single string argument and deliver it to the user as appropriate (sms, email, etc).
+        """Notification will be sent to notification_function when a write occurs to any channel in this instrument.  The function should take a single string argument and deliver it to the user as appropriate (sms, email, etc).
+
         Hint: Use a lambda function to include a subject line in the email:
         from PyICe.lab_utils.communications import email
         myemail = email(destination='myemail@mycompany.com')
         notification_function=lambda msg: myemail.send(msg,subject="LTC lab requires attention!")
-        If notification_function is None, messages will only be sent to the terminal.'''
+        If notification_function is None, messages will only be sent to the terminal.
+
+        Args:
+            notification_function: Notification function.
+        """
         self._base_name = 'Humanoid Virtual Instrument'
         delegator.__init__(self)
         instrument.__init__(
@@ -232,16 +283,28 @@ class instrument_humanoid(instrument, delegator):
         self.set_read_input_function()
 
     def add_notification_function(self, notification_function):
-        '''Add additional notification function to instrument.  Ex email and SMS.
+        """Add additional notification function to instrument.  Ex email and SMS.
+
         Notification will be sent to notification_function when a write occurs to any channel in this instrument.  The function should take a single string argument and deliver it to the user as appropriate (sms, email, etc).
         Hint: Use a lambda function to include a subject line in the email:
         from PyICe.lab_utils.communications import email
         myemail = email(destination='myemail@mycompany.com')
-        notification_function=lambda msg: myemail.send(msg,subject="LTC lab requires attention!")'''
+        notification_function=lambda msg: myemail.send(msg,subject="LTC lab requires attention!")
+
+        Args:
+            notification_function: Notification function.
+        """
         self.notification_functions.append(notification_function)
 
     def add_channel_notification_enable(self, channel_name):
-        '''Hook to temporarily suspend notifications, ex for initial setup.'''
+        """Hook to temporarily suspend notifications, ex for initial setup.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name,
                               write_function=self.set_notification_enable)
         new_channel.set_description(
@@ -249,14 +312,22 @@ class instrument_humanoid(instrument, delegator):
         return self._add_channel(new_channel)
 
     def set_notification_enable(self, enabled):
-        '''non-channel hook to enable/disable notifications'''
+        """Non-channel hook to enable/disable notifications.
+
+        Args:
+            enabled: Enabled.
+        """
         if enabled:
             self.enable_notifications = True
         else:
             self.enable_notifications = False
 
     def set_write_block_function(self, fn=None):
-        '''replace input() method with alternative way to proceed. IE email or button press'''
+        """Replace input() method with alternative way to proceed. IE email or button press.
+
+        Args:
+            fn: Callable function.
+        """
         if fn is None:
             self._write_block = lambda: input(
                 'Then press any key to continue.')
@@ -264,7 +335,8 @@ class instrument_humanoid(instrument, delegator):
             self._write_block = fn
 
     def set_read_input_function(self, fn=None):
-        '''replace input() prompt with alternative way to supply read values.
+        """Replace input() prompt with alternative way to supply read values.
+
         fn should accept a prompt string and return the user's response string.
 
         >>> h = instrument_humanoid()
@@ -276,7 +348,10 @@ class instrument_humanoid(instrument, delegator):
         3.3
         >>> ch.read()
         25.0
-        '''
+
+        Args:
+            fn: Callable function.
+        """
         if fn is None:
             self._read_input = input
         else:
@@ -296,13 +371,25 @@ class instrument_humanoid(instrument, delegator):
         print(f'Successfully toggled {ch.get_name()}. Moving right along.')
 
     def set_write_block_channel(self, ch):
-        '''wait for channel value to toggle high then low before proceeding'''
+        """Wait for channel value to toggle high then low before proceeding.
+
+        Args:
+            ch: Ch.
+        """
         self._write_block = lambda ch=ch: self._ch_block(ch)
 
     def add_channel_write(self, channel_name):
-        '''add new channel named channel_name.  Writes to channel_name will send a notification using notification_function and will block until the user acknowledges (in the terminal) that they have intervened as appropriate.
+        """Add new channel named channel_name.  Writes to channel_name will send a notification using notification_function and will block until the user acknowledges (in the terminal) that they have intervened as appropriate.
+
         Useful for including manual forcing instruments in an otherwise automated setup.
-        To set delay after changing channel, use set_write_delay() method of returned channel.'''
+        To set delay after changing channel, use set_write_delay() method of returned channel.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             write_function=lambda value: self._write(
@@ -323,8 +410,17 @@ class instrument_humanoid(instrument, delegator):
         self._write_block()  # args???
 
     def add_channel_read(self, channel_name, integer_size=None):
-        '''add new channel named channel_name.  Reads from channel_name will send a notification using notification_function and will prompt for input.
-        Useful for including manual measurement instruments in an otherwise automated setup.'''
+        """Add new channel named channel_name.  Reads from channel_name will send a notification using notification_function and will prompt for input.
+
+        Useful for including manual measurement instruments in an otherwise automated setup.
+
+        Args:
+            channel_name: Name for the new channel.
+            integer_size: Integer size.
+
+        Returns:
+            Result value.
+        """
         if integer_size is not None:
             new_channel = integer_channel(channel_name, size=integer_size)
             # delay read function to include self reference
@@ -355,7 +451,14 @@ class instrument_humanoid(instrument, delegator):
         return value
 
     def read_delegated_channel_list(self, channels):
-        '''private'''
+        """Private.
+
+        Args:
+            channels: List of channel objects.
+
+        Returns:
+            Result value.
+        """
         if self.enable_notifications:
             msg = 'Please input read value{s} for channel{s}: {names} now. ({now})'.format(
                 s='s' if len(channels) > 1 else '',
@@ -372,7 +475,7 @@ class instrument_humanoid(instrument, delegator):
 
 
 class expect(instrument):
-    '''Virtual instrument to check that reading is within specified tolerance of expected result.
+    """Virtual instrument to check that reading is within specified tolerance of expected result.
 
     >>> expect.compare_abs(measured=10.1, expect=10.0, tolerance=0.2)
     True
@@ -386,11 +489,11 @@ class expect(instrument):
     True
     >>> expect.compare_exact(measured=42, expect=43)
     False
-    '''
-
+    """
     def __init__(self, verbose_pass, err_msg_prefix=None,
                  pass_msg_prefix=None):
-        '''Expect instrument.
+        """Expect instrument.
+
         Monitor slaved channel(s) for unexpected (out-of-spec) measurments.
         Configurable per-channel to emit warning message or raise ExpectException when expectations are not met.
         Configurable per-channel to perform check either on demand, or automatically whenever slaved chanenl is read.
@@ -399,7 +502,12 @@ class expect(instrument):
         Configurable per-instrument to emit custom error message prefix (for regex log search, etc)
         Configurable per-instrument to emit custom pass message prefix (for regex log search, etc)
         Configurable per-instrument to selectively emit verbose_pass message (for regex log search, etc)
-        '''
+
+        Args:
+            err_msg_prefix: Err msg prefix.
+            pass_msg_prefix: Pass msg prefix.
+            verbose_pass: Verbose pass.
+        """
         instrument.__init__(self, "Measurement Expect Instrument")
         self._base_name = 'Measurement Expect Instrument'
         self.verbose_pass = True if verbose_pass else False
@@ -415,76 +523,199 @@ class expect(instrument):
 
     @staticmethod
     def compare_exact(measured, expect):
-        '''check that measured is equal to expect'''
+        """Check that measured is equal to expect.
+
+        Args:
+            expect: Expected value.
+            measured: Measured value.
+
+        Returns:
+            Result value.
+        """
         return measured == expect
 
     @staticmethod
     def compare_pct_not_above(measured, expect, tolerance):
-        '''check that measured is below expect * (1 + tolerance)'''
+        """Check that measured is below expect * (1 + tolerance).
+
+        Args:
+            expect: Expected value.
+            measured: Measured value.
+            tolerance: Tolerance value.
+
+        Returns:
+            Result value.
+        """
         return measured <= expect * (1 + tolerance)
 
     @staticmethod
     def compare_pct_not_below(measured, expect, tolerance):
-        '''check that measured is above expect * (1 - tolerance)'''
+        """Check that measured is above expect * (1 - tolerance).
+
+        Args:
+            expect: Expected value.
+            measured: Measured value.
+            tolerance: Tolerance value.
+
+        Returns:
+            Result value.
+        """
         return measured >= expect * (1 - tolerance)
 
     @staticmethod
     def compare_abs_not_above(measured, expect, tolerance):
-        '''check that measured is below (expect + tolerance)'''
+        """Check that measured is below (expect + tolerance).
+
+        Args:
+            expect: Expected value.
+            measured: Measured value.
+            tolerance: Tolerance value.
+
+        Returns:
+            Result value.
+        """
         return measured <= expect + tolerance
 
     @staticmethod
     def compare_abs_not_below(measured, expect, tolerance):
-        '''check that measured is above (expect - tolerance)'''
+        """Check that measured is above (expect - tolerance).
+
+        Args:
+            expect: Expected value.
+            measured: Measured value.
+            tolerance: Tolerance value.
+
+        Returns:
+            Result value.
+        """
         return measured >= expect - tolerance
 
     @classmethod
     def compare_pct(cls, measured, expect, tolerance):
-        '''check that measured is within expect * (1 +/- tolerance)'''
+        """Check that measured is within expect * (1 +/- tolerance).
+
+        Args:
+            expect: Expected value.
+            measured: Measured value.
+            tolerance: Tolerance value.
+
+        Returns:
+            Result value.
+        """
         return cls.compare_pct_not_above(
             measured, expect, tolerance) and cls.compare_pct_not_below(measured, expect, tolerance)
 
     @classmethod
     def compare_abs(cls, measured, expect, tolerance):
-        '''check that measured is within expect +/- tolerance'''
+        """Check that measured is within expect +/- tolerance.
+
+        Args:
+            expect: Expected value.
+            measured: Measured value.
+            tolerance: Tolerance value.
+
+        Returns:
+            Result value.
+        """
         return cls.compare_abs_not_above(
             measured, expect, tolerance) and cls.compare_abs_not_below(measured, expect, tolerance)
 
     @classmethod
     def compare_strict(cls, measured, expect, pct_tolerance, abs_tolerance):
-        '''check that both absolute tolerance and percentage tolerance is met'''
+        """Check that both absolute tolerance and percentage tolerance is met.
+
+        Args:
+            abs_tolerance: Abs tolerance.
+            expect: Expected value.
+            measured: Measured value.
+            pct_tolerance: Pct tolerance.
+
+        Returns:
+            Result value.
+        """
         return cls.compare_pct(measured, expect, pct_tolerance) and cls.compare_abs(
             measured, expect, abs_tolerance)
 
     @classmethod
     def compare_lenient(cls, measured, expect, pct_tolerance, abs_tolerance):
-        '''check that either absolute tolerance or percentage tolerance is met'''
+        """Check that either absolute tolerance or percentage tolerance is met.
+
+        Args:
+            abs_tolerance: Abs tolerance.
+            expect: Expected value.
+            measured: Measured value.
+            pct_tolerance: Pct tolerance.
+
+        Returns:
+            Result value.
+        """
         return cls.compare_pct(measured, expect, pct_tolerance) or cls.compare_abs(
             measured, expect, abs_tolerance)
 
     def check_exact(self, measured, expect, en_assertion, name=None):
-        '''Channel-independent exact-value check method.
+        """Channel-independent exact-value check method.
+
         Configurable to either emit warning message or raise ExpectException when expectation is not met.
-        '''
+
+        Args:
+            en_assertion: If True, raise exception on failure.
+            expect: Expected value.
+            measured: Measured value.
+            name: Name identifier.
+
+        Returns:
+            Result value.
+        """
         return self._check(function=self.compare_exact, measured=measured, expect=expect,
                            tolerance=None, en_assertion=en_assertion, exp_name=name, slave_name=None)
 
     def check_pct(self, measured, expect, tolerance, en_assertion, name=None):
-        '''Channel-independent percentage/multiplicative check method.
+        """Channel-independent percentage/multiplicative check method.
+
         Configurable to either emit warning message or raise ExpectException when expectation is not met.
-        '''
+
+        Args:
+            en_assertion: If True, raise exception on failure.
+            expect: Expected value.
+            measured: Measured value.
+            name: Name identifier.
+            tolerance: Tolerance value.
+
+        Returns:
+            Result value.
+        """
         return self._check(function=self.compare_pct, measured=measured, expect=expect,
                            tolerance=tolerance, en_assertion=en_assertion, exp_name=name, slave_name=None)
 
     def check_abs(self, measured, expect, tolerance, en_assertion, name=None):
-        '''Channel-independent absolute/additive check method.
+        """Channel-independent absolute/additive check method.
+
         Configurable to either emit warning message or raise ExpectException when expectation is not met.
-        '''
+
+        Args:
+            en_assertion: If True, raise exception on failure.
+            expect: Expected value.
+            measured: Measured value.
+            name: Name identifier.
+            tolerance: Tolerance value.
+
+        Returns:
+            Result value.
+        """
         return self._check(function=self.compare_abs, measured=measured, expect=expect,
                            tolerance=tolerance, en_assertion=en_assertion, exp_name=name, slave_name=None)
 
     def _ch_check(self, ch, measured=None, expect=None):
-        '''unified check and error report wrapper for channel attribute lookup'''
+        """Unified check and error report wrapper for channel attribute lookup.
+
+        Args:
+            ch: Ch.
+            expect: Expected value.
+            measured: Measured value.
+
+        Returns:
+            Result value.
+        """
         if expect is None:
             # as is the case when called from read callbac
             # TODO Does this need some special handling for None actual channel
@@ -521,7 +752,25 @@ class expect(instrument):
 
     def _check(self, function, measured, expect, tolerance,
                en_assertion, exp_name=None, slave_name=None):
-        '''unified check and error report'''
+        """Unified check and error report.
+
+        Args:
+            en_assertion: If True, raise exception on failure.
+            exp_name: Exp name.
+            expect: Expected value.
+            function: Function.
+            measured: Measured value.
+            slave_name: Slave name.
+            tolerance: Tolerance value.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+            ExpectOverException: On error condition.
+            ExpectUnderException: On error condition.
+        """
         if tolerance is not None:
             comp_result = function(measured, expect, tolerance)
         else:
@@ -616,11 +865,22 @@ class expect(instrument):
 
     def add_channel_expect_pct(
             self, channel_name, slave_read_channel, tolerance, en_immediate, en_assertion):
-        '''Check that value read from slave_read_channel is within <write_value> * (1 +/- tolerance)
+        """Check that value read from slave_read_channel is within <write_value> * (1 +/- tolerance).
+
         if en_immediate, a write to this channel triggers a read of slave_read_channel and the compare operation
         otherwise, the compare operation is executed automatically each time slave_read_channel is read.
         if en_assertion, a failed compare operation raises an ExpectException
-        '''
+
+        Args:
+            channel_name: Name for the new channel.
+            en_assertion: If True, raise exception on failure.
+            en_immediate: En immediate.
+            slave_read_channel: Slave read channel.
+            tolerance: Tolerance value.
+
+        Returns:
+            Result value.
+        """
         ch = self._add_channel_expect(
             compare_func=self.compare_pct,
             channel_name=channel_name,
@@ -634,11 +894,22 @@ class expect(instrument):
 
     def add_channel_expect_abs(
             self, channel_name, slave_read_channel, tolerance, en_immediate, en_assertion):
-        '''Check that value read from slave_read_channel is within <write_value> +/- tolerance
+        """Check that value read from slave_read_channel is within <write_value> +/- tolerance.
+
         if en_immediate, a write to this channel triggers a read of slave_read_channel and the compare operation
         otherwise, the compare operation is executed automatically each time slave_read_channel is read.
         if en_assertion, a failed compare operation raises an ExpectException
-        '''
+
+        Args:
+            channel_name: Name for the new channel.
+            en_assertion: If True, raise exception on failure.
+            en_immediate: En immediate.
+            slave_read_channel: Slave read channel.
+            tolerance: Tolerance value.
+
+        Returns:
+            Result value.
+        """
         ch = self._add_channel_expect(
             compare_func=self.compare_abs,
             channel_name=channel_name,
@@ -652,12 +923,22 @@ class expect(instrument):
 
     def add_channel_expect_exact(
             self, channel_name, slave_read_channel, en_immediate, en_assertion):
-        '''Check that value read from slave_read_channel is equal to <write_value>
+        """Check that value read from slave_read_channel is equal to <write_value>.
+
         slave_read_channel must be an integer channel for an exact comparison to make sense.
         if en_immediate, a write to this channel triggers a read of slave_read_channel and the compare operation
         otherwise, the compare operation is executed automatically each time slave_read_channel is read.
         if en_assertion, a failed compare operation raises an ExpectException
-        '''
+
+        Args:
+            channel_name: Name for the new channel.
+            en_assertion: If True, raise exception on failure.
+            en_immediate: En immediate.
+            slave_read_channel: Slave read channel.
+
+        Returns:
+            Result value.
+        """
         assert isinstance(slave_read_channel, integer_channel)
         ch = self._add_channel_expect(
             compare_func=self.compare_exact,
@@ -671,7 +952,15 @@ class expect(instrument):
         return ch
 
     def add_channel_tolerance(self, channel_name, expect_channel):
-        '''Modify expect tolerance of expect_channel after creation. Also logs tolerance with results (with pct/abs ambiguity).'''
+        """Modify expect tolerance of expect_channel after creation. Also logs tolerance with results (with pct/abs ambiguity).
+
+        Args:
+            channel_name: Name for the new channel.
+            expect_channel: Expect channel.
+
+        Returns:
+            Result value.
+        """
         assert 'tolerance' in expect_channel.get_attributes().keys()
         # integer channel / exact comparison
         assert expect_channel.get_attributes()['tolerance'] is not None
@@ -686,7 +975,15 @@ class expect(instrument):
         return self._add_channel(ch)
 
     def add_channel_enable(self, channel_name, expect_channel):
-        '''Enabled/disable expect cheking of expect_channel after creation.'''
+        """Enabled/disable expect cheking of expect_channel after creation.
+
+        Args:
+            channel_name: Name for the new channel.
+            expect_channel: Expect channel.
+
+        Returns:
+            Result value.
+        """
         ch = channel(
             channel_name,
             write_function=lambda enable: expect_channel.set_attribute(
@@ -699,60 +996,96 @@ class expect(instrument):
 
 
 class ExpectException(Exception):
-    '''Base class for expect instrument comparison failures'''
+    """Base class for expect instrument comparison failures."""
 
 
 class ExpectOverException(ExpectException):
-    '''expect instrument comparison failures for measured > expect'''
+    """Expect instrument comparison failures for measured > expect."""
 
 
 class ExpectUnderException(ExpectException):
-    '''expect instrument comparison failures for measured < expect'''
+    """Expect instrument comparison failures for measured < expect."""
 
 
 class delay_loop(PyICe.lab_utils.delay_loop.delay_loop, instrument):
-    '''instrument wrapper for lab_utils.delay_loop enables logging of delay diagnostic variables'''
+    """Instrument wrapper for lab_utils.delay_loop enables logging of delay diagnostic variables."""
 
     def __init__(self, strict=False, begin=True, no_drift=True):
-        '''Set strict to True to raise an Exception if loop time is longer than requested delay.
+        """Set strict to True to raise an Exception if loop time is longer than requested delay.
+
         Timer will automatically begin when the object is instantiated if begin=True.
-          To start timer only when ready, set begin=False and call begin() method to start timer.
+        To start timer only when ready, set begin=False and call begin() method to start timer.
         If no_drift=True, delay loop will manage loop time over-runs by debiting extra time from next cycle.
-          This insures long-term time stability at the expense of increased jitter.
-          Windows task switching can add multi-mS uncertainty to each delay() call, which can accumulate if not accounted for.
-          Set no_drift=False to ignore time over-runs when computing next delay time.
-        '''
+        This insures long-term time stability at the expense of increased jitter.
+        Windows task switching can add multi-mS uncertainty to each delay() call, which can accumulate if not accounted for.
+        Set no_drift=False to ignore time over-runs when computing next delay time.
+
+        Args:
+            begin: Begin.
+            no_drift: No drift.
+            strict: Strict.
+        """
         instrument.__init__(self, "delay_loop instrument wrapper")
         PyICe.lab_utils.delay_loop.delay_loop.__init__(
             self, strict, begin, no_drift)
         self._base_name = 'Precision Delay Loop Virtual Instrument Wrapper'
 
     def add_channel_count(self, channel_name):
-        '''total number of times delay() method called'''
+        """Total number of times delay() method called.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name, read_function=self.get_count)
         new_channel.set_description(
             self.get_name() + ': ' + self.add_channel_count.__doc__)
         return self._add_channel(new_channel)
 
     def add_channel_total_time(self, channel_name):
-        '''total number of seconds since delay() method first called'''
+        """Total number of seconds since delay() method first called.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name, read_function=self.get_total_time)
         new_channel.set_description(
             self.get_name() + ': ' + self.add_channel_total_time.__doc__)
         return self._add_channel(new_channel)
 
     def add_channel_delay_margin(self, channel_name):
-        '''time remaining after user's loop tasks completed to sleep before start of next cycle.
+        """Time remaining after user's loop tasks completed to sleep before start of next cycle.
+
         Negative if user tasks exceed loop time and no time is left to sleep.
-        Includes any make-up contribution if previous iterations over-ran allocated loop time with no_drift attribute set.'''
+        Includes any make-up contribution if previous iterations over-ran allocated loop time with no_drift attribute set.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name, read_function=self.delay_margin)
         new_channel.set_description(
             self.get_name() + ': ' + self.add_channel_delay_margin.__doc__)
         return self._add_channel(new_channel)
 
     def add_channel_achieved_loop_time(self, channel_name):
-        '''actual time spent during in last loop iteration
-        possibly longer than requested loop time if user taskes exceeded requested time (overrun).'''
+        """Actual time spent during in last loop iteration.
+
+        possibly longer than requested loop time if user taskes exceeded requested time (overrun).
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name,
                               read_function=self.achieved_loop_time)
         new_channel.set_description(
@@ -761,9 +1094,14 @@ class delay_loop(PyICe.lab_utils.delay_loop.delay_loop, instrument):
 
 
 class clipboard(instrument):
-    '''Virtual instrument to exchange data with Windows/Linux clipboard for interactive copy and paste with another application.'''
+    """Virtual instrument to exchange data with Windows/Linux clipboard for interactive copy and paste with another application."""
 
     def __init__(self):
+        """Initialize clipboard.
+
+        Raises:
+            Exception: On error condition.
+        """
         instrument.__init__(self, 'Clipboard Exchange Virtual Instrument')
         self._base_name = 'Copy/Past Clipboard Virtual Instrument'
         try:
@@ -786,21 +1124,40 @@ class clipboard(instrument):
                     'Clipboard virtual instrument requires either pyperclip or pywin32 module win32clipboard.')
 
     def add_channel_copy(self, channel_name):
-        '''Place data written to channel_name onto clipboard.'''
+        """Place data written to channel_name onto clipboard.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name, write_function=self._copy)
         new_channel.set_description(
             self.get_name() + ': ' + self.add_channel_copy.__doc__)
         return self._add_channel(new_channel)
 
     def add_channel_paste(self, channel_name):
-        '''Place data from clipboard into channel_name.'''
+        """Place data from clipboard into channel_name.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name, read_function=self._paste)
         new_channel.set_description(
             self.get_name() + ': ' + self.add_channel_paste.__doc__)
         return self._add_channel(new_channel)
 
     def register_copy_channel(self, channel_object, write_copy=True):
-        '''Automatically places results on clipboard each time channel_object is read and optionally when channel_object is written.'''
+        """Automatically places results on clipboard each time channel_object is read and optionally when channel_object is written.
+
+        Args:
+            channel_object: Channel object.
+            write_copy: Write copy.
+        """
         channel_object.add_read_callback(
             lambda channel_object,
             read_value: self._copy(read_value))
@@ -808,12 +1165,23 @@ class clipboard(instrument):
             channel_object.add_write_callback(
                 lambda channel_object, write_value: self._copy(write_value))
 
-    def _copy(self, clipboard_data):
-        '''place clipboard_data onto OS clipboard'''
+    def _copy(self, clipboard_data):  # pylint: disable=method-hidden; intentionally overridden in __init__ with library-specific implementation (pyperclip or win32clipboard)
+        """Place clipboard_data onto OS clipboard.
+
+        Args:
+            clipboard_data: Clipboard data.
+
+        Raises:
+            Exception: On error condition.
+        """
         raise Exception('Overloaded implementation is library specific.')
 
-    def _paste(self):
-        '''return OS clipboard contents'''
+    def _paste(self):  # pylint: disable=method-hidden; intentionally overridden in __init__ with library-specific implementation (pyperclip or win32clipboard)
+        """Return OS clipboard contents.
+
+        Raises:
+            Exception: On error condition.
+        """
         raise Exception('Overloaded implementation is library specific.')
 
     def _pyperclip_copy(self, clipboard_data):
@@ -836,7 +1204,8 @@ class clipboard(instrument):
 
 
 class accumulator(instrument):
-    '''Virtual accumulator instrument.
+    """Virtual accumulator instrument.
+
     Writable channel adds value to stored total.
     Readable channel returns accumulation total.
     Can be used as a counter by writing accumulation value to +/-1
@@ -849,16 +1218,26 @@ class accumulator(instrument):
     >>> acc.accumulate(-2)
     >>> acc.accumulation
     6
-    '''
-
+    """
     def __init__(self, init=0):
-        '''Init sets initial accumulation total.  Defaults to 0.'''
+        """Init sets initial accumulation total.  Defaults to 0.
+
+        Args:
+            init: Initial value.
+        """
         self._base_name = "Accumulator Virtual Instrument"
         instrument.__init__(self, self._base_name)
         self.accumulation = init
 
     def add_channel_accumulation(self, channel_name):
-        '''Channel reads return total accumulated quantity.'''
+        """Channel reads return total accumulated quantity.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name,
                               read_function=lambda: self.accumulation)
         new_channel.set_description(
@@ -866,23 +1245,40 @@ class accumulator(instrument):
         return self._add_channel(new_channel)
 
     def add_channel_accumulate(self, channel_name):
-        '''Channel writes accumulate value into total previously accumulated quantity.'''
+        """Channel writes accumulate value into total previously accumulated quantity.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name, write_function=self.accumulate)
         new_channel.set_description(
             self.get_name() + ': ' + self.add_channel_accumulate.__doc__)
         return self._add_channel(new_channel)
 
     def accumulate(self, value):
-        '''Adds value to accumulation total.  Use with caution outside channel framework.'''
+        """Adds value to accumulation total.  Use with caution outside channel framework.
+
+        Args:
+            value: Value to set.
+        """
         self.accumulation += value
 
 
 class timer(instrument, delegator):
-    '''Virtual timer instrument.
-    All channels are read only and return time since either last read or first read, scaled to appropriate time units.
-    All channels operate from a common timebase.'''
+    """Virtual timer instrument.
 
+    All channels are read only and return time since either last read or first read, scaled to appropriate time units.
+    All channels operate from a common timebase.
+    """
     def __init__(self, category='Timer Virtual Instrument'):
+        """Initialize timer.
+
+        Args:
+            category: Category.
+        """
         self._base_name = category
         delegator.__init__(self)
         instrument.__init__(self, self._base_name)
@@ -900,7 +1296,14 @@ class timer(instrument, delegator):
         return self.results_dict[channel_name]
 
     def add_channel_total_seconds(self, channel_name):
-        '''Channel read reports elapsed time since first read with units of seconds.'''
+        """Channel read reports elapsed time since first read with units of seconds.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._dummy_read(channel_name))
@@ -915,7 +1318,14 @@ class timer(instrument, delegator):
         return self._add_channel(new_channel)
 
     def add_channel_total_minutes(self, channel_name):
-        '''Channel read reports elapsed time since first read with units of minutes.'''
+        """Channel read reports elapsed time since first read with units of minutes.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._dummy_read(channel_name))
@@ -927,7 +1337,14 @@ class timer(instrument, delegator):
         return self._add_channel(new_channel)
 
     def add_channel_total_hours(self, channel_name):
-        '''Channel read reports elapsed time since first read with units of hours.'''
+        """Channel read reports elapsed time since first read with units of hours.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._dummy_read(channel_name))
@@ -939,7 +1356,14 @@ class timer(instrument, delegator):
         return self._add_channel(new_channel)
 
     def add_channel_total_days(self, channel_name):
-        '''Channel read reports elapsed time since first read with units of days.'''
+        """Channel read reports elapsed time since first read with units of days.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._dummy_read(channel_name))
@@ -951,7 +1375,15 @@ class timer(instrument, delegator):
         return self._add_channel(new_channel)
 
     def add_channel_total_scale(self, channel_name, time_div):
-        '''Channel read reports elapsed time since first read with user supplied time units. time_div is seconds per user-unit, eg 60 for minutes.'''
+        """Channel read reports elapsed time since first read with user supplied time units. time_div is seconds per user-unit, eg 60 for minutes.
+
+        Args:
+            channel_name: Name for the new channel.
+            time_div: Time div.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._dummy_read(channel_name))
@@ -963,7 +1395,14 @@ class timer(instrument, delegator):
         return self._add_channel(new_channel)
 
     def add_channel_delta_seconds(self, channel_name):
-        '''Channel read reports elapsed time since last read with units of seconds.'''
+        """Channel read reports elapsed time since last read with units of seconds.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._dummy_read(channel_name))
@@ -978,7 +1417,14 @@ class timer(instrument, delegator):
         return self._add_channel(new_channel)
 
     def add_channel_delta_minutes(self, channel_name):
-        '''Channel read reports elapsed time since last read with units of minutes.'''
+        """Channel read reports elapsed time since last read with units of minutes.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._dummy_read(channel_name))
@@ -990,7 +1436,14 @@ class timer(instrument, delegator):
         return self._add_channel(new_channel)
 
     def add_channel_delta_hours(self, channel_name):
-        '''Channel read reports elapsed time since last read with units of hours.'''
+        """Channel read reports elapsed time since last read with units of hours.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._dummy_read(channel_name))
@@ -1002,7 +1455,14 @@ class timer(instrument, delegator):
         return self._add_channel(new_channel)
 
     def add_channel_delta_days(self, channel_name):
-        '''Channel read reports elapsed time since last read with units of days.'''
+        """Channel read reports elapsed time since last read with units of days.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._dummy_read(channel_name))
@@ -1014,7 +1474,15 @@ class timer(instrument, delegator):
         return self._add_channel(new_channel)
 
     def add_channel_delta_scale(self, channel_name, time_div):
-        '''Channel read reports elapsed time since last read with user supplied time units. time_div is seconds per user-unit, eg 60 for minutes.'''
+        """Channel read reports elapsed time since last read with user supplied time units. time_div is seconds per user-unit, eg 60 for minutes.
+
+        Args:
+            channel_name: Name for the new channel.
+            time_div: Time div.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._dummy_read(channel_name))
@@ -1026,7 +1494,14 @@ class timer(instrument, delegator):
         return self._add_channel(new_channel)
 
     def add_channel_frequency_hz(self, channel_name):
-        '''Channel read reports read frequency in Hz.'''
+        """Channel read reports read frequency in Hz.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._dummy_read(channel_name))
@@ -1041,7 +1516,15 @@ class timer(instrument, delegator):
         return self._add_channel(new_channel)
 
     def add_channel_frequency_scale(self, channel_name, time_div):
-        '''Channel read reports read frequency with user supplied time units. time_div is seconds per user-unit, eg 60 for RPM.'''
+        """Channel read reports read frequency with user supplied time units. time_div is seconds per user-unit, eg 60 for RPM.
+
+        Args:
+            channel_name: Name for the new channel.
+            time_div: Time div.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._dummy_read(channel_name))
@@ -1063,18 +1546,24 @@ class timer(instrument, delegator):
             self.last_time = self.this_time
 
     def reset_timer(self):
-        '''Resets timer to 0. Use with caution outside channel framework.'''
+        """Resets timer to 0. Use with caution outside channel framework."""
         self.last_time = None
         self._compute_delta()
 
     def stop_and_reset_timer(self):
-        '''Halts and resets timer to 0. Timer will begin running after first read,
+        """Halts and resets timer to 0. Timer will begin running after first read,.
+
         same behavior as after timer object instantiation.
-        Use with caution outside channel framework.'''
+        Use with caution outside channel framework.
+        """
         self.last_time = None
 
     def pause_timer(self):
-        '''pause timer . Call resume_timer() to continue counting.'''
+        """Pause timer . Call resume_timer() to continue counting.
+
+        Raises:
+            Exception: On error condition.
+        """
         if self._paused:
             raise Exception('Attemped to pause already paused timer.')
         else:  # update internal variables because _compute_delta won't while paused
@@ -1085,7 +1574,13 @@ class timer(instrument, delegator):
             self._paused = True
 
     def resume_timer(self):
-        '''resume timer . Call pause_timer() to stop counting again. Can also call resume_timer() at the beginning of time to start the timer.'''
+        """Resume the timer after pausing.
+
+        Call ``pause_timer`` to stop counting again.
+
+        Raises:
+            Exception: On error condition.
+        """
         if self._paused:
             time_paused = datetime.datetime.now() - self._pause_time
             self.total_time -= self.elapsed  # undo temporatry accumulation during pause_timer()
@@ -1097,7 +1592,17 @@ class timer(instrument, delegator):
             raise Exception('Attemped to resume unpaused timer.')
 
     def read_delegated_channel_list(self, channels):
-        '''private'''
+        """Private.
+
+        Args:
+            channels: List of channel objects.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         self._compute_delta()
         self.results_dict = results_ord_dict()
         for channel in channels:
@@ -1122,7 +1627,8 @@ class timer(instrument, delegator):
 
 
 class integrator(accumulator, timer):
-    '''Virtual integrator instrument.
+    """Virtual integrator instrument.
+
     Integrate channel is writable and accumulates value to internally stored total,
     multiplied by elapsed time since last integrate channel write.
     Integration channels are read only and return integration total, scaled to appropriate time units.
@@ -1131,10 +1637,14 @@ class integrator(accumulator, timer):
     A readable channel from a different instrument can be registered with this instrument
     so that any read of that channel causes its value to be integrated automatically
     without requiring an explicit call to this instrument's integrate method or channel.
-    All channels operate from a common timebase.'''
-
+    All channels operate from a common timebase.
+    """
     def __init__(self, init=0):
-        '''Init sets initial accumulation total.  Defaults to 0.'''
+        """Init sets initial accumulation total.  Defaults to 0.
+
+        Args:
+            init: Initial value.
+        """
         accumulator.__init__(self, init)
         timer.__init__(self)
         self._base_name = 'Integrator Virtual Instrument'
@@ -1142,7 +1652,14 @@ class integrator(accumulator, timer):
         self.last_value = None
 
     def add_channel_integration_seconds(self, channel_name):
-        '''Channel read reports integration value with time units of seconds.'''
+        """Channel read reports integration value with time units of seconds.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._dummy_read(channel_name))
@@ -1154,7 +1671,14 @@ class integrator(accumulator, timer):
         return self._add_channel(new_channel)
 
     def add_channel_integration_minutes(self, channel_name):
-        '''Channel read reports integration value with time units of minutes.'''
+        """Channel read reports integration value with time units of minutes.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._dummy_read(channel_name))
@@ -1166,7 +1690,14 @@ class integrator(accumulator, timer):
         return self._add_channel(new_channel)
 
     def add_channel_integration_hours(self, channel_name):
-        '''Channel read reports integration value with time units of hours.'''
+        """Channel read reports integration value with time units of hours.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._dummy_read(channel_name))
@@ -1178,7 +1709,14 @@ class integrator(accumulator, timer):
         return self._add_channel(new_channel)
 
     def add_channel_integration_days(self, channel_name):
-        '''Channel read reports integration value with time units of days.'''
+        """Channel read reports integration value with time units of days.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._dummy_read(channel_name))
@@ -1190,7 +1728,15 @@ class integrator(accumulator, timer):
         return self._add_channel(new_channel)
 
     def add_channel_integration_scale(self, channel_name, time_div):
-        '''Channel read reports integration value with user supplied time units. time_div is seconds per user-unit, eg 60 for minutes.'''
+        """Channel read reports integration value with user supplied time units. time_div is seconds per user-unit, eg 60 for minutes.
+
+        Args:
+            channel_name: Name for the new channel.
+            time_div: Time div.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._dummy_read(channel_name))
@@ -1202,20 +1748,35 @@ class integrator(accumulator, timer):
         return self._add_channel(new_channel)
 
     def add_channel_integrate(self, channel_name):
-        '''Writing to this channel causes written value to be added to accumulator scaled by elapsed time since last write.'''
+        """Writing to this channel causes written value to be added to accumulator scaled by elapsed time since last write.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name, write_function=self.integrate)
         new_channel.set_description(
             self.get_name() + ': ' + self.add_channel_integrate.__doc__)
         return self._add_channel(new_channel)
 
     def register_integrand_channel(self, channel_object):
-        '''Automatically calls integrate method each time channel_object is read, for example in logger.log().'''
+        """Automatically calls integrate method each time channel_object is read, for example in logger.log().
+
+        Args:
+            channel_object: Channel object.
+        """
         channel_object.add_read_callback(
             lambda channel_object,
             read_value: self.integrate(read_value))
 
     def integrate(self, value):
-        '''Scale value by elapsed time and store to accumulator.  Should typically be used through integrate channel above.'''
+        """Scale value by elapsed time and store to accumulator.  Should typically be used through integrate channel above.
+
+        Args:
+            value: Value to set.
+        """
         # results stored internally in value*seconds.  Read channels scale to
         # other time units on the way out.
         self._compute_delta()
@@ -1228,7 +1789,17 @@ class integrator(accumulator, timer):
             self.last_value = value
 
     def read_delegated_channel_list(self, channels):
-        '''private'''
+        """Private.
+
+        Args:
+            channels: List of channel objects.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         self.results_dict = results_ord_dict()
         for channel in channels:
             if channel.get_attribute('type') == 'integrator':
@@ -1258,7 +1829,8 @@ class integrator(accumulator, timer):
 
 
 class differencer(instrument):
-    '''Virtual differencer instrument.
+    """Virtual differencer instrument.
+
     Compute_difference channel is writable and causes computation of first difference from last written value.
     Read_difference channel is read-only and returns computed difference.
     A readable channel from a different instrument can be registered with this instrument
@@ -1272,31 +1844,55 @@ class differencer(instrument):
     15
     >>> d.difference(20)
     -5
-    '''
-
+    """
     def __init__(self, init=None):
-        '''Init sets initial value of previous value used to compute difference.  Defaults to None.'''
+        """Init sets initial value of previous value used to compute difference.  Defaults to None.
+
+        Args:
+            init: Initial value.
+        """
         self.last_value = init
         self.diff = None
         self._base_name = 'Differencer Virtual Instrument'
         instrument.__init__(self, self._base_name)
 
     def add_channel_read_difference(self, channel_name):
-        '''Channel read returns difference between previous two values passed to difference method.'''
+        """Channel read returns difference between previous two values passed to difference method.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name, read_function=lambda: self.diff)
         new_channel.set_description(
             self.get_name() + ': ' + self.add_channel_read_difference.__doc__)
         return self._add_channel(new_channel)
 
     def add_channel_compute_difference(self, channel_name):
-        '''Channel write computes difference between previous two values passed to difference method.'''
+        """Channel write computes difference between previous two values passed to difference method.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name, write_function=self.difference)
         new_channel.set_description(
             self.get_name() + ': ' + self.add_channel_compute_difference.__doc__)
         return self._add_channel(new_channel)
 
     def difference(self, value):
-        '''Returns difference between value and value passed in last method call.'''
+        """Returns difference between value and value passed in last method call.
+
+        Args:
+            value: Value to set.
+
+        Returns:
+            Result value.
+        """
         if self.last_value is None:
             self.diff = None
         else:
@@ -1305,22 +1901,28 @@ class differencer(instrument):
         return self.diff
 
     def register_difference_channel(self, channel_object):
-        '''Automatically calls difference method each time channel_object is read, for example in logger.log().'''
+        """Automatically calls difference method each time channel_object is read, for example in logger.log().
+
+        Args:
+            channel_object: Channel object.
+        """
         channel_object.add_read_callback(
             lambda channel_object,
             read_value: self.difference(read_value))
 
 
 class differentiator(timer, differencer):
-    '''Virtual differentiator instrument.
+    """Virtual differentiator instrument.
+
     Differentiate channel is writable and causes computation of first time derivative between value and last written value.
     Differentiation channels are read-only and return previously computed time derivative, scaled to appropriate time units.
     Timer channels are read-only and return elapsed time used to compute derivative, scaled to appropriate time units.
     A readable channel from a different instrument can be registered with this instrument
     so that any read of that channel causes its value to be differentiated automatically
-    without requiring an explicit call to this instrument's differentiate method or channel.'''
-
+    without requiring an explicit call to this instrument's differentiate method or channel.
+    """
     def __init__(self):
+        """Initialize differentiator."""
         timer.__init__(self)
         differencer.__init__(self)
         self._base_name = 'Differentiator Virtual Instrument'
@@ -1328,7 +1930,14 @@ class differentiator(timer, differencer):
         self.derivative = None
 
     def add_channel_differentiation_seconds(self, channel_name):
-        '''Channel read reports derivative value with time units of seconds.'''
+        """Channel read reports derivative value with time units of seconds.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._dummy_read(channel_name))
@@ -1340,7 +1949,14 @@ class differentiator(timer, differencer):
         return self._add_channel(new_channel)
 
     def add_channel_differentiation_minutes(self, channel_name):
-        '''Channel read reports derivative value with time units of minutes.'''
+        """Channel read reports derivative value with time units of minutes.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._dummy_read(channel_name))
@@ -1352,7 +1968,14 @@ class differentiator(timer, differencer):
         return self._add_channel(new_channel)
 
     def add_channel_differentiation_hours(self, channel_name):
-        '''Channel read reports derivative value with time units of hours.'''
+        """Channel read reports derivative value with time units of hours.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._dummy_read(channel_name))
@@ -1364,7 +1987,14 @@ class differentiator(timer, differencer):
         return self._add_channel(new_channel)
 
     def add_channel_differentiation_days(self, channel_name):
-        '''Channel read reports derivative value with time units of days.'''
+        """Channel read reports derivative value with time units of days.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._dummy_read(channel_name))
@@ -1376,7 +2006,15 @@ class differentiator(timer, differencer):
         return self._add_channel(new_channel)
 
     def add_channel_differentiation_scale(self, channel_name, time_div):
-        '''Channel read reports derivative value with user supplied time units. time_div is seconds per user-unit, eg 60 for minutes.'''
+        """Channel read reports derivative value with user supplied time units. time_div is seconds per user-unit, eg 60 for minutes.
+
+        Args:
+            channel_name: Name for the new channel.
+            time_div: Time div.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._dummy_read(channel_name))
@@ -1388,7 +2026,14 @@ class differentiator(timer, differencer):
         return self._add_channel(new_channel)
 
     def differentiate(self, value):
-        '''Scale value by elapsed time and store to accumulator.  Should typically be used through integrate channel above.'''
+        """Scale value by elapsed time and store to accumulator.  Should typically be used through integrate channel above.
+
+        Args:
+            value: Value to set.
+
+        Returns:
+            Result value.
+        """
         # results stored internally in value*seconds.  Read channels scale to
         # other time units on the way out.
         self._compute_delta()
@@ -1404,20 +2049,41 @@ class differentiator(timer, differencer):
         return self.derivative
 
     def add_channel_differentiate(self, channel_name):
-        '''Channel write causes time derivative between write value and previous write value to be computed and stored.'''
+        """Channel write causes time derivative between write value and previous write value to be computed and stored.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name, write_function=self.differentiate)
         new_channel.set_description(
             self.get_name() + ': ' + self.add_channel_differentiate.__doc__)
         return self._add_channel(new_channel)
 
     def register_derivative_channel(self, channel_object):
-        '''Automatically calls difference method each time channel_object is read, for example in logger.log().'''
+        """Automatically calls difference method each time channel_object is read, for example in logger.log().
+
+        Args:
+            channel_object: Channel object.
+        """
         channel_object.add_read_callback(
             lambda channel_object,
             read_value: self.differentiate(read_value))
 
     def read_delegated_channel_list(self, channels):
-        '''private'''
+        """Private.
+
+        Args:
+            channels: List of channel objects.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         self.results_dict = results_ord_dict()
         for channel in channels:
             if channel.get_attribute('type') == 'differentiator':
@@ -1441,11 +2107,12 @@ class differentiator(timer, differencer):
 
 
 class ServoException(Exception):
-    '''Special expcetion for the servo instrument'''
+    """Special expcetion for the servo instrument."""
 
 
 class servo(instrument):
-    '''Single channel virtual servo instrument. Modifies a forcing channel until a
+    """Single channel virtual servo instrument. Modifies a forcing channel until a.
+
     measurement channel reads within tolerance of a target value.
 
     >>> from PyICe.lab_core import channel
@@ -1459,21 +2126,33 @@ class servo(instrument):
     3
     >>> abs(setting[0] - 1.5) < 0.01
     True
-    '''
-
+    """
     def __init__(self, fb_channel, output_channel, minimum, maximum, abstol, reltol=0.001,
                  verbose=False, abort_on_sat=True, max_tries=10, except_on_fail=True):
-        '''Single channel virtual servo instrument.  Given a forcing channel object and a measurement channel object,
-            modifies the forcing channel value until the measurement channel is within specified tolerance or
-            the number of allowed tries is exceeded.  Max number of tries can be varied by modifying the 'tries' property.
+        """Single channel virtual servo instrument.  Given a forcing channel object and a measurement channel object,.
 
-            fb_channel is the measurement channel object
-            output_channel is the forcing channel object
-            minimum is the lowest value that may be forced during the servo attempt
-            maximum is the highest value that may be forced during the servo attempt
-            abstol is the amount that the measurement may differ from the target value to consider the servo complete. units are the same as the measurement channel (window is +/-abstol)
-            reltol is the unitless scale factor that determines when the servo loop is sufficiently settled.  (window is target*(1 +/- reltol))
-        '''
+        modifies the forcing channel value until the measurement channel is within specified tolerance or
+        the number of allowed tries is exceeded.  Max number of tries can be varied by modifying the 'tries' property.
+
+        fb_channel is the measurement channel object
+        output_channel is the forcing channel object
+        minimum is the lowest value that may be forced during the servo attempt
+        maximum is the highest value that may be forced during the servo attempt
+        abstol is the amount that the measurement may differ from the target value to consider the servo complete. units are the same as the measurement channel (window is +/-abstol)
+        reltol is the unitless scale factor that determines when the servo loop is sufficiently settled.  (window is target*(1 +/- reltol))
+
+        Args:
+            abort_on_sat: Abort on sat.
+            abstol: Absolute tolerance.
+            except_on_fail: Except on fail.
+            fb_channel: Fb channel.
+            max_tries: Max tries.
+            maximum: Maximum value.
+            minimum: Minimum value.
+            output_channel: Output channel.
+            reltol: Relative tolerance.
+            verbose: If True, print debug output.
+        """
         self._base_name = 'servo'
         self.fb_channel = fb_channel
         self.output_channel = output_channel
@@ -1490,6 +2169,14 @@ class servo(instrument):
 
     def reconfigure(self, minimum=None, maximum=None,
                     abstol=None, reltol=None):
+        """Perform reconfigure operation.
+
+        Args:
+            abstol: Absolute tolerance.
+            maximum: Maximum value.
+            minimum: Minimum value.
+            reltol: Relative tolerance.
+        """
         if (minimum is not None):
             self.minimum = minimum
         if (maximum is not None):
@@ -1500,13 +2187,21 @@ class servo(instrument):
             self.reltol = reltol
 
     def add_channel_target(self, channel_name):
-        '''Channel write causes output_channel to servo to new target value.'''
+        """Channel write causes output_channel to servo to new target value.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         servo_channel = channel(channel_name, write_function=self.servo)
         servo_channel.set_description(
             self.get_name() + ': ' + self.add_channel_target.__doc__)
         return self._add_channel(servo_channel)
 
     def check_enpoints(self):
+        """Perform check enpoints operation."""
         self.output_channel.write(self.maximum)
         max_readback = float(self.fb_channel.read())
         self.output_channel.write(self.minimum)
@@ -1518,8 +2213,19 @@ class servo(instrument):
                 f"{self.get_name()} MAX:{max_readback:3.5e} @ {self.maximum} MIN:{min_readback:3.5e} @ {self.minimum} GAINEST:{self.gain_est:3.5e}")
 
     def servo(self, target=None):
-        '''Servo fb_channel to target by varying output_channel.
-            If target is omitted, previous target is maintained.'''
+        """Servo fb_channel to target by varying output_channel.
+
+        If target is omitted, previous target is maintained.
+
+        Args:
+            target: Target value.
+
+        Returns:
+            Result value.
+
+        Raises:
+            ServoException: On error condition.
+        """
         if target is None:
             target = self.target
         else:
@@ -1592,8 +2298,16 @@ class servo(instrument):
                         return False
 
     def servo_check(self, readback=None):
-        '''Returns True if servo is within abstol or reltol tolerances.
-            Returns False if servo failed to converge within alotted number of tries.'''
+        """Returns True if servo is within abstol or reltol tolerances.
+
+        Returns False if servo failed to converge within alotted number of tries.
+
+        Args:
+            readback: Readback.
+
+        Returns:
+            Result value.
+        """
         if readback is None:
             readback = float(self.fb_channel.read())
         if ((readback < (self.target * (1 + self.reltol))) &
@@ -1606,11 +2320,17 @@ class servo(instrument):
 
 
 class servo_group(object):
-    '''This is a group of servos.
-        It will servo each servo in that group until
-        all are in regulation or up to servo_group.tries times'''
+    """This is a group of servos.
 
+    It will servo each servo in that group until
+    all are in regulation or up to servo_group.tries times
+    """
     def __init__(self, name):
+        """Initialize servo_group.
+
+        Args:
+            name: Name identifier.
+        """
         self.servos = []
         self.verbose = False
         self.max_tries = 5
@@ -1618,12 +2338,20 @@ class servo_group(object):
         self.name = name
 
     def add_servo(self, servo_inst):
-        '''Add a servo virtual instrument to the servo_group'''
+        """Add a servo virtual instrument to the servo_group.
+
+        Args:
+            servo_inst: Servo inst.
+        """
         assert isinstance(servo_inst, servo)
         self.servos.append(servo_inst)
 
     def servo(self):
-        '''run each servo in turn until all are in regulation.'''
+        """Run each servo in turn until all are in regulation.
+
+        Returns:
+            Result value.
+        """
         self.tries = 0
         while (True):
             self.tries += 1
@@ -1648,7 +2376,8 @@ class servo_group(object):
 
 
 class ramp_to(instrument):
-    '''Virtual instrument that changes channel setting incrementally.
+    """Virtual instrument that changes channel setting incrementally.
+
     Useful to minimize impact of overshoot when trying to use power supply as a precision voltage source.
     This is a crutch. A better option would be to use an SMU if available.
 
@@ -1661,18 +2390,33 @@ class ramp_to(instrument):
     >>> _ = ramp_ch.write(3.3)
     >>> supply.read()
     3.3
-    '''
-
+    """
     def __init__(self, verbose=False):
+        """Initialize ramp_to.
+
+        Args:
+            verbose: If True, print debug output.
+        """
         instrument.__init__(self, "ramp_to virtual instrument")
         self._base_name = "ramp_to"
         self.verbose = verbose
 
     def add_channel_binary(
             self, channel_name, forcing_channel, abstol=0.001, max_step=None):
-        '''Writes binarily decreasing magnitude steps to forcing_channel until within abstol of final voltage.
+        """Writes binarily decreasing magnitude steps to forcing_channel until within abstol of final voltage.
+
         If specified, max_step will bound the step upper magnitude.
-        Use forcing_channel.set_write_delay(seconds) to control ramp rate.'''
+        Use forcing_channel.set_write_delay(seconds) to control ramp rate.
+
+        Args:
+            abstol: Absolute tolerance.
+            channel_name: Name for the new channel.
+            forcing_channel: Forcing channel.
+            max_step: Max step.
+
+        Returns:
+            Result value.
+        """
         assert abstol > 0
         assert max_step is None or max_step > abstol
         new_channel = channel(
@@ -1696,8 +2440,18 @@ class ramp_to(instrument):
 
     def add_channel_linear(
             self, channel_name, forcing_channel, step_size=0.01):
-        '''Writes constant steps of size step_size (linear_ramp) to forcing_channel until within abstol of final voltage.
-        Use forcing_channel.set_write_delay(seconds) to control ramp rate.'''
+        """Writes constant steps of size step_size (linear_ramp) to forcing_channel until within abstol of final voltage.
+
+        Use forcing_channel.set_write_delay(seconds) to control ramp rate.
+
+        Args:
+            channel_name: Name for the new channel.
+            forcing_channel: Forcing channel.
+            step_size: Step size.
+
+        Returns:
+            Result value.
+        """
         assert step_size > 0
         new_channel = channel(
             channel_name,
@@ -1719,10 +2473,20 @@ class ramp_to(instrument):
 
     def add_channel_overshoot(
             self, channel_name, forcing_channel, abstol, estimated_overshoot):
-        '''Writes steps to forcing channel_such that peak overshoot magnitude never exceeds written value by more than abstol.
+        """Writes steps to forcing channel_such that peak overshoot magnitude never exceeds written value by more than abstol.
+
         estimated_overshoot is specified as a fraction of setting change (peak = final_value + (final_value - previous_value)*estimated_overshoot).
         For example, to model 10% overshoot (5V to 6V transition hits peak 6.1V), set estimated_overshoot=0.1.
-        '''
+
+        Args:
+            abstol: Absolute tolerance.
+            channel_name: Name for the new channel.
+            estimated_overshoot: Estimated overshoot.
+            forcing_channel: Forcing channel.
+
+        Returns:
+            Result value.
+        """
         assert abstol > 0
         assert estimated_overshoot >= 0
         estimated_overshoot = float(estimated_overshoot)
@@ -1831,20 +2595,28 @@ class ramp_to(instrument):
 
 
 class peak_finder(instrument):
-    '''virtual instrument that finds the peak of one channel given a second channel as an input. The function is assumed to be unimodal. The channels used with this instrument may want to be virtual instruments. For example the output channel could be the computation of efficiency from several other channels. The peak is found by recursively performing a ternary search.
-        '''
+    """Virtual instrument that finds the peak of one channel given a second channel as an input.
 
+    The function is assumed to be unimodal. The channels used with this instrument may want to
+    be virtual instruments. For example the output channel could be the computation of efficiency
+    from several other channels. The peak is found by recursively performing a ternary search.
+    """
     def __init__(self,
                  input_channel,
                  output_channel,
                  reltol):
-        '''
-        input_force_channel - Parameter to be swept.
+        """Input_force_channel - Parameter to be swept.
+
         output_sense_channel - Parameter presumed to have a peak.
         searchstart - left side of search region (lowest value).
         searchstop - right side of search region (highest value).
         reltol - resolution of search. search stops when center of search region is within this percentage of searchstart and searchstop.
-        '''
+
+        Args:
+            input_channel: Input channel.
+            output_channel: Output channel.
+            reltol: Relative tolerance.
+        """
         self._base_name = 'peak_finder_{}_{}'.format(
             input_channel.get_name(), output_channel.get_name())
         instrument.__init__(
@@ -1858,14 +2630,29 @@ class peak_finder(instrument):
         self._successful = None
 
     def add_channel_peak(self, channel_name):
-        '''The peak value found if the search was successful'''
+        """The peak value found if the search was successful.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name, read_function=lambda: self._peak)
         new_channel.set_description(
             self.get_name() + ': ' + self.add_channel_peak.__doc__)
         return self._add_channel(new_channel)
 
     def add_channel_abscissa(self, channel_name, auto_find=False):
-        '''The value of the input variable at which the peak occurred.'''
+        """The value of the input variable at which the peak occurred.
+
+        Args:
+            auto_find: Auto find.
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name,
                               read_function=lambda: self._abscissa)
         new_channel.set_description(
@@ -1873,7 +2660,15 @@ class peak_finder(instrument):
         return self._add_channel(new_channel)
 
     def add_channel_successful(self, channel_name, auto_find=False):
-        '''Indicates whether or not the search was successful or failed due to lost peak before reltol. Try increasing reltol upon return of False'''
+        """Indicates whether or not the search was successful or failed due to lost peak before reltol. Try increasing reltol upon return of False.
+
+        Args:
+            auto_find: Auto find.
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name,
                               read_function=lambda: self._successful)
         new_channel.set_description(
@@ -1881,6 +2676,12 @@ class peak_finder(instrument):
         return self._add_channel(new_channel)
 
     def find(self, searchstart, searchstop):
+        """Return find result.
+
+        Args:
+            searchstart: Searchstart.
+            searchstop: Searchstop.
+        """
         self._input_channel.write(searchstart)
         y1 = self._output_channel.read()
         self._input_channel.write(
@@ -1911,60 +2712,60 @@ class peak_finder(instrument):
 
 
 class ThresholdFinderError(Exception):
-    '''non-specific threshold finder error.'''
+    """Non-specific threshold finder error."""
 
 
 class ThresholdUndetectableError(ThresholdFinderError):
-    '''Threshold finder unable to detect threshold. Perhaps the search range is wrong or perhaps the threshold doesn't exist. Not used for general configuration errors that should almost never be caught.'''
+    """Threshold finder unable to detect threshold. Perhaps the search range is wrong or perhaps the threshold doesn't exist. Not used for general configuration errors that should almost never be caught."""
 
 
 class threshold_finder(instrument, delegator):
-    '''virtual instrument that finds comparator thresholds via binary or linear search.
-        Does not automatically find threshold unless auto_find is enabled from add_channel. Otherwise, you must call threshold_finder.find(), or .find_linear()
+    """Virtual instrument that finds comparator thresholds via binary or linear search.
 
-        >>> from PyICe.lab_core import master
-        >>> from PyICe.models.comparator import comparator
-        >>> m = master()
-        >>> comp = comparator(falling_threshold=2.4, rising_threshold=2.6,
-        ...                   out_high=5.0, out_low=0.0)
-        >>> forcing = m.add_channel_dummy('vin')
-        >>> forcing.write(0.0)
-        0.0
-        >>> _ = forcing.add_write_callback(lambda ch, v: comp.write(v))
-        >>> output = m.add_channel_virtual('vout', read_function=comp.read)
-        >>> tf = threshold_finder(forcing, output, minimum=0.0, maximum=5.0,
-        ...                       abstol=0.01, verbose=False)
-        >>> results = tf.find_linear()
-        >>> 2.5 < results['rising'] < 2.7
-        True
-        >>> 2.3 < results['falling'] < 2.5
-        True
-        >>> results['hysteresis'] > 0
-        True
+    Does not automatically find threshold unless auto_find is enabled from add_channel. Otherwise, you must call threshold_finder.find(), or .find_linear()
 
-        The channels used with this instrument may want to be virtual instruments. For example the comparator_input_channel_force
-        could be used to clear a latched output before a new value is set, or the comparator_output_sense_channel could interpret complex
-        comparator outputs that are not direct measurements.
+    >>> from PyICe.lab_core import master
+    >>> from PyICe.models.comparator import comparator
+    >>> m = master()
+    >>> comp = comparator(falling_threshold=2.4, rising_threshold=2.6,
+    ...                   out_high=5.0, out_low=0.0)
+    >>> forcing = m.add_channel_dummy('vin')
+    >>> forcing.write(0.0)
+    0.0
+    >>> _ = forcing.add_write_callback(lambda ch, v: comp.write(v))
+    >>> output = m.add_channel_virtual('vout', read_function=comp.read)
+    >>> tf = threshold_finder(forcing, output, minimum=0.0, maximum=5.0,
+    ...                       abstol=0.01, verbose=False)
+    >>> results = tf.find_linear()
+    >>> 2.5 < results['rising'] < 2.7
+    True
+    >>> 2.3 < results['falling'] < 2.5
+    True
+    >>> results['hysteresis'] > 0
+    True
 
-        Note that these search algorithms are sensitive to absolute repeatability.
-        The DUT must not return different output values for the same forced values (within abstol and noise limits).
-        If it does, the search will permanently take a wrong turn and fail.
+    The channels used with this instrument may want to be virtual instruments. For example the comparator_input_channel_force
+    could be used to clear a latched output before a new value is set, or the comparator_output_sense_channel could interpret complex
+    comparator outputs that are not direct measurements.
 
-        If the search algorithm is failing, check the properties of the input forcing channel and the DUT. Specifically:
-            1) Make sure the forcing channel doesn't overshoot.
-                a) If it does, update the forcing_overshoot parameter to a larger number and consider using a less aggressive search algorithm.
-                b) Also consider a better forcing instrument with negligible overshoot (SMU, etc)
-            2) Make sure the forcing instrument has settled before the DUT output measurement is taken.
-                a) Consider [comparator_input_force_channel].set_write_delay(some_time)
-                b) Also consider a better forcing instrument with rapid settling (SMU, etc)
-            3) Make sure the DUT has settled after the forcing input channel has settled.
-                a) This time can be quite long with nearly zero overdrive (forced input very close to true threshold)
-                b) This time tents to infinity with zero overdrive, but we are only guaranteeing results to within abstol
-                c) Therefore, the DUT should have sufficient time to settle with |abstol| overdrive applied after forcing channel has settled.
-                d) Add this worst case DUT settling time to the forcing channel delay above.
+    Note that these search algorithms are sensitive to absolute repeatability.
+    The DUT must not return different output values for the same forced values (within abstol and noise limits).
+    If it does, the search will permanently take a wrong turn and fail.
 
-        '''
+    If the search algorithm is failing, check the properties of the input forcing channel and the DUT. Specifically:
+    1) Make sure the forcing channel doesn't overshoot.
+    a) If it does, update the forcing_overshoot parameter to a larger number and consider using a less aggressive search algorithm.
+    b) Also consider a better forcing instrument with negligible overshoot (SMU, etc)
+    2) Make sure the forcing instrument has settled before the DUT output measurement is taken.
+    a) Consider [comparator_input_force_channel].set_write_delay(some_time)
+    b) Also consider a better forcing instrument with rapid settling (SMU, etc)
+    3) Make sure the DUT has settled after the forcing input channel has settled.
+    a) This time can be quite long with nearly zero overdrive (forced input very close to true threshold)
+    b) This time tents to infinity with zero overdrive, but we are only guaranteeing results to within abstol
+    c) Therefore, the DUT should have sufficient time to settle with |abstol| overdrive applied after forcing channel has settled.
+    d) Add this worst case DUT settling time to the forcing channel delay above.
 
+    """
     def __init__(self, comparator_input_force_channel,
                  comparator_output_sense_channel,
                  minimum,
@@ -1974,8 +2775,8 @@ class threshold_finder(instrument, delegator):
                  forcing_overshoot=0,
                  output_threshold=None,
                  verbose=False):
-        '''
-        comparator_input_force_channel - DUT comparator input forcing channel object.
+        """Comparator_input_force_channel - DUT comparator input forcing channel object.
+
         comparator_output_sense_channel - DUT comparator output measurement channel object.
         minimum - minimum forced input to the DUT comparator via comparator_input_force_channel.
         maximum - maximum forced input to the DUT comparator via comparator_input_force_channel.
@@ -1985,7 +2786,18 @@ class threshold_finder(instrument, delegator):
         output_threshold - optional digitization level threshold for comparator_output_sense_channel. If unspecified, will be calculated from mean of comparator_output_sense_channel reading with comparator_input_channel_force set to minimum and maximum.
         verbose - print extra information about search progress.
         cautious - take extra measurements to make sure search is proceeding correctly and has not been corrupted by overshoot, oscillation, etc.
-        '''
+
+        Args:
+            abstol: Absolute tolerance.
+            comparator_input_force_channel: Comparator input force channel.
+            comparator_input_sense_channel: Comparator input sense channel.
+            comparator_output_sense_channel: Comparator output sense channel.
+            forcing_overshoot: Forcing overshoot.
+            maximum: Maximum value.
+            minimum: Minimum value.
+            output_threshold: Output threshold.
+            verbose: If True, print debug output.
+        """
         self._base_name = 'threshold_finder_{}_{}'.format(
             comparator_input_force_channel.get_name(),
             comparator_output_sense_channel.get_name())
@@ -2032,7 +2844,8 @@ class threshold_finder(instrument, delegator):
                     maximum=None,
                     abstol=None,
                     forcing_overshoot=None):
-        '''Reconfigure channel settings to use a single threshold finder instrument with multiplexed DUT channels.
+        """Reconfigure channel settings to use a single threshold finder instrument with multiplexed DUT channels.
+
         Required arguments:
         comparator_input_force_channel - DUT comparator input forcing channel object.
         comparator_output_sense_channel - DUT comparator output measurement channel object.
@@ -2045,7 +2858,20 @@ class threshold_finder(instrument, delegator):
         minimum - minimum forced input to the DUT comparator via comparator_input_force_channel.
         maximum - maximum forced input to the DUT comparator via comparator_input_force_channel.
         abstol - resolution of search. Relative to comparator_input_channel_force, not comparator_input_sense_channel.
-        '''
+
+        Args:
+            abstol: Absolute tolerance.
+            comparator_input_force_channel: Comparator input force channel.
+            comparator_input_sense_channel: Comparator input sense channel.
+            comparator_output_sense_channel: Comparator output sense channel.
+            forcing_overshoot: Forcing overshoot.
+            maximum: Maximum value.
+            minimum: Minimum value.
+            output_threshold: Output threshold.
+
+        Raises:
+            ThresholdFinderError: On error condition.
+        """
         self._comparator_input_channel = comparator_input_force_channel
         self._comparator_output_sense_channel = comparator_output_sense_channel
         self._comparator_input_sense_channel = comparator_input_sense_channel
@@ -2080,7 +2906,8 @@ class threshold_finder(instrument, delegator):
             self._comparator_input_ramper = self._comparator_input_channel
 
     def add_channel_all(self, channel_name, auto_find=False):
-        '''shortcut method adds the following channels:
+        """Shortcut method adds the following channels:.
+
         threshold (Average of rising and falling thresholds. Relative to comparator_input_sense_channel.)
         rising threshold (Average of measurements at low and high endpoints of rising threshold uncertainty window. Relative to comparator_input_sense_channel.)
         falling threshold (Average of measurements at low and high endpoints of falling threshold uncertainty window. Relative to comparator_input_sense_channel.)
@@ -2098,7 +2925,14 @@ class threshold_finder(instrument, delegator):
         if auto_find is 'linear', automatically call find_linear() when channel is read.
         if auto_find is 'geometric', automatically call find_geometric() when channel is read.
         if auto_find is any other true value, automatically call find() when channel is read.
-        '''
+
+        Args:
+            auto_find: Auto find.
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         # Read channels
         th = self.add_channel_threshold(channel_name + "_average", auto_find)
         self.add_channel_rising(channel_name + "_rising")
@@ -2121,11 +2955,20 @@ class threshold_finder(instrument, delegator):
     # Results channels:
 
     def add_channel_threshold(self, channel_name, auto_find=False):
-        '''Average of rising and falling thresholds found by last call to find() method.
+        """Average of rising and falling thresholds found by last call to find() method.
+
         Relative to comparator_input_sense_channel.
         if auto_find is 'linear', automatically call find_linear() when channel is read.
         if auto_find is 'geometric', automatically call find_geometric() when channel is read.
-        if auto_find is any other true value, automatically call find() when channel is read.'''
+        if auto_find is any other true value, automatically call find() when channel is read.
+
+        Args:
+            auto_find: Auto find.
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name,
                               read_function=lambda: self.threshold)
         self.auto_find = auto_find
@@ -2135,7 +2978,14 @@ class threshold_finder(instrument, delegator):
         return self._add_channel(new_channel)
 
     def add_channel_rising(self, channel_name):
-        '''Average of measurements at low and high endpoints of rising threshold uncertainty window. Relative to comparator_input_sense_channel.'''
+        """Average of measurements at low and high endpoints of rising threshold uncertainty window. Relative to comparator_input_sense_channel.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name, read_function=lambda: self.rising)
         new_channel.set_description(
             self.get_name() + ': ' + self.add_channel_rising.__doc__)
@@ -2143,7 +2993,14 @@ class threshold_finder(instrument, delegator):
         return self._add_channel(new_channel)
 
     def add_channel_falling(self, channel_name):
-        '''Average of measurements at low and high endpoints of falling threshold uncertainty window. Relative to comparator_input_sense_channel.'''
+        """Average of measurements at low and high endpoints of falling threshold uncertainty window. Relative to comparator_input_sense_channel.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name, read_function=lambda: self.falling)
         new_channel.set_description(
             self.get_name() + ': ' + self.add_channel_falling.__doc__)
@@ -2151,7 +3008,14 @@ class threshold_finder(instrument, delegator):
         return self._add_channel(new_channel)
 
     def add_channel_tries(self, channel_name):
-        '''Number of binary search steps required to reduce uncertainty window to within abstol, or number of abstol-sized steps required to find threshold with linear search.'''
+        """Number of binary search steps required to reduce uncertainty window to within abstol, or number of abstol-sized steps required to find threshold with linear search.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name, read_function=lambda: self.tries)
         new_channel.set_description(
             self.get_name() + ': ' + self.add_channel_tries.__doc__)
@@ -2160,7 +3024,14 @@ class threshold_finder(instrument, delegator):
         return new_channel
 
     def add_channel_hysteresis(self, channel_name):
-        '''Difference between rising and falling thresholds. Relative to comparator_input_sense_channel.'''
+        """Difference between rising and falling thresholds. Relative to comparator_input_sense_channel.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name,
                               read_function=lambda: self.hysteresis)
         new_channel.set_description(
@@ -2169,7 +3040,14 @@ class threshold_finder(instrument, delegator):
         return self._add_channel(new_channel)
 
     def add_channel_abstol(self, channel_name):
-        '''Maximum two-sided uncertainty range (window width) for binary search, or step size for linear search. Relative to comparator_input_force_channel.'''
+        """Maximum two-sided uncertainty range (window width) for binary search, or step size for linear search. Relative to comparator_input_force_channel.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name, read_function=lambda: self._abstol)
         new_channel.set_description(
             self.get_name() + ': ' + self.add_channel_abstol.__doc__)
@@ -2177,15 +3055,22 @@ class threshold_finder(instrument, delegator):
         return self._add_channel(new_channel)
 
     def add_channel_uncertainty(self, channel_name):
-        '''Single sided measured threshold uncertainty at termination of search.
+        """Single sided measured threshold uncertainty at termination of search.
+
         i.e (threshold_rising - uncertainty_rising) < {true rising threshold} < (threshold_rising + uncertainty_rising) and
-            (threshold_falling - uncertainty_falling) < {true falling threshold} < (threshold_falling + uncertainty_falling).
+        (threshold_falling - uncertainty_falling) < {true falling threshold} < (threshold_falling + uncertainty_falling).
 
         For binary search with comparator_input_sense_channel=None, will be between 0.5*abstol and 0.25*abstol.
         For linear sweep with comparator_input_sense_channel=None, will be 0.5*abstol.
 
         With comparator_input_sense_channel defined, uncertainty will be relative to measured rather than forced inputs and may be scaled differently than forcing (abstol) units.
-        '''
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         rising_threshold_uncertainty_channel = channel(
             channel_name + "_rising", read_function=lambda: self.rising_uncertainty)
         rising_threshold_uncertainty_channel.set_description(
@@ -2201,13 +3086,19 @@ class threshold_finder(instrument, delegator):
         return rising_threshold_uncertainty_channel
 
     def add_channel_relative_uncertainty(self, channel_name):
-        '''
-        Single sided relative measured threshold uncertainty at termination of search.
+        """Single sided relative measured threshold uncertainty at termination of search.
+
         i.e threshold_rising * (1 - relative_uncertainty_rising) < {true rising threshold} < threshold_rising * (1 + relative_uncertainty_rising) and
-            threshold_falling * (1 - relative_uncertainty_falling) < {true falling threshold} < threshold_falling * (1 + relative_uncertainty_falling)
+        threshold_falling * (1 - relative_uncertainty_falling) < {true falling threshold} < threshold_falling * (1 + relative_uncertainty_falling)
 
         With comparator_input_sense_channel defined, uncertainty will be relative to measured rather than forced inputs and may be scaled differently than forcing (abstol) units.
-        '''
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         rising_threshold_relative_uncertainty_channel = channel(
             channel_name + "_rising", read_function=lambda: self.rising_relative_uncertainty)
         rising_threshold_relative_uncertainty_channel.set_description(
@@ -2224,7 +3115,14 @@ class threshold_finder(instrument, delegator):
         return rising_threshold_relative_uncertainty_channel
 
     def add_channel_forced_rising(self, channel_name):
-        '''Average of low and high forced endpoints of rising threshold uncertainty window. Relative to comparator_input_force_channel.'''
+        """Average of low and high forced endpoints of rising threshold uncertainty window. Relative to comparator_input_force_channel.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name,
                               read_function=lambda: self.forced_rising)
         new_channel.set_description(
@@ -2233,7 +3131,14 @@ class threshold_finder(instrument, delegator):
         return self._add_channel(new_channel)
 
     def add_channel_forced_falling(self, channel_name):
-        '''Average of low and high forced endpoints of falling threshold uncertainty window. Relative to comparator_input_force_channel.'''
+        """Average of low and high forced endpoints of falling threshold uncertainty window. Relative to comparator_input_force_channel.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name,
                               read_function=lambda: self.forced_falling)
         new_channel.set_description(
@@ -2242,7 +3147,14 @@ class threshold_finder(instrument, delegator):
         return self._add_channel(new_channel)
 
     def add_channel_output_threshold(self, channel_name):
-        '''Computed digitization threshold for comparator_output_sense_channel.'''
+        """Computed digitization threshold for comparator_output_sense_channel.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._output_threshold_calc)
@@ -2252,7 +3164,14 @@ class threshold_finder(instrument, delegator):
         return self._add_channel(new_channel)
 
     def add_channel_algorithm(self, channel_name):
-        '''Search method used to determine threshold.'''
+        """Search method used to determine threshold.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name,
                               read_function=lambda: self.search_algorithm)
         new_channel.set_description(
@@ -2262,7 +3181,14 @@ class threshold_finder(instrument, delegator):
     # Configuration channels:
 
     def add_channel_output_threshold_setpoint(self, channel_name):
-        '''Digitization threshold setpoint for comparator_output_sense_channel. Caution: a reconfigure() command outsize the channel framework will un-sync this parameter.'''
+        """Digitization threshold setpoint for comparator_output_sense_channel. Caution: a reconfigure() command outsize the channel framework will un-sync this parameter.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name, write_function=lambda val: setattr(
                 self, '_output_threshold', val))
@@ -2274,19 +3200,36 @@ class threshold_finder(instrument, delegator):
     # Internal:
 
     def _write_comparator_input(self, value, controlled):
-        '''set forced input to DUT comparator'''
+        """Set forced input to DUT comparator.
+
+        Args:
+            controlled: Controlled.
+            value: Value to set.
+        """
         if controlled:
             self._comparator_input_ramper.write(value)
         else:
             self._comparator_input_channel.write(value)
 
     def _read_comparator_output(self):
-        '''measure analog output of DUT comparator'''
+        """Measure analog output of DUT comparator.
+
+        Returns:
+            Result value.
+        """
         return self._comparator_output_sense_channel.read()
 
     def _read_input_sense(self, input_set):
-        '''measure sensed input to DUT comparator.
-        Data is stored internally for future use.'''
+        """Measure sensed input to DUT comparator.
+
+        Data is stored internally for future use.
+
+        Args:
+            input_set: Input set.
+
+        Returns:
+            Result value.
+        """
         if self._comparator_input_sense_channel is not None:
             sensed_input = self._comparator_input_sense_channel.read()
             self.debug_print(
@@ -2295,19 +3238,35 @@ class threshold_finder(instrument, delegator):
             return sensed_input
 
     def _digitize_output(self, value):
-        '''Convert analog output to boolean by polarity-aware comparison with threshold.'''
+        """Convert analog output to boolean by polarity-aware comparison with threshold.
+
+        Args:
+            value: Value to set.
+
+        Returns:
+            Result value.
+        """
         if self.pol > 0:
             return value > self._output_threshold_calc
         else:
             return value < self._output_threshold_calc
 
     def _test(self, input_force, measure_input, controlled):
-        '''Private procedure to test each point during sweep.
+        """Private procedure to test each point during sweep.
+
         1) write new value to comparator_input_force_channel
         2) read comparator_output_sense_channel and digitize
         3) optionally read comparator_input_sense_channel and store for future reference
         4) return results dict
-        '''
+
+        Args:
+            controlled: Controlled.
+            input_force: Input force.
+            measure_input: Measure input.
+
+        Returns:
+            Result value.
+        """
         self._write_comparator_input(input_force, controlled)
         output_analog = self._read_comparator_output()
         try:
@@ -2376,12 +3335,15 @@ class threshold_finder(instrument, delegator):
         self.debug_print("Polarity: {}1".format("+" if self.pol == 1 else "-"))
 
     def _compute_outputs(self):
-        '''
-        Shared math for binary and linear search outputs
+        """Shared math for binary and linear search outputs.
+
         Takes instance variables self.falling_min, self.falling_max, self.rising_min, self.rising_max as input.
         Stores output instance variables self.forced_rising, self.forced_falling, self.rising, self.falling, self.hysteresis, self.threshold, self.rising_uncertainty, self.falling_uncertainty, self.rising_relative_uncertainty, self.falling_relative_uncertainty.
         Passes through self.tries, self._abstol.
-        '''
+
+        Returns:
+            Result value.
+        """
         self.forced_rising = (self.rising_min + self.rising_max) / 2.0
         self.forced_falling = (self.falling_min + self.falling_max) / 2.0
         if self._comparator_input_sense_channel is not None:
@@ -2439,13 +3401,23 @@ class threshold_finder(instrument, delegator):
         return self.results_dictionary
 
     def measure_input(self, input_sense_channel):
-        '''Measure input sense (Kelvin) channel manually after completion of search algorithm.
+        """Measure input sense (Kelvin) channel manually after completion of search algorithm.
+
         This may be somewhat less accurate than measuring sense channel during search.
         It exposes possibly non-ideal hysteresis or gain/offset drift of the forcing instrument by uncorrelating measurements in time.
 
         Typically used with comparator_input_sense_channel=None to speed up search at each point.
         Updates and returns internal results dictionary.
-        '''
+
+        Args:
+            input_sense_channel: Input sense channel.
+
+        Returns:
+            Result value.
+
+        Raises:
+            ThresholdFinderError: On error condition.
+        """
         self.debug_print("Post-measuring input sense....")
         if self.results_dictionary is None:
             raise ThresholdFinderError(
@@ -2497,6 +3469,11 @@ class threshold_finder(instrument, delegator):
         return self.results_dictionary
 
     def debug_print(self, msg):
+        """Perform debug print operation.
+
+        Args:
+            msg: Msg.
+        """
         if self.verbose:
             print(msg)
 
@@ -2507,10 +3484,20 @@ class threshold_finder(instrument, delegator):
             return value
 
     def find(self, cautious=False):
-        '''Hysteresis-aware double binary search.
+        """Hysteresis-aware double binary search.
+
         Returns dictionary of results.
         if cautious, perform extra measurement at each step to ensure hysteresis flips and search region has not been corrupted.
-        '''
+
+        Args:
+            cautious: Cautious.
+
+        Returns:
+            Result value.
+
+        Raises:
+            ThresholdFinderError: On error condition.
+        """
         self._check_polarity()
         self.rising_min = self._minimum
         self.rising_max = self._maximum
@@ -2594,10 +3581,20 @@ class threshold_finder(instrument, delegator):
         return res
 
     def find_no_hysteresis(self, cautious=False):
-        '''Hysteresis-unaware single binary search.
+        """Hysteresis-unaware single binary search.
+
         Returns dictionary of results.
         If cautious, perform extra measurment at each step to ensure that the threashold is still bounded by the current search interval.
-        '''
+
+        Args:
+            cautious: Cautious.
+
+        Returns:
+            Result value.
+
+        Raises:
+            ThresholdFinderError: On error condition.
+        """
         self._check_polarity()
         th_min = self._minimum
         th_max = self._maximum
@@ -2647,7 +3644,11 @@ class threshold_finder(instrument, delegator):
         return res
 
     def find_linear(self):
-        '''Hysteresis aware linear sweep. Returns dictionary of results'''
+        """Hysteresis aware linear sweep. Returns dictionary of results.
+
+        Returns:
+            Result value.
+        """
         # todo integer awareness
         self._check_polarity()
         self.rising_min = self._minimum
@@ -2671,7 +3672,14 @@ class threshold_finder(instrument, delegator):
         return res
 
     def find_linear_no_hysteresis(self, rising_direction=True):
-        '''hysteresis-unaware linear sweep. Returns dictionary of results. Optionally sweep in downward direction.'''
+        """Hysteresis-unaware linear sweep. Returns dictionary of results. Optionally sweep in downward direction.
+
+        Args:
+            rising_direction: Rising direction.
+
+        Returns:
+            Result value.
+        """
         # todo integer awareness
         self._check_polarity()
         self.tries = 0
@@ -2704,11 +3712,18 @@ class threshold_finder(instrument, delegator):
 
     def find_geometric(self, decades=None):
         # todo integer awareness
-        '''Perform repeated linear searches for rising and falling thresholds with 10x increase in resolution each iteration.
+        """Perform repeated linear searches for rising and falling thresholds with 10x increase in resolution each iteration.
+
         Final resolution is abstol
         Optionally specify decades argument to control how many searches are performed. Defaults to as many as possible for given min/max range and abstol.
         No steps are ever made toward the threshold with magnitude larger than current search's resolution in case of overshoot.
-        '''
+
+        Args:
+            decades: Decades.
+
+        Returns:
+            Result value.
+        """
         self._check_polarity()
         self.rising_min = self._minimum
         self.rising_max = self._maximum
@@ -2775,12 +3790,22 @@ class threshold_finder(instrument, delegator):
 
     def find_hybrid(self, linear_backtrack=None):
         # todo integer awareness
-        '''Perform course binary search, then approach rising and falling thresholds from correct direction with linear search.
+        """Perform course binary search, then approach rising and falling thresholds from correct direction with linear search.
+
         Both binary and linear searches will be performed to abstol forcing tolerance.
         The linear search will be started linear_backtrack distance away from expected threshold, with default of 5 * reltol.
         Each of the two linear sweeps will take approximately (linear_backtrack / reltol) steps toward threshold.
         Steps toward threshold are of max magnitude max_step.
-        '''
+
+        Args:
+            linear_backtrack: Linear backtrack.
+
+        Returns:
+            Result value.
+
+        Raises:
+            ThresholdFinderError: On error condition.
+        """
         if linear_backtrack is None:
             linear_backtrack = 5 * self._abstol
         assert linear_backtrack >= self._abstol
@@ -2853,8 +3878,19 @@ class threshold_finder(instrument, delegator):
         return res
 
     def _find_linear_threshold(self, min, max, step):
-        '''One sided Linear sweep which sweeps up if step is positive or down if step is negative and finds the threshold
-            Pol is the polarity of the comparator output'''
+        """One sided Linear sweep which sweeps up if step is positive or down if step is negative and finds the threshold.
+
+        Pol is the polarity of the comparator output
+
+        Args:
+            max: Max.
+            min: Min.
+            step: Step size.
+
+        Raises:
+            ThresholdFinderError: On error condition.
+            ThresholdUndetectableError: On error condition.
+        """
         if self._forcing_overshoot >= 1:
             # eventually all linear searches use step size abstol, so might as
             # well detect problems here right away.
@@ -2918,6 +3954,15 @@ class threshold_finder(instrument, delegator):
         self.tries += tries
 
     def test_repeatability(self, linear_backtrack=None, decades=None):
+        """Return test repeatability result.
+
+        Args:
+            decades: Decades.
+            linear_backtrack: Linear backtrack.
+
+        Returns:
+            Result value.
+        """
         binary_results = self.find(cautious=True)
         hybrid_results = self.find_hybrid(linear_backtrack=linear_backtrack)
         linear_results = self.find_linear()
@@ -2944,7 +3989,14 @@ class threshold_finder(instrument, delegator):
                 }
 
     def read_delegated_channel_list(self, channels):
-        '''private'''
+        """Private.
+
+        Args:
+            channels: List of channel objects.
+
+        Returns:
+            Result value.
+        """
         if self.auto_find:
             if isinstance(self.auto_find,
                           str) and self.auto_find.lower() == 'linear':
@@ -2960,12 +4012,23 @@ class threshold_finder(instrument, delegator):
 
 
 class servo_binary_search(instrument):  # todo delegator?!?!?
-    '''Servo virtual insturment based on thinly wrapped threshold finder.
-    Servo forces channel to specified value within abstol/reltol tolerance by manipulating other channel.
-    '''
+    """Servo virtual insturment based on thinly wrapped threshold finder.
 
+    Servo forces channel to specified value within abstol/reltol tolerance by manipulating other channel.
+    """
     def __init__(self, fb_channel, output_channel, minimum_output,
                  maximum_output, abstol, output_readback_channel=None, verbose=False):
+        """Initialize servo_binary_search.
+
+        Args:
+            abstol: Absolute tolerance.
+            fb_channel: Fb channel.
+            maximum_output: Maximum output.
+            minimum_output: Minimum output.
+            output_channel: Output channel.
+            output_readback_channel: Output readback channel.
+            verbose: If True, print debug output.
+        """
         # reltol=0.001
         # abort_on_sat=True
         # except_on_fail=True
@@ -2999,7 +4062,15 @@ class servo_binary_search(instrument):  # todo delegator?!?!?
                                     )
 
     def add_channel_target(self, channel_name, auto_find=True):  # why not auto find???
-        '''servo target value (setpoint)'''
+        """Servo target value (setpoint).
+
+        Args:
+            auto_find: Auto find.
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=None,
@@ -3012,7 +4083,11 @@ class servo_binary_search(instrument):  # todo delegator?!?!?
         return self._add_channel(new_channel)
 
     def add_channel_results(self, channel_name):
-        ''''''
+        """Add result reporting channels.
+
+        Args:
+            channel_name: Name for the new channel.
+        """
         abstol_channel = channel(
             f'{channel_name}_abstol',
             read_function=lambda: self.results_dictionary['abstol'])
@@ -3037,6 +4112,15 @@ class servo_binary_search(instrument):  # todo delegator?!?!?
         self._add_channel(target_error_channel)
 
     def add_channels(self, channel_name, auto_find=True):
+        """Add a channels.
+
+        Args:
+            auto_find: Auto find.
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         self.add_channel_results(channel_name)
         return self.add_channel_target(
             f'{channel_name}_target', auto_find=auto_find)
@@ -3047,6 +4131,14 @@ class servo_binary_search(instrument):  # todo delegator?!?!?
             return self.find(value)
 
     def find(self, value):
+        """Return find result.
+
+        Args:
+            value: Value to set.
+
+        Returns:
+            Result value.
+        """
         self._target_value = value
         tf_results = self._tf.find_no_hysteresis()
         # Some non-specific exceptions leak out of threshold finder. Ex
@@ -3074,10 +4166,22 @@ class servo_binary_search(instrument):  # todo delegator?!?!?
 
 
 class leakage_nuller(instrument):
-    ''''''
+    """TODO: Add docstring."""
 
     def __init__(self, leakage_measurement_channel, leakage_forcing_channel, voltage_measurement_channel,
                  minimum_output, maximum_output, voltage_abstol, current_abstol, verbose=False):
+        """Initialize leakage_nuller.
+
+        Args:
+            current_abstol: Current abstol.
+            leakage_forcing_channel: Leakage forcing channel.
+            leakage_measurement_channel: Leakage measurement channel.
+            maximum_output: Maximum output.
+            minimum_output: Minimum output.
+            verbose: If True, print debug output.
+            voltage_abstol: Voltage abstol.
+            voltage_measurement_channel: Voltage measurement channel.
+        """
         self.verbose = verbose
         self.voltage_abstol = voltage_abstol
         self.current_abstol = current_abstol
@@ -3086,24 +4190,41 @@ class leakage_nuller(instrument):
         self.voltage_measurement_channel = voltage_measurement_channel
         self.leakage_forcing_channel = leakage_forcing_channel
         self.leakage_measurement_channel = leakage_measurement_channel
-        self._common_mode_servo = servo_binary_search()
-        self._leakage_servo = servo_binary_search()
+        self._common_mode_servo = servo_binary_search()  # pylint: disable=no-value-for-parameter; known incomplete stub - leakage_nuller class is a TODO prototype awaiting full implementation
+        self._leakage_servo = servo_binary_search()  # pylint: disable=no-value-for-parameter; known incomplete stub - leakage_nuller class is a TODO prototype awaiting full implementation
 
     def measure(self, estimated_voltage):
+        """Perform measure operation.
+
+        Args:
+            estimated_voltage: Estimated voltage.
+        """
         self._common_mode_servo.find(estimated_voltage)
         self.ileak = self.leakage_measurement_channel.read()
         return  # something
 
     def null(self):
+        """Return null result.
+
+        Returns:
+            Result value.
+        """
         leak_servo_results = self._leakage_servo.find(self.ileak)
         return leak_servo_results
 
     def add_channel_null(self, channel_name, auto_null=False):
+        """Add a channel null.
+
+        Args:
+            auto_null: Auto null.
+            channel_name: Name for the new channel.
+        """
         pass
 
 
 class calibrator(instrument):
-    '''Calibrator virtual instrument. Corrects channel's read/write values based on
+    """Calibrator virtual instrument. Corrects channel's read/write values based on.
+
     either two-point gain/offset correction or full lookup table.
 
     >>> from PyICe.lab_core import channel
@@ -3113,17 +4234,31 @@ class calibrator(instrument):
     >>> _ = cal_ch.write(1.0)
     >>> raw.read()
     1.03
-    '''
-
+    """
     def __init__(self, verbose=False):
+        """Initialize calibrator.
+
+        Args:
+            verbose: If True, print debug output.
+        """
         self._base_name = 'calibrator'
         instrument.__init__(self, "calibrator virtual instrument")
         self.verbose = verbose
 
     def calibrate(self, forcing_channel, readback_channel,
                   forcing_values, results_filename=None):
-        '''produce calibration table and gain/offset calculation for later use by 2point and spline calibrators'''
-        import numpy
+        """Produce calibration table and gain/offset calculation for later use by 2point and spline calibrators.
+
+        Args:
+            forcing_channel: Forcing channel.
+            forcing_values: Forcing values.
+            readback_channel: Readback channel.
+            results_filename: Results filename.
+
+        Returns:
+            Result value.
+        """
+        import numpy  # pylint: disable=import-error; numpy is an optional dependency imported at point of use
         points = {}
         for force_v in forcing_values:
             forcing_channel.write(force_v)
@@ -3145,9 +4280,24 @@ class calibrator(instrument):
 
     def add_channel_calibrated_2point(
             self, channel_name, forcing_channel, gain=None, offset=None, calibration_filename=None, **kwargs):
-        '''correct channel writes by previously determined 2-point gain/offset trim. Can pass in **calibrate() to get gain/offset measurements.
+        """Correct channel writes by previously determined 2-point gain/offset trim. Can pass in **calibrate() to get gain/offset measurements.
+
         offset and gain are specified in the direction of readback channel to forcing channel. ie forcing channel error.
-        '''
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            calibration_filename: Calibration filename.
+            channel_name: Name for the new channel.
+            forcing_channel: Forcing channel.
+            gain: Gain value.
+            offset: Offset value.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         if calibration_filename is None and gain is not None and offset is not None:
             gain = float(gain)
             offset = float(offset)
@@ -3187,11 +4337,24 @@ class calibrator(instrument):
 
     def add_channel_calibrated_spline(
             self, channel_name, forcing_channel, calibration_filename=None, **kwargs):
-        '''correct channel writes by previously determined mapping (from calibrate()).
+        """Correct channel writes by previously determined mapping (from calibrate()).
+
         Can pass in **calibrate() to get cal map, store results dict locally, or use pickle file.
         Requires scipy.interpolate.UnivariateSpline
-        '''
-        from scipy.interpolate import UnivariateSpline
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            calibration_filename: Calibration filename.
+            channel_name: Name for the new channel.
+            forcing_channel: Forcing channel.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
+        from scipy.interpolate import UnivariateSpline  # pylint: disable=import-error; scipy is an optional dependency imported at point of use
         if kwargs.get('force_values', None) is not None and kwargs.get(
                 'readback_values', None) is not None and calibration_filename is None:
             force_values = kwargs['force_values']
@@ -3240,10 +4403,17 @@ class calibrator(instrument):
 
 class digital_analog_io(instrument):
     """Wraps an analog output PyICe channel with a digital interface.
-    domain_channel is the PyICe channel for the logic supply of the digital input
-    we're talking to, e.g. master['vin_supply'] or master['dvcc_supply']."""
 
+    domain_channel is the PyICe channel for the logic supply of the digital input
+    we're talking to, e.g. master['vin_supply'] or master['dvcc_supply'].
+    """
     def __init__(self, domain_channel=None, verbose=False):
+        """Initialize digital_analog_io.
+
+        Args:
+            domain_channel: Domain channel.
+            verbose: If True, print debug output.
+        """
         self._base_name = 'digital_analog_io'
         instrument.__init__(self, "digital_analog_io virtual instrument")
         if domain_channel is None:
@@ -3287,7 +4457,13 @@ class digital_analog_io(instrument):
         return output_v
 
     def _output_channel_callback(self, digital_channel, output_channel, value):
-        '''change digital channels back to None if overwritten by another digital channel or output channel'''
+        """Change digital channels back to None if overwritten by another digital channel or output channel.
+
+        Args:
+            digital_channel: Digital channel.
+            output_channel: Output channel.
+            value: Value to set.
+        """
         expected_output = self._compute_outputs(
             digital_channel.read(),
             # use cached domain supply to avoid domain supply noise corrupting
@@ -3302,7 +4478,11 @@ class digital_analog_io(instrument):
             digital_channel._set_value(None)  # avoid recursive callbacks
 
     def _domain_channel_callback(self, digital_channel):
-        '''update outputs when reference level changes'''
+        """Update outputs when reference level changes.
+
+        Args:
+            digital_channel: Digital channel.
+        """
         if digital_channel.read() is not None:
             output_v = self._digital_write(
                 digital_channel.read(), digital_channel)
@@ -3340,12 +4520,25 @@ class digital_analog_io(instrument):
 
     def add_channel_digital_output(
             self, channel_name, output_channel, voh_scale=1, voh_offset=0, vol_scale=0, vol_offset=0):
-        '''add a mapping from logic states to analog supply
-           optionally track instrument's domain supply (through callbacks) with non-zero _scale arguments
-           optionally offset from domain supply by absolute amount with _offset arguments
-           absolute min and max write limits can be achieved using output_channel.set_min_write_limit() and output_channel.set_max_write_limit()
-           after channel creation, additional logic states can be accommodated either by add_logic_state() to this channel, or create another digital channel mapping through the same output_channel
-           use a ramp_to domain channel to interleave output channel writes with each step and prevent logic state changes when domain supply changes'''
+        """Add a mapping from logic states to analog supply.
+
+        optionally track instrument's domain supply (through callbacks) with non-zero _scale arguments
+        optionally offset from domain supply by absolute amount with _offset arguments
+        absolute min and max write limits can be achieved using output_channel.set_min_write_limit() and output_channel.set_max_write_limit()
+        after channel creation, additional logic states can be accommodated either by add_logic_state() to this channel, or create another digital channel mapping through the same output_channel
+        use a ramp_to domain channel to interleave output channel writes with each step and prevent logic state changes when domain supply changes
+
+        Args:
+            channel_name: Name for the new channel.
+            output_channel: Output channel.
+            voh_offset: Voh offset.
+            voh_scale: Voh scale.
+            vol_offset: Vol offset.
+            vol_scale: Vol scale.
+
+        Returns:
+            Result value.
+        """
         digital_channel = integer_channel(
             channel_name,
             size=16,
@@ -3377,9 +4570,17 @@ class digital_analog_io(instrument):
 
     def add_digital_output_logic_state(
             self, digital_output_channel, digital_state, vo_scale, vo_offset):
-        '''add an additional logic state to an existing digital output channel, eg 2 for testhook overdrive.
+        """Add an additional logic state to an existing digital output channel, eg 2 for testhook overdrive.
+
         vo_scale is a percentage of the domain channel
-        vo_offset is absolute'''
+        vo_offset is absolute
+
+        Args:
+            digital_output_channel: Digital output channel.
+            digital_state: Digital state.
+            vo_offset: Vo offset.
+            vo_scale: Vo scale.
+        """
         assert isinstance(digital_output_channel, channel)
         assert isinstance(digital_state, int)
         assert isinstance(vo_scale, numbers.Real)
@@ -3390,7 +4591,11 @@ class digital_analog_io(instrument):
 
     def enable_digital_output_domain_read_callback(
             self, digital_output_channel):
-        '''This doesn't work yet. Is it worth implementing?'''
+        """This doesn't work yet. Is it worth implementing?
+
+        Args:
+            digital_output_channel: Digital output channel.
+        """
         self._domain_channel.add_read_callback(
             lambda domain_channel,
             domain_channel_value: self._domain_read_callback(
@@ -3399,8 +4604,21 @@ class digital_analog_io(instrument):
 
     def add_channel_digital_input(self, channel_name, analog_input_channel,
                                   vil_ratio=0.3, vih_ratio=0.7, hys_enable=0, hys_absolute=0):
-        '''add a mapping from analog channel to boolean, scaled to variable domain supply
-            absolute voltage thresholds are achievable by using a dummy domain supply channel'''
+        """Add a mapping from analog channel to boolean, scaled to variable domain supply.
+
+        absolute voltage thresholds are achievable by using a dummy domain supply channel
+
+        Args:
+            analog_input_channel: Analog input channel.
+            channel_name: Name for the new channel.
+            hys_absolute: Hys absolute.
+            hys_enable: Hys enable.
+            vih_ratio: Vih ratio.
+            vil_ratio: Vil ratio.
+
+        Returns:
+            Result value.
+        """
         digital_channel = integer_channel(
             channel_name, size=1, read_function=self._dummy_read)
         # need to wait for assignment to get reference back to new channel
@@ -3426,7 +4644,7 @@ class digital_analog_io(instrument):
 
 
 class vector_to_scalar_converter(instrument):
-    '''reduce rank of channel data from iterable vector data to scalar data using arbitrary reduction function (average, sum, std. dev, etc)
+    """Reduce rank of channel data from iterable vector data to scalar data using arbitrary reduction function (average, sum, std. dev, etc).
 
     >>> vector_to_scalar_converter.sum([1, 2, 3, 4])
     10.0
@@ -3436,9 +4654,9 @@ class vector_to_scalar_converter(instrument):
     2.138...
     >>> vector_to_scalar_converter.sum(None) is None
     True
-    '''
-
+    """
     def __init__(self):
+        """Initialize vector_to_scalar_converter."""
         self._base_name = 'vector_scalar_converter'
         instrument.__init__(self, self._base_name)
         # NB Python 3.4 adds useful statistics module:
@@ -3446,18 +4664,39 @@ class vector_to_scalar_converter(instrument):
 
     @staticmethod
     def sum(sequence):
-        '''arithmetic sum'''
+        """Arithmetic sum.
+
+        Args:
+            sequence: Sequence.
+
+        Returns:
+            Result value.
+        """
         return math.fsum(sequence) if sequence is not None else None
 
     @classmethod
     def mean(cls, sequence):
-        '''arithmetic mean of sequence'''
+        """Arithmetic mean of sequence.
+
+        Args:
+            sequence: Sequence.
+
+        Returns:
+            Result value.
+        """
         return cls.sum(sequence) / \
             len(sequence) if sequence is not None else None
 
     @classmethod
     def stdev(cls, sequence):
-        '''sample std deviation'''
+        """Sample std deviation.
+
+        Args:
+            sequence: Sequence.
+
+        Returns:
+            Result value.
+        """
         if sequence is None:
             return None
         mean = cls.mean(sequence)
@@ -3466,14 +4705,28 @@ class vector_to_scalar_converter(instrument):
 
     @classmethod
     def pstdev(cls, sequence):
-        '''population std deviation'''
+        """Population std deviation.
+
+        Args:
+            sequence: Sequence.
+
+        Returns:
+            Result value.
+        """
         if sequence is None:
             return None
         return cls.stdev(sequence) * ((len(sequence) - 1) / len(sequence))**0.5
 
     @classmethod
     def rms(cls, sequence):
-        '''RMS (root mean square). To instead subtract sample mean, use pstdev'''
+        """RMS (root mean square). To instead subtract sample mean, use pstdev.
+
+        Args:
+            sequence: Sequence.
+
+        Returns:
+            Result value.
+        """
         if sequence is None:
             return None
         mean = cls.mean([x**2 for x in sequence])**0.5
@@ -3482,8 +4735,18 @@ class vector_to_scalar_converter(instrument):
 
     def add_channel_callback(
             self, channel_name, vector_data_channel, reduction_function):
-        '''vector reduction channel that operates by a callback whenever vector_data_channel is read. Reading this channel won't cause vector_data_channel
-        to be read, nor will this channel's value be updated.'''
+        """Vector reduction channel that operates by a callback whenever vector_data_channel is read. Reading this channel won't cause vector_data_channel.
+
+        to be read, nor will this channel's value be updated.
+
+        Args:
+            channel_name: Name for the new channel.
+            reduction_function: Reduction function.
+            vector_data_channel: Vector data channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name)  # dummy channel
         new_channel.set_description(
             self.get_name() + ': ' + self.add_channel_callback.__doc__)
@@ -3495,8 +4758,18 @@ class vector_to_scalar_converter(instrument):
 
     def add_channel(self, channel_name, vector_data_channel,
                     reduction_function):
-        '''vector reduction channel that operates by directly reading vector_data_channel. Reading this channel will cause vector_data_channel
-        to be read, and will cause vector_data_channel to be read twice if both vector_data_channel and this virtual channel are in the read list.'''
+        """Vector reduction channel that operates by directly reading vector_data_channel. Reading this channel will cause vector_data_channel.
+
+        to be read, and will cause vector_data_channel to be read twice if both vector_data_channel and this virtual channel are in the read list.
+
+        Args:
+            channel_name: Name for the new channel.
+            reduction_function: Reduction function.
+            vector_data_channel: Vector data channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: reduction_function(
@@ -3507,7 +4780,17 @@ class vector_to_scalar_converter(instrument):
 
     def _add_channel_dummy_random(
             self, channel_name, vector_length, max=1, min=0):
-        '''return random vector channel data to test virtual instrument'''
+        """Return random vector channel data to test virtual instrument.
+
+        Args:
+            channel_name: Name for the new channel.
+            max: Max.
+            min: Min.
+            vector_length: Vector length.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name, read_function=lambda: [
                 random.uniform(
@@ -3518,11 +4801,18 @@ class vector_to_scalar_converter(instrument):
 
 
 class smart_battery_emulator(instrument):
+    """Smart_battery_emulator (instrument subclass)."""
     def __init__(self, voltage_channel_name, current_channel_name,
                  voltage_interval, current_interval, verbose=False):
-        '''
-        Smart Battery emulator to kick out voltage and current requests to keep a smart-battery charger alive.
-        '''
+        """Smart Battery emulator to kick out voltage and current requests to keep a smart-battery charger alive.
+
+        Args:
+            current_channel_name: Current channel name.
+            current_interval: Current interval.
+            verbose: If True, print debug output.
+            voltage_channel_name: Voltage channel name.
+            voltage_interval: Voltage interval.
+        """
         self._base_name = 'SB_emulator'
         instrument.__init__(self, "Smart Battery Emulator")
         self.verbose = verbose
@@ -3535,11 +4825,18 @@ class smart_battery_emulator(instrument):
         self.initial_current_interval = current_interval
 
     def stop_all(self):
-        '''Kills all threaded channels, can't be restarted.'''
+        """Kills all threaded channels, can't be restarted."""
         self.writer.stop_all()
 
     def add_channel_voltage_interval(self, channel_name):
-        '''adds a channel that can change the update interval of the smart battery voltage'''
+        """Adds a channel that can change the update interval of the smart battery voltage.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             write_function=self.voltage_thread.set_time_interval)
@@ -3548,7 +4845,14 @@ class smart_battery_emulator(instrument):
         return self._add_channel(new_channel)
 
     def add_channel_current_interval(self, channel_name):
-        '''adds a channel that can change the update interval of the smart battery current'''
+        """Adds a channel that can change the update interval of the smart battery current.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             write_function=self.current_thread.set_time_interval)
@@ -3558,23 +4862,50 @@ class smart_battery_emulator(instrument):
 
 
 class aggregator(instrument):
-    '''Combines multiple, less capable channels into a single channel of great renown.'''
+    """Combines multiple, less capable channels into a single channel of great renown."""
 
     def __init__(self):
-        ''''''
+        """TODO: Add docstring."""
         self._base_name = 'aggreg'
         instrument.__init__(self, 'AGGREGATOR')
 
     def add_channel_sequential(self, channel_name, slave_channels):
+        """Add a channel sequential.
+
+        Args:
+            channel_name: Name for the new channel.
+            slave_channels: Slave channels.
+
+        Returns:
+            Result value.
+        """
         return self.add_channel(channel_name=channel_name,
                                 slave_channels=slave_channels, sequential=True)
 
     def add_channel_parallel(self, channel_name, slave_channels):
+        """Add a channel parallel.
+
+        Args:
+            channel_name: Name for the new channel.
+            slave_channels: Slave channels.
+
+        Returns:
+            Result value.
+        """
         return self.add_channel(channel_name=channel_name,
                                 slave_channels=slave_channels, sequential=False)
 
     def add_channel(self, channel_name, slave_channels, sequential=True):
-        """Adds the main channels that will make use of the lesser channels"""
+        """Adds the main channels that will make use of the lesser channels.
+
+        Args:
+            channel_name: Name for the new channel.
+            sequential: Sequential.
+            slave_channels: Slave channels.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(channel_name, write_function=None)
         new_channel._write = lambda value, channel = new_channel: self._write_channel(
             value, channel)
@@ -3605,7 +4936,15 @@ class aggregator(instrument):
                 value, channel.get_attribute("slave_channels"))
 
     def _write_sequential(self, value, servant_channels):
-        '''Distributes value through the lesser channels'''
+        """Distributes value through the lesser channels.
+
+        Args:
+            servant_channels: Servant channels.
+            value: Value to set.
+
+        Raises:
+            ChannelValueException: On error condition.
+        """
         if len(servant_channels) == 1:
             if value != 0:
                 if servant_channels[0].get_max_write_limit() is None:
@@ -3648,11 +4987,25 @@ class aggregator(instrument):
 
 
 class simple_servo(instrument):
-    '''Alternae servo instrument, which makes no assumptions about gain or linearity.
-    Binary and geometric have monotonicity constraints. Linear searches should fine an answer eventually, without a monotonicity constraint'''
+    """Alternae servo instrument, which makes no assumptions about gain or linearity.
 
+    Binary and geometric have monotonicity constraints. Linear searches should fine an answer eventually, without a monotonicity constraint
+    """
     def __init__(self, fb_channel, output_channel, minimum, maximum, reltol=0.001,
                  abstol=None, verbose=False, max_tries=10, step_method="BINARY"):
+        """Initialize simple_servo.
+
+        Args:
+            abstol: Absolute tolerance.
+            fb_channel: Fb channel.
+            max_tries: Max tries.
+            maximum: Maximum value.
+            minimum: Minimum value.
+            output_channel: Output channel.
+            reltol: Relative tolerance.
+            step_method: Step method.
+            verbose: If True, print debug output.
+        """
         self._base_name = 'servo'
         self.fb_channel = fb_channel
         self.output_channel = output_channel
@@ -3682,11 +5035,16 @@ class simple_servo(instrument):
         # final_range = starting_range * range_attenuation
 
     def set_search_direction_override_fn(self, fn):
+        """Set the search direction override fn.
+
+        Args:
+            fn: Callable function.
+        """
         self._search_direction_override_fn = fn
 
     def search_direction_override(self, **kwargs):
-        '''
-        Use extra (multivariate or more complex) logic to control servo direction in the face of non-monotonic behavior
+        """Use extra (multivariate or more complex) logic to control servo direction in the face of non-monotonic behavior.
+
         For example, current measurement too low because too much current caused compliance/dropout problem with servo'd load, measurable though compliance voltage waveform, current limit status bit, etc.
         return None to allow loop decision to stand
         return True to force an upward search
@@ -3694,23 +5052,57 @@ class simple_servo(instrument):
 
         This dummy method doesn't alter behavior, but can be replaced with inheritance or the set_search_direction_override_fn method to point to something with more smarts.
         Should accept **kwargs dict argument containing servo state information
-        '''
+
+        Args:
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            Result value.
+        """
         return None
 
     def set_minimum(self, value):
+        """Set the minimum.
+
+        Args:
+            value: Value to set.
+        """
         self.minimum = value
 
     def set_maximum(self, value):
+        """Set the maximum.
+
+        Args:
+            value: Value to set.
+        """
         self.maximum = value
 
     def add_channel_target(self, channel_name):
-        '''Channel write causes output_channel to servo to new target value.'''
+        """Channel write causes output_channel to servo to new target value.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         servo_channel = channel(channel_name, write_function=self.servo)
         servo_channel.set_description(
             self.get_name() + ': ' + self.add_channel_target.__doc__)
         return self._add_channel(servo_channel)
 
     def servo(self, target):
+        """Return servo result.
+
+        Args:
+            target: Target value.
+
+        Returns:
+            Result value.
+
+        Raises:
+            ServoException: On error condition.
+        """
         assert target != 0 or self.reltol is not None
         self.lower_bound = self.minimum
         self.upper_bound = self.maximum
@@ -3783,6 +5175,15 @@ class simple_servo(instrument):
         raise ServoException(f"Max servo tries exceeded: {self.max_tries}")
 
     def is_in_spec(self, target, setting):
+        """Return whether the channel is in spec.
+
+        Args:
+            setting: Setting.
+            target: Target value.
+
+        Returns:
+            Result value.
+        """
         self.previous_error = self.error
         self.fb_read_val = float(self.fb_channel.read())
         self.error = self.fb_read_val - target
@@ -3803,12 +5204,17 @@ class simple_servo(instrument):
 
 
 class dummy_quantum_twin(instrument):
+    """Dummy_quantum_twin (instrument subclass)."""
     def __init__(self, name=None):
-        '''Creates dummy channels that opportunistically mirror the state of the live originals.
+        """Creates dummy channels that opportunistically mirror the state of the live originals.
+
         Can be used to replace channels in a logger than might not always still be readable at time of logging.
         Can speed up multiple logging iterations if resisters are known to be static.
         Etc...
-        '''
+
+        Args:
+            name: Name identifier.
+        """
         self._base_name = 'Dummy Quantum Twin Instrument' if name is None else f'{name}'
         instrument.__init__(self, self._base_name)
     # TODO - prests, formats, int channel size???
@@ -3816,9 +5222,18 @@ class dummy_quantum_twin(instrument):
     # confusing???
 
     def add_channel(self, live_channel, skip_read=False, cached_value=None):
-        '''Make a new dummy chanel, entangle it with the live one, and add it to this instrument.
+        """Make a new dummy chanel, entangle it with the live one, and add it to this instrument.
+
         Original live channel unchanged except for added callbacks.
-        '''
+
+        Args:
+            cached_value: Cached value.
+            live_channel: Live channel.
+            skip_read: Skip read.
+
+        Returns:
+            Result value.
+        """
         dummy_channel = channel(
             name=live_channel.get_name(),
             read_function=None,
@@ -3856,7 +5271,9 @@ class dummy_quantum_twin(instrument):
 
 
 class Virtual_Oven(temperature_chamber):
+    """Virtual_ oven (temperature_chamber subclass)."""
     def __init__(self):
+        """Initialize virtual_ oven."""
         self._base_name = 'Virtual_Oven'
         temperature_chamber.__init__(self)
 

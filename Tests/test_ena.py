@@ -1,3 +1,4 @@
+"""Tests for ena."""
 from PyICe import lab_core
 from PyICe.lab_instruments.ENA import keysight_e5061b
 

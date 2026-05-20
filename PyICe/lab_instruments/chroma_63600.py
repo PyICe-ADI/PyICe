@@ -1,24 +1,36 @@
+"""Chroma 63600 instrument driver."""
 from PyICe.lab_core import *  # noqa: F403
 
 
 class chroma_63600(scpi_instrument):
+    """Chroma_63600 (scpi_instrument subclass)."""
     def __init__(self, interface_visa):
-        '''interface_visa'''
+        """interface_visa.
+
+        Args:
+            interface_visa: VISA interface instance.
+        """
         self._base_name = 'chroma_63600'
         scpi_instrument.__init__(self, f"chroma_63600 @ {interface_visa}")
         self.add_interface_visa(interface_visa)
         self.get_interface().write(("*RL1"))
 
     def set_mode_and_range(self, num, mode, range):
-        '''Sets the mode and range.
+        """Sets the mode and range.
+
             Mode: a string of either CC, CR, CV, CP, or CZ
             Range: a string of either L, M, or H
-        '''
+
+        Args:
+            mode: Operating mode.
+            num: Count or number.
+            range: Measurement or output range.
+        """
         self._select_load_channel(num)
         self.get_interface().write(((f"MODE {mode}{range}").upper()))
 
     def _select_load_channel(self, num):
-        '''Selects which load channel will receive subsequent commands.
+        """Selects which load channel will receive subsequent commands.
 
             From the Chroma manual section 2.4.1:
 
@@ -29,7 +41,10 @@ class chroma_63600(scpi_instrument):
             Figure 2-3 shows the channel assignments for a Chroma 63600-5 Mainframe containing two Loads of 63630-80-60 single channel module, and two Loads of 63610-80-20 dual channel module.
             Channel number is automatically assigned to 1, 3, 5, 6, 7, and 8.
             Channel 2 and 4 are skipped as single module is applied.
-        '''
+
+        Args:
+            num: Count or number.
+        """
         self.get_interface().write((f"CHAN {num}"))
     # def add_channel_enable(self, channel_name, num):
         # new_channel = integer_channel(channel_name, size=1, write_function= lambda state, num=num: self._write_enable(num,state))
@@ -44,6 +59,15 @@ class chroma_63600(scpi_instrument):
             self.get_interface().write(("LOAD OFF"))
 
     def add_channel_current(self, channel_name, num):
+        """Add a channel current.
+
+        Args:
+            channel_name: Name for the new channel.
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             write_function=lambda current: self._write_current(
@@ -59,6 +83,15 @@ class chroma_63600(scpi_instrument):
         self.get_interface().write((f"CURR:STAT:L1 {current}"))
 
     def add_channel_voltage(self, channel_name, num):
+        """Add a channel voltage.
+
+        Args:
+            channel_name: Name for the new channel.
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             write_function=lambda voltage: self._write_voltage(
@@ -75,6 +108,15 @@ class chroma_63600(scpi_instrument):
 
     # current limit in CV  mode
     def add_channel_current_limit(self, channel_name, num):
+        """Add a channel current limit.
+
+        Args:
+            channel_name: Name for the new channel.
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             write_function=lambda current_limit: self._write_current_limit(
@@ -90,6 +132,15 @@ class chroma_63600(scpi_instrument):
         self.get_interface().write((f"VOLT:STAT:ILIM {current_limit}"))
 
     def add_channel_resistance(self, channel_name, num):
+        """Add a channel resistance.
+
+        Args:
+            channel_name: Name for the new channel.
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             write_function=lambda resistance: self._write_resistance(
@@ -107,6 +158,15 @@ class chroma_63600(scpi_instrument):
         self.get_interface().write((f"RES:STAT:L1 {resistance}"))  # TODO
 
     def add_channel_power(self, channel_name, num):
+        """Add a channel power.
+
+        Args:
+            channel_name: Name for the new channel.
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             write_function=lambda power: self._write_power(
@@ -126,6 +186,15 @@ class chroma_63600(scpi_instrument):
         # self.get_interface().write((f"MEAS:INP {num}"))
 
     def add_channel_measured_current(self, channel_name, num):
+        """Add a channel measured current.
+
+        Args:
+            channel_name: Name for the new channel.
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._read_measured_current(num))
@@ -139,6 +208,15 @@ class chroma_63600(scpi_instrument):
         return float(self.get_interface().ask("MEAS:CURR?"))
 
     def add_channel_measured_voltage(self, channel_name, num):
+        """Add a channel measured voltage.
+
+        Args:
+            channel_name: Name for the new channel.
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._read_measured_voltage(num))
@@ -153,6 +231,15 @@ class chroma_63600(scpi_instrument):
         return float(self.get_interface().ask("MEAS:VOLT?"))
 
     def add_channel_measured_power(self, channel_name, num):
+        """Add a channel measured power.
+
+        Args:
+            channel_name: Name for the new channel.
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         new_channel = channel(
             channel_name,
             read_function=lambda: self._read_measured_power(num))
