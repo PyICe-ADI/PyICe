@@ -1,5 +1,5 @@
 """Tests for labcomm serial to  D C2038 A ltc4162."""
-from serial.tools.list_ports import comports
+from serial.tools.list_ports import comports  # pylint: disable=import-error; pyserial is an optional dependency that must be installed to run this test
 import os
 baudrate = 115200
 # import logging                           # No need to do this anymore because
@@ -27,15 +27,17 @@ def talk_to_demoboard(connection, src_id, xml_file, debug=False):
     m = lab_core.master()
     m._threaded = False   # Useful when debugging.
     if connection[0] == 'serial':
-        twi = m.get_twi_labcomm_raw_serial(serial_port_name=connection[1],
+        twi = m.get_twi_labcomm_raw_serial(serial_port_name=connection[1],  # pylint: disable=no-member; method from older PyICe API or dynamically added via interface_manager mixin
                                            src_id=src_id)
     elif connection[0] == 'tcp':
-        twi = m.get_twi_labcomm_tcp(dest_ip_address=connection[1][0],
+        twi = m.get_twi_labcomm_tcp(dest_ip_address=connection[1][0],  # pylint: disable=no-member; method from older PyICe API or dynamically added via interface_manager mixin
                                     dest_tcp_portnum=connection[1][1],
                                     src_id=src_id,
                                     debug=False)
     elif connection[0] == 'dummy':
         twi = m.get_twi_dummy_interface()
+    else:
+        raise ValueError(f"Unknown connection type: {connection[0]}")
 
     chip = twi_instrument.twi_instrument(interface_twi=twi,
                                          except_on_i2cInitError=True,
@@ -65,7 +67,7 @@ def talk_to_demoboard(connection, src_id, xml_file, debug=False):
         if PYICE_NATIVE is True:
             m.gui()
         else:
-            from LTC4162_GUI import ltc4162_gui  # this cannot be imported in the main thread
+            from LTC4162_GUI import ltc4162_gui  # pylint: disable=import-error; this cannot be imported in the main thread; external GUI package required separately
             gui = ltc4162_gui.ltc_lab_gui_app_client(m,
                                                      passive=False,
                                                      cfg_file='default.guicfg')
@@ -161,5 +163,5 @@ def test_labcomm():
 
 
 if __name__ == '__main__':
-    #    from serial.tools.list_ports import comports
+    #    from serial.tools.list_ports import comports  # pylint: disable=import-error; pyserial is an optional dependency that must be installed to run this test
     test_labcomm()

@@ -166,7 +166,7 @@ class bench_config_component():
         Returns:
             Result value.
         """
-        return self._terminals.keys()
+        return iter(self._terminals.keys())
 
 
 class component_collection():

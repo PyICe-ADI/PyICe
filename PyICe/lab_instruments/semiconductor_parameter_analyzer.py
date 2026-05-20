@@ -1,4 +1,9 @@
 """Semiconductor parameter analyzer instrument driver."""
+# pylint: disable=E1101; this is an abstract base class - members like _smu_configuration,
+# _smu_voltage_range, _smu_current_range, _smu_voltage_force_channels, smu_numbers, vs_numbers,
+# _voltage_measure_channels, _current_measure_channels, _smu_voltage_measure_channels,
+# _smu_current_measure_channels, _vm_voltage_measure_channels are all initialized in concrete
+# subclass __init__ methods (hp_4155b, keithley_4200) before any of these base class methods are called
 from ..lab_core import *  # noqa: F403
 
 

@@ -32,7 +32,7 @@ class kikusui_pwr(scpi_instrument):
         """
         self._base_name = 'kikusui_pwr'
         scpi_instrument.__init__(
-            self, f"kikusui_pwr800l {self.kikusui_pwr_name} @ {interface_visa}:Node {node}: Ch{ch}")
+            self, f"kikusui_pwr800l {self.kikusui_pwr_name} @ {interface_visa}:Node {node}: Ch{ch}")  # pylint: disable=E1101; kikusui_pwr_name is set by subclass __init__ (e.g. kikusui_pwr800l) before calling super().__init__
         self.add_interface_visa(interface_visa)
         self.node = node
         self.ch = ch

@@ -42,10 +42,10 @@ class agilent_e4433b(instrument):
         self._write_power(power)
         self._write_freq(freq)
 
-    def _write_power(self, channel_name, power):
+    def _write_power(self, power):
         self.get_interface().write(("POWER " + str(power) + " DBM"))
 
-    def _write_freq(self, channel_name, freq):
+    def _write_freq(self, freq):
         self.get_interface().write(("FREQuency " + str(freq) + "MHZ"))
 
     def add_channel_freq(self, channel_name):

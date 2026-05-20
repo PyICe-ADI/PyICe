@@ -1,7 +1,7 @@
 """Relay instrument driver."""
 import platform
-import usb.util
-import usb.core
+import usb.util  # pylint: disable=E0401; pyusb is an optional dependency required only when using USB relay hardware
+import usb.core  # pylint: disable=E0401; pyusb is an optional dependency required only when using USB relay hardware
 from ..lab_core import *  # noqa: F403
 import abc
 
@@ -626,7 +626,7 @@ class FT245R:
 if __name__ == '__main__':
     # ftdi_relay(serial_number='AB0NX7L7')
 
-    import usb.core  # noqa: F811
+    import usb.core  # noqa: F811  # pylint: disable=E0401; pyusb is an optional dependency required only for USB relay hardware
     import sys
     import time
     rb = FT245R()
@@ -645,7 +645,7 @@ if __name__ == '__main__':
         print(f'Using device with serial number {dev.serial_number}')
     elif len(sys.argv) == 2:
         ser = sys.argv[1]
-        dev_list = rb.list_dev(serial_number=ser)
+        dev_list = [dev for dev in rb.list_dev() if dev.serial_number == ser]
         if len(dev_list) == 0:
             raise Exception(f'No FT245R device with serial {ser} found')
         # Show their serial numbers

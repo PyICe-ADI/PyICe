@@ -14,7 +14,7 @@ class agilent_e3631a(agilent_e36xxa):
             interface_visa: VISA interface instance.
         """
         self._base_name = 'agilent_e3631a'
-        self.name = f'{_base_name} @ {interface_visa}'
+        self.name = f'{self._base_name} @ {interface_visa}'
         # instrument.__init__(self,self.name)
         super(agilent_e3631a, self).__init__(self.name)
         self.add_interface_visa(interface_visa)

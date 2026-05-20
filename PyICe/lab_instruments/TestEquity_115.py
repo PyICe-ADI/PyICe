@@ -23,6 +23,7 @@ class TestEquity_115(temperature_chamber):
         self.add_interface_raw_serial(interface_raw_serial)
         self.modbus_pid = minimalmodbus.Instrument(
             interface_raw_serial, slaveaddress=1)
+        self.__scriptDebug = False
 
     def add_channels(self, channel_name):
         """Add a channels.
@@ -68,7 +69,7 @@ class TestEquity_115(temperature_chamber):
             try:
                 temp = self.modbus_pid.read_register(100, 1, 3, True)
             except (IOError, ValueError):
-                if self.__scriptDebug is True:
+                if self.__scriptDebug is True:  # pylint: disable=E1101; __scriptDebug is initialized in __init__ but pylint cannot resolve the name-mangled attribute (_TestEquity_115__scriptDebug) through the class hierarchy
                     print("TE115A: get_temp communication error")
                 time.sleep(5)
         return float(temp)
@@ -76,7 +77,7 @@ class TestEquity_115(temperature_chamber):
     def _write_temperature(self, value):
         self.modbus_pid.write_register(300, float(value), 1, 16, True)
 
-    def instrumentInfoString(self):
+    def instrumentInfoString(self):  # pylint: disable=E1101; _manufacturer, _modelNumber, _serialNumber, _address are expected to be set by subclasses or external configuration before calling this method (incomplete stub inherited from an interface pattern)
         """Return instrumentInfoString result.
 
         Returns:

@@ -107,7 +107,7 @@ class u2300a_scope(scpi_instrument, delegator):
             channel_name,
             write_function=lambda v: setattr(
                 self,
-                _trigger_timeout,
+                '_trigger_timeout',
                 v))
         new_ch.set_attribute('u2300a_type', 'trigger_control')
         new_ch.set_description(
@@ -146,10 +146,10 @@ class u2300a_scope(scpi_instrument, delegator):
             Result value.
         """
         assert channel_num not in self._configured_channels
-        assert channel_num in self._ai_channels['single_ended']
+        assert channel_num in self._ai_channels['single_ended']  # pylint: disable=E1101; _ai_channels is a class-level dict defined in hardware-specific mixin subclasses (e.g. u2331a_base) combined via multiple inheritance
         assert channel_num - \
             max(self._ai_channels['differential']) + \
-            1 - 100 not in self._configured_channels
+            1 - 100 not in self._configured_channels  # pylint: disable=E1101; _ai_channels is provided by hardware-specific mixin subclasses at class level
         new_ch = channel(channel_name, read_function=self.dummy_read)
         self._configured_channels[channel_num] = new_ch
         new_ch.set_attribute('internal_address', channel_num)
@@ -211,10 +211,10 @@ class u2300a_scope(scpi_instrument, delegator):
             Result value.
         """
         assert channel_num not in self._configured_channels
-        assert channel_num in self._ai_channels['single_ended']
+        assert channel_num in self._ai_channels['single_ended']  # pylint: disable=E1101; _ai_channels is a class-level dict defined in hardware-specific mixin subclasses (e.g. u2331a_base) combined via multiple inheritance
         assert channel_num - \
             max(self._ai_channels['differential']) + \
-            1 - 100 not in self._configured_channels
+            1 - 100 not in self._configured_channels  # pylint: disable=E1101; _ai_channels is provided by hardware-specific mixin subclasses at class level
         new_ch = channel(channel_name, read_function=self.dummy_read)
         self._configured_channels[channel_num] = new_ch
         new_ch.set_attribute('internal_address', channel_num)
@@ -1234,10 +1234,10 @@ class u2300a_DVM(scpi_instrument, delegator):
             Result value.
         """
         assert channel_num not in self._configured_channels
-        assert channel_num in self._ai_channels['single_ended']
+        assert channel_num in self._ai_channels['single_ended']  # pylint: disable=E1101; _ai_channels is a class-level dict defined in hardware-specific mixin subclasses (e.g. u2331a_base) combined via multiple inheritance
         assert channel_num - \
             max(self._ai_channels['differential']) + \
-            1 - 100 not in self._configured_channels
+            1 - 100 not in self._configured_channels  # pylint: disable=E1101; _ai_channels is provided by hardware-specific mixin subclasses at class level
         new_ch = channel(channel_name, read_function=self.dummy_read)
         self._configured_channels[channel_num] = new_ch
         new_ch.set_attribute('internal_address', channel_num)
@@ -1302,10 +1302,10 @@ class u2300a_DVM(scpi_instrument, delegator):
             Result value.
         """
         assert channel_num not in self._configured_channels
-        assert channel_num in self._ai_channels['single_ended']
+        assert channel_num in self._ai_channels['single_ended']  # pylint: disable=E1101; _ai_channels is a class-level dict defined in hardware-specific mixin subclasses (e.g. u2331a_base) combined via multiple inheritance
         assert channel_num - \
             max(self._ai_channels['differential']) + \
-            1 - 100 not in self._configured_channels
+            1 - 100 not in self._configured_channels  # pylint: disable=E1101; _ai_channels is provided by hardware-specific mixin subclasses at class level
         new_ch = channel(channel_name, read_function=self.dummy_read)
         self._configured_channels[channel_num] = new_ch
         new_ch.set_attribute('internal_address', channel_num)

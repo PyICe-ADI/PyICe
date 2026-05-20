@@ -19,7 +19,7 @@ def try_out_dc2709a_4021(comport, src_id, xml_file, debug=False):
     from PyICe import lab_core, twi_instrument
     from PyICe.virtual_instruments import timer
     m = lab_core.master()
-    twi = m.get_twi_labcomm_raw_serial(serial_port_name=comport, src_id=src_id)
+    twi = m.get_twi_labcomm_raw_serial(serial_port_name=comport, src_id=src_id)  # pylint: disable=no-member; method from older PyICe API or dynamically added via interface_manager mixin
     ltc4021 = twi_instrument.twi_instrument(interface_twi=twi,
                                             except_on_i2cInitError=True,
                                             except_on_i2cCommError=False,
@@ -56,7 +56,7 @@ if demoboard_connection[0] == "serial":
         "I will connect to a DC2709A on serial port {}...".format(
             demoboard_connection[1]))
     input("Press ENTER to continue. ")
-    from ltc4021.Register_Definitions import XMLFILE
+    from ltc4021.Register_Definitions import XMLFILE  # pylint: disable=import-error; external product-specific package required to run this test
     # xml_file="../../ltc4021/Register_Definitions/LTC4021.xml"
     master = try_out_dc2709a_4021(
         comport=demoboard_connection[1],

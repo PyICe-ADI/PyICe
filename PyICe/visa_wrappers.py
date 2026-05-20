@@ -13,7 +13,7 @@ import logging
 debug_logging = logging.getLogger(__name__)
 dbgprint = debug_logging.debug
 try:
-    import pyvisa as visa
+    import pyvisa as visa  # pylint: disable=import-error; optional dependency guarded by try/except
     visaMissing = False
 except BaseException:
     visaMissing = True
@@ -22,22 +22,22 @@ try:
 except BaseException:
     ctypesMissing = True
 try:
-    import serial
+    import serial  # pylint: disable=import-error; optional dependency guarded by try/except
     serialMissing = False
 except BaseException:
     serialMissing = True
 try:
-    import vxi11
+    import vxi11  # pylint: disable=import-error; optional dependency guarded by try/except
     vxi11Missing = False
 except BaseException:
     vxi11Missing = True
 try:
-    import usbtmc
+    import usbtmc  # pylint: disable=import-error; optional dependency guarded by try/except
     usbtmcMissing = False
 except BaseException:
     usbtmcMissing = True
 try:
-    import telnetlib
+    import telnetlib  # pylint: disable=import-error; optional dependency guarded by try/except
     telnetlibMissing = False
 except BaseException:
     telnetlibMissing = True
@@ -182,7 +182,7 @@ class visa_wrapper(object):
             Result value.
         """
         assert isinstance(message, bytes)
-        self.write_raw(message)
+        self.write_raw(message)  # pylint: disable=no-member; write_raw is defined in subclasses (visa_wrapper_serial, visa_wrapper_vxi11, etc.) that actually use this method
         return self.read_values_binary(
             format_str, byte_order, terminationCharacter)
 

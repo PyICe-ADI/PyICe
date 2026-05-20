@@ -551,7 +551,7 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             Result value.
         """
         return self.read_register(
-            self, addr7, commandCode=None, data_size=0, use_pec=False)
+            addr7, commandCode=None, data_size=0, use_pec=False)
 
     def receive_byte_pec(self, addr7):
         """Receive_byte with additional PEC byte read from slave.
@@ -563,7 +563,7 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             Result value.
         """
         return self.read_register(
-            self, addr7, commandCode=None, data_size=0, use_pec=True)
+            addr7, commandCode=None, data_size=0, use_pec=True)
 
     def alert_response(self):
         """Another optional signal is an interrupt line for devices that want to trade their ability to master for a pin.
@@ -4761,7 +4761,7 @@ class i2c_bobbytalk(twi_interface):
             recv_timeout: Recv timeout.
             src_id: Source identifier.
         """
-        from . import lab_interfaces, bobbytalk
+        from . import lab_interfaces, bobbytalk  # pylint: disable=no-name-in-module; bobbytalk is an optional external module that may be installed separately into the PyICe package
         assert isinstance(
             bobbytalk_interface,
             lab_interfaces.interface_bobbytalk)
@@ -4798,7 +4798,7 @@ class i2c_bobbytalk(twi_interface):
         Args:
             val: Val.
         """
-        from . import bobbytalk
+        from . import bobbytalk  # pylint: disable=no-name-in-module; bobbytalk is an optional external module that may be installed separately into the PyICe package
         assert isinstance(val, int)
         self.check_size(val, 8 * bobbytalk.packet.SRC_ID_SIZE)
         self._src_id = val
@@ -4819,7 +4819,7 @@ class i2c_bobbytalk(twi_interface):
         Args:
             val: Val.
         """
-        from . import bobbytalk
+        from . import bobbytalk  # pylint: disable=no-name-in-module; bobbytalk is an optional external module that may be installed separately into the PyICe package
         assert isinstance(val, int)
         self.check_size(val, 8 * bobbytalk.packet.DEST_ID_SIZE)
         self._dest_id = val
@@ -5620,12 +5620,12 @@ class i2c_labcomm(twi_interface):
         for command_code in command_codes:
             payload += int.to_bytes(command_code, length=1, byteorder="big")
         self.interface.write_raw(
-            self.talker.assemble(
+            self.talker.assemble(  # pylint: disable=no-member; talker is set in subclass interface_labcomm_twi_serial.__init__
                 source=self.src_id,
                 destination=self.dest_id,
                 payload=payload.decode(
                     encoding=STR_ENCODING)))
-        packet = self.parser.read_message()
+        packet = self.parser.read_message()  # pylint: disable=no-member; parser is set in subclass interface_labcomm_twi_serial.__init__
         # ┌────────┬──────────┬───────────┬┬────────┬──────────┬───────────┬┬─────┐
         # │ STATUS │ DATA LOW │[DATA HIGH]││ STATUS │ DATA LOW │[DATA HIGH]││ ... │
         # └────────┴──────────┴───────────┴┴────────┴──────────┴───────────┴┴─────┘
@@ -5664,12 +5664,12 @@ class i2c_labcomm(twi_interface):
             # Hi Byte assuming WORD mode
             payload += int.to_bytes(data >> 8, length=1, byteorder="big")
         self.interface.write_raw(
-            self.talker.assemble(
+            self.talker.assemble(  # pylint: disable=no-member; talker is set in subclass interface_labcomm_twi_serial.__init__
                 source=self.src_id,
                 destination=self.dest_id,
                 payload=payload.decode(
                     encoding=STR_ENCODING)))
-        packet = self.parser.read_message()
+        packet = self.parser.read_message()  # pylint: disable=no-member; parser is set in subclass interface_labcomm_twi_serial.__init__
         self.raise_twi_error(
             code=packet["payload"][0],
             command_code=commandCode)
@@ -5696,12 +5696,12 @@ class i2c_labcomm(twi_interface):
         payload += int.to_bytes(data_size, length=1,
                                 byteorder="big")  # Will be 8 or 16
         self.interface.write_raw(
-            self.talker.assemble(
+            self.talker.assemble(  # pylint: disable=no-member; talker is set in subclass interface_labcomm_twi_serial.__init__
                 source=self.src_id,
                 destination=self.dest_id,
                 payload=payload.decode(
                     encoding=STR_ENCODING)))
-        packet = self.parser.read_message()
+        packet = self.parser.read_message()  # pylint: disable=no-member; parser is set in subclass interface_labcomm_twi_serial.__init__
         self.raise_twi_error(
             code=packet["payload"][0],
             command_code=commandCode)
@@ -5730,12 +5730,12 @@ class i2c_labcomm(twi_interface):
         # One byte is 8 bits
         payload += int.to_bytes(8, length=1, byteorder="big")
         self.interface.write_raw(
-            self.talker.assemble(
+            self.talker.assemble(  # pylint: disable=no-member; talker is set in subclass interface_labcomm_twi_serial.__init__
                 source=self.src_id,
                 destination=self.dest_id,
                 payload=payload.decode(
                     encoding=STR_ENCODING)))
-        packet = self.parser.read_message()
+        packet = self.parser.read_message()  # pylint: disable=no-member; parser is set in subclass interface_labcomm_twi_serial.__init__
         self.raise_twi_error(code=packet["payload"][0], command_code=None)
         return packet["payload"][1]
 

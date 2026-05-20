@@ -24,7 +24,7 @@ if table_name != '':
     scope.set_points(5000)
     for channel in range(1, 5):
         if scope.get_channel_enable_status(channel):
-            scope.add_channel('scope_channel_{}'.format(channel), channel)
+            scope.add_channel('scope_channel_{}'.format(channel), channel)  # pylint: disable=too-many-function-args; test uses removed API - current API uses add_Ychannel(name, number) instead
     master.add(scope)
     master.add_channel_dummy("plot_title")
     logger = lab_core.logger(

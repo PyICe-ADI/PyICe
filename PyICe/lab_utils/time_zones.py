@@ -36,7 +36,7 @@ class US_Time_Zone(datetime.tzinfo):
         Returns:
             Result value.
         """
-        return datetime.timedelta(hours=self.gmt_offset) + self.dst(dt)
+        return datetime.timedelta(hours=self.gmt_offset) + self.dst(dt)  # pylint: disable=no-member; gmt_offset is defined in subclass __init__ (e.g. US_Eastern_Time, US_Pacific_Time)
 
     def dst(self, dt):
         """Return DST offset from standard local time based on calendar date.
@@ -54,7 +54,7 @@ class US_Time_Zone(datetime.tzinfo):
         self.dstoff = self.first_sunday_on_or_after(
             datetime.datetime(dt.year, 11, 1))
         if self.dston <= dt.replace(tzinfo=None) < self.dstoff:
-            return datetime.timedelta(hours=self.dst_offset)
+            return datetime.timedelta(hours=self.dst_offset)  # pylint: disable=no-member; dst_offset is defined in subclass __init__ (e.g. US_Eastern_Time, US_Pacific_Time)
         else:
             return datetime.timedelta(0)
 
@@ -68,8 +68,8 @@ class US_Time_Zone(datetime.tzinfo):
             Result value.
         """
         if self.dst(dt):
-            return self.tz_name_dst
-        return self.tz_name
+            return self.tz_name_dst  # pylint: disable=no-member; tz_name_dst is defined in subclass __init__ (e.g. US_Eastern_Time, US_Pacific_Time)
+        return self.tz_name  # pylint: disable=no-member; tz_name is defined in subclass __init__ (e.g. US_Eastern_Time, US_Pacific_Time)
 
 
 class UTC(US_Time_Zone):

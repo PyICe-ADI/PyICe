@@ -1091,7 +1091,7 @@ class htx9011(scpi_instrument):
                 f"\n\nHTX9011 Invalid interrupt number {pcint_number}. Only valid PCINTS are: {self.pcints}.\n\n")
         control_channel = channel(
             channel_name,
-            write_function=lambda value: _write_pcint_channel(
+            write_function=lambda value: _write_pcint_control_channel(
                 pcint_number,
                 value))
         control_channel.add_preset(
@@ -1125,7 +1125,7 @@ class htx9011(scpi_instrument):
         capture_status_channel.set_attribute('INTERRUPT_NUMBER', pcint_number)
         self.add_channel(capture_status_channel)
         enabled_pcints_channel = channel(
-            name=f"{channel_basename}_enabled_pcints",
+            name=f"{channel_name}_enabled_pcints",
             read_function=lambda: None)
         enabled_pcints_channel._read = lambda: _read_enabled_pcints()
         enabled_pcints_channel.set_attribute('INTERRUPT_NUMBER', pcint_number)

@@ -459,7 +459,7 @@ class hameg_4040(scpi_instrument):
             ValueError: On error condition.
         """
         '''SLM: What constitutes a Previous Selected Channel'''
-        arb_cycles = 0 if "INF" in ncycle.upper() else int(arb_cycles)
+        arb_cycles = 0 if "INF" in str(arb_cycles).upper() else int(arb_cycles)
         if arb_cycles not in range(256):
             raise ValueError(
                 "\n\nNumber of ARB cycles for Hameg 4040 must be [0..255] or something containing case agnostic substring 'inf'.\n")

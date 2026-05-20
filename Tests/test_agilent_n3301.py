@@ -6,7 +6,7 @@
 #
 # This works as of August 13, 2012 with no issues.
 
-import lab as lab
+import lab as lab  # pylint: disable=import-error; 'lab' is a project-local convenience module that must be on PYTHONPATH to run this test
 import time as time
 
 # create a new lab bench

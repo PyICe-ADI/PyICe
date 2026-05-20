@@ -37,7 +37,7 @@ class polling_delay(object):
         if time_readback_fn is None and dly_fn is None:
             self.time_readback_fn = lambda: time.time()
         elif time_readback_fn is None:
-            self.time_readback_fn = lambda: self.accumulated_dly
+            self.time_readback_fn = lambda: self._accumulated_dly
         else:
             self.time_readback_fn = time_readback_fn
 

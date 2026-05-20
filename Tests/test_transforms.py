@@ -1,7 +1,7 @@
 """Tests for transforms."""
 import sqlite3
-import numpy as np
-import pytest
+import numpy as np  # pylint: disable=import-error; numpy is a required test dependency
+import pytest  # pylint: disable=import-error; pytest is a required test dependency
 from PyICe.lab_utils.scalar_transform import scalar_transform
 from PyICe.lab_utils.vector_transform import vector_transform
 from PyICe.lab_utils.sqlite_data import sqlite_data
@@ -297,4 +297,4 @@ class TestSqliteData:
         db.query("SELECT voltage, current FROM measurements")
         arr = db.numpy_recarray(force_float_dtype=True)
         assert len(arr) == 5
-        assert arr.voltage[0] == pytest.approx(3.3)
+        assert arr.voltage[0] == pytest.approx(3.3)  # pylint: disable=no-member; 'voltage' is a named field on the numpy recarray created from the database query columns

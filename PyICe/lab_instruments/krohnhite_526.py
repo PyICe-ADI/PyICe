@@ -90,7 +90,7 @@ class krohnhite_526(instrument):
         # determine polarity and produce _pol_char
         if current >= 0:
             _pol_char = '+'
-        elif current < 0:
+        else:
             _pol_char = '-'
         # always 7 digits of magnitude, decimal point ignored, pad left side
         # with zeros
@@ -100,7 +100,7 @@ class krohnhite_526(instrument):
                 cmd = 'J' + f'{current * 1000 - 10:05.4f}'
             if current == -0.01:
                 cmd = 'J' + f'{current * 1000 + 10:05.4f}'
-        elif self._irange == 0.1:
+        else:  # self._irange == 0.1 (only other valid range per _set_irange validation)
             cmd = f'{current * 100:07.5f}'
             if current == 0.1:
                 cmd = 'J' + f'{current * 100 - 10:06.4f}'
@@ -153,7 +153,7 @@ class krohnhite_526(instrument):
         # determine polarity and produce _pol_char
         if voltage >= 0:
             _pol_char = '+'
-        elif voltage < 0:
+        else:
             _pol_char = '-'
         # always 7 digits of magnitude, decimal point ignored, pad left side
         # with zeros
@@ -178,7 +178,7 @@ class krohnhite_526(instrument):
                 cmd = 'J' + f'{voltage - 10:06.4f}'
             if voltage == -10:
                 cmd = 'J' + f'{voltage + 10:06.4f}'
-        elif self._vrange == 100:
+        else:  # self._vrange == 100 (only remaining valid range per _set_vrange validation)
             # #four digits before decimal, three after
             # cmd = f'{voltage:07.4f}'
             # if voltage == 100:
@@ -187,11 +187,11 @@ class krohnhite_526(instrument):
             # cmd = 'J' + f'{voltage+100:06.4f}'
 
             # four digits before decimal, three after
-            if (voltage < 0) | (voltage > -10):
-                cmd = f'{voltage:08.4f}'
-            elif voltage <= -10:
+            if voltage < 0 and voltage <= -10:
                 cmd = f'{voltage:07.4f}'
-            if voltage >= 0:
+            elif voltage < 0:
+                cmd = f'{voltage:08.4f}'
+            else:
                 cmd = f'{voltage:07.4f}'
             if voltage == 100:
                 cmd = 'J' + f'{voltage - 100:06.4f}'

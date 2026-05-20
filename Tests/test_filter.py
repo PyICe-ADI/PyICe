@@ -1,8 +1,8 @@
 """Tests for filter."""
-from PyICe.sqlite_data import sqlite_data
-from PyICe.interpolating_spline import interpolating_spline
-from PyICe.float_distance import float_distance
-from PyICe.column_formatter import column_formatter
+from PyICe.lab_utils.sqlite_data import sqlite_data  # pylint: disable=import-error; module path is correct but pylint can't resolve it without the full package installed
+from PyICe.lab_utils.interpolating_spline import interpolating_spline  # pylint: disable=import-error; module path is correct but pylint can't resolve it without the full package installed
+from PyICe.lab_utils.float_distance import float_distance  # pylint: disable=import-error; module path is correct but pylint can't resolve it without the full package installed
+from PyICe.lab_utils.column_formatter import column_formatter  # pylint: disable=import-error; module path is correct but pylint can't resolve it without the full package installed
 
 db = sqlite_data(table_name='die_temp')
 db.query("SELECT temp, die_temp_fmt, board_temp, temp_sense, temp_user_sense FROM die_temp")

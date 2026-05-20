@@ -4,7 +4,7 @@ import datetime
 import functools
 import json
 import numbers
-from numpy import bool_, ndarray
+from numpy import bool_, ndarray  # pylint: disable=import-error; numpy is a required dependency for this module but may not be installed in all environments
 
 # https://stackoverflow.com/questions/5884066/hashing-a-dictionary/22003440#22003440
 
@@ -200,7 +200,7 @@ class generic_results():
         for t_d in declarations:
             res_dict['tests'][t_d] = {}
             res_dict['tests'][t_d]['declaration'] = {
-                k: v for k, v in self.test_limits[t_d].items() if k not in ['test_name']}
+                k: v for k, v in self.test_limits[t_d].items() if k not in ['test_name']}  # pylint: disable=no-member; test_limits is set in subclass Test_Results.__init__; generic_results is never instantiated directly
             try:
                 results[t_d]
             except KeyError:

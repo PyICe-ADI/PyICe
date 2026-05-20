@@ -1,5 +1,6 @@
 """Print hex bytes utility."""
 import collections
+import collections.abc
 from .print_to_screen import print_to_screen
 
 
@@ -35,7 +36,7 @@ def print_hex_bytes(the_bytes, number_of_bytes_per_line=16,
         write: Write.
     """
     # Validate arguments.
-    assert isinstance(the_bytes, collections.Iterable)
+    assert isinstance(the_bytes, collections.abc.Iterable)
     for v in (number_of_bytes_per_line, number_of_bytes_to_print):
         assert v is None or (isinstance(v, int) and v >= 0)
     if write is None:

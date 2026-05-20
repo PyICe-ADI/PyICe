@@ -802,12 +802,16 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
             x_evaled, y_evaled = list(zip(*xyevalpoints))
             if direction == "format":
                 z = sorted(zip(x_evaled, y_evaled), key=lambda x: x[0])
+                z_unzipped = list(zip(*z))
+                z_x, z_y = z_unzipped[0], z_unzipped[1]
                 return lambda x: None if x is None else float(
-                    UnivariateSpline(x=zip(*z)[0], y=zip(*z)[1], k=1, s=0)(x))
+                    UnivariateSpline(x=z_x, y=z_y, k=1, s=0)(x))
             elif direction == "unformat":
                 z = sorted(zip(x_evaled, y_evaled), key=lambda x: x[1])
+                z_unzipped = list(zip(*z))
+                z_y, z_x = z_unzipped[1], z_unzipped[0]
                 return lambda x: int(round(UnivariateSpline(
-                    x=zip(*z)[1], y=zip(*z)[0], k=1, s=0)(float(x))))
+                    x=z_y, y=z_x, k=1, s=0)(float(x))))
             else:
                 raise Exception(
                     "'transform_from_points()' requires one of either: 'format' or 'unformat'")
@@ -937,7 +941,7 @@ class pmbus_instrument(twi_instrument):
                 data_size=8,
                 use_pec=self._PEC)
             debug_logging.debug(
-                "PMBus instrument at {} setting page register to %s",
+                "PMBus instrument at %s setting page register to %s",
                 self._addr7,
                 page)
 

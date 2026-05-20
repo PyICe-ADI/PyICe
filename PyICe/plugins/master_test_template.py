@@ -1,5 +1,5 @@
 """Master test template plugin."""
-class Master_Test_Template():
+class Master_Test_Template():  # pylint: disable=no-member; this is a mixin/template class whose attributes (_logger, _name, _test_results, _corr_results, _channel_reconfiguration_settings, project_folder_name, _debug, verbose) are set by Plugin_Manager at runtime
     """Master_ test_ template."""
     ###
     # SCRIPT METHODS

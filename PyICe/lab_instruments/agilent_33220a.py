@@ -51,27 +51,27 @@ class agilent_33220a(scpi_instrument):
         self.get_interface().write("BURSt:STATe on")
         self.get_interface().write("OUTPut on")
 
-    def config_sinusoid_func():
+    def config_sinusoid_func(self):
         """Perform config sinusoid func operation."""
         pass
 
-    def config_square_func():
+    def config_square_func(self):
         """Perform config square func operation."""
         pass
 
-    def config_ramp_func():
+    def config_ramp_func(self):
         """Perform config ramp func operation."""
         pass
 
-    def config_noise_func():
+    def config_noise_func(self):
         """Perform config noise func operation."""
         pass
 
-    def config_dc_func():
+    def config_dc_func(self):
         """Perform config dc func operation."""
         pass
 
-    def config_user_func():
+    def config_user_func(self):
         """Perform config user func operation."""
         pass
 

@@ -2,8 +2,8 @@
 from ..lab_core import *  # noqa: F403
 
 import math
-import numpy as np
-import nifgen
+import numpy as np  # pylint: disable=E0401; numpy is an optional dependency required only when using NI PXI hardware
+import nifgen  # pylint: disable=E0401; nifgen is an optional NI hardware-specific dependency
 import time
 
 
@@ -25,11 +25,13 @@ class ni_pxi5413(scpi_instrument, delegator):
 
     # TODO - need to modify methods into PyICe fashion
 
+    @staticmethod
     def create_trapzoid_signal(SampleN, width, slope, VOH, VOL, period):
         # function to generate custom pulse
         """Return create trapzoid signal result.
 
         Args:
+            SampleN: Number of samples.
             VOH: Voh.
             VOL: Vol.
             period: Period.
@@ -42,8 +44,7 @@ class ni_pxi5413(scpi_instrument, delegator):
         t = np.linspace(0, period, SampleN)
         amp = VOH - VOL
         offset = VOL
-        a = slope * width * \
-            signal.sawtooth(2 * math.pi * t / width, width=0.5) / 4.
+        a = slope * width * signal.sawtooth(2 * math.pi * t / width, width=0.5) / 4.  # pylint: disable=E0602; signal (scipy.signal) is an optional dependency not imported at module level - this is incomplete/WIP code per the TODO above  # noqa: E501
         a += slope * width / 4.
         # clamp the top of the waveform
         a[a > amp] = amp
@@ -53,17 +54,19 @@ class ni_pxi5413(scpi_instrument, delegator):
         waveform_data = a + offset
         return waveform_data
 
+    @staticmethod
     def main_method(resource_name, options, samples, gain, offset, gen_time):
         """Perform main method operation.
 
         Args:
+            resource_name: NI resource name.
             gain: Gain value.
             gen_time: Gen time.
             offset: Offset value.
             options: Options.
             samples: Samples.
         """
-        waveform_data = create_waveform_data(samples)
+        waveform_data = create_waveform_data(samples)  # noqa: F821  # pylint: disable=E0602; create_waveform_data is undefined - this is incomplete/WIP code per the TODO above
         # gen_time = period
         with nifgen.Session(resource_name=resource_name, options=options) as session:
             session.output_mode = nifgen.OutputMode.ARB

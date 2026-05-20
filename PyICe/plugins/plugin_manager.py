@@ -51,7 +51,7 @@ class Callback_logger(logger):
         return readings
 
 
-class Plugin_Manager():
+class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, project_path, verbose, component_list, project_folder_name, bench_image_locations, traceability_items) are set dynamically via setattr from the settings dict in __init__
     """Plugin_ manager."""
     def __init__(self, scratch_folder='scratch', settings={}):
         """Initialize plugin_ manager.
@@ -72,7 +72,7 @@ class Plugin_Manager():
         if self._send_notifications:
             self._find_notifications(self.project_path)
             try:
-                import cairosvg
+                import cairosvg  # pylint: disable=import-error; optional dependency guarded by try/except for notifications plugin
                 self._cairosvg = cairosvg
             except Exception:
                 print_banner(

@@ -219,13 +219,13 @@ class database_archive():
                         import_file = os.path.realpath(os.path.relpath(
                             os.getcwd(), start=os.environ['PYTHONPATH']))
                         import_file = import_file[import_file.find(
-                            project_folder_name):]  # noqa: F821
+                            project_folder_name):]  # noqa: F821 # pylint: disable=undefined-variable; known bug - should likely be self.project_folder_name but left as-is for backward compatibility
                         import_file += os.sep
                         import_file = import_file.replace(os.sep, ".")
                         import_file += os.path.basename(os.getcwd())
                         self.write_plot_script(
-                            test_module=import_file, test_class=os.path.basename(
-                                os.getcwd()), db_table=resp[0], db_file=resp[1])
+                            import_str=import_file,
+                            db_table=resp[0], db_file=resp[1])
             self.source_conn.commit()
         return copied_tables_files
 

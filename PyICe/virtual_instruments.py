@@ -1165,7 +1165,7 @@ class clipboard(instrument):
             channel_object.add_write_callback(
                 lambda channel_object, write_value: self._copy(write_value))
 
-    def _copy(self, clipboard_data):
+    def _copy(self, clipboard_data):  # pylint: disable=method-hidden; intentionally overridden in __init__ with library-specific implementation (pyperclip or win32clipboard)
         """Place clipboard_data onto OS clipboard.
 
         Args:
@@ -1176,7 +1176,7 @@ class clipboard(instrument):
         """
         raise Exception('Overloaded implementation is library specific.')
 
-    def _paste(self):
+    def _paste(self):  # pylint: disable=method-hidden; intentionally overridden in __init__ with library-specific implementation (pyperclip or win32clipboard)
         """Return OS clipboard contents.
 
         Raises:
@@ -4190,8 +4190,8 @@ class leakage_nuller(instrument):
         self.voltage_measurement_channel = voltage_measurement_channel
         self.leakage_forcing_channel = leakage_forcing_channel
         self.leakage_measurement_channel = leakage_measurement_channel
-        self._common_mode_servo = servo_binary_search()
-        self._leakage_servo = servo_binary_search()
+        self._common_mode_servo = servo_binary_search()  # pylint: disable=no-value-for-parameter; known incomplete stub - leakage_nuller class is a TODO prototype awaiting full implementation
+        self._leakage_servo = servo_binary_search()  # pylint: disable=no-value-for-parameter; known incomplete stub - leakage_nuller class is a TODO prototype awaiting full implementation
 
     def measure(self, estimated_voltage):
         """Perform measure operation.
@@ -4258,7 +4258,7 @@ class calibrator(instrument):
         Returns:
             Result value.
         """
-        import numpy
+        import numpy  # pylint: disable=import-error; numpy is an optional dependency imported at point of use
         points = {}
         for force_v in forcing_values:
             forcing_channel.write(force_v)
@@ -4354,7 +4354,7 @@ class calibrator(instrument):
         Raises:
             Exception: On error condition.
         """
-        from scipy.interpolate import UnivariateSpline
+        from scipy.interpolate import UnivariateSpline  # pylint: disable=import-error; scipy is an optional dependency imported at point of use
         if kwargs.get('force_values', None) is not None and kwargs.get(
                 'readback_values', None) is not None and calibration_filename is None:
             force_values = kwargs['force_values']

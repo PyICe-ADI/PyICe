@@ -11,7 +11,7 @@ class sorensen_generic_supply(instrument):
             interface_visa: VISA interface instance.
         """
         self._base_name = 'sorensen_generic_supply'
-        instrument.__init__(self, f"{self.sorensen_name} @ {interface_visa}")
+        instrument.__init__(self, f"{self.sorensen_name} @ {interface_visa}")  # pylint: disable=E1101; sorensen_name is set by subclass __init__ (e.g. sorensen_dlm_60_10, sorensen_xt_250_25) before calling super().__init__
         self.add_interface_visa(interface_visa)
         # initialize to instrument on, all voltages 0
         # self.get_interface().write(("VSET 0"))
@@ -49,9 +49,12 @@ class sorensen_generic_supply(instrument):
 
         Args:
             channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
         """
         new_channel = channel(channel_name, write_function=self._write_voltage)
-        self._add_channel(new_channel)
+        return self._add_channel(new_channel)
 
     def add_channel_current(self, channel_name):
         """Add a channel current.

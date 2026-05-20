@@ -14,7 +14,7 @@ class dlog(object):
         self.f = open(filename, 'w')
         # note the time.clock function won't work well for linux...
         # this is written for windows
-        self.timezero = time.clock()
+        self.timezero = time.perf_counter()
         # time/date stamp header
         self.log_notime(time.strftime("%a, %d %b %Y %H:%M:%S"))
 
@@ -55,7 +55,7 @@ class dlog(object):
         Args:
             data: Data to write.
         """
-        self.log_notime(str(time.clock() - self.timezero) + str(data))
+        self.log_notime(str(time.perf_counter() - self.timezero) + str(data))
 
     def create_error(self):
         """This function doesn't appear to actually do much.  self.errcnt is never written to the dlog."""
@@ -66,5 +66,5 @@ class dlog(object):
         self.log_notime(
             "Data log closed at {}.  Elapsed time: {}".format(
                 time.strftime("%a, %d %b %Y %H:%M:%S"),
-                time.clock() - self.timezero))
+                time.perf_counter() - self.timezero))
         self.f.close()

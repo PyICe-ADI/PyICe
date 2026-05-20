@@ -898,13 +898,13 @@ class tektronix_4104b(scpi_instrument, delegator):
         Returns:
             Result value.
         """
-        format = self._display_screenshot_image_format_mapping[format]
+        format = self._display_screenshot_image_format_mapping[format]  # pylint: disable=E1101; _display_screenshot_image_format_mapping is intended to be defined in a subclass or configured at runtime for instruments supporting multiple screenshot formats - this method is incomplete/WIP
         self.get_interface().write(("HARDCopy:INKSaver").encode(self.str_encoding))
         self.get_interface().write(
             ("SAVe:IMAGE:FILEFORMAT PNG").encode(
                 self.str_encoding))
         self.get_interface().write(("HARDCopy START").encode(self.str_encoding))
-        return self.read()
+        return self.get_interface().read()  # pylint: disable=E1120; fixed: was self.read() which requires channel_name arg; using interface read() to get raw screenshot data
 
     def set_channel_label_text(self, channel_number, label_text):
         """Sets channel label.

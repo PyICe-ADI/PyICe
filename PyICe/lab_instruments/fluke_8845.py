@@ -22,6 +22,11 @@ class fluke_8845(scpi_instrument):
             time.sleep(0.2)  # add delay for 34401 remote mode setting error
             self.get_interface().ser.dsrdtr = True
         self.config_dc_voltage()
+
+    def config_dc_voltage(self):
+        """Set meter to measure DC volts with default settings."""
+        self.get_interface().write('FUNCtion "VOLT:DC"')
+
     # def config_dc_voltage(self, NPLC=1, range="AUTO", BW=20):
         # '''Set meter to measure DC volts.  Optionally set number of powerline cycles for integration to
         # [.02,.2,1,10,100] and set range to [0.1, 1, 10, 100, 1000]'''

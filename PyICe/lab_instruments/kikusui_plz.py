@@ -25,7 +25,7 @@ class kikusui_plz(scpi_instrument):
         """
         self._base_name = 'kikusui_plz'
         scpi_instrument.__init__(
-            self, f"{self.kikusui_plz_name} @ {interface_visa}")
+            self, f"{self.kikusui_plz_name} @ {interface_visa}")  # pylint: disable=E1101; kikusui_plz_name is set by subclass __init__ (e.g. kikusui_plz334w, kikusui_plz664wa) before calling super().__init__
         self.add_interface_visa(interface_visa)
         self.clear_status()
         self.reset()
@@ -254,11 +254,11 @@ class kikusui_plz(scpi_instrument):
         self._write_mode("CC")
         self._mode = "CC"
         if autorange:
-            if (current <= self.kikusui_low_threshold):
+            if (current <= self.kikusui_low_threshold):  # pylint: disable=E1101; kikusui_low_threshold is set by subclass __init__ (e.g. kikusui_plz334w) before calling super().__init__
                 best_range = "LOW"
-            elif (current > self.kikusui_low_threshold and current <= self.kikusui_high_threshold):
+            elif (current > self.kikusui_low_threshold and current <= self.kikusui_high_threshold):  # pylint: disable=E1101; kikusui_low_threshold and kikusui_high_threshold are set by subclass __init__ before calling super().__init__
                 best_range = "MED"
-            elif (current > self.kikusui_high_threshold):
+            else:
                 best_range = "HIGH"
             self._write_enable(0)
             time.sleep(0.3)

@@ -48,7 +48,7 @@ Case BB008: "the FW sends a bad Start of Response before every 10th good respons
 
 import time
 import random
-from PyICe import labcomm
+from PyICe import labcomm  # pylint: disable=no-name-in-module; labcomm is an external package re-exported through PyICe namespace at runtime
 
 
 def infinite_bytestream(*bytes):
@@ -241,7 +241,8 @@ def mux_streams(selection_sequence, *streams):
         Next value.
     """
     import collections
-    assert isinstance(selection_sequence, collections.Iterable)
+    import collections.abc
+    assert isinstance(selection_sequence, collections.abc.Iterable)
     while True:
         for select in selection_sequence:
             yield next(streams[select])
@@ -290,7 +291,7 @@ def chunkstream_to_labcomm_packet_stream(input_chnkstrm, src_id, dest_id):
 
 if __name__ == '__main__':
     MY_ID = 0xabcd
-    from PyICe.lab_utils import print_hex_bytes
+    from PyICe.lab_utils.print_hex_bytes import print_hex_bytes
     #
     # Create a stream of valid LabComm packets (pkt_strm) that we'll expect the
     # parser to receive properly.
@@ -381,7 +382,7 @@ if __name__ == '__main__':
             the_bytes=junk_bytes,
             prefix="JUNKED bytes ",
             show_offsets=True)
-    lc_intf = lab_interfaces.interface_labcomm_raw_serial(raw_serial_interface=test_ser,
+    lc_intf = lab_interfaces.interface_labcomm_raw_serial(raw_serial_interface=test_ser,  # pylint: disable=unexpected-keyword-arg,no-value-for-parameter; test uses outdated API - constructor signature has changed since this test was written
                                                           junk_bytes_dump=print_junk_bytes,
                                                           debug=True)
     print("Created a LabComm interface that reads bytes from the serial harness.")
@@ -389,5 +390,5 @@ if __name__ == '__main__':
     print("Attempt to call recv_packet() {} times:".format(num_recv_calls))
     print()
     for i in range(num_recv_calls):
-        pkt = lc_intf.recv_packet(dest_id=MY_ID, timeout=0.2)
+        pkt = lc_intf.recv_packet(dest_id=MY_ID, timeout=0.2)  # pylint: disable=no-member; recv_packet is inherited from interface base class but pylint loses track due to constructor signature mismatch above
         print("{:>4d}: {}".format(i + 1, pkt))

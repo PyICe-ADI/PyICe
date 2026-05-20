@@ -865,7 +865,7 @@ class agilent_a970a_20ch(agilent_a970a_20ch_40ch):
         return channel
 
 
-class agilent_a970a_20ch(agilent_a970a_20ch):
+class agilent_a970a_20ch(agilent_a970a_20ch):  # pylint: disable=E0102; intentional class redefinition kept for backward compatibility as a no-op alias to the same-named parent class
     """Agilent_a970a_20ch."""
     pass
 
@@ -884,12 +884,12 @@ class agilent_a970a_40ch(agilent_a970a_20ch_40ch):
         self.plugin_type = "DAQM908A"
 
 
-class agilent_a970a_40ch(agilent_a970a_40ch):
+class agilent_a970a_40ch(agilent_a970a_40ch):  # pylint: disable=E0102; intentional class redefinition kept for backward compatibility as a no-op alias to the same-named parent class (first duplicate)
     """Agilent_a970a_40ch."""
     pass
 
 
-class agilent_a970a_40ch(agilent_a970a_40ch):
+class agilent_a970a_40ch(agilent_a970a_40ch):  # pylint: disable=E0102; intentional class redefinition kept for backward compatibility as a no-op alias to the same-named parent class (second duplicate)
     """Agilent_a970a_40ch."""
     pass
 
@@ -957,7 +957,7 @@ class agilent_a970a_dacs(daq970a_instrument):
         self.get_interface().write(txt)
 
 
-class agilent_a970a_dacs(agilent_a970a_dacs):
+class agilent_a970a_dacs(agilent_a970a_dacs):  # pylint: disable=E0102; intentional class redefinition kept for backward compatibility as a no-op alias to the same-named parent class
     """Agilent_a970a_dacs."""
     pass
 
@@ -1121,7 +1121,7 @@ class agilent_a970a_dig_out8(daq970a_instrument):
             f"SOURce:DIGital:DATA {self.data},(@{self.internal_address})")
 
 
-class agilent_a970a_dig_out8(agilent_a970a_dig_out8):
+class agilent_a970a_dig_out8(agilent_a970a_dig_out8):  # pylint: disable=E0102; intentional class redefinition kept for backward compatibility as a no-op alias to the same-named parent class
     """Agilent_a970a_dig_out8."""
     pass
 

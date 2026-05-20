@@ -13,7 +13,7 @@ if __name__ == '__main__':
     # bar.configure_slot_smu(1,1)
 
     # m.set_gpib_adapter_rl1009(0,"COM26")
-    m.set_gpib_adapter_rl1009(0)
+    m.set_gpib_adapter_rl1009(0)  # pylint: disable=no-member; method from older PyICe API that has been removed (replaced by set_gpib_adapter_visa)
     hiface = m.get_visa_gpib_interface(
         gpib_adapter_number=0, gpib_address_number=17)
     bar = hp_4155b(hiface)

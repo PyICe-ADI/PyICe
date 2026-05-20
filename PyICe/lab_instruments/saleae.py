@@ -18,7 +18,7 @@ class saleae(instrument, delegator):
             host: Host.
             port: Port.
         """
-        import saleae as saleae_lib
+        import saleae as saleae_lib  # pylint: disable=E0401; saleae is an optional dependency required only when using Saleae Logic hardware
         instrument.__init__(self, f"Saleae Logic @ {host}:{port}")
         delegator.__init__(self)
         self._saleae = saleae_lib.Saleae(host, port)

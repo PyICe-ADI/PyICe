@@ -20,7 +20,7 @@ class digital_IO_over_analog_output(object):
             domain_channel: Domain channel.
             tolerance: Tolerance value.
         """
-        from . import lab_core
+        from PyICe import lab_core
         assert isinstance(channel, lab_core.channel)
         assert isinstance(domain_channel, lab_core.channel)
         self.channel = channel

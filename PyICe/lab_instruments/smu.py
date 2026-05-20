@@ -1,4 +1,9 @@
 """Smu instrument driver."""
+# pylint: disable=E1101; this module defines abstract base classes (smu, scpi_smu) whose members
+# (_configured_channels, _vforce, _iforce, _vsense, _isense, _vcompl, _vcomplq, _icompl, _icomplq,
+# _remote_sense, _remote_senseq, _high_capacitance, _high_capacitanceq, _terminal_select,
+# _terminal_selectq, _parse_float) are implemented/initialized by concrete subclasses
+# (keithley_2400, keithley_smu, etc.) that combine these bases via multiple inheritance
 from ..lab_core import *  # noqa: F403
 
 # todo measure autorange

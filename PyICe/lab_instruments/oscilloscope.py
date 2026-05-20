@@ -182,7 +182,7 @@ class oscilloscope(scpi_instrument, delegator):
         """Turn off all Y channels."""
 
     @abc.abstractmethod
-    def resync_scope():
+    def resync_scope(self):
         """Reset the scope and reconfigure physical instrument to desired used channels."""
 
     @abc.abstractmethod

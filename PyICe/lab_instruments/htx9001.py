@@ -211,8 +211,8 @@ class htx9001(scpi_instrument):
         Returns:
             Result value.
         """
-        return self.read_channel_generic(
-            channel_name, function=self.read_pins_values)
+        return self.read_channel_generic(  # pylint: disable=E1101; legacy dead code - read_channel_generic is undefined; method is never called and preserved only for historical API compatibility
+            channel_name, function=self.read_pins_values)  # pylint: disable=E1101; legacy dead code - read_pins_values (without underscore prefix) is undefined; method is never called and preserved only for historical API compatibility
 
     def resync(self):
         """Perform resync operation."""

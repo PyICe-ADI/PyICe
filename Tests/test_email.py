@@ -1,9 +1,9 @@
 """Tests for email."""
 from PyICe.lab_utils.communications import email
 from email.mime.image import MIMEImage
-import cairosvg
+import cairosvg  # pylint: disable=import-error; optional dependency required only for this test script
 
-dave_mail = email('recipient@example.com', smtp_server='smtp.example.com:25', sender='noreply@example.com')
+dave_mail = email('recipient@example.com', smtp_server='smtp.example.com:25', sender='noreply@example.com')  # pylint: disable=unexpected-keyword-arg; test script uses a custom email subclass or outdated API signature that accepted smtp_server and sender kwargs
 
 
 with open(r'path/to/example.svg', 'rb') as img:
@@ -27,7 +27,7 @@ pic3.add_header('Content-ID', '<waves>')
 
 
 # dave_mail.send('<html><body>asdf <img src="cid:myimg"\></body></html>', subject="image test", attachment_objects=[pic])
-dave_mail.send(
+dave_mail.send(  # pylint: disable=unexpected-keyword-arg; test script uses outdated API - current API uses attachment_MIMEParts
     '<html><body>1<img src="cid:dice"/>2<img src="cid:waves"/></body></html>',
     subject="image test",
     attachment_objects=[

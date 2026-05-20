@@ -16,27 +16,27 @@ from .lab_utils.StreamWindow import StreamWindow
 import labcomm
 import abc
 try:
-    import pyvisa  # noqa: F401
+    import pyvisa  # noqa: F401 # pylint: disable=import-error; optional dependency guarded by try/except
     visaMissing = False
 except BaseException:
     visaMissing = True
 try:
-    import serial
+    import serial  # pylint: disable=import-error; optional dependency guarded by try/except
     serialMissing = False
 except BaseException:
     serialMissing = True
 try:
-    import vxi11  # noqa: F401
+    import vxi11  # noqa: F401 # pylint: disable=import-error; optional dependency guarded by try/except
     vxi11Missing = False
 except BaseException:
     vxi11Missing = True
 try:
-    import usbtmc  # noqa: F401
+    import usbtmc  # noqa: F401 # pylint: disable=import-error; optional dependency guarded by try/except
     usbtmcMissing = False
 except BaseException:
     usbtmcMissing = True
 try:
-    import telnetlib  # noqa: F401
+    import telnetlib  # noqa: F401 # pylint: disable=import-error; optional dependency guarded by try/except
     telnetlibMissing = False
 except BaseException:
     telnetlibMissing = True
@@ -90,7 +90,7 @@ str_log_dict = OrderedDict()
 # visa wrappers should probably go away and get merged in here
 
 try:
-    import usb.core
+    import usb.core  # pylint: disable=import-error; optional dependency guarded by try/except
     ubsMissing = False
 except BaseException:
     ubsMissing = True
@@ -591,7 +591,7 @@ if serial.VERSION == '3.4' and PYSERIAL_DEBUG:
     # cannot be opened. There must be some kind of library initialization
     # that happens when a regular serial.Serial object is first created.
     # This sort of thing is expected when using undocumented calls.
-    from serial.urlhandler.protocol_spy import Serial as SpySerial  # <--- UNDOCUMENTED CALL
+    from serial.urlhandler.protocol_spy import Serial as SpySerial  # <--- UNDOCUMENTED CALL # pylint: disable=import-error; optional undocumented pyserial internals, guarded by version check
 
     class serial_from_name_or_url(SpySerial):
         """Serial_from_name_or_url (spy serial subclass)."""
@@ -1960,6 +1960,8 @@ class interface_factory(communication_node):
                 serial_obj_or_port_name, baudrate, timeout, **kwargs)
         elif isinstance(serial_obj_or_port_name, interface_raw_serial):
             rawser = serial_obj_or_port_name
+        else:
+            raise TypeError(f"serial_obj_or_port_name must be a str or interface_raw_serial, got {type(serial_obj_or_port_name)}")
         new_interface = interface_visa_serial(rawser)
         new_interface.set_com_node_parent(rawser)
         self._visa_serial_interfaces.append(new_interface)
@@ -2081,7 +2083,7 @@ class interface_factory(communication_node):
         Returns:
             Result value.
         """
-        new_interface = interface_ftdi_d2xx()
+        new_interface = interface_ftdi_d2xx()  # pylint: disable=abstract-class-instantiated; interface_ftdi_d2xx is an intentional stub class awaiting implementation of abstract methods
         new_interface.set_com_node_parent(self)
         return new_interface
 
@@ -2226,7 +2228,7 @@ class interface_factory(communication_node):
         Returns:
             Result value.
         """
-        new_interface = interface_twi_kernel(bus_number)  # noqa: F821 - class defined externally or not yet implemented
+        new_interface = interface_twi_kernel(bus_number)  # noqa: F821 # pylint: disable=undefined-variable; class was removed from this module but method retained for API compatibility
         new_interface.set_com_node_parent(self)
         return new_interface
 
@@ -2329,6 +2331,8 @@ class interface_factory(communication_node):
         elif isinstance(dest_ip_address, interface):
             # testhook: allows interface_test_harness_serial
             serial_intf = dest_ip_address
+        else:
+            raise TypeError(f"dest_ip_address must be a str or interface, got {type(dest_ip_address)}")
         lc_intf = interface_bobbytalk_raw_serial(
             serial_intf, fifo_size=fifo_size, debug=debug)
         lc_intf.set_com_node_parent(serial_intf)
