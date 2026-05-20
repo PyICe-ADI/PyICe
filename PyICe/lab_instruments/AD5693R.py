@@ -101,7 +101,7 @@ class AD5693R(instrument):
     def _code_to_volts(self, code):
         if code > 65535 or code < 0:
             raise Exception(
-                f"AD5693R code: {code} out of range 0 to 65535. Gain = {gain}, Requested voltage = {voltage}.")
+                f"AD5693R code: {code} out of range 0 to 65535.")
         if self.gain_code == 0x0800:
             gain = 2.0
         else:
