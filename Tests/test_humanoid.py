@@ -7,7 +7,7 @@ from PyICe.virtual_instruments import instrument_humanoid
 # logging.basicConfig(level=logging.DEBUG)
 
 m = lab_core.master()
-em = lab_utils.email(destination='recipient@example.com', smtp_server='smtp.example.com:25', sender='noreply@example.com')
+em = email(destination='recipient@example.com', smtp_server='smtp.example.com:25', sender='noreply@example.com')
 ih = instrument_humanoid(
     notification_function=lambda msg: em.send(
         msg,subject="Lab requires attention!"))

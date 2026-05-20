@@ -3,7 +3,7 @@ from PyICe.lab_utils.communications import email
 from email.mime.image import MIMEImage
 import cairosvg  # pylint: disable=import-error; optional dependency required only for this test script
 
-dave_mail = lab_utils.email('recipient@example.com', smtp_server='smtp.example.com:25', sender='noreply@example.com')
+dave_mail = email('recipient@example.com', smtp_server='smtp.example.com:25', sender='noreply@example.com')
 
 
 with open(r'path/to/example.svg', 'rb') as img:
