@@ -5312,7 +5312,7 @@ class logger_backend(object):
             cursor.close()  # rapid garbage collection might speed things up
         except sqlite3.OperationalError as e:
             if num > 2:
-                debug_logging.warning(data)
+                debug_logging.warning(data_iter)
                 debug_logging.warning(e)
                 debug_logging.warning(
                     "Try {} failed. Trying again...".format(num))
