@@ -2703,7 +2703,7 @@ class channel_group(object):
         if len(self._self_delegation_channels):
             self._partial_delegation_results.update(results)
             results.update(
-                self._read_delegated_channel_list(
+                self._read_delegated_channel_list(  # pylint: disable=no-member; inherited from delegator via multiple inheritance
                     self._self_delegation_channels))
         self._partial_delegation_results = results_ord_dict()
         self._self_delegation_channels = results_ord_dict()
@@ -2745,7 +2745,7 @@ class channel_group(object):
                 interfaces.append(interface)
 
         remaining_delegators = []
-        interface_thread_groups = self.group_com_nodes_for_threads_filter(
+        interface_thread_groups = self.group_com_nodes_for_threads_filter(  # pylint: disable=no-member; defined in master subclass, guarded by hasattr check above
             interfaces)
         work_units = 0
         if len(interface_thread_groups):
@@ -3720,7 +3720,7 @@ class remote_channel_group_client(channel_group, delegator):
         self.cgm = channel_group_manager(
             address=(address, port), authkey=authkey)
         self.cgm.connect()
-        self.server = self.cgm.get_channel_server()
+        self.server = self.cgm.get_channel_server()  # pylint: disable=no-member; method added dynamically by BaseManager.register()
         names = self.server.get_all_channel_names()
         for i in names:
             ch = self.server.get_channel(i)
