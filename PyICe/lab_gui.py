@@ -4322,14 +4322,14 @@ class ltc_lab_gui_app(QObject):
 
 
 if __name__ == '__main__':
-    from . import lab_instruments
     from . import lab_core  # noqa: F811
+    from .virtual_instruments import timer as Timer
     master = lab_core.master("Demonstration GUI")
     master.add_channel_delta_timer('time_d')
-    timer = lab_instruments.timer()
-    timer.add_channel_total_seconds('seconds')
-    timer.add_channel_total_minutes('minutes')
-    master.add(timer)
+    t = Timer()
+    t.add_channel_total_seconds('seconds')
+    t.add_channel_total_minutes('minutes')
+    master.add(t)
     import cProfile
     PROFILING = True
     if PROFILING:
