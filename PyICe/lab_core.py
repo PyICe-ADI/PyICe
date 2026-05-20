@@ -2949,7 +2949,8 @@ class channel_group(object):
         Args:
             *categories: Additional positional arguments.
         """
-        [self.remove_category(category) for category in categories]
+        for category in categories:
+            self.remove_category(category)
 
     def debug_print(self, indent=" "):
         """Perform debug print operation.
