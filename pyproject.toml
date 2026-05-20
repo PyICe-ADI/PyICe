@@ -75,7 +75,7 @@ include = [
 ]
 
 [project.optional-dependencies]
-dev = ["flake8", "flake8-docstrings", "pip-tools", "pytest", "pytest-mock", "pytest-cov", "sphinx", "sphinx_rtd_theme", "html5lib", "beautifulsoup4"]
+dev = ["flake8", "flake8-docstrings", "interrogate", "xdoctest", "pip-tools", "pytest", "pytest-mock", "pytest-cov", "sphinx", "sphinx_rtd_theme", "html5lib", "beautifulsoup4"]
 #[tool.hatch.envs.default]
 #dependencies = ["pytest", "pytest-mock"]
 [tool.hatch.build.targets.sdist]
