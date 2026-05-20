@@ -173,7 +173,7 @@ class AD5667R(instrument):
     def _code_to_volts(self, code):
         if code > 65535 or code < 0:
             raise Exception(
-                f"AD5667R code: {code} out of range 0 to 65535. Requested voltage was: {voltage}V.")
+                f"AD5667R code: {code} out of range 0 to 65535.")
         return code * GAIN * VREF / 65536
 
     def add_channel_DAC_A(self, channel_name):
