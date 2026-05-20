@@ -172,7 +172,7 @@ class sms(email):
                 'carrier argument must be "verizon", "t-mobile", "att", "sprint", or "nextel" unless you add your carrier to the list')
         email.__init__(self, sms_email, smtp_server, sender)
     def send(self, body, subject = None, attachments = []):
-       """Perform send operation.
+        """Perform send operation.
 
         Args:
             attachments: Attachments.
