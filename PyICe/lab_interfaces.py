@@ -1443,8 +1443,8 @@ class interface_twi_dummy(interface_twi, twi_interface.i2c_dummy):
             **kwargs: Additional keyword arguments.
             delay: Delay time in seconds.
         """
-        twi_interface.i2c_dummy.__init__(self, delay, **kwargs)
         interface_twi.__init__(self, 'interface_twi_dummy @ fake')
+        twi_interface.i2c_dummy.__init__(self, delay, **kwargs)
 
 
 class interface_twi_mdump(interface_twi, twi_interface.mem_dict):

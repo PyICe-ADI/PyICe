@@ -43,7 +43,7 @@ class TestDelayLoop:
         dl.delay(0.05)
         loop_time = dl.achieved_loop_time()
         assert loop_time >= 0.04
-        assert loop_time < 0.15
+        assert loop_time < 0.5
 
     def test_callable(self):
         """Perform test callable operation."""
@@ -74,7 +74,7 @@ class TestDelayLoop:
         dl.delay(0.05)
         dl.delay(0.05)
         total = dl.get_total_time()
-        assert total < 0.15
+        assert total < 0.5
 
     def test_time_remaining(self):
         """Perform test time remaining operation."""

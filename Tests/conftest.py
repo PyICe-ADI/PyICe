@@ -66,6 +66,7 @@ def master_instance():
     from PyICe.lab_core import master
     m = master()
     yield m
+    m.stop_threads()
 
 
 @pytest.fixture
