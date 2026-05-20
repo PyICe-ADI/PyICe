@@ -1459,7 +1459,7 @@ class i2c_dummy(twi_interface):
                 'Unimplemented data size: {}. Not within set (-1, 0, 8, 16, 32, 64)'.format(data_size))
         if not no_delay:
             time.sleep(self._delay)
-        if random.random() > self._p_change:
+        if random.random() >= self._p_change:
             try:
                 rd = self._cc_data[commandCode]
             except KeyError:
