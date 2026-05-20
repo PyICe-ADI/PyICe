@@ -1,3 +1,4 @@
+"""Tests for smu."""
 from PyICe import lab_core
 from PyICe.lab_instruments.smu import keithley_2400
 

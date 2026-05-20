@@ -1,3 +1,4 @@
+"""Tutorial 9 metadata logging module."""
 if __name__ == '__main__':
     from PyICe import lab_core
 

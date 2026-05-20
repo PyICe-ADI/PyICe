@@ -1,3 +1,4 @@
+"""Tutorial 6 code free gui module."""
 # ============================
 # TUTORIAL 6 The Code-Free GUI
 # ============================

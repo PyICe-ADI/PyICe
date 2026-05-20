@@ -1,11 +1,14 @@
+"""L Tspice waveform reader utilities."""
 from scipy.interpolate import interp1d
 from PyICe.lab_utils.eng_string import eng_string
 import numpy
 
 
 class LTspice_wavereader():
+    """L tspice_wavereader."""
     def __init__(self, file_name):
-        '''LTspice has the ability to export waveforms from the waveform viewer.
+        """Initialize LTspice waveform reader from exported text file.
+
            To export a record of one or more waveforms in a waveform pane, right click in the plane, drop down to 'File' menu and select 'export data as text'.
 
            From the dialog box you should be able to select multiple traces by name and save to a new file.
@@ -16,16 +19,26 @@ class LTspice_wavereader():
            This script endevors to parse the file and return a Python record of the individual columns.
 
            The resultant data structure is a dictionary with the header row values as the keys and a list of values found for each column as the values for each key.
-           It is incumbent upon the user to massage the record further, for example zipping times and voltages if need be for the data analysis.'''
+           It is incumbent upon the user to massage the record further, for example zipping times and voltages if need be for the data analysis.
+
+        Args:
+            file_name: File name.
+        """
         self.file_name = file_name
 
     def read_file(self, floats=True):
-        '''As returned from the file, each data value would be a string.
-           The argument 'floats' (default True) converts all the values to floats presuming that was the intent of the LTCspice excercise.'''
+        """As returned from the file, each data value would be a string.
+
+           The argument 'floats' (default True) converts all the values to floats presuming that was the intent of the LTCspice excercise.
+
+        Args:
+            floats: Floats.
+        """
         rows = []
         file = open(self.file_name, "r")
         firstline = True
         self.data = {}
+        keys = []
         for line in file:
             if firstline:
                 keys = line.strip().split("\t")
@@ -42,11 +55,16 @@ class LTspice_wavereader():
             column += 1
 
     def resample_timeseries(self, timestep, verbose=False):
-        '''This utility can be used to resample the data with a known fixed time step so that an FFT may be taken.
+        """This utility can be used to resample the data with a known fixed time step so that an FFT may be taken.
+
            LTspice, as with all versions of Spice, generates variable time steps as needed for covergence.
            The first column of data (first dictionary key) is presumed to be the indepdendent variable, or common indepedent variable, across all columns - almost invariably "time".
-           The original series is destroyed and replaced with the resampled version.'''
+           The original series is destroyed and replaced with the resampled version.
 
+        Args:
+            timestep: Timestep.
+            verbose: If True, print debug output.
+        """
         keys = [key for key in self.data.keys()]
         native_times = self.data[keys[0]]
         start = native_times[0]
@@ -82,4 +100,9 @@ class LTspice_wavereader():
             print("Resampling Complete!")
 
     def get_results(self):
+        """Return the results.
+
+        Returns:
+            Result value.
+        """
         return self.data

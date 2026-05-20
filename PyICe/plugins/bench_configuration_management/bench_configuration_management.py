@@ -1,3 +1,4 @@
+"""Bench configuration management plugin."""
 from PyICe.lab_utils.banners import print_banner
 import abc
 
@@ -6,12 +7,23 @@ BLOCKED_STRING = "◄――――――――■ [BLOCKED]"
 
 
 class Diagram_Reconstructor():
+    """Diagram_ reconstructor."""
     def __init__(self, connections, blocked_terminals):
+        """Initialize diagram_ reconstructor.
+
+        Args:
+            blocked_terminals: Blocked terminals.
+            connections: Connections.
+        """
         self.connections = connections
         self.blocked_terminals = blocked_terminals
 
     def get_connection_diagram(self):
-        ''''Returns a presentable diagram centrally aligned. Becomes difficult to read if not enough window width is provided.'''
+        """Returns a presentable diagram centrally aligned. Becomes difficult to read if not enough window width is provided.
+
+        Returns:
+            Result value.
+        """
         connection_diagram = ""
         for connection in self.connections:
             connection_diagram += (35 - len(f"{connection[0][0]}:{connection[0][1]}")) * " " + \
@@ -26,36 +38,64 @@ class Diagram_Reconstructor():
 
 
 class terminal():
-    '''A terminal object represents a potential port of a component to which a single connection can be made. A component will typically have one or more terminals. Terminals will likely be paired with connections once the bench wiring is defined. A terminal can only have a single connection. Any more will cause an error. A terminal represents a single port, regardless of pin count.'''
+    """A terminal object represents a potential port of a component to which a single connection can be made. A component will typically have one or more terminals. Terminals will likely be paired with connections once the bench wiring is defined. A terminal can only have a single connection. Any more will cause an error. A terminal represents a single port, regardless of pin count."""
 
     def __init__(self, type, owner, instrument):
+        """Initialize terminal.
+
+        Args:
+            instrument: Instrument.
+            owner: Owner.
+            type: Type.
+        """
         self.type = type
         self.owner = owner
         self.instrument = instrument
 
     def get_type(self):
+        """Return the type.
+
+        Returns:
+            Result value.
+        """
         return self.type
 
     def get_owner(self):
+        """Return the owner.
+
+        Returns:
+            Result value.
+        """
         return self.owner
 
     def get_ownerclass(self):
+        """Return the ownerclass.
+
+        Returns:
+            Result value.
+        """
         return self.instrument
 
 
 class bench_configuration_error(ValueError):
-    '''This is the parent class of all configuration errors'''
+    """This is the parent class of all configuration errors."""
 
 
 class generic_instrument_class():
-    '''Generic Instrument, has no peers'''
+    """Generic Instrument, has no peers."""
 
 
 class bench_config_component():
-    '''Parent of all components
-    A component represents a physical instrument on the bench that can have connections, like a piece of test equipment, circuit board with connectors, or probes.'''
+    """Parent of all components.
 
+    A component represents a physical instrument on the bench that can have connections, like a piece of test equipment, circuit board with connectors, or probes.
+    """
     def __init__(self, name):
+        """Initialize bench_config_component.
+
+        Args:
+            name: Name identifier.
+        """
         self.type = type(self)
         self.name = name
         self._terminals = {}
@@ -63,6 +103,15 @@ class bench_config_component():
         self.is_a_kind_of = generic_instrument_class
 
     def add_terminal(self, name, instrument=None):
+        """Add a terminal.
+
+        Args:
+            instrument: Instrument.
+            name: Name identifier.
+
+        Raises:
+            ValueError: On error condition.
+        """
         if name in self._terminals:
             raise ValueError(
                 f"\n\n*** ERROR: Bad component definition in {self.type}. Duplicate terminal name: '{name}'.\n")
@@ -71,37 +120,80 @@ class bench_config_component():
 
     @abc.abstractmethod
     def add_terminals(self):
-        '''Prototype. Make repeated calls to self.add_terminal.'''
+        """Prototype. Make repeated calls to self.add_terminal."""
 
     def get_terminals(self):
+        """Return the terminals.
+
+        Returns:
+            Result value.
+        """
         return self._terminals
 
     def get_name(self):
+        """Return the name.
+
+        Returns:
+            Result value.
+        """
         return self.name
 
     def __getitem__(self, item):
+        """Get item by key or index.
+
+        Args:
+            item: Item.
+
+        Returns:
+            Result value.
+        """
         return self._terminals[item]
 
     def __contains__(self, item):
+        """Check if item is contained.
+
+        Args:
+            item: Item.
+
+        Returns:
+            Result value.
+        """
         return item in self._terminals
 
     def __iter__(self):
-        return self._terminals.keys()
+        """Return iterator over items.
+
+        Returns:
+            Result value.
+        """
+        return iter(self._terminals.keys())
 
 
 class component_collection():
-    '''A dictionary of all declared components on the bench. Keys are the assigned names provided at creation, and values are the component instances.'''
+    """A dictionary of all declared components on the bench. Keys are the assigned names provided at creation, and values are the component instances."""
 
     def __init__(self):
+        """Initialize component_collection."""
         self.components = {}
 
     def add_component(self, component):
+        """Add a component.
+
+        Args:
+            component: Component.
+        """
         self.components[component.get_name()] = component
 
     def get_components(self):
+        """Return the components.
+
+        Returns:
+            Result value.
+        """
         return self.components
 
     def print_components(self):
+        """Perform print components operation."""
         print("Bench Configuration Components:")
         print("-------------------------------")
         for component in self.components:
@@ -109,6 +201,11 @@ class component_collection():
         print("\n")
 
     def print_terminals_by_component(self):
+        """Return print terminals by component result.
+
+        Returns:
+            Result value.
+        """
         text = ''
         for component in self.components:
             text += f'{component}\n'
@@ -118,30 +215,67 @@ class component_collection():
 
 
 class connection():
-    '''A connection represents the physical linking of two different terminals between bench components. The two terminals can be from the same component or between terminals of different components, but only one connection can be assigned to any given terminal. Once a connection is made to a terminal, that terminal is considered "blocked".'''
+    """A connection represents the physical linking of two different terminals between bench components. The two terminals can be from the same component or between terminals of different components, but only one connection can be assigned to any given terminal. Once a connection is made to a terminal, that terminal is considered "blocked"."""
 
     def __init__(self, *terminals, owner=None):
+        """Initialize connection.
+
+        Args:
+            *terminals: Additional positional arguments.
+            owner: Owner.
+        """
         # Why is the indexing needed to prevent list of lists?
         self.terminals = terminals[0]
         self.owner = owner
 
     def get_terminals(self):
+        """Return the terminals.
+
+        Returns:
+            Result value.
+        """
         return self.terminals
 
     def get_script_name(self):
+        """Return the script name.
+
+        Returns:
+            Result value.
+        """
         return self.owner
 
     def has_terminals(self, terminal_list):
+        """Return whether terminals exists.
+
+        Args:
+            terminal_list: Terminal list.
+
+        Returns:
+            Result value.
+        """
         return terminal_list[0] in self.terminals and terminal_list[1] in self.terminals
 
     def has_terminal(self, terminal):
+        """Return whether terminal exists.
+
+        Args:
+            terminal: Terminal.
+
+        Returns:
+            Result value.
+        """
         return terminal in self.terminals
 
 
 class connection_collection():
-    '''An unindexed list of all connections made on a test bench. It has the ability to check consistency of all declared connections. If multiple connections are made to a single terminal or a connection is made to a terminal that has been declared "blocked", an error is raised.'''
+    """An unindexed list of all connections made on a test bench. It has the ability to check consistency of all declared connections. If multiple connections are made to a single terminal or a connection is made to a terminal that has been declared "blocked", an error is raised."""
 
     def __init__(self, name):
+        """Initialize connection_collection.
+
+        Args:
+            name: Name identifier.
+        """
         self.connections = []
         self.blocked_terminals = []
         self.readable_list = []
@@ -150,17 +284,36 @@ class connection_collection():
         self._invalid_config = False
 
     def set_invalid(self):
+        """Set the invalid."""
         self._invalid_config = True
 
     def block_connection(self, terminal):
+        """Perform block connection operation.
+
+        Args:
+            terminal: Terminal.
+        """
         if terminal not in self.blocked_terminals:
             self.blocked_terminals.append(terminal)
 
     def unblock_connection(self, terminal):
+        """Perform unblock connection operation.
+
+        Args:
+            terminal: Terminal.
+        """
         if terminal in self.blocked_terminals:
             self.blocked_terminals.remove(terminal)
 
     def add_connection(self, *terminals):
+        """Add a connection.
+
+        Args:
+            *terminals: Additional positional arguments.
+
+        Raises:
+            ValueError: On error condition.
+        """
         if len(terminals) != 2:
             raise ValueError(
                 "\nConnections must specify precisely 2 terminals.\n")
@@ -172,7 +325,11 @@ class connection_collection():
             self.connections.append(connection(terminals, owner=self.name))
 
     def remove_connection_by_terminals(self, *terminals):
-        '''If a connection exists between the given terminal objects, that connection is removed from the list of connections.'''
+        """If a connection exists between the given terminal objects, that connection is removed from the list of connections.
+
+        Args:
+            *terminals: Additional positional arguments.
+        """
         for connextion in self.connections:
             if connextion.has_terminals([terminals[0], terminals[1]]):
                 self.connections.remove(connextion)
@@ -182,7 +339,11 @@ class connection_collection():
                 f'\n\n***\n* WARNING\n***\nPYICE BENCH CONFIG MANAGEMENT: Attempt to remove connection between terminals ({terminals[0].owner},{terminals[0].type}) and ({terminals[1].owner},{terminals[1].type}) failed. Such a connection does not exist in the list of connections.\n\n')
 
     def remove_connection(self, connextion):
-        '''If the provided connections object exists in the connection list, it shall be removed.'''
+        """If the provided connections object exists in the connection list, it shall be removed.
+
+        Args:
+            connextion: Connextion.
+        """
         if connextion in self.connections:
             self.connections.remove(connextion)
         else:
@@ -190,11 +351,19 @@ class connection_collection():
                 f'\n\n***\n* WARNING\n***\nPYICE BENCH CONFIG MANAGEMENT: Attempt to remove connection between terminals ({connextion.get_terminals()[0].owner},{connextion.get_terminals()[0].type}) and ({connextion.get_terminals()[1].owner},{connextion.get_terminals()[1].type}) failed. Such a connection does not exist in the list of connections.\n\n')
 
     def get_connections(self):
-        '''Returns itself.'''
+        """Returns itself.
+
+        Returns:
+            Result value.
+        """
         return self
 
     def get_readable_connections(self):
-        '''Returns a parsable list of instrument terminal connections that is also human readable.'''
+        """Returns a parsable list of instrument terminal connections that is also human readable.
+
+        Returns:
+            Result value.
+        """
         if not self.readable_list:
             for connection in self.connections:
                 self.readable_list.append(([connection.get_terminals()[0].owner, connection.get_terminals(
@@ -202,14 +371,25 @@ class connection_collection():
         return self.readable_list
 
     def get_readable_blocked_terminals(self):
-        '''Returns a parsable list of instrument terminal connections that is also human readable.'''
+        """Returns a parsable list of instrument terminal connections that is also human readable.
+
+        Returns:
+            Result value.
+        """
         if not self.readable_blocked:
             for blocked in self.blocked_terminals:
                 self.readable_blocked.append((blocked.owner, blocked.type))
         return self.readable_blocked
 
     def print_connections(self, exclude=None):
-        ''''Returns a presentable diagram centrally aligned. Becomes difficult to read if not enough window width is provided.'''
+        """Returns a presentable diagram centrally aligned. Becomes difficult to read if not enough window width is provided.
+
+        Args:
+            exclude: Exclude.
+
+        Returns:
+            Result value.
+        """
         connection_diagram = ""
         for connextion in self.connections:
             ok = True
@@ -240,7 +420,14 @@ class connection_collection():
 
     @classmethod
     def distill(cls, connection_collections):
-        '''Checks compatibility, assert if conflicts. Vacuums down duplicates.'''
+        """Checks compatibility, assert if conflicts. Vacuums down duplicates.
+
+        Args:
+            connection_collections: Connection collections.
+
+        Returns:
+            Result value.
+        """
         aggregate_collection = connection_collection("aggregate_collection")
         # Make a dictionary whose keys are the connections, and whose values
         # are the names of the scripts that supplied those connections
@@ -273,7 +460,15 @@ class connection_collection():
 
     @classmethod
     def reload_from_string(cls, string, components):
-        '''Recreates the visualizer from the bench_configuration string that is logged in the database'''
+        """Recreates the visualizer from the bench_configuration string that is logged in the database.
+
+        Args:
+            components: Components.
+            string: String data.
+
+        Returns:
+            Result value.
+        """
         logged_connections = connection_collection("logged_connections")
         connection_list_w_arrow = string.strip().split('\n')
         connection_list_of_lists = []
@@ -289,7 +484,27 @@ class connection_collection():
         return logged_connections
 
     def check_consistency(self, connection_source):
+        """Perform check consistency operation.
+
+        Args:
+            connection_source: Connection source.
+
+        Raises:
+            bench_configuration_error: On error condition.
+        """
         def raise_error(terminal1, terminal2a, terminal2b, script1, script2):
+            """Perform raise error operation.
+
+            Args:
+                script1: Script1.
+                script2: Script2.
+                terminal1: Terminal1.
+                terminal2a: Terminal2a.
+                terminal2b: Terminal2b.
+
+            Raises:
+                bench_configuration_error: On error condition.
+            """
             print_banner("*** CONNECTION ERROR ***",
                          f'"{terminal1.get_owner()}:{terminal1.get_type()}" is assigned differently in',
                          f'{script1}({terminal2a.get_owner()}:{terminal2a.get_type()})',
@@ -425,15 +640,26 @@ class connection_collection():
 
 
 class configuration_parser():
-    '''Can be used to reconstitute an equipment connection and terminal list from a displayable string.
-       Not sure what the use model will be.
-       Note that the original instrument type is lost as we did not store the actual Python datastructure in sqlite.
-       This just returns a list of dictionaries from a bunched up string.'''
+    """Can be used to reconstitute an equipment connection and terminal list from a displayable string.
 
+    Not sure what the use model will be.
+    Note that the original instrument type is lost as we did not store the actual Python datastructure in sqlite.
+    This just returns a list of dictionaries from a bunched up string.
+    """
     def __init__(self, config_string):
+        """Initialize configuration_parser.
+
+        Args:
+            config_string: Config string.
+        """
         self.config_string = config_string
 
     def parse(self):
+        """Return parse result.
+
+        Returns:
+            Result value.
+        """
         connections = []
         for conn in self.config_string.split(
                 "\n")[:-1]:  # last one is always an empty line

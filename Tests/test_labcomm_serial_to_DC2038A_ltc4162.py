@@ -1,4 +1,5 @@
-from serial.tools.list_ports import comports
+"""Tests for labcomm serial to  D C2038 A ltc4162."""
+from serial.tools.list_ports import comports  # pylint: disable=import-error; pyserial is an optional dependency that must be installed to run this test
 import os
 baudrate = 115200
 # import logging                           # No need to do this anymore because
@@ -10,19 +11,33 @@ PYICE_NATIVE = True
 
 
 def talk_to_demoboard(connection, src_id, xml_file, debug=False):
-    from PyICe import lab_core, twi_instrument, lab_instruments
+    """Return talk to demoboard result.
+
+    Args:
+        connection: Connection.
+        debug: If True, enable debug output.
+        src_id: Source identifier.
+        xml_file: Xml file.
+
+    Returns:
+        Result value.
+    """
+    from PyICe import lab_core, twi_instrument
+    from PyICe.virtual_instruments import timer
     m = lab_core.master()
     m._threaded = False   # Useful when debugging.
     if connection[0] == 'serial':
-        twi = m.get_twi_labcomm_raw_serial(serial_port_name=connection[1],
+        twi = m.get_twi_labcomm_raw_serial(serial_port_name=connection[1],  # pylint: disable=no-member; method from older PyICe API or dynamically added via interface_manager mixin
                                            src_id=src_id)
     elif connection[0] == 'tcp':
-        twi = m.get_twi_labcomm_tcp(dest_ip_address=connection[1][0],
+        twi = m.get_twi_labcomm_tcp(dest_ip_address=connection[1][0],  # pylint: disable=no-member; method from older PyICe API or dynamically added via interface_manager mixin
                                     dest_tcp_portnum=connection[1][1],
                                     src_id=src_id,
                                     debug=False)
     elif connection[0] == 'dummy':
         twi = m.get_twi_dummy_interface()
+    else:
+        raise ValueError(f"Unknown connection type: {connection[0]}")
 
     chip = twi_instrument.twi_instrument(interface_twi=twi,
                                          except_on_i2cInitError=True,
@@ -43,7 +58,7 @@ def talk_to_demoboard(connection, src_id, xml_file, debug=False):
     # if self.make_ARA_channel:
     # ARAch = self.master.add_channel_virtual("ARA", read_function = self.twi.alert_response)
     # ARAch.set_category("Alerts")
-    vtimer = lab_instruments.timer()
+    vtimer = timer()
     vtimer.add_channel_delta_seconds("delta_secs")
     m.add(vtimer)
     m['battery_detection_alert'].add_change_callback()
@@ -52,7 +67,7 @@ def talk_to_demoboard(connection, src_id, xml_file, debug=False):
         if PYICE_NATIVE is True:
             m.gui()
         else:
-            from LTC4162_GUI import ltc4162_gui  # this cannot be imported in the main thread
+            from LTC4162_GUI import ltc4162_gui  # pylint: disable=import-error; this cannot be imported in the main thread; external GUI package required separately
             gui = ltc4162_gui.ltc_lab_gui_app_client(m,
                                                      passive=False,
                                                      cfg_file='default.guicfg')
@@ -69,11 +84,13 @@ def talk_to_demoboard(connection, src_id, xml_file, debug=False):
 
 
 def test_labcomm():
-    """
-    Main Test code for labcomm initialization
-    :return:
-    """
+    """Main Test code for labcomm initialization.
 
+    :return:
+
+    Raises:
+        SystemExit: On error condition.
+    """
     while True:
         comport_list = comports()
         if not len(comport_list):
@@ -129,7 +146,7 @@ def test_labcomm():
     # Activate while build
     # the_xml_file = "./LTC4162-BASE-local-copy.xml"
     # Dummy without board
-    # the_xml_file = "C:/WORK/A_SVN/LTC4162/trunk/Registers/LTC4162-LAD/synthetics/public/XML/LTC4162-LAD.xml"
+    # the_xml_file = "/path/to/LTC4162-LAD.xml"
 
     print()
     s = input("Press ENTER to accept default XML file {}, or enter the path\n"
@@ -146,5 +163,5 @@ def test_labcomm():
 
 
 if __name__ == '__main__':
-    #    from serial.tools.list_ports import comports
+    #    from serial.tools.list_ports import comports  # pylint: disable=import-error; pyserial is an optional dependency that must be installed to run this test
     test_labcomm()

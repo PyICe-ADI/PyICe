@@ -1,3 +1,4 @@
+"""Csv example module."""
 from PyICe import LTC_plot
 
 G0 = LTC_plot.plot(plot_title="128K Point FFT, fIN = 2.2MHz,\n-1dBFS, PGA = 0",

@@ -1,11 +1,16 @@
+"""Agilent 3458a instrument driver."""
 from ..lab_core import instrument, channel
 
 
 class hp_3458a(instrument):
-    '''HP 3458A MULTIMETER'''
+    """HP 3458A MULTIMETER."""
 
     def __init__(self, interface_visa):
-        '''interface_visa"'''
+        """Interface_visa".
+
+        Args:
+            interface_visa: VISA interface instance.
+        """
         self._base_name = 'hp_3458a'
         instrument.__init__(self, f"hp_3458a @ {interface_visa}")
         self.add_interface_visa(interface_visa)
@@ -15,9 +20,17 @@ class hp_3458a(instrument):
         self.meter_channel = None
 
     def add_channel(self, channel_name):
-        '''Deprecated! Use add_channel_[a,d]c_voltage, current, etc instead.
+        """Deprecated! Use add_channel_[a,d]c_voltage, current, etc instead.
+
         Channel configuration was changed to bring meter NPLC/range configuration
-        within channel framework and allow access from channel master.'''
+        within channel framework and allow access from channel master.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         # raise Exception('Use add_channel_dc_voltage, add_channel_dc_current, etc to configure instrument.')
         print(
             f"WARNING: Channel {channel_name} add_channel method deprecated!")
@@ -26,9 +39,19 @@ class hp_3458a(instrument):
         return self.add_channel_dc_voltage(channel_name)
 
     def add_channel_dc_voltage(self, channel_name, NPLC=50, range='AUTO'):
-        '''Add named DC voltage measurement channel.
+        """Add named DC voltage measurement channel.
+
         Optionally set number of powerline cycles for integration to [0-1000]
-        and set range to ['AUTO' or 0.12, 1.2, 12, 120, 1000]'''
+        and set range to ['AUTO' or 0.12, 1.2, 12, 120, 1000]
+
+        Args:
+            NPLC: Number of power line cycles for integration.
+            channel_name: Name for the new channel.
+            range: Measurement or output range.
+
+        Returns:
+            Result value.
+        """
         if self.meter_channel is not None:
             print("WARNING: Re-defining 3458 DMM channel configuration")
         self.meter_channel = channel(
@@ -38,9 +61,19 @@ class hp_3458a(instrument):
         return self._add_channel(self.meter_channel)
 
     def add_channel_ac_voltage(self, channel_name, NPLC=50, range='AUTO'):
-        '''Add named AC voltage measurement channel.
+        """Add named AC voltage measurement channel.
+
         Optionally set number of powerline cycles for integration to [0-1000]
-        and set range to ['AUTO' or 0.012, 0.12, 1.2, 12, 120, 1000]'''
+        and set range to ['AUTO' or 0.012, 0.12, 1.2, 12, 120, 1000]
+
+        Args:
+            NPLC: Number of power line cycles for integration.
+            channel_name: Name for the new channel.
+            range: Measurement or output range.
+
+        Returns:
+            Result value.
+        """
         if self.meter_channel is not None:
             print("WARNING: Re-defining 3458 DMM channel configuration")
         self.meter_channel = channel(
@@ -50,9 +83,19 @@ class hp_3458a(instrument):
         return self._add_channel(self.meter_channel)
 
     def add_channel_dc_current(self, channel_name, NPLC=50, range='AUTO'):
-        '''Add named DC current measurement channel.
+        """Add named DC current measurement channel.
+
         Optionally set number of powerline cycles for integration to [0-1000]
-        and set range to ['AUTO' or 0.12E-6, 1.2E-6, 12E-6, 120E-6, 1.2E-3, 12E-3, 120E-3, 1.2]'''
+        and set range to ['AUTO' or 0.12E-6, 1.2E-6, 12E-6, 120E-6, 1.2E-3, 12E-3, 120E-3, 1.2]
+
+        Args:
+            NPLC: Number of power line cycles for integration.
+            channel_name: Name for the new channel.
+            range: Measurement or output range.
+
+        Returns:
+            Result value.
+        """
         if self.meter_channel is not None:
             print("WARNING: Re-defining 3458 DMM channel configuration")
         self.meter_channel = channel(
@@ -62,9 +105,19 @@ class hp_3458a(instrument):
         return self._add_channel(self.meter_channel)
 
     def add_channel_ac_current(self, channel_name, NPLC=50, range='AUTO'):
-        '''Add named AC current measurement channel.
+        """Add named AC current measurement channel.
+
         Optionally set number of powerline cycles for integration to [0-1000]
-        and set range to ['AUTO' or 0.12E-6, 1.2E-6, 12E-6, 120E-6, 1.2E-3, 12E-3, 120E-3, 1.2]'''
+        and set range to ['AUTO' or 0.12E-6, 1.2E-6, 12E-6, 120E-6, 1.2E-3, 12E-3, 120E-3, 1.2]
+
+        Args:
+            NPLC: Number of power line cycles for integration.
+            channel_name: Name for the new channel.
+            range: Measurement or output range.
+
+        Returns:
+            Result value.
+        """
         if self.meter_channel is not None:
             print("WARNING: Re-defining 3458 DMM channel configuration")
         self.meter_channel = channel(
@@ -74,9 +127,19 @@ class hp_3458a(instrument):
         return self._add_channel(self.meter_channel)
 
     def add_channel_ohm_fourwire(self, channel_name, NPLC=50, range='AUTO'):
-        '''Add named 4-wire resistance measurement channel.
+        """Add named 4-wire resistance measurement channel.
+
         Optionally set number of powerline cycles for integration to [0-1000]
-        and set range to ['AUTO' or 12, 120 1.2e3, 1.2e4, 1.2e5, 1.2e6, 1.2e7, 1.2e8, 1.2e9]'''
+        and set range to ['AUTO' or 12, 120 1.2e3, 1.2e4, 1.2e5, 1.2e6, 1.2e7, 1.2e8, 1.2e9]
+
+        Args:
+            NPLC: Number of power line cycles for integration.
+            channel_name: Name for the new channel.
+            range: Measurement or output range.
+
+        Returns:
+            Result value.
+        """
         if self.meter_channel is not None:
             print("WARNING: Re-defining 3458 DMM channel configuration")
         self.meter_channel = channel(
@@ -86,8 +149,19 @@ class hp_3458a(instrument):
         return self._add_channel(self.meter_channel)
 
     def add_channel_NPLC(self, channel_name):
-        '''add named channel to re-configure meter powerline cycle integration time.
-        Valid values are [0-1000]'''
+        """Add named channel to re-configure meter powerline cycle integration time.
+
+        Valid values are [0-1000]
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         if self.meter_channel is None:
             raise Exception(
                 f'ERROR: Please create 3458 DMM NPLC re-configuration channel: {channel_name} after creating measurement channel.')
@@ -98,8 +172,19 @@ class hp_3458a(instrument):
         return self._add_channel(meter_config_channel)
 
     def add_channel_range(self, channel_name):
-        '''add named channel to re-configure meter range.
-        Valid values depend on meter mode configuration.'''
+        """Add named channel to re-configure meter range.
+
+        Valid values depend on meter mode configuration.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         if self.meter_channel is None:
             raise Exception(
                 f'ERROR: Please create 3458 DMM range re-configuration channel: {channel_name} after creating measurement channel.')
@@ -122,11 +207,19 @@ class hp_3458a(instrument):
         self.get_interface().write(('TRIG AUTO'))
 
     def _read_meter(self):
-        '''return float representing meter measurement.'''
+        """Return float representing meter measurement.
+
+        Returns:
+            Result value.
+        """
         # why does float conversion raise exception? - TODO: Debug!
         self.get_interface().write(('TARM SGL, 1'))
         return float(self.get_interface().read())
 
     def display(self, message):
-        '''Write message to instrument front panel display.'''
+        """Write message to instrument front panel display.
+
+        Args:
+            message: Message.
+        """
         self.get_interface().write(('DISP MSG,"' + message + '"'))

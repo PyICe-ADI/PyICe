@@ -1,5 +1,4 @@
-'''
-Linear Technology Compliant Plot Generator
+r"""Linear Technology Compliant Plot Generator.
 
 This program can be used to generate plots for general lab use or to
 generate plots that can be imported directly into a datasheet in
@@ -29,18 +28,18 @@ Multipage_pdf.
 ::
 
   G0 = LTC_plot.plot(
-                      plot_title      = "EN/FBIN Thresholds",
-                      plot_name       = "8709 G0",
-                      xaxis_label     = "TEMPERATURE (" + DEGC + ")",
-                      yaxis_label     = "FBIN CHIP ENABLE (V)",
-                      xlims           = (-50, 125),
-                      ylims           = (1.2, 1.4),
-                      xminor          = 0,
-                      xdivs           = 7,
-                      yminor          = 0,
-                      ydivs           = 10,
-                      logx            = False,
-                      logy            = False)
+    plot_title      = "EN/FBIN Thresholds",
+    plot_name       = "8709 G0",
+    xaxis_label     = "TEMPERATURE (" + DEGC + ")",
+    yaxis_label     = "FBIN CHIP ENABLE (V)",
+    xlims           = (-50, 125),
+    ylims           = (1.2, 1.4),
+    xminor          = 0,
+    xdivs           = 7,
+    yminor          = 0,
+    ydivs           = 10,
+    logx            = False,
+    logy            = False)
 
 A plot is nothing more than a record of the plot you want to create. It doesn't
 support any outputting methods itself. A plot must eventually be added to a Page
@@ -314,8 +313,7 @@ PyICe/Examples/LTC_plot_example/LTC_plot_example.py
   If you get a warning about missing Linear fonts and you have them installed,
   try deleting: "C:\\\\Users\\\\%username%\\\\.matplotlib\\\\fontList.cache and tex.cache"
 
-'''
-
+"""
 import numpy as np
 import matplotlib
 import matplotlib.ticker
@@ -331,7 +329,14 @@ import csv
 
 
 class PyICe_data_base():
+    """Py i ce_data_base."""
     def __init__(self, table_name, file_name="data_log.sqlite"):
+        """Initialize py i ce_data_base.
+
+        Args:
+            file_name: File name.
+            table_name: Database table name.
+        """
         print()
         print()
         print()  # PyICe_data_base() from inside LTC_plot is deprecated.      #
@@ -343,12 +348,29 @@ class PyICe_data_base():
 
 
 class plot(object):
+    """Plot (object subclass)."""
     def __init__(self, plot_title, plot_name, xaxis_label, yaxis_label,
                  xlims, ylims, xminor, xdivs, yminor, ydivs, logx, logy):
-        '''A plot is just a record of what you want to plot and how you want it to look.
+        """A plot is just a record of what you want to plot and how you want it to look.
+
         It must be added to a Page before it can be exported.
         Start by creating as many plots as you like and adding data and various annotations to them.
-        Once you add your plot or plots to a Page you can generate an SVG or PDF of the Page.'''
+        Once you add your plot or plots to a Page you can generate an SVG or PDF of the Page.
+
+        Args:
+            logx: Logx.
+            logy: Logy.
+            plot_name: Plot name.
+            plot_title: Plot title.
+            xaxis_label: Xaxis label.
+            xdivs: Xdivs.
+            xlims: Xlims.
+            xminor: Xminor.
+            yaxis_label: Yaxis label.
+            ydivs: Ydivs.
+            ylims: Ylims.
+            yminor: Yminor.
+        """
         self.plot_title = plot_title
         self.plot_name = plot_name
         self.xaxis_label = xaxis_label
@@ -383,6 +405,21 @@ class plot(object):
 
     def add_trace(self, axis, data, color, marker=None, markersize=0, linestyle="-",
                   linewidth=None, legend="", stepped_style=False, vxline=False, hxline=False):
+        """Add a trace.
+
+        Args:
+            axis: Axis.
+            color: Color.
+            data: Data to write.
+            hxline: Hxline.
+            legend: Legend.
+            linestyle: Linestyle.
+            linewidth: Linewidth.
+            marker: Marker.
+            markersize: Markersize.
+            stepped_style: Stepped style.
+            vxline: Vxline.
+        """
         data = data if not isinstance(data, zip) else list(data)
         legend = legend.replace("-", "−") if legend is not None else legend
         if not (vxline or hxline or len(data)):
@@ -408,6 +445,19 @@ class plot(object):
 
     def add_scatter(self, axis, data, color, marker='*', markersize=4,
                     legend="", stepped_style=False, vxline=False, hxline=False):
+        """Add a scatter.
+
+        Args:
+            axis: Axis.
+            color: Color.
+            data: Data to write.
+            hxline: Hxline.
+            legend: Legend.
+            marker: Marker.
+            markersize: Markersize.
+            stepped_style: Stepped style.
+            vxline: Vxline.
+        """
         self.add_trace(
             axis=axis,
             data=data,
@@ -422,10 +472,21 @@ class plot(object):
 
     def add_horizontal_line(self, value, xrange=None, note=None,
                             axis=1, color=None, linestyle=None, linewidth=None):
-        '''This can be useful for annotating limit lines. It can make dotted red lines for example.'''
+        """This can be useful for annotating limit lines. It can make dotted red lines for example.
+
+        Args:
+            axis: Axis.
+            color: Color.
+            linestyle: Linestyle.
+            linewidth: Linewidth.
+            note: Note.
+            value: Value to set.
+            xrange: Xrange.
+        """
         if color is None:
             color = [1, 0, 0]
         ylims = self.ylims if axis == 1 else self.y2_axis_params["ylims"]
+        text_location = None
         if self.xlims in [None, "auto"] and xrange is None:
             hxline = True                                       # Use automatic placement mode
             xrange0 = 0                                         # Should be irrelevant
@@ -505,12 +566,26 @@ class plot(object):
 
     def add_vertical_line(self, value, yrange=None, note=None,
                           axis=1, color=None, linestyle=None, linewidth=None):
-        '''This can be useful for annotating limit lines. It can make dotted red lines for example.'''
+        """This can be useful for annotating limit lines. It can make dotted red lines for example.
+
+        Args:
+            axis: Axis.
+            color: Color.
+            linestyle: Linestyle.
+            linewidth: Linewidth.
+            note: Note.
+            value: Value to set.
+            yrange: Yrange.
+
+        Raises:
+            Exception: On error condition.
+        """
         if color is None:
             color = [1, 0, 0]
         if axis not in [1, 2]:
             raise Exception("\n\nLTC_plot ERROR: AXIS MUST BE 1 or 2\n")
         axis_params = self.y1_axis_params if axis == 1 else self.y2_axis_params
+        text_location = None
         if axis_params['ylims'] in [None, "auto"] and yrange is None:
             # Use automatic placement mode
             vxline = True
@@ -588,6 +663,18 @@ class plot(object):
 
     def add_histogram(self, axis, xdata, num_bins, color,
                       normed=False, legend="", linewidth=0.5, alpha=1):
+        """Add a histogram.
+
+        Args:
+            alpha: Alpha.
+            axis: Axis.
+            color: Color.
+            legend: Legend.
+            linewidth: Linewidth.
+            normed: Normed.
+            num_bins: Num bins.
+            xdata: Xdata.
+        """
         histo_data = {"axis": axis,
                       "xdata": xdata,
                       "num_bins": num_bins,
@@ -602,8 +689,17 @@ class plot(object):
             self.y2_axis_params["histo_data"].append(histo_data)
 
     def make_second_y_axis(self, yaxis_label, ylims, yminor, ydivs, logy):
-        '''A second (right side) y axis is useful if two very different data sets need to be plotted against the same indepdendent axis.
-        Be sure to use the same number of divisions on each y-axis to have sensible (common) graticules.'''
+        """A second (right side) y axis is useful if two very different data sets need to be plotted against the same indepdendent axis.
+
+        Be sure to use the same number of divisions on each y-axis to have sensible (common) graticules.
+
+        Args:
+            logy: Logy.
+            yaxis_label: Yaxis label.
+            ydivs: Ydivs.
+            ylims: Ylims.
+            yminor: Yminor.
+        """
         self.y2_axis_params["axis_is_used"] = True
         self.y2_axis_params["yaxis_label"] = yaxis_label
         self.y2_axis_params["ylims"] = ylims
@@ -613,7 +709,15 @@ class plot(object):
 
     def add_legend(self, axis, location=(
             0, 0), justification='lower left', use_axes_scale=False, fontsize=7):
-        '''Place a legend on the graph. The legend labels were acquired from the legend argument in the add_trace call. Position supports data axes and absolute axes.'''
+        """Place a legend on the graph. The legend labels were acquired from the legend argument in the add_trace call. Position supports data axes and absolute axes.
+
+        Args:
+            axis: Axis.
+            fontsize: Fontsize.
+            justification: Justification.
+            location: Location.
+            use_axes_scale: Use axes scale.
+        """
         if axis == 1:
             self.y1_axis_params["place_legend"] = True
             self.y1_axis_params["legend_loc"] = location
@@ -629,7 +733,17 @@ class plot(object):
 
     def add_note(self, note, location=None, use_axes_scale=True, fontsize=7,
                  axis=1, horizontalalignment="left", verticalalignment="bottom"):
-        '''Add an arbitratry note anywhere on the graph. Position supports data axes and absolute axes.'''
+        """Add an arbitratry note anywhere on the graph. Position supports data axes and absolute axes.
+
+        Args:
+            axis: Axis.
+            fontsize: Fontsize.
+            horizontalalignment: Horizontalalignment.
+            location: Location.
+            note: Note.
+            use_axes_scale: Use axes scale.
+            verticalalignment: Verticalalignment.
+        """
         if location is None:
             location = [0.05, 0.5]
         self.notes.append({"note": note,
@@ -642,7 +756,15 @@ class plot(object):
 
     def add_arrow(self, text, text_location, arrow_tip,
                   use_axes_scale=True, fontsize=7):
-        '''Adds a note and an arrow pointing to something. The arrow shaft emanates from the center of the note text and the arrow tip lands on the arrow top point. Both position follow either the data axes and absolute axes.'''
+        """Adds a note and an arrow pointing to something. The arrow shaft emanates from the center of the note text and the arrow tip lands on the arrow top point. Both position follow either the data axes and absolute axes.
+
+        Args:
+            arrow_tip: Arrow tip.
+            fontsize: Fontsize.
+            text: Text.
+            text_location: Text location.
+            use_axes_scale: Use axes scale.
+        """
         self.arrows.append({"text": text,
                             "text_location": text_location,
                             "arrow_tip": arrow_tip,
@@ -651,12 +773,26 @@ class plot(object):
                             })
 
     def create_svg(self, file_basename):
-        '''shortcut to create SVG for a single plot without having to construct a Page.'''
+        """Shortcut to create SVG for a single plot without having to construct a Page.
+
+        Args:
+            file_basename: File basename.
+
+        Returns:
+            Result value.
+        """
         page = Page(rows_x_cols=None, page_size=None, plot_count=1)
         page.add_plot(plot=self)
         return page.create_svg(file_basename)
 
     def create_csv(self, file_basename, filepath=None, dialect='excel'):
+        """Perform create csv operation.
+
+        Args:
+            dialect: Dialect.
+            file_basename: File basename.
+            filepath: Filepath.
+        """
         filepath = './csv/' if filepath is None else os.path.join(
             filepath, 'csv')
         try:
@@ -697,13 +833,23 @@ class plot(object):
 
 
 class scope_plot(plot):
+    """Scope_plot."""
     def __init__(self, plot_title, plot_name, xaxis_label, xlims, ylims):
-        '''A plot is just a record of what you want to plot and how you want it to look.
+        """A plot is just a record of what you want to plot and how you want it to look.
+
         It must be added to a Page before it can be exported.
         Start by creating as many plots as you like and adding data and various annotations to them.
         Once you add your plot or plots to a Page you can generate an SVG or PDF of the Page.
 
-        The scope_plot is a special plot that is 8 graticules high by 10 graticules wide and has its x and y labels listed in units/div like an oscilloscope.'''
+        The scope_plot is a special plot that is 8 graticules high by 10 graticules wide and has its x and y labels listed in units/div like an oscilloscope.
+
+        Args:
+            plot_name: Plot name.
+            plot_title: Plot title.
+            xaxis_label: Xaxis label.
+            xlims: Xlims.
+            ylims: Ylims.
+        """
         self.plot_title = plot_title
         self.plot_name = plot_name
         self.xaxis_label = xaxis_label
@@ -742,6 +888,17 @@ class scope_plot(plot):
 
     def add_trace(self, data, color, marker=None, markersize=0,
                   linestyle="-", linewidth=None, legend=""):
+        """Add a trace.
+
+        Args:
+            color: Color.
+            data: Data to write.
+            legend: Legend.
+            linestyle: Linestyle.
+            linewidth: Linewidth.
+            marker: Marker.
+            markersize: Markersize.
+        """
         plot.add_trace(
             self,
             axis=1,
@@ -755,6 +912,15 @@ class scope_plot(plot):
 
     def add_legend(self, axis=1, location=(
             0, 0), justification='lower left', use_axes_scale=False, fontsize=7):
+        """Add a legend.
+
+        Args:
+            axis: Axis.
+            fontsize: Fontsize.
+            justification: Justification.
+            location: Location.
+            use_axes_scale: Use axes scale.
+        """
         plot.add_legend(
             self,
             axis=axis,
@@ -764,30 +930,77 @@ class scope_plot(plot):
             fontsize=fontsize)
 
     def make_second_y_axis(self, *args, **kwargs):
+        """Perform make second y axis operation.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+            *args: Additional positional arguments.
+
+        Raises:
+            Exception: On error condition.
+        """
         raise Exception('Second y-axis not implemented for scope plots.')
 
     def add_ref_marker(self, ylocation, marker_color, use_axes_scale):
+        """Add a ref marker.
+
+        Args:
+            marker_color: Marker color.
+            use_axes_scale: Use axes scale.
+            ylocation: Ylocation.
+        """
         self.ref_markers.append({"ylocation": ylocation,
                                  "marker_color": marker_color,
                                  "use_axes_scale": use_axes_scale})
 
     def add_trace_label(self, trace_label, ylocation, use_axes_scale):
+        """Add a trace label.
+
+        Args:
+            trace_label: Trace label.
+            use_axes_scale: Use axes scale.
+            ylocation: Ylocation.
+        """
         self.trace_labels.append(
             {"trace_label": trace_label, "ylocation": ylocation, "use_axes_scale": use_axes_scale})
 
     def add_time_refmarker_open(self, xlocation):
+        """Add a time refmarker open.
+
+        Args:
+            xlocation: Xlocation.
+        """
         self.include_time_refmarker_open = True
         self.time_refmarker_open_xlocation = xlocation
 
     def add_time_refmarker_closed(self, xlocation):
+        """Add a time refmarker closed.
+
+        Args:
+            xlocation: Xlocation.
+        """
         self.include_time_refmarker_closed = True
         self.time_refmarker_closed_xlocation = xlocation
 
     def add_all_time_refmarkers(self, xlocation_open, xlocation_closed):
+        """Add a all time refmarkers.
+
+        Args:
+            xlocation_closed: Xlocation closed.
+            xlocation_open: Xlocation open.
+        """
         self.add_time_refmarker_open(xlocation_open)
         self.add_time_refmarker_closed(xlocation_closed)
 
     def add_horizontal_line(self, value, xrange=None, note=None, color=None):
+        """Add a horizontal line.
+
+        Args:
+            color: Color.
+            note: Note.
+            value: Value to set.
+            xrange: Xrange.
+        """
         if color is None:
             color = [1, 0, 0]
         xrange0 = self.xlims[0] if xrange is None else xrange[0]
@@ -814,6 +1027,14 @@ class scope_plot(plot):
                           axis=1)
 
     def add_vertical_line(self, value, yrange=None, note=None, color=None):
+        """Add a vertical line.
+
+        Args:
+            color: Color.
+            note: Note.
+            value: Value to set.
+            yrange: Yrange.
+        """
         if color is None:
             color = [1, 0, 0]
         yrange0 = self.y1_axis_params['ylims'][0] if yrange is None else yrange[0]
@@ -839,10 +1060,21 @@ class scope_plot(plot):
 
 
 class Page():
+    """Page."""
     def __init__(self, rows_x_cols=None, page_size=None, plot_count=None):
-        '''A Page containing one or more plots can be exported as a PDF or SVG.
+        """A Page containing one or more plots can be exported as a PDF or SVG.
+
         Alternately you can kit the page for datasheet submission.
-        This is where the plots are actually "constructed" from matplotlib objects.'''
+        This is where the plots are actually "constructed" from matplotlib objects.
+
+        Args:
+            page_size: Page size.
+            plot_count: Plot count.
+            rows_x_cols: Rows x cols.
+
+        Raises:
+            Exception: On error condition.
+        """
         #################################################################
         # Create the matplotlib Figure and do some datasheet setup      #
         #################################################################
@@ -876,6 +1108,14 @@ class Page():
         matplotlib.mathtext.GROW_FACTOR = 1 / matplotlib.mathtext.SHRINK_FACTOR
 
     def LTC_LOG10_Formatter(self, x):
+        """Return LTC LOG10 Formatter result.
+
+        Args:
+            x: X.
+
+        Returns:
+            Result value.
+        """
         if x >= 1:
             return str(int(x))
         else:
@@ -900,6 +1140,24 @@ class Page():
         #################################################################
         # Create subplots                                               #
         #################################################################
+        """Add a plot.
+
+        Args:
+            bottom_border: Bottom border.
+            left_border: Left border.
+            plot: Plot.
+            plot_sizex: Plot sizex.
+            plot_sizey: Plot sizey.
+            position: Position.
+            right_border: Right border.
+            top_border: Top border.
+            trace_width: Trace width.
+            x_gap: X gap.
+            y_gap: Y gap.
+
+        Raises:
+            Exception: On error condition.
+        """
         if self.page_type is None:
             self.page_type = plot.plot_type
         elif self.page_type != plot.plot_type:
@@ -1516,6 +1774,15 @@ class Page():
                                size=arrow_dict["fontsize"])
 
     def create_svg(self, file_basename=None, filepath=None):
+        """Return create svg result.
+
+        Args:
+            file_basename: File basename.
+            filepath: Filepath.
+
+        Returns:
+            Result value.
+        """
         FigureCanvasSVG(self.Figure)
         figdata = io.StringIO()
         self.Figure.savefig(figdata, format="svg")
@@ -1540,6 +1807,12 @@ class Page():
         return output
 
     def create_pdf(self, file_basename, filepath=None):
+        """Perform create pdf operation.
+
+        Args:
+            file_basename: File basename.
+            filepath: Filepath.
+        """
         filepath = './plots/' if filepath is None else os.path.join(
             filepath, 'plots')
         try:
@@ -1553,6 +1826,11 @@ class Page():
         self.Figure.savefig(file_basename, format="pdf")
 
     def kit_datasheet(self, file_basename="datasheet_kit"):
+        """Perform kit datasheet operation.
+
+        Args:
+            file_basename: File basename.
+        """
         filepath = '{}\\'.format(file_basename)
         try:
             os.makedirs('.\\plots\\' + filepath)
@@ -1574,17 +1852,30 @@ class Page():
 
 
 class Multipage_pdf():
-    '''Add one or more Pages to a Multipage_pdf to keep your page sizes manageable (such as 8.5x11).
-    Multipage_pdf also support kit_datasheet().'''
+    """Add one or more Pages to a Multipage_pdf to keep your page sizes manageable (such as 8.5x11).
 
+    Multipage_pdf also support kit_datasheet().
+    """
     def __init__(self):
+        """Initialize multipage_pdf."""
         self.page_list = []
 
     def add_page(self, page):
+        """Add a page.
+
+        Args:
+            page: Page.
+        """
         FigureCanvasPdf(page.Figure)
         self.page_list.append(page)
 
     def create_pdf(self, file_basename, filepath=None):
+        """Perform create pdf operation.
+
+        Args:
+            file_basename: File basename.
+            filepath: Filepath.
+        """
         filepath = './plots/' if filepath is None else os.path.join(
             filepath, 'plots')
         try:
@@ -1606,6 +1897,11 @@ class Multipage_pdf():
         self.pdf_file.close()
 
     def kit_datasheet(self, file_basename="datasheet_kit"):
+        """Perform kit datasheet operation.
+
+        Args:
+            file_basename: File basename.
+        """
         filepath = 'datasheet_kit\\'
         try:
             os.makedirs('.\\plots\\' + filepath)
@@ -1630,15 +1926,24 @@ class Multipage_pdf():
 
 
 class color_gen(object):
-    '''Color yielding generator. Returns a new color each time an instance is called'''
+    """Color yielding generator. Returns a new color each time an instance is called."""
 
     def __init__(self, rollover=True):
-        '''set rollover False to cause an IndexError exception when colors are exhausted'''
+        """Set rollover False to cause an IndexError exception when colors are exhausted.
+
+        Args:
+            rollover: Rollover.
+        """
         self.colors = MARCOM_COLORSfracRGB[:]
         self.reset()
         self.rollover = rollover
 
     def __call__(self):
+        """Call the instance.
+
+        Returns:
+            Result value.
+        """
         color = self.colors[self.index]
         self.index += 1
         if self.rollover:
@@ -1646,13 +1951,15 @@ class color_gen(object):
         return color
 
     def reset(self):
-        '''start color sequence over'''
+        """Start color sequence over."""
         self.index = 0
 
 
 def list_markers():
-    '''Valid linestyles are ['-' '--' '-.' ':' 'None' ' ' '']
-    Valid markers are [':' '.' ',' 'o' 'v' '^' '<' '>' '1' '2' '3' '4' '8' 's' 'p' '*' 'h' 'H' '+' 'x' 'D' 'd' '|' '_' TICKLEFT TICKRIGHT TICKUP TICKDOWN CARETLEFT CARETRIGHT CARETUP CARETDOWN]'''
+    """Valid linestyles are ['-' '--' '-.' ':' 'None' ' ' ''].
+
+    Valid markers are [':' '.' ',' 'o' 'v' '^' '<' '>' '1' '2' '3' '4' '8' 's' 'p' '*' 'h' 'H' '+' 'x' 'D' 'd' '|' '_' TICKLEFT TICKRIGHT TICKUP TICKDOWN CARETLEFT CARETRIGHT CARETUP CARETDOWN]
+    """
     print()
     print(
         "Valid markers are: " +
@@ -1663,6 +1970,12 @@ def list_markers():
 
 
 def smooth(data, window=5):
+    """Perform smooth operation.
+
+    Args:
+        data: Data to write.
+        window: Window.
+    """
     print("##########################################################")
     print("#                                                        #")
     print("#  WARNING, LTC_plot.smooth() is deprecated!!!           #")
@@ -1680,6 +1993,12 @@ def smooth(data, window=5):
 
 
 def smooth_y_vector(data, window=5):
+    """Perform smooth y vector operation.
+
+    Args:
+        data: Data to write.
+        window: Window.
+    """
     print("##########################################################")
     print("#                                                        #")
     print("#  WARNING, LTC_plot.smooth_y_vector() is deprecated!!!  #")
@@ -1693,6 +2012,14 @@ def smooth_y_vector(data, window=5):
 
 
 def data_from_file(filename):
+    """Return data from file result.
+
+    Args:
+        filename: File path.
+
+    Returns:
+        Result value.
+    """
     x = []
     y = []
     input_file = open(filename, 'r')
@@ -1704,6 +2031,14 @@ def data_from_file(filename):
 
 
 def CMYK_to_fracRGB(CMYK):
+    """Return CMYK to fracRGB result.
+
+    Args:
+        CMYK: Cmyk.
+
+    Returns:
+        Result value.
+    """
     R = (1 - CMYK[0]) * (1 - CMYK[3])
     G = (1 - CMYK[1]) * (1 - CMYK[3])
     B = (1 - CMYK[2]) * (1 - CMYK[3])
@@ -1711,6 +2046,14 @@ def CMYK_to_fracRGB(CMYK):
 
 
 def fracRGB_to_CMYK(RGB):
+    """Return fracRGB to CMYK result.
+
+    Args:
+        RGB: Rgb.
+
+    Returns:
+        Result value.
+    """
     C = 1 - RGB[0]
     M = 1 - RGB[1]
     Y = 1 - RGB[2]
@@ -1727,6 +2070,14 @@ def fracRGB_to_CMYK(RGB):
 
 
 def webRGB_to_fracRGB(webRGB):
+    """Return webRGB to fracRGB result.
+
+    Args:
+        webRGB: Webrgb.
+
+    Returns:
+        Result value.
+    """
     R = int(webRGB[0:2], 16) / 255.0
     G = int(webRGB[2:4], 16) / 255.0
     B = int(webRGB[4:6], 16) / 255.0
@@ -1734,6 +2085,14 @@ def webRGB_to_fracRGB(webRGB):
 
 
 def webRGB_to_RGB(webRGB):
+    """Return webRGB to RGB result.
+
+    Args:
+        webRGB: Webrgb.
+
+    Returns:
+        Result value.
+    """
     R = int(webRGB[0:2], 16)
     G = int(webRGB[2:4], 16)
     B = int(webRGB[4:6], 16)
@@ -1741,6 +2100,14 @@ def webRGB_to_RGB(webRGB):
 
 
 def RGB_to_webRGB(RGB):
+    """Return RGB to webRGB result.
+
+    Args:
+        RGB: Rgb.
+
+    Returns:
+        Result value.
+    """
     R = hex(int(RGB[0]))
     G = hex(int(RGB[1]))
     B = hex(int(RGB[2]))
@@ -1748,6 +2115,14 @@ def RGB_to_webRGB(RGB):
 
 
 def fracRGB_to_RGB(fracRGB):
+    """Return fracRGB to RGB result.
+
+    Args:
+        fracRGB: Fracrgb.
+
+    Returns:
+        Result value.
+    """
     R = int(round(fracRGB[0] * 255.0))
     G = int(round(fracRGB[1] * 255.0))
     B = int(round(fracRGB[2] * 255.0))
@@ -1755,6 +2130,14 @@ def fracRGB_to_RGB(fracRGB):
 
 
 def RGB_to_fracRGB(RGB):
+    """Return RGB to fracRGB result.
+
+    Args:
+        RGB: Rgb.
+
+    Returns:
+        Result value.
+    """
     R = RGB[0] / 255.0
     G = RGB[1] / 255.0
     B = RGB[2] / 255.0
@@ -1762,6 +2145,14 @@ def RGB_to_fracRGB(RGB):
 
 
 def fracRGB_to_webRGB(fracRGB):
+    """Return fracRGB to webRGB result.
+
+    Args:
+        fracRGB: Fracrgb.
+
+    Returns:
+        Result value.
+    """
     return RGB_to_webRGB(fracRGB_to_RGB(fracRGB))
 
 
@@ -1863,6 +2254,12 @@ minus = "\u2212"
 
 if __name__ == "__main__":
     import pydoc
+    import sys
     pydoc.writedoc('LTC_plot')
-    os.startfile("LTC_plot.html")
+    if sys.platform == 'win32':
+        os.startfile("LTC_plot.html")
+    elif sys.platform == 'darwin':
+        os.system('open "LTC_plot.html"')
+    else:
+        os.system('xdg-open "LTC_plot.html"')
     # print __doc__

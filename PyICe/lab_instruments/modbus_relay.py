@@ -1,9 +1,17 @@
+"""Modbus relay instrument driver."""
 from ..lab_core import *  # noqa: F403
 from .modbus_instrument import modbus_register
 
 
 class modbus_relay(instrument):
+    """Modbus_relay (instrument subclass)."""
     def __init__(self, serial_port, modbus_address):
+        """Initialize modbus_relay.
+
+        Args:
+            modbus_address: Modbus address.
+            serial_port: Serial port.
+        """
         import minimalmodbus
         minimalmodbus.BAUDRATE = 9600
         minimalmodbus.TIMEOUT = 5
@@ -20,6 +28,14 @@ class modbus_relay(instrument):
         # self.modbus_relay.serial.timeout = 1
 
     def add_channel_relay1(self, channel_name='relay1'):
+        """Add a channel relay1.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_register = modbus_register(channel_name,
                                        read_function=lambda: self.modbus_relay.read_register(
                                            registeraddress=1, functioncode=3),
@@ -35,6 +51,14 @@ class modbus_relay(instrument):
         return self._add_channel(new_register)
 
     def add_channel_relay2(self, channel_name='relay2'):
+        """Add a channel relay2.
+
+        Args:
+            channel_name: Name for the new channel.
+
+        Returns:
+            Result value.
+        """
         new_register = register(channel_name,
                                 size=1,
                                 read_function=lambda: self.modbus_relay.read_register(
@@ -49,5 +73,10 @@ class modbus_relay(instrument):
                 256 if data else 512), functioncode=6)
 
     def flush(self):
+        """Return flush result.
+
+        Returns:
+            Result value.
+        """
         return self.modbus_relay.serial.read(
             self.modbus_relay.serial.inWaiting())

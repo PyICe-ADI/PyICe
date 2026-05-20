@@ -1,3 +1,4 @@
+"""Scope trace example module."""
 from PyICe import LTC_plot
 
 G24 = LTC_plot.scope_plot(plot_title="Burst Mode to Constant Frequency\nMode Transition Waveform",

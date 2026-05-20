@@ -1,14 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Tests for sqlite."""
 
-from PyICe import lab_utils
+from PyICe.lab_utils.sqlite_data import sqlite_data
+from PyICe.lab_utils.sqlite_to_xlsx import sqlite_to_xlsx
 
-db = lab_utils.sqlite_data(
+db = sqlite_data(
     database_file='temp_sensor.sqlite',
     table_name='temp_sensor')
-# db = lab_utils.sqlite_data(table_name='die_temp_2017_01_30_15_57')
-# db = lab_utils.sqlite_data(database_file='LTC6363_bandwidth_vs_freq00.sqlite', table_name='LTC6363_1_bandwidth_vs_freq00')
-# db = lab_utils.sqlite_data(database_file='LTC6363_bandwidth_vs_freq00.sqlite', table_name='LTC6363_2_bandwidth_vs_freq00')
+# db = sqlite_data(table_name='die_temp_2017_01_30_15_57')
+# db = sqlite_data(database_file='LTC6363_bandwidth_vs_freq00.sqlite', table_name='LTC6363_1_bandwidth_vs_freq00')
+# db = sqlite_data(database_file='LTC6363_bandwidth_vs_freq00.sqlite', table_name='LTC6363_2_bandwidth_vs_freq00')
 
 # Option 1 - let CSV method do elapsed time calculation in Python
 csv = db.csv(
@@ -29,7 +31,7 @@ csv3 = db.expand_vector_data(csv_filename='die_temp3.csv')
 
 db.xlsx('die_temp.xlsx', elapsed_time_columns=True)
 
-wb = lab_utils.sqlite_to_xlsx('temp_sensor.xlsx')
+wb = sqlite_to_xlsx('temp_sensor.xlsx')
 
 sheets = wb.add_database(
     db_file_name='temp_sensor.sqlite',

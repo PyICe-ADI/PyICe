@@ -1,29 +1,52 @@
+"""Sqlite to csv utility."""
 import sqlite3
 from .csv_writer import csv_writer
 
 
 class sqlite_to_csv(csv_writer):
-    '''Formats data stored in an SQLite database so that it can be browsed interactively.
-       Use a program like Live Graph (https://sourceforge.net/projects/live-graph/) or KST (kst-plot.kde.org) to visualize data.'''
+    """Formats data stored in an SQLite database so that it can be browsed interactively.
 
+    Use a program like Live Graph (https://sourceforge.net/projects/live-graph/) or KST (kst-plot.kde.org) to visualize data.
+    """
     def __init__(self, table_name, database_file='data_log.sqlite'):
-        '''name is the chart title.
+        """Name is the chart title.
+
         table_name is the database table containing selected data columns.
-        database_file is the sqlite file containing table_name.'''
+        database_file is the sqlite file containing table_name.
+
+        Args:
+            database_file: Database file.
+            table_name: Database table name.
+        """
         csv_writer.__init__(self)
         self.table_name = table_name
         self.conn = sqlite3.connect(database_file)
         self.cursor = self.conn.cursor()
 
     def __enter__(self):
+        """Enter the context manager.
+
+        Returns:
+            Result value.
+        """
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        """Exit the context manager.
+
+        Args:
+            exc_tb: Exc tb.
+            exc_type: Exc type.
+            exc_val: Exc val.
+
+        Returns:
+            Result value.
+        """
         self.conn.close()
         return None
 
     def add_timestamps(self):
-        '''Add rowid and datetime columns to csv output.'''
+        """Add rowid and datetime columns to csv output."""
         self.add_column('rowid')
         self.add_column('datetime')
 
@@ -39,7 +62,13 @@ class sqlite_to_csv(csv_writer):
             transform=transform)
 
     def write(self, output_file, append=False, encoding='utf-8'):
-        '''write previously selected column data to output_file.'''
+        """Write previously selected column data to output_file.
+
+        Args:
+            append: Append.
+            encoding: Encoding.
+            output_file: Output file.
+        """
         query_txt = ''
         for column in self.columns:
             query_txt += "{},".format(column.query_name)

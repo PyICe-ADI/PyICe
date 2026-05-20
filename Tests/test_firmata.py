@@ -1,9 +1,11 @@
+"""Tests for firmata."""
 from PyICe import spi_interface, spi_instrument
-from PyICe import lab_core, lab_instruments
+from PyICe import lab_core
+from PyICe.lab_instruments.firmata import firmata
 
 m = lab_core.master()
 
-firmata = lab_instruments.firmata('com4')
+firmata = firmata('com4')
 
 firmata.add_channel_digital_output('pin2_out', 2)
 firmata.add_channel_digital_output('pin3_out', 3)

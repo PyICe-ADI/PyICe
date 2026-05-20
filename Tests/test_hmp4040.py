@@ -1,3 +1,4 @@
+"""Tests for hmp4040."""
 # test_hmp4040_serial.py
 # Simple test program for testing the Hameg 4040 lab supply software
 # John Cook August 2012
@@ -20,7 +21,7 @@
 # to channel 4 is not set or sometimes channel 4 is not turned OFF by the
 # destructor at the exit() of the program.
 
-import lab as lab
+import lab as lab  # pylint: disable=import-error; 'lab' is a project-local convenience module that must be on PYTHONPATH to run this test
 import time as time
 
 

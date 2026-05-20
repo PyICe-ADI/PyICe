@@ -1,8 +1,14 @@
+"""Tests for gui."""
 from PyICe import lab_core
 import random
 
 
 def debug(val):
+    """Perform debug operation.
+
+    Args:
+        val: Val.
+    """
     pass
     # print "Writing channel to {}".format(val)
 

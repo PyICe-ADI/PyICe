@@ -1,10 +1,16 @@
 #!/usr/bin/env python
+"""Tests for shift register."""
 
 from PyICe import spi_interface, spi_instrument
 
 
 def setup_inst():
     # All SPI stuff starts with a shift register.
+    """Return setup inst result.
+
+    Returns:
+        Result value.
+    """
     sr = spi_interface.shift_register(name='test SPI shift register')
     sr.add_bit_field(
         bit_field_name='test_mode',

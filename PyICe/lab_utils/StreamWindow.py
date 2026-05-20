@@ -1,9 +1,11 @@
+"""Stream Window utility."""
 import sys
 from .print_hex_bytes import print_hex_bytes
 
 
 class StreamWindow(object):
-    '''Wraps any non-seekable stream that has a read(number_of_bytes) method
+    """Wraps any non-seekable stream that has a read(number_of_bytes) method.
+
     and provides a specifiable amount of rewindability via FIFO buffering.
     StreamWindow-wrapped streams offer a peek() method which effectively provides
     a "sliding window" over the head of the stream.
@@ -20,7 +22,8 @@ class StreamWindow(object):
     and larger values of n until one peeks at a complete data packet, for the
     example use case of segmenting/parsing packets from a stream of bytes.
 
-    StreamWindow was developed to fill this gap.'''
+    StreamWindow was developed to fill this gap.
+    """
     # FYI: This class should be here in PyICe.lab_utils rather than corraled in labcomm
     # because it is generally applicable to any I/O stream that follows the io.RawIOBase
     # protocol, which is most of Python standard I/O. Indeed, the functionality of this class
@@ -28,6 +31,13 @@ class StreamWindow(object):
     # but for whatever reason wasn't.  -- F. Lee 7/25/2017
 
     def __init__(self, stream, buffer_size=2**16, debug=False):
+        """Initialize stream window.
+
+        Args:
+            buffer_size: Buffer size.
+            debug: If True, enable debug output.
+            stream: Stream.
+        """
         assert hasattr(stream, "read"), ("stream argument provided to StreamWindow "
                                          "constructor must have a read() method.")
         assert isinstance(buffer_size, int) and buffer_size >= 1
@@ -39,13 +49,25 @@ class StreamWindow(object):
         self.debug = debug
 
     def _shift_buffer(self, num_bytes):
-        '''Delete num_bytes of data from the front of buf, overwriting
+        """Delete num_bytes of data from the front of buf, overwriting.
+
         it with valid data slid over from the end of buf. This makes
-        room at the end of buf for new data from stream.'''
+        room at the end of buf for new data from stream.
+
+        Args:
+            num_bytes: Number of bytes.
+        """
         self.buf[:self.buffer_size - num_bytes] = self.buf[num_bytes:]
 
     def _read_buffer(self, num_bytes):
-        "Consumes bytes from the FIFO buffer."
+        """Consumes bytes from the FIFO buffer.
+
+        Args:
+            num_bytes: Number of bytes.
+
+        Returns:
+            Result value.
+        """
         assert num_bytes <= self.content_size
         # Save result bytes into new bytearray.
         result = bytearray(self.buf[:num_bytes])
@@ -54,13 +76,29 @@ class StreamWindow(object):
         return result
 
     def __len__(self):
-        '''Just return the number of valid bytes in the FIFO, as it is already
-        known that streams have indefinite length.'''
+        """Just return the number of valid bytes in the FIFO, as it is already.
+
+        known that streams have indefinite length.
+
+        Returns:
+            Result value.
+        """
         return self.content_size
 
     def __getitem__(self, k):
-        '''Support x[i] indexing or x[i:j] slice peeking into the FIFO.
-        0 indexes the head byte in the FIFO, -1 indexes the tail byte.'''
+        """Support x[i] indexing or x[i:j] slice peeking into the FIFO.
+
+        0 indexes the head byte in the FIFO, -1 indexes the tail byte.
+
+        Args:
+            k: K.
+
+        Returns:
+            Result value.
+
+        Raises:
+            IndexError: On error condition.
+        """
         if isinstance(k, int):
             if (k > 0 and k >= self.content_size) or (
                     k < 0 and -k > self.content_size):
@@ -73,13 +111,31 @@ class StreamWindow(object):
         return self.buf[k]
 
     def find(self, sub, start=0, end=None):
-        '''Return the lowest index in FIFO buffer where subsection sub is found.
-        Returns -1 if not found.'''
+        """Return the lowest index in FIFO buffer where subsection sub is found.
+
+        Returns -1 if not found.
+
+        Args:
+            end: End.
+            start: Start bit position.
+            sub: Sub.
+
+        Returns:
+            Result value.
+        """
         return self.buf.find(sub, 0, self.content_size)
 
     def read(self, num=1):
-        '''Try to read and consume num bytes from the FIFO-buffered stream.
-        Returns at most num bytes as a string.'''
+        """Try to read and consume num bytes from the FIFO-buffered stream.
+
+        Returns at most num bytes as a string.
+
+        Args:
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         assert num > 0
         if self.debug:
             print(
@@ -116,11 +172,19 @@ class StreamWindow(object):
         return result
 
     def peek(self, num=1):
-        '''Returns a copy of at most num bytes from stream but also saves them in a FIFO
+        """Returns a copy of at most num bytes from stream but also saves them in a FIFO.
+
         buffer to allow future peek()s and read()s to see them. If FIFO is full,
         peek() returns only what is in the FIFO and won't read from stream until
         space is made.
-        Use read() to make some space in the FIFO to continue retrieving bytes from stream.'''
+        Use read() to make some space in the FIFO to continue retrieving bytes from stream.
+
+        Args:
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         assert num > 0
         if num > self.buffer_size:
             num = self.buffer_size
@@ -176,5 +240,9 @@ class StreamWindow(object):
         return result
 
     def close(self):
-        "Closes the underlying stream."
+        """Closes the underlying stream.
+
+        Returns:
+            Result value.
+        """
         return self.stream.close()

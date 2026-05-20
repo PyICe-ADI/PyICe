@@ -1,3 +1,4 @@
+"""Tests for virtual instruments."""
 import pytest
 from PyICe.lab_core import integer_channel
 from PyICe.virtual_instruments import (
@@ -9,14 +10,17 @@ from PyICe.virtual_instruments import (
 
 
 class TestDummy:
+    """Tests for Dummy."""
 
     def test_dummy_write_channel(self):
+        """Perform test dummy write channel operation."""
         d = dummy()
         ch = d.add_channel_write('wch')
         ch.write(42)
         assert ch.read() == 42
 
     def test_dummy_read_channel_random(self):
+        """Perform test dummy read channel random operation."""
         d = dummy()
         d.set_random_read(True)
         ch = d.add_channel_read('rch')
@@ -24,6 +28,7 @@ class TestDummy:
         assert val is not None
 
     def test_dummy_read_channel_no_random(self):
+        """Perform test dummy read channel no random operation."""
         d = dummy()
         d.set_random_read(False)
         ch = d.add_channel_read('rch')
@@ -31,6 +36,7 @@ class TestDummy:
         assert val is None
 
     def test_dummy_write_integer_channel(self):
+        """Perform test dummy write integer channel operation."""
         d = dummy()
         ch = d.add_channel_write('ich', integer_size=8)
         assert isinstance(ch, integer_channel)
@@ -38,16 +44,23 @@ class TestDummy:
         assert ch.read() == 100
 
     def test_dummy_read_is_subclass(self):
+        """Perform test dummy read is subclass operation."""
         d = dummy_read()
         ch = d.add_channel('rch')
         assert not ch.is_writeable()
 
     def test_dummy_write_is_subclass(self):
+        """Perform test dummy write is subclass operation."""
         d = dummy_write()
         ch = d.add_channel('wch')
         assert ch.is_writeable()
 
     def test_dummy_verbose(self, capsys):
+        """Perform test dummy verbose operation.
+
+        Args:
+            capsys: Capsys.
+        """
         d = dummy()
         d.set_verbose(True)
         d.add_channel_write('v')
@@ -55,6 +68,11 @@ class TestDummy:
         assert 'dummy write channel' in captured.out.lower()
 
     def test_add_to_master(self, master_instance):
+        """Perform test add to master operation.
+
+        Args:
+            master_instance: Master instance.
+        """
         d = dummy()
         d.add_channel_write('dch')
         d['dch'].write(7)
@@ -63,89 +81,149 @@ class TestDummy:
 
 
 class TestExpectComparisons:
+    """Tests for Expect Comparisons."""
 
     def test_compare_exact_pass(self):
+        """Perform test compare exact pass operation."""
         assert expect.compare_exact(5, 5) is True
 
     def test_compare_exact_fail(self):
+        """Perform test compare exact fail operation."""
         assert expect.compare_exact(5, 6) is False
 
     def test_compare_pct_pass(self):
+        """Perform test compare pct pass operation."""
         assert expect.compare_pct(1.05, 1.0, 0.1) is True
 
     def test_compare_pct_fail(self):
+        """Perform test compare pct fail operation."""
         assert expect.compare_pct(1.2, 1.0, 0.1) is False
 
     def test_compare_abs_pass(self):
+        """Perform test compare abs pass operation."""
         assert expect.compare_abs(10.05, 10.0, 0.1) is True
 
     def test_compare_abs_fail(self):
+        """Perform test compare abs fail operation."""
         assert expect.compare_abs(10.5, 10.0, 0.1) is False
 
     def test_compare_pct_not_above(self):
+        """Perform test compare pct not above operation."""
         assert expect.compare_pct_not_above(1.05, 1.0, 0.1) is True
         assert expect.compare_pct_not_above(1.15, 1.0, 0.1) is False
 
     def test_compare_pct_not_below(self):
+        """Perform test compare pct not below operation."""
         assert expect.compare_pct_not_below(0.95, 1.0, 0.1) is True
         assert expect.compare_pct_not_below(0.85, 1.0, 0.1) is False
 
     def test_compare_abs_not_above(self):
+        """Perform test compare abs not above operation."""
         assert expect.compare_abs_not_above(10.05, 10.0, 0.1) is True
         assert expect.compare_abs_not_above(10.2, 10.0, 0.1) is False
 
     def test_compare_abs_not_below(self):
+        """Perform test compare abs not below operation."""
         assert expect.compare_abs_not_below(9.95, 10.0, 0.1) is True
         assert expect.compare_abs_not_below(9.8, 10.0, 0.1) is False
 
     def test_compare_strict(self):
+        """Perform test compare strict operation."""
         assert expect.compare_strict(10.0, 10.0, 0.01, 0.5) is True
         assert expect.compare_strict(10.5, 10.0, 0.01, 0.1) is False
 
     def test_compare_lenient(self):
+        """Perform test compare lenient operation."""
         assert expect.compare_lenient(10.5, 10.0, 0.1, 0.1) is True
         assert expect.compare_lenient(20.0, 10.0, 0.01, 0.1) is False
 
 
 class TestExpectChecks:
+    """Tests for Expect Checks."""
 
     @pytest.fixture
     def exp(self):
+        """Return exp result.
+
+        Returns:
+            Result value.
+        """
         return expect(verbose_pass=False)
 
     def test_check_exact_pass(self, exp):
+        """Perform test check exact pass operation.
+
+        Args:
+            exp: Exp.
+        """
         result = exp.check_exact(5, 5, en_assertion=False)
         assert result is True
 
     def test_check_exact_fail_no_assertion(self, exp):
+        """Perform test check exact fail no assertion operation.
+
+        Args:
+            exp: Exp.
+        """
         result = exp.check_exact(5, 6, en_assertion=False)
         assert result is False
 
     def test_check_exact_fail_with_assertion(self, exp):
+        """Perform test check exact fail with assertion operation.
+
+        Args:
+            exp: Exp.
+        """
         with pytest.raises(ExpectException):
             exp.check_exact(5, 6, en_assertion=True)
 
     def test_check_pct_pass(self, exp):
+        """Perform test check pct pass operation.
+
+        Args:
+            exp: Exp.
+        """
         result = exp.check_pct(1.0, 1.0, 0.1, en_assertion=False)
         assert result is True
 
     def test_check_pct_fail_over(self, exp):
+        """Perform test check pct fail over operation.
+
+        Args:
+            exp: Exp.
+        """
         with pytest.raises(ExpectOverException):
             exp.check_pct(1.2, 1.0, 0.1, en_assertion=True)
 
     def test_check_pct_fail_under(self, exp):
+        """Perform test check pct fail under operation.
+
+        Args:
+            exp: Exp.
+        """
         with pytest.raises(ExpectUnderException):
             exp.check_pct(0.8, 1.0, 0.1, en_assertion=True)
 
     def test_check_abs_pass(self, exp):
+        """Perform test check abs pass operation.
+
+        Args:
+            exp: Exp.
+        """
         result = exp.check_abs(10.05, 10.0, 0.1, en_assertion=False)
         assert result is True
 
     def test_check_abs_fail(self, exp):
+        """Perform test check abs fail operation.
+
+        Args:
+            exp: Exp.
+        """
         with pytest.raises(ExpectException):
             exp.check_abs(10.5, 10.0, 0.1, en_assertion=True)
 
     def test_custom_prefixes(self):
+        """Perform test custom prefixes operation."""
         exp = expect(verbose_pass=False, err_msg_prefix="ERROR: ",
                      pass_msg_prefix="OK: ")
         result = exp.check_exact(1, 2, en_assertion=False, name="test")
@@ -153,8 +231,14 @@ class TestExpectChecks:
 
 
 class TestExpectChannels:
+    """Tests for Expect Channels."""
 
     def test_expect_channel_pct_immediate(self, master_instance):
+        """Perform test expect channel pct immediate operation.
+
+        Args:
+            master_instance: Master instance.
+        """
         m = master_instance
         source = m.add_channel_dummy('source')
         source.write(10.0)
@@ -171,6 +255,11 @@ class TestExpectChannels:
         assert result_ch.read() is True
 
     def test_expect_channel_abs_immediate(self, master_instance):
+        """Perform test expect channel abs immediate operation.
+
+        Args:
+            master_instance: Master instance.
+        """
         m = master_instance
         source = m.add_channel_dummy('source')
         source.write(5.0)
@@ -187,6 +276,11 @@ class TestExpectChannels:
         assert result_ch.read() is True
 
     def test_expect_channel_exact_immediate(self, master_instance):
+        """Perform test expect channel exact immediate operation.
+
+        Args:
+            master_instance: Master instance.
+        """
         m = master_instance
         source = m.add_channel_dummy('source', integer_size=8)
         source.write(42)
@@ -202,6 +296,11 @@ class TestExpectChannels:
         assert result_ch.read() is True
 
     def test_expect_channel_callback_mode(self, master_instance):
+        """Perform test expect channel callback mode operation.
+
+        Args:
+            master_instance: Master instance.
+        """
         m = master_instance
         source = m.add_channel_dummy('source')
         source.write(10.0)
@@ -220,8 +319,10 @@ class TestExpectChannels:
 
 
 class TestAccumulator:
+    """Tests for Accumulator."""
 
     def test_basic_accumulation(self):
+        """Perform test basic accumulation operation."""
         acc = accumulator(init=0)
         acc.add_channel_accumulation('total')
         acc.add_channel_accumulate('add')
@@ -232,11 +333,13 @@ class TestAccumulator:
         assert acc['total'].read() == 8
 
     def test_initial_value(self):
+        """Perform test initial value operation."""
         acc = accumulator(init=100)
         acc.add_channel_accumulation('total')
         assert acc['total'].read() == 100
 
     def test_negative_accumulation(self):
+        """Perform test negative accumulation operation."""
         acc = accumulator(init=10)
         acc.add_channel_accumulate('sub')
         acc.add_channel_accumulation('total')
@@ -244,12 +347,18 @@ class TestAccumulator:
         assert acc['total'].read() == 7
 
     def test_accumulate_method(self):
+        """Perform test accumulate method operation."""
         acc = accumulator(init=0)
         acc.accumulate(10)
         acc.accumulate(20)
         assert acc.accumulation == 30
 
     def test_add_to_master(self, master_instance):
+        """Perform test add to master operation.
+
+        Args:
+            master_instance: Master instance.
+        """
         m = master_instance
         acc = accumulator()
         acc.add_channel_accumulation('sum')
@@ -260,8 +369,10 @@ class TestAccumulator:
 
 
 class TestDifferencer:
+    """Tests for Differencer."""
 
     def test_basic_difference(self):
+        """Perform test basic difference operation."""
         diff = differencer(init=0)
         diff.add_channel_read_difference('delta')
         diff.add_channel_compute_difference('val')
@@ -271,6 +382,7 @@ class TestDifferencer:
         assert diff['delta'].read() == 5
 
     def test_first_difference_with_no_init(self):
+        """Perform test first difference with no init operation."""
         diff = differencer(init=None)
         diff.add_channel_read_difference('delta')
         diff.add_channel_compute_difference('val')
@@ -280,11 +392,17 @@ class TestDifferencer:
         assert diff['delta'].read() == 5
 
     def test_negative_difference(self):
+        """Perform test negative difference operation."""
         diff = differencer(init=10)
         diff.difference(5)
         assert diff.diff == -5
 
     def test_register_channel_callback(self, master_instance):
+        """Perform test register channel callback operation.
+
+        Args:
+            master_instance: Master instance.
+        """
         m = master_instance
         source = m.add_channel_virtual('src', read_function=lambda: 42)
         diff = differencer(init=0)
@@ -298,15 +416,28 @@ class TestDifferencer:
 
 
 class TestServo:
+    """Tests for Servo."""
 
     @pytest.fixture
     def linear_system(self, master_instance):
-        """Simulate a linear system: output = 2 * forcing."""
+        """Simulate a linear system: output = 2 * forcing.
+
+        Args:
+            master_instance: Master instance.
+
+        Returns:
+            Result value.
+        """
         m = master_instance
         forcing = m.add_channel_dummy('force')
         forcing.write(0)
 
         def read_feedback():
+            """Return read feedback result.
+
+            Returns:
+                Result value.
+            """
             return forcing.read() * 2.0
 
         feedback = m.add_channel_virtual('feedback',
@@ -314,6 +445,11 @@ class TestServo:
         return m, forcing, feedback
 
     def test_servo_converges(self, linear_system):
+        """Perform test servo converges operation.
+
+        Args:
+            linear_system: Linear system.
+        """
         m, forcing, feedback = linear_system
         s = servo(feedback, forcing,
                   minimum=-100, maximum=100,
@@ -323,6 +459,11 @@ class TestServo:
         assert abs(feedback.read() - 10.0) < 0.01
 
     def test_servo_channel(self, linear_system):
+        """Perform test servo channel operation.
+
+        Args:
+            linear_system: Linear system.
+        """
         m, forcing, feedback = linear_system
         s = servo(feedback, forcing,
                   minimum=-100, maximum=100,
@@ -333,6 +474,11 @@ class TestServo:
         assert abs(feedback.read() - 20.0) < 0.01
 
     def test_servo_check_within_tolerance(self, linear_system):
+        """Perform test servo check within tolerance operation.
+
+        Args:
+            linear_system: Linear system.
+        """
         m, forcing, feedback = linear_system
         s = servo(feedback, forcing,
                   minimum=-100, maximum=100,
@@ -342,6 +488,11 @@ class TestServo:
         assert s.servo_check(readback=20.0) is False
 
     def test_servo_exceeds_max_tries(self, master_instance):
+        """Perform test servo exceeds max tries operation.
+
+        Args:
+            master_instance: Master instance.
+        """
         m = master_instance
         forcing = m.add_channel_dummy('force')
         forcing.write(0)
@@ -354,6 +505,11 @@ class TestServo:
             s.servo(target=5.0)
 
     def test_servo_no_except_returns_false(self, master_instance):
+        """Perform test servo no except returns false operation.
+
+        Args:
+            master_instance: Master instance.
+        """
         m = master_instance
         forcing = m.add_channel_dummy('force')
         forcing.write(0)
@@ -366,6 +522,11 @@ class TestServo:
         assert result is False
 
     def test_servo_reconfigure(self, linear_system):
+        """Perform test servo reconfigure operation.
+
+        Args:
+            linear_system: Linear system.
+        """
         m, forcing, feedback = linear_system
         s = servo(feedback, forcing,
                   minimum=-100, maximum=100,

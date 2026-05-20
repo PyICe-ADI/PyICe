@@ -1,11 +1,21 @@
+"""Agilent e36xxa instrument driver."""
 from PyICe.lab_core import *  # noqa: F403
 import time
 
 
 class agilent_e36xxa(scpi_instrument):
-    '''Generic base class for Agilent programmable DC power supply'''
+    """Generic base class for Agilent programmable DC power supply."""
 
     def add_channel_voltage(self, channel_name, num):
+        """Add a channel voltage.
+
+        Args:
+            channel_name: Name for the new channel.
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         voltage_channel = channel(
             channel_name,
             write_function=lambda voltage: self.set_voltage(
@@ -15,6 +25,15 @@ class agilent_e36xxa(scpi_instrument):
         return self._add_channel(voltage_channel)
 
     def add_channel_current(self, channel_name, num):
+        """Add a channel current.
+
+        Args:
+            channel_name: Name for the new channel.
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         current_channel = channel(
             channel_name,
             write_function=lambda current: self.set_current(
@@ -24,27 +43,64 @@ class agilent_e36xxa(scpi_instrument):
         return self._add_channel(current_channel)
 
     def add_channel_vsense(self, channel_name, num):
+        """Add a channel vsense.
+
+        Args:
+            channel_name: Name for the new channel.
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         vsense_channel = channel(channel_name,
                                  read_function=lambda: self.read_vsense(num))
         return self._add_channel(vsense_channel)
 
     def add_channel_isense(self, channel_name, num):
+        """Add a channel isense.
+
+        Args:
+            channel_name: Name for the new channel.
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         isense_channel = channel(channel_name,
                                  read_function=lambda: self.read_isense(num))
         return self._add_channel(isense_channel)
 
     def set_voltage(self, num, voltage):
+        """Set the voltage.
+
+        Args:
+            num: Count or number.
+            voltage: Voltage value.
+        """
         self.get_interface().write(("INSTrument:SELect " + num))
         self.get_interface().write(("VOLTage " + str(voltage)))
         time.sleep(0.2)
 
     def set_current(self, num, current):
+        """Set the current.
+
+        Args:
+            current: Current value.
+            num: Count or number.
+        """
         self.get_interface().write(("INSTrument:SELect " + num))
         self.get_interface().write(("CURRent " + str(current)))
         time.sleep(0.2)
 
     def read_vsense(self, num):
-        '''Query the instrument and return float representing actual measured terminal voltage.'''
+        """Query the instrument and return float representing actual measured terminal voltage.
+
+        Args:
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         self.get_interface().write("\n")   # Clear out instrument's input buffer
         time.sleep(0.2)
         self.get_interface().write((":INSTrument:SELect " + num))
@@ -52,7 +108,14 @@ class agilent_e36xxa(scpi_instrument):
         return float(self.get_interface().ask((":MEASure:VOLTage?")))
 
     def read_isense(self, num):
-        '''Query the instrument and return float representing actual measured terminal current.'''
+        """Query the instrument and return float representing actual measured terminal current.
+
+        Args:
+            num: Count or number.
+
+        Returns:
+            Result value.
+        """
         self.get_interface().write("\n")   # Clear out instrument's input buffer
         time.sleep(0.2)
         self.get_interface().write((":INSTrument:SELect " + num))
@@ -60,9 +123,23 @@ class agilent_e36xxa(scpi_instrument):
         return float(self.get_interface().ask(":MEASure:CURRent?"))
 
     def set_ilim(self, channel_name, ilim):
+        """Set the ilim.
+
+        Args:
+            channel_name: Name for the new channel.
+            ilim: Current limit.
+
+        Raises:
+            Exception: On error condition.
+        """
         raise Exception('removed, write to the appropriate channel instead')
 
     def enable_output(self, state):
+        """Enable output.
+
+        Args:
+            state: State.
+        """
         self.get_interface().write("\n")   # Clear out instrument's input buffer
         time.sleep(0.2)
         if state:
@@ -71,10 +148,19 @@ class agilent_e36xxa(scpi_instrument):
             self.get_interface().write(":OUTput:STATe OFF")
 
     def output_enabled(self):
+        """Return output enabled result.
+
+        Returns:
+            Result value.
+        """
         return self.get_interface().ask("OUTput:STATe?")
 
     def _set_remote_mode(self, remote=True):
-        '''Required for RS-232 control.  Not allowed for GPIB control'''
+        """Required for RS-232 control.  Not allowed for GPIB control.
+
+        Args:
+            remote: Remote.
+        """
         self.get_interface().write("\n")   # Clear out instrument's input buffer
         time.sleep(0.2)
         if remote:

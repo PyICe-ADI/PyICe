@@ -1,7 +1,9 @@
+"""Comparator model."""
 
 
 class comparator(object):
-    '''Virtual comparator with programmable rising and falling input thresholds
+    """Virtual comparator with programmable rising and falling input thresholds.
+
     and programmable output high and low logic levels. Also models forcing
     instrument overshoot as a percentage of transition magnitude.
 
@@ -20,11 +22,11 @@ class comparator(object):
     >>> comp.write(0.5)
     >>> comp.read()
     0.0
-    '''
+    """
 
     def __init__(self, falling_threshold, rising_threshold,
                  out_high=1, out_low=0, write_overshoot=0, verbose=False):
-        '''Create a comparator model.
+        """Create a comparator model.
 
         >>> comp = comparator(falling_threshold=2.5, rising_threshold=2.5)
         >>> comp.read()
@@ -32,7 +34,15 @@ class comparator(object):
         >>> comp.write(3.0)
         >>> comp.read()
         1
-        '''
+
+        Args:
+            falling_threshold: Falling threshold.
+            out_high: Out high.
+            out_low: Out low.
+            rising_threshold: Rising threshold.
+            verbose: If True, print debug output.
+            write_overshoot: Write overshoot.
+        """
         self.state = False
         self.input = None
         self.set_thresholds(falling_threshold, rising_threshold)
@@ -44,11 +54,16 @@ class comparator(object):
         assert falling_threshold is not None or rising_threshold is not None
 
     def debug_print(self, msg):
+        """Perform debug print operation.
+
+        Args:
+            msg: Msg.
+        """
         if self.verbose:
             print("*COMPARATOR*, {}".format(msg))
 
     def set_thresholds(self, falling_threshold, rising_threshold):
-        '''Change thresholds on an existing comparator.
+        """Change thresholds on an existing comparator.
 
         >>> comp = comparator(falling_threshold=1.0, rising_threshold=2.0)
         >>> comp.write(1.5)
@@ -58,11 +73,20 @@ class comparator(object):
         >>> comp.write(1.5)
         >>> comp.read()
         1
-        '''
+
+        Args:
+            falling_threshold: Falling threshold.
+            rising_threshold: Rising threshold.
+        """
         self.falling_threshold = falling_threshold
         self.rising_threshold = rising_threshold
 
     def write(self, value):
+        """Write a value to the channel.
+
+        Args:
+            value: Value to set.
+        """
         if self.input is not None:
             # overshoot changes polarity naturally?
             overshoot = self.write_overshoot * (value - self.input)
@@ -89,7 +113,7 @@ class comparator(object):
         self.input = value
 
     def reset(self):
-        '''Force comparator output low regardless of input.
+        """Force comparator output low regardless of input.
 
         >>> comp = comparator(falling_threshold=1.0, rising_threshold=2.0)
         >>> comp.write(3.0)
@@ -98,12 +122,12 @@ class comparator(object):
         >>> comp.reset()
         >>> comp.read()
         0
-        '''
+        """
         self.state = False
         self.debug_print("Forcing comparator output low.")
 
     def set(self):
-        '''Force comparator output high regardless of input.
+        """Force comparator output high regardless of input.
 
         >>> comp = comparator(falling_threshold=1.0, rising_threshold=2.0)
         >>> comp.read()
@@ -111,12 +135,12 @@ class comparator(object):
         >>> comp.set()
         >>> comp.read()
         1
-        '''
+        """
         self.state = True
         self.debug_print("Forcing comparator output high.")
 
     def read(self):
-        '''Return current output level.
+        """Return current output level.
 
         >>> comp = comparator(falling_threshold=1.0, rising_threshold=2.0,
         ...                   out_high=3.3, out_low=0.0)
@@ -125,5 +149,8 @@ class comparator(object):
         >>> comp.write(2.5)
         >>> comp.read()
         3.3
-        '''
+
+        Returns:
+            Result value.
+        """
         return self.out_high if self.state else self.out_low

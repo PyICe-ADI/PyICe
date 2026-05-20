@@ -1,8 +1,7 @@
+"""Tests for parameter analyzer."""
 import time
-import PyICe.lab_instruments as lab_instruments
-import PyICe.lab_core as lab_core
-import sys
-sys.path.append('../..')
+from PyICe import lab_core
+from PyICe.lab_instruments.hp_4155b import hp_4155b
 
 
 if __name__ == '__main__':
@@ -14,10 +13,10 @@ if __name__ == '__main__':
     # bar.configure_slot_smu(1,1)
 
     # m.set_gpib_adapter_rl1009(0,"COM26")
-    m.set_gpib_adapter_rl1009(0)
+    m.set_gpib_adapter_rl1009(0)  # pylint: disable=no-member; method from older PyICe API that has been removed (replaced by set_gpib_adapter_visa)
     hiface = m.get_visa_gpib_interface(
         gpib_adapter_number=0, gpib_address_number=17)
-    bar = lab_instruments.hp_4155b(hiface)
+    bar = hp_4155b(hiface)
 
     bar.add_channels_smu_voltage(1, 'voltage', 'current_compliance')
     bar.add_channel_smu_voltage_sense(1, 'readback_voltage')
@@ -30,6 +29,11 @@ if __name__ == '__main__':
     m.add(bar)
 
     def counter():
+        """Return counter result.
+
+        Returns:
+            Result value.
+        """
         if counter.count is None:
             counter.start_time = time.time()
             counter.count = 1
@@ -39,12 +43,22 @@ if __name__ == '__main__':
     counter.count = None
 
     def timer():
+        """Return timer result.
+
+        Returns:
+            Result value.
+        """
         if timer.start is None:
             timer.start = time.time()
         return time.time() - timer.start
     timer.start = None
 
     def cycle_timer():
+        """Return cycle timer result.
+
+        Returns:
+            Result value.
+        """
         return timer() / counter.count
 
     m.add_channel_virtual('count', read_function=counter)

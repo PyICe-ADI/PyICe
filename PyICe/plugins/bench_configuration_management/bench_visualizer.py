@@ -1,3 +1,4 @@
+"""Bench visualizer plugin."""
 from PyICe.lab_utils.banners import print_banner
 import traceback
 import subprocess
@@ -13,12 +14,31 @@ else:
 
 
 class visualizer():
+    """Visualizer."""
     def __init__(self, connections, locations):
+        """Initialize visualizer.
+
+        Args:
+            connections: Connections.
+            locations: Locations.
+        """
         self.locations = locations
         self.connections = connections
 
     def generate(self, file_base_name, prune=True,
                  file_format='svg', engine='neato', file_location=''):
+        """Return generate result.
+
+        Args:
+            engine: Engine.
+            file_base_name: File base name.
+            file_format: File format.
+            file_location: File location.
+            prune: Prune.
+
+        Raises:
+            Exception: On error condition.
+        """
         if file_format.upper() not in ['SVG', 'PNG']:
             raise Exception(
                 f"\nBench Visualizer: Sorry don't know how to output file format {file_format}. Try 'svg' or 'png'.\n")

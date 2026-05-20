@@ -1,3 +1,4 @@
+"""Isclose utility."""
 import math
 
 
@@ -8,16 +9,17 @@ def isclose(a, b, rel_tol=1e-9, abs_tol=0.0):
     # https://docs.python.org/3/library/math.html#math.isclose
     # alternative tests here:
     # https://github.com/PythonCHB/close_pep/blob/master/is_close.py
-    """
-    returns True if a is close in value to b. False otherwise
+    """Returns True if a is close in value to b. False otherwise.
+
     :param a: one of the values to be tested
     :param b: the other value to be tested
     :param rel_tol=1e-9: The relative tolerance -- the amount of error
-                         allowed, relative to the absolute value of the
-                         larger input values.
+        allowed, relative to the absolute value of the
+        larger input values.
     :param abs_tol=0.0: The minimum absolute tolerance level -- useful
         for comparisons to zero.
-    NOTES:
+
+    Notes:
     -inf, inf and NaN behave similarly to the IEEE 754 Standard. That
     is, NaN is not close to anything, even itself. inf and -inf are
     only close to themselves.
@@ -37,8 +39,19 @@ def isclose(a, b, rel_tol=1e-9, abs_tol=0.0):
     True
     >>> isclose(float('inf'), float('inf'))
     True
-    """
 
+    Args:
+        a: A.
+        abs_tol: Abs tol.
+        b: B.
+        rel_tol: Rel tol.
+
+    Returns:
+        Result value.
+
+    Raises:
+        ValueError: On error condition.
+    """
     if a == b:  # short-circuit exact equality
         return True
 

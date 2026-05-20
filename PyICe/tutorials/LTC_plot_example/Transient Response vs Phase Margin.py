@@ -1,3 +1,4 @@
+"""Transient  Response vs  Phase  Margin module."""
 from PyICe import LTC_plot
 from numpy import e, sin, arctan, pi, tan
 phase_margins = [76, 45, 34, 27, 22, 18, 14, 11, 5.7]

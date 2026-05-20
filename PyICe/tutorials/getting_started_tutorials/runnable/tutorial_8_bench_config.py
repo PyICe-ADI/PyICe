@@ -1,5 +1,6 @@
+"""Tutorial 8 bench config module."""
 if __name__ == '__main__':
-    from PyICe.bench_configuration_management import bench_configuration_management, lab_components
+    from PyICe.plugins.bench_configuration_management import bench_configuration_management, lab_components
 
     test_components = bench_configuration_management.component_collection()
     test_connections = bench_configuration_management.connection_collection(
@@ -24,7 +25,7 @@ if __name__ == '__main__':
 
     print(test_connections.print_connections())
 
-    from PyICe.bench_configuration_management import bench_visualizer
+    from PyICe.plugins.bench_configuration_management import bench_visualizer
     from PyICe.tutorials.bench_config_management_tutorial.bench_image_example import visualizer_locations
     visualizer = bench_visualizer.visualizer(
         connections=test_connections.connections,

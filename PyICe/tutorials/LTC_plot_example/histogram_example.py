@@ -1,3 +1,4 @@
+"""Histogram example module."""
 from PyICe import LTC_plot
 import numpy as np
 
