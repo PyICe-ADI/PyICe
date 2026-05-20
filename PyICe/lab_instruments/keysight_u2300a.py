@@ -912,7 +912,7 @@ class u2300a_scope(scpi_instrument, delegator):
                     # failed trigger
                     results[ch.get_name()] = None
             elif ch.get_attribute('u2300a_type') == 'trigger_control':
-                if channel.get_attribute(
+                if ch.get_attribute(
                         'trigger_config_type') == 'trigger_channel':
                     results[ch.get_name()] = ch.read()
                 else:
