@@ -29,4 +29,5 @@ jobs:
         pip install -e ".[dev]"
     - name: Analysing the code with pylint
       run: |
-        git ls-files -z '*.py' | grep -zv 'conf\.py$' | xargs -0 pylint --fail-under=2.0 --fail-on=F,E
+        readarray -d '' files < <(git ls-files -z '*.py')
+        pylint --fail-under=2.0 --fail-on=F,E --ignore=conf.py "${files[@]}"
