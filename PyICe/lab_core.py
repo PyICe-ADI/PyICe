@@ -1937,7 +1937,7 @@ class integer_channel(channel):
         Returns:
             Result value.
         """
-        return self.unformat(value, self._format, self._use_presets_write)
+        return self.unformat(value, self._format, self._use_presets_write)  # pylint: disable=not-callable; unformat is defined in this class at line ~1767
 
     def twosComplementToSigned(self, binary):
         """Transform two's complement formatted binary number to signed integer.  Requires register's size attribute to be set in __init__.
