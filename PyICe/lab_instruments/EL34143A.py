@@ -319,7 +319,7 @@ class EL34143A(scpi_instrument):
         self.forcing_channels['RES'].append(new_channel)
         return self._add_channel(new_channel)
 
-    def _add_channel_res_range(self, res_range):
+    def _add_channel_res_range(self, channel_name, res_range):
         """Add single range manipulation channel.
 
         Args:
