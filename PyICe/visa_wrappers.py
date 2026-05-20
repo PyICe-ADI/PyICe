@@ -622,7 +622,7 @@ class visa_wrapper_vxi11(visa_wrapper):
             timeout: Timeout in seconds.
         """
         self.terminationCharacter = None
-        self.vxi_interface = vxi11.Instrument(
+        self.vxi_interface = vxi11.Instrument(  # pylint: disable=unexpected-keyword-arg; timeout is accepted by python-vxi11 Instrument constructor
             address, term_char=self.terminationCharacter, timeout=timeout)
 
     def read(self):
@@ -834,7 +834,7 @@ class visa_interface(visa_wrapper):
         if visaMissing:
             raise visaWrapperException('VISA library missing from this system')
         elif "instrument" in dir(visa):  # Old API from PyVISA rev < 1.5
-            self.visaInterface = visa.instrument(
+            self.visaInterface = visa.instrument(  # pylint: disable=no-member; runtime-guarded by dir() check above
                 resource_name=address)  # , timeout=timeout)
             self.timeout_scale = 1
         else:  # Use new API PyVISA rev >= 1.5

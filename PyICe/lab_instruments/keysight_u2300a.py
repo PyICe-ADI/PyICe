@@ -1,4 +1,6 @@
 """Keysight u2300a instrument driver."""
+# pylint: disable=no-member; _ai_channels and _scale_fn are provided by hardware-specific
+# mixin subclasses (u2331a_base, u2352a_base, etc.) combined via multiple inheritance
 from PyICe.lab_utils.eng_string import eng_string
 from numpy import fromiter, dtype
 import struct

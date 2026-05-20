@@ -77,12 +77,13 @@ class TestEquity_115(temperature_chamber):
     def _write_temperature(self, value):
         self.modbus_pid.write_register(300, float(value), 1, 16, True)
 
-    def instrumentInfoString(self):  # pylint: disable=E1101; _manufacturer, _modelNumber, _serialNumber, _address are expected to be set by subclasses or external configuration before calling this method (incomplete stub inherited from an interface pattern)
+    def instrumentInfoString(self):
         """Return instrumentInfoString result.
 
         Returns:
             Result value.
         """
+        # pylint: disable=no-member; attributes set externally before this method is called (incomplete interface stub)
         return "%s - %s - SN:%s - %s" % \
             (self._manufacturer, self._modelNumber,
              self._serialNumber, self._address)
