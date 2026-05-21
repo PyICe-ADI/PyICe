@@ -9,17 +9,18 @@ from PyICe.lab_utils.clean_unicode import clean_unicode
 
 
 class email(object):
-    """Sends email to specified destination from ADI mail server. Only works on ADI trusted internal network."""
-
-    def __init__(self, destination):  # ADI internal network only
+    '''Sends email to specified destination via SMTP server.'''
+    def __init__(self, destination, smtp_server, sender):
         """Destination is the recipient's email address.
 
         Args:
             destination: Destination.
+            smtp_server: outgoing mail server address string (e.g. 'smtp.example.com:25').
+            sender: From address string in outgoing message.
         """
         self.destination = destination
-        self.sender = 'PyICe_noreply@analog.com'
-
+        self.smtp_server = smtp_server
+        self.sender = sender
     def send_raw(self, body, subject=None, attachment_filenames=None,
                  attachment_MIMEParts=None, _subtype='html'):
         """Compose MIME message with proper headers and send.
@@ -57,7 +58,7 @@ class email(object):
             message['Subject'] = subject
         message['To'] = self.destination
         message['From'] = self.sender
-        server = smtplib.SMTP('mailhost.analog.com:25')
+        server = smtplib.SMTP(self.smtp_server)
         server.ehlo()
         server.sendmail(self.sender, self.destination, message.as_string())
         server.quit()
@@ -132,15 +133,16 @@ class email(object):
 
 
 class sms(email):
-    """Extends email class to send sms messages through several carriers' email to sms gateways."""
-
-    def __init__(self, mobile_number, carrier):
+    '''Extends email class to send sms messages through several carriers' email to sms gateways'''
+    def __init__(self, mobile_number, carrier, smtp_server, sender):
         """Carrier is 'verizon', 'tmobile', 'att', 'sprint', or 'nextel'.
 
         Args:
-            carrier: Carrier.
             mobile_number: Mobile number.
-
+            carrier: Carrier.
+             smtp_server: outgoing mail server address string (e.g. 'smtp.example.com:25').
+            sender: From address string in outgoing message.
+            
         Raises:
             Exception: On error condition.
         """
@@ -168,9 +170,8 @@ class sms(email):
             # http://en.wikipedia.org/wiki/List_of_SMS_gateways
             raise Exception(
                 'carrier argument must be "verizon", "t-mobile", "att", "sprint", or "nextel" unless you add your carrier to the list')
-        email.__init__(self, sms_email)
-
-    def send(self, body, subject=None, attachments=[]):
+        email.__init__(self, sms_email, smtp_server, sender)
+    def send(self, body, subject = None, attachments = []):
         """Perform send operation.
 
         Args:
