@@ -3,7 +3,12 @@ import ast
 
 
 def parse_list(string_list):
-    """Parse a string representation of a list using ast.literal_eval.
+    """Safely convert a string-encoded Python list literal back into a list.
+
+    Uses ``ast.literal_eval`` so only literal structures (numbers, strings,
+    tuples, lists, dicts, booleans, None) are accepted — no arbitrary code
+    execution. Commonly used to deserialize list-valued fields read from CSV
+    or SQLite text columns.
 
     >>> parse_list('[1, 2, 3]')
     [1, 2, 3]
@@ -11,15 +16,15 @@ def parse_list(string_list):
     ['a', 'b']
     >>> parse_list('[[1, 2], [3, 4]]')
     [[1, 2], [3, 4]]
+    >>> parse_list('[True, None, 3.14]')
+    [True, None, 3.14]
 
     Args:
-        string_list: String list.
-
-    Returns:
-        Result value.
+        string_list: A string containing a valid Python list literal.
 
     Raises:
-        Exception: On error condition.
+        Exception: If the argument is not a string.
+        ValueError: If the string is not a valid Python literal (from ast).
     """
     if type(string_list) is not type(""):
         raise Exception(
