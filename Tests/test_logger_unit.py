@@ -24,6 +24,7 @@ def simple_logger(tmp_path):
     lg = logger(m, database=db_path, use_threads=False)
     yield lg
     lg.stop()
+    m.stop_threads()
 
 
 @pytest.mark.database
@@ -42,6 +43,7 @@ class TestLoggerInit:
         lg = logger(m, database=db_path, use_threads=False)
         assert os.path.exists(db_path)
         lg.stop()
+        m.stop_threads()
 
     def test_context_manager(self, tmp_path):
         """Perform test context manager operation.
@@ -55,6 +57,7 @@ class TestLoggerInit:
         with logger(m, database=db_path, use_threads=False) as lg:
             assert lg is not None
         assert os.path.exists(db_path)
+        m.stop_threads()
 
     def test_merges_channel_group(self, simple_logger):
         """Perform test merges channel group operation.
@@ -83,6 +86,7 @@ class TestLoggerInit:
         assert 'readable' in names
         assert 'non_readable' not in names
         lg.stop()
+        m.stop_threads()
 
 
 @pytest.mark.database

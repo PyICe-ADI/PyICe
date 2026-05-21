@@ -2817,6 +2817,13 @@ class channel_group(object):
         else:
             raise Exception('Threads already started, do not start again')
 
+    def stop_threads(self):
+        """Stop worker threads started by start_threads."""
+        if self._threaded:
+            self._threaded = False
+            for _ in range(self._threads):
+                self._read_queue.put(None)
+
     def threaded_read_function(self):
         """Perform threaded read function operation."""
         while self._threaded:
@@ -2826,6 +2833,8 @@ class channel_group(object):
                 # shouldn't get here
                 pass
             else:
+                if channel_list is None:
+                    break
                 try:
                     results = self._read_channels_non_threaded(channel_list)
                 except Exception as e:
@@ -3766,6 +3775,7 @@ class channel_master(channel_group, delegator):
     42
     >>> 'test_voltage' in m.get_all_channel_names()
     True
+    >>> m.stop_threads()
     """
     def __init__(self, name=None):
         """Initialize the channel master.
@@ -4297,6 +4307,7 @@ class logger(master):
     >>> lg.get_table_name()
     'measurements'
     >>> lg.stop()
+    >>> m.stop_threads()
     >>> os.unlink(db)
     """
     def __init__(self, channel_master_or_group=None,
@@ -4602,6 +4613,7 @@ class logger(master):
         >>> 'datetime' in data
         True
         >>> lg.stop()
+        >>> m.stop_threads()
         >>> os.unlink(db)
 
         Args:
