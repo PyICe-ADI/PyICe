@@ -2743,6 +2743,7 @@ class threshold_finder(instrument, delegator):
     True
     >>> results['hysteresis'] > 0
     True
+    >>> m.stop_threads()
 
     The channels used with this instrument may want to be virtual instruments. For example the comparator_input_channel_force
     could be used to clear a latched output before a new value is set, or the comparator_output_sense_channel could interpret complex
