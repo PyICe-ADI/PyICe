@@ -3,7 +3,11 @@ import unicodedata
 
 
 def clean_unicode(ustr):
-    """Limited Unicode substitution to ASCII-safe equivalents.
+    """Replace common engineering Unicode symbols with ASCII mnemonic tags.
+
+    Handles degree (°→_DEG_), micro (µ→_MICRO_), ohm (Ω→_OHM_), multiply
+    (×→_MUL_), and other symbols frequently seen in instrument channel names
+    and datasheet notation. Raises if an unrecognized non-ASCII character remains.
 
     >>> clean_unicode('100°C')
     '100_DEG_C'
@@ -13,15 +17,18 @@ def clean_unicode(ustr):
     '50_OHM_'
     >>> clean_unicode('hello')
     'hello'
+    >>> clean_unicode('R²')
+    'R_SQ_'
+    >>> clean_unicode('β=100')
+    '_BETA_=100'
 
     Args:
-        ustr: Ustr.
-
-    Returns:
-        Result value.
+        ustr: Input string potentially containing Unicode engineering symbols.
 
     Raises:
-        Exception: On error condition.
+        Exception: If a non-ASCII character above 0x7E remains after all
+            substitution rules are applied. Edit this function to add the
+            missing character mapping.
     """
     # limited Unicode substitution
     ustr = ustr.replace("®", "_REG_")  # 0x00AE

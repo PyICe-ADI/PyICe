@@ -1,6 +1,10 @@
 """Str2num utility."""
 def str2num(str_in, except_on_error=True):
-    """Convert string to numeric type with automatic base detection.
+    """Convert a string to its most specific numeric type (int, float, or bool).
+
+    Handles decimal, hex (0x), octal (0o), and binary (0b) integer formats via
+    Python's ``int(s, 0)`` auto-base detection. Pass-through for values that are
+    already numeric or None.
 
     >>> str2num('42')
     42
@@ -14,16 +18,16 @@ def str2num(str_in, except_on_error=True):
     True
     >>> str2num('hello', except_on_error=False)
     'hello'
+    >>> str2num('0b1010')
+    10
 
     Args:
-        except_on_error: Except on error.
-        str_in: Str in.
-
-    Returns:
-        Result value.
+        str_in: String to convert, or a value that is already numeric/None.
+        except_on_error: If True (default), raise ValueError on unconvertible
+            strings. If False, return the original string unchanged.
 
     Raises:
-        ValueError: On error condition.
+        ValueError: If the string cannot be parsed and except_on_error is True.
     """
     if isinstance(str_in, int) or isinstance(str_in, float) or str_in is None:
         return str_in

@@ -4,7 +4,11 @@ from .clean_ascii_code import clean_ascii_code
 
 
 def clean_sql(str):
-    """Clean string for use as a SQL identifier. Raises on reserved words.
+    """Sanitize a string for use as a SQLite column name, rejecting reserved words.
+
+    Applies clean_ascii_code first (special chars to mnemonics), then checks
+    against the full SQLite reserved keyword list. Used to ensure that channel
+    names from instruments can safely become database column names.
 
     >>> clean_sql('my_channel')
     'my_channel'
@@ -16,13 +20,10 @@ def clean_sql(str):
     Exception: Found "SELECT" reserved keyword in c cleaned string: "SELECT"
 
     Args:
-        str: Str.
-
-    Returns:
-        Result value.
+        str: Input string (will be run through clean_ascii_code first).
 
     Raises:
-        Exception: On error condition.
+        Exception: If the cleaned result contains a SQLite reserved keyword.
     """
     str = clean_ascii_code(str)
 

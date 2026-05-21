@@ -1,6 +1,9 @@
 """Twos Complement To Signed utility."""
 def twosComplementToSigned(binary, bitCount):
-    """Take two's complement number with specified number of bits and convert to python int representation.
+    """Decode an unsigned two's complement register value into a signed Python int.
+
+    The inverse of signedToTwosComplement. Used when reading hardware registers
+    that store signed quantities (e.g., ADC output codes, temperature readings).
 
     >>> twosComplementToSigned(5, 8)
     5
@@ -8,16 +11,17 @@ def twosComplementToSigned(binary, bitCount):
     -1
     >>> twosComplementToSigned(128, 8)
     -128
+    >>> twosComplementToSigned(0, 16)
+    0
+    >>> twosComplementToSigned(0xFFFF, 16)
+    -1
 
     Args:
-        binary: Binary/integer data.
-        bitCount: Bitcount.
-
-    Returns:
-        Result value.
+        binary: Unsigned integer read from hardware (0 to 2**bitCount - 1).
+        bitCount: Number of bits in the source register.
 
     Raises:
-        ValueError: On error condition.
+        ValueError: If binary is negative or exceeds the bitCount range.
     """
     if binary >= 2**bitCount:
         raise ValueError(

@@ -3,31 +3,14 @@ import math
 
 
 def isclose(a, b, rel_tol=1e-9, abs_tol=0.0):
-    # backported from 3.5
-    # https://github.com/PythonCHB/close_pep/blob/master/isclose.py
-    # https://www.python.org/dev/peps/pep-0485/
-    # https://docs.python.org/3/library/math.html#math.isclose
-    # alternative tests here:
-    # https://github.com/PythonCHB/close_pep/blob/master/is_close.py
-    """Returns True if a is close in value to b. False otherwise.
+    """Determine whether two values are close using strong-symmetry comparison.
 
-    :param a: one of the values to be tested
-    :param b: the other value to be tested
-    :param rel_tol=1e-9: The relative tolerance -- the amount of error
-        allowed, relative to the absolute value of the
-        larger input values.
-    :param abs_tol=0.0: The minimum absolute tolerance level -- useful
-        for comparisons to zero.
+    Unlike ``math.isclose`` (which uses weak symmetry — order-dependent),
+    this implementation requires the difference to be within rel_tol of *both*
+    operands, so ``isclose(a, b) == isclose(b, a)`` always holds.
 
-    Notes:
-    -inf, inf and NaN behave similarly to the IEEE 754 Standard. That
-    is, NaN is not close to anything, even itself. inf and -inf are
-    only close to themselves.
-    The function can be used with any type that supports comparison,
-    substratcion and multiplication, including Decimal, Fraction, and
-    Complex
-    Complex values are compared based on their absolute value.
-    See PEP-0485 for a detailed description
+    Backported from PEP 485 reference implementation with strong symmetry
+    modification. See https://www.python.org/dev/peps/pep-0485/
 
     >>> isclose(1.0, 1.0)
     True
@@ -39,18 +22,29 @@ def isclose(a, b, rel_tol=1e-9, abs_tol=0.0):
     True
     >>> isclose(float('inf'), float('inf'))
     True
+    >>> isclose(float('-inf'), float('-inf'))
+    True
+    >>> isclose(float('inf'), float('-inf'))
+    False
+    >>> isclose(float('nan'), float('nan'))
+    False
+    >>> isclose(float('nan'), 1.0)
+    False
+    >>> isclose(1e-10, 2e-10, rel_tol=1e-9)  # near-zero needs abs_tol
+    False
+    >>> isclose(1e-10, 2e-10, abs_tol=1e-9)
+    True
 
     Args:
-        a: A.
-        abs_tol: Abs tol.
-        b: B.
-        rel_tol: Rel tol.
-
-    Returns:
-        Result value.
+        a: First value to compare.
+        b: Second value to compare.
+        rel_tol: Maximum allowed difference relative to the magnitude of both
+            inputs (strong symmetry). Default 1e-9.
+        abs_tol: Minimum absolute tolerance — needed for comparisons near zero
+            where relative tolerance breaks down. Default 0.0.
 
     Raises:
-        ValueError: On error condition.
+        ValueError: If rel_tol or abs_tol is negative.
     """
     if a == b:  # short-circuit exact equality
         return True
