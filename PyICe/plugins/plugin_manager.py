@@ -1223,7 +1223,7 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                 print(f"Skipping evaluation for {test.get_name()}.")
 
     def correlate(self, database=None, table_name=None, test_list=None):
-         """Run the correlate method of each test in self.tests.
+        """Run the correlate method of each test in self.tests.
 
         Args:
             database: The location of the database with the data to correlate. If left blank, the correlation will continue with the database in the same directory as the test script.
