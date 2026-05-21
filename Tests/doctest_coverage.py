@@ -107,14 +107,13 @@ def get_doctest_callables(xdoctest_target: str) -> tuple[int, list[str]]:
     callables = set()
     for line in result.stdout.splitlines():
         line = line.strip()
-        if not line:
+        if not line.startswith("python -m xdoctest "):
             continue
-        # xdoctest list output: lines contain callable references with :N suffix
-        # Strip the :N doctest index to deduplicate multiple blocks in one callable
-        if ":" in line:
-            name = line.rsplit(":", 1)[0]
+        token = line.rsplit(None, 1)[-1]
+        if ":" in token:
+            name = token.rsplit(":", 1)[0]
         else:
-            name = line
+            name = token
         callables.add(name)
 
     warnings = []
