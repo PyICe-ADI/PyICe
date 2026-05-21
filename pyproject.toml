@@ -8,7 +8,7 @@ build-backend = "hatchling.build"
 [project]
 name='PyICe-ADI'
 #packages=find_packages(include=['src'])
-requires-python = ">=3.10,<3.11"
+requires-python = ">=3.9, <3.15" #windows-curses support not yet implemented for 3.15 as of 2026/01/21
 readme='README.md'
 authors=[
     {name='Dave Simmons', email='david.simmons@analog.com'},
@@ -19,29 +19,33 @@ classifiers=[
     'Intended Audience :: Developers',
     'Programming Language :: Python :: 3',
     'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.14',
 ]
 dynamic = ["version"]
 
 dependencies=[
     "cairosvg",
-    "PySide2",
+    "PySide6; python_version >= \"3.11\"",
+    "PySide2; python_version < \"3.11\"",
     "bokeh",
-    "deprecated==1.2.12",
+    "deprecated", #testing. Was previously held back to ==1.2.12
     "graphviz",
     "jsonc-parser",
     "labcomm",
     "matplotlib>=3.6.0",
     "minimalmodbus",
-	"numpy<2",
+    "numpy",
     "nifgen",
-    "objutils==0.6.4",
+    "objutils==0.6.4", #later versions through 0.8.7 won't run build script without crash
     "openpyxl",
     "pandas",
     "vcdvcd",
     "pybind11",
     "pycairo",
+    "python-pptx",
     "PyPDF2",
-    "pyserial==3.4",
+    "pyserial", #testing. Was previously held back to ==3.4
     "pysocks",
     "pystdf",
     "python-usbtmc",
@@ -55,7 +59,8 @@ dependencies=[
     "scipy>=1.7 ",
     "statsmodels",
     "svglib",
-    "windows-curses==2.3.1 ; platform_system == \"Windows\"",
+    "sympy",
+    "windows-curses ; platform_system == \"Windows\"",
     "xlrd",
     "xlsxwriter",
 ]
@@ -70,7 +75,7 @@ include = [
 ]
 
 [project.optional-dependencies]
-dev = ["pip-tools", "pytest", "pytest-mock", "pytest-cov", "sphinx", "sphinx_rtd_theme"]
+dev = ["flake8", "flake8-docstrings", "pip-tools", "pytest", "pytest-mock", "pytest-cov", "sphinx", "sphinx_rtd_theme", "html5lib", "beautifulsoup4"]
 #[tool.hatch.envs.default]
 #dependencies = ["pytest", "pytest-mock"]
 [tool.hatch.build.targets.sdist]
@@ -87,4 +92,22 @@ exclude = [
     "/PyICe/Docs/",
     "/PyICe/examples/",
 #    "/PyICe/deps/"
+]
+
+[tool.pytest.ini_options]
+testpaths = ["Tests", "PyICe"]
+doctest_optionflags = ["NORMALIZE_WHITESPACE", "ELLIPSIS"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "threading: tests involving the thread pool",
+    "database: tests creating SQLite databases",
+]
+addopts = "--strict-markers -ra --doctest-modules"
+norecursedirs = [
+    "PyICe/tutorials",
+    "PyICe/examples",
+    "PyICe/data_utils/memory_dump_analysis/parse_test",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning:PyICe.*",
 ]

@@ -1,47 +1,59 @@
-import socket, os
+"""Project Creator Wizard plugin."""
+import socket
+import os
 from PyICe.lab_utils import banners, select_string_menu
 
 if __name__ == '__main__':
     '''Creates a folder hierarchy to utilize PyICe Infrastructure Extensions.'''
     banners.print_banner("", "Welcome to the PyICe Project Creator Wizard!",
-                           "This will help you get started with a basic folder structure for your new Project.",
-                           "Good luck and enjoy!", "", length=90)
+                         "This will help you get started with a basic folder structure for your new Project.",
+                         "Good luck and enjoy!", "", length=90)
     project_name = input('Enter project name: ')
     this_machine = socket.gethostname().replace("-", "_")
-    banners.print_banner(f'Creating a bench file for "{this_machine}".', '*** Users on other benches will need to make their own bench files. ***')
+    banners.print_banner(
+        f'Creating a bench file for "{this_machine}".',
+        '*** Users on other benches will need to make their own bench files. ***')
     project_folder = ''
     while not len(project_folder):
-        project_folder = input(f'Enter project folder location (e.g. D:{os.sep}users{os.sep}{os.getlogin().lower()}{os.sep}projects{os.sep}{project_name}): ')
+        project_folder = input(
+            f'Enter project folder location (e.g. D:{os.sep}users{os.sep}{os.getlogin().lower()}{os.sep}projects{os.sep}{project_name}): ')
         if not len(project_folder):
             print("Please enter a filepath to your project folder.")
             continue
         try:
             os.mkdir(project_folder)
         except FileExistsError:
-            print(f'{project_folder} already exists. Please pick another location.\n')
+            print(
+                f'{project_folder} already exists. Please pick another location.\n')
             project_folder = ''
-    banners.print_banner("Project folder has been created at:", f"{os.path.abspath(project_folder)}")
+    banners.print_banner(
+        "Project folder has been created at:", f"{os.path.abspath(project_folder)}")
 
     script_creator_dict = {}
     dir_to_make = []
 
-    project_test_folder = os.path.join(project_folder, f'tests')
+    project_test_folder = os.path.join(project_folder, 'tests')
     dir_to_make.append(project_test_folder)
-    test_example_folder = os.path.join(project_test_folder, f'example')
+    test_example_folder = os.path.join(project_test_folder, 'example')
     dir_to_make.append(test_example_folder)
-    infrastructure_folder = os.path.join(project_folder, f'infrastructure')
+    infrastructure_folder = os.path.join(project_folder, 'infrastructure')
     dir_to_make.append(infrastructure_folder)
-    bench_folder = os.path.join(infrastructure_folder, f'benches')
+    bench_folder = os.path.join(infrastructure_folder, 'benches')
     dir_to_make.append(bench_folder)
-    driver_folder = os.path.join(infrastructure_folder, f'hardware_drivers')
+    driver_folder = os.path.join(infrastructure_folder, 'hardware_drivers')
     dir_to_make.append(driver_folder)
-    plugin_folder = os.path.join(infrastructure_folder, f'plugin_dependencies')
+    plugin_folder = os.path.join(infrastructure_folder, 'plugin_dependencies')
     dir_to_make.append(plugin_folder)
 
     for folder in dir_to_make:
         os.mkdir(folder)
 
     def traceability_script_maker():
+        """Return traceability script maker result.
+
+        Returns:
+            Result value.
+        """
         script_str = '''from PyICe.plugins.traceability_items import traceability_items
 import os
 
@@ -55,6 +67,11 @@ def get_traceability_items(test):
         return script_str
 
     def bench_connection_addon():
+        """Return bench connection addon result.
+
+        Returns:
+            Result value.
+        """
         bench_method = '''
     def _declare_bench_connections(self):
         #Here user has the option to add project specific components to self.pm.test_components and default connections to self.pm.test_connections before adding the test's changes.
@@ -62,8 +79,13 @@ def get_traceability_items(test):
         return bench_method
 
     def user_script_maker():
-        user_script_str='''def get_notification_targets():
-    targets =   {   
+        """Return user script maker result.
+
+        Returns:
+            Result value.
+        """
+        user_script_str = '''def get_notification_targets():
+    targets =   {
                 # 'emails':['your.email@analog.com'],
                 # 'texts' :[('yourphonenumber', 'yourservicecarrier')]
                 }
@@ -74,16 +96,25 @@ def get_traceability_items(test):
     plugins_to_add = []
     os.system("")
     while True:
-        plugin_check = input('Would you like to add plugins to your test module [\33[38;5;0;48;5;255mY\33[m/N]? ')
-        if len(plugin_check) and plugin_check.upper() not in ['Y','N']:
+        plugin_check = input(
+            'Would you like to add plugins to your test module [\33[38;5;0;48;5;255mY\33[m/N]? ')
+        if len(plugin_check) and plugin_check.upper() not in ['Y', 'N']:
             print('Please enter either "Y" or "N".')
         else:
             break
     if not len(plugin_check) or plugin_check.upper() not in ['NO', 'N']:
         while True:
-            plugin_list = ["evaluate_tests","traceability","archive","notifications","bench_config_management","bench_image_creation"]
-            to_add = select_string_menu.select_string_menu('Select plugins to add, then select exit.', [(' ' if z not in plugins_to_add else '•')+z for z in plugin_list])
-            if to_add is None:  ## The menu returns a None when default menu item 'exit' is selected.
+            plugin_list = [
+                "evaluate_tests",
+                "traceability",
+                "archive",
+                "notifications",
+                "bench_config_management",
+                "bench_image_creation"]
+            to_add = select_string_menu.select_string_menu(
+                'Select plugins to add, then select exit.', [
+                    (' ' if z not in plugins_to_add else '•') + z for z in plugin_list])
+            if to_add is None:  # The menu returns a None when default menu item 'exit' is selected.
                 break
             elif to_add[1:] in plugins_to_add:
                 plugins_to_add.remove(to_add[1:])
@@ -91,20 +122,23 @@ def get_traceability_items(test):
                 plugins_to_add.append(to_add[1:])
     if 'notifications' in plugins_to_add:
         os.mkdir(os.path.join(plugin_folder, 'user_notifications'))
-        script_creator_dict[os.path.join(plugin_folder, 'user_notifications', f"example_user.py")] = user_script_maker()
+        script_creator_dict[os.path.join(
+            plugin_folder, 'user_notifications', "example_user.py")] = user_script_maker()
     if 'traceability' in plugins_to_add:
-        script_creator_dict[os.path.join(plugin_folder, f"traceability.py")] = traceability_script_maker()
+        script_creator_dict[os.path.join(
+            plugin_folder, "traceability.py")] = traceability_script_maker()
     plugin_str = '['
     for x in plugins_to_add:
-        plugin_str+=f'"{x}",'
+        plugin_str += f'"{x}",'
     plugin_str = plugin_str[:-1]
     plugin_str += ']'
-    script_creator_dict[os.path.join(plugin_folder, f"plugins.json")] = plugin_str
+    script_creator_dict[os.path.join(
+        plugin_folder, "plugins.json")] = plugin_str
 
     ###
     # TEST TEMPLATE
     ###
-    new_test_template = f'from PyICe.plugins.master_test_template import Master_Test_Template'
+    new_test_template = 'from PyICe.plugins.master_test_template import Master_Test_Template'
     if 'traceability' in plugins_to_add:
         new_test_template += f'\nfrom {project_name}.infrastructure.plugin_dependencies.traceability import get_traceability_items'
     new_test_template += f'''
@@ -114,20 +148,21 @@ class Test_Template(Master_Test_Template):
         self.project_folder_name="{project_name}"
         self.verbose=True'''
     if 'traceability' in plugins_to_add:
-        new_test_template+='\n        self.traceability_items = get_traceability_items(test=self)'
+        new_test_template += '\n        self.traceability_items = get_traceability_items(test=self)'
     if 'bench_image_creation' in plugins_to_add:
-        new_test_template+='\n        self.bench_image_locations = {} # User must add instrument images and their locations. See https://github.com/PyICe-ADI/PyICe/blob/main/docs/tutorials/tutorial_8_bench_config_management.rst'
+        new_test_template += '\n        self.bench_image_locations = {} # User must add instrument images and their locations. See https://github.com/PyICe-ADI/PyICe/blob/main/docs/tutorials/tutorial_8_bench_config_management.rst'
     if 'evaluate_tests' in plugins_to_add:
-        new_test_template+="\n    def get_test_limits(self, test_name):\n        #User code to determine limits of given test.\n        return {'lower_limit':None, 'upper_limit':None}"
+        new_test_template += "\n    def get_test_limits(self, test_name):\n        #User code to determine limits of given test.\n        return {'lower_limit':None, 'upper_limit':None}"
     if 'bench_config_management' in plugins_to_add:
-        new_test_template+=bench_connection_addon()
-    script_creator_dict[os.path.join(plugin_folder, "test_template.py")] = new_test_template
+        new_test_template += bench_connection_addon()
+    script_creator_dict[os.path.join(
+        plugin_folder, "test_template.py")] = new_test_template
 
     ###
     # BENCH FILE
     ###
     new_bench = \
-'''from PyICe.lab_interfaces import interface_factory
+        '''from PyICe.lab_interfaces import interface_factory
 
 def get_interfaces():
     # Add the instruments used by this computer and their information as shown
@@ -135,7 +170,8 @@ def get_interfaces():
     return {
             # 'HAMEG'                 : my_if.get_visa_serial_interface('COM18', baudrate= 57600), # For example
             }'''
-    script_creator_dict[os.path.join(bench_folder, f"{this_machine}.py")] = new_bench
+    script_creator_dict[os.path.join(
+        bench_folder, f"{this_machine}.py")] = new_bench
 
     ###
     # SAMPLE DRIVER
@@ -159,7 +195,8 @@ def populate(self):
     for channel in hameg:
         channel.set_category("supplies")
     return {'instruments':[hameg], "cleanup_list":hameg_cleanup_list}'''
-    script_creator_dict[os.path.join(driver_folder, f"example_HAMEG.py")] = new_sample_driver
+    script_creator_dict[os.path.join(
+        driver_folder, "example_HAMEG.py")] = new_sample_driver
 
     ###
     # EXAMPLE SCRIPT
@@ -217,7 +254,8 @@ class Test(Test_Template):
         Page.create_svg(file_basename=self.name, filepath=self.plot_filepath)
         Page.create_pdf(file_basename=self.name, filepath=self.plot_filepath)
         return plotlist'''
-    script_creator_dict[os.path.join(test_example_folder, f"test.py")] = new_example_script
+    script_creator_dict[os.path.join(
+        test_example_folder, "test.py")] = new_example_script
 
     ###
     # RUN SCRIPT
@@ -228,7 +266,8 @@ from test import Test
 pm = Plugin_Manager()
 pm.add_test(Test)
 pm.run()'''
-    script_creator_dict[os.path.join(test_example_folder, f"run.py")] = new_run_script
+    script_creator_dict[os.path.join(
+        test_example_folder, "run.py")] = new_run_script
 
     for (k, v) in script_creator_dict.items():
         try:
@@ -239,9 +278,8 @@ pm.run()'''
             print(type(e))
             print(e)
             breakpoint()
-            pass
 
     banners.print_banner("",
-        f"New project '{project_name}' structure set!", "Be sure the new folder is part of the PYTHONPATH in environment variables.", "Please go to the driver folder to make drivers for the instruments you need", "and the benches folder to add them to your bench,", "or go directly to:", f"{test_example_folder}","to run an example of a test.", "")
+                         f"New project '{project_name}' structure set!", "Be sure the new folder is part of the PYTHONPATH in environment variables.", "Please go to the driver folder to make drivers for the instruments you need", "and the benches folder to add them to your bench,", "or go directly to:", f"{test_example_folder}", "to run an example of a test.", "")
     if len(plugins_to_add):
-        print(f"\nBe aware: some plugins may require additional project information in order to function.")
+        print("\nBe aware: some plugins may require additional project information in order to function.")

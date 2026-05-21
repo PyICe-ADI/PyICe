@@ -1,12 +1,25 @@
-from ..lab_core import *
+"""Sun ecxx instrument driver."""
 from .temperature_chamber import temperature_chamber
 
+
 class sun_ecxx(temperature_chamber):
-    '''sun ecXx oven instrument base class
-        implements all methods common to sun ec0x and ec1x ovens'''
-    def __init__(self,interface_visa):
+    """Sun ecXx oven instrument base class.
+
+    implements all methods common to sun ec0x and ec1x ovens
+    """
+    def __init__(self, interface_visa):
+        """Initialize sun_ecxx.
+
+        Args:
+            interface_visa: VISA interface instance.
+        """
         temperature_chamber.__init__(self)
         self.add_interface_visa(interface_visa)
+
     def _read_temperature_sense(self):
-        '''read back actual chamber temperature'''
+        """Read back actual chamber temperature.
+
+        Returns:
+            Result value.
+        """
         return float(self.get_interface().ask("TEMP?"))
