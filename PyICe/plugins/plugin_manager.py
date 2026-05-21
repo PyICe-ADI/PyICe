@@ -444,14 +444,14 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                 try:
                     if signal_type == 'emails':
                         for email_address in self.notification_targets['emails']:
-                            mail = email(email_address)
+                            mail = email(email_address, self.smtp_server, self.sender)
                             mail.send(f"{self.ident_header}{msg}",
                                       subject=subject,
                                       attachment_filenames=attachment_filenames,
                                       attachment_MIMEParts=attachment_MIMEParts)
                     elif signal_type == 'texts':
                         for txt_number, carrier in self.notification_targets['texts']:
-                            text = sms(txt_number, carrier)
+                            text = sms(txt_number, carrier, self.smtp_server, self.sender)
                             text.send(msg)
                     else:
                         print(

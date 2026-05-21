@@ -3,7 +3,7 @@ from PyICe.lab_utils.communications import email
 from email.mime.image import MIMEImage
 import cairosvg  # pylint: disable=import-error; optional dependency required only for this test script
 
-dave_mail = email('recipient@example.com', smtp_server='smtp.example.com:25', sender='noreply@example.com')  # pylint: disable=unexpected-keyword-arg; test script uses a custom email subclass or outdated API signature that accepted smtp_server and sender kwargs
+dave_mail = email('recipient@example.com', smtp_server='smtp.example.com:25', sender='noreply@example.com')
 
 
 with open(r'path/to/example.svg', 'rb') as img:
