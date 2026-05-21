@@ -3,37 +3,41 @@ import numpy
 
 
 def floatRange(start, stop=None, step=None):
-    """Returns a list of numbers similar to python range() builtin but supports floats.
+    """Generate a list of evenly spaced floats (start inclusive, stop exclusive).
 
-        start is inclusive, stop is exclusive
-        When called with a single argument, start=0 and the argument becomes stop.
+    Wraps ``numpy.arange`` and returns a plain Python list. Avoids the
+    accumulation errors of repeated float addition that ``range()`` would have.
 
     >>> floatRange(0, 1.0, 0.5)
     [0.0, 0.5]
     >>> floatRange(0, 3, 1)
     [0, 1, 2]
+    >>> floatRange(0, 0.3, 0.1)
+    [0.0, 0.1, 0.2]
 
     Args:
-        start: Start bit position.
-        step: Step size.
-        stop: If True, send stop condition.
-
-    Returns:
-        Result value.
+        start: First value in the range (inclusive).
+        stop: End of range (exclusive).
+        step: Spacing between values.
     """
     return numpy.arange(start, stop, step).tolist()
 
 
 def floatRangeInc(start, stop=None, step=None):
-    """Same as float range, however it is inclusive of the last value.
+    """Like floatRange but inclusive of the stop value.
+
+    Appends stop to the result if numpy.arange didn't already include it
+    (which depends on floating-point rounding).
+
+    >>> floatRangeInc(0, 1.0, 0.5)
+    [0.0, 0.5, 1.0]
+    >>> floatRangeInc(0, 3, 1)
+    [0, 1, 2, 3]
 
     Args:
-        start: Start bit position.
-        step: Step size.
-        stop: If True, send stop condition.
-
-    Returns:
-        Result value.
+        start: First value in the range (inclusive).
+        stop: End of range (inclusive).
+        step: Spacing between values.
     """
     fr = floatRange(start, stop, step)
     if fr[-1] != stop:
@@ -45,24 +49,28 @@ def floatRangeInc(start, stop=None, step=None):
 
 
 def logRange(start, stop, stepsPerDecade=None, stepsPerOctave=None):
-    """Log step range function similar to python built-in range().
+    """Generate logarithmically spaced values (start inclusive, stop exclusive).
+
+    Useful for frequency sweeps and gain-vs-frequency characterization where
+    equal spacing on a log axis is needed.
 
     >>> len(logRange(1, 100, stepsPerDecade=3))
     6
     >>> logRange(1, 10, stepsPerDecade=1)
     [1.0]
+    >>> logRange(1, 8, stepsPerOctave=1)
+    [1.0, 2.0, 4.0]
 
     Args:
-        start: Start bit position.
-        stepsPerDecade: Stepsperdecade.
-        stepsPerOctave: Stepsperoctave.
-        stop: If True, send stop condition.
-
-    Returns:
-        Result value.
+        start: First value (inclusive).
+        stop: End of range (exclusive).
+        stepsPerDecade: Points per factor-of-10 interval. Mutually exclusive
+            with stepsPerOctave.
+        stepsPerOctave: Points per factor-of-2 interval. Mutually exclusive
+            with stepsPerDecade.
 
     Raises:
-        Exception: On error condition.
+        Exception: If neither or both of stepsPerDecade/stepsPerOctave given.
     """
     if (stepsPerDecade is not None and stepsPerOctave is None):
         stepsize = 10**(1.0 / stepsPerDecade)  # possible divide by zero!
@@ -80,16 +88,16 @@ def logRange(start, stop, stepsPerDecade=None, stepsPerOctave=None):
 
 
 def logRangeInc(start, stop, stepsPerDecade=None, stepsPerOctave=None):
-    """Return logRangeInc result.
+    """Like logRange but inclusive of the stop value.
+
+    >>> logRangeInc(1, 8, stepsPerOctave=1)
+    [1.0, 2.0, 4.0, 8]
 
     Args:
-        start: Start bit position.
-        stepsPerDecade: Stepsperdecade.
-        stepsPerOctave: Stepsperoctave.
-        stop: If True, send stop condition.
-
-    Returns:
-        Result value.
+        start: First value (inclusive).
+        stop: End of range (inclusive).
+        stepsPerDecade: Points per factor-of-10 interval.
+        stepsPerOctave: Points per factor-of-2 interval.
     """
     lr = logRange(
         start,
@@ -102,20 +110,19 @@ def logRangeInc(start, stop, stepsPerDecade=None, stepsPerOctave=None):
 
 
 def decadeListRange(decadePoints, decades):
-    """Log step range function similar to python built-in range().
+    """Repeat a set of points across multiple decades by scaling by powers of 10.
 
-    accepts list input of points in a single decade and repeats
-    these points over the specified number of decades
+    Useful for defining preferred-value sweep lists (e.g., 1-2-5 sequence)
+    that span several orders of magnitude.
 
     >>> decadeListRange([1, 2, 5], 3)
     [1, 2, 5, 10, 20, 50, 100, 200, 500]
+    >>> decadeListRange([1, 3], 2)
+    [1, 3, 10, 30]
 
     Args:
-        decadePoints: Decadepoints.
-        decades: Decades.
-
-    Returns:
-        Result value.
+        decadePoints: Base points within a single decade.
+        decades: Number of decades to span.
     """
     r = []
     exp = 0
