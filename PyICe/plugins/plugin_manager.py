@@ -929,7 +929,7 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
             self_made_bench = self.tests[0].build_a_bench()
             if self_made_bench == 'Not used':
                 self.add_instrument_channels()
-            if self.temperature_channel == None:
+            if self.temperature_channel is None:
                 self.temperature_channel = self.master.add_channel_dummy("tdegc")
                 self._temperature_is_dummy = True
             if not self._temperatures:
