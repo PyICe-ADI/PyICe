@@ -1,3 +1,4 @@
+"""Read mdump module."""
 from PyICe import lab_core
 import json
 import objutils
@@ -10,76 +11,144 @@ import os
 #   Intel format: https://en.wikipedia.org/wiki/Intel_HEX
 ####
 
+
 class memory_decoder():
+    """Memory_decoder."""
     def __init__(self, twii=None):
+        """Initialize memory_decoder.
+
+        Args:
+            twii: Twii.
+        """
         self.twii = twii
+
     def _parse_mdump(self, mem_str, fmt, offset=0):
-        #TODO. Dtype hardcoded to unit8, for lack of an alternate stakeholder right now.
+        # TODO. Dtype hardcoded to unit8, for lack of an alternate stakeholder right now.
         # https://pypi.org/project/objutils/
         mem = objutils.loads(fmt, mem_str)
         mem_dict = {}
         for section in mem.sections:
-            mem_array = section.read_numeric_array(addr=section.address, length=section.length, dtype='uint8_be')
+            mem_array = section.read_numeric_array(
+                addr=section.address, length=section.length, dtype='uint8_be')
             for idx, data in enumerate(mem_array):
-                mem_dict[idx+section.address+offset] = data
+                mem_dict[idx + section.address + offset] = data
         return mem_dict
+
     def parse_srec(self, srec_str, offset=0):
+        """Return parse srec result.
+
+        Args:
+            offset: Offset value.
+            srec_str: Srec str.
+
+        Returns:
+            Result value.
+        """
         return self._parse_mdump(srec_str, fmt='srec', offset=offset)
+
     def parse_ihex(self, ihex_str, offset=0):
+        """Return parse ihex result.
+
+        Args:
+            ihex_str: Ihex str.
+            offset: Offset value.
+
+        Returns:
+            Result value.
+        """
         return self._parse_mdump(ihex_str, fmt='ihex', offset=offset)
+
     def parse_hexdump(self, rfc4194_str, offset=0):
+        """Return parse hexdump result.
+
+        Args:
+            offset: Offset value.
+            rfc4194_str: Rfc4194 str.
+
+        Returns:
+            Result value.
+        """
         return self._parse_mdump(rfc4194_str, fmt='shf', offset=offset)
 
     # def parse_ascii_hex(ascii_hex_str, offset=0):
-        #not quite hexdump format, ex:
+        # not quite hexdump format, ex:
         # 0x1F 0x00 0x01 0x08 0x00 0x00 0x09 0x03 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
         # 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
         # mem_data = {}
         # for idx, reg in enumerate(ascii_hex_str.split()):
-            # addr = offset + idx
-            # dbyte = int(reg, 16)
-            # mem_data[addr] = dbyte
+        # addr = offset + idx
+        # dbyte = int(reg, 16)
+        # mem_data[addr] = dbyte
         # print(f'READ data between addresses 0x{min(mem_data.keys()):X} and 0x{max(mem_data.keys()):X} ({max(mem_data.keys())-min(mem_data.keys())+1})')
         # return mem_data
     def _parse_bitfields(self):
-        #depends on twii memory dict having been previously populated!
+        # depends on twii memory dict having been previously populated!
         bf_data = {}
         for bf in self.twii:
             try:
                 bf_data[bf.get_name()] = bf.read()
-            except lab_core.ChannelAccessException as e:
+            except lab_core.ChannelAccessException:
                 # Not all bit fields are readable
                 pass
         return bf_data
-    def prettify(self, bf_name, bf_value): #, twii=None
+
+    def prettify(self, bf_name, bf_value):  # , twii=None
+        """Return prettify result.
+
+        Args:
+            bf_name: Bf name.
+            bf_value: Bf value.
+
+        Returns:
+            Result value.
+        """
         if self.twii is None:
             try:
                 pkey = f'0x{bf_name:X}'
-            except ValueError as e:
+            except ValueError:
                 pkey = bf_name
             try:
                 pvalue = f'0x{bf_value:02X}'
-            except ValueError as e:
+            except ValueError:
                 pvalue = bf_value
         else:
-            pkey = bf_name # Name
+            pkey = bf_name  # Name
             bf = self.twii[bf_name]
             fvalue = bf.format(data=bf_value, format=None, use_presets=True)
             if fvalue is None:
                 pvalue = bf_value
             elif fvalue == bf_value:
                 size = bf.get_size()
-                nsize = (size-1) // 4 + 1
+                nsize = (size - 1) // 4 + 1
                 nsizefstr = f'{bf_value:0{nsize}X}'
                 pvalue = f"{size}'h{nsizefstr}"
             else:
                 pvalue = fvalue
         return (pkey, pvalue)
-    def prettyprint(self, dict): # twii=None
+
+    def prettyprint(self, dict):  # twii=None
+        """Perform prettyprint operation.
+
+        Args:
+            dict: Dict.
+        """
         for k in sorted(dict):
-            (pkey, pvalue) = self.prettify(bf_name=k, bf_value=dict[k]) #, twii=twii
+            (pkey, pvalue) = self.prettify(
+                bf_name=k, bf_value=dict[k])  # , twii=twii
             print(f'{pkey}: {pvalue}')
+
     def decode(self, memdump_file):
+        """Return decode result.
+
+        Args:
+            memdump_file: Memdump file.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         file_ext = os.path.splitext(memdump_file)[1]
         with open(memdump_file, 'r') as f:
             if file_ext == '.srec' or file_ext == '.s19':
@@ -87,18 +156,39 @@ class memory_decoder():
             elif file_ext == '.ihex':
                 reg_data = self.parse_ihex(f.read(), offset=0)
             else:
-                raise Exception(f'Unknown file type {file_ext}. Contact PyICe-developers@analog.com for more information.')
+                raise Exception(
+                    f'Unknown file type {file_ext}. Contact PyICe-developers@analog.com for more information.')
             f.close()
         return self.slice(reg_data)
+
     def slice(self, reg_data):
-        '''expect dictionary of {addr_a: data_a, addr_b:, data_b, ...addr_n: data_n}'''
+        """Expect dictionary of {addr_a: data_a, addr_b:, data_b, ...addr_n: data_n}.
+
+        Args:
+            reg_data: Reg data.
+
+        Returns:
+            Result value.
+        """
         self.twii.get_interface().set_data_source(reg_data)
         bf_data = self._parse_bitfields()
         self.prettyprint(bf_data)
         return bf_data
+
     def read(self, ascii_dump_file):
-        '''Expects data already sliced to named bitfields. Applies enumerations and format transforms.'''
-        #Warning, this modifies the twii, making it incompatible with binary decode()
+        """Expects data already sliced to named bitfields. Applies enumerations and format transforms.
+
+        Args:
+            ascii_dump_file: Ascii dump file.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
+        # Warning, this modifies the twii, making it incompatible with binary
+        # decode()
         for bf in self.twii:
             bf.set_delegator(bf)
             bf._write = None
@@ -109,25 +199,25 @@ class memory_decoder():
             if file_ext == ".txt":
                 # "KEY: VALUE\n" record, like PyICe GUI dump
                 for line in f:
-                    k,v = line.strip().split(":")
+                    k, v = line.strip().split(":")
                     try:
-                        twii[k].write(v)
+                        self.twii[k].write(v)
                     except lab_core.ChannelAccessException as e:
                         print(e)
                     except Exception as e:
                         raise e
             elif file_ext == ".json" or file_ext == ".jsonc":
-                for k,v in json.json.load(f).items():
+                for k, v in json.load(f).items():
                     try:
-                        twii[k].write(v)
+                        self.twii[k].write(v)
                     except lab_core.ChannelAccessException as e:
                         print(e)
                     except Exception as e:
                         raise e
             else:
-                raise Exception(f'Unknown file type {file_ext}. Contact PyICe-developers@analog.com for more information.')
+                raise Exception(
+                    f'Unknown file type {file_ext}. Contact PyICe-developers@analog.com for more information.')
             f.close()
         bf_data = self.twii.read_all_channels()
         self.prettyprint(bf_data)
         return bf_data
-        

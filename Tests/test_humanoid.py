@@ -1,11 +1,16 @@
-from PyICe import lab_instruments, lab_core, lab_utils
+"""Tests for humanoid."""
+from PyICe import lab_core
+from PyICe.lab_utils.communications import email
+from PyICe.virtual_instruments import instrument_humanoid
 
 # import logging
 # logging.basicConfig(level=logging.DEBUG)
 
 m = lab_core.master()
-em = lab_utils.email(destination='david.simmons@analog.com')
-ih = lab_instruments.instrument_humanoid(notification_function=lambda msg: em.send(msg,subject="LTC lab requires attention!"))
+em = email(destination='recipient@example.com', smtp_server='smtp.example.com:25', sender='noreply@example.com')
+ih = instrument_humanoid(
+    notification_function=lambda msg: em.send(
+        msg,subject="Lab requires attention!"))
 m.add(ih)
 wc = ih.add_channel_write('write_channel')
 rc = ih.add_channel_read('read_channel')
@@ -17,12 +22,12 @@ m.background_gui()
 print(type(m.read('read_channel')))
 m.write('write_channel', 99)
 foo = m.read_all_channels()
-print(foo, {k: type(v) for k,v in foo.items()})
+print(foo, {k: type(v) for k, v in foo.items()})
 for ch in foo:
     print(ch, foo[ch], type(foo[ch]))
 
-l = lab_core.logger(m)
-l.new_table('manual_data', replace_table='copy')
+logger = lab_core.logger(m)
+logger.new_table('manual_data', replace_table='copy')
 for i in range(5):
     m.write('write_channel', i)
-    print(l.log())
+    print(logger.log())

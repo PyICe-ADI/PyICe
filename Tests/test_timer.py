@@ -1,19 +1,26 @@
-from PyICe import lab_instruments, lab_core
+"""Tests for timer."""
+from PyICe.virtual_instruments import timer, integrator
 import time
 
-timer = lab_instruments.timer()
+timer = timer()
 timer.add_channel_total_seconds('total_s')
 timer.add_channel_total_minutes('total_m')
 timer.add_channel_delta_seconds('delta_s')
 
 
 def sleep(sleep_time):
+    """Perform sleep operation.
+
+    Args:
+        sleep_time: Sleep time.
+    """
     print("Sleeping {}s".format(sleep_time))
     time.sleep(sleep_time)
 
+
 sleep(2)
 print("Unpause")
-timer.resume_timer() #resume to start
+timer.resume_timer()  # resume to start
 sleep(2)
 print("Pause")
 timer.pause_timer()
@@ -28,7 +35,7 @@ print("Expect 4t, 2d: {}".format(timer.read_all_channels()))
 print("Pause")
 timer.pause_timer()
 sleep(2)
-#print timer.read_all_channels()
+# print timer.read_all_channels()
 print("Unpause")
 timer.resume_timer()
 sleep(1)
@@ -38,7 +45,7 @@ print("Expect 6t, 1d: {}".format(timer.read_all_channels()))
 
 
 print("\nIntegrator test")
-integrator = lab_instruments.integrator()
+integrator = integrator()
 integrator.add_channel_total_seconds('int_total_s')
 integrator.add_channel_delta_seconds('int_delta_s')
 integrator.add_channel_integration_seconds('int_s')
@@ -61,5 +68,3 @@ print(integrator.read_all_channels())
 sleep(1)
 integrator['int_input'].write(1)
 print(integrator.read_all_channels())
-
-
