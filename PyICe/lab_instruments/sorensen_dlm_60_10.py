@@ -1,28 +1,60 @@
-from ..lab_core import *
-from .sorensen_generic_supply import *
+"""Sorensen dlm 60 10 instrument driver."""
+from ..lab_core import *  # noqa: F403
+from .sorensen_generic_supply import *  # noqa: F403
+
 
 class sorensen_dlm_60_10(sorensen_generic_supply):
-    '''single channel sorensen_dlm_60_10'''
-    def __init__(self,interface_visa):
+    """Single channel sorensen_dlm_60_10."""
+
+    def __init__(self, interface_visa):
+        """Initialize sorensen_dlm_60_10.
+
+        Args:
+            interface_visa: VISA interface instance.
+        """
         self.sorensen_name = "sorensen_dlm_60_10"
-        interface_visa.terminationCharacter = "\r"  # for some reason the dlm_60_10 terminates with a carriage return and no new-line...
+        # for some reason the dlm_60_10 terminates with a carriage return and
+        # no new-line...
+        interface_visa.terminationCharacter = "\r"
         interface_visa.write("*CLS")
         interface_visa.write("*RST")
         sorensen_generic_supply.__init__(self, interface_visa)
         self._base_name = 'sorensen_dlm_60_10'
-        time.sleep(1.0) # have to wait a bit before doing any writes (such as writing ilim when adding a channel) or they seem to get thrown away...
+        # have to wait a bit before doing any writes (such as writing ilim when
+        # adding a channel) or they seem to get thrown away...
+        time.sleep(1.0)
+
     def _enable_output(self):
-        '''DLM 60 10 can only be enabled/disabled by physical output enable button - so just pass here'''
-        pass
-    def _write_voltage(self,voltage):
-        '''Set named channel to force voltage'''
+        """DLM 60 10 can only be enabled/disabled by physical output enable button - so just pass here."""
+
+    def _write_voltage(self, voltage):
+        """Set named channel to force voltage.
+
+        Args:
+            voltage: Voltage value.
+        """
         self.get_interface().write((f"SOURce:VOLTage {voltage}"))
-    def _write_current(self,ilim):
-        '''Set named channel's compliance current'''
+
+    def _write_current(self, ilim):
+        """Set named channel's compliance current.
+
+        Args:
+            ilim: Current limit.
+        """
         self.get_interface().write((f"SOURce:CURRent {ilim}"))
+
     def _read_vsense(self):
-        '''Returns instrument's measured output voltage.'''
-        return  float( self.get_interface().ask("MEASure:VOLTage?") )
+        """Returns instrument's measured output voltage.
+
+        Returns:
+            Result value.
+        """
+        return float(self.get_interface().ask("MEASure:VOLTage?"))
+
     def _read_isense(self):
-        '''Returns instrument's measured output current.'''
-        return float( self.get_interface().ask("MEASure:CURRent?") )
+        """Returns instrument's measured output current.
+
+        Returns:
+            Result value.
+        """
+        return float(self.get_interface().ask("MEASure:CURRent?"))

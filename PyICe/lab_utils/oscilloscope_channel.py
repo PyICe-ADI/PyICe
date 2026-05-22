@@ -1,8 +1,17 @@
+"""Oscilloscope channel utility."""
 import numpy
 from .ordered_pair import ordered_pair
 
+
 class oscilloscope_channel(ordered_pair):
+    """Oscilloscope_channel (ordered_pair subclass)."""
     def __init__(self, time_points, channel_data):
+        """Initialize oscilloscope_channel.
+
+        Args:
+            channel_data: Channel data.
+            time_points: Time points.
+        """
         list.__init__(self)
         '''takes string data, likely from a two-column sql database query of an oscilloscope trace
        and returns a list of (x,y) ordered pairs of floats appropriate for plotting or further manipulation
@@ -13,6 +22,13 @@ class oscilloscope_channel(ordered_pair):
         xvalues = [float(x) for x in time_points]
         yvalues = [float(y) for y in channel_data]
         self.extend(list(zip(xvalues, yvalues)))
-        self.array = numpy.array(list(zip(xvalues, yvalues)), dtype=[('x', float), ('y', float)])
+        self.array = numpy.array(list(zip(xvalues, yvalues)), dtype=[
+                                 ('x', float), ('y', float)])
+
     def to_recarray(self):
+        """Return to recarray result.
+
+        Returns:
+            Result value.
+        """
         return self.array.view(numpy.recarray)

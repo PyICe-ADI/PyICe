@@ -5,7 +5,8 @@
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
-import os, sys
+import os
+import sys
 sys.path.append(os.path.abspath('..'))
 
 project = 'PyICe'
@@ -19,7 +20,6 @@ extensions = ['sphinx.ext.autodoc']
 
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
-
 
 
 # -- Options for HTML output -------------------------------------------------
