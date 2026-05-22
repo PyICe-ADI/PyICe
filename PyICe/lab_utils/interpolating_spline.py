@@ -4,21 +4,28 @@ import scipy
 
 
 def interpolating_spline(rec_array, **kwargs):
-    """Uses http://scipy.github.io/devdocs/generated/scipy.interpolate.UnivariateSpline.html.
+    """Build callable spline interpolators for each y-column in a record array.
 
-    provides interpolation function with original data points returning exact values (knots placed on x-values)
-    x-axis data is assumed to be first column
-    x-axis data must be increasing
-    returns spline function named tuple for each y-column.
-    for small point count, consider scipy.interpolate.Akima1DInterpolator instead
-    https://docs.scipy.org/doc/scipy-0.19.1/reference/generated/scipy.interpolate.Akima1DInterpolator.html#scipy.interpolate.Akima1DInterpolator
+    Wraps ``scipy.interpolate.UnivariateSpline`` with ``s=0`` (exact
+    interpolation through every data point) and returns the resulting
+    spline functions in a named tuple keyed by column name. The first
+    column is taken as the x-axis and must be strictly increasing.
+
+    For datasets with very few points, consider
+    ``scipy.interpolate.Akima1DInterpolator`` instead to avoid
+    oscillatory artefacts.
 
     Args:
-        **kwargs: Additional keyword arguments.
-        rec_array: Rec array.
+        rec_array: Input numpy record array. The first column supplies
+            the x-values; remaining columns are each fitted with an
+            independent spline. X-values must be strictly increasing.
+        **kwargs: Forwarded to ``scipy.interpolate.UnivariateSpline``
+            (e.g. ``k`` for spline degree, ``s`` to override the default
+            exact-interpolation setting of 0).
 
     Returns:
-        Result value.
+        A named tuple whose fields match the y-column names. Each field
+        holds a callable ``UnivariateSpline`` that maps x → y.
     """
     if 's' in kwargs:
         s = kwargs['s']

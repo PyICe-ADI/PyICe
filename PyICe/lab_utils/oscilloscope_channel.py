@@ -4,19 +4,28 @@ from .ordered_pair import ordered_pair
 
 
 class oscilloscope_channel(ordered_pair):
-    """Oscilloscope_channel (ordered_pair subclass)."""
+    """Represent an oscilloscope trace as a sequence of time-voltage ordered pairs.
+
+    This subclass of ordered_pair converts separate time and voltage arrays,
+    typically retrieved from a two-column SQL database query of an oscilloscope
+    capture, into a list of (x, y) ordered-pair floats suitable for plotting or
+    further numerical manipulation. The data is also stored internally as a
+    NumPy structured array for efficient columnar access.
+    """
     def __init__(self, time_points, channel_data):
-        """Initialize oscilloscope_channel.
+        """Build the channel trace from parallel time and voltage sequences.
+
+        Each element of *time_points* is paired with the corresponding element
+        of *channel_data* to form an (x, y) ordered pair. Both sequences must
+        be the same length and contain values convertible to float.
 
         Args:
-            channel_data: Channel data.
-            time_points: Time points.
+            time_points: Iterable of time-axis sample values (seconds or other
+                time unit) for the oscilloscope trace.
+            channel_data: Iterable of voltage-axis sample values corresponding
+                to each time point.
         """
         list.__init__(self)
-        '''takes string data, likely from a two-column sql database query of an oscilloscope trace
-       and returns a list of (x,y) ordered pairs of floats appropriate for plotting or further manipulation
-       expects time and channel series data to be surrounded with square braces and comma separated
-       time_points and channel_data should be of equal length'''
         # xvalues = [float(x) for x in time_points.strip("[]").split(",")]
         # yvalues = [float(x) for x in channel_data.strip("[]").split(",")]
         xvalues = [float(x) for x in time_points]
@@ -26,9 +35,14 @@ class oscilloscope_channel(ordered_pair):
                                  ('x', float), ('y', float)])
 
     def to_recarray(self):
-        """Return to recarray result.
+        """Convert the internal structured array to a NumPy record array.
+
+        Use this to access the time and voltage columns by name
+        (e.g., ``rec.x`` for time, ``rec.y`` for voltage) instead of by
+        index, which makes downstream analysis code more readable.
 
         Returns:
-            Result value.
+            A ``numpy.recarray`` view of the trace data with fields ``x``
+            (time) and ``y`` (voltage).
         """
         return self.array.view(numpy.recarray)

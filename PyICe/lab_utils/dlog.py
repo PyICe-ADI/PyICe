@@ -3,12 +3,14 @@ import time
 
 
 class dlog(object):
-    """Dlog (object subclass)."""
+    """Write timestamped data lines to a log file while echoing to the console."""
     def __init__(self, filename="output.txt"):
-        """Open filehandle to filename.  If omitted, filename defaults to "output.txt.
+        """Open a log file and write a date/time header.
+
+        Uses ``time.perf_counter()`` as the time base for per-line timestamps.
 
         Args:
-            filename: File path.
+            filename: Path to the output file (defaults to ``"output.txt"``).
         """
         self.errcnt = 0
         self.f = open(filename, 'w')
@@ -19,50 +21,50 @@ class dlog(object):
         self.log_notime(time.strftime("%a, %d %b %Y %H:%M:%S"))
 
     def __enter__(self):
-        """Enter the context manager.
+        """Enter the context manager, returning this instance for use in a ``with`` block.
 
         Returns:
-            Result value.
+            This :class:`dlog` instance.
         """
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        """Exit the context manager.
+        """Close the log file when exiting a ``with`` block.
 
         Args:
-            exc_tb: Exc tb.
-            exc_type: Exc type.
-            exc_val: Exc val.
+            exc_type: Type of the exception raised inside the block, or ``None``.
+            exc_val: Exception instance, or ``None``.
+            exc_tb: Traceback object, or ``None``.
 
         Returns:
-            Result value.
+            ``None`` (does not suppress exceptions).
         """
         self.f.close()
         return None
 
     def log_notime(self, data):
-        """Write data to file with trailing newline.
+        """Write *data* to the log file and console without a timestamp prefix.
 
         Args:
-            data: Data to write.
+            data: Value to log (converted to string via ``str()``).
         """
         self.f.write(str(data) + "\n")
         print(data)
 
     def log(self, data):
-        """Write data to file with timestamp and trailing newline.
+        """Write *data* to the log file and console, prefixed with elapsed seconds since construction.
 
         Args:
-            data: Data to write.
+            data: Value to log (converted to string via ``str()``).
         """
         self.log_notime(str(time.perf_counter() - self.timezero) + str(data))
 
     def create_error(self):
-        """This function doesn't appear to actually do much.  self.errcnt is never written to the dlog."""
+        """Increment the internal error counter (counter is tracked but never written to the log)."""
         self.errcnt += 1
 
     def finish(self):
-        """Write final timestamp and close filehandle."""
+        """Write a closing timestamp with total elapsed time, then close the file."""
         self.log_notime(
             "Data log closed at {}.  Elapsed time: {}".format(
                 time.strftime("%a, %d %b %Y %H:%M:%S"),
