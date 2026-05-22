@@ -1,31 +1,44 @@
-from ..lab_core import *
-import time
+"""Oscilloscope instrument driver."""
+from ..lab_core import *  # noqa: F403
 import struct
 import abc
 
 try:
     from numpy import fromiter, dtype
     numpy_missing = False
-except ImportError as e:
+except ImportError:
     numpy_missing = True
 
+
 class oscilloscope(scpi_instrument, delegator):
+    """Oscilloscope."""
     pass
     # binary unpack
     # scaling
     # trigger status polling / timeout (force trigger)
-    
+
     def fetch_waveform_data(self):
         # assumes :WAVeform:SOURce set correctly before call!
+        """Return fetch waveform data result.
+
+        Returns:
+            Result value.
+
+        Raises:
+            Exception: On error condition.
+        """
         self.get_interface().write(':WAVeform:DATA?')
         raw_data = self.get_interface().read_raw()
-        #Example: "#800027579 4.03266e-002, 1.25647e-004, 1.25647e-004, 1.25647e-004,......."
-        # Since bytes objects are sequences of integers (akin to a tuple), for a bytes object b, b[0] will be an integer, while b[0:1] will be a bytes object of length 1. (This contrasts with text strings, where both indexing and slicing will produce a string of length 1)
+        # Example: "#800027579 4.03266e-002, 1.25647e-004, 1.25647e-004, 1.25647e-004,......."
+        # Since bytes objects are sequences of integers (akin to a tuple), for
+        # a bytes object b, b[0] will be an integer, while b[0:1] will be a
+        # bytes object of length 1. (This contrasts with text strings, where
+        # both indexing and slicing will produce a string of length 1)
         assert raw_data[0:1] == b'#'
         raw_data_header_length = int(raw_data[1:2])
-        raw_data_length_bytes = int(raw_data[2:raw_data_header_length+2])
-        raw_data = raw_data[raw_data_header_length+2:] #remove header
-        
+        _raw_data_length_bytes = int(raw_data[2:raw_data_header_length + 2])  # noqa: F841
+        raw_data = raw_data[raw_data_header_length + 2:]  # remove header
+
         data_format = self.get_interface().ask(':WAVeform:FORMat?')
         if data_format == 'WORD':
             byte_order = self.get_interface().ask(':WAVeform:BYTeorder?')
@@ -35,14 +48,19 @@ class oscilloscope(scpi_instrument, delegator):
             elif int(byte_type) == 0:
                 fmt_str = 'h'
             else:
-                raise Exception("I'm lost. Contact PyICe-developers@analog.com for more information.")
-            assert len(raw_data[:-1]) % 2 == 0 #Remove trailing newline; data should be even number of bytes.
+                raise Exception(
+                    "I'm lost. Contact PyICe-developers@analog.com for more information.")
+            # Remove trailing newline; data should be even number of bytes.
+            assert len(raw_data[:-1]) % 2 == 0
             if byte_order == 'LSBF':
-                data = struct.unpack(f'<{fmt_str*(len(raw_data[:-1])//2)}', raw_data[:-1])
+                data = struct.unpack(
+                    f'<{fmt_str * (len(raw_data[:-1]) // 2)}', raw_data[:-1])
             elif byte_order == 'MSBF':
-                data = struct.unpack(f'>{fmt_str*(len(raw_data[:-1])//2)}', raw_data[:-1])
+                data = struct.unpack(
+                    f'>{fmt_str * (len(raw_data[:-1]) // 2)}', raw_data[:-1])
             else:
-                raise Exception('Unknown WORD byte order. Contact PyICe-developers@analog.com for more information.')
+                raise Exception(
+                    'Unknown WORD byte order. Contact PyICe-developers@analog.com for more information.')
             data = self.scale_waveform_data(data)
         elif data_format == 'BYTE':
             byte_type = self.get_interface().ask(':WAVeform:UNSigned?')
@@ -51,17 +69,20 @@ class oscilloscope(scpi_instrument, delegator):
             elif int(byte_type) == 0:
                 fmt_str = 'b'
             else:
-                raise Exception("I'm lost. Contact PyICe-developers@analog.com for more information.")
-            data = struct.unpack(f'{fmt_str*len(raw_data[:-1])}', raw_data[:-1])
+                raise Exception(
+                    "I'm lost. Contact PyICe-developers@analog.com for more information.")
+            data = struct.unpack(
+                f'{fmt_str * len(raw_data[:-1])}', raw_data[:-1])
             data = self.scale_waveform_data(data)
         elif data_format == 'ASC':
             raw_data = raw_data.decode(encoding='latin-1').split(',')
             data = [float(x) for x in raw_data]
             print(list(data)[:100])
         else:
-            raise Exception(f'Unknown data format: {data_format}. Contact PyICe-developers@analog.com for more information.')
+            raise Exception(
+                f'Unknown data format: {data_format}. Contact PyICe-developers@analog.com for more information.')
         return data
-        
+
     def scale_waveform_data(self, data):
         # Data Conversion
         # Word or byte data sent from the oscilloscope must be scaled for useful
@@ -94,74 +115,142 @@ class oscilloscope(scpi_instrument, delegator):
         # yincrement = float(yincrement)
         # yorigin = float(yorigin)
         # yreference = int(yreference)
+        """Return scale waveform data result.
+
+        Args:
+            data: Data to write.
+
+        Returns:
+            Result value.
+        """
         waveform_scaling = self.get_waveform_scaling()
-        data = map(lambda pt: ((pt - waveform_scaling['yreference']) * waveform_scaling['yincrement']) + waveform_scaling['yorigin'], data)
+        data = map(
+            lambda pt: (
+                (pt -
+                 waveform_scaling['yreference']) *
+                waveform_scaling['yincrement']) +
+            waveform_scaling['yorigin'],
+            data)
         if not numpy_missing:
-            return fromiter(data,dtype=dtype('<d'))         ## This will cause trouble if _set_type_affinity('BLOB') isn't on.
+            # This will cause trouble if _set_type_affinity('BLOB') isn't on.
+            return fromiter(data, dtype=dtype('<d'))
         return list(data)
-        
+
     def get_waveform_scaling(self):
-        ### Requires Waveform Source to be previously set
-        waveform_scaling={}
+        # Requires Waveform Source to be previously set
+        """Return the waveform scaling.
+
+        Returns:
+            Result value.
+        """
+        waveform_scaling = {}
         preamble = self.get_interface().ask(':WAVeform:PREamble?')
-        (waveform_scaling['fmt'], waveform_scaling['typ'], points, count, xincrement, xorigin, xreference, yincrement, yorigin, yreference) = preamble.split(',')
+        (waveform_scaling['fmt'],
+         waveform_scaling['typ'],
+         points,
+         count,
+         xincrement,
+         xorigin,
+         xreference,
+         yincrement,
+         yorigin,
+         yreference) = preamble.split(',')
         waveform_scaling['yincrement'] = float(yincrement)
         waveform_scaling['yorigin'] = float(yorigin)
         waveform_scaling['yreference'] = int(yreference)
-        
+
         return waveform_scaling
 
     @abc.abstractmethod
     def setup_channels(self, scope_channels):
-        '''Helper method to set up each specific waveform channel in scope_channels list and call add_all_timebase_trigger_aquisition_channels'''
+        """Helper method to set up each specific waveform channel in scope_channels list and call add_all_timebase_trigger_aquisition_channels.
+
+        Args:
+            scope_channels: Scope channels.
+        """
 
     @abc.abstractmethod
     def enable_channels(self, channels):
-        '''Turn on Y channels in the channels list'''
-    
-    @abc.abstractmethod
-    def disable_all_Ychannels(self):
-        '''Turn off all Y channels'''
+        """Turn on Y channels in the channels list.
+
+        Args:
+            channels: List of channel objects.
+        """
 
     @abc.abstractmethod
-    def resync_scope():
-        '''Reset the scope and reconfigure physical instrument to desired used channels.'''
+    def disable_all_Ychannels(self):
+        """Turn off all Y channels."""
+
+    @abc.abstractmethod
+    def resync_scope(self):
+        """Reset the scope and reconfigure physical instrument to desired used channels."""
 
     @abc.abstractmethod
     def add_Ychannel_waveform(self, name, number):
-        '''Add named waveform channel and add Ycontrol and Yreadback channels for that waveform channel'''
+        """Add named waveform channel and add Ycontrol and Yreadback channels for that waveform channel.
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+        """
 
     @abc.abstractmethod
     def add_Ycontrol_Yreadback_channels(self, name, number):
-        '''Add all control and readback channels for the specified Y waveform channel.'''
+        """Add all control and readback channels for the specified Y waveform channel.
+
+        Args:
+            name: Name identifier.
+            number: Channel or port number.
+        """
 
     @abc.abstractmethod
     def add_Xcontrol_Xreadback_channels(self, prefix):
-        '''Add all X control and readback channels'''
+        """Add all X control and readback channels.
+
+        Args:
+            prefix: Name prefix string.
+        """
 
     @abc.abstractmethod
     def add_trigger_channels(self, prefix):
-        '''Add all trigger control channels.'''
+        """Add all trigger control channels.
+
+        Args:
+            prefix: Name prefix string.
+        """
 
     @abc.abstractmethod
     def add_aquire_channels(self, prefix):
-        '''Add all channels the control the scope aquisition channel'''
+        """Add all channels the control the scope aquisition channel.
+
+        Args:
+            prefix: Name prefix string.
+        """
 
     @abc.abstractmethod
-    def add_channel_timebase(self,name):
-        '''Add time channel that stores the x-axis data points in seconds'''
+    def add_channel_timebase(self, name):
+        """Add time channel that stores the x-axis data points in seconds.
+
+        Args:
+            name: Name identifier.
+        """
 
     @abc.abstractmethod
     def add_all_timebase_trigger_aquisition_channels(self, prefix):
-        '''Helper method to easily add time base, X control, X readback, trigger, and aquisition channels'''
-    
-    # SCPI syntax taken from DSOX3034T programmer manual. May differ from other MSO/DSO Keysight scopes and different manufacturer scopes.
-    
+        """Helper method to easily add time base, X control, X readback, trigger, and aquisition channels.
+
+        Args:
+            prefix: Name prefix string.
+        """
+
+    # SCPI syntax taken from DSOX3034T programmer manual. May differ from
+    # other MSO/DSO Keysight scopes and different manufacturer scopes.
+
     # Command Syntax :WAVeform:BYTeorder <value>
         # <value> ::= {LSBFirst | MSBFirst}
         # The :WAVeform:BYTeorder command sets the output sequence of the WORD data.
-            # • MSBFirst — sets the most significant byte to be transmitted first.
-            # • LSBFirst — sets the least significant byte to be transmitted first.
+        # • MSBFirst — sets the most significant byte to be transmitted first.
+        # • LSBFirst — sets the least significant byte to be transmitted first.
         # This command affects the transmitting sequence only when :WAVeform:FORMat
         # WORD is selected.
         # The default setting is MSBFirst.
@@ -188,17 +277,16 @@ class oscilloscope(scpi_instrument, delegator):
         # :WAVeform:BYTeorder, :WAVeform:FORMat, and :WAVeform:SOURce commands.
         # The number of points returned is controlled by the :WAVeform:POINts command.
         # In BYTE or WORD waveform formats, these data values have special meaning:
-            # • 0x00 or 0x0000 — Hole. Holes are locations where data has not yet been
-                # acquired.
-                # Another situation where there can be zeros in the data, incorrectly, is when
-                # programming over telnet port 5024. Port 5024 provides a command prompt
-                # and is intended for ASCII transfers. Use telnet port 5025 instead.
-            # • 0x01 or 0x0001 — Clipped low. These are locations where the waveform is
-                # clipped at the bottom of the oscilloscope display.
-            # • 0xFF or 0xFFFF — Clipped high. These are locations where the waveform is
-                # clipped at the top of the oscilloscope display.
-                # Return Format <binary block data><NL>
-
+        # • 0x00 or 0x0000 — Hole. Holes are locations where data has not yet been
+        # acquired.
+        # Another situation where there can be zeros in the data, incorrectly, is when
+        # programming over telnet port 5024. Port 5024 provides a command prompt
+        # and is intended for ASCII transfers. Use telnet port 5025 instead.
+        # • 0x01 or 0x0001 — Clipped low. These are locations where the waveform is
+        # clipped at the bottom of the oscilloscope display.
+        # • 0xFF or 0xFFFF — Clipped high. These are locations where the waveform is
+        # clipped at the top of the oscilloscope display.
+        # Return Format <binary block data><NL>
 
     # :WAVeform:FORMat
         # (see page 1572)
@@ -208,18 +296,18 @@ class oscilloscope(scpi_instrument, delegator):
         # data points. This command controls how the data is formatted when sent from the
         # oscilloscope.
         # • ASCii formatted data converts the internal integer data values to real Y-axis
-            # values. Values are transferred as ASCii digits in floating point notation,
-            # separated by commas.
-            # ASCII formatted data is transferred ASCii text.
+        # values. Values are transferred as ASCii digits in floating point notation,
+        # separated by commas.
+        # ASCII formatted data is transferred ASCii text.
         # • WORD formatted data transfers 16-bit data as two bytes. The
-            # :WAVeform:BYTeorder command can be used to specify whether the upper or
-            # lower byte is transmitted first. The default (no command sent) is that the upper
-            # byte transmitted first.
+        # :WAVeform:BYTeorder command can be used to specify whether the upper or
+        # lower byte is transmitted first. The default (no command sent) is that the upper
+        # byte transmitted first.
         # • BYTE formatted data is transferred as 8-bit bytes.
         # When the :WAVeform:SOURce is the serial decode bus (SBUS1 or SBUS2), ASCii
-            # is the only waveform format allowed.
-            # When the :WAVeform:SOURce is one of the digital channel buses (BUS1 or BUS2),
-            # ASCii and WORD are the only waveform formats allowed.
+        # is the only waveform format allowed.
+        # When the :WAVeform:SOURce is one of the digital channel buses (BUS1 or BUS2),
+        # ASCii and WORD are the only waveform formats allowed.
     # Query Syntax :WAVeform:FORMat?
         # The :WAVeform:FORMat query returns the current output format for the transfer of
         # waveform data.
@@ -251,7 +339,7 @@ class oscilloscope(scpi_instrument, delegator):
     # waveform data.
     # Return Format <value><NL>
     # <value> ::= {WORD | BYTE | ASC}
-    
+
     # :WAVeform:POINts:MODE
     # (see page 1572)
     # Command Syntax :WAVeform:POINts:MODE <points_mode>
@@ -295,7 +383,7 @@ class oscilloscope(scpi_instrument, delegator):
     # points mode will affect what data is transferred. See the discussion above.
     # Return Format <points_mode><NL>
     # <points_mode> ::= {NORMal | MAXimum | RAW}
-    
+
     # :WAVeform:PREamble
     # (see page 1572)
     # Query Syntax :WAVeform:PREamble?
@@ -320,8 +408,7 @@ class oscilloscope(scpi_instrument, delegator):
     # (type set by :ACQuire:TYPE).
     # <count> ::= Average count or 1 if PEAK or NORMal; an integer in NR1
     # format (count set by :ACQuire:COUNt).
-    
-    
+
     # :WAVeform:PREamble
     # (see page 1572)
     # Query Syntax :WAVeform:PREamble?
@@ -345,7 +432,7 @@ class oscilloscope(scpi_instrument, delegator):
     # type, 1 for PEAK detect type; an integer in NR1 format
     # (type set by :ACQuire:TYPE).
     # <count> ::= Average count or 1 if PEAK or NORMal; an
-    
+
     # :WAVeform:SEGMented:ALL
     # (see page 1572)
     # Command Syntax :WAVeform:SEGMented:ALL {{0 | OFF} | {1 | ON}}
@@ -375,7 +462,7 @@ class oscilloscope(scpi_instrument, delegator):
     # segments" setting.
     # Return Format <setting><NL>
     # <setting> ::= {0 | 1}
-    
+
     # :WAVeform:SEGMented:COUNt
     # (see page 1572)
     # Query Syntax :WAVeform:SEGMented:COUNt?
@@ -389,7 +476,7 @@ class oscilloscope(scpi_instrument, delegator):
     # :SINGle, or :RUN commands.
     # Return Format <count> ::= an integer from 2 to 1000 in NR1 format (count set by
     # :ACQuire:SEGMented:COUNt).
-    
+
     # :WAVeform:SEGMented:TTAG
     # (see page 1572)
     # Query Syntax :WAVeform:SEGMented:TTAG?
@@ -397,7 +484,7 @@ class oscilloscope(scpi_instrument, delegator):
     # selected segmented memory index. The index is selected using the
     # :ACQuire:SEGMented:INDex command.
     # Return Format <time_tag> ::= in NR3 format
-    
+
     # :WAVeform:SEGMented:XLISt
     # (see page 1572)
     # Query Syntax :WAVeform:SEGMented:XLISt? <xlist_type>
@@ -416,7 +503,7 @@ class oscilloscope(scpi_instrument, delegator):
     # Return Format <return_value><NL>
     # <return_value> ::= binary block data in IEEE 488.2 # format, contains
     # comma-separated string with X-info for all segments
-    
+
     # :WAVeform:SOURce
     # (see page 1572)
     # Command Syntax :WAVeform:SOURce <source>
@@ -462,7 +549,7 @@ class oscilloscope(scpi_instrument, delegator):
     # <n> ::= 1 to (# analog channels) in NR1 format
     # <m> ::= 1 to (# math functions) in NR1 format
     # <r> ::= 1 to (# ref waveforms) in NR1 format
-    
+
     # :WAVeform:UNSigned
     # (see page 1572)
     # Command Syntax :WAVeform:UNSigned <unsigned>
@@ -479,7 +566,7 @@ class oscilloscope(scpi_instrument, delegator):
     # currently selected waveform.
     # Return Format <unsigned><NL>
     # <unsigned> ::= {0 | 1}
-    
+
     # :WAVeform:VIEW
     # (see page 1572)
     # Command Syntax :WAVeform:VIEW <view>
@@ -497,7 +584,7 @@ class oscilloscope(scpi_instrument, delegator):
     # selected waveform.
     # Return Format <view><NL>
     # <view> ::= {MAIN | ALL}
-    
+
     # :WAVeform:XINCrement
     # (see page 1572)
     # Query Syntax :WAVeform:XINCrement?
@@ -507,7 +594,7 @@ class oscilloscope(scpi_instrument, delegator):
     # Return Format <value><NL>
     # <value> ::= x-increment in the current preamble in 64-bit
     # floating point NR3 format
-    
+
     # :WAVeform:XORigin
     # (see page 1572)
     # Query Syntax :WAVeform:XORigin?
@@ -519,7 +606,7 @@ class oscilloscope(scpi_instrument, delegator):
     # <value> ::= x-origin value in the current preamble in 64-bit
     # floating point NR3 format
     # See Also • "Introduction to :WAVeform Commands"
-    
+
     # :WAVeform:XREFerence
     # (see page 1572)
     # Query Syntax :WAVeform:XREFerence?
@@ -529,7 +616,7 @@ class oscilloscope(scpi_instrument, delegator):
     # displayed and XREFerence is always 0.
     # Return Format <value><NL>
     # <value> ::= x-reference value = 0 in 32-bit NR1 format
-    
+
     # :WAVeform:YINCrement
     # (see page 1572)
     # Query Syntax :WAVeform:YINCrement?
@@ -539,7 +626,7 @@ class oscilloscope(scpi_instrument, delegator):
     # Return Format <value><NL>
     # <value> ::= y-increment value in the current preamble in 32-bit
     # floating point NR3 format
-    
+
     # :WAVeform:YORigin
     # (see page 1572)
     # Query Syntax :WAVeform:YORigin?
@@ -550,7 +637,7 @@ class oscilloscope(scpi_instrument, delegator):
     # Return Format <value><NL>
     # <value> ::= y-origin in the current preamble in 32-bit
     # floating point NR3 format
-    
+
     # :WAVeform:YREFerence
     # (see page 1572)
     # Query Syntax :WAVeform:YREFerence?
@@ -561,8 +648,7 @@ class oscilloscope(scpi_instrument, delegator):
     # Return Format <value><NL>
     # <value> ::= y-reference value in the current preamble in 32-bit
     # NR1 format
-    
-    
+
     # :ACQuire:DIGitizer
     # (see page 1572)
     # Command Syntax :ACQuire:DIGitizer {{0 | OFF} | {1 | ON}}
@@ -590,11 +676,6 @@ class oscilloscope(scpi_instrument, delegator):
     # Return Format <setting><NL>
     # <setting> ::= {0 | 1}
 
-
-
-
-
-
     # '''Agilent 4-channel mixed signal DSO'''
     # def __init__(self, interface_visa, force_trigger=False, reset=False, timeout=2): # 10 seconds recommended in programmer"s manual page 63
         # '''interface_visa'''
@@ -603,7 +684,7 @@ class oscilloscope(scpi_instrument, delegator):
         # delegator.__init__(self)  # Clears self._interfaces list, so must happen before add_interface_visa(). --FL 12/21/2016
         # self.add_interface_visa(interface_visa, timeout = timeout)
         # if reset:
-            # self.reset() # Get to a known state for full automation if so desired.
+        # self.reset() # Get to a known state for full automation if so desired.
         # self.get_interface().write(":WAVeform:FORMat ASCII")
         # self.get_interface().write(":WAVeform:POINts:MODE RAW") #maximum number of points by default (scope must be stopped)
         # self.force_trigger = force_trigger
@@ -616,15 +697,15 @@ class oscilloscope(scpi_instrument, delegator):
         # self.get_interface().write(f":CHANnel{number}:DISPlay ON") # make sure it"s on
         # self.get_interface().write(f":WAVeform:SOURce CHANnel{number}") #make sure one of the selected channels is always active to get time info
         # def get_channel_settings(number):
-            # result              = {}
-            # result["scale"]     = float(self.get_interface().ask(f":CHANnel{number}:SCALe?"))
-            # result["offset"]    = float(self.get_interface().ask(f":CHANnel{number}:OFFSet?"))# This is the value represented by the screen center.
-            # result["units"]     = self.get_interface().ask(f":CHANnel{number}:UNITs?")[0]# Pick up just the first letter A for AMP or V for VOLT.
-            # result["label"]     = self.get_interface().ask(f":CHANnel{number}:LABel?").decode().strip("'")
-            # result["bwlimit"]   = self.get_interface().ask(f":CHANnel{number}:BWLimit?")
-            # result["coupling"]  = self.get_interface().ask(f":CHANnel{number}:COUPling?")
-            # result["impedance"] = self.get_interface().ask(f":CHANnel{number}:IMPedance?")
-            # return result
+        # result              = {}
+        # result["scale"]     = float(self.get_interface().ask(f":CHANnel{number}:SCALe?"))
+        # result["offset"]    = float(self.get_interface().ask(f":CHANnel{number}:OFFSet?"))# This is the value represented by the screen center.
+        # result["units"]     = self.get_interface().ask(f":CHANnel{number}:UNITs?")[0]# Pick up just the first letter A for AMP or V for VOLT.
+        # result["label"]     = self.get_interface().ask(f":CHANnel{number}:LABel?").decode().strip("'")
+        # result["bwlimit"]   = self.get_interface().ask(f":CHANnel{number}:BWLimit?")
+        # result["coupling"]  = self.get_interface().ask(f":CHANnel{number}:COUPling?")
+        # result["impedance"] = self.get_interface().ask(f":CHANnel{number}:IMPedance?")
+        # return result
         # # Extended Channels
         # self.add_channel_probe_gain(name=f"{name}_probe_gain", number=number)
         # self.add_channel_BWLimit(name=f"{name}_BWlimit", number=number)
@@ -638,7 +719,7 @@ class oscilloscope(scpi_instrument, delegator):
         # trace_info.set_delegator(self)
         # self._add_channel(trace_info)
         # return scope_channel
-        
+
     # def add_Xchannels(self, prefix):
         # self.add_channel_Xrange(name=f"{prefix}_Xrange")
         # self.add_channel_Xposition(name=f"{prefix}_Xposition")
@@ -655,16 +736,16 @@ class oscilloscope(scpi_instrument, delegator):
 
     # def add_channel_time(self,name):
         # def compute_x_points(self):
-            # '''Data conversion:
-            # voltage = [(data value - yreference) * yincrement] + yorigin
-            # time = [(data point number - xreference) * xincrement] + xorigin'''
-            # xpoints = [(x - self.time_info["reference"]) * self.time_info["increment"] + self.time_info["origin"] for x in range(self.time_info["points"])]
-            # return xpoints
+        # '''Data conversion:
+        # voltage = [(data value - yreference) * yincrement] + yorigin
+        # time = [(data point number - xreference) * xincrement] + xorigin'''
+        # xpoints = [(x - self.time_info["reference"]) * self.time_info["increment"] + self.time_info["origin"] for x in range(self.time_info["points"])]
+        # return xpoints
         # time_channel = channel(name, read_function=lambda: compute_x_points(self))
         # time_channel.set_delegator(self)
         # self._add_channel(time_channel)
         # def get_time_info(self):
-            # return self.time_info
+        # return self.time_info
         # time_info = channel(name + "_info", read_function=lambda: get_time_info(self))
         # time_info.set_delegator(self)
         # self._add_channel(time_info)
@@ -676,14 +757,15 @@ class oscilloscope(scpi_instrument, delegator):
         # allowed_points.extend(decadeListRange([1000,2000,5000],4))  TODO from PyICe.lab_utils.ranges import decadeListRange
         # allowed_points.extend(8000000,)
         # if points not in allowed_points:
-            # raise ValueError(f"\n\n{self.get_name()}: set_points: points argument muse be in: {allowed_points}")
+        # raise ValueError(f"\n\n{self.get_name()}: set_points: points argument muse be in: {allowed_points}")
         # self.get_interface().write(f":WAVeform:POINts {points}")
 
     # def get_channel_enable_status(self, number):
         # return int(self.get_interface().ask(f":CHANnel{number}:DISPlay?"))
 
     # def get_time_base(self):
-        # return float(self.get_interface().ask(":TIMebase:RANGe?")) / 10 # Always 10 horizontal divisions
+        # return float(self.get_interface().ask(":TIMebase:RANGe?")) / 10 #
+        # Always 10 horizontal divisions
 
     # def trigger_force(self):
         # self.get_interface().write(":RUN;:TRIGger:FORCe")
@@ -702,13 +784,13 @@ class oscilloscope(scpi_instrument, delegator):
         # self.time_info["scale"]       = self.time_info["increment"] * self.time_info["points"] / 10
         # self.time_info["enable_status"] = {}
         # for scope_channel_number in range(1,5):
-            # self.time_info["enable_status"][scope_channel_number] = int(self.get_interface().ask(f":CHANnel{scope_channel_number}:DISPlay?"))
+        # self.time_info["enable_status"][scope_channel_number] = int(self.get_interface().ask(f":CHANnel{scope_channel_number}:DISPlay?"))
 
     # def _read_scope_channel(self, scope_channel_number):
         # '''return list of y-axis points for named channel
-            # list will be datalogged by logger as a string in a single cell in the table
-            # trigger=False can by used to suppress acquisition of new data by the instrument so that
-            # data from a single trigger may be retrieved from each of the four channels in turn by read_channels()
+        # list will be datalogged by logger as a string in a single cell in the table
+        # trigger=False can by used to suppress acquisition of new data by the instrument so that
+        # data from a single trigger may be retrieved from each of the four channels in turn by read_channels()
         # '''
         # self.get_interface().write(f":WAVeform:SOURce CHANnel{scope_channel_number}")
         # raw_data = self.get_interface().ask(":WAVeform:DATA?")
@@ -730,9 +812,9 @@ class oscilloscope(scpi_instrument, delegator):
         # self._read_scope_time_info()
         # results = results_ord_dict()
         # for channel in channels:
-            # results[channel.get_name()] = channel.read_without_delegator()
+        # results[channel.get_name()] = channel.read_without_delegator()
         # return results
-        
+
     # def add_channel_probe_gain(self, name, number):
         # new_channel = channel(name, write_function=lambda value : self.get_interface().write(f":CHANnel{number}:PROBe {value}"))
         # self._add_channel(new_channel)
@@ -740,13 +822,13 @@ class oscilloscope(scpi_instrument, delegator):
 
     # def add_channel_BWLimit(self, name, number):
         # def _set_BWLimit(number, value):
-            # if value in [True, False]:
-                # value = "ON" if value else "OFF"
-            # if str(value).upper() in ["TRUE", "FALSE"]:
-                # value = "ON" if str(value).upper()== "TRUE" else "OFF"
-            # if str(value).upper() not in ["ON", "OFF"]:
-                # value = "ON" if value else "OFF" # Best guess but at least no SCPI error.
-            # self.get_interface().write(f":CHANnel{number}:BWLimit {value}")
+        # if value in [True, False]:
+        # value = "ON" if value else "OFF"
+        # if str(value).upper() in ["TRUE", "FALSE"]:
+        # value = "ON" if str(value).upper()== "TRUE" else "OFF"
+        # if str(value).upper() not in ["ON", "OFF"]:
+        # value = "ON" if value else "OFF" # Best guess but at least no SCPI error.
+        # self.get_interface().write(f":CHANnel{number}:BWLimit {value}")
         # new_channel = channel(name, write_function=lambda value : _set_BWLimit(number, value))
         # new_channel.add_preset("ON",    "Enable 25Mhz limit")
         # new_channel.add_preset("OFF",   "Disable 25MHz limit")
@@ -757,7 +839,7 @@ class oscilloscope(scpi_instrument, delegator):
         # new_channel = channel(name, write_function=lambda value : self.get_interface().write(f":CHANnel{number}:RANGe {value}"))
         # self._add_channel(new_channel)
         # return new_channel
-            
+
     # def add_channel_Yoffset(self, name, number):
         # new_channel = channel(name, write_function=lambda value : self.get_interface().write(f":CHANnel{number}:OFFSet {-value}"))
         # self._add_channel(new_channel)
@@ -765,12 +847,12 @@ class oscilloscope(scpi_instrument, delegator):
 
     # def add_channel_impedance(self, name, number):
         # def _set_impedance(number, value):
-            # if value in [50, "50", 1000000, 1e6, "1000000", "1e6", "1M"]:
-                # value = "FIFTy" if value in [50, "50"] else "ONEMeg"
-            # else:
-                # raise ValueError("\n\nScope input impedance must be either 50, 1000000 or 1M")
-            # self.get_interface().write(f":CHANnel{number}:IMPedance {value}")
-            # self.operation_complete()
+        # if value in [50, "50", 1000000, 1e6, "1000000", "1e6", "1M"]:
+        # value = "FIFTy" if value in [50, "50"] else "ONEMeg"
+        # else:
+        # raise ValueError("\n\nScope input impedance must be either 50, 1000000 or 1M")
+        # self.get_interface().write(f":CHANnel{number}:IMPedance {value}")
+        # self.operation_complete()
         # new_channel = channel(name, write_function=lambda value : _set_impedance(number, value))
         # new_channel.add_preset("50",    "50Ω")
         # new_channel.add_preset("1M",    "1MΩ")
@@ -779,24 +861,24 @@ class oscilloscope(scpi_instrument, delegator):
 
     # def add_channel_units(self, name, number):
         # def _set_units(number, value):
-            # if value.upper() in ["V", "A", "VOLTS", "AMPS"]:
-                # value = "VOLT" if value.upper() in ["V", "VOLTS"] else "AMPere"
-            # else:
-                # raise ValueError("\n\nUnits must be one of V, A, VOLTS, AMPS")
-            # self.get_interface().write(f":CHANnel{number}:UNITs {value}")
-            # self.operation_complete()
+        # if value.upper() in ["V", "A", "VOLTS", "AMPS"]:
+        # value = "VOLT" if value.upper() in ["V", "VOLTS"] else "AMPere"
+        # else:
+        # raise ValueError("\n\nUnits must be one of V, A, VOLTS, AMPS")
+        # self.get_interface().write(f":CHANnel{number}:UNITs {value}")
+        # self.operation_complete()
         # new_channel = channel(name, write_function=lambda value : _set_units(number, value))
         # new_channel.add_preset("VOLTS", "Volts")
         # new_channel.add_preset("AMPS",  "Amperes")
         # self._add_channel(new_channel)
         # return new_channel
-        
+
     # def add_channel_coupling(self, name, number):
         # def _set_coupling(number, value):
-            # if value.upper() not in ["AC", "DC"]:
-                # raise ValueError("\n\nUnits must be either AC or DC")
-            # self.get_interface().write(f":CHANnel{number}:COUPling {value}")
-            # self.operation_complete()
+        # if value.upper() not in ["AC", "DC"]:
+        # raise ValueError("\n\nUnits must be either AC or DC")
+        # self.get_interface().write(f":CHANnel{number}:COUPling {value}")
+        # self.operation_complete()
         # new_channel = channel(name, write_function=lambda value : _set_coupling(number, value))
         # new_channel.add_preset("AC", "AC")
         # new_channel.add_preset("DC", "DC")
@@ -805,26 +887,26 @@ class oscilloscope(scpi_instrument, delegator):
 
     # def add_channel_Xrange(self, name):
         # def _set_Xrange(value):
-            # self.get_interface().write(f":TIMebase:RANGe {value}")
-            # self.operation_complete()
+        # self.get_interface().write(f":TIMebase:RANGe {value}")
+        # self.operation_complete()
         # new_channel = channel(name, write_function=lambda value : _set_Xrange(value))
         # self._add_channel(new_channel)
         # return new_channel
 
     # def add_channel_Xposition(self, name):
         # def _set_Xposition(value):
-            # self.get_interface().write(f":TIMebase:POSition {-value}")
-            # self.operation_complete()
+        # self.get_interface().write(f":TIMebase:POSition {-value}")
+        # self.operation_complete()
         # new_channel = channel(name, write_function=lambda value : _set_Xposition(value))
         # self._add_channel(new_channel)
         # return new_channel
 
     # def add_channel_Xreference(self, name):
         # def _set_xreference(value):
-            # if value.upper() not in ["LEFT", "CENTER", "RIGHT"]:
-                # raise ValueError("\n\nX reference must be one of must be one of: LEFT, CENTER, RIGHT")
-            # self.get_interface().write(f":TIMebase:REFerence {value}")
-            # self.operation_complete()
+        # if value.upper() not in ["LEFT", "CENTER", "RIGHT"]:
+        # raise ValueError("\n\nX reference must be one of must be one of: LEFT, CENTER, RIGHT")
+        # self.get_interface().write(f":TIMebase:REFerence {value}")
+        # self.operation_complete()
         # new_channel = channel(name, write_function=lambda value : _set_xreference(value))
         # new_channel.add_preset("LEFT",      "One Division from the left")
         # new_channel.add_preset("CENTER",    "Screen Center")
@@ -834,17 +916,17 @@ class oscilloscope(scpi_instrument, delegator):
 
     # def add_channel_runmode(self, name):
         # def _set_runmode(value):
-            # if value.upper() not in ["RUN", "STOP", "SINGLE"]:
-                # raise ValueError("\n\nRun mode must be one of: RUN, STOP, SINGLE")
-            # self.get_interface().write(f":{value}")
-            # # self.operation_complete()
+        # if value.upper() not in ["RUN", "STOP", "SINGLE"]:
+        # raise ValueError("\n\nRun mode must be one of: RUN, STOP, SINGLE")
+        # self.get_interface().write(f":{value}")
+        # # self.operation_complete()
         # new_channel = channel(name, write_function=lambda value : _set_runmode(value))
         # new_channel.add_preset("RUN",       "Free running mode")
         # new_channel.add_preset("STOP",      "Stopped")
         # new_channel.add_preset("SINGLE",    "Waiting for trigger")
         # self._add_channel(new_channel)
         # return new_channel
-            
+
     # def add_channel_triggerlevel(self, name): # TODO Needs operation complete
         # new_channel = channel(name, write_function=lambda value : self.get_interface().write(f":TRIGger:LEVel {value}"))
         # self._add_channel(new_channel)
@@ -852,22 +934,22 @@ class oscilloscope(scpi_instrument, delegator):
 
     # def add_channel_triggermode(self, name):
         # def _set_triggermode(value):
-            # if value.upper() not in ["AUTO", "NORMAL"]:
-                # raise ValueError("\n\nTrigger mode must be one of: AUTO, NORMAL")
-            # self.get_interface().write(f":TRIGger:SWEep {value}")
-            # self.operation_complete()
+        # if value.upper() not in ["AUTO", "NORMAL"]:
+        # raise ValueError("\n\nTrigger mode must be one of: AUTO, NORMAL")
+        # self.get_interface().write(f":TRIGger:SWEep {value}")
+        # self.operation_complete()
         # new_channel = channel(name, write_function=lambda value : _set_triggermode(value))
         # new_channel.add_preset("AUTO",       "Find a trigger level")
         # new_channel.add_preset("NORMAL",     "Use defined trigger level")
         # self._add_channel(new_channel)
         # return new_channel
-            
+
     # def add_channel_triggerslope(self, name):
         # def _set_triggerslope(value):
-            # if value.upper() not in ["NEGATIVE", "POSITIVE", "EITHER", "ALTERNATE"]:
-                # raise ValueError("\n\nTrigger mode must be one of: AUTO, NORMAL, EITHER, ALTERNATE")
-            # self.get_interface().write(f":TRIGger:SLOPe {value}")
-            # self.operation_complete()
+        # if value.upper() not in ["NEGATIVE", "POSITIVE", "EITHER", "ALTERNATE"]:
+        # raise ValueError("\n\nTrigger mode must be one of: AUTO, NORMAL, EITHER, ALTERNATE")
+        # self.get_interface().write(f":TRIGger:SLOPe {value}")
+        # self.operation_complete()
         # new_channel = channel(name, write_function=lambda value : _set_triggerslope(value))
         # new_channel.add_preset("POSITIVE",      "Positive edges")
         # new_channel.add_preset("NEGATIVE",      "Negative edges")
@@ -875,13 +957,13 @@ class oscilloscope(scpi_instrument, delegator):
         # new_channel.add_preset("ALTERNATE",     "Alternate between edges")
         # self._add_channel(new_channel)
         # return new_channel
-            
+
     # def add_channel_triggersource(self, name):
         # def _set_triggersource(value):
-            # if value.upper() not in ["EXT", "LINE", "WGEN", "CHANNEL1", "CHANNEL2", "CHANNEL3", "CHANNEL4"]:
-                # raise ValueError("\n\nTrigger mode must be one of: EXT, LINE, WGEN, CHANx where x=[1..4]]")
-            # self.get_interface().write(f":TRIGger:SOURce {value}")
-            # self.operation_complete()
+        # if value.upper() not in ["EXT", "LINE", "WGEN", "CHANNEL1", "CHANNEL2", "CHANNEL3", "CHANNEL4"]:
+        # raise ValueError("\n\nTrigger mode must be one of: EXT, LINE, WGEN, CHANx where x=[1..4]]")
+        # self.get_interface().write(f":TRIGger:SOURce {value}")
+        # self.operation_complete()
         # new_channel = channel(name, write_function=lambda value : _set_triggersource(value))
         # new_channel.add_preset("EXT",       "External Trigger")
         # new_channel.add_preset("LINE",      "Line Trigger")
@@ -895,10 +977,10 @@ class oscilloscope(scpi_instrument, delegator):
 
     # def add_channel_acquire_type(self, name):
         # def _set_acquiretype(value):
-            # if value.upper() not in ["NORMAL", "AVERAGE", "HRESOLUTION", "PEAK"]:
-                # raise ValueError("\n\nAcquire type must be one of: NORMAL, AVERAGE, HRESOLUTION, PEAK")
-            # self.get_interface().write(f":ACQuire:TYPE {value}")
-            # self.operation_complete()
+        # if value.upper() not in ["NORMAL", "AVERAGE", "HRESOLUTION", "PEAK"]:
+        # raise ValueError("\n\nAcquire type must be one of: NORMAL, AVERAGE, HRESOLUTION, PEAK")
+        # self.get_interface().write(f":ACQuire:TYPE {value}")
+        # self.operation_complete()
         # new_channel = channel(name, write_function=lambda value : _set_acquiretype(value))
         # new_channel.add_preset("NORMAL",        "Sets the oscilloscope in the normal mode")
         # new_channel.add_preset("AVERAGE",       "sets the oscilloscope in the averaging mode. You can set the count by sending the :ACQuire:COUNt command followed by the number of averages. In this mode, the value for averages is an integer from 1 to 65536 (Acquire Count section of manual says 2..65326, setting to 1 results in Data Out of Range (SLM)). The COUNt value determines the number of averages that must be acquired")
@@ -906,17 +988,17 @@ class oscilloscope(scpi_instrument, delegator):
         # new_channel.add_preset("PEAK",          "sets the oscilloscope in the peak detect mode. In this mode, :ACQuire:COUNt has no meaning")
         # self._add_channel(new_channel)
         # return new_channel
-        
+
     # def add_channel_acquire_count(self, name):
         # def _set_acquirecount(value):
-            # if value not in range(2,65536+1):
-                # raise ValueError("\n\nAcquire Count must be in [2..65536]")
-            # self.get_interface().write(f":ACQuire:COUNt {value}")
-            # self.operation_complete()
+        # if value not in range(2,65536+1):
+        # raise ValueError("\n\nAcquire Count must be in [2..65536]")
+        # self.get_interface().write(f":ACQuire:COUNt {value}")
+        # self.operation_complete()
         # new_channel = channel(name, write_function=lambda value : _set_acquirecount(value))
         # self._add_channel(new_channel)
         # return new_channel
-            
+
     # def add_channel_pointcount(self, name):
         # new_channel = channel(name, write_function=lambda value : self.set_points(value))
         # self._add_channel(new_channel)

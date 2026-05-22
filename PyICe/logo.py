@@ -1,3 +1,4 @@
+"""Logo module."""
 
 logo = '''
         &&&&&&&&&      &&&&&&&&&&      &&&&&&&&&&      &&&&&&&&&&
@@ -63,7 +64,7 @@ M ` `   `  `   `   `     `                    `         `    `  `  `   J
         M      JM      JM      JM      JF      JF      JF      JF
         MMMMMMMMM      JMMMMMMMM#      JMMMMMMMMF      JMMMMMMMMF'''
 
-isometric = '''
+isometric = r'''
                ____           ______   ____
               /\  _`\        /\__  _\ /\  _`\\
               \ \ \L\ \__  __\/_/\ \/ \ \ \/\_\\     __
@@ -73,7 +74,7 @@ isometric = '''
                   \/_/  `/___/> \\\\/_____/ \/___/  \/____/
                            /\___/
                            \/__/'''
-flames = '''
+flames = r'''
                        (        (
                        )\ )     )\ )  (
                       (()/((   (()/(  )\    (
@@ -83,7 +84,7 @@ flames = '''
                       |  _/ || || | | (__/ -_)
                       |_|  \_, |___| \___\___|
                            |__/'''
-sign = '''
+sign = r'''
                               \|||/
                               (o o)
            +-------------oooO--(_)---------------------+
@@ -103,10 +104,13 @@ sign = '''
                               || ||
                              ooO Ooo'''
 
+
 def display():
-    #print logo,
-    #print isometric
+    # print logo,
+    # print isometric
+    """Perform display operation."""
     print(sign)
+
 
 if __name__ == '__main__':
     display()

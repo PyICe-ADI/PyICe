@@ -1,3 +1,4 @@
+"""Tutorial 4 supply module."""
 # ================================
 # TUTORIAL 4 Adding a Power Supply
 # ================================
@@ -7,7 +8,8 @@ from PyICe import lab_interfaces
 from PyICe.lab_instruments.hameg_4040 import hameg_4040
 
 interface_factory = lab_interfaces.interface_factory()
-supply_interface = interface_factory.get_visa_serial_interface("COM16", baudrate=115200, rtscts=True, timeout=10)
+supply_interface = interface_factory.get_visa_serial_interface(
+    "COM16", baudrate=115200, rtscts=True, timeout=10)
 
 hameg = hameg_4040(supply_interface)
 hameg.add_channel(channel_name="force_voltage", num=3, ilim=1, delay=0.25)
@@ -24,4 +26,8 @@ print("Reading ALL channels")
 print(channel_master.read_all_channels())
 
 print("Reading the '<your_name>_vsense' and '<your_name>_isense' auxilliary channels")
-print(channel_master.read_channels(item_list=['force_voltage_vsense', 'force_voltage_isense']))
+print(
+    channel_master.read_channels(
+        item_list=[
+            'force_voltage_vsense',
+            'force_voltage_isense']))
