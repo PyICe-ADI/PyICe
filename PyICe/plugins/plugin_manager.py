@@ -87,7 +87,7 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                     "*** Expect a crash when generating plots ****",
                     "")
 
-    def add_test(self, test, debug=False, skip_plot=False, skip_eval=False):
+    def add_test(self, test, debug=False, skip_plot=False, skip_eval=False, test_obj=None):
         """Adds a script to the list that will be operated on. If this is the first time a test is added to this instance of plugin manager, plugin manager also takes this opportunity to acquire the list of plugins used for the project.
 
         args: test - class object. A test that contains the methods necessary for data collection and processing in the project.
@@ -98,8 +98,12 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
             skip_eval: Skip eval.
             skip_plot: Skip plot.
             test: Test.
+            test_obj: ?
         """
-        a_test = test()
+        if test is None:
+            a_test = test_obj
+        else:
+            a_test = test()
         a_test._debug = debug
         if debug:
             self.debug = True
@@ -1317,6 +1321,4 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                         prune=True,
                         file_format='svg',
                         engine='neato',
-                        file_location=test._module_path +
-                        os.sep +
-                        'scratch')
+                        file_location=test._module_path + os.sep + 'scratch')
