@@ -6,8 +6,6 @@
 def print_banner(*message, offset=1, length=80):
     """Print a box-drawn banner to stdout. See build_banner for details.
 
-    Performs the described operation on the object's internal state.
-
 
     >>> from PyICe.lab_utils.banners import print_banner
     >>> callable(print_banner)

@@ -248,7 +248,6 @@ def test():
     def thinking_of_a_number():
         """Return a random integer in [0, 100) and print it.
 
-        Performs the described operation on the object's internal state.
 
         >>> from PyICe.lab_utils.polling_delay import thinking_of_a_number
         >>> thinking_of_a_number() is not None or True
@@ -283,10 +282,6 @@ def test():
 
         def get_time(self):
             """Return the current virtual time.
-            Returns the stored time value from the object's internal state.
-            Returns the stored time from the object's internal state.
-
-            Returns the stored time from the object's internal state.
 
 
             >>> from PyICe.lab_utils.polling_delay import get_time

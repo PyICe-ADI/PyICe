@@ -80,10 +80,6 @@ class delay_loop(object):
 
     def get_count(self):
         """Return the total number of times delay() has been called.
-        Returns the stored count value from the object's internal state.
-        Returns the stored count from the object's internal state.
-
-        Returns the stored count from the object's internal state.
 
 
         >>> dl = delay_loop(begin=False)
@@ -97,10 +93,6 @@ class delay_loop(object):
 
     def get_total_time(self):
         """Return the elapsed wall-clock time since the first delay.
-        Returns the stored total time value from the object's internal state.
-        Returns the stored total time from the object's internal state.
-
-        Returns the stored total time from the object's internal state.
 
 
         >>> from PyICe.lab_utils.delay_loop import delay_loop

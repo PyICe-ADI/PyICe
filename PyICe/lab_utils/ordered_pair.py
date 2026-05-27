@@ -41,8 +41,6 @@ class ordered_pair(list):
             def x_transform(x):
                 """Return *x* unchanged (identity fallback).
 
-                Performs the described operation on the object's internal state.
-
 
                 >>> from PyICe.lab_utils.ordered_pair import ordered_pair
                 >>> hasattr(ordered_pair, 'x_transform')
@@ -55,8 +53,6 @@ class ordered_pair(list):
         if y_transform is None:
             def y_transform(y):
                 """Return *y* unchanged (identity fallback).
-
-                Performs the described operation on the object's internal state.
 
 
                 >>> from PyICe.lab_utils.ordered_pair import ordered_pair
@@ -112,8 +108,6 @@ class ordered_pair(list):
     def xscale(self, x_scale):
         """Multiply all x values by a constant scale factor in place.
 
-        Supports the ``ordered_pair`` workflow by performing the described operation.
-
 
         >>> from PyICe.lab_utils.ordered_pair import ordered_pair
         >>> hasattr(ordered_pair, 'xscale')
@@ -126,8 +120,6 @@ class ordered_pair(list):
 
     def yscale(self, y_scale):
         """Multiply all y values by a constant scale factor in place.
-
-        Supports the ``ordered_pair`` workflow by performing the described operation.
 
 
         >>> from PyICe.lab_utils.ordered_pair import ordered_pair
@@ -142,8 +134,6 @@ class ordered_pair(list):
     def xoffset(self, x_offset):
         """Add a constant offset to all x values in place.
 
-        Supports the ``ordered_pair`` workflow by performing the described operation.
-
 
         >>> from PyICe.lab_utils.ordered_pair import ordered_pair
         >>> hasattr(ordered_pair, 'xoffset')
@@ -157,8 +147,6 @@ class ordered_pair(list):
     def yoffset(self, y_offset):
         """Add a constant offset to all y values in place.
 
-        Supports the ``ordered_pair`` workflow by performing the described operation.
-
 
         >>> from PyICe.lab_utils.ordered_pair import ordered_pair
         >>> hasattr(ordered_pair, 'yoffset')
@@ -171,8 +159,6 @@ class ordered_pair(list):
 
     def xyscale(self, x_scale, y_scale):
         """Multiply all x and y values by their respective scale factors in place.
-
-        Supports the ``ordered_pair`` workflow by performing the described operation.
 
 
         >>> from PyICe.lab_utils.ordered_pair import ordered_pair
@@ -509,8 +495,6 @@ class ordered_pair(list):
     def x_extents(self):
         """Compute the minimum, maximum, and range of the x-axis data.
 
-        Supports the ``ordered_pair`` workflow by performing the described operation.
-
 
         >>> from PyICe.lab_utils.ordered_pair import ordered_pair
         >>> hasattr(ordered_pair, 'x_extents')
@@ -525,8 +509,6 @@ class ordered_pair(list):
 
     def y_extents(self):
         """Compute the minimum, maximum, and range of the y-axis data.
-
-        Supports the ``ordered_pair`` workflow by performing the described operation.
 
 
         >>> from PyICe.lab_utils.ordered_pair import ordered_pair

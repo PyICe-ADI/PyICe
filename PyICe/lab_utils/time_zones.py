@@ -72,8 +72,6 @@ class US_Time_Zone(datetime.tzinfo):
     def dst(self, dt):
         """Return the DST adjustment for *dt* (one hour or zero).
 
-        Supports the ``US_Time_Zone`` workflow by performing the described operation.
-
         >>> import datetime
         >>> US_Eastern_Time().dst(datetime.datetime(2024, 1, 15))
         datetime.timedelta(0)
@@ -101,8 +99,6 @@ class US_Time_Zone(datetime.tzinfo):
 
     def tzname(self, dt):
         """Return the timezone abbreviation, switching for DST.
-
-        Supports the ``US_Time_Zone`` workflow by performing the described operation.
 
         >>> import datetime
         >>> US_Pacific_Time().tzname(datetime.datetime(2024, 12, 1))

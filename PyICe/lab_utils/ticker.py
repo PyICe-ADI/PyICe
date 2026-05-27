@@ -39,8 +39,6 @@ class ticker(object):
 
     def get_quote(self, symbol):
         """Fetch a single stock quote from Yahoo Finance.
-        Returns the stored quote value from the object's internal state.
-        Returns the stored quote from the object's internal state.
 
         Issues a SCPI query to the instrument and parses the response.
 
@@ -89,8 +87,6 @@ class ticker(object):
 
     def rotate(self):
         """Rotate the tape string one character to the left, wrapping around.
-
-        Supports the ``ticker`` workflow by performing the described operation.
 
 
         >>> from PyICe.lab_utils.ticker import ticker
@@ -148,8 +144,6 @@ class ticker(object):
 
     def disp(self, msg):
         """Print *msg* to the console with a carriage return, overwriting the current line.
-
-        Supports the ``ticker`` workflow by performing the described operation.
 
 
         >>> from PyICe.lab_utils.ticker import ticker

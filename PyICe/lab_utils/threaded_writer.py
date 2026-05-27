@@ -69,8 +69,6 @@ class threaded_writer(object):
         def stop(self):
             """Signal the thread to stop. The thread cannot be restarted.
 
-            Supports the ``stop_thread`` workflow by performing the described operation.
-
 
             >>> from PyICe.lab_utils.threaded_writer import threaded_writer
             >>> hasattr(threaded_writer, "stop_thread")
@@ -200,8 +198,6 @@ class threaded_writer(object):
 
                 def generator(self, sequence):
                     """Yield each value from the sequence one at a time.
-
-                    Supports the ``sequencer`` workflow by performing the described operation.
 
 
                     >>> from PyICe.lab_utils.threaded_writer import threaded_writer
