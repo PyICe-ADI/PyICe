@@ -1,4 +1,8 @@
-"""Autonicstk instrument driver."""
+"""Autonicstk instrument driver.
+
+>>> from PyICe.lab_instruments.autonicstk import autonicstk
+
+"""
 from ..lab_core import *  # noqa: F403
 from .modbus_instrument import modbus_register
 
@@ -7,10 +11,14 @@ class autonicstk(instrument):
     """Autonicstk (instrument subclass)."""
     def __init__(self, interface_raw_serial, modbus_address):
         """Initialize autonicstk.
+        Initializes 4 instance attributes that configure the object's
+        behavior.
+
+        Calls the parent constructor to inherit base behavior, and initializes 4 instance attributes that configure the object's behavior.
 
         Args:
-            interface_raw_serial: Interface raw serial.
-            modbus_address: Modbus address.
+            interface_raw_serial: Raw serial interface instance for communication.
+            modbus_address: Modbus address to use.
         """
         import minimalmodbus
         # minimalmodbus.BAUDRATE = 38400
@@ -30,6 +38,9 @@ class autonicstk(instrument):
 
     def add_basic_channels(self, channel_name):
         """Add a basic channels.
+        Creates and registers a new basic channels.
+
+        Appends a new basic channels entry to the object's internal collection.
 
         Args:
             channel_name: Name for the new channel.
@@ -40,6 +51,9 @@ class autonicstk(instrument):
 
     def add_advanced_channels(self, channel_name):
         """Add a advanced channels.
+        Creates and registers a new advanced channels.
+
+        Appends a new advanced channels entry to the object's internal collection.
 
         Args:
             channel_name: Name for the new channel.
@@ -57,21 +71,33 @@ class autonicstk(instrument):
         self.add_channels_alarm_config(channel_name)
 
     def get_decimal(self):
-        """Return the decimal.
+        """Return the current decimal.
+        Reads the corresponding register from the device via TWI/I2C.
+        Returns the stored decimal from the object's internal state.
+
+        Performs a register-level transaction over the communication bus.
 
         Returns:
-            Result value.
+            The current decimal.
         """
         return self.modbus_pid.read_register(1001, functioncode=4)
 
     def add_channel_measured(self, channel_name):
         """Measured Temperature Readback (PV).
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_register = channel(
             f'{channel_name}_PV',
@@ -86,12 +112,20 @@ class autonicstk(instrument):
 
     def add_channel_units(self, channel_name):
         """Select Celsius or Farenheit. CAUTION: Units also change PID gains.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument and maps it to the underlying device register for read/write access.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_register = register(f'{channel_name}_Units',
                                 size=1,
@@ -108,12 +142,20 @@ class autonicstk(instrument):
 
     def add_channel_setpoint(self, channel_name):
         """Target Temperature Setpoint (SV).
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument and maps it to the underlying device register for read/write access.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_register = modbus_register(channel_name,
                                        read_function=lambda: self.retry(
@@ -140,12 +182,20 @@ class autonicstk(instrument):
 
     def add_channel_heat_mv(self, channel_name):
         """Heater percent power manipulated variable (MV). Can be written directly in manual mode.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument and maps it to the underlying device register for read/write access.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_register = modbus_register(f'{channel_name}_MV_Heat',
                                        read_function=lambda: self.modbus_pid.read_register(
@@ -157,12 +207,20 @@ class autonicstk(instrument):
 
     def add_channel_cool_mv(self, channel_name):
         """Cooler percent power manipulated variable (MV). Can be written directly in manual mode.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument and maps it to the underlying device register for read/write access.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_register = modbus_register(f'{channel_name}_MV_Cool',
                                        read_function=lambda: self.modbus_pid.read_register(
@@ -174,12 +232,20 @@ class autonicstk(instrument):
 
     def add_channel_mode(self, channel_name):
         """Automatic/Manual mode selector. Automatic uses temperature setpoint (SV). Manual uses heat and cool MV setpoints.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument and maps it to the underlying device register for read/write access.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_register = register(f'{channel_name}_Mode',
                                 size=1,
@@ -196,12 +262,20 @@ class autonicstk(instrument):
 
     def add_channel_presets(self, channel_name):
         """Select one of 4 pre-selected temperatures.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument and maps it to the underlying device register for read/write access.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_register = register(f'{channel_name}_Preset',
                                 size=16,
@@ -220,12 +294,20 @@ class autonicstk(instrument):
 
     def add_channel_alarm1(self, channel_name):
         """Alarm 1 output status.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument and maps it to the underlying device register for read/write access.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_register = integer_channel(f'{channel_name}_Alarm1',
                                        size=1,
@@ -240,12 +322,20 @@ class autonicstk(instrument):
 
     def add_channel_alarm2(self, channel_name):
         """Alarm 2 output status.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument and maps it to the underlying device register for read/write access.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_register = integer_channel(f'{channel_name}_Alarm2',
                                        size=1,
@@ -260,12 +350,20 @@ class autonicstk(instrument):
 
     def add_channel_enable_output(self, channel_name):
         """Enable/Disable heat and cool outputs.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument and maps it to the underlying device register for read/write access.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_register = register(f'{channel_name}_enable',
                                 size=1,
@@ -285,12 +383,20 @@ class autonicstk(instrument):
 
     def add_channel_heat_cool_mode(self, channel_name):
         """Enable heat only, cool only or heat-cool mode.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument and maps it to the underlying device register for read/write access.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_register = register(f'{channel_name}_heat_cool_mode',
                                 size=2,
@@ -308,12 +414,20 @@ class autonicstk(instrument):
 
     def add_channel_autotune(self, channel_name):
         """Start autotune sequence.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument and maps it to the underlying device register for read/write access.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_register = register(f'{channel_name}_Autotune',
                                 size=1,
@@ -330,12 +444,20 @@ class autonicstk(instrument):
 
     def add_channels_tuning(self, channel_name):
         """PID control gain settings. See: https://en.wikipedia.org/wiki/PID_controller#Alternative_nomenclature_and_PID_forms.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument and maps it to the underlying device register for read/write access.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channels = []
         new_register = modbus_register(f'{channel_name}_Heat_Proportional',
@@ -457,6 +579,14 @@ class autonicstk(instrument):
 
     def add_channel_sensor_type(self, channel_name):
         """Add a channel sensor type.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument and maps it to the underlying device register for read/write access.
 
         Args:
             channel_name: Name for the new channel.
@@ -496,6 +626,14 @@ class autonicstk(instrument):
 
     def add_channels_alarm_config(self, channel_name):
         """Add a channels alarm config.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument and maps it to the underlying device register for read/write access.
 
         Args:
             channel_name: Name for the new channel.
@@ -634,17 +772,19 @@ class autonicstk(instrument):
         self._add_channel(new_register)
 
     def retry(self, cmd, retry_count):
-        """Return retry result.
+        """Return the retry.
+
+        Issues a SCPI query to the instrument and parses the response.
 
         Args:
-            cmd: Cmd.
-            retry_count: Retry count.
+            cmd: Cmd to use.
+            retry_count: Retry count to use.
 
         Returns:
-            Result value.
+            The retry result.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         try:
             return cmd()
@@ -658,9 +798,11 @@ class autonicstk(instrument):
                 raise e
 
     def flush(self):
-        """Return flush result.
+        """Return the flush.
+
+        Supports the ``autonicstk`` workflow by performing the described operation.
 
         Returns:
-            Result value.
+            The flush result.
         """
         return self.modbus_pid.serial.read(self.modbus_pid.serial.inWaiting())

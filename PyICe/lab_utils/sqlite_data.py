@@ -1,4 +1,8 @@
-"""Sqlite data utility."""
+"""Sqlite data utility.
+
+Examples:
+    >>> from PyICe.lab_utils.sqlite_data import sqlite_data
+"""
 import datetime
 import sqlite3
 import re
@@ -24,6 +28,11 @@ class sqlite_data(
     Typical downstream consumers include ``LTC_plot`` for graphing, ``numpy``
     record-array conversion, ``pandas`` DataFrame conversion, CSV/XLSX export,
     and the ``lab_core.logger`` post-processing pipeline.
+
+    >>> from PyICe.lab_utils.sqlite_data import sqlite_data
+    >>> sqlite_data is not None
+    True
+
     """
 
     def __init__(self, table_name=None,
@@ -36,6 +45,11 @@ class sqlite_data(
         ``dict``, ``tuple``, or ``numpy.ndarray`` objects when rows are
         fetched.  If *table_name* is provided, a default ``SELECT *``
         query is constructed immediately.
+
+
+        >>> from PyICe.lab_utils.sqlite_data import sqlite_data
+        >>> hasattr(sqlite_data, '__init__')
+        True
 
         Args:
             table_name: Name of the SQLite table (or view, or any SQL
@@ -82,6 +96,12 @@ class sqlite_data(
         rebuild the default ``SELECT *`` query; call :meth:`query`
         afterward to update the active SQL statement.
 
+
+        >>> sd = sqlite_data(database_file=":memory:")
+        >>> sd.set_table("measurements")
+        >>> sd.table_name
+        'measurements'
+
         Args:
             table_name: Name of the SQLite table, view, or sub-select
                 expression to use as the default relation.
@@ -96,6 +116,11 @@ class sqlite_data(
         byte-string, attaches UTC, then converts to the instance's
         configured timezone so that all downstream consumers see
         correctly localized ``datetime.datetime`` objects.
+
+
+        >>> from PyICe.lab_utils.sqlite_data import sqlite_data
+        >>> hasattr(sqlite_data, 'convert_timestring')
+        True
 
         Args:
             time_bytes: Raw bytes read from a DATETIME column, expected
@@ -117,6 +142,18 @@ class sqlite_data(
         (``[…]``), dict (``{…}``), or tuple (``(…)``) and reconstructs
         the original Python object via ``ast.literal_eval``.  Scalar
         values are converted with ``str2num``.
+
+
+        >>> sqlite_data.convert_vector(b"42")
+        42
+        >>> sqlite_data.convert_vector(b"3.14")
+        3.14
+        >>> sqlite_data.convert_vector(b"[1, 2, 3]")
+        [1, 2, 3]
+        >>> sqlite_data.convert_vector(b'{"a": 1}')
+        {'a': 1}
+        >>> sqlite_data.convert_vector(b"(4, 5)")
+        (4, 5)
 
         Args:
             col_data_bytes: Raw bytes read from a NUMERIC, PyICeDict,
@@ -147,6 +184,11 @@ class sqlite_data(
         little-endian float64).  This converter reads the dtype header
         and rebuilds the original 1-D array.
 
+
+        >>> from PyICe.lab_utils.sqlite_data import sqlite_data
+        >>> hasattr(sqlite_data, 'convert_ndarray')
+        True
+
         Args:
             col_data_bytes: Raw bytes read from a PyICeBLOB column.
                 The first byte encodes the length of the dtype format
@@ -170,6 +212,11 @@ class sqlite_data(
         clauses applied to the active query, so only the requested rows
         are fetched from the database.  Negative indices and slice steps
         are not supported.
+
+
+        >>> from PyICe.lab_utils.sqlite_data import sqlite_data
+        >>> hasattr(sqlite_data, '__getitem__')
+        True
 
         Args:
             key: An integer row index (0-based) returning a single
@@ -214,6 +261,11 @@ class sqlite_data(
         item is a ``sqlite3.Row`` supporting both column-name and
         positional access.
 
+
+        >>> from PyICe.lab_utils.sqlite_data import sqlite_data
+        >>> hasattr(sqlite_data, '__iter__')
+        True
+
         Returns:
             A ``sqlite3.Cursor`` that lazily yields ``sqlite3.Row``
             objects one at a time.
@@ -226,6 +278,11 @@ class sqlite_data(
         WARNING: This fetches *all* rows into memory just to count them,
         which is very expensive on large result sets.  Prefer iterating
         or slicing when possible instead of calling ``len()``.
+
+
+        >>> from PyICe.lab_utils.sqlite_data import sqlite_data
+        >>> hasattr(sqlite_data, '__len__')
+        True
 
         Returns:
             The integer count of rows in the full result set.
@@ -242,6 +299,11 @@ class sqlite_data(
         underlying SQLite connection is closed when the block exits,
         even if an exception occurs.
 
+
+        >>> with sqlite_data(database_file=":memory:") as sd:
+        ...     type(sd).__name__
+        'sqlite_data'
+
         Returns:
             This ``sqlite_data`` instance.
         """
@@ -252,6 +314,11 @@ class sqlite_data(
 
         Any pending transaction is implicitly rolled back by the
         ``sqlite3`` module when the connection is closed.
+
+
+        >>> from PyICe.lab_utils.sqlite_data import sqlite_data
+        >>> hasattr(sqlite_data, '__exit__')
+        True
 
         Args:
             exc_type: The exception class if an exception was raised
@@ -269,6 +336,14 @@ class sqlite_data(
         Queries the ``sqlite_master`` catalog to discover what relations
         exist.  Useful for inspecting an unfamiliar database file before
         choosing which table to query.
+
+
+        >>> sd = sqlite_data(database_file=":memory:")
+        >>> sd.get_table_names()
+        []
+        >>> _ = sd.conn.execute("CREATE TABLE t1 (x INTEGER)")
+        >>> sd.get_table_names()
+        ['t1']
 
         Args:
             include_views: When ``True`` (the default), include SQL
@@ -294,6 +369,11 @@ class sqlite_data(
         queries, to index into ``sqlite3.Row`` results, or to label
         axes in ``LTC_plot``.
 
+
+        >>> from PyICe.lab_utils.sqlite_data import sqlite_data
+        >>> hasattr(sqlite_data, 'get_column_names')
+        True
+
         Returns:
             A list of column-name strings in query-column order, or
             ``None`` if the query returned no rows.
@@ -318,6 +398,11 @@ class sqlite_data(
         internally by :meth:`numpy_recarray` to build the ``dtype``
         descriptor for the record array.
 
+
+        >>> from PyICe.lab_utils.sqlite_data import sqlite_data
+        >>> hasattr(sqlite_data, 'get_column_types')
+        True
+
         Returns:
             An ``OrderedDict`` mapping column-name strings to Python
             type objects (e.g. ``{'vbat': <class 'float'>, ...}``).
@@ -336,6 +421,11 @@ class sqlite_data(
         constructing ``WHERE … IN (…)`` clauses for follow-up queries.
         When multiple columns are requested, each distinct combination
         is returned as a ``namedtuple``.
+
+
+        >>> from PyICe.lab_utils.sqlite_data import sqlite_data
+        >>> hasattr(sqlite_data, 'get_distinct')
+        True
 
         Args:
             column_name: A single column-name string, or a list/tuple
@@ -401,6 +491,11 @@ class sqlite_data(
         Each row returned supports access by column name or by
         positional index.
 
+
+        >>> from PyICe.lab_utils.sqlite_data import sqlite_data
+        >>> hasattr(sqlite_data, 'query')
+        True
+
         Args:
             sql_query: A complete SQL ``SELECT`` statement (or any
                 statement that returns rows).
@@ -425,6 +520,11 @@ class sqlite_data(
         tuple contains all row values for that column.  Useful for
         feeding columnar data directly into plotting functions.
 
+
+        >>> from PyICe.lab_utils.sqlite_data import sqlite_data
+        >>> hasattr(sqlite_data, 'zip')
+        True
+
         Returns:
             A list of tuples, one per column, each containing all row
             values for that column in query order.
@@ -440,6 +540,11 @@ class sqlite_data(
         wrapped in quotes).  If *output_file* is ``None``, no file is
         written and only the CSV string is returned, which is useful
         for programmatic consumption.
+
+
+        >>> from PyICe.lab_utils.sqlite_data import sqlite_data
+        >>> hasattr(sqlite_data, 'csv')
+        True
 
         Args:
             output_file: Filesystem path for the output CSV file.  Pass
@@ -503,6 +608,11 @@ class sqlite_data(
         columns as the active query, optionally augmented with elapsed-
         time columns.
 
+
+        >>> from PyICe.lab_utils.sqlite_data import sqlite_data
+        >>> hasattr(sqlite_data, 'xlsx')
+        True
+
         Args:
             output_file: Filesystem path for the output ``.xlsx`` file.
             elapsed_time_columns: When ``True``, insert elapsed-time
@@ -522,6 +632,11 @@ class sqlite_data(
         the data needs to be traversed more than once without
         re-executing the query.
 
+
+        >>> from PyICe.lab_utils.sqlite_data import sqlite_data
+        >>> hasattr(sqlite_data, 'to_list')
+        True
+
         Returns:
             A list of ``sqlite3.Row`` objects, one per result row.
         """
@@ -538,6 +653,11 @@ class sqlite_data(
         By default, column names and dtypes are inferred from the first
         row of data.  Use *force_float_dtype* to coerce all columns to
         ``float``, or supply *data_types* for full manual control.
+
+
+        >>> from PyICe.lab_utils.sqlite_data import sqlite_data
+        >>> hasattr(sqlite_data, 'numpy_recarray')
+        True
 
         Args:
             force_float_dtype: When ``True``, set every column's dtype
@@ -580,6 +700,11 @@ class sqlite_data(
         resulting DataFrame is convenient for exploratory analysis,
         groupby operations, and integration with Jupyter notebooks.
 
+
+        >>> from PyICe.lab_utils.sqlite_data import sqlite_data
+        >>> hasattr(sqlite_data, 'pandas_dataframe')
+        True
+
         Returns:
             A ``pandas.DataFrame`` with one column per query column and
             one row per result row.
@@ -600,6 +725,11 @@ class sqlite_data(
         Concatenates the column names with commas so the result can be
         interpolated directly into a ``SELECT`` statement, e.g.
         ``"SELECT {} FROM …".format(obj.column_query(['a', 'b']))``.
+
+
+        >>> sd = sqlite_data(database_file=":memory:")
+        >>> sd.column_query(["voltage", "current", "temperature"])
+        'voltage,current,temperature'
 
         Args:
             column_list: An iterable of column-name strings to include
@@ -625,6 +755,11 @@ class sqlite_data(
         It calculates fractional seconds between each row's ``datetime``
         and the first row's ``datetime``, then divides by *time_div* to
         produce the desired time scale.
+
+
+        >>> from PyICe.lab_utils.sqlite_data import sqlite_data
+        >>> hasattr(sqlite_data, 'time_delta_query')
+        True
 
         Args:
             time_div: Divisor applied to the raw elapsed seconds.  Use
@@ -677,6 +812,11 @@ class sqlite_data(
         columns differs from the preceding row.  The resulting tuple is
         designed to be interpolated into a ``WHERE rowid IN …`` clause
         for a follow-up query that fetches only the transition points.
+
+
+        >>> from PyICe.lab_utils.sqlite_data import sqlite_data
+        >>> hasattr(sqlite_data, 'filter_change')
+        True
 
         Args:
             column_name_list: An iterable of column-name strings to
@@ -732,6 +872,11 @@ class sqlite_data(
         and requires up to 2× the current file size in free disk space.
         WARNING: ``VACUUM`` may reassign ``rowid`` values, which can
         invalidate any externally cached row identifiers.
+
+        >>> from PyICe.lab_utils.sqlite_data import sqlite_data
+        >>> hasattr(sqlite_data, 'optimize')
+        True
+
         """
         self.conn.execute("VACUUM;")
         self.conn.execute("ANALYZE;")
@@ -746,6 +891,11 @@ class sqlite_data(
         scalar columns to match the vector length, and flattens the
         result so every data point has its own row.  The output is
         suitable for direct plotting or further NumPy analysis.
+
+
+        >>> from PyICe.lab_utils.sqlite_data import sqlite_data
+        >>> hasattr(sqlite_data, 'expand_vector_data')
+        True
 
         Args:
             csv_filename: If not ``None``, write the expanded data to

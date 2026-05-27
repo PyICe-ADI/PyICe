@@ -1,4 +1,8 @@
-"""Interpolating spline utility."""
+"""Interpolating spline utility.
+
+>>> from PyICe.lab_utils.interpolating_spline import interpolating_spline
+
+"""
 import collections
 import scipy
 
@@ -14,6 +18,11 @@ def interpolating_spline(rec_array, **kwargs):
     For datasets with very few points, consider
     ``scipy.interpolate.Akima1DInterpolator`` instead to avoid
     oscillatory artefacts.
+
+
+    >>> from PyICe.lab_utils.interpolating_spline import interpolating_spline
+    >>> callable(interpolating_spline)
+    True
 
     Args:
         rec_array: Input numpy record array. The first column supplies

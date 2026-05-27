@@ -1,4 +1,8 @@
-"""Expand tabs utility."""
+"""Expand tabs utility.
+
+>>> from PyICe.lab_utils.expand_tabs import expand_tabs
+
+"""
 def expand_tabs(string, *column_widths, **default_column_width):
     r"""Expand tab-separated fields into fixed-width columns with per-column control.
 

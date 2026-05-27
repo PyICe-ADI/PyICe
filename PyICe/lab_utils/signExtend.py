@@ -1,4 +1,8 @@
-"""Sign Extend utility."""
+"""Sign Extend utility.
+
+>>> from PyICe.lab_utils.signExtend import signExtend
+
+"""
 from .signedToTwosComplement import signedToTwosComplement
 from .twosComplementToSigned import twosComplementToSigned
 

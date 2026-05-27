@@ -1,4 +1,8 @@
-"""C A T5140 instrument driver."""
+"""C A T5140 instrument driver.
+
+>>> from PyICe.lab_instruments.CAT5140 import CAT5140
+
+"""
 from ..lab_core import *  # noqa: F403
 from .. import twi_interface
 
@@ -8,6 +12,10 @@ class CAT5140(instrument):
 
     def __init__(self, interface_twi):
         """Initialize c a t5140.
+        Initializes 4 instance attributes that configure the object's
+        behavior.
+
+        Calls the parent constructor to inherit base behavior, and initializes 4 instance attributes that configure the object's behavior.
 
         Args:
             interface_twi: TWI/I2C interface instance.
@@ -43,6 +51,8 @@ class CAT5140(instrument):
     def set_output(self, value):
         """Set the output.
 
+        Updates the output in the object's internal state.
+
         Args:
             value: Value to set.
         """
@@ -51,13 +61,17 @@ class CAT5140(instrument):
         self._write_byte(self.addr7, 0x00, value)
 
     def get_output(self):
-        """Return the output.
+        """Return the current output.
+        Reads the corresponding register from the device via TWI/I2C.
+        Returns the stored output from the object's internal state.
+
+        Performs a register-level transaction over the communication bus.
 
         Returns:
-            Result value.
+            The current output.
 
         Raises:
-            i2cIOError: On error condition.
+            i2cIOError: If the operation fails.
         """
         tries = self.tries
         while tries:
@@ -77,8 +91,10 @@ class CAT5140(instrument):
     def _write_percent(self, percent):
         """Value is between 0 and 1. DAC is biased toward 0 so that full scale is not achievable.
 
+        Internal implementation detail; see the public API for usage.
+
         Args:
-            percent: Percent.
+            percent: Percent to use.
         """
         assert percent >= 0
         assert percent <= 1
@@ -87,24 +103,40 @@ class CAT5140(instrument):
 
     def add_channel_code(self, channel_name):
         """Add a channel code.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         code_channel = channel(channel_name, write_function=self.set_output)
         return self._add_channel(code_channel)
 
     def add_channel_percent(self, channel_name):
         """Add a channel percent.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         percent_channel = channel(
             channel_name, write_function=self._write_percent)
@@ -112,24 +144,40 @@ class CAT5140(instrument):
 
     def add_channel_code_readback(self, channel_name):
         """Add a channel code readback.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         code_channel = channel(channel_name, read_function=self.get_output)
         return self._add_channel(code_channel)
 
     def add_channel_percent_readback(self, channel_name):
         """Add a channel percent readback.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         percent_channel = channel(
             channel_name,
@@ -159,12 +207,20 @@ class CAT5140(instrument):
 
     def add_channel_select_nonvolatile_register(self, channel_name):
         """Add a channel select nonvolatile register.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         nvselect_channel = channel(
             channel_name,
@@ -173,12 +229,20 @@ class CAT5140(instrument):
 
     def add_channel_select_volatile_register(self, channel_name):
         """Add a channel select volatile register.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         volselect_channel = channel(
             channel_name,

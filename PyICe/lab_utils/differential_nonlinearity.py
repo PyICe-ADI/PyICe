@@ -1,4 +1,8 @@
-"""Differential nonlinearity utility."""
+"""Differential nonlinearity utility.
+
+>>> from PyICe.lab_utils.differential_nonlinearity import differential_nonlinearity
+
+"""
 import numpy
 from .scalar_transform import scalar_transform
 from .vector_transform import vector_transform

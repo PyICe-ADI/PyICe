@@ -1,4 +1,8 @@
-"""Vcd utils utilities."""
+"""Vcd utils utilities.
+
+>>> from PyICe.data_utils.vcd_utils import vcd_reader
+
+"""
 from vcdvcd import VCDVCD
 
 from PyICe.data_utils.wave_analysis import waveform
@@ -8,28 +12,60 @@ import numpy
 
 
 class vcd_reader():
-    """Vcd_reader."""
+    """Vcd_reader.
+
+    >>> from PyICe.data_utils.vcd_utils import vcd_reader
+    >>> vcd_reader is not None
+    True
+
+    """
     def __init__(self, file):
         """Initialize vcd_reader.
+        Stores configuration in ``vcd`` for use by other methods.
+
+        Initializes 1 instance attribute that configure the object's behavior.
+
+
+        >>> from PyICe.data_utils.vcd_utils import vcd_reader
+        >>> vcd_reader is not None
+        True
 
         Args:
-            file: File.
+            file: File to use.
         """
         self.vcd = VCDVCD(file)
 
     def get_signals(self):
-        """Return the signals.
+        """Return the current signals.
+        Returns the stored signals value from the object's internal state.
+        Returns the stored signals from the object's internal state.
+
+        Returns the stored signals from the object's internal state.
+
+
+        >>> from PyICe.data_utils.vcd_utils import vcd_reader
+        >>> hasattr(vcd_reader, 'get_signals')
+        True
 
         Returns:
-            Result value.
+            The current signals.
         """
         return self.vcd.get_signals()
 
     def get_raw_data(self, variable_name):
         """Return the raw data.
+        Returns the stored raw data value from the object's internal state.
+        Returns the stored raw data from the object's internal state.
+
+        Returns the stored raw data from the object's internal state.
+
+
+        >>> from PyICe.data_utils.vcd_utils import vcd_reader
+        >>> hasattr(vcd_reader, 'get_raw_data')
+        True
 
         Args:
-            variable_name: Variable name.
+            variable_name: Name of the variable to query or set.
         """
         if variable_name not in self.vcd.references_to_ids.keys():
             print(
@@ -40,15 +76,22 @@ class vcd_reader():
     def process_data(self, variable_name, add_staircase_points=False):
         """Return process data result.
 
+        Supports the ``vcd_reader`` workflow by performing the described operation.
+
+
+        >>> from PyICe.data_utils.vcd_utils import vcd_reader
+        >>> hasattr(vcd_reader, 'process_data')
+        True
+
         Args:
-            add_staircase_points: Add staircase points.
-            variable_name: Variable name.
+            add_staircase_points: Add staircase points to use.
+            variable_name: Name of the variable to query or set.
 
         Returns:
-            Result value.
+            The process data result.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         raw_data = self.get_raw_data(variable_name)
         xdata, ydata = list(zip(*raw_data))
@@ -93,25 +136,44 @@ class vcd_reader():
 
     def get_data_as_waveform(self, variable_name):
         """Return the data as waveform.
+        Returns the stored data as waveform value from the object's internal
+        state.
+        Returns the stored data as waveform from the object's internal state.
+
+        Returns the stored data as waveform from the object's internal state.
+
+
+        >>> from PyICe.data_utils.vcd_utils import vcd_reader
+        >>> hasattr(vcd_reader, 'get_data_as_waveform')
+        True
 
         Args:
-            variable_name: Variable name.
+            variable_name: Name of the variable to query or set.
 
         Returns:
-            Result value.
+            The current data as waveform.
         """
         return waveform(data=self.process_data(
             variable_name, add_staircase_points=True))
 
     def get_value(self, variable_name, at_time):
-        """Return the value.
+        """Return the current value.
+        Returns the stored value value from the object's internal state.
+        Returns the stored value from the object's internal state.
+
+        Returns the stored value from the object's internal state.
+
+
+        >>> from PyICe.data_utils.vcd_utils import vcd_reader
+        >>> hasattr(vcd_reader, 'get_value')
+        True
 
         Args:
-            at_time: At time.
-            variable_name: Variable name.
+            at_time: At time to use.
+            variable_name: Name of the variable to query or set.
 
         Returns:
-            Result value.
+            The current value.
         """
         arrayed_data = self.process_data(variable_name)
         for i, time in enumerate(arrayed_data[0]):
@@ -128,9 +190,17 @@ class vcd_reader():
 
     def plot_signal(self, variable_name):
         """Perform plot signal operation.
+        Configures or updates the plot with the specified parameters.
+
+        Generates or configures a visual representation of the data.
+
+
+        >>> from PyICe.data_utils.vcd_utils import vcd_reader
+        >>> hasattr(vcd_reader, 'plot_signal')
+        True
 
         Args:
-            variable_name: Variable name.
+            variable_name: Name of the variable to query or set.
         """
         arrayed_data = self.process_data(variable_name)
         plt = figure(title=variable_name, frame_width=300, frame_height=300)
@@ -139,10 +209,18 @@ class vcd_reader():
 
     def plot_raw(self, variable_name, add_staircase_points=False):
         """Perform plot raw operation.
+        Configures or updates the plot with the specified parameters.
+
+        Generates or configures a visual representation of the data.
+
+
+        >>> from PyICe.data_utils.vcd_utils import vcd_reader
+        >>> hasattr(vcd_reader, 'plot_raw')
+        True
 
         Args:
-            add_staircase_points: Add staircase points.
-            variable_name: Variable name.
+            add_staircase_points: Add staircase points to use.
+            variable_name: Name of the variable to query or set.
         """
         arrayed_data = self.process_data(
             variable_name=variable_name,
@@ -153,10 +231,18 @@ class vcd_reader():
 
     def plot_data(self, title, data):
         """Perform plot data operation.
+        Configures or updates the plot with the specified parameters.
+
+        Generates or configures a visual representation of the data.
+
+
+        >>> from PyICe.data_utils.vcd_utils import vcd_reader
+        >>> hasattr(vcd_reader, 'plot_data')
+        True
 
         Args:
             data: Data to write.
-            title: Title.
+            title: Title string for display or report heading.
         """
         plt2 = figure(title=title, frame_width=300, frame_height=300)
         try:

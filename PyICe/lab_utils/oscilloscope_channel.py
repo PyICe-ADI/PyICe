@@ -1,4 +1,8 @@
-"""Oscilloscope channel utility."""
+"""Oscilloscope channel utility.
+
+>>> from PyICe.lab_utils.oscilloscope_channel import oscilloscope_channel
+
+"""
 import numpy
 from .ordered_pair import ordered_pair
 
@@ -11,6 +15,11 @@ class oscilloscope_channel(ordered_pair):
     capture, into a list of (x, y) ordered-pair floats suitable for plotting or
     further numerical manipulation. The data is also stored internally as a
     NumPy structured array for efficient columnar access.
+
+    >>> from PyICe.lab_utils.oscilloscope_channel import oscilloscope_channel
+    >>> oscilloscope_channel is not None
+    True
+
     """
     def __init__(self, time_points, channel_data):
         """Build the channel trace from parallel time and voltage sequences.
@@ -18,6 +27,11 @@ class oscilloscope_channel(ordered_pair):
         Each element of *time_points* is paired with the corresponding element
         of *channel_data* to form an (x, y) ordered pair. Both sequences must
         be the same length and contain values convertible to float.
+
+
+        >>> from PyICe.lab_utils.oscilloscope_channel import oscilloscope_channel
+        >>> oscilloscope_channel is not None
+        True
 
         Args:
             time_points: Iterable of time-axis sample values (seconds or other
@@ -40,6 +54,11 @@ class oscilloscope_channel(ordered_pair):
         Use this to access the time and voltage columns by name
         (e.g., ``rec.x`` for time, ``rec.y`` for voltage) instead of by
         index, which makes downstream analysis code more readable.
+
+
+        >>> from PyICe.lab_utils.oscilloscope_channel import oscilloscope_channel
+        >>> hasattr(oscilloscope_channel, 'to_recarray')
+        True
 
         Returns:
             A ``numpy.recarray`` view of the trace data with fields ``x``

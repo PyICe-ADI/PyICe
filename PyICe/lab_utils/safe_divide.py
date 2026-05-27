@@ -1,4 +1,8 @@
-"""Safe divide utility."""
+"""Safe divide utility.
+
+>>> from PyICe.lab_utils.safe_divide import safe_divide
+
+"""
 def safe_divide(a, b):
     """Divide a by b, returning None instead of raising on division-by-zero or type mismatch.
 

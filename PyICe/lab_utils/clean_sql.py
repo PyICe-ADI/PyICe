@@ -1,4 +1,8 @@
-"""Clean sql utility."""
+"""Clean sql utility.
+
+>>> from PyICe.lab_utils.clean_sql import clean_sql
+
+"""
 import re
 from .clean_ascii_code import clean_ascii_code
 

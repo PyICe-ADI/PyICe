@@ -1,4 +1,8 @@
-"""Dont print utility."""
+"""Dont print utility.
+
+>>> from PyICe.lab_utils.dont_print import dont_print
+
+"""
 def dont_print(*args, **kwargs):
     """Accept and discard all arguments, producing no output.
 

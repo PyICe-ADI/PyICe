@@ -1,4 +1,8 @@
-"""Csv logger utility."""
+"""Csv logger utility.
+
+>>> from PyICe.lab_utils.csv_logger import csv_logger
+
+"""
 import datetime
 import atexit
 from .csv_writer import csv_writer
@@ -17,6 +21,11 @@ class csv_logger(csv_writer):
 
     Use as a context manager or register it with a lab_core.logger instance via
     register_logger_callback() for fully automatic operation.
+
+    >>> from PyICe.lab_utils.csv_logger import csv_logger
+    >>> csv_logger is not None
+    True
+
     """
 
     def __init__(self, output_file, encoding='utf-8'):
@@ -26,6 +35,11 @@ class csv_logger(csv_writer):
         can be flushed incrementally during a test run. Registers __del__ with
         atexit as a safety net to close the file if the caller does not use the
         context manager protocol or call unregister_logger_callback().
+
+
+        >>> from PyICe.lab_utils.csv_logger import csv_logger
+        >>> csv_logger is not None
+        True
 
         Args:
             output_file: Path to the CSV file to create or overwrite.
@@ -47,6 +61,11 @@ class csv_logger(csv_writer):
         that the file handle is closed via __exit__ even if an exception occurs
         during the test run.
 
+
+        >>> from PyICe.lab_utils.csv_logger import csv_logger
+        >>> hasattr(csv_logger, '__enter__')
+        True
+
         Returns:
             This csv_logger instance.
         """
@@ -59,6 +78,11 @@ class csv_logger(csv_writer):
         block exits normally or raises an exception. Does not suppress
         exceptions; any exception raised inside the ``with`` block will
         propagate normally after the file is closed.
+
+
+        >>> from PyICe.lab_utils.csv_logger import csv_logger
+        >>> hasattr(csv_logger, '__exit__')
+        True
 
         Args:
             exc_type: Exception class, or ``None`` if no exception occurred.
@@ -78,6 +102,11 @@ class csv_logger(csv_writer):
         Acts as a last-resort safety net via atexit registration. Prefer the
         context manager or unregister_logger_callback() for deterministic
         cleanup, since finalizer invocation order is not guaranteed.
+
+        >>> from PyICe.lab_utils.csv_logger import csv_logger
+        >>> hasattr(csv_logger, '__del__')
+        True
+
         """
         print("__del__ closing CSV filehandle: {}".format(self.output_file))
         self.f.close()
@@ -88,6 +117,11 @@ class csv_logger(csv_writer):
         Used as the query_function for the ``rowid`` column added by
         add_timestamps(). Each call increments the internal counter by one,
         so successive write() calls receive consecutive integer identifiers.
+
+
+        >>> from PyICe.lab_utils.csv_logger import csv_logger
+        >>> hasattr(csv_logger, '_row_count')
+        True
 
         Returns:
             Integer row index for the current row, beginning at 0 on the first
@@ -109,6 +143,11 @@ class csv_logger(csv_writer):
         Call this method before the first write(), typically right before
         add_columns(). register_logger_callback() calls it automatically if
         no columns have been configured yet.
+
+        >>> from PyICe.lab_utils.csv_logger import csv_logger
+        >>> hasattr(csv_logger, 'add_timestamps')
+        True
+
         """
         csv_writer.add_column(
             self,
@@ -143,6 +182,11 @@ class csv_logger(csv_writer):
         called before the first write(); the header row is written on the
         initial write() call and the column layout is frozen at that point.
 
+
+        >>> from PyICe.lab_utils.csv_logger import csv_logger
+        >>> hasattr(csv_logger, 'add_column')
+        True
+
         Args:
             channel: A lab_core channel object whose get_name() method returns
                 the key used to look up values in the channel_data dictionary
@@ -172,6 +216,11 @@ class csv_logger(csv_writer):
         formatting; call add_column() individually when per-column control is
         needed. Must be called before the first write().
 
+
+        >>> from PyICe.lab_utils.csv_logger import csv_logger
+        >>> hasattr(csv_logger, 'add_columns')
+        True
+
         Args:
             channel_list: An iterable of lab_core channel objects to add, in
                 the order they should appear in the CSV output.
@@ -200,6 +249,11 @@ class csv_logger(csv_writer):
         This method is designed to be passed as a callback to
         lab_core.logger.add_log_callback() so it is invoked automatically
         after every measurement sweep.
+
+
+        >>> from PyICe.lab_utils.csv_logger import csv_logger
+        >>> hasattr(csv_logger, 'write')
+        True
 
         Args:
             channel_data: Dictionary mapping channel name strings to their
@@ -243,6 +297,11 @@ class csv_logger(csv_writer):
         This is the primary integration point for live "marching waves"
         visualization.
 
+
+        >>> from PyICe.lab_utils.csv_logger import csv_logger
+        >>> hasattr(csv_logger, 'register_logger_callback')
+        True
+
         Args:
             logger: A lab_core.logger instance whose channel list will be used
                 to auto-configure columns (when none exist yet) and whose
@@ -262,6 +321,11 @@ class csv_logger(csv_writer):
         instance is being reused across multiple tests and a fresh output file
         is needed for each one: detach the old csv_logger, create a new one,
         and register it with register_logger_callback().
+
+
+        >>> from PyICe.lab_utils.csv_logger import csv_logger
+        >>> hasattr(csv_logger, 'unregister_logger_callback')
+        True
 
         Args:
             logger: The lab_core.logger instance from which to remove the

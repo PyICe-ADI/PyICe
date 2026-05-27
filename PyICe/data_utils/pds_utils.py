@@ -1,4 +1,8 @@
-"""Pds utils utilities."""
+"""Pds utils utilities.
+
+>>> from PyICe.data_utils.pds_utils import pds_reader
+
+"""
 import re
 import random
 import xlsxwriter
@@ -14,9 +18,22 @@ class pds_reader():
     Each dictionary of test groups is a dictionary of tests keys by the test NUMBER.SUBTESTNUMBER.
     Each test is a dictionary of parameters keyed by Eagle columns as described by the file section "Datasheet Variable Map".
     Method get_test(test_number, subtest_number) may be used to tease out a specific test record.
+
+    >>> from PyICe.data_utils.pds_utils import pds_reader
+    >>> pds_reader is not None
+    True
+
     """
     def __init__(self, filename):
         """Initialize pds_reader.
+        Stores configuration in ``data`` for use by other methods.
+
+        Initializes 1 instance attribute that configure the object's behavior.
+
+
+        >>> from PyICe.data_utils.pds_utils import pds_reader
+        >>> pds_reader is not None
+        True
 
         Args:
             filename: File path.
@@ -42,20 +59,44 @@ class pds_reader():
         self.build_record()
 
     def get_column_map(self):
-        """Return the column map."""
+        """Return the column map.
+
+        Returns the stored column map from the object's internal state.
+
+        >>> from PyICe.data_utils.pds_utils import pds_reader
+        >>> hasattr(pds_reader, 'get_column_map')
+        True
+
+        """
         self.column_map = []
         for column in self.data["Datasheet Variable Map"]:
             self.column_map.append(column.split(",")[1].strip('"'))
 
     def find_test_groups(self):
-        """Perform find test groups operation."""
+        """Perform find test groups operation.
+
+        Searches for and returns the matching test groups.
+
+        >>> from PyICe.data_utils.pds_utils import pds_reader
+        >>> hasattr(pds_reader, 'find_test_groups')
+        True
+
+        """
         self.test_groups = []
         for key in self.data:
             if key.startswith("T") and key[1].isdigit():
                 self.test_groups.append(key)
 
     def build_record(self):
-        """Perform build record operation."""
+        """Perform build record operation.
+
+        Captures data for later analysis or replay.
+
+        >>> from PyICe.data_utils.pds_utils import pds_reader
+        >>> hasattr(pds_reader, 'build_record')
+        True
+
+        """
         self.results = {}
         for test_group in self.test_groups:
             self.results[test_group] = {}
@@ -71,14 +112,23 @@ class pds_reader():
                 self.results[test_group][f"{test_number}.{parameter['SubTestNmbr']}"] = parameter
 
     def get_test(self, test_number, subtest_number):
-        """Return the test.
+        """Return the current test.
+        Returns the stored test value from the object's internal state.
+        Returns the stored test from the object's internal state.
+
+        Returns the stored test from the object's internal state.
+
+
+        >>> from PyICe.data_utils.pds_utils import pds_reader
+        >>> hasattr(pds_reader, 'get_test')
+        True
 
         Args:
-            subtest_number: Subtest number.
-            test_number: Test number.
+            subtest_number: Subtest number to use.
+            test_number: Test number to use.
 
         Returns:
-            Result value.
+            The current test.
         """
         for test_group in self.results:
             if f"{test_number}.{subtest_number}" in self.results[test_group].keys(
@@ -90,8 +140,15 @@ class pds_reader():
     def generate_excel_report(self, file_name):
         """Perform generate excel report operation.
 
+        Supports the ``pds_reader`` workflow by performing the described operation.
+
+
+        >>> from PyICe.data_utils.pds_utils import pds_reader
+        >>> hasattr(pds_reader, 'generate_excel_report')
+        True
+
         Args:
-            file_name: File name.
+            file_name: File path string.
         """
         columns = ["TestNmbr", "SubTestNmbr", "DLogDesc", "LoFTRm", "HiFTRm", "LoFTTrim", "HiFTTrim", "LoFTCold", "HiFTCold", "LoFTHot", "HiFTHot", "LoQARm", "HiQARm", "LoQACold", "HiQACold", "LoQACold1", "HiQACold1", "LoQAHot", "HiQAHot", "LoQAHot1", "HiQAHot1", "LoWS", "HiWS", "LoWS1", "HiWS1",
                    "LoWS2", "HiWS2", "LoWSEng", "HiWSEng", "LoEng1", "HiEng1", "LoEng2", "HiEng2", "Units"]

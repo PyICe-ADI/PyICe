@@ -1,4 +1,8 @@
-"""Temperature chamber instrument driver."""
+"""Temperature chamber instrument driver.
+
+>>> from PyICe.lab_instruments.temperature_chamber import temperature_chamber
+
+"""
 from ..lab_core import *  # noqa: F403
 from abc import ABCMeta, abstractmethod
 
@@ -7,7 +11,11 @@ class temperature_chamber(instrument, metaclass=ABCMeta):
     """Generic temperature chamber parent class to handle common tasks, like setting the soak time."""
 
     def __init__(self):
-        """Initialize temperature_chamber."""
+        """Initialize temperature_chamber.
+
+        Initializes 5 instance attributes that configure the object's
+        behavior.
+        """
         instrument.__init__(self, self._base_name)
         self.setpoint = None
         self.soak = 450
@@ -26,7 +34,7 @@ class temperature_chamber(instrument, metaclass=ABCMeta):
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         temp_ch = self.add_channel_temp(channel_name)
         self.add_channel_sense(channel_name + "_sense")
@@ -41,23 +49,35 @@ class temperature_chamber(instrument, metaclass=ABCMeta):
 
     def add_channel(self, channel_name):
         """Adds just the main temperature setting setpoint channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         return self.add_channel_temp(channel_name)
 
     def add_channel_temp(self, channel_name):
         """Channel_name represents PID loop forcing temperature setpoint.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name,
                               write_function=self._write_temperature)
@@ -68,12 +88,20 @@ class temperature_chamber(instrument, metaclass=ABCMeta):
 
     def add_channel_sense(self, channel_name):
         """Channel_name represents primary PID control loop thermocouple readback.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name,
                               read_function=self._read_temperature_sense)
@@ -83,12 +111,19 @@ class temperature_chamber(instrument, metaclass=ABCMeta):
 
     def add_channel_soak(self, channel_name):
         """Channel_name represents soak time setpoint in seconds. Soak timer runs while temperature is continuously within 'window' and resets to zero otherwise.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, write_function=self._set_soak)
         new_channel.write(self.soak)
@@ -98,12 +133,19 @@ class temperature_chamber(instrument, metaclass=ABCMeta):
 
     def add_channel_window(self, channel_name):
         """Channel_name represents width setpoint of tolerance window to start soak timer. Setpoint is total window width in degrees (temp must be +/-window/2).
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, write_function=self._set_window)
         new_channel.write(self.window)
@@ -113,12 +155,20 @@ class temperature_chamber(instrument, metaclass=ABCMeta):
 
     def add_channel_soak_settling_time(self, channel_name):
         """Channel_name represents soak timer elapsed time readback.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, read_function=lambda: self.time)
         new_channel.set_description(
@@ -127,12 +177,19 @@ class temperature_chamber(instrument, metaclass=ABCMeta):
 
     def add_channel_settle_time_limit(self, channel_name):
         """Channel_name represents max time to wait for oven to settle to within window before raising Exception.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name,
                               write_function=self._set_settle_time_limit)
@@ -143,12 +200,19 @@ class temperature_chamber(instrument, metaclass=ABCMeta):
 
     def add_channel_blocking(self, channel_name):
         """Allow Python to continue immediately for gui/interactive use without waiting for slew/settle.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = integer_channel(
             channel_name, size=1, write_function=self.set_blocking_mode)
@@ -166,7 +230,7 @@ class temperature_chamber(instrument, metaclass=ABCMeta):
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = integer_channel(
             channel_name, size=2, write_function=self._enable)
@@ -180,14 +244,20 @@ class temperature_chamber(instrument, metaclass=ABCMeta):
 
     def set_blocking_mode(self, blocking):
         """Allow Python to continue immediately for gui/interactive use without waiting for slew/settle.
+        Updates the blocking mode in the object's internal state.
+
+        Updates the blocking mode in the object's internal state.
 
         Args:
-            blocking: Blocking.
+            blocking: Blocking to use.
         """
         self._blocking = blocking
 
     def _set_window(self, value):
         """Set allowed window to start soak timer.
+        Internal helper that updates object state.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
             value: Value to set.
@@ -200,12 +270,15 @@ class temperature_chamber(instrument, metaclass=ABCMeta):
             specified time
 
         Args:
-            seconds: Seconds.
+            seconds: Duration in seconds.
         """
         self.settle_time_limit = seconds
 
     def _set_soak(self, value):
         """Set soak time in seconds.
+        Internal helper that updates object state.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
             value: Value to set.
@@ -218,7 +291,7 @@ class temperature_chamber(instrument, metaclass=ABCMeta):
             Optionally abort, set oven to standby, and raise exception if oven temp fails to converge in specified time
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if not self._blocking:
             return
@@ -257,6 +330,9 @@ class temperature_chamber(instrument, metaclass=ABCMeta):
     @abstractmethod
     def _write_temperature(self, value):
         """Program tempertaure setpoint to value. Implement for specific hardware.
+        Internal helper that updates object state.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
             value: Value to set.
@@ -265,10 +341,15 @@ class temperature_chamber(instrument, metaclass=ABCMeta):
 
     @abstractmethod
     def _read_temperature_sense(self):
-        """Read back actual chamber temperature.  Implement for specific hardware."""
+        """Read back actual chamber temperature.  Implement for specific hardware.
+
+        Internal implementation detail; see the public API for usage.
+        """
     @abstractmethod
     def _enable(self, enable):
         """Enable/disable temperature chamber heating and cooling. Also accepts heat/cool only arguments if chamber supports it.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
             enable: Enable or disable.
@@ -281,6 +362,6 @@ class temperature_chamber(instrument, metaclass=ABCMeta):
         otherwise, default to disable heating and cooling.
 
         Args:
-            shutdown: Shutdown.
+            shutdown: Shutdown to use.
         """
         self._enable(not shutdown)

@@ -1,4 +1,8 @@
-"""Ni pxi5413 instrument driver."""
+"""Ni pxi5413 instrument driver.
+
+>>> from PyICe.lab_instruments.ni_pxi5413 import ni_pxi5413
+
+"""
 from ..lab_core import *  # noqa: F403
 
 import math
@@ -12,9 +16,13 @@ class ni_pxi5413(scpi_instrument, delegator):
 
     def __init__(self, interface_visa, force_trigger=True):
         """interface_visa e.g. PXI1SLOT2".
+        Stores configuration in ``_base_name``, ``force_trigger`` for use by
+        other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 2 instance attributes that configure the object's behavior.
 
         Args:
-            force_trigger: Force trigger.
+            force_trigger: If True, force an immediate trigger.
             interface_visa: VISA interface instance.
         """
         self._base_name = 'NI_PXI5413'
@@ -29,17 +37,20 @@ class ni_pxi5413(scpi_instrument, delegator):
     def create_trapzoid_signal(SampleN, width, slope, VOH, VOL, period):
         # function to generate custom pulse
         """Return create trapzoid signal result.
+        Creates and returns a new trapzoid signal.
+
+        Supports the ``ni_pxi5413`` workflow by performing the described operation.
 
         Args:
             SampleN: Number of samples.
-            VOH: Voh.
-            VOL: Vol.
-            period: Period.
-            slope: Slope.
-            width: Width.
+            VOH: Voh to use.
+            VOL: Vol to use.
+            period: Signal period.
+            slope: Trigger slope (rising or falling).
+            width: Width in characters or pixels.
 
         Returns:
-            Result value.
+            The create trapzoid signal result.
         """
         t = np.linspace(0, period, SampleN)
         amp = VOH - VOL
@@ -58,13 +69,15 @@ class ni_pxi5413(scpi_instrument, delegator):
     def main_method(resource_name, options, samples, gain, offset, gen_time):
         """Perform main method operation.
 
+        Supports the ``ni_pxi5413`` workflow by performing the described operation.
+
         Args:
             resource_name: NI resource name.
             gain: Gain value.
-            gen_time: Gen time.
+            gen_time: Gen time to use.
             offset: Offset value.
-            options: Options.
-            samples: Samples.
+            options: Options to use.
+            samples: Number of samples to acquire.
         """
         waveform_data = create_waveform_data(samples)  # noqa: F821  # pylint: disable=E0602; create_waveform_data is undefined - this is incomplete/WIP code per the TODO above
         # gen_time = period

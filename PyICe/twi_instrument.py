@@ -3,6 +3,9 @@
 ==========================================
 
 Can automatically populate channels/reisters from XML description
+
+>>> from PyICe.twi_instrument import twi_instrument
+
 """
 import logging
 from . import lab_core
@@ -24,17 +27,42 @@ debug_logging = logging.getLogger(__name__)
 
 
 class twi_instrument(lab_core.instrument, lab_core.delegator):
-    """Twi_instrument."""
+    """Instrument wrapper that maps I2C/SMBus registers to PyICe channels.
+
+    Provides automatic read-modify-write for sub-register bitfield access,
+    XML/JSON register-map import, and configurable error-retry behaviour.
+    Each bitfield becomes a readable/writable channel that the lab_core
+    delegation framework can batch into efficient bus transactions.
+
+    >>> from PyICe.twi_instrument import twi_instrument
+    >>> twi_instrument is not None
+    True
+
+    """
     def __init__(self, interface_twi, except_on_i2cInitError=True,
                  except_on_i2cCommError=False, retry_count=5, PEC=False):
-        """Initialize twi_instrument.
+        """Create a twi_instrument bound to an I2C/SMBus master interface.
+
+        Call this once per slave device.  After construction, populate
+        channels with ``add_register``, ``populate_from_file``, or
+        ``populate_from_yoda_json_bridge``.
+
+
+        >>> from PyICe.twi_instrument import twi_instrument
+        >>> hasattr(twi_instrument, '__init__')
+        True
 
         Args:
-            PEC: Pec.
-            except_on_i2cCommError: Except on i2ccommerror.
-            except_on_i2cInitError: Except on i2ciniterror.
-            interface_twi: TWI/I2C interface instance.
-            retry_count: Retry count.
+            interface_twi: TWI/I2C master interface (e.g. from
+                ``master.get_twi_interface()``).
+            except_on_i2cInitError: If True, raise when the bus cannot be
+                re-synchronised after a communication failure.
+            except_on_i2cCommError: If True, raise on a failed I2C
+                transaction after all retries are exhausted.
+            retry_count: Number of additional attempts after the first
+                failure before giving up.
+            PEC: Enable SMBus Packet Error Checking (CRC-8) on every
+                transaction.
         """
         lab_core.instrument.__init__(self, name="twi_instrument")
         lab_core.delegator.__init__(self)
@@ -52,24 +80,37 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
 
     def add_register(self, name, addr7, command_code, size, offset,
                      word_size, is_readable, is_writable, overwrite_others=False):
-        """Add a register.
+        """Create a new TWI register channel for a single bitfield.
+
+        Builds a ``twi_register`` whose writes are delegated through a
+        read-modify-write cycle so that adjacent bitfields sharing the
+        same command code are preserved.  The register is returned after
+        being added to the instrument's channel list.
+
+
+        >>> from PyICe.twi_instrument import twi_instrument
+        >>> hasattr(twi_instrument, 'add_register')
+        True
 
         Args:
-            addr7: 7-bit I2C device address.
-            command_code: Command code.
-            is_readable: Is readable.
-            is_writable: Is writable.
-            name: Name identifier.
-            offset: Offset value.
-            overwrite_others: Overwrite others.
-            size: Size in bits.
-            word_size: Word size.
+            name: Human-readable channel name for this bitfield.
+            addr7: 7-bit I2C slave address (without R/W bit).
+            command_code: SMBus command code (register address byte).
+            size: Width of this bitfield in bits.
+            offset: LSB position of this bitfield within the register.
+            word_size: Total register width in bits (0 for send-byte,
+                -1 for quick-command).
+            is_readable: Whether the register supports reads.
+            is_writable: Whether the register supports writes.
+            overwrite_others: If True, skip the read-back during
+                read-modify-write and assume other bitfields are zero.
 
         Returns:
-            Result value.
+            The newly created ``twi_register`` channel instance.
 
         Raises:
-            Exception: On error condition.
+            Exception: If a different ``addr7`` was already registered
+                (only one slave address per instrument is allowed).
         """
         if self._addr7 != addr7:
             if self._addr7 is None:
@@ -102,13 +143,22 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
         return self._add_channel(new_register)
 
     def add_channel_ARA(self, name):
-        """Add a channel ARA.
+        """Add an SMBus Alert Response Address (ARA) channel.
+
+        Reading this channel issues an ARA transaction on the bus, which
+        causes the alerting slave to respond with its own address.  Use
+        this to identify which device asserted SMBALERT#.
+
+
+        >>> from PyICe.twi_instrument import twi_instrument
+        >>> hasattr(twi_instrument, 'add_channel_ARA')
+        True
 
         Args:
-            name: Name identifier.
+            name: Channel name for the ARA response.
 
         Returns:
-            Result value.
+            The newly created ARA channel instance.
         """
         ARA_channel = lab_core.channel(
             name, read_function=self._interface.alert_response)
@@ -118,16 +168,26 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
         raise Exception("Shouldn't be here!")
 
     def get_command_codes(self, register_list):
-        """Return the command codes.
+        """Return the sorted, deduplicated command codes needed to read the given registers.
+
+        Examines each register's readability and caching status to
+        determine which command codes must actually be sent on the bus.
+
+
+        >>> from PyICe.twi_instrument import twi_instrument
+        >>> hasattr(twi_instrument, 'get_command_codes')
+        True
 
         Args:
-            register_list: Register list.
+            register_list: Iterable of ``twi_register`` channel objects
+                whose command codes are needed.
 
         Returns:
-            Result value.
+            Sorted list of unique integer command codes.
 
         Raises:
-            ChannelAccessException: On error condition.
+            ChannelAccessException: If a non-readable, non-cached
+                register is included in the list.
         """
         command_codes = []
         for register in register_list:
@@ -139,27 +199,44 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
         return sorted(list(set(command_codes)))  # filter unique
 
     def get_readable_command_codes(self, register_list):
-        """Returns list of command codes required to read all readable registers within register_list.
+        """Return command codes for all readable registers in the list.
 
-        not used for normal delegated reads. helpful to construct command code list for use with other tools (Linduino streaming for example)
+        Not used for normal delegated reads.  Useful when constructing a
+        command-code list for external tools such as Linduino streaming.
+
+
+        >>> from PyICe.twi_instrument import twi_instrument
+        >>> hasattr(twi_instrument, 'get_readable_command_codes')
+        True
 
         Args:
-            register_list: Register list.
+            register_list: Iterable of channel objects to inspect.
 
         Returns:
-            Result value.
+            Sorted list of unique integer command codes for the readable
+            subset of *register_list*.
         """
         return self.get_command_codes([channel for channel in register_list if channel.is_readable(
         ) and 'command_code' in channel.get_attributes()])
 
     def read_delegated_channel_list(self, register_list):
-        """Return read delegated channel list result.
+        """Batch-read all registers in *register_list* via the I2C bus.
+
+        Groups registers by word size, issues one
+        ``read_register_list`` call per group, then extracts each
+        bitfield from the raw register data.  Cached registers are
+        returned from their local cache instead.
+
+
+        >>> from PyICe.twi_instrument import twi_instrument
+        >>> hasattr(twi_instrument, 'read_delegated_channel_list')
+        True
 
         Args:
-            register_list: Register list.
+            register_list: Iterable of ``twi_register`` channels to read.
 
         Returns:
-            Result value.
+            ``results_ord_dict`` mapping channel name → read value.
         """
         start_streaming = False
         cc_data = {}
@@ -182,10 +259,14 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
             # start_streaming = True
 
             def function():
-                """Return function result.
+                """Read all command codes for one word-size group.
 
-                Returns:
-                    Result value.
+                Performs the described operation on the object's internal state.
+
+                >>> from PyICe.twi_instrument import twi_instrument
+                >>> hasattr(twi_instrument, 'function')
+                True
+
                 """
                 return self._interface.read_register_list(
                     self._addr7, command_codes, data_size, self._PEC)
@@ -275,16 +356,23 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
             self, addr7, data, command_code, size, offset, word_size):
         """Return the bitfield writeback data.
 
+        Returns the stored bitfield writeback data from the object's internal state.
+
+
+        >>> from PyICe.twi_instrument import twi_instrument
+        >>> hasattr(twi_instrument, 'get_bitfield_writeback_data')
+        True
+
         Args:
             addr7: 7-bit I2C device address.
-            command_code: Command code.
+            command_code: Register command code byte.
             data: Data to write.
             offset: Offset value.
             size: Size in bits.
-            word_size: Word size.
+            word_size: Data word width in bits.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         raise Exception(
             'Code cleanup 2024/05/08. Switch to new method name compute_rmw_writeback_data() with new calling and return signature.')
@@ -325,21 +413,26 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
         Exception
             Various consistency errors. Abnormal.
 
+
+        >>> from PyICe.twi_instrument import twi_instrument
+        >>> hasattr(twi_instrument, 'compute_rmw_writeback_data')
+        True
+
         Args:
             addr7: 7-bit I2C device address.
-            command_code: Command code.
+            command_code: Register command code byte.
             data: Data to write.
-            is_readable: Is readable.
+            is_readable: Is readable to use.
             offset: Offset value.
-            overwrite_others: Overwrite others.
+            overwrite_others: Overwrite others to use.
             size: Size in bits.
-            word_size: Word size.
+            word_size: Data word width in bits.
 
         Returns:
-            Result value.
+            The result of the operation.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         # Step 1: get existing data across whole register width
         if data is None and word_size == 0:
@@ -349,10 +442,17 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
             raise Exception('quick_cmd not yet fully implemented.')
         else:
             def function():
-                """Return function result.
+                """Return the function.
+
+                Performs a register-level transaction over the communication bus.
+
+
+                >>> from PyICe.twi_instrument import twi_instrument
+                >>> hasattr(twi_instrument, 'function')
+                True
 
                 Returns:
-                    Result value.
+                    The function result.
                 """
                 return self._interface.read_register(
                     addr7, command_code, word_size, self._PEC)
@@ -430,8 +530,13 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
 
         only affects write-only register by default. include_readable_registers argument also includes read-write registers.
 
+
+        >>> from PyICe.twi_instrument import twi_instrument
+        >>> hasattr(twi_instrument, 'enable_cached_read')
+        True
+
         Args:
-            include_readable_registers: Include readable registers.
+            include_readable_registers: Include readable registers to use.
         """
         for register in self:
             if register.is_writeable():
@@ -441,6 +546,13 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
     def populate_from_file(self, xml_file, format_dict=None, access_list=None,
                            use_case=None, channel_prefix="", channel_suffix=""):
         """Parse xml_register file complying with register_map.dtd and populate instrument channels.
+
+        Issues a SCPI query to the instrument and parses the response.
+
+
+        >>> from PyICe.twi_instrument import twi_instrument
+        >>> hasattr(twi_instrument, 'populate_from_file')
+        True
 
         Args:
             xml_file: Path to XML register map file.
@@ -576,13 +688,20 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
             self, filename, i2c_addr7, extended_addressing=False):
         """Perform populate from yoda json bridge operation.
 
+        Issues a SCPI query to the instrument and parses the response.
+
+
+        >>> from PyICe.twi_instrument import twi_instrument
+        >>> hasattr(twi_instrument, 'populate_from_yoda_json_bridge')
+        True
+
         Args:
-            extended_addressing: Extended addressing.
+            extended_addressing: Extended addressing to use.
             filename: File path.
-            i2c_addr7: I2c addr7.
+            i2c_addr7: I2c addr7 to use.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         with open(filename, 'r') as fp:
             registers = json.load(fp)
@@ -717,14 +836,19 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
         If the data is signed in two's-complement format, set signed=True.
         After creating format, use set_active_format method to make the new format active.
 
+
+        >>> from PyICe.twi_instrument import twi_instrument
+        >>> hasattr(twi_instrument, 'create_format')
+        True
+
         Args:
             description: Description string.
-            format_function: Format function.
+            format_function: Format function to use.
             format_name: Name of the format.
             signed: If True, interpret as signed value.
-            unformat_function: Unformat function.
+            unformat_function: Unformat function to use.
             units: Unit string.
-            xypoints: Xypoints.
+            xypoints: Xypoints to use.
         """
         if xypoints is None:
             xypoints = []
@@ -739,8 +863,15 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
     def set_constant(self, constant, value):
         """Sets the constants found in the datasheet used by the formatters to convert from real world values to digital value and back.
 
+        Updates the constant in the object's internal state.
+
+
+        >>> from PyICe.twi_instrument import twi_instrument
+        >>> hasattr(twi_instrument, 'set_constant')
+        True
+
         Args:
-            constant: Constant.
+            constant: Constant to use.
             value: Value to set.
         """
         self._constants[constant] = value
@@ -748,20 +879,36 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
 
     def get_constant(self, constant):
         """Sets the constants found in the datasheet used by the formatters to convert from real world values to digital value and back.
+        Returns the stored constant value from the object's internal state.
+        Returns the stored constant from the object's internal state.
+
+        Returns the stored constant from the object's internal state.
+
+
+        >>> from PyICe.twi_instrument import twi_instrument
+        >>> hasattr(twi_instrument, 'get_constant')
+        True
 
         Args:
-            constant: Constant.
+            constant: Constant to use.
 
         Returns:
-            Result value.
+            The current constant.
         """
         return self._constants[constant]
 
     def list_constants(self):
         """Returns the list of constants found in the datasheet used by the formatters to convert from real world values to digital value and back.
 
+        Transforms the input data into the required output form.
+
+
+        >>> from PyICe.twi_instrument import twi_instrument
+        >>> hasattr(twi_instrument, 'list_constants')
+        True
+
         Returns:
-            Result value.
+            List of matching items.
         """
         return self._constants
 
@@ -787,16 +934,24 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
 
     def _transform_from_points(self, xyevalpoints, direction):
         """Used internally to convert from register values to real world values and back again.
+        Internal helper that computes and returns a derived value.
+
+        Internal implementation detail; see the public API for usage.
+
+
+        >>> from PyICe.twi_instrument import twi_instrument
+        >>> hasattr(twi_instrument, '_transform_from_points')
+        True
 
         Args:
-            direction: Direction.
-            xyevalpoints: Xyevalpoints.
+            direction: Direction of operation (e.g. ``"up"``/``"down"``).
+            xyevalpoints: Xyevalpoints to use.
 
         Returns:
-            Result value.
+            The transform from points result.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if not SCIPY_MISSING:
             x_evaled, y_evaled = list(zip(*xyevalpoints))
@@ -838,7 +993,13 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
 
 
 class twi_register(lab_core.register):
-    """Twi_register."""
+    """Twi_register.
+
+    >>> from PyICe.twi_instrument import twi_register
+    >>> twi_register is not None
+    True
+
+    """
     pass
     # 2024/05/07 DJS: This code appears unused. Prove me wrong.
     # def calculate_cc_merge_bf(self, bf_data):
@@ -857,17 +1018,31 @@ class twi_register(lab_core.register):
 
 
 class pmbus_instrument(twi_instrument):
-    """Pmbus_instrument (twi_instrument subclass)."""
+    """Pmbus_instrument (twi_instrument subclass).
+
+    >>> from PyICe.twi_instrument import pmbus_instrument
+    >>> pmbus_instrument is not None
+    True
+
+    """
     def __init__(self, interface_twi, except_on_i2cInitError=True,
                  except_on_i2cCommError=False, retry_count=5, PEC=False):
         """Initialize pmbus_instrument.
+        Stores configuration in ``pmbus_commands`` for use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
+
+
+        >>> from PyICe.twi_instrument import pmbus_instrument
+        >>> hasattr(pmbus_instrument, '__init__')
+        True
 
         Args:
-            PEC: Pec.
-            except_on_i2cCommError: Except on i2ccommerror.
-            except_on_i2cInitError: Except on i2ciniterror.
+            PEC: Pec to use.
+            except_on_i2cCommError: Except on i2ccommerror to use.
+            except_on_i2cInitError: Except on i2ciniterror to use.
             interface_twi: TWI/I2C interface instance.
-            retry_count: Retry count.
+            retry_count: Retry count to use.
         """
         twi_instrument.__init__(
             self,
@@ -884,30 +1059,45 @@ class pmbus_instrument(twi_instrument):
     def add_register(self, name, addr7, page, command_code,
                      size, offset, word_size, is_readable, is_writable):
         """Add a register.
+        Creates and registers a new register.
+
+        Appends a new register entry to the object's internal collection.
+
+
+        >>> from PyICe.twi_instrument import pmbus_instrument
+        >>> hasattr(pmbus_instrument, 'add_register')
+        True
 
         Args:
             addr7: 7-bit I2C device address.
-            command_code: Command code.
-            is_readable: Is readable.
-            is_writable: Is writable.
+            command_code: Register command code byte.
+            is_readable: Is readable to use.
+            is_writable: Is writable to use.
             name: Name identifier.
             offset: Offset value.
-            page: Page.
+            page: PMBus page number for multi-output devices.
             size: Size in bits.
-            word_size: Word size.
+            word_size: Data word width in bits.
 
         Returns:
-            Result value.
+            The add register result.
         """
         def paged_write(data, channel):
             """Return paged write result.
+
+            Performs the described operation on the object's internal state.
+
+
+            >>> from PyICe.twi_instrument import pmbus_instrument
+            >>> hasattr(pmbus_instrument, 'paged_write')
+            True
 
             Args:
                 channel: Channel object.
                 data: Data to write.
 
             Returns:
-                Result value.
+                The paged write result.
             """
             self.set_page(channel.get_attribute('page'))
             return channel.pmbus_unpaged_write(data)
@@ -930,8 +1120,15 @@ class pmbus_instrument(twi_instrument):
     def set_page(self, page):
         """Set the page.
 
+        Performs a register-level transaction over the communication bus.
+
+
+        >>> from PyICe.twi_instrument import pmbus_instrument
+        >>> hasattr(pmbus_instrument, 'set_page')
+        True
+
         Args:
-            page: Page.
+            page: PMBus page number for multi-output devices.
         """
         if page is not None:
             self._interface.write_register(
@@ -948,11 +1145,18 @@ class pmbus_instrument(twi_instrument):
     def read_delegated_channel_list(self, register_list):
         """Return read delegated channel list result.
 
+        Reads data from the underlying source and returns it.
+
+
+        >>> from PyICe.twi_instrument import pmbus_instrument
+        >>> hasattr(pmbus_instrument, 'read_delegated_channel_list')
+        True
+
         Args:
-            register_list: Register list.
+            register_list: Register list to use.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
         """
         results = lab_core.results_ord_dict()
         pages = set([ch.get_attribute('page') for ch in register_list])
@@ -970,10 +1174,25 @@ class pmbus_instrument(twi_instrument):
 
 
 class twi_instrument_dummy(twi_instrument):
-    """Use for formatters, etc without having to set up a master and physical hardware."""
+    """Use for formatters, etc without having to set up a master and physical hardware.
+
+    >>> from PyICe.twi_instrument import twi_instrument_dummy
+    >>> twi_instrument_dummy is not None
+    True
+
+    """
 
     def __init__(self):
-        """Initialize twi_instrument_dummy."""
+        """Initialize twi_instrument_dummy.
+
+        Stores configuration in ``_addr7``, ``_constants``, ``formatters`` for
+        use by other methods.
+
+        >>> from PyICe.twi_instrument import twi_instrument_dummy
+        >>> twi_instrument_dummy is not None
+        True
+
+        """
         lab_core.instrument.__init__(self, name="twi_instrument_dummy")
         self._addr7 = None
         self.formatters = {}

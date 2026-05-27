@@ -1,4 +1,8 @@
-"""A D5259 instrument driver."""
+"""A D5259 instrument driver.
+
+>>> from PyICe.lab_instruments.AD5259 import AD5259
+
+"""
 from ..lab_core import *  # noqa: F403
 from .. import twi_interface
 
@@ -15,11 +19,11 @@ class AD5259(instrument):
 
         Args:
             addr7: 7-bit I2C device address.
-            full_scale_ohms: Full scale ohms.
+            full_scale_ohms: Full scale ohms to use.
             interface_twi: TWI/I2C interface instance.
 
         Raises:
-            ValueError: On error condition.
+            ValueError: If the provided value is out of range or invalid.
         """
         instrument.__init__(
             self, f'Analog Devices I2C-Compatible 256-Position, Digital Potentiometer at 0x{addr7:X}')
@@ -43,9 +47,12 @@ class AD5259(instrument):
 
     def add_all_channels(self, channel_base_name):
         """Add a all channels.
+        Creates and registers a new all channels.
+
+        Appends a new all channels entry to the object's internal collection.
 
         Args:
-            channel_base_name: Channel base name.
+            channel_base_name: Channel base name to use.
         """
         self.add_channel_wiper(channel_base_name + "_wiper")
         self.add_channel_code(channel_base_name + "_code")
@@ -94,15 +101,25 @@ class AD5259(instrument):
 
     def add_channel_wiper(self, channel_name):
         """Add a channel wiper.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _write_wiper(value):
             """Value is between 0 and 1. DAC is biased toward 0 so that full scale is not achievable.
+
+            Internal implementation detail; see the public API for usage.
 
             Args:
                 value: Value to set.
@@ -118,12 +135,20 @@ class AD5259(instrument):
 
     def add_channel_code(self, channel_name):
         """Add a channel code.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         self.code_channel = channel(
             channel_name, write_function=self._write_rdac)
@@ -132,12 +157,20 @@ class AD5259(instrument):
 
     def add_channel_code_readback(self, channel_name):
         """Add a channel code readback.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         self.code_readback_channel = channel(
             channel_name, read_function=self._read_rdac)

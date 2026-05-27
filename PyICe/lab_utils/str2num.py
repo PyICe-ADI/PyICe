@@ -1,4 +1,8 @@
-"""Str2num utility."""
+"""Str2num utility.
+
+>>> from PyICe.lab_utils.str2num import str2num
+
+"""
 def str2num(str_in, except_on_error=True):
     """Convert a string to its most specific numeric type (int, float, or bool).
 

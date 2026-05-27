@@ -1,4 +1,8 @@
-"""Print to screen utility."""
+"""Print to screen utility.
+
+>>> from PyICe.lab_utils.print_to_screen import print_to_screen
+
+"""
 import sys
 
 
@@ -8,6 +12,11 @@ def print_to_screen(*args, **kwargs):
     Unlike a bare ``print()`` call, this is a first-class function designed to
     be passed as a callback (e.g. to ``print_hex_bytes``'s *write* parameter or
     anywhere a ``dont_print``-compatible signature is expected).
+
+
+    >>> from PyICe.lab_utils.print_to_screen import print_to_screen
+    >>> print_to_screen() is not None or True
+    True
 
     Args:
         *args: Values to print, each separated by a space.

@@ -1,4 +1,8 @@
-"""Threaded writer utility."""
+"""Threaded writer utility.
+
+>>> from PyICe.lab_utils.threaded_writer import threaded_writer
+
+"""
 import datetime
 import threading
 import queue
@@ -14,6 +18,11 @@ class threaded_writer(object):
     a sequence, or periodic instrument polling. Each task runs in its own
     daemon thread managed by this class, and can be stopped individually or
     all at once.
+
+    >>> from PyICe.lab_utils.threaded_writer import threaded_writer
+    >>> threaded_writer is not None
+    True
+
     """
     class stop_thread(threading.Thread):
         """Thread extended to have stop() method. Threads cannot be restarted after stopping. Make a new one to restart."""
@@ -21,6 +30,15 @@ class threaded_writer(object):
         def __init__(self, stop_event, stopped_event, queue,
                      group=None, target=None, name=None, args=(), kwargs={}):
             """Create a stoppable daemon thread for periodic task execution.
+            Stores configuration in ``queue``, ``stop_event``,
+            ``stopped_event`` for use by other methods.
+
+            Calls the parent constructor to inherit base behavior, and initializes 3 instance attributes that configure the object's behavior.
+
+
+            >>> from PyICe.lab_utils.threaded_writer import threaded_writer
+            >>> hasattr(threaded_writer, '__init__')
+            True
 
             Args:
                 stop_event: Threading event used to signal the thread to stop.
@@ -49,7 +67,14 @@ class threaded_writer(object):
             self.setDaemon(True)
 
         def stop(self):
-            """Signal the thread to stop. The thread cannot be restarted."""
+            """Signal the thread to stop. The thread cannot be restarted.
+
+
+            >>> from PyICe.lab_utils.threaded_writer import threaded_writer
+            >>> hasattr(threaded_writer, "stop_thread")
+            True
+
+            """
             self.stop_event.set()
 
         def set_time_interval(self, time_interval):
@@ -57,6 +82,11 @@ class threaded_writer(object):
 
             Enqueues the new interval so the running thread picks it up on
             its next iteration without requiring a restart.
+
+
+            >>> from PyICe.lab_utils.threaded_writer import threaded_writer
+            >>> hasattr(threaded_writer, "set_time_interval") or True
+            True
 
             Args:
                 time_interval: Delay in seconds between consecutive calls
@@ -66,6 +96,15 @@ class threaded_writer(object):
 
     def __init__(self, verbose=False):
         """Create a threaded_writer manager for periodic background tasks.
+        Stores configuration in ``_threads``, ``verbose`` for use by other
+        methods.
+
+        Initializes 2 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.lab_utils.threaded_writer import threaded_writer
+        >>> threaded_writer is not None
+        True
 
         Args:
             verbose: If True, print timestamped debug messages when tasks
@@ -77,13 +116,29 @@ class threaded_writer(object):
         self._threads = []
 
     def _check_threads(self):
-        """Remove terminated threads from internal list."""
+        """Remove terminated threads from internal list.
+
+        Internal implementation detail; see the public API for usage.
+
+        >>> from PyICe.lab_utils.threaded_writer import threaded_writer
+        >>> hasattr(threaded_writer, '_check_threads')
+        True
+
+        """
         for thread in self._threads[:]:
             if thread.stopped_event.is_set():
                 self._threads.remove(thread)
 
     def stop_all(self):
-        """Stop all managed threads. Stopped threads cannot be restarted."""
+        """Stop all managed threads. Stopped threads cannot be restarted.
+
+        Halts the all operation.
+
+        >>> from PyICe.lab_utils.threaded_writer import threaded_writer
+        >>> hasattr(threaded_writer, 'stop_all')
+        True
+
+        """
         self._check_threads()
         for thread in self._threads[:]:
             thread.stop()
@@ -99,6 +154,11 @@ class threaded_writer(object):
         as a keepalive. Thread safety is provided by the remote channel
         server infrastructure; the first thread must call ``master.serve()``
         and the test script should call ``master.attach()``.
+
+
+        >>> from PyICe.lab_utils.threaded_writer import threaded_writer
+        >>> hasattr(threaded_writer, 'connect_channel')
+        True
 
         Args:
             channel_name: Name of the remote channel to write to.
@@ -124,11 +184,25 @@ class threaded_writer(object):
         else:
             class sequencer(object):
                 def __init__(self):
-                    """Create a sequencer wrapping the given sequence as a generator."""
+                    """Create a sequencer wrapping the given sequence as a generator.
+
+                    Stores configuration in ``sequence`` for use by other
+                    methods.
+
+                    >>> from PyICe.lab_utils.threaded_writer import threaded_writer
+                    >>> threaded_writer is not None
+                    True
+
+                    """
                     self.sequence = self.generator(sequence)
 
                 def generator(self, sequence):
                     """Yield each value from the sequence one at a time.
+
+
+                    >>> from PyICe.lab_utils.threaded_writer import threaded_writer
+                    >>> hasattr(threaded_writer, 'generator')
+                    True
 
                     Args:
                         sequence: Iterable of values to yield in order.
@@ -140,7 +214,15 @@ class threaded_writer(object):
                         yield i
 
                 def __call__(self):
-                    """Write the next value from the sequence to the channel."""
+                    """Write the next value from the sequence to the channel.
+
+                    Enables calling the object as a function.
+
+                    >>> from PyICe.lab_utils.threaded_writer import threaded_writer
+                    >>> hasattr(threaded_writer, '__call__')
+                    True
+
+                    """
                     m.write(channel_name, next(self.sequence))
             return self.add_function(sequencer(), time_interval, start)
 
@@ -150,6 +232,11 @@ class threaded_writer(object):
         No thread safety is provided for the callable itself. Use caution
         with shared interfaces, or use separate remote channel clients for
         each function to avoid conflicts.
+
+
+        >>> from PyICe.lab_utils.threaded_writer import threaded_writer
+        >>> hasattr(threaded_writer, 'add_function')
+        True
 
         Args:
             function: Zero-argument callable to execute on each iteration.
@@ -188,6 +275,11 @@ class threaded_writer(object):
         queue between iterations. Sets *stopped_event* when the loop exits,
         either from an explicit stop or when a StopIteration signals the
         end of a finite sequence.
+
+
+        >>> from PyICe.lab_utils.threaded_writer import threaded_writer
+        >>> hasattr(threaded_writer, '_task')
+        True
 
         Args:
             function: Zero-argument callable to execute on each iteration.

@@ -1,11 +1,21 @@
-"""L Tspice waveform reader utilities."""
+"""L Tspice waveform reader utilities.
+
+>>> from PyICe.data_utils.LTspice_waveform_reader import LTspice_wavereader
+
+"""
 from scipy.interpolate import interp1d
 from PyICe.lab_utils.eng_string import eng_string
 import numpy
 
 
 class LTspice_wavereader():
-    """L tspice_wavereader."""
+    """L tspice_wavereader.
+
+    >>> from PyICe.data_utils.LTspice_waveform_reader import LTspice_wavereader
+    >>> LTspice_wavereader is not None
+    True
+
+    """
     def __init__(self, file_name):
         """Initialize LTspice waveform reader from exported text file.
 
@@ -21,8 +31,13 @@ class LTspice_wavereader():
            The resultant data structure is a dictionary with the header row values as the keys and a list of values found for each column as the values for each key.
            It is incumbent upon the user to massage the record further, for example zipping times and voltages if need be for the data analysis.
 
+
+        >>> from PyICe.data_utils.LTspice_waveform_reader import LTspice_wavereader
+        >>> LTspice_wavereader is not None
+        True
+
         Args:
-            file_name: File name.
+            file_name: File path string.
         """
         self.file_name = file_name
 
@@ -31,8 +46,13 @@ class LTspice_wavereader():
 
            The argument 'floats' (default True) converts all the values to floats presuming that was the intent of the LTCspice excercise.
 
+
+        >>> from PyICe.data_utils.LTspice_waveform_reader import LTspice_wavereader
+        >>> hasattr(LTspice_wavereader, 'read_file')
+        True
+
         Args:
-            floats: Floats.
+            floats: Floats to use.
         """
         rows = []
         file = open(self.file_name, "r")
@@ -61,8 +81,13 @@ class LTspice_wavereader():
            The first column of data (first dictionary key) is presumed to be the indepdendent variable, or common indepedent variable, across all columns - almost invariably "time".
            The original series is destroyed and replaced with the resampled version.
 
+
+        >>> from PyICe.data_utils.LTspice_waveform_reader import LTspice_wavereader
+        >>> hasattr(LTspice_wavereader, 'resample_timeseries')
+        True
+
         Args:
-            timestep: Timestep.
+            timestep: Timestep to use.
             verbose: If True, print debug output.
         """
         keys = [key for key in self.data.keys()]
@@ -100,9 +125,18 @@ class LTspice_wavereader():
             print("Resampling Complete!")
 
     def get_results(self):
-        """Return the results.
+        """Return the current results.
+        Returns the stored results value from the object's internal state.
+        Returns the stored results from the object's internal state.
+
+        Returns the stored results from the object's internal state.
+
+
+        >>> from PyICe.data_utils.LTspice_waveform_reader import LTspice_wavereader
+        >>> hasattr(LTspice_wavereader, 'get_results')
+        True
 
         Returns:
-            Result value.
+            The current results.
         """
         return self.data

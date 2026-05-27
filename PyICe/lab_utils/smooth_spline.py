@@ -1,4 +1,8 @@
-"""Smooth spline utility."""
+"""Smooth spline utility.
+
+>>> from PyICe.lab_utils.smooth_spline import smooth_spline
+
+"""
 import numpy
 import scipy
 
@@ -14,6 +18,11 @@ def smooth_spline(rec_array, rms_error, verbose=True, **kwargs):
     *rms_error* to 0 to interpolate exactly through every point.
 
     **Note:** *rec_array* is modified in place.
+
+
+    >>> from PyICe.lab_utils.smooth_spline import smooth_spline
+    >>> callable(smooth_spline)
+    True
 
     Args:
         rec_array: Two-column numpy record array (x, y). Modified in

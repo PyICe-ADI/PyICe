@@ -1,4 +1,8 @@
-"""Parse list utility."""
+"""Parse list utility.
+
+>>> from PyICe.lab_utils.parse_list import parse_list
+
+"""
 import ast
 
 

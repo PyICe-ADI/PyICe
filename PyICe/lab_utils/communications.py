@@ -1,4 +1,8 @@
-"""Communications utility."""
+"""Communications utility.
+
+>>> from PyICe.lab_utils.communications import email
+
+"""
 import smtplib
 import re
 import os
@@ -12,6 +16,17 @@ class email(object):
     '''Send email messages—including attachments—through an SMTP server.'''
     def __init__(self, destination, smtp_server, sender):
         """Configure the email transport with recipient, server, and sender addresses.
+        Stores configuration in ``destination``, ``sender``, ``smtp_server``
+        for use by other methods.
+
+        Initializes 3 instance attributes that configure the object's behavior.
+
+
+        >>> e = email("user@example.com", "smtp.example.com", "lab@example.com")
+        >>> e.destination
+        'user@example.com'
+        >>> e.sender
+        'lab@example.com'
 
         Args:
             destination: Recipient's email address (e.g. ``'user@example.com'``).
@@ -29,6 +44,11 @@ class email(object):
         Handles both simple (text-only) and multipart messages. File
         attachments are read from disk; pre-built ``MIMEBase`` objects can
         also be attached directly.
+
+
+        >>> from PyICe.lab_utils.communications import email
+        >>> hasattr(email, 'send_raw')
+        True
 
         Args:
             body: Message body string (interpreted according to *_subtype*).
@@ -77,6 +97,11 @@ class email(object):
 
         Convenience method that delegates to ``send_html_monospace``.
 
+
+        >>> from PyICe.lab_utils.communications import email
+        >>> hasattr(email, 'send')
+        True
+
         Args:
             body: Plain-text message body (will be rendered in monospace HTML).
             subject: Email subject line, or ``None`` to omit.
@@ -98,6 +123,11 @@ class email(object):
         replacing spaces with ``&nbsp;`` (outside of HTML tags) and
         preserving line breaks. Useful for sending lab reports or log output
         that must keep column alignment in the recipient's mail client.
+
+
+        >>> from PyICe.lab_utils.communications import email
+        >>> hasattr(email, 'send_html_monospace')
+        True
 
         Args:
             body: Plain-text message body to be wrapped in monospace HTML.
@@ -151,12 +181,26 @@ class email(object):
 
 
 class sms(email):
-    '''Send SMS messages via carrier email-to-SMS gateways.'''
+    '''Send SMS messages via carrier email-to-SMS gateways.
+
+    >>> from PyICe.lab_utils.communications import sms
+    >>> sms is not None
+    True
+
+    '''
     def __init__(self, mobile_number, carrier, smtp_server, sender):
         """Build the carrier-specific email address for SMS delivery.
 
         Strips non-digit characters and any leading country code from
         *mobile_number*, then appends the appropriate carrier gateway domain.
+
+
+        >>> s = sms("(555) 123-4567", "verizon", "smtp.example.com", "lab@example.com")
+        >>> s.destination
+        '5551234567@vtext.com'
+        >>> s2 = sms("1-800-555-0199", "tmobile", "smtp.example.com", "lab@example.com")
+        >>> s2.destination
+        '8005550199@tmomail.net'
 
         Args:
             mobile_number: 10-digit US phone number with area code.
@@ -203,6 +247,11 @@ class sms(email):
 
         Non-ASCII characters in *body* and *subject* are transliterated to
         their closest ASCII equivalents so they survive the SMS gateway.
+
+
+        >>> from PyICe.lab_utils.communications import sms
+        >>> hasattr(sms, 'send')
+        True
 
         Args:
             body: Text message body (Unicode-safe).

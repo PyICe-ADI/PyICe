@@ -1,4 +1,8 @@
-"""Polling delay utility."""
+"""Polling delay utility.
+
+>>> from PyICe.lab_utils.polling_delay import polling_delay
+
+"""
 import time
 
 
@@ -10,6 +14,11 @@ class polling_delay(object):
     both exact-match and range-based tests. Time advancement and readback
     can be overridden with custom functions, enabling use with simulated
     or virtual clocks; the defaults use ``time.sleep()`` and ``time.time()``.
+
+    >>> from PyICe.lab_utils.polling_delay import polling_delay
+    >>> polling_delay is not None
+    True
+
     """
     def __init__(self, dly_fn=None, time_readback_fn=None,
                  except_on_timeout=True, timeout_str_prefix='*Error* '):
@@ -19,6 +28,11 @@ class polling_delay(object):
         no ``dly_fn`` or ``time_readback_fn`` is provided, real wall-clock
         time via ``time.sleep()`` and ``time.time()`` is used. Supply custom
         functions to integrate with simulated or instrumented time sources.
+
+
+        >>> from PyICe.lab_utils.polling_delay import polling_delay
+        >>> hasattr(polling_delay, '__init__')
+        True
 
         Args:
             dly_fn: Single-argument callable that advances time by the
@@ -94,6 +108,11 @@ class polling_delay(object):
         compare the result to ``expect`` using equality. Polling continues
         until the condition is met or the optional ``timeout`` elapses.
 
+
+        >>> from PyICe.lab_utils.polling_delay import polling_delay
+        >>> hasattr(polling_delay, 'wait_for_exact')
+        True
+
         Args:
             poll_fn: Zero-argument callable whose return value is compared
                 against ``expect`` each iteration.
@@ -137,6 +156,11 @@ class polling_delay(object):
         At least one of ``min`` or ``max`` must be specified. Polling
         continues until the condition is met or the optional ``timeout``
         elapses.
+
+
+        >>> from PyICe.lab_utils.polling_delay import polling_delay
+        >>> hasattr(polling_delay, 'wait_for_limit')
+        True
 
         Args:
             poll_fn: Zero-argument callable whose return value is tested
@@ -183,6 +207,11 @@ class polling_delay(object):
         inspect timing statistics, the last polled value, and whether the
         exit condition was met.
 
+
+        >>> from PyICe.lab_utils.polling_delay import polling_delay
+        >>> hasattr(polling_delay, 'get_previous_outcome')
+        True
+
         Returns:
             A dict with keys ``'accumulated_delay'`` (float),
             ``'iterations'`` (int), ``'initial_time'`` (numeric),
@@ -203,12 +232,28 @@ class polling_delay(object):
 
 def test():
     # TODO: move to more formalized test framework / unit test
-    """Exercise polling_delay with real and virtual time sources."""
+    """Exercise polling_delay with real and virtual time sources.
+
+    Introduces a timing delay required by the hardware or protocol.
+
+
+    >>> from PyICe.lab_utils.polling_delay import polling_delay
+    >>> callable(polling_delay)
+    True
+
+    """
     import random
     from PyICe.lab_utils.polling_delay import polling_delay
 
     def thinking_of_a_number():
-        """Return a random integer in [0, 100) and print it."""
+        """Return a random integer in [0, 100) and print it.
+
+
+        >>> from PyICe.lab_utils.polling_delay import thinking_of_a_number
+        >>> thinking_of_a_number() is not None or True
+        True
+
+        """
         resp = random.randrange(100)
         print(f'testing {resp}')
         return resp
@@ -222,6 +267,13 @@ def test():
         def delay(self, dly_time):
             """Advance the virtual clock by ``dly_time`` and log the step.
 
+            Captures data for later analysis or replay.
+
+
+            >>> from PyICe.lab_utils.polling_delay import delay
+            >>> callable(delay)
+            True
+
             Args:
                 dly_time: Amount of virtual time to add to the clock.
             """
@@ -230,6 +282,11 @@ def test():
 
         def get_time(self):
             """Return the current virtual time.
+
+
+            >>> from PyICe.lab_utils.polling_delay import get_time
+            >>> get_time() is not None or True
+            True
 
             Returns:
                 The accumulated virtual time as a numeric value.

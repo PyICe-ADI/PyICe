@@ -1,4 +1,8 @@
-"""Agilent 81110a instrument driver."""
+"""Agilent 81110a instrument driver.
+
+>>> from PyICe.lab_instruments.agilent_81110a import Agilent_81110a
+
+"""
 from .agilent_8110a import Agilent_8110a
 from PyICe.lab_core import *  # noqa: F403
 
@@ -11,11 +15,15 @@ class Agilent_81110a(Agilent_8110a):
     """
     def __init__(self, interface_visa, plugin, debug_comms=False):
         """Initialize agilent_81110a.
+        Initializes 4 instance attributes that configure the object's
+        behavior.
+
+        Calls the parent constructor to inherit base behavior, and initializes 4 instance attributes that configure the object's behavior.
 
         Args:
-            debug_comms: Debug comms.
+            debug_comms: Debug comms to use.
             interface_visa: VISA interface instance.
-            plugin: Plugin.
+            plugin: Plugin to use.
         """
         self._debug_comms = debug_comms
         self._base_name = 'HP81110A'

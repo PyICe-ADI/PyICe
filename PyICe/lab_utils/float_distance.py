@@ -1,4 +1,8 @@
-"""Float distance utility."""
+"""Float distance utility.
+
+>>> from PyICe.lab_utils.float_distance import float_distance
+
+"""
 import math
 import sys
 

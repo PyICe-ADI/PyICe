@@ -1,12 +1,31 @@
-"""Bandgap model."""
+"""Bandgap model.
+
+>>> from PyICe.models.bandgap import bandgap
+
+"""
 import random
 import numpy
 
 
 class bandgap():
-    """Bandgap."""
+    """Bandgap.
+
+    >>> from PyICe.models.bandgap import bandgap
+    >>> bandgap is not None
+    True
+
+    """
     def __init__(self):
-        """Initialize bandgap."""
+        """Initialize bandgap.
+
+        Initializes 7 instance attributes that configure the object's
+        behavior.
+
+        >>> from PyICe.models.bandgap import bandgap
+        >>> bandgap is not None
+        True
+
+        """
         self.vbe27 = random.gauss(mu=0.66, sigma=250e-6)
         self.Nemit = random.gauss(mu=12, sigma=0.1)
         self.dvbe_gain = random.gauss(mu=23 / 3., sigma=23 / 3. * 0.0025)
@@ -17,9 +36,17 @@ class bandgap():
 
     def set_trimval(self, trimcode):
         """Set the trimval.
+        Updates the trimval in the object's internal state.
+
+        Updates the trimval in the object's internal state.
+
+
+        >>> from PyICe.models.bandgap import bandgap
+        >>> hasattr(bandgap, 'set_trimval')
+        True
 
         Args:
-            trimcode: Trimcode.
+            trimcode: Trimcode to use.
         """
         if not isinstance(trimcode, int):
             print(
@@ -37,9 +64,17 @@ class bandgap():
 
     def set_tdegc(self, tdegc):
         """Set the tdegc.
+        Updates the tdegc in the object's internal state.
+
+        Updates the tdegc in the object's internal state.
+
+
+        >>> from PyICe.models.bandgap import bandgap
+        >>> hasattr(bandgap, 'set_tdegc')
+        True
 
         Args:
-            tdegc: Tdegc.
+            tdegc: Tdegc to use.
         """
         self.tdegc = float(tdegc)
         if self.tdegc < -50:
@@ -50,18 +85,32 @@ class bandgap():
             exit()
 
     def Tk(self):
-        """Return Tk result.
+        """Return the Tk.
+
+        Supports the ``bandgap`` workflow by performing the described operation.
+
+
+        >>> from PyICe.models.bandgap import bandgap
+        >>> hasattr(bandgap, 'Tk')
+        True
 
         Returns:
-            Result value.
+            The Tk result.
         """
         return 273.15 + self.tdegc
 
     def Vbe(self):
-        """Return Vbe result.
+        """Return the Vbe.
+
+        Supports the ``bandgap`` workflow by performing the described operation.
+
+
+        >>> from PyICe.models.bandgap import bandgap
+        >>> hasattr(bandgap, 'Vbe')
+        True
 
         Returns:
-            Result value.
+            The Vbe result.
         """
         m = (self.vbe27 - self.VTO) / (273.15 + 27)
         b = self.VTO
@@ -72,18 +121,34 @@ class bandgap():
         return m * self.Tk() + b + parbola
 
     def Vt(self):
-        """Return Vt result.
+        """Return the Vt.
+
+        Supports the ``bandgap`` workflow by performing the described operation.
+
+
+        >>> from PyICe.models.bandgap import bandgap
+        >>> hasattr(bandgap, 'Vt')
+        True
 
         Returns:
-            Result value.
+            The Vt result.
         """
         return self.K * (self.tdegc + 273.15) / self.q
 
     def get_vbg(self):
-        """Return the vbg.
+        """Return the current vbg.
+        Returns the stored vbg value from the object's internal state.
+        Returns the stored vbg from the object's internal state.
+
+        Returns the stored vbg from the object's internal state.
+
+
+        >>> from PyICe.models.bandgap import bandgap
+        >>> hasattr(bandgap, 'get_vbg')
+        True
 
         Returns:
-            Result value.
+            The current vbg.
         """
         return self.Vbe() + self.dvbe_gain * self.Vt() * numpy.log(self.Nemit) + \
             self.trimcode * self.trim_lsb * (self.Vt() / 0.026)

@@ -1,4 +1,8 @@
-"""Data precision 8200 instrument driver."""
+"""Data precision 8200 instrument driver.
+
+>>> from PyICe.lab_instruments.data_precision_8200 import data_precision_8200
+
+"""
 from ..lab_core import *  # noqa: F403
 
 
@@ -11,6 +15,10 @@ class data_precision_8200(instrument):
 
     def __init__(self, interface_visa):
         """Initialize data_precision_8200.
+        Initializes 6 instance attributes that configure the object's
+        behavior.
+
+        Calls the parent constructor to inherit base behavior, and initializes 6 instance attributes that configure the object's behavior.
 
         Args:
             interface_visa: VISA interface instance.
@@ -26,12 +34,18 @@ class data_precision_8200(instrument):
         self._mode = None
 
     def __del__(self):
-        """Clean up resources."""
+        """Clean up resources.
+
+        Performs cleanup when the object is garbage-collected.
+        """
         self.local_control()
         self.get_interface().close()
 
     def local_control(self):
-        """Perform local control operation."""
+        """Perform local control operation.
+
+        Supports the ``data_precision_8200`` workflow by performing the described operation.
+        """
         term_chars = self.get_interface().term_chars
         # need to remove any carriage return or line feed added by visa for
         # this to work correctly
@@ -51,7 +65,7 @@ class data_precision_8200(instrument):
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, write_function=self._write_voltage)
         return self._add_channel(new_channel)
@@ -65,7 +79,7 @@ class data_precision_8200(instrument):
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, write_function=self._write_current)
         return self._add_channel(new_channel)
@@ -79,19 +93,27 @@ class data_precision_8200(instrument):
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, write_function=self._set_vrange)
         return self._add_channel(new_channel)
 
     def add_channel_mode(self, channel_name):
         """Channel returns 'V' when in Voltage mode and 'A' when in current mode.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, read_function=self._get_mode)
         return self._add_channel(new_channel)

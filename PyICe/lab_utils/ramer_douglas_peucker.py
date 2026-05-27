@@ -1,4 +1,8 @@
-"""Ramer douglas peucker utility."""
+"""Ramer douglas peucker utility.
+
+>>> from PyICe.lab_utils.ramer_douglas_peucker import ramer_douglas_peucker
+
+"""
 import time
 import numpy
 
@@ -14,6 +18,11 @@ def ramer_douglas_peucker(rec_array, epsilon, verbose=True):
     Requires the ``rdp`` package (``pip install rdp``).
 
     See https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm
+
+
+    >>> from PyICe.lab_utils.ramer_douglas_peucker import ramer_douglas_peucker
+    >>> callable(ramer_douglas_peucker)
+    True
 
     Args:
         rec_array: Two-column numpy record array representing the (x, y)

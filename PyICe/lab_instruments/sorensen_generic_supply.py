@@ -1,4 +1,8 @@
-"""Sorensen generic supply instrument driver."""
+"""Sorensen generic supply instrument driver.
+
+>>> from PyICe.lab_instruments.sorensen_generic_supply import sorensen_generic_supply
+
+"""
 from ..lab_core import *  # noqa: F403
 
 
@@ -6,6 +10,9 @@ class sorensen_generic_supply(instrument):
     """Sorensen_generic_supply (instrument subclass)."""
     def __init__(self, interface_visa):
         """interface_visa.
+        Stores configuration in ``_base_name`` for use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
 
         Args:
             interface_visa: VISA interface instance.
@@ -32,7 +39,7 @@ class sorensen_generic_supply(instrument):
             ilim: Current limit.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         voltage_channel = self.add_channel_voltage(channel_name)
         if add_extended_channels:
@@ -46,18 +53,34 @@ class sorensen_generic_supply(instrument):
 
     def add_channel_voltage(self, channel_name):
         """Add a channel voltage.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, write_function=self._write_voltage)
         return self._add_channel(new_channel)
 
     def add_channel_current(self, channel_name):
         """Add a channel current.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
@@ -67,6 +90,14 @@ class sorensen_generic_supply(instrument):
 
     def add_channel_vsense(self, channel_name):
         """Add a channel vsense.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
@@ -76,6 +107,14 @@ class sorensen_generic_supply(instrument):
 
     def add_channel_isense(self, channel_name):
         """Add a channel isense.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
@@ -84,11 +123,16 @@ class sorensen_generic_supply(instrument):
         self._add_channel(new_channel)
 
     def _enable_output(self):
-        """Enable output."""
+        """Enable output.
+
+        Internal implementation detail; see the public API for usage.
+        """
         self.get_interface().write(("OUT 1"))
 
     def _write_voltage(self, voltage):
         """Set named channel to force voltage, optionally with ilim compliance current.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
             voltage: Voltage value.
@@ -98,6 +142,8 @@ class sorensen_generic_supply(instrument):
     def _write_current(self, ilim):
         """Set named channel's compliance current.
 
+        Internal implementation detail; see the public API for usage.
+
         Args:
             ilim: Current limit.
         """
@@ -105,22 +151,28 @@ class sorensen_generic_supply(instrument):
 
     def _read_vsense(self, channel_name):
         """Returns instrument's measured output voltage.
+        Internal helper that computes and returns a derived value.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The measured value.
         """
         return float(self.get_interface().ask("VOUT?").lstrip("VOUT "))
 
     def _read_isense(self, channel_name):
         """Returns instrument's measured output current.
+        Internal helper that computes and returns a derived value.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The measured value.
         """
         return float(self.get_interface().ask("IOUT? ").lstrip("IOUT "))

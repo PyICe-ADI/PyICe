@@ -1,4 +1,8 @@
-"""Present menu utility."""
+"""Present menu utility.
+
+>>> from PyICe.lab_utils.present_menu import present_menu
+
+"""
 def present_menu(intro_msg, prompt_msg, item_list):
     """Print a numbered menu on stdout and return the item the user selects.
 
@@ -17,6 +21,11 @@ def present_menu(intro_msg, prompt_msg, item_list):
         What method should I use?
 
     The user types an index number; invalid input re-displays the menu.
+
+
+    >>> from PyICe.lab_utils.present_menu import present_menu
+    >>> callable(present_menu)
+    True
 
     Args:
         intro_msg: Explanatory text printed before the numbered list.

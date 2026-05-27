@@ -1,4 +1,8 @@
-"""Clean c utility."""
+"""Clean c utility.
+
+>>> from PyICe.lab_utils.clean_c import clean_c
+
+"""
 import re
 from .clean_ascii_code import clean_ascii_code
 

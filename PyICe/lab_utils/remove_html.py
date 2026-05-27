@@ -1,4 +1,8 @@
-"""Remove html utility."""
+"""Remove html utility.
+
+>>> from PyICe.lab_utils.remove_html import remove_html
+
+"""
 import re
 
 

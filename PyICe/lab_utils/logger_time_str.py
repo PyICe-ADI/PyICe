@@ -1,4 +1,8 @@
-"""Logger time str utility."""
+"""Logger time str utility.
+
+>>> from PyICe.lab_utils.logger_time_str import logger_time_str
+
+"""
 from .time_zones import UTC
 
 

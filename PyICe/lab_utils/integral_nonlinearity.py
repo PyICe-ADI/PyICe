@@ -1,4 +1,8 @@
-"""Integral nonlinearity utility."""
+"""Integral nonlinearity utility.
+
+>>> from PyICe.lab_utils.integral_nonlinearity import integral_nonlinearity
+
+"""
 from .scalar_transform import scalar_transform
 from .detrend import detrend_linear
 
@@ -10,6 +14,11 @@ def integral_nonlinearity(rec_array, lsb_size=1):
     and scales the residual by *lsb_size*, converting raw voltage
     deviations into LSB counts. The x-column (typically digital codes)
     passes through unchanged.
+
+
+    >>> from PyICe.lab_utils.integral_nonlinearity import integral_nonlinearity
+    >>> callable(integral_nonlinearity)
+    True
 
     Args:
         rec_array: Two-column numpy record array, typically (code, voltage),

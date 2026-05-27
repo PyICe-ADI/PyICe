@@ -1,4 +1,8 @@
-"""Unit least precision utility."""
+"""Unit least precision utility.
+
+>>> from PyICe.lab_utils.unit_least_precision import unit_least_precision
+
+"""
 from .float_next import float_next
 from .float_prior import float_prior
 

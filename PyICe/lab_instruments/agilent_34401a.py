@@ -1,4 +1,8 @@
-"""Agilent 34401a instrument driver."""
+"""Agilent 34401a instrument driver.
+
+>>> from PyICe.lab_instruments.agilent_34401a import agilent_34401a
+
+"""
 from ..lab_core import *  # noqa: F403
 
 
@@ -9,6 +13,9 @@ class agilent_34401a(scpi_instrument):
     """
     def __init__(self, interface_visa):
         """Interface_visa.
+        Stores configuration in ``_base_name`` for use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
 
         Args:
             interface_visa: VISA interface instance.
@@ -29,12 +36,12 @@ class agilent_34401a(scpi_instrument):
         [.02,.2,1,10,100] and set range to [0.1, 1, 10, 100, 1000]
 
         Args:
-            BW: Bw.
+            BW: Bandwidth limit setting (e.g. 3, 20, 200 Hz).
             NPLC: Number of power line cycles for integration.
             range: Measurement or output range.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         # DJS Todo: Move this stuff to channel wrappers like 34970
         if NPLC not in [.02, .2, 1, 10, 100]:
@@ -53,6 +60,11 @@ class agilent_34401a(scpi_instrument):
 
     def set_autozero_mode(self, mode):
         """[SENSe:]ZERO:AUTO {OFF|ONCE|ON}.
+        Sends the ``SENSe:ZERO:AUTO`` SCPI command to the instrument.
+        Sends the appropriate SCPI command to configure the instrument's
+        autozero mode.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
             mode: Operating mode.
@@ -72,12 +84,12 @@ class agilent_34401a(scpi_instrument):
         Valid values are in amps: [0.01, 0.1, 1, 3]
 
         Args:
-            BW: Bw.
+            BW: Bandwidth limit setting (e.g. 3, 20, 200 Hz).
             NPLC: Number of power line cycles for integration.
             range: Measurement or output range.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if NPLC not in [.02, .2, 1, 10, 100]:
             raise Exception(
@@ -90,12 +102,17 @@ class agilent_34401a(scpi_instrument):
 
     def config_ac_voltage(self, BW=200):
         """Configure meter for AC voltage measurement.
+        Sends the ``FUNCtion`` SCPI command to the instrument.
+        Configures the instrument for ac voltage measurement mode via SCPI
+        commands.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
-            BW: Bw.
+            BW: Bandwidth limit setting (e.g. 3, 20, 200 Hz).
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if BW not in [3, 20, 200]:
             raise Exception(
@@ -105,34 +122,51 @@ class agilent_34401a(scpi_instrument):
         self.get_interface().write('FUNCtion "VOLT:AC"')
 
     def config_ac_current(self):
-        """Configure meter for AC current measurement."""
+        """Configure meter for AC current measurement.
+
+        Applies the specified configuration to the object or hardware.
+        """
         self.get_interface().write('FUNCtion "CURRent:AC"')
 
     def add_channel(self, channel_name):
         """Add named channel to instrument without configuring measurement type.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         meter_channel = channel(channel_name, read_function=self.read_meter)
         return self._add_channel(meter_channel)
 
     def read_meter(self):
         """Return float representing meter measurement.  Units are V,A,Ohm, etc depending on meter configuration.
+        Sends the appropriate query to the instrument and parses the response.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
         """
         return float(self.get_interface().ask("READ?"))
 
     def _set_remote_mode(self, remote=True):
         """Required for RS-232 control.  Not allowed for GPIB control.
+        Internal helper that sends the ``SYSTem:LOCal`` SCPI command.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
-            remote: Remote.
+            remote: Remote to use.
         """
         if remote:
             self.get_interface().write("SYSTem:REMote")

@@ -1,4 +1,8 @@
-"""Ordered pair utility."""
+"""Ordered pair utility.
+
+>>> from PyICe.lab_utils.ordered_pair import ordered_pair
+
+"""
 import math
 import numpy
 from .ramer_douglas_peucker import ramer_douglas_peucker
@@ -10,6 +14,11 @@ class ordered_pair(list):
     Provides in-place transformation, scaling, offsetting, smoothing, filtering,
     decimation, and curve simplification operations commonly needed when working
     with instrument or simulation waveform data.
+
+    >>> from PyICe.lab_utils.ordered_pair import ordered_pair
+    >>> ordered_pair is not None
+    True
+
     """
     def transform(self, x_transform=None, y_transform=None):
         """Apply element-wise transformation functions to x and/or y data in place.
@@ -19,6 +28,11 @@ class ordered_pair(list):
         isolation, this is not suitable for filtering operations that need access
         to neighboring data points (use smooth_y/smooth_x instead).
 
+
+        >>> from PyICe.lab_utils.ordered_pair import ordered_pair
+        >>> hasattr(ordered_pair, 'transform')
+        True
+
         Args:
             x_transform: Callable applied to each x value. Defaults to identity.
             y_transform: Callable applied to each y value. Defaults to identity.
@@ -27,6 +41,11 @@ class ordered_pair(list):
             def x_transform(x):
                 """Return *x* unchanged (identity fallback).
 
+
+                >>> from PyICe.lab_utils.ordered_pair import ordered_pair
+                >>> hasattr(ordered_pair, 'x_transform')
+                True
+
                 Args:
                     x: Input value.
                 """
@@ -34,6 +53,11 @@ class ordered_pair(list):
         if y_transform is None:
             def y_transform(y):
                 """Return *y* unchanged (identity fallback).
+
+
+                >>> from PyICe.lab_utils.ordered_pair import ordered_pair
+                >>> hasattr(ordered_pair, 'y_transform')
+                True
 
                 Args:
                     y: Input value.
@@ -50,6 +74,11 @@ class ordered_pair(list):
         by default. Access timedelta properties (days, seconds, microseconds) or
         call total_seconds(). Optionally convert to a numeric elapsed time in the
         specified unit by setting exactly one of the unit flags to True.
+
+
+        >>> from PyICe.lab_utils.ordered_pair import ordered_pair
+        >>> hasattr(ordered_pair, 'x_sql_elapsed_time')
+        True
 
         Args:
             seconds: If True, convert x values to elapsed seconds as a float.
@@ -79,6 +108,11 @@ class ordered_pair(list):
     def xscale(self, x_scale):
         """Multiply all x values by a constant scale factor in place.
 
+
+        >>> from PyICe.lab_utils.ordered_pair import ordered_pair
+        >>> hasattr(ordered_pair, 'xscale')
+        True
+
         Args:
             x_scale: Multiplicative factor applied to every x value.
         """
@@ -86,6 +120,11 @@ class ordered_pair(list):
 
     def yscale(self, y_scale):
         """Multiply all y values by a constant scale factor in place.
+
+
+        >>> from PyICe.lab_utils.ordered_pair import ordered_pair
+        >>> hasattr(ordered_pair, 'yscale')
+        True
 
         Args:
             y_scale: Multiplicative factor applied to every y value.
@@ -95,6 +134,11 @@ class ordered_pair(list):
     def xoffset(self, x_offset):
         """Add a constant offset to all x values in place.
 
+
+        >>> from PyICe.lab_utils.ordered_pair import ordered_pair
+        >>> hasattr(ordered_pair, 'xoffset')
+        True
+
         Args:
             x_offset: Value added to every x data point.
         """
@@ -103,6 +147,11 @@ class ordered_pair(list):
     def yoffset(self, y_offset):
         """Add a constant offset to all y values in place.
 
+
+        >>> from PyICe.lab_utils.ordered_pair import ordered_pair
+        >>> hasattr(ordered_pair, 'yoffset')
+        True
+
         Args:
             y_offset: Value added to every y data point.
         """
@@ -110,6 +159,11 @@ class ordered_pair(list):
 
     def xyscale(self, x_scale, y_scale):
         """Multiply all x and y values by their respective scale factors in place.
+
+
+        >>> from PyICe.lab_utils.ordered_pair import ordered_pair
+        >>> hasattr(ordered_pair, 'xyscale')
+        True
 
         Args:
             x_scale: Multiplicative factor applied to every x value.
@@ -126,6 +180,11 @@ class ordered_pair(list):
         fractional percentage (0 < length < 1) of the original record length
         or an absolute integer number of points. If length is None, all
         remaining points after the offset are kept.
+
+
+        >>> from PyICe.lab_utils.ordered_pair import ordered_pair
+        >>> hasattr(ordered_pair, 'truncate')
+        True
 
         Args:
             length: Number of points to retain. Pass a float between 0 and 1
@@ -172,6 +231,11 @@ class ordered_pair(list):
         resulting record length is approximately ``scale * original_length``.
         Useful for thinning dense waveform captures before plotting.
 
+
+        >>> from PyICe.lab_utils.ordered_pair import ordered_pair
+        >>> hasattr(ordered_pair, 'decimate')
+        True
+
         Args:
             scale: Fraction of points to retain, between 0 (exclusive) and 1
                 (inclusive). For example, 0.5 keeps roughly half the points.
@@ -207,6 +271,11 @@ class ordered_pair(list):
         columns to float, or ``data_types`` to specify custom column names
         and dtypes.
         http://docs.scipy.org/doc/numpy-1.10.1/reference/generated/numpy.recarray.html
+
+
+        >>> from PyICe.lab_utils.ordered_pair import ordered_pair
+        >>> hasattr(ordered_pair, 'numpy_recarray')
+        True
 
         Args:
             force_float_dtype: If True, force both columns to float dtype
@@ -245,6 +314,11 @@ class ordered_pair(list):
         simplified line segments. The data is first converted to a NumPy
         record array internally.
         https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm
+
+
+        >>> from PyICe.lab_utils.ordered_pair import ordered_pair
+        >>> hasattr(ordered_pair, 'ramer_douglas_peucker')
+        True
 
         Args:
             epsilon: Maximum perpendicular distance a point may deviate from
@@ -318,6 +392,11 @@ class ordered_pair(list):
         shift along the independent axis. Always compare smoothed data against
         the original to check for distortion.
 
+
+        >>> from PyICe.lab_utils.ordered_pair import ordered_pair
+        >>> hasattr(ordered_pair, 'smooth_y')
+        True
+
         Args:
             window: Size of the convolution kernel (number of points). Odd
                 values are preferred; even values are automatically incremented
@@ -350,6 +429,11 @@ class ordered_pair(list):
         shift along the independent axis. Always compare smoothed data against
         the original to check for distortion.
 
+
+        >>> from PyICe.lab_utils.ordered_pair import ordered_pair
+        >>> hasattr(ordered_pair, 'smooth_x')
+        True
+
         Args:
             window: Size of the convolution kernel (number of points). Odd
                 values are preferred; even values are automatically incremented
@@ -377,6 +461,11 @@ class ordered_pair(list):
         If the sampling interval is not provided explicitly, it is inferred
         from the spacing between the first two x data points (rounded to the
         nearest 10 ps).
+
+
+        >>> from PyICe.lab_utils.ordered_pair import ordered_pair
+        >>> hasattr(ordered_pair, 'box_filter')
+        True
 
         Args:
             f3db: Desired -3 dB cutoff frequency in Hz.
@@ -406,6 +495,11 @@ class ordered_pair(list):
     def x_extents(self):
         """Compute the minimum, maximum, and range of the x-axis data.
 
+
+        >>> from PyICe.lab_utils.ordered_pair import ordered_pair
+        >>> hasattr(ordered_pair, 'x_extents')
+        True
+
         Returns:
             Dict with keys ``"min"``, ``"max"``, and ``"diff"`` (max − min).
         """
@@ -415,6 +509,11 @@ class ordered_pair(list):
 
     def y_extents(self):
         """Compute the minimum, maximum, and range of the y-axis data.
+
+
+        >>> from PyICe.lab_utils.ordered_pair import ordered_pair
+        >>> hasattr(ordered_pair, 'y_extents')
+        True
 
         Returns:
             Dict with keys ``"min"``, ``"max"``, and ``"diff"`` (max − min).
@@ -428,6 +527,11 @@ class ordered_pair(list):
 
         Uses ``numpy.interp`` to interpolate between existing data points.
         Values outside the x range are clamped to the nearest endpoint's y value.
+
+
+        >>> from PyICe.lab_utils.ordered_pair import ordered_pair
+        >>> hasattr(ordered_pair, 'interpolated_y_value')
+        True
 
         Args:
             xvalue: The x coordinate (or array of coordinates) at which to

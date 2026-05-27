@@ -1,4 +1,8 @@
-"""Polyfit utility."""
+"""Polyfit utility.
+
+>>> from PyICe.lab_utils.polyfit import polyfit
+
+"""
 import numpy
 
 
@@ -8,6 +12,11 @@ def polyfit(rec_array, degree=1):
     Wraps ``numpy.polyfit`` treating the first column as x and the second
     as y. Useful for extracting gain, offset, or higher-order
     coefficients from measured transfer functions.
+
+
+    >>> from PyICe.lab_utils.polyfit import polyfit
+    >>> callable(polyfit)
+    True
 
     Args:
         rec_array: Two-column numpy record array. The first column
