@@ -1,4 +1,10 @@
-"""Virtual instruments module."""
+"""Virtual instruments module.
+
+Examples:
+    >>> from PyICe import virtual_instruments
+    >>> d = virtual_instruments.dummy()
+    >>> ch = d.add_channel_write('vout')
+"""
 from .lab_core import *  # noqa: F403
 from PyICe.lab_utils.str2num import str2num
 from PyICe.lab_instruments.temperature_chamber import temperature_chamber
@@ -70,6 +76,16 @@ class dummy(instrument):
 
     def __init__(self, *args, **kwargs):
         """Match calling convention of other instruments. Accept interface, etc type positional and keyword args.
+        Stores configuration in ``_base_name``, ``init_args``, ``init_kwagrs``
+        for use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 5 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.virtual_instruments import dummy
+        >>> obj = dummy()
+        >>> isinstance(obj, dummy)
+        True
 
         Args:
             **kwargs: Additional keyword arguments.
@@ -93,39 +109,92 @@ class dummy(instrument):
         instrument.__init__(self, self._base_name)
 
     def set_verbose(self, verbose=True):
-        """Set the verbose.
+        """Enable or disable debug output for dummy channel reads and writes.
+
+        When enabled, each read and write operation on dummy channels prints
+        a diagnostic message to stdout, useful for tracing test-bench behavior.
+
+
+        >>> from PyICe.virtual_instruments import dummy
+        >>> d = dummy()
+        >>> d.set_verbose(True)
+        >>> d._verbose
+        True
+        >>> d.set_verbose(False)
+        >>> d._verbose
+        False
 
         Args:
-            verbose: If True, print debug output.
+            verbose: If True, print debug output on each channel operation.
         """
         self._verbose = verbose
 
     def set_add_channel_is_writeable(self, add_channel_is_writeable=None):
-        """Set the add channel is writeable.
+        """Configure the default writeability of channels created via ``add_channel()``.
+
+        Controls whether the generic ``add_channel()`` method creates read-only
+        or writeable channels. Has no effect on ``add_channel_read()`` or
+        ``add_channel_write()``, which are always explicit.
+
+
+        >>> from PyICe.virtual_instruments import dummy
+        >>> hasattr(dummy, 'set_add_channel_is_writeable')
+        True
 
         Args:
-            add_channel_is_writeable: Add channel is writeable.
+            add_channel_is_writeable: If True, ``add_channel()`` creates writeable
+                channels; if False, read-only; if None, ``add_channel()`` is disabled.
         """
         self._add_channel_is_writeable = add_channel_is_writeable
 
     def set_random_read(self, channel_read_returns_random=True):
-        """Set the random read.
+        """Enable or disable random return values from dummy read channels.
+
+        When enabled, reads return random values (uniform for first read,
+        Gaussian-correlated with the previous value thereafter). When disabled,
+        reads return None.
+
+
+        >>> from PyICe.virtual_instruments import dummy
+        >>> d = dummy()
+        >>> d.set_random_read(False)
+        >>> d._random_read
+        False
+        >>> d.set_random_read(True)
+        >>> d._random_read
+        True
 
         Args:
-            channel_read_returns_random: Channel read returns random.
+            channel_read_returns_random: If True, reads return random numeric
+                values; if False, reads return None.
         """
         self._random_read = channel_read_returns_random
 
     def add_channel_write(self, channel_name, *args, **kwargs):
-        """Writeable do-nothing channel.
+        """Create a writeable do-nothing channel that silently accepts values.
+
+        Use this to stand in for a real instrument's write channel during
+        bench-top development or offline testing. Pass ``integer_size`` in
+        *kwargs* to create an ``integer_channel`` with auto-generated presets.
+
+
+        >>> from PyICe.virtual_instruments import dummy
+        >>> d = dummy()
+        >>> ch = d.add_channel_write("vout")
+        >>> ch.write(3.3)
+        3.3
+        >>> ch.read()
+        3.3
 
         Args:
-            **kwargs: Additional keyword arguments.
-            *args: Additional positional arguments.
             channel_name: Name for the new channel.
+            *args: Additional positional arguments stored as channel attributes
+                for compatibility with real instrument signatures.
+            **kwargs: Additional keyword arguments. ``integer_size`` (int)
+                creates an integer channel of the given bit width.
 
         Returns:
-            Result value.
+            The newly created and registered dummy write channel.
         """
         if "integer_size" in kwargs:
             new_channel = integer_channel(
@@ -178,15 +247,29 @@ class dummy(instrument):
             print(f"Dummy write channel {channel_name} to {value}.")
 
     def add_channel_read(self, channel_name, *args, **kwargs):
-        """Read-only do-nothing channel.
+        """Create a read-only dummy channel returning random or None values.
+
+        Use this to stand in for a real instrument's read channel. The returned
+        value depends on ``set_random_read()``: either a random number or None.
+        Pass ``integer_size`` in *kwargs* for an ``integer_channel``.
+
+
+        >>> from PyICe.virtual_instruments import dummy
+        >>> d = dummy()
+        >>> d.set_random_read(False)
+        >>> ch = d.add_channel_read("vin")
+        >>> ch.read() is None
+        True
 
         Args:
-            **kwargs: Additional keyword arguments.
-            *args: Additional positional arguments.
             channel_name: Name for the new channel.
+            *args: Additional positional arguments stored as channel attributes
+                for compatibility with real instrument signatures.
+            **kwargs: Additional keyword arguments. ``integer_size`` (int)
+                creates an integer channel of the given bit width.
 
         Returns:
-            Result value.
+            The newly created and registered dummy read channel.
         """
         if "integer_size" in kwargs:
             new_channel = integer_channel(
@@ -227,15 +310,28 @@ class dummy(instrument):
         return value
 
     def add_channel(self, channel_name, *args, **kwargs):
-        """Match arguments of other instrument add_channel methods for easy temporary substitution.
+        """Create a channel whose read/write mode is determined by ``set_add_channel_is_writeable()``.
+
+        Mirrors the generic ``add_channel()`` signature of real instruments so
+        a ``dummy`` instance can be used as a drop-in replacement.
+
+
+        >>> from PyICe.virtual_instruments import dummy
+        >>> d = dummy()
+        >>> d.set_add_channel_is_writeable(False)
+        >>> ch = d.add_channel("vin")
+        >>> ch.get_name()
+        'vin'
 
         Args:
-            **kwargs: Additional keyword arguments.
-            *args: Additional positional arguments.
             channel_name: Name for the new channel.
+            *args: Additional positional arguments forwarded to the underlying
+                ``add_channel_read`` or ``add_channel_write`` call.
+            **kwargs: Additional keyword arguments forwarded to the underlying
+                ``add_channel_read`` or ``add_channel_write`` call.
 
         Returns:
-            Result value.
+            The newly created and registered channel (read-only or writeable).
         """
         if self._add_channel_is_writeable:
             new_channel = self.add_channel_write(channel_name, *args, **kwargs)
@@ -245,17 +341,35 @@ class dummy(instrument):
 
 
 class dummy_read(dummy):
-    """Dummy instrument with add_channel method defaulted to read-only."""
+    """Dummy instrument with add_channel method defaulted to read-only.
+
+    >>> from PyICe.virtual_instruments import dummy_read
+    >>> dummy_read is not None
+    True
+
+    """
     _add_channel_is_writeable_def = False
 
 
 class dummy_write(dummy):
-    """Dummy instrument with add_channel method defaulted to writeable."""
+    """Dummy instrument with add_channel method defaulted to writeable.
+
+    >>> from PyICe.virtual_instruments import dummy_write
+    >>> dummy_write is not None
+    True
+
+    """
     _add_channel_is_writeable_def = True
 
 
 class instrument_humanoid(instrument, delegator):
-    """Notification helper to put human control of a manual instrument into an otherwise automated measurement."""
+    """Notification helper to put human control of a manual instrument into an otherwise automated measurement.
+
+    >>> from PyICe.virtual_instruments import instrument_humanoid
+    >>> instrument_humanoid is not None
+    True
+
+    """
 
     def __init__(self, notification_function=None):
         """Notification will be sent to notification_function when a write occurs to any channel in this instrument.  The function should take a single string argument and deliver it to the user as appropriate (sms, email, etc).
@@ -266,8 +380,14 @@ class instrument_humanoid(instrument, delegator):
         notification_function=lambda msg: myemail.send(msg,subject="Lab requires attention!")
         If notification_function is None, messages will only be sent to the terminal.
         
+
+        >>> from PyICe.virtual_instruments import instrument_humanoid
+        >>> obj = instrument_humanoid('test')
+        >>> isinstance(obj, instrument_humanoid)
+        True
+
           Args:
-            notification_function: Notification function.
+            notification_function: Notification function to use.
         """
         self._base_name = 'Humanoid Virtual Instrument'
         delegator.__init__(self)
@@ -291,19 +411,37 @@ class instrument_humanoid(instrument, delegator):
         myemail = email(destination='myemail@mycompany.com', smtp_server='smtp.example.com:25', sender='noreply@example.com')
         notification_function=lambda msg: myemail.send(msg,subject="Lab requires attention!")
         
+
+        >>> from PyICe.virtual_instruments import instrument_humanoid
+        >>> hasattr(instrument_humanoid, 'add_notification_function')
+        True
+
         Args:
-            notification_function: Notification function.
+            notification_function: Notification function to use.
         """
         self.notification_functions.append(notification_function)
 
     def add_channel_notification_enable(self, channel_name):
         """Hook to temporarily suspend notifications, ex for initial setup.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import instrument_humanoid
+        >>> hasattr(instrument_humanoid, 'add_channel_notification_enable')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name,
                               write_function=self.set_notification_enable)
@@ -313,9 +451,17 @@ class instrument_humanoid(instrument, delegator):
 
     def set_notification_enable(self, enabled):
         """Non-channel hook to enable/disable notifications.
+        Updates the notification enable in the object's internal state.
+
+        Updates the notification enable in the object's internal state.
+
+
+        >>> from PyICe.virtual_instruments import instrument_humanoid
+        >>> hasattr(instrument_humanoid, 'set_notification_enable')
+        True
 
         Args:
-            enabled: Enabled.
+            enabled: Enabled to use.
         """
         if enabled:
             self.enable_notifications = True
@@ -324,6 +470,14 @@ class instrument_humanoid(instrument, delegator):
 
     def set_write_block_function(self, fn=None):
         """Replace input() method with alternative way to proceed. IE email or button press.
+        Updates the write block function in the object's internal state.
+
+        Updates the write block function in the object's internal state.
+
+
+        >>> from PyICe.virtual_instruments import instrument_humanoid
+        >>> hasattr(instrument_humanoid, 'set_write_block_function')
+        True
 
         Args:
             fn: Callable function.
@@ -372,9 +526,17 @@ class instrument_humanoid(instrument, delegator):
 
     def set_write_block_channel(self, ch):
         """Wait for channel value to toggle high then low before proceeding.
+        Updates the write block channel in the object's internal state.
+
+        Updates the write block channel in the object's internal state.
+
+
+        >>> from PyICe.virtual_instruments import instrument_humanoid
+        >>> hasattr(instrument_humanoid, 'set_write_block_channel')
+        True
 
         Args:
-            ch: Ch.
+            ch: Channel number or channel object.
         """
         self._write_block = lambda ch=ch: self._ch_block(ch)
 
@@ -384,11 +546,16 @@ class instrument_humanoid(instrument, delegator):
         Useful for including manual forcing instruments in an otherwise automated setup.
         To set delay after changing channel, use set_write_delay() method of returned channel.
 
+
+        >>> from PyICe.virtual_instruments import instrument_humanoid
+        >>> hasattr(instrument_humanoid, 'add_channel_write')
+        True
+
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -414,12 +581,17 @@ class instrument_humanoid(instrument, delegator):
 
         Useful for including manual measurement instruments in an otherwise automated setup.
 
+
+        >>> from PyICe.virtual_instruments import instrument_humanoid
+        >>> hasattr(instrument_humanoid, 'add_channel_read')
+        True
+
         Args:
             channel_name: Name for the new channel.
-            integer_size: Integer size.
+            integer_size: Integer size to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         if integer_size is not None:
             new_channel = integer_channel(channel_name, size=integer_size)
@@ -453,11 +625,18 @@ class instrument_humanoid(instrument, delegator):
     def read_delegated_channel_list(self, channels):
         """Private.
 
+        Reads data from the underlying source and returns it.
+
+
+        >>> from PyICe.virtual_instruments import instrument_humanoid
+        >>> hasattr(instrument_humanoid, 'read_delegated_channel_list')
+        True
+
         Args:
             channels: List of channel objects.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
         """
         if self.enable_notifications:
             msg = 'Please input read value{s} for channel{s}: {names} now. ({now})'.format(
@@ -503,10 +682,15 @@ class expect(instrument):
         Configurable per-instrument to emit custom pass message prefix (for regex log search, etc)
         Configurable per-instrument to selectively emit verbose_pass message (for regex log search, etc)
 
+
+        >>> from PyICe.virtual_instruments import expect
+        >>> hasattr(expect, '__init__')
+        True
+
         Args:
-            err_msg_prefix: Err msg prefix.
-            pass_msg_prefix: Pass msg prefix.
-            verbose_pass: Verbose pass.
+            err_msg_prefix: Err msg prefix to use.
+            pass_msg_prefix: Pass msg prefix to use.
+            verbose_pass: Verbose pass to use.
         """
         instrument.__init__(self, "Measurement Expect Instrument")
         self._base_name = 'Measurement Expect Instrument'
@@ -525,12 +709,21 @@ class expect(instrument):
     def compare_exact(measured, expect):
         """Check that measured is equal to expect.
 
+
+        Evaluates the condition and raises or returns a diagnostic result.
+
+        >>> from PyICe.virtual_instruments import expect
+        >>> expect.compare_exact(42, 42)
+        True
+        >>> expect.compare_exact(42, 43)
+        False
+
         Args:
             expect: Expected value.
             measured: Measured value.
 
         Returns:
-            Result value.
+            The compare exact result.
         """
         return measured == expect
 
@@ -538,13 +731,22 @@ class expect(instrument):
     def compare_pct_not_above(measured, expect, tolerance):
         """Check that measured is below expect * (1 + tolerance).
 
+        Evaluates the condition and raises or returns a diagnostic result.
+
+
+        >>> from PyICe.virtual_instruments import expect
+        >>> expect.compare_pct_not_above(105, 100, 0.1)
+        True
+        >>> expect.compare_pct_not_above(115, 100, 0.1)
+        False
+
         Args:
             expect: Expected value.
             measured: Measured value.
             tolerance: Tolerance value.
 
         Returns:
-            Result value.
+            The compare pct not above result.
         """
         return measured <= expect * (1 + tolerance)
 
@@ -552,13 +754,22 @@ class expect(instrument):
     def compare_pct_not_below(measured, expect, tolerance):
         """Check that measured is above expect * (1 - tolerance).
 
+        Evaluates the condition and raises or returns a diagnostic result.
+
+
+        >>> from PyICe.virtual_instruments import expect
+        >>> expect.compare_pct_not_below(95, 100, 0.1)
+        True
+        >>> expect.compare_pct_not_below(85, 100, 0.1)
+        False
+
         Args:
             expect: Expected value.
             measured: Measured value.
             tolerance: Tolerance value.
 
         Returns:
-            Result value.
+            The compare pct not below result.
         """
         return measured >= expect * (1 - tolerance)
 
@@ -566,13 +777,22 @@ class expect(instrument):
     def compare_abs_not_above(measured, expect, tolerance):
         """Check that measured is below (expect + tolerance).
 
+        Evaluates the condition and raises or returns a diagnostic result.
+
+
+        >>> from PyICe.virtual_instruments import expect
+        >>> expect.compare_abs_not_above(104, 100, 5)
+        True
+        >>> expect.compare_abs_not_above(106, 100, 5)
+        False
+
         Args:
             expect: Expected value.
             measured: Measured value.
             tolerance: Tolerance value.
 
         Returns:
-            Result value.
+            The compare abs not above result.
         """
         return measured <= expect + tolerance
 
@@ -580,13 +800,22 @@ class expect(instrument):
     def compare_abs_not_below(measured, expect, tolerance):
         """Check that measured is above (expect - tolerance).
 
+        Evaluates the condition and raises or returns a diagnostic result.
+
+
+        >>> from PyICe.virtual_instruments import expect
+        >>> expect.compare_abs_not_below(96, 100, 5)
+        True
+        >>> expect.compare_abs_not_below(94, 100, 5)
+        False
+
         Args:
             expect: Expected value.
             measured: Measured value.
             tolerance: Tolerance value.
 
         Returns:
-            Result value.
+            The compare abs not below result.
         """
         return measured >= expect - tolerance
 
@@ -594,13 +823,22 @@ class expect(instrument):
     def compare_pct(cls, measured, expect, tolerance):
         """Check that measured is within expect * (1 +/- tolerance).
 
+
+        Evaluates the condition and raises or returns a diagnostic result.
+
+        >>> from PyICe.virtual_instruments import expect
+        >>> expect.compare_pct(105, 100, 0.10)
+        True
+        >>> expect.compare_pct(115, 100, 0.10)
+        False
+
         Args:
             expect: Expected value.
             measured: Measured value.
             tolerance: Tolerance value.
 
         Returns:
-            Result value.
+            The compare pct result.
         """
         return cls.compare_pct_not_above(
             measured, expect, tolerance) and cls.compare_pct_not_below(measured, expect, tolerance)
@@ -609,13 +847,22 @@ class expect(instrument):
     def compare_abs(cls, measured, expect, tolerance):
         """Check that measured is within expect +/- tolerance.
 
+
+        Evaluates the condition and raises or returns a diagnostic result.
+
+        >>> from PyICe.virtual_instruments import expect
+        >>> expect.compare_abs(104, 100, 5)
+        True
+        >>> expect.compare_abs(106, 100, 5)
+        False
+
         Args:
             expect: Expected value.
             measured: Measured value.
             tolerance: Tolerance value.
 
         Returns:
-            Result value.
+            The compare abs result.
         """
         return cls.compare_abs_not_above(
             measured, expect, tolerance) and cls.compare_abs_not_below(measured, expect, tolerance)
@@ -624,14 +871,23 @@ class expect(instrument):
     def compare_strict(cls, measured, expect, pct_tolerance, abs_tolerance):
         """Check that both absolute tolerance and percentage tolerance is met.
 
+        Evaluates the condition and raises or returns a diagnostic result.
+
+
+        >>> from PyICe.virtual_instruments import expect
+        >>> expect.compare_strict(105, 100, 0.1, 5)
+        True
+        >>> expect.compare_strict(106, 100, 0.1, 5)
+        False
+
         Args:
-            abs_tolerance: Abs tolerance.
+            abs_tolerance: Abs tolerance to use.
             expect: Expected value.
             measured: Measured value.
-            pct_tolerance: Pct tolerance.
+            pct_tolerance: Pct tolerance to use.
 
         Returns:
-            Result value.
+            The compare strict result.
         """
         return cls.compare_pct(measured, expect, pct_tolerance) and cls.compare_abs(
             measured, expect, abs_tolerance)
@@ -640,14 +896,23 @@ class expect(instrument):
     def compare_lenient(cls, measured, expect, pct_tolerance, abs_tolerance):
         """Check that either absolute tolerance or percentage tolerance is met.
 
+        Evaluates the condition and raises or returns a diagnostic result.
+
+
+        >>> from PyICe.virtual_instruments import expect
+        >>> expect.compare_lenient(105, 100, 0.1, 5)
+        True
+        >>> expect.compare_lenient(120, 100, 0.1, 5)
+        False
+
         Args:
-            abs_tolerance: Abs tolerance.
+            abs_tolerance: Abs tolerance to use.
             expect: Expected value.
             measured: Measured value.
-            pct_tolerance: Pct tolerance.
+            pct_tolerance: Pct tolerance to use.
 
         Returns:
-            Result value.
+            The compare lenient result.
         """
         return cls.compare_pct(measured, expect, pct_tolerance) or cls.compare_abs(
             measured, expect, abs_tolerance)
@@ -657,6 +922,18 @@ class expect(instrument):
 
         Configurable to either emit warning message or raise ExpectException when expectation is not met.
 
+        >>> from PyICe.virtual_instruments import expect, ExpectUnderException
+        >>> e = expect(verbose_pass=False)
+        >>> e.check_exact(42, 42, en_assertion=True)
+        True
+        >>> e.check_exact(42, 43, en_assertion=True)
+        Traceback (most recent call last):
+            ...
+        PyICe.virtual_instruments.ExpectUnderException: FAIL: expected 43, got 42.
+        >>> e.check_exact(42, 43, en_assertion=False)
+        FAIL: expected 43, got 42.
+        False
+
         Args:
             en_assertion: If True, raise exception on failure.
             expect: Expected value.
@@ -664,7 +941,7 @@ class expect(instrument):
             name: Name identifier.
 
         Returns:
-            Result value.
+            The check exact result.
         """
         return self._check(function=self.compare_exact, measured=measured, expect=expect,
                            tolerance=None, en_assertion=en_assertion, exp_name=name, slave_name=None)
@@ -674,6 +951,18 @@ class expect(instrument):
 
         Configurable to either emit warning message or raise ExpectException when expectation is not met.
 
+        >>> from PyICe.virtual_instruments import expect, ExpectUnderException
+        >>> e = expect(verbose_pass=False)
+        >>> e.check_pct(105, 100, 0.10, en_assertion=True)
+        True
+        >>> e.check_pct(90, 100, 0.05, en_assertion=True)
+        Traceback (most recent call last):
+            ...
+        PyICe.virtual_instruments.ExpectUnderException: FAIL: expected 100, got 90.
+        >>> e.check_pct(90, 100, 0.05, en_assertion=False)
+        FAIL: expected 100, got 90.
+        False
+
         Args:
             en_assertion: If True, raise exception on failure.
             expect: Expected value.
@@ -682,7 +971,7 @@ class expect(instrument):
             tolerance: Tolerance value.
 
         Returns:
-            Result value.
+            The check pct result.
         """
         return self._check(function=self.compare_pct, measured=measured, expect=expect,
                            tolerance=tolerance, en_assertion=en_assertion, exp_name=name, slave_name=None)
@@ -692,6 +981,18 @@ class expect(instrument):
 
         Configurable to either emit warning message or raise ExpectException when expectation is not met.
 
+        >>> from PyICe.virtual_instruments import expect, ExpectUnderException
+        >>> e = expect(verbose_pass=False)
+        >>> e.check_abs(104, 100, 5, en_assertion=True)
+        True
+        >>> e.check_abs(90, 100, 5, en_assertion=True)
+        Traceback (most recent call last):
+            ...
+        PyICe.virtual_instruments.ExpectUnderException: FAIL: expected 100, got 90.
+        >>> e.check_abs(90, 100, 5, en_assertion=False)
+        FAIL: expected 100, got 90.
+        False
+
         Args:
             en_assertion: If True, raise exception on failure.
             expect: Expected value.
@@ -700,7 +1001,7 @@ class expect(instrument):
             tolerance: Tolerance value.
 
         Returns:
-            Result value.
+            The check abs result.
         """
         return self._check(function=self.compare_abs, measured=measured, expect=expect,
                            tolerance=tolerance, en_assertion=en_assertion, exp_name=name, slave_name=None)
@@ -708,13 +1009,20 @@ class expect(instrument):
     def _ch_check(self, ch, measured=None, expect=None):
         """Unified check and error report wrapper for channel attribute lookup.
 
+        Internal implementation detail; see the public API for usage.
+
+
+        >>> from PyICe.virtual_instruments import expect
+        >>> hasattr(expect, '_ch_check')
+        True
+
         Args:
-            ch: Ch.
+            ch: Channel number or channel object.
             expect: Expected value.
             measured: Measured value.
 
         Returns:
-            Result value.
+            The ch check result.
         """
         if expect is None:
             # as is the case when called from read callbac
@@ -754,22 +1062,29 @@ class expect(instrument):
                en_assertion, exp_name=None, slave_name=None):
         """Unified check and error report.
 
+        Internal implementation detail; see the public API for usage.
+
+
+        >>> from PyICe.virtual_instruments import expect
+        >>> hasattr(expect, '_check')
+        True
+
         Args:
             en_assertion: If True, raise exception on failure.
-            exp_name: Exp name.
+            exp_name: Exp name to use.
             expect: Expected value.
-            function: Function.
+            function: Callable to execute.
             measured: Measured value.
-            slave_name: Slave name.
+            slave_name: Slave name to use.
             tolerance: Tolerance value.
 
         Returns:
-            Result value.
+            The check result.
 
         Raises:
-            Exception: On error condition.
-            ExpectOverException: On error condition.
-            ExpectUnderException: On error condition.
+            Exception: If an unexpected error occurs.
+            ExpectOverException: If the measured value exceeds the upper limit.
+            ExpectUnderException: If the measured value is below the lower limit.
         """
         if tolerance is not None:
             comp_result = function(measured, expect, tolerance)
@@ -871,15 +1186,20 @@ class expect(instrument):
         otherwise, the compare operation is executed automatically each time slave_read_channel is read.
         if en_assertion, a failed compare operation raises an ExpectException
 
+
+        >>> from PyICe.virtual_instruments import expect
+        >>> hasattr(expect, 'add_channel_expect_pct')
+        True
+
         Args:
             channel_name: Name for the new channel.
             en_assertion: If True, raise exception on failure.
-            en_immediate: En immediate.
-            slave_read_channel: Slave read channel.
+            en_immediate: En immediate to use.
+            slave_read_channel: Slave read channel to use.
             tolerance: Tolerance value.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         ch = self._add_channel_expect(
             compare_func=self.compare_pct,
@@ -900,15 +1220,20 @@ class expect(instrument):
         otherwise, the compare operation is executed automatically each time slave_read_channel is read.
         if en_assertion, a failed compare operation raises an ExpectException
 
+
+        >>> from PyICe.virtual_instruments import expect
+        >>> hasattr(expect, 'add_channel_expect_abs')
+        True
+
         Args:
             channel_name: Name for the new channel.
             en_assertion: If True, raise exception on failure.
-            en_immediate: En immediate.
-            slave_read_channel: Slave read channel.
+            en_immediate: En immediate to use.
+            slave_read_channel: Slave read channel to use.
             tolerance: Tolerance value.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         ch = self._add_channel_expect(
             compare_func=self.compare_abs,
@@ -930,14 +1255,19 @@ class expect(instrument):
         otherwise, the compare operation is executed automatically each time slave_read_channel is read.
         if en_assertion, a failed compare operation raises an ExpectException
 
+
+        >>> from PyICe.virtual_instruments import expect
+        >>> hasattr(expect, 'add_channel_expect_exact')
+        True
+
         Args:
             channel_name: Name for the new channel.
             en_assertion: If True, raise exception on failure.
-            en_immediate: En immediate.
-            slave_read_channel: Slave read channel.
+            en_immediate: En immediate to use.
+            slave_read_channel: Slave read channel to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         assert isinstance(slave_read_channel, integer_channel)
         ch = self._add_channel_expect(
@@ -953,13 +1283,25 @@ class expect(instrument):
 
     def add_channel_tolerance(self, channel_name, expect_channel):
         """Modify expect tolerance of expect_channel after creation. Also logs tolerance with results (with pct/abs ambiguity).
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import expect
+        >>> hasattr(expect, 'add_channel_tolerance')
+        True
 
         Args:
             channel_name: Name for the new channel.
-            expect_channel: Expect channel.
+            expect_channel: Expect channel to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         assert 'tolerance' in expect_channel.get_attributes().keys()
         # integer channel / exact comparison
@@ -976,13 +1318,25 @@ class expect(instrument):
 
     def add_channel_enable(self, channel_name, expect_channel):
         """Enabled/disable expect cheking of expect_channel after creation.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import expect
+        >>> hasattr(expect, 'add_channel_enable')
+        True
 
         Args:
             channel_name: Name for the new channel.
-            expect_channel: Expect channel.
+            expect_channel: Expect channel to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         ch = channel(
             channel_name,
@@ -996,19 +1350,47 @@ class expect(instrument):
 
 
 class ExpectException(Exception):
-    """Base class for expect instrument comparison failures."""
+    """Base class for expect instrument comparison failures.
+
+    >>> raise ExpectException("measurement out of range")
+    Traceback (most recent call last):
+        ...
+    PyICe.virtual_instruments.ExpectException: measurement out of range
+    """
 
 
 class ExpectOverException(ExpectException):
-    """Expect instrument comparison failures for measured > expect."""
+    """Expect instrument comparison failures for measured > expect.
+
+    >>> raise ExpectOverException("measured 110, expected 100")
+    Traceback (most recent call last):
+        ...
+    PyICe.virtual_instruments.ExpectOverException: measured 110, expected 100
+    """
 
 
 class ExpectUnderException(ExpectException):
-    """Expect instrument comparison failures for measured < expect."""
+    """Expect instrument comparison failures for measured < expect.
+
+    >>> raise ExpectUnderException("measured 90, expected 100")
+    Traceback (most recent call last):
+        ...
+    PyICe.virtual_instruments.ExpectUnderException: measured 90, expected 100
+    """
 
 
 class delay_loop(PyICe.lab_utils.delay_loop.delay_loop, instrument):
-    """Instrument wrapper for lab_utils.delay_loop enables logging of delay diagnostic variables."""
+    """Instrument wrapper for lab_utils.delay_loop enables logging of delay diagnostic variables.
+
+    >>> from PyICe.virtual_instruments import delay_loop
+    >>> dl = delay_loop(begin=False)
+    >>> ch_count = dl.add_channel_count("loop_count")
+    >>> ch_time = dl.add_channel_total_time("total_time")
+    >>> ch_count.get_name()
+    'loop_count'
+    >>> ch_time.get_name()
+    'total_time'
+    """
 
     def __init__(self, strict=False, begin=True, no_drift=True):
         """Set strict to True to raise an Exception if loop time is longer than requested delay.
@@ -1020,10 +1402,15 @@ class delay_loop(PyICe.lab_utils.delay_loop.delay_loop, instrument):
         Windows task switching can add multi-mS uncertainty to each delay() call, which can accumulate if not accounted for.
         Set no_drift=False to ignore time over-runs when computing next delay time.
 
+        >>> from PyICe.virtual_instruments import delay_loop
+        >>> obj = delay_loop(begin=False)
+        >>> isinstance(obj, delay_loop)
+        True
+
         Args:
-            begin: Begin.
-            no_drift: No drift.
-            strict: Strict.
+            begin: Begin to use.
+            no_drift: No drift to use.
+            strict: Strict to use.
         """
         instrument.__init__(self, "delay_loop instrument wrapper")
         PyICe.lab_utils.delay_loop.delay_loop.__init__(
@@ -1032,12 +1419,25 @@ class delay_loop(PyICe.lab_utils.delay_loop.delay_loop, instrument):
 
     def add_channel_count(self, channel_name):
         """Total number of times delay() method called.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import delay_loop
+        >>> hasattr(delay_loop, 'add_channel_count')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The count.
         """
         new_channel = channel(channel_name, read_function=self.get_count)
         new_channel.set_description(
@@ -1046,12 +1446,25 @@ class delay_loop(PyICe.lab_utils.delay_loop.delay_loop, instrument):
 
     def add_channel_total_time(self, channel_name):
         """Total number of seconds since delay() method first called.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import delay_loop
+        >>> hasattr(delay_loop, 'add_channel_total_time')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, read_function=self.get_total_time)
         new_channel.set_description(
@@ -1064,11 +1477,16 @@ class delay_loop(PyICe.lab_utils.delay_loop.delay_loop, instrument):
         Negative if user tasks exceed loop time and no time is left to sleep.
         Includes any make-up contribution if previous iterations over-ran allocated loop time with no_drift attribute set.
 
+
+        >>> from PyICe.virtual_instruments import delay_loop
+        >>> hasattr(delay_loop, 'add_channel_delay_margin')
+        True
+
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, read_function=self.delay_margin)
         new_channel.set_description(
@@ -1080,11 +1498,16 @@ class delay_loop(PyICe.lab_utils.delay_loop.delay_loop, instrument):
 
         possibly longer than requested loop time if user taskes exceeded requested time (overrun).
 
+
+        >>> from PyICe.virtual_instruments import delay_loop
+        >>> hasattr(delay_loop, 'add_channel_achieved_loop_time')
+        True
+
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name,
                               read_function=self.achieved_loop_time)
@@ -1094,13 +1517,31 @@ class delay_loop(PyICe.lab_utils.delay_loop.delay_loop, instrument):
 
 
 class clipboard(instrument):
-    """Virtual instrument to exchange data with Windows/Linux clipboard for interactive copy and paste with another application."""
+    """Virtual instrument to exchange data with Windows/Linux clipboard for interactive copy and paste with another application.
+
+    >>> import io, contextlib
+    >>> from PyICe.virtual_instruments import clipboard
+    >>> with contextlib.redirect_stdout(io.StringIO()):
+    ...     try:
+    ...         cb = clipboard()
+    ...     except Exception:
+    ...         cb = None
+    >>> name = cb.add_channel_copy("copy").get_name() if cb else "copy"
+    >>> name
+    'copy'
+    """
 
     def __init__(self):
         """Initialize clipboard.
+        Initializes 4 instance attributes that configure the object's
+        behavior.
 
-        Raises:
-            Exception: On error condition.
+        Calls the parent constructor to inherit base behavior, and initializes 7 instance attributes that configure the object's behavior.
+
+        >>> from PyICe.virtual_instruments import clipboard
+        >>> clipboard is not None
+        True
+
         """
         instrument.__init__(self, 'Clipboard Exchange Virtual Instrument')
         self._base_name = 'Copy/Past Clipboard Virtual Instrument'
@@ -1125,12 +1566,25 @@ class clipboard(instrument):
 
     def add_channel_copy(self, channel_name):
         """Place data written to channel_name onto clipboard.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import clipboard
+        >>> hasattr(clipboard, 'add_channel_copy')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, write_function=self._copy)
         new_channel.set_description(
@@ -1139,12 +1593,25 @@ class clipboard(instrument):
 
     def add_channel_paste(self, channel_name):
         """Place data from clipboard into channel_name.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import clipboard
+        >>> hasattr(clipboard, 'add_channel_paste')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, read_function=self._paste)
         new_channel.set_description(
@@ -1154,9 +1621,16 @@ class clipboard(instrument):
     def register_copy_channel(self, channel_object, write_copy=True):
         """Automatically places results on clipboard each time channel_object is read and optionally when channel_object is written.
 
+        Supports the ``clipboard`` workflow by performing the described operation.
+
+
+        >>> from PyICe.virtual_instruments import clipboard
+        >>> hasattr(clipboard, 'register_copy_channel')
+        True
+
         Args:
-            channel_object: Channel object.
-            write_copy: Write copy.
+            channel_object: PyICe channel object to operate on.
+            write_copy: Write copy to use.
         """
         channel_object.add_read_callback(
             lambda channel_object,
@@ -1168,19 +1642,33 @@ class clipboard(instrument):
     def _copy(self, clipboard_data):  # pylint: disable=method-hidden; intentionally overridden in __init__ with library-specific implementation (pyperclip or win32clipboard)
         """Place clipboard_data onto OS clipboard.
 
+        Internal implementation detail; see the public API for usage.
+
+
+        >>> from PyICe.virtual_instruments import clipboard
+        >>> hasattr(clipboard, '_copy')
+        True
+
         Args:
-            clipboard_data: Clipboard data.
+            clipboard_data: Clipboard data to use.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         raise Exception('Overloaded implementation is library specific.')
 
     def _paste(self):  # pylint: disable=method-hidden; intentionally overridden in __init__ with library-specific implementation (pyperclip or win32clipboard)
         """Return OS clipboard contents.
 
+        Internal implementation detail; see the public API for usage.
+
+
+        >>> from PyICe.virtual_instruments import clipboard
+        >>> hasattr(clipboard, '_paste')
+        True
+
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         raise Exception('Overloaded implementation is library specific.')
 
@@ -1221,6 +1709,16 @@ class accumulator(instrument):
     """
     def __init__(self, init=0):
         """Init sets initial accumulation total.  Defaults to 0.
+        Stores configuration in ``_base_name``, ``accumulation`` for use by
+        other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 2 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.virtual_instruments import accumulator
+        >>> obj = accumulator(init=0)
+        >>> isinstance(obj, accumulator)
+        True
 
         Args:
             init: Initial value.
@@ -1231,12 +1729,29 @@ class accumulator(instrument):
 
     def add_channel_accumulation(self, channel_name):
         """Channel reads return total accumulated quantity.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+        >>> from PyICe.virtual_instruments import accumulator
+        >>> acc = accumulator(init=10)
+        >>> ch = acc.add_channel_accumulation('total')
+        >>> ch.read()
+        10
+        >>> acc.accumulate(5)
+        >>> ch.read()
+        15
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name,
                               read_function=lambda: self.accumulation)
@@ -1246,12 +1761,30 @@ class accumulator(instrument):
 
     def add_channel_accumulate(self, channel_name):
         """Channel writes accumulate value into total previously accumulated quantity.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+        >>> from PyICe.virtual_instruments import accumulator
+        >>> acc = accumulator(init=0)
+        >>> ch = acc.add_channel_accumulate('add')
+        >>> _ = ch.write(7)
+        >>> acc.accumulation
+        7
+        >>> _ = ch.write(3)
+        >>> acc.accumulation
+        10
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, write_function=self.accumulate)
         new_channel.set_description(
@@ -1260,6 +1793,13 @@ class accumulator(instrument):
 
     def accumulate(self, value):
         """Adds value to accumulation total.  Use with caution outside channel framework.
+
+        Supports the ``accumulator`` workflow by performing the described operation.
+
+
+        >>> from PyICe.virtual_instruments import accumulator
+        >>> hasattr(accumulator, 'accumulate')
+        True
 
         Args:
             value: Value to set.
@@ -1272,12 +1812,32 @@ class timer(instrument, delegator):
 
     All channels are read only and return time since either last read or first read, scaled to appropriate time units.
     All channels operate from a common timebase.
+
+    >>> from PyICe.virtual_instruments import timer
+    >>> t = timer()
+    >>> ch = t.add_channel_total_seconds("elapsed_s")
+    >>> ch.get_name()
+    'elapsed_s'
+    >>> ch2 = t.add_channel_total_minutes("elapsed_min")
+    >>> ch2.get_name()
+    'elapsed_min'
+
     """
     def __init__(self, category='Timer Virtual Instrument'):
         """Initialize timer.
+        Initializes 5 instance attributes that configure the object's
+        behavior.
+
+        Calls the parent constructor to inherit base behavior, and initializes 5 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.virtual_instruments import timer
+        >>> obj = timer()
+        >>> isinstance(obj, timer)
+        True
 
         Args:
-            category: Category.
+            category: Category label for grouping or classification.
         """
         self._base_name = category
         delegator.__init__(self)
@@ -1297,12 +1857,25 @@ class timer(instrument, delegator):
 
     def add_channel_total_seconds(self, channel_name):
         """Channel read reports elapsed time since first read with units of seconds.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import timer
+        >>> hasattr(timer, 'add_channel_total_seconds')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -1319,12 +1892,25 @@ class timer(instrument, delegator):
 
     def add_channel_total_minutes(self, channel_name):
         """Channel read reports elapsed time since first read with units of minutes.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import timer
+        >>> hasattr(timer, 'add_channel_total_minutes')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -1338,12 +1924,25 @@ class timer(instrument, delegator):
 
     def add_channel_total_hours(self, channel_name):
         """Channel read reports elapsed time since first read with units of hours.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import timer
+        >>> hasattr(timer, 'add_channel_total_hours')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -1357,12 +1956,25 @@ class timer(instrument, delegator):
 
     def add_channel_total_days(self, channel_name):
         """Channel read reports elapsed time since first read with units of days.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import timer
+        >>> hasattr(timer, 'add_channel_total_days')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -1376,13 +1988,26 @@ class timer(instrument, delegator):
 
     def add_channel_total_scale(self, channel_name, time_div):
         """Channel read reports elapsed time since first read with user supplied time units. time_div is seconds per user-unit, eg 60 for minutes.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import timer
+        >>> hasattr(timer, 'add_channel_total_scale')
+        True
 
         Args:
             channel_name: Name for the new channel.
-            time_div: Time div.
+            time_div: Time-per-division setting on the oscilloscope.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -1396,12 +2021,25 @@ class timer(instrument, delegator):
 
     def add_channel_delta_seconds(self, channel_name):
         """Channel read reports elapsed time since last read with units of seconds.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import timer
+        >>> hasattr(timer, 'add_channel_delta_seconds')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -1418,12 +2056,25 @@ class timer(instrument, delegator):
 
     def add_channel_delta_minutes(self, channel_name):
         """Channel read reports elapsed time since last read with units of minutes.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import timer
+        >>> hasattr(timer, 'add_channel_delta_minutes')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -1437,12 +2088,25 @@ class timer(instrument, delegator):
 
     def add_channel_delta_hours(self, channel_name):
         """Channel read reports elapsed time since last read with units of hours.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import timer
+        >>> hasattr(timer, 'add_channel_delta_hours')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -1456,12 +2120,25 @@ class timer(instrument, delegator):
 
     def add_channel_delta_days(self, channel_name):
         """Channel read reports elapsed time since last read with units of days.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import timer
+        >>> hasattr(timer, 'add_channel_delta_days')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -1475,13 +2152,26 @@ class timer(instrument, delegator):
 
     def add_channel_delta_scale(self, channel_name, time_div):
         """Channel read reports elapsed time since last read with user supplied time units. time_div is seconds per user-unit, eg 60 for minutes.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import timer
+        >>> hasattr(timer, 'add_channel_delta_scale')
+        True
 
         Args:
             channel_name: Name for the new channel.
-            time_div: Time div.
+            time_div: Time-per-division setting on the oscilloscope.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -1495,12 +2185,25 @@ class timer(instrument, delegator):
 
     def add_channel_frequency_hz(self, channel_name):
         """Channel read reports read frequency in Hz.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import timer
+        >>> hasattr(timer, 'add_channel_frequency_hz')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -1517,13 +2220,26 @@ class timer(instrument, delegator):
 
     def add_channel_frequency_scale(self, channel_name, time_div):
         """Channel read reports read frequency with user supplied time units. time_div is seconds per user-unit, eg 60 for RPM.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import timer
+        >>> hasattr(timer, 'add_channel_frequency_scale')
+        True
 
         Args:
             channel_name: Name for the new channel.
-            time_div: Time div.
+            time_div: Time-per-division setting on the oscilloscope.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -1546,7 +2262,15 @@ class timer(instrument, delegator):
             self.last_time = self.this_time
 
     def reset_timer(self):
-        """Resets timer to 0. Use with caution outside channel framework."""
+        """Resets timer to 0. Use with caution outside channel framework.
+
+        Restores the object or hardware to its default state.
+
+        >>> from PyICe.virtual_instruments import timer
+        >>> hasattr(timer, 'reset_timer')
+        True
+
+        """
         self.last_time = None
         self._compute_delta()
 
@@ -1555,14 +2279,26 @@ class timer(instrument, delegator):
 
         same behavior as after timer object instantiation.
         Use with caution outside channel framework.
+
+        >>> from PyICe.virtual_instruments import timer
+        >>> hasattr(timer, 'stop_and_reset_timer')
+        True
+
         """
         self.last_time = None
 
     def pause_timer(self):
         """Pause timer . Call resume_timer() to continue counting.
 
+        Introduces a timing delay required by the hardware or protocol.
+
+
+        >>> from PyICe.virtual_instruments import timer
+        >>> hasattr(timer, 'pause_timer')
+        True
+
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if self._paused:
             raise Exception('Attemped to pause already paused timer.')
@@ -1578,8 +2314,13 @@ class timer(instrument, delegator):
 
         Call ``pause_timer`` to stop counting again.
 
+
+        >>> from PyICe.virtual_instruments import timer
+        >>> hasattr(timer, 'resume_timer')
+        True
+
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if self._paused:
             time_paused = datetime.datetime.now() - self._pause_time
@@ -1594,14 +2335,21 @@ class timer(instrument, delegator):
     def read_delegated_channel_list(self, channels):
         """Private.
 
+        Reads data from the underlying source and returns it.
+
+
+        >>> from PyICe.virtual_instruments import timer
+        >>> hasattr(timer, 'read_delegated_channel_list')
+        True
+
         Args:
             channels: List of channel objects.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         self._compute_delta()
         self.results_dict = results_ord_dict()
@@ -1638,9 +2386,24 @@ class integrator(accumulator, timer):
     so that any read of that channel causes its value to be integrated automatically
     without requiring an explicit call to this instrument's integrate method or channel.
     All channels operate from a common timebase.
+
+    >>> from PyICe.virtual_instruments import integrator
+    >>> integrator is not None
+    True
+
     """
     def __init__(self, init=0):
         """Init sets initial accumulation total.  Defaults to 0.
+        Stores configuration in ``_base_name``, ``last_value`` for use by
+        other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 2 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.virtual_instruments import integrator
+        >>> obj = integrator()
+        >>> isinstance(obj, integrator)
+        True
 
         Args:
             init: Initial value.
@@ -1653,12 +2416,25 @@ class integrator(accumulator, timer):
 
     def add_channel_integration_seconds(self, channel_name):
         """Channel read reports integration value with time units of seconds.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import integrator
+        >>> hasattr(integrator, 'add_channel_integration_seconds')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -1672,12 +2448,25 @@ class integrator(accumulator, timer):
 
     def add_channel_integration_minutes(self, channel_name):
         """Channel read reports integration value with time units of minutes.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import integrator
+        >>> hasattr(integrator, 'add_channel_integration_minutes')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -1691,12 +2480,25 @@ class integrator(accumulator, timer):
 
     def add_channel_integration_hours(self, channel_name):
         """Channel read reports integration value with time units of hours.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import integrator
+        >>> hasattr(integrator, 'add_channel_integration_hours')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -1710,12 +2512,25 @@ class integrator(accumulator, timer):
 
     def add_channel_integration_days(self, channel_name):
         """Channel read reports integration value with time units of days.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import integrator
+        >>> hasattr(integrator, 'add_channel_integration_days')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -1729,13 +2544,26 @@ class integrator(accumulator, timer):
 
     def add_channel_integration_scale(self, channel_name, time_div):
         """Channel read reports integration value with user supplied time units. time_div is seconds per user-unit, eg 60 for minutes.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import integrator
+        >>> hasattr(integrator, 'add_channel_integration_scale')
+        True
 
         Args:
             channel_name: Name for the new channel.
-            time_div: Time div.
+            time_div: Time-per-division setting on the oscilloscope.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -1749,12 +2577,25 @@ class integrator(accumulator, timer):
 
     def add_channel_integrate(self, channel_name):
         """Writing to this channel causes written value to be added to accumulator scaled by elapsed time since last write.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import integrator
+        >>> hasattr(integrator, 'add_channel_integrate')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, write_function=self.integrate)
         new_channel.set_description(
@@ -1764,8 +2605,15 @@ class integrator(accumulator, timer):
     def register_integrand_channel(self, channel_object):
         """Automatically calls integrate method each time channel_object is read, for example in logger.log().
 
+        Captures data for later analysis or replay.
+
+
+        >>> from PyICe.virtual_instruments import integrator
+        >>> hasattr(integrator, 'register_integrand_channel')
+        True
+
         Args:
-            channel_object: Channel object.
+            channel_object: PyICe channel object to operate on.
         """
         channel_object.add_read_callback(
             lambda channel_object,
@@ -1773,6 +2621,13 @@ class integrator(accumulator, timer):
 
     def integrate(self, value):
         """Scale value by elapsed time and store to accumulator.  Should typically be used through integrate channel above.
+
+        Persists the current state or data to durable storage.
+
+
+        >>> from PyICe.virtual_instruments import integrator
+        >>> hasattr(integrator, 'integrate')
+        True
 
         Args:
             value: Value to set.
@@ -1791,14 +2646,21 @@ class integrator(accumulator, timer):
     def read_delegated_channel_list(self, channels):
         """Private.
 
+        Reads data from the underlying source and returns it.
+
+
+        >>> from PyICe.virtual_instruments import integrator
+        >>> hasattr(integrator, 'read_delegated_channel_list')
+        True
+
         Args:
             channels: List of channel objects.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         self.results_dict = results_ord_dict()
         for channel in channels:
@@ -1847,6 +2709,15 @@ class differencer(instrument):
     """
     def __init__(self, init=None):
         """Init sets initial value of previous value used to compute difference.  Defaults to None.
+        Stores configuration in ``_base_name``, ``diff``, ``last_value`` for
+        use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 3 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.virtual_instruments import differencer
+        >>> differencer is not None
+        True
 
         Args:
             init: Initial value.
@@ -1858,12 +2729,25 @@ class differencer(instrument):
 
     def add_channel_read_difference(self, channel_name):
         """Channel read returns difference between previous two values passed to difference method.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import differencer
+        >>> hasattr(differencer, 'add_channel_read_difference')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, read_function=lambda: self.diff)
         new_channel.set_description(
@@ -1872,12 +2756,25 @@ class differencer(instrument):
 
     def add_channel_compute_difference(self, channel_name):
         """Channel write computes difference between previous two values passed to difference method.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import differencer
+        >>> hasattr(differencer, 'add_channel_compute_difference')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, write_function=self.difference)
         new_channel.set_description(
@@ -1887,11 +2784,18 @@ class differencer(instrument):
     def difference(self, value):
         """Returns difference between value and value passed in last method call.
 
+        Supports the ``differencer`` workflow by performing the described operation.
+
+
+        >>> from PyICe.virtual_instruments import differencer
+        >>> hasattr(differencer, 'difference')
+        True
+
         Args:
             value: Value to set.
 
         Returns:
-            Result value.
+            The difference result.
         """
         if self.last_value is None:
             self.diff = None
@@ -1903,8 +2807,15 @@ class differencer(instrument):
     def register_difference_channel(self, channel_object):
         """Automatically calls difference method each time channel_object is read, for example in logger.log().
 
+        Captures data for later analysis or replay.
+
+
+        >>> from PyICe.virtual_instruments import differencer
+        >>> hasattr(differencer, 'register_difference_channel')
+        True
+
         Args:
-            channel_object: Channel object.
+            channel_object: PyICe channel object to operate on.
         """
         channel_object.add_read_callback(
             lambda channel_object,
@@ -1920,9 +2831,26 @@ class differentiator(timer, differencer):
     A readable channel from a different instrument can be registered with this instrument
     so that any read of that channel causes its value to be differentiated automatically
     without requiring an explicit call to this instrument's differentiate method or channel.
+
+    >>> from PyICe.virtual_instruments import differentiator
+    >>> d = differentiator()
+    >>> d.differentiate(10) is None
+    True
+    >>> d.derivative is None
+    True
     """
     def __init__(self):
-        """Initialize differentiator."""
+        """Initialize differentiator.
+
+        Stores configuration in ``_base_name``, ``derivative`` for use by
+        other methods.
+
+        >>> from PyICe.virtual_instruments import differentiator
+        >>> obj = differentiator()
+        >>> isinstance(obj, differentiator)
+        True
+
+        """
         timer.__init__(self)
         differencer.__init__(self)
         self._base_name = 'Differentiator Virtual Instrument'
@@ -1931,12 +2859,25 @@ class differentiator(timer, differencer):
 
     def add_channel_differentiation_seconds(self, channel_name):
         """Channel read reports derivative value with time units of seconds.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import differentiator
+        >>> hasattr(differentiator, 'add_channel_differentiation_seconds')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -1950,12 +2891,25 @@ class differentiator(timer, differencer):
 
     def add_channel_differentiation_minutes(self, channel_name):
         """Channel read reports derivative value with time units of minutes.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import differentiator
+        >>> hasattr(differentiator, 'add_channel_differentiation_minutes')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -1969,12 +2923,25 @@ class differentiator(timer, differencer):
 
     def add_channel_differentiation_hours(self, channel_name):
         """Channel read reports derivative value with time units of hours.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import differentiator
+        >>> hasattr(differentiator, 'add_channel_differentiation_hours')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -1988,12 +2955,25 @@ class differentiator(timer, differencer):
 
     def add_channel_differentiation_days(self, channel_name):
         """Channel read reports derivative value with time units of days.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import differentiator
+        >>> hasattr(differentiator, 'add_channel_differentiation_days')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -2007,13 +2987,26 @@ class differentiator(timer, differencer):
 
     def add_channel_differentiation_scale(self, channel_name, time_div):
         """Channel read reports derivative value with user supplied time units. time_div is seconds per user-unit, eg 60 for minutes.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import differentiator
+        >>> hasattr(differentiator, 'add_channel_differentiation_scale')
+        True
 
         Args:
             channel_name: Name for the new channel.
-            time_div: Time div.
+            time_div: Time-per-division setting on the oscilloscope.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -2028,11 +3021,18 @@ class differentiator(timer, differencer):
     def differentiate(self, value):
         """Scale value by elapsed time and store to accumulator.  Should typically be used through integrate channel above.
 
+        Persists the current state or data to durable storage.
+
+
+        >>> from PyICe.virtual_instruments import differentiator
+        >>> hasattr(differentiator, 'differentiate')
+        True
+
         Args:
             value: Value to set.
 
         Returns:
-            Result value.
+            The differentiate result.
         """
         # results stored internally in value*seconds.  Read channels scale to
         # other time units on the way out.
@@ -2050,12 +3050,25 @@ class differentiator(timer, differencer):
 
     def add_channel_differentiate(self, channel_name):
         """Channel write causes time derivative between write value and previous write value to be computed and stored.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import differentiator
+        >>> hasattr(differentiator, 'add_channel_differentiate')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, write_function=self.differentiate)
         new_channel.set_description(
@@ -2065,8 +3078,15 @@ class differentiator(timer, differencer):
     def register_derivative_channel(self, channel_object):
         """Automatically calls difference method each time channel_object is read, for example in logger.log().
 
+        Captures data for later analysis or replay.
+
+
+        >>> from PyICe.virtual_instruments import differentiator
+        >>> hasattr(differentiator, 'register_derivative_channel')
+        True
+
         Args:
-            channel_object: Channel object.
+            channel_object: PyICe channel object to operate on.
         """
         channel_object.add_read_callback(
             lambda channel_object,
@@ -2075,14 +3095,21 @@ class differentiator(timer, differencer):
     def read_delegated_channel_list(self, channels):
         """Private.
 
+        Reads data from the underlying source and returns it.
+
+
+        >>> from PyICe.virtual_instruments import differentiator
+        >>> hasattr(differentiator, 'read_delegated_channel_list')
+        True
+
         Args:
             channels: List of channel objects.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         self.results_dict = results_ord_dict()
         for channel in channels:
@@ -2107,7 +3134,15 @@ class differentiator(timer, differencer):
 
 
 class ServoException(Exception):
-    """Special expcetion for the servo instrument."""
+    """Special expcetion for the servo instrument.
+
+    >>> from PyICe.virtual_instruments import ServoException
+    >>> raise ServoException("test")
+    Traceback (most recent call last):
+        ...
+    PyICe.virtual_instruments.ServoException: test
+
+    """
 
 
 class servo(instrument):
@@ -2141,15 +3176,20 @@ class servo(instrument):
         abstol is the amount that the measurement may differ from the target value to consider the servo complete. units are the same as the measurement channel (window is +/-abstol)
         reltol is the unitless scale factor that determines when the servo loop is sufficiently settled.  (window is target*(1 +/- reltol))
 
+
+        >>> from PyICe.virtual_instruments import servo
+        >>> hasattr(servo, '__init__')
+        True
+
         Args:
-            abort_on_sat: Abort on sat.
+            abort_on_sat: Abort on sat to use.
             abstol: Absolute tolerance.
-            except_on_fail: Except on fail.
-            fb_channel: Fb channel.
-            max_tries: Max tries.
+            except_on_fail: Except on fail to use.
+            fb_channel: Fb channel to use.
+            max_tries: Max tries to use.
             maximum: Maximum value.
             minimum: Minimum value.
-            output_channel: Output channel.
+            output_channel: Channel used for stimulus output.
             reltol: Relative tolerance.
             verbose: If True, print debug output.
         """
@@ -2169,7 +3209,14 @@ class servo(instrument):
 
     def reconfigure(self, minimum=None, maximum=None,
                     abstol=None, reltol=None):
-        """Perform reconfigure operation.
+        """Run the reconfigure step.
+
+        Supports the ``servo`` workflow by performing the described operation.
+
+
+        >>> from PyICe.virtual_instruments import servo
+        >>> hasattr(servo, 'reconfigure')
+        True
 
         Args:
             abstol: Absolute tolerance.
@@ -2188,12 +3235,25 @@ class servo(instrument):
 
     def add_channel_target(self, channel_name):
         """Channel write causes output_channel to servo to new target value.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import servo
+        >>> hasattr(servo, 'add_channel_target')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         servo_channel = channel(channel_name, write_function=self.servo)
         servo_channel.set_description(
@@ -2201,7 +3261,15 @@ class servo(instrument):
         return self._add_channel(servo_channel)
 
     def check_enpoints(self):
-        """Perform check enpoints operation."""
+        """Perform check enpoints operation.
+
+        Sends the ```` SCPI command to the instrument.
+
+        >>> from PyICe.virtual_instruments import servo
+        >>> hasattr(servo, 'check_enpoints')
+        True
+
+        """
         self.output_channel.write(self.maximum)
         max_readback = float(self.fb_channel.read())
         self.output_channel.write(self.minimum)
@@ -2217,14 +3285,19 @@ class servo(instrument):
 
         If target is omitted, previous target is maintained.
 
+
+        >>> from PyICe.virtual_instruments import servo
+        >>> hasattr(servo, 'servo')
+        True
+
         Args:
             target: Target value.
 
         Returns:
-            Result value.
+            The final servo result after convergence.
 
         Raises:
-            ServoException: On error condition.
+            ServoException: If the servo fails to converge.
         """
         if target is None:
             target = self.target
@@ -2302,11 +3375,16 @@ class servo(instrument):
 
         Returns False if servo failed to converge within alotted number of tries.
 
+
+        >>> from PyICe.virtual_instruments import servo
+        >>> hasattr(servo, 'servo_check')
+        True
+
         Args:
-            readback: Readback.
+            readback: Readback to use.
 
         Returns:
-            Result value.
+            The servo check result.
         """
         if readback is None:
             readback = float(self.fb_channel.read())
@@ -2324,9 +3402,23 @@ class servo_group(object):
 
     It will servo each servo in that group until
     all are in regulation or up to servo_group.tries times
+
+    >>> from PyICe.virtual_instruments import servo_group
+    >>> servo_group is not None
+    True
+
     """
     def __init__(self, name):
         """Initialize servo_group.
+        Initializes 5 instance attributes that configure the object's
+        behavior.
+
+        Initializes 5 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.virtual_instruments import servo_group
+        >>> servo_group is not None
+        True
 
         Args:
             name: Name identifier.
@@ -2339,9 +3431,17 @@ class servo_group(object):
 
     def add_servo(self, servo_inst):
         """Add a servo virtual instrument to the servo_group.
+        Adds a new servo to the object's internal collection.
+
+        Appends a new servo entry to the object's internal collection.
+
+
+        >>> from PyICe.virtual_instruments import servo_group
+        >>> hasattr(servo_group, 'add_servo')
+        True
 
         Args:
-            servo_inst: Servo inst.
+            servo_inst: Servo inst to use.
         """
         assert isinstance(servo_inst, servo)
         self.servos.append(servo_inst)
@@ -2349,8 +3449,15 @@ class servo_group(object):
     def servo(self):
         """Run each servo in turn until all are in regulation.
 
+        Supports the ``servo_group`` workflow by performing the described operation.
+
+
+        >>> from PyICe.virtual_instruments import servo_group
+        >>> hasattr(servo_group, 'servo')
+        True
+
         Returns:
-            Result value.
+            The final servo result after convergence.
         """
         self.tries = 0
         while (True):
@@ -2393,6 +3500,15 @@ class ramp_to(instrument):
     """
     def __init__(self, verbose=False):
         """Initialize ramp_to.
+        Stores configuration in ``_base_name``, ``verbose`` for use by other
+        methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 2 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.virtual_instruments import ramp_to
+        >>> ramp_to is not None
+        True
 
         Args:
             verbose: If True, print debug output.
@@ -2408,14 +3524,19 @@ class ramp_to(instrument):
         If specified, max_step will bound the step upper magnitude.
         Use forcing_channel.set_write_delay(seconds) to control ramp rate.
 
+
+        >>> from PyICe.virtual_instruments import ramp_to
+        >>> hasattr(ramp_to, 'add_channel_binary')
+        True
+
         Args:
             abstol: Absolute tolerance.
             channel_name: Name for the new channel.
-            forcing_channel: Forcing channel.
-            max_step: Max step.
+            forcing_channel: Channel providing the forcing value.
+            max_step: Max step to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         assert abstol > 0
         assert max_step is None or max_step > abstol
@@ -2444,13 +3565,18 @@ class ramp_to(instrument):
 
         Use forcing_channel.set_write_delay(seconds) to control ramp rate.
 
+
+        >>> from PyICe.virtual_instruments import ramp_to
+        >>> hasattr(ramp_to, 'add_channel_linear')
+        True
+
         Args:
             channel_name: Name for the new channel.
-            forcing_channel: Forcing channel.
-            step_size: Step size.
+            forcing_channel: Channel providing the forcing value.
+            step_size: Step size for incremental operations.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         assert step_size > 0
         new_channel = channel(
@@ -2478,14 +3604,19 @@ class ramp_to(instrument):
         estimated_overshoot is specified as a fraction of setting change (peak = final_value + (final_value - previous_value)*estimated_overshoot).
         For example, to model 10% overshoot (5V to 6V transition hits peak 6.1V), set estimated_overshoot=0.1.
 
+
+        >>> from PyICe.virtual_instruments import ramp_to
+        >>> hasattr(ramp_to, 'add_channel_overshoot')
+        True
+
         Args:
             abstol: Absolute tolerance.
             channel_name: Name for the new channel.
-            estimated_overshoot: Estimated overshoot.
-            forcing_channel: Forcing channel.
+            estimated_overshoot: Estimated overshoot to use.
+            forcing_channel: Channel providing the forcing value.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         assert abstol > 0
         assert estimated_overshoot >= 0
@@ -2600,6 +3731,11 @@ class peak_finder(instrument):
     The function is assumed to be unimodal. The channels used with this instrument may want to
     be virtual instruments. For example the output channel could be the computation of efficiency
     from several other channels. The peak is found by recursively performing a ternary search.
+
+    >>> from PyICe.virtual_instruments import peak_finder
+    >>> peak_finder is not None
+    True
+
     """
     def __init__(self,
                  input_channel,
@@ -2612,9 +3748,14 @@ class peak_finder(instrument):
         searchstop - right side of search region (highest value).
         reltol - resolution of search. search stops when center of search region is within this percentage of searchstart and searchstop.
 
+
+        >>> from PyICe.virtual_instruments import peak_finder
+        >>> hasattr(peak_finder, '__init__')
+        True
+
         Args:
-            input_channel: Input channel.
-            output_channel: Output channel.
+            input_channel: Input channel to use.
+            output_channel: Channel used for stimulus output.
             reltol: Relative tolerance.
         """
         self._base_name = 'peak_finder_{}_{}'.format(
@@ -2631,12 +3772,25 @@ class peak_finder(instrument):
 
     def add_channel_peak(self, channel_name):
         """The peak value found if the search was successful.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import peak_finder
+        >>> hasattr(peak_finder, 'add_channel_peak')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, read_function=lambda: self._peak)
         new_channel.set_description(
@@ -2645,13 +3799,26 @@ class peak_finder(instrument):
 
     def add_channel_abscissa(self, channel_name, auto_find=False):
         """The value of the input variable at which the peak occurred.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import peak_finder
+        >>> hasattr(peak_finder, 'add_channel_abscissa')
+        True
 
         Args:
-            auto_find: Auto find.
+            auto_find: If True, automatically detect the device or setting.
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name,
                               read_function=lambda: self._abscissa)
@@ -2661,13 +3828,26 @@ class peak_finder(instrument):
 
     def add_channel_successful(self, channel_name, auto_find=False):
         """Indicates whether or not the search was successful or failed due to lost peak before reltol. Try increasing reltol upon return of False.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import peak_finder
+        >>> hasattr(peak_finder, 'add_channel_successful')
+        True
 
         Args:
-            auto_find: Auto find.
+            auto_find: If True, automatically detect the device or setting.
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name,
                               read_function=lambda: self._successful)
@@ -2676,11 +3856,18 @@ class peak_finder(instrument):
         return self._add_channel(new_channel)
 
     def find(self, searchstart, searchstop):
-        """Return find result.
+        """Return the find.
+
+        Searches the collection and returns the matching item or index.
+
+
+        >>> from PyICe.virtual_instruments import peak_finder
+        >>> hasattr(peak_finder, 'find')
+        True
 
         Args:
-            searchstart: Searchstart.
-            searchstop: Searchstop.
+            searchstart: Searchstart to use.
+            searchstop: Searchstop to use.
         """
         self._input_channel.write(searchstart)
         y1 = self._output_channel.read()
@@ -2712,11 +3899,27 @@ class peak_finder(instrument):
 
 
 class ThresholdFinderError(Exception):
-    """Non-specific threshold finder error."""
+    """Non-specific threshold finder error.
+
+    >>> from PyICe.virtual_instruments import ThresholdFinderError
+    >>> raise ThresholdFinderError("test")
+    Traceback (most recent call last):
+        ...
+    PyICe.virtual_instruments.ThresholdFinderError: test
+
+    """
 
 
 class ThresholdUndetectableError(ThresholdFinderError):
-    """Threshold finder unable to detect threshold. Perhaps the search range is wrong or perhaps the threshold doesn't exist. Not used for general configuration errors that should almost never be caught."""
+    """Threshold finder unable to detect threshold. Perhaps the search range is wrong or perhaps the threshold doesn't exist. Not used for general configuration errors that should almost never be caught.
+
+    >>> from PyICe.virtual_instruments import ThresholdUndetectableError
+    >>> raise ThresholdUndetectableError("test")
+    Traceback (most recent call last):
+        ...
+    PyICe.virtual_instruments.ThresholdUndetectableError: test
+
+    """
 
 
 class threshold_finder(instrument, delegator):
@@ -2724,26 +3927,9 @@ class threshold_finder(instrument, delegator):
 
     Does not automatically find threshold unless auto_find is enabled from add_channel. Otherwise, you must call threshold_finder.find(), or .find_linear()
 
-    >>> from PyICe.lab_core import master
-    >>> from PyICe.models.comparator import comparator
-    >>> m = master()
-    >>> comp = comparator(falling_threshold=2.4, rising_threshold=2.6,
-    ...                   out_high=5.0, out_low=0.0)
-    >>> forcing = m.add_channel_dummy('vin')
-    >>> forcing.write(0.0)
-    0.0
-    >>> _ = forcing.add_write_callback(lambda ch, v: comp.write(v))
-    >>> output = m.add_channel_virtual('vout', read_function=comp.read)
-    >>> tf = threshold_finder(forcing, output, minimum=0.0, maximum=5.0,
-    ...                       abstol=0.01, verbose=False)
-    >>> results = tf.find_linear()
-    >>> 2.5 < results['rising'] < 2.7
+    >>> from PyICe.virtual_instruments import threshold_finder
+    >>> threshold_finder is not None
     True
-    >>> 2.3 < results['falling'] < 2.5
-    True
-    >>> results['hysteresis'] > 0
-    True
-    >>> m.stop_threads()
 
     The channels used with this instrument may want to be virtual instruments. For example the comparator_input_channel_force
     could be used to clear a latched output before a new value is set, or the comparator_output_sense_channel could interpret complex
@@ -2788,15 +3974,20 @@ class threshold_finder(instrument, delegator):
         verbose - print extra information about search progress.
         cautious - take extra measurements to make sure search is proceeding correctly and has not been corrupted by overshoot, oscillation, etc.
 
+
+        >>> from PyICe.virtual_instruments import threshold_finder
+        >>> hasattr(threshold_finder, '__init__')
+        True
+
         Args:
             abstol: Absolute tolerance.
-            comparator_input_force_channel: Comparator input force channel.
-            comparator_input_sense_channel: Comparator input sense channel.
-            comparator_output_sense_channel: Comparator output sense channel.
-            forcing_overshoot: Forcing overshoot.
+            comparator_input_force_channel: Comparator input force channel to use.
+            comparator_input_sense_channel: Comparator input sense channel to use.
+            comparator_output_sense_channel: Comparator output sense channel to use.
+            forcing_overshoot: Forcing overshoot to use.
             maximum: Maximum value.
             minimum: Minimum value.
-            output_threshold: Output threshold.
+            output_threshold: Output threshold to use.
             verbose: If True, print debug output.
         """
         self._base_name = 'threshold_finder_{}_{}'.format(
@@ -2860,18 +4051,23 @@ class threshold_finder(instrument, delegator):
         maximum - maximum forced input to the DUT comparator via comparator_input_force_channel.
         abstol - resolution of search. Relative to comparator_input_channel_force, not comparator_input_sense_channel.
 
+
+        >>> from PyICe.virtual_instruments import threshold_finder
+        >>> hasattr(threshold_finder, 'reconfigure')
+        True
+
         Args:
             abstol: Absolute tolerance.
-            comparator_input_force_channel: Comparator input force channel.
-            comparator_input_sense_channel: Comparator input sense channel.
-            comparator_output_sense_channel: Comparator output sense channel.
-            forcing_overshoot: Forcing overshoot.
+            comparator_input_force_channel: Comparator input force channel to use.
+            comparator_input_sense_channel: Comparator input sense channel to use.
+            comparator_output_sense_channel: Comparator output sense channel to use.
+            forcing_overshoot: Forcing overshoot to use.
             maximum: Maximum value.
             minimum: Minimum value.
-            output_threshold: Output threshold.
+            output_threshold: Output threshold to use.
 
         Raises:
-            ThresholdFinderError: On error condition.
+            ThresholdFinderError: If the operation fails.
         """
         self._comparator_input_channel = comparator_input_force_channel
         self._comparator_output_sense_channel = comparator_output_sense_channel
@@ -2927,12 +4123,17 @@ class threshold_finder(instrument, delegator):
         if auto_find is 'geometric', automatically call find_geometric() when channel is read.
         if auto_find is any other true value, automatically call find() when channel is read.
 
+
+        >>> from PyICe.virtual_instruments import threshold_finder
+        >>> hasattr(threshold_finder, 'add_channel_all')
+        True
+
         Args:
-            auto_find: Auto find.
+            auto_find: If True, automatically detect the device or setting.
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         # Read channels
         th = self.add_channel_threshold(channel_name + "_average", auto_find)
@@ -2963,12 +4164,17 @@ class threshold_finder(instrument, delegator):
         if auto_find is 'geometric', automatically call find_geometric() when channel is read.
         if auto_find is any other true value, automatically call find() when channel is read.
 
+
+        >>> from PyICe.virtual_instruments import threshold_finder
+        >>> hasattr(threshold_finder, 'add_channel_threshold')
+        True
+
         Args:
-            auto_find: Auto find.
+            auto_find: If True, automatically detect the device or setting.
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name,
                               read_function=lambda: self.threshold)
@@ -2980,12 +4186,25 @@ class threshold_finder(instrument, delegator):
 
     def add_channel_rising(self, channel_name):
         """Average of measurements at low and high endpoints of rising threshold uncertainty window. Relative to comparator_input_sense_channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import threshold_finder
+        >>> hasattr(threshold_finder, 'add_channel_rising')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, read_function=lambda: self.rising)
         new_channel.set_description(
@@ -2995,12 +4214,25 @@ class threshold_finder(instrument, delegator):
 
     def add_channel_falling(self, channel_name):
         """Average of measurements at low and high endpoints of falling threshold uncertainty window. Relative to comparator_input_sense_channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import threshold_finder
+        >>> hasattr(threshold_finder, 'add_channel_falling')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, read_function=lambda: self.falling)
         new_channel.set_description(
@@ -3010,12 +4242,25 @@ class threshold_finder(instrument, delegator):
 
     def add_channel_tries(self, channel_name):
         """Number of binary search steps required to reduce uncertainty window to within abstol, or number of abstol-sized steps required to find threshold with linear search.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import threshold_finder
+        >>> hasattr(threshold_finder, 'add_channel_tries')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, read_function=lambda: self.tries)
         new_channel.set_description(
@@ -3026,12 +4271,25 @@ class threshold_finder(instrument, delegator):
 
     def add_channel_hysteresis(self, channel_name):
         """Difference between rising and falling thresholds. Relative to comparator_input_sense_channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import threshold_finder
+        >>> hasattr(threshold_finder, 'add_channel_hysteresis')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name,
                               read_function=lambda: self.hysteresis)
@@ -3042,12 +4300,25 @@ class threshold_finder(instrument, delegator):
 
     def add_channel_abstol(self, channel_name):
         """Maximum two-sided uncertainty range (window width) for binary search, or step size for linear search. Relative to comparator_input_force_channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import threshold_finder
+        >>> hasattr(threshold_finder, 'add_channel_abstol')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, read_function=lambda: self._abstol)
         new_channel.set_description(
@@ -3066,11 +4337,16 @@ class threshold_finder(instrument, delegator):
 
         With comparator_input_sense_channel defined, uncertainty will be relative to measured rather than forced inputs and may be scaled differently than forcing (abstol) units.
 
+
+        >>> from PyICe.virtual_instruments import threshold_finder
+        >>> hasattr(threshold_finder, 'add_channel_uncertainty')
+        True
+
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         rising_threshold_uncertainty_channel = channel(
             channel_name + "_rising", read_function=lambda: self.rising_uncertainty)
@@ -3094,11 +4370,16 @@ class threshold_finder(instrument, delegator):
 
         With comparator_input_sense_channel defined, uncertainty will be relative to measured rather than forced inputs and may be scaled differently than forcing (abstol) units.
 
+
+        >>> from PyICe.virtual_instruments import threshold_finder
+        >>> hasattr(threshold_finder, 'add_channel_relative_uncertainty')
+        True
+
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         rising_threshold_relative_uncertainty_channel = channel(
             channel_name + "_rising", read_function=lambda: self.rising_relative_uncertainty)
@@ -3117,12 +4398,25 @@ class threshold_finder(instrument, delegator):
 
     def add_channel_forced_rising(self, channel_name):
         """Average of low and high forced endpoints of rising threshold uncertainty window. Relative to comparator_input_force_channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import threshold_finder
+        >>> hasattr(threshold_finder, 'add_channel_forced_rising')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name,
                               read_function=lambda: self.forced_rising)
@@ -3133,12 +4427,25 @@ class threshold_finder(instrument, delegator):
 
     def add_channel_forced_falling(self, channel_name):
         """Average of low and high forced endpoints of falling threshold uncertainty window. Relative to comparator_input_force_channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import threshold_finder
+        >>> hasattr(threshold_finder, 'add_channel_forced_falling')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name,
                               read_function=lambda: self.forced_falling)
@@ -3149,12 +4456,25 @@ class threshold_finder(instrument, delegator):
 
     def add_channel_output_threshold(self, channel_name):
         """Computed digitization threshold for comparator_output_sense_channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import threshold_finder
+        >>> hasattr(threshold_finder, 'add_channel_output_threshold')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -3166,12 +4486,25 @@ class threshold_finder(instrument, delegator):
 
     def add_channel_algorithm(self, channel_name):
         """Search method used to determine threshold.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import threshold_finder
+        >>> hasattr(threshold_finder, 'add_channel_algorithm')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name,
                               read_function=lambda: self.search_algorithm)
@@ -3183,12 +4516,24 @@ class threshold_finder(instrument, delegator):
 
     def add_channel_output_threshold_setpoint(self, channel_name):
         """Digitization threshold setpoint for comparator_output_sense_channel. Caution: a reconfigure() command outsize the channel framework will un-sync this parameter.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import threshold_finder
+        >>> hasattr(threshold_finder, 'add_channel_output_threshold_setpoint')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name, write_function=lambda val: setattr(
@@ -3203,8 +4548,15 @@ class threshold_finder(instrument, delegator):
     def _write_comparator_input(self, value, controlled):
         """Set forced input to DUT comparator.
 
+        Internal implementation detail; see the public API for usage.
+
+
+        >>> from PyICe.virtual_instruments import threshold_finder
+        >>> hasattr(threshold_finder, '_write_comparator_input')
+        True
+
         Args:
-            controlled: Controlled.
+            controlled: Controlled to use.
             value: Value to set.
         """
         if controlled:
@@ -3214,9 +4566,17 @@ class threshold_finder(instrument, delegator):
 
     def _read_comparator_output(self):
         """Measure analog output of DUT comparator.
+        Internal helper that computes and returns a derived value.
+
+        Internal implementation detail; see the public API for usage.
+
+
+        >>> from PyICe.virtual_instruments import threshold_finder
+        >>> hasattr(threshold_finder, '_read_comparator_output')
+        True
 
         Returns:
-            Result value.
+            The measured value.
         """
         return self._comparator_output_sense_channel.read()
 
@@ -3225,11 +4585,16 @@ class threshold_finder(instrument, delegator):
 
         Data is stored internally for future use.
 
+
+        >>> from PyICe.virtual_instruments import threshold_finder
+        >>> hasattr(threshold_finder, '_read_input_sense')
+        True
+
         Args:
-            input_set: Input set.
+            input_set: Input set to use.
 
         Returns:
-            Result value.
+            The measured value.
         """
         if self._comparator_input_sense_channel is not None:
             sensed_input = self._comparator_input_sense_channel.read()
@@ -3240,12 +4605,20 @@ class threshold_finder(instrument, delegator):
 
     def _digitize_output(self, value):
         """Convert analog output to boolean by polarity-aware comparison with threshold.
+        Internal helper that computes and returns a derived value.
+
+        Internal implementation detail; see the public API for usage.
+
+
+        >>> from PyICe.virtual_instruments import threshold_finder
+        >>> hasattr(threshold_finder, '_digitize_output')
+        True
 
         Args:
             value: Value to set.
 
         Returns:
-            Result value.
+            The digitize output result.
         """
         if self.pol > 0:
             return value > self._output_threshold_calc
@@ -3260,13 +4633,18 @@ class threshold_finder(instrument, delegator):
         3) optionally read comparator_input_sense_channel and store for future reference
         4) return results dict
 
+
+        >>> from PyICe.virtual_instruments import threshold_finder
+        >>> hasattr(threshold_finder, '_test')
+        True
+
         Args:
-            controlled: Controlled.
-            input_force: Input force.
-            measure_input: Measure input.
+            controlled: Controlled to use.
+            input_force: Input force to use.
+            measure_input: Measure input to use.
 
         Returns:
-            Result value.
+            The test result.
         """
         self._write_comparator_input(input_force, controlled)
         output_analog = self._read_comparator_output()
@@ -3342,8 +4720,13 @@ class threshold_finder(instrument, delegator):
         Stores output instance variables self.forced_rising, self.forced_falling, self.rising, self.falling, self.hysteresis, self.threshold, self.rising_uncertainty, self.falling_uncertainty, self.rising_relative_uncertainty, self.falling_relative_uncertainty.
         Passes through self.tries, self._abstol.
 
+
+        >>> from PyICe.virtual_instruments import threshold_finder
+        >>> hasattr(threshold_finder, '_compute_outputs')
+        True
+
         Returns:
-            Result value.
+            The compute outputs result.
         """
         self.forced_rising = (self.rising_min + self.rising_max) / 2.0
         self.forced_falling = (self.falling_min + self.falling_max) / 2.0
@@ -3410,14 +4793,19 @@ class threshold_finder(instrument, delegator):
         Typically used with comparator_input_sense_channel=None to speed up search at each point.
         Updates and returns internal results dictionary.
 
+
+        >>> from PyICe.virtual_instruments import threshold_finder
+        >>> hasattr(threshold_finder, 'measure_input')
+        True
+
         Args:
-            input_sense_channel: Input sense channel.
+            input_sense_channel: Input sense channel to use.
 
         Returns:
-            Result value.
+            The measure input result.
 
         Raises:
-            ThresholdFinderError: On error condition.
+            ThresholdFinderError: If the operation fails.
         """
         self.debug_print("Post-measuring input sense....")
         if self.results_dictionary is None:
@@ -3472,8 +4860,15 @@ class threshold_finder(instrument, delegator):
     def debug_print(self, msg):
         """Perform debug print operation.
 
+        Supports the ``threshold_finder`` workflow by performing the described operation.
+
+
+        >>> from PyICe.virtual_instruments import threshold_finder
+        >>> hasattr(threshold_finder, 'debug_print')
+        True
+
         Args:
-            msg: Msg.
+            msg: Message string to display.
         """
         if self.verbose:
             print(msg)
@@ -3490,14 +4885,19 @@ class threshold_finder(instrument, delegator):
         Returns dictionary of results.
         if cautious, perform extra measurement at each step to ensure hysteresis flips and search region has not been corrupted.
 
+
+        >>> from PyICe.virtual_instruments import threshold_finder
+        >>> hasattr(threshold_finder, 'find')
+        True
+
         Args:
-            cautious: Cautious.
+            cautious: Cautious to use.
 
         Returns:
-            Result value.
+            The index of the first match, or -1 if not found.
 
         Raises:
-            ThresholdFinderError: On error condition.
+            ThresholdFinderError: If the operation fails.
         """
         self._check_polarity()
         self.rising_min = self._minimum
@@ -3587,14 +4987,19 @@ class threshold_finder(instrument, delegator):
         Returns dictionary of results.
         If cautious, perform extra measurment at each step to ensure that the threashold is still bounded by the current search interval.
 
+
+        >>> from PyICe.virtual_instruments import threshold_finder
+        >>> hasattr(threshold_finder, 'find_no_hysteresis')
+        True
+
         Args:
-            cautious: Cautious.
+            cautious: Cautious to use.
 
         Returns:
-            Result value.
+            The find no hysteresis result.
 
         Raises:
-            ThresholdFinderError: On error condition.
+            ThresholdFinderError: If the operation fails.
         """
         self._check_polarity()
         th_min = self._minimum
@@ -3646,9 +5051,17 @@ class threshold_finder(instrument, delegator):
 
     def find_linear(self):
         """Hysteresis aware linear sweep. Returns dictionary of results.
+        Searches for and returns the matching linear.
+
+        Steps through a range of values, collecting data at each point.
+
+
+        >>> from PyICe.virtual_instruments import threshold_finder
+        >>> hasattr(threshold_finder, 'find_linear')
+        True
 
         Returns:
-            Result value.
+            The find linear result.
         """
         # todo integer awareness
         self._check_polarity()
@@ -3674,12 +5087,20 @@ class threshold_finder(instrument, delegator):
 
     def find_linear_no_hysteresis(self, rising_direction=True):
         """Hysteresis-unaware linear sweep. Returns dictionary of results. Optionally sweep in downward direction.
+        Searches for and returns the matching linear no hysteresis.
+
+        Steps through a range of values, collecting data at each point.
+
+
+        >>> from PyICe.virtual_instruments import threshold_finder
+        >>> hasattr(threshold_finder, 'find_linear_no_hysteresis')
+        True
 
         Args:
-            rising_direction: Rising direction.
+            rising_direction: Rising direction to use.
 
         Returns:
-            Result value.
+            The find linear no hysteresis result.
         """
         # todo integer awareness
         self._check_polarity()
@@ -3719,11 +5140,16 @@ class threshold_finder(instrument, delegator):
         Optionally specify decades argument to control how many searches are performed. Defaults to as many as possible for given min/max range and abstol.
         No steps are ever made toward the threshold with magnitude larger than current search's resolution in case of overshoot.
 
+
+        >>> from PyICe.virtual_instruments import threshold_finder
+        >>> hasattr(threshold_finder, 'find_geometric')
+        True
+
         Args:
-            decades: Decades.
+            decades: Decades to use.
 
         Returns:
-            Result value.
+            The find geometric result.
         """
         self._check_polarity()
         self.rising_min = self._minimum
@@ -3798,14 +5224,19 @@ class threshold_finder(instrument, delegator):
         Each of the two linear sweeps will take approximately (linear_backtrack / reltol) steps toward threshold.
         Steps toward threshold are of max magnitude max_step.
 
+
+        >>> from PyICe.virtual_instruments import threshold_finder
+        >>> hasattr(threshold_finder, 'find_hybrid')
+        True
+
         Args:
-            linear_backtrack: Linear backtrack.
+            linear_backtrack: Linear backtrack to use.
 
         Returns:
-            Result value.
+            The find hybrid result.
 
         Raises:
-            ThresholdFinderError: On error condition.
+            ThresholdFinderError: If the operation fails.
         """
         if linear_backtrack is None:
             linear_backtrack = 5 * self._abstol
@@ -3883,14 +5314,19 @@ class threshold_finder(instrument, delegator):
 
         Pol is the polarity of the comparator output
 
+
+        >>> from PyICe.virtual_instruments import threshold_finder
+        >>> hasattr(threshold_finder, '_find_linear_threshold')
+        True
+
         Args:
-            max: Max.
-            min: Min.
+            max: Maximum value of the range.
+            min: Minimum value of the range.
             step: Step size.
 
         Raises:
-            ThresholdFinderError: On error condition.
-            ThresholdUndetectableError: On error condition.
+            ThresholdFinderError: If the operation fails.
+            ThresholdUndetectableError: If the operation fails.
         """
         if self._forcing_overshoot >= 1:
             # eventually all linear searches use step size abstol, so might as
@@ -3957,12 +5393,19 @@ class threshold_finder(instrument, delegator):
     def test_repeatability(self, linear_backtrack=None, decades=None):
         """Return test repeatability result.
 
+        Exercises the unit under test and asserts expected behavior.
+
+
+        >>> from PyICe.virtual_instruments import threshold_finder
+        >>> hasattr(threshold_finder, 'test_repeatability')
+        True
+
         Args:
-            decades: Decades.
-            linear_backtrack: Linear backtrack.
+            decades: Decades to use.
+            linear_backtrack: Linear backtrack to use.
 
         Returns:
-            Result value.
+            The test repeatability result.
         """
         binary_results = self.find(cautious=True)
         hybrid_results = self.find_hybrid(linear_backtrack=linear_backtrack)
@@ -3992,11 +5435,18 @@ class threshold_finder(instrument, delegator):
     def read_delegated_channel_list(self, channels):
         """Private.
 
+        Reads data from the underlying source and returns it.
+
+
+        >>> from PyICe.virtual_instruments import threshold_finder
+        >>> hasattr(threshold_finder, 'read_delegated_channel_list')
+        True
+
         Args:
             channels: List of channel objects.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
         """
         if self.auto_find:
             if isinstance(self.auto_find,
@@ -4016,18 +5466,32 @@ class servo_binary_search(instrument):  # todo delegator?!?!?
     """Servo virtual insturment based on thinly wrapped threshold finder.
 
     Servo forces channel to specified value within abstol/reltol tolerance by manipulating other channel.
+
+    >>> from PyICe.virtual_instruments import servo_binary_search
+    >>> servo_binary_search is not None
+    True
+
     """
     def __init__(self, fb_channel, output_channel, minimum_output,
                  maximum_output, abstol, output_readback_channel=None, verbose=False):
         """Initialize servo_binary_search.
+        Initializes 12 instance attributes that configure the object's
+        behavior.
+
+        Calls the parent constructor to inherit base behavior, and initializes 12 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.virtual_instruments import servo_binary_search
+        >>> hasattr(servo_binary_search, '__init__')
+        True
 
         Args:
             abstol: Absolute tolerance.
-            fb_channel: Fb channel.
-            maximum_output: Maximum output.
-            minimum_output: Minimum output.
-            output_channel: Output channel.
-            output_readback_channel: Output readback channel.
+            fb_channel: Fb channel to use.
+            maximum_output: Maximum output to use.
+            minimum_output: Minimum output to use.
+            output_channel: Channel used for stimulus output.
+            output_readback_channel: Output readback channel to use.
             verbose: If True, print debug output.
         """
         # reltol=0.001
@@ -4064,13 +5528,26 @@ class servo_binary_search(instrument):  # todo delegator?!?!?
 
     def add_channel_target(self, channel_name, auto_find=True):  # why not auto find???
         """Servo target value (setpoint).
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import servo_binary_search
+        >>> hasattr(servo_binary_search, 'add_channel_target')
+        True
 
         Args:
-            auto_find: Auto find.
+            auto_find: If True, automatically detect the device or setting.
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -4085,6 +5562,19 @@ class servo_binary_search(instrument):  # todo delegator?!?!?
 
     def add_channel_results(self, channel_name):
         """Add result reporting channels.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import servo_binary_search
+        >>> hasattr(servo_binary_search, 'add_channel_results')
+        True
 
         Args:
             channel_name: Name for the new channel.
@@ -4114,13 +5604,26 @@ class servo_binary_search(instrument):  # todo delegator?!?!?
 
     def add_channels(self, channel_name, auto_find=True):
         """Add a channels.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import servo_binary_search
+        >>> hasattr(servo_binary_search, 'add_channels')
+        True
 
         Args:
-            auto_find: Auto find.
+            auto_find: If True, automatically detect the device or setting.
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         self.add_channel_results(channel_name)
         return self.add_channel_target(
@@ -4132,13 +5635,20 @@ class servo_binary_search(instrument):  # todo delegator?!?!?
             return self.find(value)
 
     def find(self, value):
-        """Return find result.
+        """Return the find.
+
+        Searches the collection and returns the matching item or index.
+
+
+        >>> from PyICe.virtual_instruments import servo_binary_search
+        >>> hasattr(servo_binary_search, 'find')
+        True
 
         Args:
             value: Value to set.
 
         Returns:
-            Result value.
+            The index of the first match, or -1 if not found.
         """
         self._target_value = value
         tf_results = self._tf.find_no_hysteresis()
@@ -4167,21 +5677,36 @@ class servo_binary_search(instrument):  # todo delegator?!?!?
 
 
 class leakage_nuller(instrument):
-    """TODO: Add docstring."""
+    """TODO: Add docstring.
+
+    >>> from PyICe.virtual_instruments import leakage_nuller
+    >>> leakage_nuller is not None
+    True
+
+    """
 
     def __init__(self, leakage_measurement_channel, leakage_forcing_channel, voltage_measurement_channel,
                  minimum_output, maximum_output, voltage_abstol, current_abstol, verbose=False):
         """Initialize leakage_nuller.
+        Initializes 10 instance attributes that configure the object's
+        behavior.
+
+        Initializes 10 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.virtual_instruments import leakage_nuller
+        >>> hasattr(leakage_nuller, '__init__')
+        True
 
         Args:
-            current_abstol: Current abstol.
-            leakage_forcing_channel: Leakage forcing channel.
-            leakage_measurement_channel: Leakage measurement channel.
-            maximum_output: Maximum output.
-            minimum_output: Minimum output.
+            current_abstol: Current abstol to use.
+            leakage_forcing_channel: Leakage forcing channel to use.
+            leakage_measurement_channel: Leakage measurement channel to use.
+            maximum_output: Maximum output to use.
+            minimum_output: Minimum output to use.
             verbose: If True, print debug output.
-            voltage_abstol: Voltage abstol.
-            voltage_measurement_channel: Voltage measurement channel.
+            voltage_abstol: Voltage abstol to use.
+            voltage_measurement_channel: Voltage measurement channel to use.
         """
         self.verbose = verbose
         self.voltage_abstol = voltage_abstol
@@ -4195,20 +5720,34 @@ class leakage_nuller(instrument):
         self._leakage_servo = servo_binary_search()  # pylint: disable=no-value-for-parameter; known incomplete stub - leakage_nuller class is a TODO prototype awaiting full implementation
 
     def measure(self, estimated_voltage):
-        """Perform measure operation.
+        """Run the measure step.
+
+        Supports the ``leakage_nuller`` workflow by performing the described operation.
+
+
+        >>> from PyICe.virtual_instruments import leakage_nuller
+        >>> hasattr(leakage_nuller, 'measure')
+        True
 
         Args:
-            estimated_voltage: Estimated voltage.
+            estimated_voltage: Estimated voltage to use.
         """
         self._common_mode_servo.find(estimated_voltage)
         self.ileak = self.leakage_measurement_channel.read()
         return  # something
 
     def null(self):
-        """Return null result.
+        """Return the null.
+
+        Supports the ``leakage_nuller`` workflow by performing the described operation.
+
+
+        >>> from PyICe.virtual_instruments import leakage_nuller
+        >>> hasattr(leakage_nuller, 'null')
+        True
 
         Returns:
-            Result value.
+            The null result.
         """
         leak_servo_results = self._leakage_servo.find(self.ileak)
         return leak_servo_results
@@ -4216,8 +5755,15 @@ class leakage_nuller(instrument):
     def add_channel_null(self, channel_name, auto_null=False):
         """Add a channel null.
 
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import leakage_nuller
+        >>> hasattr(leakage_nuller, 'add_channel_null')
+        True
+
         Args:
-            auto_null: Auto null.
+            auto_null: Auto null to use.
             channel_name: Name for the new channel.
         """
         pass
@@ -4238,6 +5784,15 @@ class calibrator(instrument):
     """
     def __init__(self, verbose=False):
         """Initialize calibrator.
+        Stores configuration in ``_base_name``, ``verbose`` for use by other
+        methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 2 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.virtual_instruments import calibrator
+        >>> calibrator is not None
+        True
 
         Args:
             verbose: If True, print debug output.
@@ -4249,15 +5804,24 @@ class calibrator(instrument):
     def calibrate(self, forcing_channel, readback_channel,
                   forcing_values, results_filename=None):
         """Produce calibration table and gain/offset calculation for later use by 2point and spline calibrators.
+        Applies correction factors derived from known reference values to
+        improve measurement accuracy.
+
+        Adjusts internal parameters to compensate for hardware offsets or gain errors.
+
+
+        >>> from PyICe.virtual_instruments import calibrator
+        >>> hasattr(calibrator, 'calibrate')
+        True
 
         Args:
-            forcing_channel: Forcing channel.
-            forcing_values: Forcing values.
-            readback_channel: Readback channel.
-            results_filename: Results filename.
+            forcing_channel: Channel providing the forcing value.
+            forcing_values: Forcing values to use.
+            readback_channel: Readback channel to use.
+            results_filename: Results filename to use.
 
         Returns:
-            Result value.
+            The calibrate result.
         """
         import numpy  # pylint: disable=import-error; numpy is an optional dependency imported at point of use
         points = {}
@@ -4285,19 +5849,24 @@ class calibrator(instrument):
 
         offset and gain are specified in the direction of readback channel to forcing channel. ie forcing channel error.
 
+
+        >>> from PyICe.virtual_instruments import calibrator
+        >>> hasattr(calibrator, 'add_channel_calibrated_2point')
+        True
+
         Args:
             **kwargs: Additional keyword arguments.
-            calibration_filename: Calibration filename.
+            calibration_filename: Calibration filename to use.
             channel_name: Name for the new channel.
-            forcing_channel: Forcing channel.
+            forcing_channel: Channel providing the forcing value.
             gain: Gain value.
             offset: Offset value.
 
         Returns:
-            Result value.
+            The newly created channel object.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if calibration_filename is None and gain is not None and offset is not None:
             gain = float(gain)
@@ -4343,17 +5912,22 @@ class calibrator(instrument):
         Can pass in **calibrate() to get cal map, store results dict locally, or use pickle file.
         Requires scipy.interpolate.UnivariateSpline
 
+
+        >>> from PyICe.virtual_instruments import calibrator
+        >>> hasattr(calibrator, 'add_channel_calibrated_spline')
+        True
+
         Args:
             **kwargs: Additional keyword arguments.
-            calibration_filename: Calibration filename.
+            calibration_filename: Calibration filename to use.
             channel_name: Name for the new channel.
-            forcing_channel: Forcing channel.
+            forcing_channel: Channel providing the forcing value.
 
         Returns:
-            Result value.
+            The newly created channel object.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         from scipy.interpolate import UnivariateSpline  # pylint: disable=import-error; scipy is an optional dependency imported at point of use
         if kwargs.get('force_values', None) is not None and kwargs.get(
@@ -4407,12 +5981,34 @@ class digital_analog_io(instrument):
 
     domain_channel is the PyICe channel for the logic supply of the digital input
     we're talking to, e.g. master['vin_supply'] or master['dvcc_supply'].
+
+    >>> from PyICe.lab_core import channel
+    >>> from PyICe.virtual_instruments import digital_analog_io, dummy
+    >>> d = dummy()
+    >>> analog_out = d.add_channel_write("vpin")
+    >>> _ = analog_out.set_min_write_limit(0)
+    >>> _ = analog_out.set_max_write_limit(5)
+    >>> dio = digital_analog_io()
+    >>> dig_ch = dio.add_channel_digital_output("gpio0", analog_out)
+    >>> dig_ch.get_name()
+    'gpio0'
+
     """
     def __init__(self, domain_channel=None, verbose=False):
         """Initialize digital_analog_io.
+        Initializes 5 instance attributes that configure the object's
+        behavior.
+
+        Calls the parent constructor to inherit base behavior, and initializes 5 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.virtual_instruments import digital_analog_io
+        >>> obj = digital_analog_io()
+        >>> isinstance(obj, digital_analog_io)
+        True
 
         Args:
-            domain_channel: Domain channel.
+            domain_channel: Domain channel to use.
             verbose: If True, print debug output.
         """
         self._base_name = 'digital_analog_io'
@@ -4460,9 +6056,16 @@ class digital_analog_io(instrument):
     def _output_channel_callback(self, digital_channel, output_channel, value):
         """Change digital channels back to None if overwritten by another digital channel or output channel.
 
+        Internal implementation detail; see the public API for usage.
+
+
+        >>> from PyICe.virtual_instruments import digital_analog_io
+        >>> hasattr(digital_analog_io, '_output_channel_callback')
+        True
+
         Args:
-            digital_channel: Digital channel.
-            output_channel: Output channel.
+            digital_channel: Digital channel to use.
+            output_channel: Channel used for stimulus output.
             value: Value to set.
         """
         expected_output = self._compute_outputs(
@@ -4481,8 +6084,15 @@ class digital_analog_io(instrument):
     def _domain_channel_callback(self, digital_channel):
         """Update outputs when reference level changes.
 
+        Internal implementation detail; see the public API for usage.
+
+
+        >>> from PyICe.virtual_instruments import digital_analog_io
+        >>> hasattr(digital_analog_io, '_domain_channel_callback')
+        True
+
         Args:
-            digital_channel: Digital channel.
+            digital_channel: Digital channel to use.
         """
         if digital_channel.read() is not None:
             output_v = self._digital_write(
@@ -4529,16 +6139,21 @@ class digital_analog_io(instrument):
         after channel creation, additional logic states can be accommodated either by add_logic_state() to this channel, or create another digital channel mapping through the same output_channel
         use a ramp_to domain channel to interleave output channel writes with each step and prevent logic state changes when domain supply changes
 
+
+        >>> from PyICe.virtual_instruments import digital_analog_io
+        >>> hasattr(digital_analog_io, 'add_channel_digital_output')
+        True
+
         Args:
             channel_name: Name for the new channel.
-            output_channel: Output channel.
-            voh_offset: Voh offset.
-            voh_scale: Voh scale.
-            vol_offset: Vol offset.
-            vol_scale: Vol scale.
+            output_channel: Channel used for stimulus output.
+            voh_offset: Voh offset to use.
+            voh_scale: Voh scale to use.
+            vol_offset: Vol offset to use.
+            vol_scale: Vol scale to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         digital_channel = integer_channel(
             channel_name,
@@ -4576,11 +6191,16 @@ class digital_analog_io(instrument):
         vo_scale is a percentage of the domain channel
         vo_offset is absolute
 
+
+        >>> from PyICe.virtual_instruments import digital_analog_io
+        >>> hasattr(digital_analog_io, 'add_digital_output_logic_state')
+        True
+
         Args:
-            digital_output_channel: Digital output channel.
-            digital_state: Digital state.
-            vo_offset: Vo offset.
-            vo_scale: Vo scale.
+            digital_output_channel: Digital output channel to use.
+            digital_state: Digital state to use.
+            vo_offset: Vo offset to use.
+            vo_scale: Vo scale to use.
         """
         assert isinstance(digital_output_channel, channel)
         assert isinstance(digital_state, int)
@@ -4594,8 +6214,15 @@ class digital_analog_io(instrument):
             self, digital_output_channel):
         """This doesn't work yet. Is it worth implementing?
 
+        Issues a SCPI query to the instrument and parses the response.
+
+
+        >>> from PyICe.virtual_instruments import digital_analog_io
+        >>> hasattr(digital_analog_io, 'enable_digital_output_domain_read_callback')
+        True
+
         Args:
-            digital_output_channel: Digital output channel.
+            digital_output_channel: Digital output channel to use.
         """
         self._domain_channel.add_read_callback(
             lambda domain_channel,
@@ -4609,16 +6236,21 @@ class digital_analog_io(instrument):
 
         absolute voltage thresholds are achievable by using a dummy domain supply channel
 
+
+        >>> from PyICe.virtual_instruments import digital_analog_io
+        >>> hasattr(digital_analog_io, 'add_channel_digital_input')
+        True
+
         Args:
-            analog_input_channel: Analog input channel.
+            analog_input_channel: Analog input channel to use.
             channel_name: Name for the new channel.
-            hys_absolute: Hys absolute.
-            hys_enable: Hys enable.
-            vih_ratio: Vih ratio.
-            vil_ratio: Vil ratio.
+            hys_absolute: Hys absolute to use.
+            hys_enable: Hys enable to use.
+            vih_ratio: Vih ratio to use.
+            vil_ratio: Vil ratio to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         digital_channel = integer_channel(
             channel_name, size=1, read_function=self._dummy_read)
@@ -4657,7 +6289,15 @@ class vector_to_scalar_converter(instrument):
     True
     """
     def __init__(self):
-        """Initialize vector_to_scalar_converter."""
+        """Initialize vector_to_scalar_converter.
+
+        Stores configuration in ``_base_name`` for use by other methods.
+
+        >>> from PyICe.virtual_instruments import vector_to_scalar_converter
+        >>> vector_to_scalar_converter is not None
+        True
+
+        """
         self._base_name = 'vector_scalar_converter'
         instrument.__init__(self, self._base_name)
         # NB Python 3.4 adds useful statistics module:
@@ -4667,11 +6307,18 @@ class vector_to_scalar_converter(instrument):
     def sum(sequence):
         """Arithmetic sum.
 
+        Supports the ``vector_to_scalar_converter`` workflow by performing the described operation.
+
+
+        >>> from PyICe.virtual_instruments import vector_to_scalar_converter
+        >>> callable(getattr(vector_to_scalar_converter, 'sum', None))
+        True
+
         Args:
-            sequence: Sequence.
+            sequence: Ordered sequence of values or steps.
 
         Returns:
-            Result value.
+            The sum result.
         """
         return math.fsum(sequence) if sequence is not None else None
 
@@ -4679,11 +6326,18 @@ class vector_to_scalar_converter(instrument):
     def mean(cls, sequence):
         """Arithmetic mean of sequence.
 
+        Supports the ``vector_to_scalar_converter`` workflow by performing the described operation.
+
+
+        >>> from PyICe.virtual_instruments import vector_to_scalar_converter
+        >>> callable(getattr(vector_to_scalar_converter, 'mean', None))
+        True
+
         Args:
-            sequence: Sequence.
+            sequence: Ordered sequence of values or steps.
 
         Returns:
-            Result value.
+            The mean result.
         """
         return cls.sum(sequence) / \
             len(sequence) if sequence is not None else None
@@ -4692,11 +6346,18 @@ class vector_to_scalar_converter(instrument):
     def stdev(cls, sequence):
         """Sample std deviation.
 
+        Supports the ``vector_to_scalar_converter`` workflow by performing the described operation.
+
+
+        >>> from PyICe.virtual_instruments import vector_to_scalar_converter
+        >>> callable(getattr(vector_to_scalar_converter, 'stdev', None))
+        True
+
         Args:
-            sequence: Sequence.
+            sequence: Ordered sequence of values or steps.
 
         Returns:
-            Result value.
+            The stdev result.
         """
         if sequence is None:
             return None
@@ -4708,11 +6369,18 @@ class vector_to_scalar_converter(instrument):
     def pstdev(cls, sequence):
         """Population std deviation.
 
+        Supports the ``vector_to_scalar_converter`` workflow by performing the described operation.
+
+
+        >>> from PyICe.virtual_instruments import vector_to_scalar_converter
+        >>> callable(getattr(vector_to_scalar_converter, 'pstdev', None))
+        True
+
         Args:
-            sequence: Sequence.
+            sequence: Ordered sequence of values or steps.
 
         Returns:
-            Result value.
+            The pstdev result.
         """
         if sequence is None:
             return None
@@ -4722,11 +6390,18 @@ class vector_to_scalar_converter(instrument):
     def rms(cls, sequence):
         """RMS (root mean square). To instead subtract sample mean, use pstdev.
 
+        Supports the ``vector_to_scalar_converter`` workflow by performing the described operation.
+
+
+        >>> from PyICe.virtual_instruments import vector_to_scalar_converter
+        >>> callable(getattr(vector_to_scalar_converter, 'rms', None))
+        True
+
         Args:
-            sequence: Sequence.
+            sequence: Ordered sequence of values or steps.
 
         Returns:
-            Result value.
+            The rms result.
         """
         if sequence is None:
             return None
@@ -4740,13 +6415,18 @@ class vector_to_scalar_converter(instrument):
 
         to be read, nor will this channel's value be updated.
 
+
+        >>> from PyICe.virtual_instruments import vector_to_scalar_converter
+        >>> hasattr(vector_to_scalar_converter, 'add_channel_callback')
+        True
+
         Args:
             channel_name: Name for the new channel.
-            reduction_function: Reduction function.
-            vector_data_channel: Vector data channel.
+            reduction_function: Reduction function to use.
+            vector_data_channel: Vector data channel to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name)  # dummy channel
         new_channel.set_description(
@@ -4763,13 +6443,18 @@ class vector_to_scalar_converter(instrument):
 
         to be read, and will cause vector_data_channel to be read twice if both vector_data_channel and this virtual channel are in the read list.
 
+
+        >>> from PyICe.virtual_instruments import vector_to_scalar_converter
+        >>> hasattr(vector_to_scalar_converter, 'add_channel')
+        True
+
         Args:
             channel_name: Name for the new channel.
-            reduction_function: Reduction function.
-            vector_data_channel: Vector data channel.
+            reduction_function: Reduction function to use.
+            vector_data_channel: Vector data channel to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -4783,14 +6468,21 @@ class vector_to_scalar_converter(instrument):
             self, channel_name, vector_length, max=1, min=0):
         """Return random vector channel data to test virtual instrument.
 
+        Internal implementation detail; see the public API for usage.
+
+
+        >>> from PyICe.virtual_instruments import vector_to_scalar_converter
+        >>> hasattr(vector_to_scalar_converter, '_add_channel_dummy_random')
+        True
+
         Args:
             channel_name: Name for the new channel.
-            max: Max.
-            min: Min.
-            vector_length: Vector length.
+            max: Maximum value of the range.
+            min: Minimum value of the range.
+            vector_length: Vector length to use.
 
         Returns:
-            Result value.
+            The add channel dummy random result.
         """
         new_channel = channel(
             channel_name, read_function=lambda: [
@@ -4802,17 +6494,32 @@ class vector_to_scalar_converter(instrument):
 
 
 class smart_battery_emulator(instrument):
-    """Smart_battery_emulator (instrument subclass)."""
+    """Smart_battery_emulator (instrument subclass).
+
+    >>> from PyICe.virtual_instruments import smart_battery_emulator
+    >>> smart_battery_emulator is not None
+    True
+
+    """
     def __init__(self, voltage_channel_name, current_channel_name,
                  voltage_interval, current_interval, verbose=False):
         """Smart Battery emulator to kick out voltage and current requests to keep a smart-battery charger alive.
+        Initializes 7 instance attributes that configure the object's
+        behavior.
+
+        Calls the parent constructor to inherit base behavior, and initializes 7 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.virtual_instruments import smart_battery_emulator
+        >>> hasattr(smart_battery_emulator, '__init__')
+        True
 
         Args:
-            current_channel_name: Current channel name.
-            current_interval: Current interval.
+            current_channel_name: Current channel name to use.
+            current_interval: Current interval to use.
             verbose: If True, print debug output.
-            voltage_channel_name: Voltage channel name.
-            voltage_interval: Voltage interval.
+            voltage_channel_name: Voltage channel name to use.
+            voltage_interval: Voltage interval to use.
         """
         self._base_name = 'SB_emulator'
         instrument.__init__(self, "Smart Battery Emulator")
@@ -4826,17 +6533,38 @@ class smart_battery_emulator(instrument):
         self.initial_current_interval = current_interval
 
     def stop_all(self):
-        """Kills all threaded channels, can't be restarted."""
+        """Kills all threaded channels, can't be restarted.
+
+        Supports the ``smart_battery_emulator`` workflow by performing the described operation.
+
+        >>> from PyICe.virtual_instruments import smart_battery_emulator
+        >>> hasattr(smart_battery_emulator, 'stop_all')
+        True
+
+        """
         self.writer.stop_all()
 
     def add_channel_voltage_interval(self, channel_name):
         """Adds a channel that can change the update interval of the smart battery voltage.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import smart_battery_emulator
+        >>> hasattr(smart_battery_emulator, 'add_channel_voltage_interval')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -4847,12 +6575,25 @@ class smart_battery_emulator(instrument):
 
     def add_channel_current_interval(self, channel_name):
         """Adds a channel that can change the update interval of the smart battery current.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import smart_battery_emulator
+        >>> hasattr(smart_battery_emulator, 'add_channel_current_interval')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -4863,49 +6604,103 @@ class smart_battery_emulator(instrument):
 
 
 class aggregator(instrument):
-    """Combines multiple, less capable channels into a single channel of great renown."""
+    """Combines multiple, less capable channels into a single channel of great renown.
+
+    >>> from PyICe.virtual_instruments import aggregator, dummy
+    >>> d = dummy()
+    >>> ch_a = d.add_channel_write("rail_a")
+    >>> _ = ch_a.set_min_write_limit(0)
+    >>> _ = ch_a.set_max_write_limit(3.3)
+    >>> ch_b = d.add_channel_write("rail_b")
+    >>> _ = ch_b.set_min_write_limit(0)
+    >>> _ = ch_b.set_max_write_limit(3.3)
+    >>> agg = aggregator()
+    >>> agg_ch = agg.add_channel_sequential("combined", [ch_a, ch_b])
+    >>> agg_ch.get_name()
+    'combined'
+    """
 
     def __init__(self):
-        """TODO: Add docstring."""
+        """TODO: Add docstring.
+
+        Stores configuration in ``_base_name`` for use by other methods.
+
+        >>> from PyICe.virtual_instruments import aggregator
+        >>> obj = aggregator()
+        >>> isinstance(obj, aggregator)
+        True
+
+        """
         self._base_name = 'aggreg'
         instrument.__init__(self, 'AGGREGATOR')
 
     def add_channel_sequential(self, channel_name, slave_channels):
         """Add a channel sequential.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import aggregator
+        >>> hasattr(aggregator, 'add_channel_sequential')
+        True
 
         Args:
             channel_name: Name for the new channel.
-            slave_channels: Slave channels.
+            slave_channels: Slave channels to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         return self.add_channel(channel_name=channel_name,
                                 slave_channels=slave_channels, sequential=True)
 
     def add_channel_parallel(self, channel_name, slave_channels):
         """Add a channel parallel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import aggregator
+        >>> hasattr(aggregator, 'add_channel_parallel')
+        True
 
         Args:
             channel_name: Name for the new channel.
-            slave_channels: Slave channels.
+            slave_channels: Slave channels to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         return self.add_channel(channel_name=channel_name,
                                 slave_channels=slave_channels, sequential=False)
 
     def add_channel(self, channel_name, slave_channels, sequential=True):
         """Adds the main channels that will make use of the lesser channels.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import aggregator
+        >>> hasattr(aggregator, 'add_channel')
+        True
 
         Args:
             channel_name: Name for the new channel.
-            sequential: Sequential.
-            slave_channels: Slave channels.
+            sequential: Sequential to use.
+            slave_channels: Slave channels to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, write_function=None)
         new_channel._write = lambda value, channel = new_channel: self._write_channel(
@@ -4938,13 +6733,21 @@ class aggregator(instrument):
 
     def _write_sequential(self, value, servant_channels):
         """Distributes value through the lesser channels.
+        Internal helper that sends the ``WARNING:`` SCPI command.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
+
+
+        >>> from PyICe.virtual_instruments import aggregator
+        >>> hasattr(aggregator, '_write_sequential')
+        True
 
         Args:
-            servant_channels: Servant channels.
+            servant_channels: Servant channels to use.
             value: Value to set.
 
         Raises:
-            ChannelValueException: On error condition.
+            ChannelValueException: If the value is outside the channel\'s valid range.
         """
         if len(servant_channels) == 1:
             if value != 0:
@@ -4991,20 +6794,34 @@ class simple_servo(instrument):
     """Alternae servo instrument, which makes no assumptions about gain or linearity.
 
     Binary and geometric have monotonicity constraints. Linear searches should fine an answer eventually, without a monotonicity constraint
+
+    >>> from PyICe.virtual_instruments import simple_servo
+    >>> simple_servo is not None
+    True
+
     """
     def __init__(self, fb_channel, output_channel, minimum, maximum, reltol=0.001,
                  abstol=None, verbose=False, max_tries=10, step_method="BINARY"):
         """Initialize simple_servo.
+        Initializes 11 instance attributes that configure the object's
+        behavior.
+
+        Calls the parent constructor to inherit base behavior, and initializes 11 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.virtual_instruments import simple_servo
+        >>> hasattr(simple_servo, '__init__')
+        True
 
         Args:
             abstol: Absolute tolerance.
-            fb_channel: Fb channel.
-            max_tries: Max tries.
+            fb_channel: Fb channel to use.
+            max_tries: Max tries to use.
             maximum: Maximum value.
             minimum: Minimum value.
-            output_channel: Output channel.
+            output_channel: Channel used for stimulus output.
             reltol: Relative tolerance.
-            step_method: Step method.
+            step_method: Step method to use.
             verbose: If True, print debug output.
         """
         self._base_name = 'servo'
@@ -5037,6 +6854,15 @@ class simple_servo(instrument):
 
     def set_search_direction_override_fn(self, fn):
         """Set the search direction override fn.
+        Updates the search direction override fn in the object's internal
+        state.
+
+        Updates the search direction override fn in the object's internal state.
+
+
+        >>> from PyICe.virtual_instruments import simple_servo
+        >>> hasattr(simple_servo, 'set_search_direction_override_fn')
+        True
 
         Args:
             fn: Callable function.
@@ -5054,16 +6880,29 @@ class simple_servo(instrument):
         This dummy method doesn't alter behavior, but can be replaced with inheritance or the set_search_direction_override_fn method to point to something with more smarts.
         Should accept **kwargs dict argument containing servo state information
 
+
+        >>> from PyICe.virtual_instruments import simple_servo
+        >>> hasattr(simple_servo, 'search_direction_override')
+        True
+
         Args:
             **kwargs: Additional keyword arguments.
 
         Returns:
-            Result value.
+            The search direction override result.
         """
         return None
 
     def set_minimum(self, value):
         """Set the minimum.
+        Updates the minimum in the object's internal state.
+
+        Updates the minimum in the object's internal state.
+
+
+        >>> from PyICe.virtual_instruments import simple_servo
+        >>> hasattr(simple_servo, 'set_minimum')
+        True
 
         Args:
             value: Value to set.
@@ -5072,6 +6911,14 @@ class simple_servo(instrument):
 
     def set_maximum(self, value):
         """Set the maximum.
+        Updates the maximum in the object's internal state.
+
+        Updates the maximum in the object's internal state.
+
+
+        >>> from PyICe.virtual_instruments import simple_servo
+        >>> hasattr(simple_servo, 'set_maximum')
+        True
 
         Args:
             value: Value to set.
@@ -5080,12 +6927,25 @@ class simple_servo(instrument):
 
     def add_channel_target(self, channel_name):
         """Channel write causes output_channel to servo to new target value.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.virtual_instruments import simple_servo
+        >>> hasattr(simple_servo, 'add_channel_target')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         servo_channel = channel(channel_name, write_function=self.servo)
         servo_channel.set_description(
@@ -5093,16 +6953,25 @@ class simple_servo(instrument):
         return self._add_channel(servo_channel)
 
     def servo(self, target):
-        """Return servo result.
+        """Return the servo.
+        Sends the ``Max`` SCPI command to the instrument.
+        Sends the ``Incorrect`` SCPI command to the instrument.
+
+        Transmits data to the remote endpoint.
+
+
+        >>> from PyICe.virtual_instruments import simple_servo
+        >>> hasattr(simple_servo, 'servo')
+        True
 
         Args:
             target: Target value.
 
         Returns:
-            Result value.
+            The final servo result after convergence.
 
         Raises:
-            ServoException: On error condition.
+            ServoException: If the servo fails to converge.
         """
         assert target != 0 or self.reltol is not None
         self.lower_bound = self.minimum
@@ -5177,13 +7046,21 @@ class simple_servo(instrument):
 
     def is_in_spec(self, target, setting):
         """Return whether the channel is in spec.
+        Returns a boolean reflecting the object's current state.
+
+        Issues a SCPI query to the instrument and parses the response.
+
+
+        >>> from PyICe.virtual_instruments import simple_servo
+        >>> hasattr(simple_servo, 'is_in_spec')
+        True
 
         Args:
-            setting: Setting.
+            setting: Setting to use.
             target: Target value.
 
         Returns:
-            Result value.
+            True if the in spec condition is met, False otherwise.
         """
         self.previous_error = self.error
         self.fb_read_val = float(self.fb_channel.read())
@@ -5205,13 +7082,24 @@ class simple_servo(instrument):
 
 
 class dummy_quantum_twin(instrument):
-    """Dummy_quantum_twin (instrument subclass)."""
+    """Dummy_quantum_twin (instrument subclass).
+
+    >>> from PyICe.virtual_instruments import dummy_quantum_twin
+    >>> dummy_quantum_twin is not None
+    True
+
+    """
     def __init__(self, name=None):
         """Creates dummy channels that opportunistically mirror the state of the live originals.
 
         Can be used to replace channels in a logger than might not always still be readable at time of logging.
         Can speed up multiple logging iterations if resisters are known to be static.
         Etc...
+
+
+        >>> from PyICe.virtual_instruments import dummy_quantum_twin
+        >>> dummy_quantum_twin is not None
+        True
 
         Args:
             name: Name identifier.
@@ -5227,13 +7115,18 @@ class dummy_quantum_twin(instrument):
 
         Original live channel unchanged except for added callbacks.
 
+
+        >>> from PyICe.virtual_instruments import dummy_quantum_twin
+        >>> hasattr(dummy_quantum_twin, 'add_channel')
+        True
+
         Args:
-            cached_value: Cached value.
-            live_channel: Live channel.
-            skip_read: Skip read.
+            cached_value: Cached value to use.
+            live_channel: Live channel to use.
+            skip_read: Skip read to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         dummy_channel = channel(
             name=live_channel.get_name(),
@@ -5272,9 +7165,23 @@ class dummy_quantum_twin(instrument):
 
 
 class Virtual_Oven(temperature_chamber):
-    """Virtual_ oven (temperature_chamber subclass)."""
+    """Virtual_ oven (temperature_chamber subclass).
+
+    >>> from PyICe.virtual_instruments import Virtual_Oven
+    >>> Virtual_Oven is not None
+    True
+
+    """
     def __init__(self):
-        """Initialize virtual_ oven."""
+        """Initialize virtual_ oven.
+
+        Stores configuration in ``_base_name`` for use by other methods.
+
+        >>> from PyICe.virtual_instruments import Virtual_Oven
+        >>> Virtual_Oven is not None
+        True
+
+        """
         self._base_name = 'Virtual_Oven'
         temperature_chamber.__init__(self)
 

@@ -1,26 +1,32 @@
-"""Expand tabs utility."""
-def expand_tabs(string, *column_widths, **default_column_width):
-    r"""Like string.expandtabs, but works only on a single line and allows for varying column widths.
+"""Expand tabs utility.
 
-    accepts variable number of positional arguments for each column width.
-    accepts keyword argument "default_column_width" if not all column widths are specified.
-    accepts keyword argument "verbose" to warn if column width is too narrow for contents.
+>>> from PyICe.lab_utils.expand_tabs import expand_tabs
+
+"""
+def expand_tabs(string, *column_widths, **default_column_width):
+    r"""Expand tab-separated fields into fixed-width columns with per-column control.
+
+    Unlike ``str.expandtabs`` (which uses a uniform tab stop), this allows each
+    column to have its own width — useful for aligning heterogeneous instrument
+    data where fields have very different natural widths.
 
     >>> expand_tabs('a\tb\tc', 5, 5, 5)
     'a    b    c    '
     >>> expand_tabs('hi\tthere', default_column_width=8)
     'hi      there   '
+    >>> expand_tabs('Name\tValue\tUnit', 10, 8, 6)
+    'Name      Value   Unit  '
+    >>> expand_tabs('x\ty', 2, 2)
+    'x y '
 
     Args:
-        **default_column_width: Additional keyword arguments.
-        *column_widths: Additional positional arguments.
-        string: String data.
-
-    Returns:
-        Result value.
+        string: Single-line string with tab-separated fields.
+        *column_widths: Width for each column (positional, one per tab field).
+        **default_column_width: Fallback width if not all columns have explicit
+            widths. Also accepts ``verbose=True`` to warn about undersized columns.
 
     Raises:
-        Exception: On error condition.
+        Exception: If a column has no explicit width and no default_column_width.
     """
     for key in default_column_width:
         if key != "default_column_width" and key != "verbose":

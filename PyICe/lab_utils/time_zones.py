@@ -1,26 +1,48 @@
-"""Time zones utility."""
+"""Time zones utility.
+
+>>> from PyICe.lab_utils.time_zones import US_Time_Zone
+
+"""
 import datetime
 
 
 class US_Time_Zone(datetime.tzinfo):
-    """Generic Timezone parent class.
+    """Implement ``datetime.tzinfo`` with US daylight-saving-time rules.
 
-    Implements methods required by datetime.tzinfo with US DST rules (second Sunday of March and first Sunday of November).
-    Requires subclass to define local timezone parameters:
-        self.tz_name
-        self.tz_name_dst
-        self.gmt_offset
-        self.dst_offset
+    Handles the DST transition on the second Sunday of March (spring forward)
+    and the first Sunday of November (fall back). Subclasses must set the
+    following attributes in their ``__init__``:
+
+    - ``tz_name`` – standard-time abbreviation (e.g. ``'EST'``)
+    - ``tz_name_dst`` – daylight-time abbreviation (e.g. ``'EDT'``)
+    - ``gmt_offset`` – hours offset from UTC in standard time (e.g. ``-5``)
+    - ``dst_offset`` – additional hours added during DST (typically ``+1``)
+
+    >>> import datetime
+    >>> tz = US_Eastern_Time()
+    >>> tz.tzname(datetime.datetime(2024, 1, 15))
+    'EST'
+    >>> tz.tzname(datetime.datetime(2024, 7, 15))
+    'EDT'
     """
 
     def first_sunday_on_or_after(self, dt):
-        """Return date of first Sunday on or after dt.
+        """Return the first Sunday on or after *dt*.
+
+        Used internally to locate DST transition dates.
+
+        >>> import datetime
+        >>> tz = US_Time_Zone.__new__(US_Time_Zone)
+        >>> tz.first_sunday_on_or_after(datetime.datetime(2024, 3, 10))  # already Sunday
+        datetime.datetime(2024, 3, 10, 0, 0)
+        >>> tz.first_sunday_on_or_after(datetime.datetime(2024, 3, 4)).weekday()  # 0=Mon
+        6
 
         Args:
-            dt: Dt.
+            dt: A ``datetime.datetime`` (or ``datetime.date``) to start from.
 
         Returns:
-            Result value.
+            A ``datetime.datetime`` for the first Sunday ≥ *dt*.
         """
         days_to_go = 6 - dt.weekday()
         # if days_to_go:
@@ -28,24 +50,43 @@ class US_Time_Zone(datetime.tzinfo):
         return dt
 
     def utcoffset(self, dt):
-        """Return DST aware offset from GMT/UTC based on calendar date.
+        """Return the total UTC offset (standard + DST) for the given datetime.
+
+        Collects the requested items and returns them as a standard container.
+
+        >>> import datetime
+        >>> US_Eastern_Time().utcoffset(datetime.datetime(2024, 1, 15))
+        datetime.timedelta(days=-1, seconds=68400)
+        >>> US_Eastern_Time().utcoffset(datetime.datetime(2024, 7, 15))
+        datetime.timedelta(days=-1, seconds=72000)
 
         Args:
-            dt: Dt.
+            dt: A ``datetime.datetime`` whose date determines whether DST
+                is in effect.
 
         Returns:
-            Result value.
+            A ``datetime.timedelta`` representing the offset from UTC.
         """
         return datetime.timedelta(hours=self.gmt_offset) + self.dst(dt)  # pylint: disable=no-member; gmt_offset is defined in subclass __init__ (e.g. US_Eastern_Time, US_Pacific_Time)
 
     def dst(self, dt):
-        """Return DST offset from standard local time based on calendar date.
+        """Return the DST adjustment for *dt* (one hour or zero).
+
+        Supports the ``US_Time_Zone`` workflow by performing the described operation.
+
+        >>> import datetime
+        >>> US_Eastern_Time().dst(datetime.datetime(2024, 1, 15))
+        datetime.timedelta(0)
+        >>> US_Eastern_Time().dst(datetime.datetime(2024, 7, 15))
+        datetime.timedelta(seconds=3600)
 
         Args:
-            dt: Dt.
+            dt: A ``datetime.datetime`` whose date determines whether DST
+                is active.
 
         Returns:
-            Result value.
+            ``datetime.timedelta(hours=dst_offset)`` during DST, otherwise
+            ``datetime.timedelta(0)``.
         """
         # DST starts second Sunday in March
         # ends first Sunday in November
@@ -59,13 +100,23 @@ class US_Time_Zone(datetime.tzinfo):
             return datetime.timedelta(0)
 
     def tzname(self, dt):
-        """Return DST aware local time zone name based on calendar date.
+        """Return the timezone abbreviation, switching for DST.
+
+        Supports the ``US_Time_Zone`` workflow by performing the described operation.
+
+        >>> import datetime
+        >>> US_Pacific_Time().tzname(datetime.datetime(2024, 12, 1))
+        'PST'
+        >>> US_Pacific_Time().tzname(datetime.datetime(2024, 6, 1))
+        'PDT'
 
         Args:
-            dt: Dt.
+            dt: A ``datetime.datetime`` whose date determines whether DST
+                is active.
 
         Returns:
-            Result value.
+            The standard or daylight-saving timezone abbreviation string
+            (e.g. ``'EST'`` or ``'EDT'``).
         """
         if self.dst(dt):
             return self.tz_name_dst  # pylint: disable=no-member; tz_name_dst is defined in subclass __init__ (e.g. US_Eastern_Time, US_Pacific_Time)
@@ -73,10 +124,24 @@ class US_Time_Zone(datetime.tzinfo):
 
 
 class UTC(US_Time_Zone):
-    """UTC / GMT / Zulu time zone."""
+    """UTC / GMT / Zulu time zone (no DST adjustment).
+
+    >>> import datetime
+    >>> UTC().utcoffset(datetime.datetime(2024, 7, 15))
+    datetime.timedelta(0)
+    """
 
     def __init__(self):
-        """Initialize u t c."""
+        """Set UTC parameters (zero offset, no DST).
+
+        Initializes 4 instance attributes that configure the object's
+        behavior.
+
+        >>> from PyICe.lab_utils.time_zones import UTC
+        >>> UTC is not None
+        True
+
+        """
         self.tz_name = "UTC"
         self.tz_name_dst = "UTC"
         self.gmt_offset = +0
@@ -84,10 +149,24 @@ class UTC(US_Time_Zone):
 
 
 class US_Eastern_Time(US_Time_Zone):
-    """US Eastern time zone. (NYC/BOS)."""
+    """US Eastern time zone (EST/EDT, UTC−5 / UTC−4).
+
+    >>> import datetime
+    >>> US_Eastern_Time().tzname(datetime.datetime(2024, 1, 15))
+    'EST'
+    """
 
     def __init__(self):
-        """Initialize u s_ eastern_ time."""
+        """Set Eastern-timezone parameters (GMT−5, +1 h DST).
+
+        Initializes 4 instance attributes that configure the object's
+        behavior.
+
+        >>> from PyICe.lab_utils.time_zones import US_Eastern_Time
+        >>> US_Eastern_Time is not None
+        True
+
+        """
         self.tz_name = "EST"
         self.tz_name_dst = "EDT"
         self.gmt_offset = -5
@@ -95,10 +174,24 @@ class US_Eastern_Time(US_Time_Zone):
 
 
 class US_Pacific_Time(US_Time_Zone):
-    """US Pacific time zone. (LAX/SMF)."""
+    """US Pacific time zone (PST/PDT, UTC−8 / UTC−7).
+
+    >>> import datetime
+    >>> US_Pacific_Time().tzname(datetime.datetime(2024, 1, 15))
+    'PST'
+    """
 
     def __init__(self):
-        """Initialize u s_ pacific_ time."""
+        """Set Pacific-timezone parameters (GMT−8, +1 h DST).
+
+        Initializes 4 instance attributes that configure the object's
+        behavior.
+
+        >>> from PyICe.lab_utils.time_zones import US_Pacific_Time
+        >>> US_Pacific_Time is not None
+        True
+
+        """
         self.tz_name = "PST"
         self.tz_name_dst = "PDT"
         self.gmt_offset = -8

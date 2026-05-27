@@ -1,4 +1,8 @@
-"""Test Equity 115 instrument driver."""
+"""Test Equity 115 instrument driver.
+
+>>> from PyICe.lab_instruments.TestEquity_115 import TestEquity_115
+
+"""
 from ..lab_core import *  # noqa: F403
 from .temperature_chamber import temperature_chamber
 
@@ -7,9 +11,13 @@ class TestEquity_115(temperature_chamber):
     """TestEquity_115 with basic channels."""
     def __init__(self, interface_raw_serial):
         """Initialize test equity_115.
+        Initializes 4 instance attributes that configure the object's
+        behavior.
+
+        Calls the parent constructor to inherit base behavior, and initializes 4 instance attributes that configure the object's behavior.
 
         Args:
-            interface_raw_serial: Interface raw serial.
+            interface_raw_serial: Raw serial interface instance for communication.
         """
         import minimalmodbus
         minimalmodbus.BAUDRATE = 9600
@@ -27,24 +35,40 @@ class TestEquity_115(temperature_chamber):
 
     def add_channels(self, channel_name):
         """Add a channels.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         temp_channel = temperature_chamber.add_channels(self, channel_name)
         return temp_channel
 
     def add_channel_enable_output(self, channel_name):
         """Enable/Disable heat and cool outputs.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument and maps it to the underlying device register for read/write access.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_register = register(f'{channel_name}_enable',
                                 size=1,
@@ -78,10 +102,12 @@ class TestEquity_115(temperature_chamber):
         self.modbus_pid.write_register(300, float(value), 1, 16, True)
 
     def instrumentInfoString(self):
-        """Return instrumentInfoString result.
+        """Return the instrumentInfoString.
+
+        Supports the ``TestEquity_115`` workflow by performing the described operation.
 
         Returns:
-            Result value.
+            The instrumentInfoString result.
         """
         # pylint: disable=no-member; attributes set externally before this method is called (incomplete interface stub)
         return "%s - %s - SN:%s - %s" % \

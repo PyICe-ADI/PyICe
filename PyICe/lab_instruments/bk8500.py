@@ -1,4 +1,8 @@
-"""Bk8500 instrument driver."""
+"""Bk8500 instrument driver.
+
+>>> from PyICe.lab_instruments.bk8500 import bk8500
+
+"""
 from ..lab_core import *  # noqa: F403
 
 
@@ -52,11 +56,15 @@ class bk8500(instrument):
     """
     def __init__(self, interface_raw_serial, address=0, remote_sense=False):
         """Initialize bk8500.
+        Initializes 5 instance attributes that configure the object's
+        behavior.
+
+        Calls the parent constructor to inherit base behavior, and initializes 5 instance attributes that configure the object's behavior.
 
         Args:
-            address: Address.
-            interface_raw_serial: Interface raw serial.
-            remote_sense: Remote sense.
+            address: Network hostname or IP address string.
+            interface_raw_serial: Raw serial interface instance for communication.
+            remote_sense: Remote sense to use.
         """
         self._base_name = 'bk8500'
         instrument.__init__(self, f"BK8500 @ {interface_raw_serial}")
@@ -110,6 +118,13 @@ class bk8500(instrument):
 
     def add_channel_current(self, channel_name):
         """Add single CC forcing channel and force zero current.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
@@ -128,6 +143,14 @@ class bk8500(instrument):
 
     def add_channel_isense(self, channel_name):
         """Add single current readback channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
@@ -144,6 +167,14 @@ class bk8500(instrument):
 
     def add_channel_vsense(self, channel_name):
         """Add single voltage readback channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
@@ -160,6 +191,14 @@ class bk8500(instrument):
 
     def add_channel_psense(self, channel_name):
         """Read back computed power dissipated in load.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
@@ -176,6 +215,14 @@ class bk8500(instrument):
 
     def add_channel_mode(self, channel_name):
         """Read back operating mode (Off, Constant Current, Constant Voltage, Constant Power, Constant Resistance).
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
@@ -190,6 +237,9 @@ class bk8500(instrument):
 
     def _read_vsense(self, channel_name):
         """Return measured voltage float.
+        Internal helper that computes and returns a derived value.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
             channel_name: Name of the channel being read.
@@ -201,6 +251,9 @@ class bk8500(instrument):
 
     def _read_isense(self, channel_name):
         """Return measured current float.
+        Internal helper that computes and returns a derived value.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
             channel_name: Name of the channel being read.
@@ -212,6 +265,9 @@ class bk8500(instrument):
 
     def _read_psense(self, channel_name):
         """Return measured power float.
+        Internal helper that computes and returns a derived value.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
             channel_name: Name of the channel being read.
@@ -223,6 +279,13 @@ class bk8500(instrument):
 
     def add_channel_remote_sense(self, channel_name):
         """Enable/disable remote voltage sense through rear panel connectors.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
@@ -239,6 +302,14 @@ class bk8500(instrument):
 
     def add_channel_voltage(self, channel_name):
         """Add single CV forcing channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
@@ -254,6 +325,14 @@ class bk8500(instrument):
 
     def add_channel_power(self, channel_name):
         """Add single CW forcing channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
@@ -269,6 +348,14 @@ class bk8500(instrument):
 
     def add_channel_resistance(self, channel_name):
         """Add single CR forcing channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
@@ -414,6 +501,8 @@ class bk8500(instrument):
     def CommandProperlyFormed(self, cmd):
         """Return 1 if a command is properly formed; otherwise, return 0.
 
+        Supports the ``bk8500`` workflow by performing the described operation.
+
         Args:
             cmd: The command bytes to validate.
 
@@ -459,6 +548,8 @@ class bk8500(instrument):
     def CalculateChecksum(self, cmd):
         """Return the sum of the bytes in cmd modulo 256.
 
+        Supports the ``bk8500`` workflow by performing the described operation.
+
         Args:
             cmd: The command bytes to calculate the checksum for.
 
@@ -475,13 +566,15 @@ class bk8500(instrument):
         return checksum
 
     def StartCommand(self, byte):
-        """Return StartCommand result.
+        """Return the StartCommand.
+
+        Supports the ``bk8500`` workflow by performing the described operation.
 
         Args:
-            byte: Byte.
+            byte: Byte to use.
 
         Returns:
-            Result value.
+            The StartCommand result.
         """
         assert byte >= 0 and byte <= 255
         return bytes((0xaa, self.address, byte))
@@ -611,6 +704,8 @@ class bk8500(instrument):
     def PrintCommandAndResponse(self, cmd, response, cmd_name):
         """Print the command and its response if debugging is on.
 
+        Supports the ``bk8500`` workflow by performing the described operation.
+
         Args:
             cmd: The command bytes that were sent.
             response: The response bytes received.
@@ -649,6 +744,8 @@ class bk8500(instrument):
     def GetData(self, data, num_bytes=4):
         """Extract the little endian integer from the data and return it.
 
+        Interprets raw data and returns structured results.
+
         Args:
             data: The 26-byte response data packet.
             num_bytes: Number of bytes to decode (1, 2, or 4).
@@ -670,13 +767,15 @@ class bk8500(instrument):
             raise Exception("Bad number of bytes:  %d" % num_bytes)
 
     def Reserved(self, num_used):
-        """Return Reserved result.
+        """Return the Reserved.
+
+        Supports the ``bk8500`` workflow by performing the described operation.
 
         Args:
-            num_used: Num used.
+            num_used: Num used to use.
 
         Returns:
-            Result value.
+            The Reserved result.
         """
         assert (num_used >= 3 and num_used < self.length_packet - 1)
         return b'\x00' * (self.length_packet - num_used - 1)
@@ -727,6 +826,8 @@ class bk8500(instrument):
     def TurnLoadOn(self):
         """Turns the load on.
 
+        Reads previously saved state or data back into memory.
+
         Returns:
             The instrument response status string.
         """
@@ -736,6 +837,8 @@ class bk8500(instrument):
 
     def TurnLoadOff(self):
         """Turns the load off.
+
+        Reads previously saved state or data back into memory.
 
         Returns:
             The instrument response status string.
@@ -747,6 +850,8 @@ class bk8500(instrument):
     def SetRemoteControl(self):
         """Sets the load to remote control.
 
+        Reads previously saved state or data back into memory.
+
         Returns:
             The instrument response status string.
         """
@@ -757,6 +862,8 @@ class bk8500(instrument):
     def SetLocalControl(self):
         """Sets the load to local control.
 
+        Reads previously saved state or data back into memory.
+
         Returns:
             The instrument response status string.
         """
@@ -766,6 +873,8 @@ class bk8500(instrument):
 
     def SetMaxCurrent(self, current):
         """Sets the maximum current the load will sink.
+
+        Reads previously saved state or data back into memory.
 
         Args:
             current: Maximum current in amps.
@@ -780,6 +889,8 @@ class bk8500(instrument):
     def GetMaxCurrent(self):
         """Returns the maximum current the load will sink.
 
+        Reads previously saved state or data back into memory.
+
         Returns:
             The maximum current in amps.
         """
@@ -789,6 +900,8 @@ class bk8500(instrument):
 
     def SetMaxVoltage(self, voltage):
         """Sets the maximum voltage the load will allow.
+
+        Reads previously saved state or data back into memory.
 
         Args:
             voltage: Maximum voltage in volts.
@@ -803,6 +916,8 @@ class bk8500(instrument):
     def GetMaxVoltage(self):
         """Gets the maximum voltage the load will allow.
 
+        Reads previously saved state or data back into memory.
+
         Returns:
             The maximum voltage in volts.
         """
@@ -812,6 +927,8 @@ class bk8500(instrument):
 
     def SetMaxPower(self, power):
         """Sets the maximum power the load will allow.
+
+        Reads previously saved state or data back into memory.
 
         Args:
             power: Maximum power in watts.
@@ -826,6 +943,8 @@ class bk8500(instrument):
     def GetMaxPower(self):
         """Gets the maximum power the load will allow.
 
+        Reads previously saved state or data back into memory.
+
         Returns:
             The maximum power in watts.
         """
@@ -835,6 +954,8 @@ class bk8500(instrument):
 
     def SetMode(self, mode):
         """Sets the mode (constant current, constant voltage, etc.
+
+        Supports the ``bk8500`` workflow by performing the described operation.
 
         Args:
             mode: Mode string, one of "cc", "cv", "cw", or "cr".
@@ -854,6 +975,8 @@ class bk8500(instrument):
     def GetMode(self):
         """Gets the mode (constant current, constant voltage, etc.
 
+        Supports the ``bk8500`` workflow by performing the described operation.
+
         Returns:
             The current mode string ("cc", "cv", "cw", or "cr").
         """
@@ -864,6 +987,8 @@ class bk8500(instrument):
 
     def SetCCCurrent(self, current):
         """Sets the constant current mode's current level.
+
+        Supports the ``bk8500`` workflow by performing the described operation.
 
         Args:
             current: Current level in amps.
@@ -878,6 +1003,8 @@ class bk8500(instrument):
     def GetCCCurrent(self):
         """Gets the constant current mode's current level.
 
+        Supports the ``bk8500`` workflow by performing the described operation.
+
         Returns:
             The current level in amps.
         """
@@ -887,6 +1014,8 @@ class bk8500(instrument):
 
     def SetCVVoltage(self, voltage):
         """Sets the constant voltage mode's voltage level.
+
+        Supports the ``bk8500`` workflow by performing the described operation.
 
         Args:
             voltage: Voltage level in volts.
@@ -901,6 +1030,8 @@ class bk8500(instrument):
     def GetCVVoltage(self):
         """Gets the constant voltage mode's voltage level.
 
+        Supports the ``bk8500`` workflow by performing the described operation.
+
         Returns:
             The voltage level in volts.
         """
@@ -910,6 +1041,8 @@ class bk8500(instrument):
 
     def SetCWPower(self, power):
         """Sets the constant power mode's power level.
+
+        Supports the ``bk8500`` workflow by performing the described operation.
 
         Args:
             power: Power level in watts.
@@ -924,6 +1057,8 @@ class bk8500(instrument):
     def GetCWPower(self):
         """Gets the constant power mode's power level.
 
+        Supports the ``bk8500`` workflow by performing the described operation.
+
         Returns:
             The power level in watts.
         """
@@ -933,6 +1068,8 @@ class bk8500(instrument):
 
     def SetCRResistance(self, resistance):
         """Sets the constant resistance mode's resistance level.
+
+        Supports the ``bk8500`` workflow by performing the described operation.
 
         Args:
             resistance: Resistance level in ohms.
@@ -946,6 +1083,8 @@ class bk8500(instrument):
 
     def GetCRResistance(self):
         """Gets the constant resistance mode's resistance level.
+
+        Supports the ``bk8500`` workflow by performing the described operation.
 
         Returns:
             The resistance level in ohms.
@@ -1002,6 +1141,8 @@ class bk8500(instrument):
     def GetTransient(self, mode):
         """Gets the transient mode settings.
 
+        Supports the ``bk8500`` workflow by performing the described operation.
+
         Args:
             mode: Operating mode string, one of "cc", "cv", "cw", or "cr".
 
@@ -1052,6 +1193,8 @@ class bk8500(instrument):
     def SetBatteryTestVoltage(self, min_voltage):
         """Sets the battery test voltage.
 
+        Supports the ``bk8500`` workflow by performing the described operation.
+
         Args:
             min_voltage: Minimum battery voltage in volts.
 
@@ -1065,6 +1208,8 @@ class bk8500(instrument):
     def GetBatteryTestVoltage(self):
         """Gets the battery test voltage.
 
+        Supports the ``bk8500`` workflow by performing the described operation.
+
         Returns:
             The battery test voltage in volts.
         """
@@ -1074,6 +1219,8 @@ class bk8500(instrument):
 
     def SetLoadOnTimer(self, time_in_s):
         """Sets the time in seconds that the load will be on.
+
+        Reads previously saved state or data back into memory.
 
         Args:
             time_in_s: Load on time in seconds.
@@ -1087,6 +1234,8 @@ class bk8500(instrument):
     def GetLoadOnTimer(self):
         """Gets the time in seconds that the load will be on.
 
+        Reads previously saved state or data back into memory.
+
         Returns:
             The load on timer value in seconds.
         """
@@ -1095,6 +1244,8 @@ class bk8500(instrument):
 
     def SetLoadOnTimerState(self, enabled=0):
         """Enables or disables the load on timer state.
+
+        Reads previously saved state or data back into memory.
 
         Args:
             enabled: 1 to enable, 0 to disable.
@@ -1107,6 +1258,8 @@ class bk8500(instrument):
 
     def GetLoadOnTimerState(self):
         """Gets the load on timer state.
+
+        Reads previously saved state or data back into memory.
 
         Returns:
             String "enabled" or "disabled".
@@ -1136,6 +1289,8 @@ class bk8500(instrument):
     def EnableLocalControl(self):
         """Enable local control (i.e., key presses work) of the load.
 
+        Reads previously saved state or data back into memory.
+
         Returns:
             The instrument response status string.
         """
@@ -1146,6 +1301,8 @@ class bk8500(instrument):
     def DisableLocalControl(self):
         """Disable local control of the load.
 
+        Reads previously saved state or data back into memory.
+
         Returns:
             The instrument response status string.
         """
@@ -1155,6 +1312,8 @@ class bk8500(instrument):
 
     def SetRemoteSense(self, enabled=0):
         """Enable or disable remote sensing.
+
+        Supports the ``bk8500`` workflow by performing the described operation.
 
         Args:
             enabled: 1 to enable, 0 to disable remote sensing.
@@ -1167,6 +1326,8 @@ class bk8500(instrument):
 
     def GetRemoteSense(self):
         """Get the state of remote sensing.
+
+        Supports the ``bk8500`` workflow by performing the described operation.
 
         Returns:
             Integer indicating remote sense state (1=enabled, 0=disabled).
@@ -1199,6 +1360,8 @@ class bk8500(instrument):
     def GetTriggerSource(self):
         """Get how the instrument will be triggered.
 
+        Initiates the action and notifies any registered observers.
+
         Returns:
             Trigger source string ("immediate", "external", or "bus").
         """
@@ -1227,6 +1390,8 @@ class bk8500(instrument):
     def SaveSettings(self, register=0):
         """Save instrument settings to a register.
 
+        Persists the current state or data to durable storage.
+
         Args:
             register: Register number to save to (1-25).
 
@@ -1239,6 +1404,8 @@ class bk8500(instrument):
 
     def RecallSettings(self, register=0):
         """Restore instrument settings from a register.
+
+        Persists the current state or data to durable storage.
 
         Args:
             register: Register number to recall from (1-25).
@@ -1276,6 +1443,8 @@ class bk8500(instrument):
     def GetFunction(self):
         """Get the function (type of operation) of the load.
 
+        Reads previously saved state or data back into memory.
+
         Returns:
             Function string ("fixed", "short", "transient", or "battery").
         """
@@ -1310,6 +1479,8 @@ class bk8500(instrument):
     def GetProductInformation(self):
         """Returns model number, serial number, and firmware version.
 
+        Issues a SCPI query to the instrument and parses the response.
+
         Returns:
             String with model and serial number information.
         """
@@ -1328,6 +1499,8 @@ class bk8500(instrument):
     def GetDemandState(self):
         """Returns demand_state byte. Add DJS 2017/11/13 for Bat Discharge.
 
+        Supports the ``bk8500`` workflow by performing the described operation.
+
         Returns:
             The demand state integer value.
         """
@@ -1342,9 +1515,11 @@ class bk8500(instrument):
         return demand_state
 
     def identify(self):
-        """Return identify result.
+        """Return the identify.
+
+        Supports the ``bk8500`` workflow by performing the described operation.
 
         Returns:
-            Result value.
+            The identify result.
         """
         return self.GetProductInformation()

@@ -1,4 +1,8 @@
-"""Tests for data."""
+"""Tests for data.
+
+>>> import PyICe.data_utils.memory_dump_analysis.parse_test.test_data
+
+"""
 import objutils
 
 sections = []

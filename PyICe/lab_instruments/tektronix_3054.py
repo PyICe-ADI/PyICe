@@ -1,4 +1,8 @@
-"""Tektronix 3054 instrument driver."""
+"""Tektronix 3054 instrument driver.
+
+>>> from PyICe.lab_instruments.tektronix_3054 import tektronix_3054
+
+"""
 from ..lab_core import *  # noqa: F403
 import time
 
@@ -8,9 +12,13 @@ class tektronix_3054(scpi_instrument, delegator):
 
     def __init__(self, interface_visa, force_trigger=True):
         """Interface_visa".
+        Stores configuration in ``_base_name``, ``force_trigger`` for use by
+        other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 2 instance attributes that configure the object's behavior.
 
         Args:
-            force_trigger: Force trigger.
+            force_trigger: If True, force an immediate trigger.
             interface_visa: VISA interface instance.
         """
         self._base_name = 'tektronix_3054'
@@ -26,12 +34,20 @@ class tektronix_3054(scpi_instrument, delegator):
 
     def add_channel_time(self, channel_name):
         """Add a channel time.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         time_channel = channel(
             channel_name,
@@ -41,13 +57,21 @@ class tektronix_3054(scpi_instrument, delegator):
 
     def add_channel(self, channel_name, scope_channel_number):
         """Add named channel to instrument.  num is 1-4.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
-            scope_channel_number: Scope channel number.
+            scope_channel_number: Oscilloscope channel number (1-based).
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         assert isinstance(scope_channel_number, int)
         scope_channel = channel(
@@ -59,15 +83,23 @@ class tektronix_3054(scpi_instrument, delegator):
     def add_channel_dvm(self, channel_name,
                         scope_channel_number, measurement_time=2, mode='DC'):
         """Add a channel dvm.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
-            measurement_time: Measurement time.
+            measurement_time: Measurement time to use.
             mode: Operating mode.
-            scope_channel_number: Scope channel number.
+            scope_channel_number: Oscilloscope channel number (1-based).
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         assert isinstance(scope_channel_number, int)
         mode = mode.upper()
@@ -98,7 +130,7 @@ class tektronix_3054(scpi_instrument, delegator):
         time = [(data point number - xreference) * xincrement] + xorigin
 
         Returns:
-            Result value.
+            The measured value.
         """
         self.get_interface().write(('WFMPRE?'))
         preamble = self.get_interface().read().split(';')
@@ -128,10 +160,10 @@ class tektronix_3054(scpi_instrument, delegator):
             data from a single trigger may be retrieved from each of the four channels in turn by read_channels()
 
         Args:
-            scope_channel_number: Scope channel number.
+            scope_channel_number: Oscilloscope channel number (1-based).
 
         Returns:
-            Result value.
+            The measured value.
         """
         # trigger / single arm sequence commands need investigation.  Forcing trigger here is not correct
         # if trigger:
@@ -184,14 +216,17 @@ class tektronix_3054(scpi_instrument, delegator):
 
     def _read_dvm_channel(self, scope_channel_number, measurement_time, mode):
         """Return DVM voltage for selected channel.
+        Internal helper that sends the ``DVM:SOUrce`` SCPI command.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
-            measurement_time: Measurement time.
+            measurement_time: Measurement time to use.
             mode: Operating mode.
-            scope_channel_number: Scope channel number.
+            scope_channel_number: Oscilloscope channel number (1-based).
 
         Returns:
-            Result value.
+            The measured value.
         """
         self.get_interface().write((f'DVM:SOUrce CH{scope_channel_number}'))
         self.get_interface().write((f'DVM:MODE {mode}'))
@@ -203,11 +238,13 @@ class tektronix_3054(scpi_instrument, delegator):
     def read_delegated_channel_list(self, channels):
         """Return read delegated channel list result.
 
+        Reads data from the underlying source and returns it.
+
         Args:
             channels: List of channel objects.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
         """
         if self.force_trigger:
             self.trigger_force()

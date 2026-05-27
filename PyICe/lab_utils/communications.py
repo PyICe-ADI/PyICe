@@ -1,4 +1,8 @@
-"""Communications utility."""
+"""Communications utility.
+
+>>> from PyICe.lab_utils.communications import email
+
+"""
 import smtplib
 import re
 import os
@@ -9,27 +13,51 @@ from PyICe.lab_utils.clean_unicode import clean_unicode
 
 
 class email(object):
-    '''Sends email to specified destination via SMTP server.'''
+    '''Send email messages—including attachments—through an SMTP server.'''
     def __init__(self, destination, smtp_server, sender):
-        """Destination is the recipient's email address.
+        """Configure the email transport with recipient, server, and sender addresses.
+        Stores configuration in ``destination``, ``sender``, ``smtp_server``
+        for use by other methods.
+
+        Initializes 3 instance attributes that configure the object's behavior.
+
+
+        >>> e = email("user@example.com", "smtp.example.com", "lab@example.com")
+        >>> e.destination
+        'user@example.com'
+        >>> e.sender
+        'lab@example.com'
 
         Args:
-            destination: Destination.
-            smtp_server: outgoing mail server address string (e.g. 'smtp.example.com:25').
-            sender: From address string in outgoing message.
+            destination: Recipient's email address (e.g. ``'user@example.com'``).
+            smtp_server: Outgoing SMTP server address, optionally with port
+                (e.g. ``'smtp.example.com:25'``).
+            sender: ``From`` address shown in outgoing messages.
         """
         self.destination = destination
         self.smtp_server = smtp_server
         self.sender = sender
     def send_raw(self, body, subject=None, attachment_filenames=None,
                  attachment_MIMEParts=None, _subtype='html'):
-        """Compose MIME message with proper headers and send.
+        """Compose a MIME message from raw body text and send it via SMTP.
+
+        Handles both simple (text-only) and multipart messages. File
+        attachments are read from disk; pre-built ``MIMEBase`` objects can
+        also be attached directly.
+
+
+        >>> from PyICe.lab_utils.communications import email
+        >>> hasattr(email, 'send_raw')
+        True
 
         Args:
-            attachment_MIMEParts: Attachment mimeparts.
-            attachment_filenames: Attachment filenames.
-            body: Body.
-            subject: Subject.
+            body: Message body string (interpreted according to *_subtype*).
+            subject: Email subject line, or ``None`` to omit.
+            attachment_filenames: List of file paths to attach (read as
+                binary). Defaults to ``[]``.
+            attachment_MIMEParts: List of pre-encoded ``email.mime``
+                objects to attach verbatim. Defaults to ``[]``.
+            _subtype: MIME subtype for the body (``'html'`` or ``'plain'``).
         """
         if attachment_filenames is None:
             attachment_filenames = []
@@ -65,13 +93,21 @@ class email(object):
 
     def send(self, body, subject=None, attachment_filenames=None,
              attachment_MIMEParts=None):
-        """Perform send operation.
+        """Send an email using monospaced HTML formatting.
+
+        Convenience method that delegates to ``send_html_monospace``.
+
+
+        >>> from PyICe.lab_utils.communications import email
+        >>> hasattr(email, 'send')
+        True
 
         Args:
-            attachment_MIMEParts: Attachment mimeparts.
-            attachment_filenames: Attachment filenames.
-            body: Body.
-            subject: Subject.
+            body: Plain-text message body (will be rendered in monospace HTML).
+            subject: Email subject line, or ``None`` to omit.
+            attachment_filenames: List of file paths to attach.
+            attachment_MIMEParts: List of pre-encoded ``email.mime`` objects
+                to attach.
         """
         self.send_html_monospace(
             body=body,
@@ -81,13 +117,25 @@ class email(object):
 
     def send_html_monospace(self, body, subject=None,
                             attachment_filenames=None, attachment_MIMEParts=None):
-        """Perform send html monospace operation.
+        """Wrap a plain-text body in monospace HTML and send it as an email.
+
+        Converts plain text to an HTML document styled with Courier New,
+        replacing spaces with ``&nbsp;`` (outside of HTML tags) and
+        preserving line breaks. Useful for sending lab reports or log output
+        that must keep column alignment in the recipient's mail client.
+
+
+        >>> from PyICe.lab_utils.communications import email
+        >>> hasattr(email, 'send_html_monospace')
+        True
 
         Args:
-            attachment_MIMEParts: Attachment mimeparts.
-            attachment_filenames: Attachment filenames.
-            body: Body.
-            subject: Subject.
+            body: Plain-text message body to be wrapped in monospace HTML.
+            subject: Email subject line, or ``None`` to omit.
+            attachment_filenames: List of file paths to attach. Defaults to
+                ``[]``.
+            attachment_MIMEParts: List of pre-encoded ``email.mime`` objects
+                to attach. Defaults to ``[]``.
         """
         if attachment_filenames is None:
             attachment_filenames = []
@@ -133,18 +181,41 @@ class email(object):
 
 
 class sms(email):
-    '''Extends email class to send sms messages through several carriers' email to sms gateways'''
+    '''Send SMS messages via carrier email-to-SMS gateways.
+
+    >>> from PyICe.lab_utils.communications import sms
+    >>> sms is not None
+    True
+
+    '''
     def __init__(self, mobile_number, carrier, smtp_server, sender):
-        """Carrier is 'verizon', 'tmobile', 'att', 'sprint', or 'nextel'.
+        """Build the carrier-specific email address for SMS delivery.
+
+        Strips non-digit characters and any leading country code from
+        *mobile_number*, then appends the appropriate carrier gateway domain.
+
+
+        >>> s = sms("(555) 123-4567", "verizon", "smtp.example.com", "lab@example.com")
+        >>> s.destination
+        '5551234567@vtext.com'
+        >>> s2 = sms("1-800-555-0199", "tmobile", "smtp.example.com", "lab@example.com")
+        >>> s2.destination
+        '8005550199@tmomail.net'
 
         Args:
-            mobile_number: Mobile number.
-            carrier: Carrier.
-             smtp_server: outgoing mail server address string (e.g. 'smtp.example.com:25').
-            sender: From address string in outgoing message.
-            
+            mobile_number: 10-digit US phone number with area code.
+                Dashes, dots, spaces, and a leading ``1`` are stripped
+                automatically.
+            carrier: Carrier name—one of ``'verizon'``, ``'tmobile'``
+                (or ``'t-mobile'``), ``'att'`` (or ``'at&t'``),
+                ``'sprint'``, or ``'nextel'`` (case-insensitive).
+            smtp_server: Outgoing SMTP server address, optionally with port
+                (e.g. ``'smtp.example.com:25'``).
+            sender: ``From`` address shown in the outgoing message.
+
         Raises:
-            Exception: On error condition.
+            Exception: If *mobile_number* does not resolve to exactly
+                10 digits, or *carrier* is not recognised.
         """
         sms_email = ''
         for digit in str(mobile_number):
@@ -172,12 +243,20 @@ class sms(email):
                 'carrier argument must be "verizon", "t-mobile", "att", "sprint", or "nextel" unless you add your carrier to the list')
         email.__init__(self, sms_email, smtp_server, sender)
     def send(self, body, subject = None, attachments = []):
-        """Perform send operation.
+        """Send an SMS by emailing the carrier's gateway, cleaning Unicode first.
+
+        Non-ASCII characters in *body* and *subject* are transliterated to
+        their closest ASCII equivalents so they survive the SMS gateway.
+
+
+        >>> from PyICe.lab_utils.communications import sms
+        >>> hasattr(sms, 'send')
+        True
 
         Args:
-            attachments: Attachments.
-            body: Body.
-            subject: Subject.
+            body: Text message body (Unicode-safe).
+            subject: Message subject, or ``None`` to omit.
+            attachments: List of file paths to attach.
         """
         email.send(
             self,

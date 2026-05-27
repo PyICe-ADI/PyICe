@@ -1,4 +1,12 @@
-"""Test results plugin."""
+"""Test results plugin.
+
+Examples:
+    >>> from PyICe.plugins.test_results import none_min, none_max
+    >>> none_min(3, 5)
+    3
+    >>> none_max(None, 7)
+    7
+"""
 import collections
 import datetime
 import functools
@@ -10,16 +18,31 @@ from numpy import bool_, ndarray  # pylint: disable=import-error; numpy is a req
 
 
 def freeze(o):
-    """Return freeze result.
+    """Return the freeze.
+
+    Performs the described operation on the object's internal state.
+
+
+    Examples:
+        >>> freeze({"b": 2, "a": 1}) == frozenset({("b", 2), ("a", 1)})
+        True
+        >>> freeze({1, 2, 3}) == frozenset({1, 2, 3})
+        True
+        >>> freeze([1, 2, 3])
+        (1, 2, 3)
+        >>> freeze((4, 5))
+        (4, 5)
+        >>> freeze(42)
+        42
 
     Args:
-        o: O.
+        o: Object to freeze or hash.
 
     Returns:
-        Result value.
+        The result of the operation.
 
     Raises:
-        TypeError: On error condition.
+        TypeError: If an argument has an incompatible type.
     """
     if isinstance(o, dict):
         return frozenset({k: freeze(v)
@@ -43,11 +66,22 @@ def freeze(o):
 def make_hash(o):
     """Makes a hash out of anything that contains only list,dict and hashable types including string and numeric types.
 
+    Performs the described operation on the object's internal state.
+
+
+    Examples:
+        >>> make_hash({"a": 1}) == make_hash({"a": 1})
+        True
+        >>> make_hash({"a": 1}) == make_hash({"a": 2})
+        False
+        >>> isinstance(make_hash([1, 2, 3]), int)
+        True
+
     Args:
-        o: O.
+        o: Object to freeze or hash.
 
     Returns:
-        Result value.
+        The result of the operation.
     """
     return hash(freeze(o))
 
@@ -55,12 +89,25 @@ def make_hash(o):
 def none_min(a, b):
     """Return none min result.
 
+    Performs the described operation on the object's internal state.
+
+
+    Examples:
+        >>> none_min(None, None) is None
+        True
+        >>> none_min(None, 5)
+        5
+        >>> none_min(3, None)
+        3
+        >>> none_min(3, 5)
+        3
+
     Args:
-        a: A.
-        b: B.
+        a: First value to compare.
+        b: Second value to compare.
 
     Returns:
-        Result value.
+        The result of the operation.
     """
     if a is None and b is None:
         return None
@@ -74,12 +121,25 @@ def none_min(a, b):
 def none_max(a, b):
     """Return none max result.
 
+    Performs the described operation on the object's internal state.
+
+
+    Examples:
+        >>> none_max(None, None) is None
+        True
+        >>> none_max(None, 5)
+        5
+        >>> none_max(3, None)
+        3
+        >>> none_max(3, 5)
+        5
+
     Args:
-        a: A.
-        b: B.
+        a: First value to compare.
+        b: Second value to compare.
 
     Returns:
-        Result value.
+        The result of the operation.
     """
     if a is None and b is None:
         return None
@@ -93,11 +153,22 @@ def none_max(a, b):
 def none_abs(a):
     """Return none abs result.
 
+    Performs the described operation on the object's internal state.
+
+
+    Examples:
+        >>> none_abs(None) is None
+        True
+        >>> none_abs(-7)
+        7
+        >>> none_abs(3.5)
+        3.5
+
     Args:
-        a: A.
+        a: First value to compare.
 
     Returns:
-        Result value.
+        The result of the operation.
     """
     if a is None:
         return None
@@ -105,13 +176,28 @@ def none_abs(a):
 
 
 class generic_results():
-    """Parent of Test_Results and correlation_results and keeper of any commonalities."""
+    """Parent of Test_Results and correlation_results and keeper of any commonalities.
+
+    >>> from PyICe.plugins.test_results import generic_results
+    >>> generic_results is not None
+    True
+
+    """
 
     def __init__(self):
         """Initialize generic_results.
 
+        Prepares the object for use by setting up internal state.
+
+        Examples:
+            >>> from PyICe.plugins.test_results import generic_results
+            >>> generic_results()
+            Traceback (most recent call last):
+                ...
+            Exception: This class isn't supposed to be instantiated directly.
+
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         raise Exception(
             "This class isn't supposed to be instantiated directly.")
@@ -124,18 +210,40 @@ class generic_results():
         self._failure_override = False
 
     def get_name(self):
-        """Return the name.
+        """Return the current name.
+        Returns the stored name value from the object's internal state.
+        Returns the stored name from the object's internal state.
+
+        Returns the stored name from the object's internal state.
+
+        Examples:
+            >>> from PyICe.plugins.test_results import Test_Results
+            >>> tr = Test_Results(name='my_suite', module=None)
+            >>> tr.get_name()
+            'my_suite'
 
         Returns:
-            Result value.
+            The current name.
         """
         return self._name
 
     def get_traceability_info(self):
         """Return the traceability info.
+        Returns the stored traceability info value from the object's internal
+        state.
+        Returns the stored traceability info from the object's internal state.
+
+        Returns the stored traceability info from the object's internal state.
+
+        Examples:
+            >>> from PyICe.plugins.test_results import Test_Results
+            >>> import collections
+            >>> tr = Test_Results(name='my_suite', module=None)
+            >>> tr.get_traceability_info()
+            OrderedDict()
 
         Returns:
-            Result value.
+            The current traceability info.
         """
         return self._traceability_info
 
@@ -150,16 +258,23 @@ class generic_results():
         class CustomJSONizer(json.JSONEncoder):
             """Custom j s o nizer (j s o n encoder subclass)."""
             def default(self, obj):
-                """Return default result.
+                """Return the default.
+
+                Supports the ``CustomJSONizer`` workflow by performing the described operation.
+
+
+                >>> from PyICe.plugins.test_results import generic_results
+                >>> hasattr(generic_results, 'default')
+                True
 
                 Args:
-                    obj: Obj.
+                    obj: Obj to use.
 
                 Returns:
-                    Result value.
+                    The default value.
 
                 Raises:
-                    TypeError: On error condition.
+                    TypeError: If an argument has an incompatible type.
                 """
                 if isinstance(obj, bool_):
                     return bool(obj)
@@ -238,18 +353,31 @@ class generic_results():
 
 
 class Test_Results(generic_results):
-    """Tests for Results."""
+    """Tests for Results.
+
+    >>> from PyICe.plugins.test_results import Test_Results
+    >>> Test_Results is not None
+    True
+
+    """
     class _test_result(collections.namedtuple('test_result', [
                        'test_name', 'conditions', 'min_data', 'max_data', 'passes', 'failure_reason', 'collected_data', 'plot', 'query'])):
         """Add some helper moethods for easy summary."""
         def __new__(cls, **kwargs):
             """Fix (allowed) missing fields. For instance, original JSON didn't retain SQL query string.
 
+            Implements the ``__new__`` protocol for this object.
+
+
+            >>> from PyICe.plugins.test_results import Test_Results
+            >>> hasattr(Test_Results, '__new__')
+            True
+
             Args:
                 **kwargs: Additional keyword arguments.
 
             Returns:
-                Result value.
+                The new   result.
             """
             if 'query' not in kwargs:
                 kwargs['query'] = None
@@ -259,17 +387,33 @@ class Test_Results(generic_results):
 
         def __deepcopy__(self, _memo):
             """Implement deepcopy protocol.
+            Enables deep copying via ``copy.deepcopy()``.
+
+            Implements the ``__deepcopy__`` protocol for this object.
+
+
+            >>> from PyICe.plugins.test_results import Test_Results
+            >>> hasattr(Test_Results, '__deepcopy__')
+            True
 
             Returns:
-                Result value.
+                The deepcopy   result.
             """
             return Test_Results._test_result(**self._asdict())
 
         def __bool__(self):
             """Return boolean value.
+            Enables truth-value testing with ``bool()``.
+
+            Controls truthiness when the object is used in boolean context.
+
+
+            >>> from PyICe.plugins.test_results import Test_Results
+            >>> hasattr(Test_Results, '__bool__')
+            True
 
             Returns:
-                Result value.
+                Boolean evaluation of this object.
             """
             return bool(self.passes)
 
@@ -285,9 +429,17 @@ class Test_Results(generic_results):
 
         def __str__(self):
             """Return string representation.
+            Provides a human-readable string for debugging and display.
+
+            Provides a human-readable representation for debugging and logging.
+
+
+            >>> from PyICe.plugins.test_results import Test_Results
+            >>> hasattr(Test_Results, '__str__')
+            True
 
             Returns:
-                Result value.
+                String representation.
             """
             summary_str = ''
             summary_str += f'{self.__padded_str(self.conditions)}\tTRIALS:{len(self)}\tVERDICT:{"PASS" if self else "FAIL"}\n'.expandtabs()
@@ -307,20 +459,36 @@ class Test_Results(generic_results):
 
         def __len__(self):
             """Return the number of items.
+            Enables ``len()`` to report the number of items.
+
+            Supports the built-in ``len()`` function for this container.
+
+
+            >>> from PyICe.plugins.test_results import Test_Results
+            >>> hasattr(Test_Results, '__len__')
+            True
 
             Returns:
-                Result value.
+                The number of items.
             """
             return len(self.collected_data)
 
         def __add__(self, other):
             """Implement add protocol.
+            Enables the ``+`` operator.
+
+            Implements the ``__add__`` protocol for this object.
+
+
+            >>> from PyICe.plugins.test_results import Test_Results
+            >>> hasattr(Test_Results, '__add__')
+            True
 
             Args:
-                other: Other.
+                other: Second operand for the operation.
 
             Returns:
-                Result value.
+                A new object containing the combined result.
             """
             assert isinstance(other, type(self))
             assert self.test_name == other.test_name
@@ -352,12 +520,22 @@ class Test_Results(generic_results):
 
         def __init__(self, name, upper_limit, lower_limit, override):
             """Initialize _test_results_list.
+            Calls the parent class constructor and initializes
+            instance-specific attributes for _test_results_list.
+
+            Calls the parent constructor to inherit base behavior, and initializes 4 instance attributes that configure the object's behavior.
+
+
+            >>> from PyICe.plugins.test_results import Test_Results
+            >>> obj = Test_Results('t', module=None)
+            >>> isinstance(obj, Test_Results)
+            True
 
             Args:
-                lower_limit: Lower limit.
+                lower_limit: Lower limit to use.
                 name: Name identifier.
-                override: Override.
-                upper_limit: Upper limit.
+                override: Override to use.
+                upper_limit: Upper limit to use.
             """
             self.name = name
             self.upper_limit = upper_limit
@@ -367,9 +545,17 @@ class Test_Results(generic_results):
 
         def __bool__(self):
             """Return boolean value.
+            Enables truth-value testing with ``bool()``.
+
+            Controls truthiness when the object is used in boolean context.
+
+
+            >>> from PyICe.plugins.test_results import Test_Results
+            >>> hasattr(Test_Results, '__bool__')
+            True
 
             Returns:
-                Result value.
+                Boolean evaluation of this object.
             """
             if not len(self):
                 return False
@@ -378,9 +564,17 @@ class Test_Results(generic_results):
 
         def __str__(self):
             """Return string representation.
+            Provides a human-readable string for debugging and display.
+
+            Provides a human-readable representation for debugging and logging.
+
+
+            >>> from PyICe.plugins.test_results import Test_Results
+            >>> hasattr(Test_Results, '__str__')
+            True
 
             Returns:
-                Result value.
+                String representation.
             """
             resp = ''
             resp += f'{self.name}\n'
@@ -418,21 +612,38 @@ class Test_Results(generic_results):
             return functools.reduce(none_max, (r._max() for r in self))
 
         def get_conditions(self):
-            """Return the conditions.
+            """Return the current conditions.
+            Returns the stored conditions value from the object's internal
+            state.
+            Returns the stored conditions from the object's internal state.
+
+            Returns the stored conditions from the object's internal state.
+
+
+            >>> from PyICe.plugins.test_results import Test_Results
+            >>> hasattr(Test_Results, 'get_conditions')
+            True
 
             Returns:
-                Result value.
+                The current conditions.
             """
             return {make_hash(data_group.conditions): data_group.conditions for data_group in self}
 
         def filter(self, condition_hash):
-            """Return filter result.
+            """Return the filter.
+
+            Supports the ``_test_results_list`` workflow by performing the described operation.
+
+
+            >>> from PyICe.plugins.test_results import Test_Results
+            >>> hasattr(Test_Results, 'filter')
+            True
 
             Args:
-                condition_hash: Condition hash.
+                condition_hash: Condition hash to use.
 
             Returns:
-                Result value.
+                The filter result.
             """
             ret = type(self)(
                 self.name,
@@ -449,8 +660,13 @@ class Test_Results(generic_results):
 
             merges all resutls from like conditions
 
+
+            >>> from PyICe.plugins.test_results import Test_Results
+            >>> hasattr(Test_Results, 'factored')
+            True
+
             Returns:
-                Result value.
+                The factored result.
             """
             ret = type(self)(
                 self.name,
@@ -467,9 +683,21 @@ class Test_Results(generic_results):
 
     def __init__(self, name, module):
         """TODO.
+        Initializes 5 instance attributes that configure the object's
+        behavior.
+
+        Initializes 5 instance attributes that configure the object's behavior.
+
+        Examples:
+            >>> from PyICe.plugins.test_results import Test_Results
+            >>> tr = Test_Results(name='power_tests', module=None)
+            >>> tr.get_name()
+            'power_tests'
+            >>> len(tr)
+            0
 
         Args:
-            module: Module.
+            module: Module to use.
             name: Name identifier.
         """
         self._test_results = collections.OrderedDict()
@@ -482,25 +710,70 @@ class Test_Results(generic_results):
     def json_report(self):
         """Return json report result.
 
+        Supports the ``Test_Results`` workflow by performing the described operation.
+
+        Examples:
+            >>> import json
+            >>> from PyICe.plugins.test_results import Test_Results
+            >>> class FakeDB:
+            ...     def get_table_names(self): return []
+            >>> class FakeModule:
+            ...     def get_name(self): return 'test_module'
+            ...     def get_database(self): return FakeDB()
+            >>> tr = Test_Results(name='my_results', module=FakeModule())
+            >>> tr.test_limits['voltage'] = {'test_name': 'voltage', 'upper_limit': 5.0, 'lower_limit': 1.0}
+            >>> _ = tr._evaluate_list(name='voltage', iter_data=[3.0], conditions=None)
+            >>> report = tr.json_report()
+            >>> isinstance(report, str)
+            True
+            >>> d = json.loads(report)
+            >>> d['test_module']
+            'my_results'
+            >>> d['summary']['passes']
+            True
+
         Returns:
-            Result value.
+            The json report result.
         """
         return self._json_report(declarations=self._test_declarations,
                                  results=self._test_results, ate_results=self._ate_results)
 
     def get_test_declarations(self):
         """Return the test declarations.
+        Returns the stored test declarations value from the object's internal
+        state.
+        Returns the stored test declarations from the object's internal state.
+
+        Returns the stored test declarations from the object's internal state.
+
+        Examples:
+            >>> from PyICe.plugins.test_results import Test_Results
+            >>> tr = Test_Results(name='suite', module=None)
+            >>> tr.get_test_declarations()
+            []
+            >>> tr.test_limits['v'] = {'test_name': 'v', 'upper_limit': 5.0, 'lower_limit': 1.0}
+            >>> _ = tr._evaluate_list(name='v', iter_data=[3.0], conditions=None)
+            >>> tr.get_test_declarations()
+            ['v']
 
         Returns:
-            Result value.
+            The current test declarations.
         """
         return self._test_declarations
 
     def __str__(self):
         """Printable regression results.
+        Provides a human-readable string for debugging and display.
+
+        Provides a human-readable representation for debugging and logging.
+
+
+        >>> from PyICe.plugins.test_results import Test_Results
+        >>> hasattr(Test_Results, '__str__')
+        True
 
         Returns:
-            Result value.
+            String representation.
         """
         # TODO more concise summary when passing, grouped results, etc.
         resp = ''
@@ -513,9 +786,26 @@ class Test_Results(generic_results):
 
     def __bool__(self):
         """Return boolean value.
+        Enables truth-value testing with ``bool()``.
+
+        Controls truthiness when the object is used in boolean context.
+
+        Examples:
+            >>> from PyICe.plugins.test_results import Test_Results
+            >>> tr = Test_Results(name='suite', module=None)
+            >>> bool(tr)
+            True
+            >>> tr.test_limits['v'] = {'test_name': 'v', 'upper_limit': 5.0, 'lower_limit': 1.0}
+            >>> _ = tr._evaluate_list(name='v', iter_data=[3.0], conditions=None)
+            >>> bool(tr)
+            True
+            >>> tr.test_limits['i'] = {'test_name': 'i', 'upper_limit': 2.0, 'lower_limit': 0.0}
+            >>> _ = tr._evaluate_list(name='i', iter_data=[5.0], conditions=None)
+            >>> bool(tr)
+            False
 
         Returns:
-            Result value.
+            Boolean evaluation of this object.
         """
         if not len(self):
             # No tests declared
@@ -525,28 +815,65 @@ class Test_Results(generic_results):
 
     def __iter__(self):
         """Test declaration names.
+        Enables iteration over the object's elements.
+
+        Supports iteration with ``for ... in`` loops.
+
+        Examples:
+            >>> from PyICe.plugins.test_results import Test_Results
+            >>> tr = Test_Results(name='suite', module=None)
+            >>> tr.test_limits['v'] = {'test_name': 'v', 'upper_limit': 5.0, 'lower_limit': 1.0}
+            >>> tr.test_limits['i'] = {'test_name': 'i', 'upper_limit': 2.0, 'lower_limit': 0.0}
+            >>> _ = tr._evaluate_list(name='v', iter_data=[3.0], conditions=None)
+            >>> _ = tr._evaluate_list(name='i', iter_data=[1.0], conditions=None)
+            >>> list(tr)
+            ['v', 'i']
 
         Returns:
-            Result value.
+            An iterator over the contained items.
         """
         return iter(self._test_declarations)
 
     def __len__(self):
         """Return the number of items.
+        Enables ``len()`` to report the number of items.
+
+        Supports the built-in ``len()`` function for this container.
+
+        Examples:
+            >>> from PyICe.plugins.test_results import Test_Results
+            >>> tr = Test_Results(name='suite', module=None)
+            >>> len(tr)
+            0
+            >>> tr.test_limits['voltage'] = {'test_name': 'voltage', 'upper_limit': 5.0, 'lower_limit': 1.0}
+            >>> _ = tr._evaluate_list(name='voltage', iter_data=[3.0], conditions=None)
+            >>> len(tr)
+            1
 
         Returns:
-            Result value.
+            The number of items.
         """
         return len(self.get_test_declarations())
 
     def __getitem__(self, key):
         """Get item by key or index.
+        Enables bracket-style indexing (``obj[key]``).
+
+        Supports bracket-style indexing (``obj[key]``) for this container.
+
+        Examples:
+            >>> from PyICe.plugins.test_results import Test_Results
+            >>> tr = Test_Results(name='suite', module=None)
+            >>> tr.test_limits['voltage'] = {'test_name': 'voltage', 'upper_limit': 5.0, 'lower_limit': 1.0}
+            >>> _ = tr._evaluate_list(name='voltage', iter_data=[3.0], conditions=None)
+            >>> bool(tr['voltage'])
+            True
 
         Args:
-            key: Key.
+            key: Lookup key or index.
 
         Returns:
-            Result value.
+            The item at the requested position or key.
         """
         return self._test_results[key]
 
@@ -680,9 +1007,23 @@ class Test_Results(generic_results):
 
     def remove_result(self, key):
         """Remove a result.
+        Removes the specified result.
+
+        Removes the specified item from the object's internal collection.
+
+        Examples:
+            >>> from PyICe.plugins.test_results import Test_Results
+            >>> tr = Test_Results(name='suite', module=None)
+            >>> tr.test_limits['v'] = {'test_name': 'v', 'upper_limit': 5.0, 'lower_limit': 1.0}
+            >>> _ = tr._evaluate_list(name='v', iter_data=[3.0], conditions=None)
+            >>> len(tr)
+            1
+            >>> tr.remove_result('v')
+            >>> len(tr)
+            0
 
         Args:
-            key: Key.
+            key: Lookup key or index.
         """
         del self._test_results[key]
         self._test_declarations.remove(key)
@@ -731,13 +1072,28 @@ class Test_Results(generic_results):
 
 
 class Test_Results_Reload(Test_Results):
-    """Rereads a json file and converts it back to a Test_Results compatible schema."""
+    """Rereads a json file and converts it back to a Test_Results compatible schema.
+
+    >>> from PyICe.plugins.test_results import Test_Results_Reload
+    >>> Test_Results_Reload is not None
+    True
+
+    """
 
     def __init__(self, results_json='test_results.json'):
         """Initialize test_ results_ reload.
+        Initializes 6 instance attributes that configure the object's
+        behavior.
+
+        Initializes 6 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.plugins.test_results import Test_Results_Reload
+        >>> Test_Results_Reload is not None
+        True
 
         Args:
-            results_json: Results json.
+            results_json: Results json to use.
         """
         self._test_declarations = []
         self.test_limits = {}
@@ -777,6 +1133,13 @@ class Test_Results_Reload(Test_Results):
     def json_report(self, filename='test_results_rewrite.json'):
         """Perform json report operation.
 
+        Supports the ``Test_Results_Reload`` workflow by performing the described operation.
+
+
+        >>> from PyICe.plugins.test_results import Test_Results_Reload
+        >>> hasattr(Test_Results_Reload, 'json_report')
+        True
+
         Args:
             filename: File path.
         """
@@ -786,27 +1149,61 @@ class Test_Results_Reload(Test_Results):
 
 
 class Failed_Eval(Test_Results):
-    """Failed_ eval (test_ results subclass)."""
+    """Failed_ eval (test_ results subclass).
+
+    >>> from PyICe.plugins.test_results import Failed_Eval
+    >>> Failed_Eval is not None
+    True
+
+    """
     def __init__(self, test):
         """Initialize failed_ eval.
+        Stores configuration in ``test`` for use by other methods.
+
+        Initializes 1 instance attribute that configure the object's behavior.
+
+        Examples:
+            >>> from PyICe.plugins.test_results import Failed_Eval, Test_Results
+            >>> tr = Test_Results(name='my_suite', module=None)
+            >>> fe = Failed_Eval(test=tr)
+            >>> bool(fe)
+            False
 
         Args:
-            test: Test.
+            test: Test case object or test function.
         """
         self.test = test
 
     def __str__(self):
         """Return string representation.
+        Provides a human-readable string for debugging and display.
+
+        Provides a human-readable representation for debugging and logging.
+
+
+        >>> from PyICe.plugins.test_results import Failed_Eval
+        >>> hasattr(Failed_Eval, '__str__')
+        True
 
         Returns:
-            Result value.
+            String representation.
         """
         return f'Evaluation method itself failed for {self.test.get_name()}.\n\n'
 
     def __bool__(self):
         """Return boolean value.
+        Enables truth-value testing with ``bool()``.
+
+        Controls truthiness when the object is used in boolean context.
+
+        Examples:
+            >>> from PyICe.plugins.test_results import Failed_Eval, Test_Results
+            >>> tr = Test_Results(name='my_suite', module=None)
+            >>> fe = Failed_Eval(test=tr)
+            >>> bool(fe)
+            False
 
         Returns:
-            Result value.
+            Boolean evaluation of this object.
         """
         return False

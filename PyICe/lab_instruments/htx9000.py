@@ -1,4 +1,8 @@
-"""Htx9000 instrument driver."""
+"""Htx9000 instrument driver.
+
+>>> from PyICe.lab_instruments.htx9000 import htx9000
+
+"""
 from ..lab_core import *  # noqa: F403
 
 
@@ -9,6 +13,10 @@ class htx9000(scpi_instrument):
     """
     def __init__(self, interface_visa):
         """Initialize htx9000.
+        Stores configuration in ``_base_name``, ``_forced_range`` for use by
+        other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 2 instance attributes that configure the object's behavior.
 
         Args:
             interface_visa: VISA interface instance.
@@ -21,7 +29,10 @@ class htx9000(scpi_instrument):
         self._forced_range = None
 
     def __del__(self):
-        """Close interface (serial) port on exit."""
+        """Close interface (serial) port on exit.
+
+        Performs cleanup when the object is garbage-collected.
+        """
         self.get_interface().close()
 
     def add_channel(self, channel_name, add_extended_channels=True):
@@ -34,7 +45,7 @@ class htx9000(scpi_instrument):
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         if add_extended_channels:
             self.add_channel_current_readback(channel_name + "_readback")
@@ -46,12 +57,20 @@ class htx9000(scpi_instrument):
 
     def add_channel_current(self, channel_name):
         """Add a channel current.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, write_function=self._write_current)
         # new_channel.set_min_write_warning(0.0) # set_min_write_limit too draconian. Crashes scripts that could have otherwise cleaned up. Caveat Emptor.
@@ -73,12 +92,20 @@ class htx9000(scpi_instrument):
 
     def add_channel_current_readback(self, channel_name):
         """Add a channel current readback.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name,
                               read_function=self._readback_current)
@@ -86,12 +113,20 @@ class htx9000(scpi_instrument):
 
     def add_channel_dropout(self, channel_name):
         """Add a channel dropout.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = integer_channel(
             name=channel_name,
@@ -101,12 +136,20 @@ class htx9000(scpi_instrument):
 
     def add_channel_temp_heatsink(self, channel_name):
         """Add a channel temp heatsink.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name,
                               read_function=self._read_heatsink_temp)
@@ -114,12 +157,20 @@ class htx9000(scpi_instrument):
 
     def add_channel_temp_board(self, channel_name):
         """Add a channel temp board.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -128,12 +179,20 @@ class htx9000(scpi_instrument):
 
     def add_channel_swipepad_lock(self, channel_name):
         """Add a channel swipepad lock.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = integer_channel(
             name=channel_name,
@@ -144,12 +203,20 @@ class htx9000(scpi_instrument):
 
     def add_channel_manual_range(self, channel_name):
         """Add a channel manual range.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name, write_function=lambda rng: setattr(
@@ -161,12 +228,19 @@ class htx9000(scpi_instrument):
 
     def add_channel_range_readback(self, channel_name):
         """Add a channel range readback.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:SOURce:CURRent:RANGe`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -178,13 +252,17 @@ class htx9000(scpi_instrument):
 
     def _write_current(self, value, range=None):
         """Write channel to value.
+        Internal helper that sends the ``SOURce:CURRent:RANGe:LOw`` SCPI
+        command.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
             range: Measurement or output range.
             value: Value to set.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         # TODO: instrument currently broken - sets range to low if under-range
         # on input Steve to fix.
@@ -220,9 +298,12 @@ class htx9000(scpi_instrument):
 
     def _read_dropout(self):
         """Return False if in regulation, True if in dropout.
+        Internal helper that sends the ```` SCPI command.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Returns:
-            Result value.
+            The measured value.
         """
         while True:
             data = self.get_interface().ask("DROPout?")
@@ -246,7 +327,7 @@ class htx9000(scpi_instrument):
         was previously written.
 
         Returns:
-            Result value.
+            The measured value.
         """
         while True:
             data = self.get_interface().ask("SOURce:CURRent?")
@@ -268,6 +349,9 @@ class htx9000(scpi_instrument):
 
     def _write_swipepad_lock(self, value):
         """Turn on or off the swipe pad lock so incidental contact doesn't change the value.
+        Internal helper that sends the ``SYSTem:LOCK`` SCPI command.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
             value: Value to set.
@@ -286,9 +370,15 @@ class htx9000(scpi_instrument):
 
     def get_serial_number(self):
         """Return the serial number.
+        Queries the instrument for its current serial number and returns the
+        parsed response.
+        Queries the instrument for its current serial number and returns the
+        parsed response.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Returns:
-            Result value.
+            The current serial number.
         """
         ident = self.get_interface().ask("*IDN?")
         return ident.split(",")[2].strip()
@@ -301,6 +391,10 @@ class htx9000SE_5A(htx9000):
     """
     def __init__(self, interface_visa):
         """Initialize htx9000 s e_5 a.
+        Stores configuration in ``_base_name``, ``_forced_range`` for use by
+        other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 2 instance attributes that configure the object's behavior.
 
         Args:
             interface_visa: VISA interface instance.
@@ -314,12 +408,20 @@ class htx9000SE_5A(htx9000):
 
     def add_channel_current(self, channel_name):
         """Add a channel current.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, write_function=self._write_current)
         new_channel.set_min_write_limit(0.0)

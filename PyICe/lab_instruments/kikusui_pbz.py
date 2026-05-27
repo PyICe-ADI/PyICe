@@ -1,4 +1,8 @@
-"""Kikusui pbz instrument driver."""
+"""Kikusui pbz instrument driver.
+
+>>> from PyICe.lab_instruments.kikusui_pbz import kikusui_pbz
+
+"""
 from PyICe.lab_core import *  # noqa: F403
 
 
@@ -7,6 +11,8 @@ class kikusui_pbz(scpi_instrument):
 
     def __init__(self, interface_visa):
         """Initialize kikusui_pbz.
+
+        Prepares the object for use by setting up internal state.
 
         Args:
             interface_visa: VISA interface instance.
@@ -33,7 +39,7 @@ class kikusui_pbz(scpi_instrument):
             ilim: Current limit.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         voltage_channel = self.add_channel_voltage(channel_name)
         voltage_channel.set_write_delay(delay)
@@ -62,24 +68,40 @@ class kikusui_pbz(scpi_instrument):
 
     def add_channel_voltage(self, channel_name):
         """Add a channel voltage.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, write_function=self._write_voltage)
         return self._add_channel(new_channel)
 
     def add_channel_current_source(self, channel_name):
         """Add a channel current source.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name,
                               write_function=self._write_current_source)
@@ -87,12 +109,20 @@ class kikusui_pbz(scpi_instrument):
 
     def add_channel_current_sink(self, channel_name):
         """Add a channel current sink.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name,
                               write_function=self._write_current_sink)
@@ -100,12 +130,20 @@ class kikusui_pbz(scpi_instrument):
 
     def add_channel_output_enable(self, channel_name):
         """Add a channel output enable.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name,
                               write_function=self._write_output_enable)
@@ -113,36 +151,60 @@ class kikusui_pbz(scpi_instrument):
 
     def add_channel_vsense(self, channel_name):
         """Add a channel vsense.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, read_function=self._read_vsense)
         return self._add_channel(new_channel)
 
     def add_channel_isense(self, channel_name):
         """Add a channel isense.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, read_function=self._read_isense)
         return self._add_channel(new_channel)
 
     def add_channel_voltage_readback(self, channel_name):
         """Add a channel voltage readback.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name,
                               read_function=self._read_voltage_readback)
@@ -157,6 +219,8 @@ class kikusui_pbz(scpi_instrument):
     def _write_voltage(self, voltage):
         """Set output voltage.
 
+        Internal implementation detail; see the public API for usage.
+
         Args:
             voltage: Voltage value.
         """
@@ -164,6 +228,8 @@ class kikusui_pbz(scpi_instrument):
 
     def _write_output_enable(self, enable):
         """Set output enable.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
             enable: Enable or disable.
@@ -175,24 +241,33 @@ class kikusui_pbz(scpi_instrument):
 
     def _read_voltage_readback(self):
         """Returns instrument's actual setopint.  May differ by commanded value by rounding/range error.
+        Internal helper that computes and returns a derived value.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Returns:
-            Result value.
+            The measured value.
         """
         return float(self.get_interface().ask("VOLT?"))
 
     def _read_vsense(self):
         """Returns instrument's measured output voltage.
+        Internal helper that sends the ``MEAS:VOLT`` SCPI command.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Returns:
-            Result value.
+            The measured value.
         """
         return float(self.get_interface().ask("MEAS:VOLT?"))
 
     def _read_isense(self):
         """Returns instrument's measured current output.
+        Internal helper that sends the ``MEAS:CURR`` SCPI command.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Returns:
-            Result value.
+            The measured value.
         """
         return float(self.get_interface().ask("MEAS:CURR?"))

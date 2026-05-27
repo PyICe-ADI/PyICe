@@ -1,4 +1,8 @@
-"""A D5667 R instrument driver."""
+"""A D5667 R instrument driver.
+
+>>> from PyICe.lab_instruments.AD5667R import AD5667R
+
+"""
 from ..lab_core import *  # noqa: F403
 
 #################################################
@@ -132,16 +136,20 @@ class AD5667R(instrument):
     def write_power_state_DAC_A(self, power_state):
         """Perform write power state DAC A operation.
 
+        Writes data to the underlying target.
+
         Args:
-            power_state: Power state.
+            power_state: Power state to use.
         """
         self._set_power_state(power_state, dac=DAC_A_ENABLE)
 
     def write_power_state_DAC_B(self, power_state):
         """Perform write power state DAC B operation.
 
+        Writes data to the underlying target.
+
         Args:
-            power_state: Power state.
+            power_state: Power state to use.
         """
         self._set_power_state(power_state, dac=DAC_B_ENABLE)
 
@@ -178,12 +186,20 @@ class AD5667R(instrument):
 
     def add_channel_DAC_A(self, channel_name):
         """Add a channel DAC A.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         output = channel(channel_name, write_function=self._set_dac_A_voltage)
         output.set_attribute('ch_type', 'voltage')
@@ -192,12 +208,20 @@ class AD5667R(instrument):
 
     def add_channel_DAC_B(self, channel_name):
         """Add a channel DAC B.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         output = channel(channel_name, write_function=self._set_dac_B_voltage)
         output.set_attribute('ch_type', 'voltage')
@@ -206,12 +230,20 @@ class AD5667R(instrument):
 
     def add_channel_code_DAC_A(self, channel_name):
         """Add a channel code DAC A.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         int_output = integer_channel(
             channel_name, size=16, write_function=self._write_dac_A_code)
@@ -221,12 +253,20 @@ class AD5667R(instrument):
 
     def add_channel_code_DAC_B(self, channel_name):
         """Add a channel code DAC B.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         int_output = integer_channel(
             channel_name, size=16, write_function=self._write_dac_B_code)
@@ -236,12 +276,20 @@ class AD5667R(instrument):
 
     def add_channel_powerstate_DAC_A(self, channel_name):
         """Add a channel powerstate DAC A.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         powerstate_channel = channel(
             channel_name, write_function=self.write_power_state_DAC_A)
@@ -253,12 +301,20 @@ class AD5667R(instrument):
 
     def add_channel_powerstate_DAC_B(self, channel_name):
         """Add a channel powerstate DAC B.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         powerstate_channel = channel(
             channel_name, write_function=self.write_power_state_DAC_B)
@@ -271,12 +327,14 @@ class AD5667R(instrument):
     def _sync_channels(self, channel, value):
         """Sync's Voltages and Codes to match each other after changes to either.
 
+        Internal implementation detail; see the public API for usage.
+
         Args:
             channel: Channel object.
             value: Value to set.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if channel.get_attribute('ch_type') == 'voltage':
             voltage = value

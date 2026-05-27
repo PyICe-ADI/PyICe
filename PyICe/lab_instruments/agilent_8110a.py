@@ -1,4 +1,8 @@
-"""Agilent 8110a instrument driver."""
+"""Agilent 8110a instrument driver.
+
+>>> from PyICe.lab_instruments.agilent_8110a import Agilent_8110a
+
+"""
 from PyICe.lab_core import *  # noqa: F403
 
 
@@ -10,11 +14,15 @@ class Agilent_8110a(scpi_instrument):
     """
     def __init__(self, interface_visa, plugin, debug_comms=False):
         """Initialize agilent_8110a.
+        Initializes 4 instance attributes that configure the object's
+        behavior.
+
+        Calls the parent constructor to inherit base behavior, and initializes 4 instance attributes that configure the object's behavior.
 
         Args:
-            debug_comms: Debug comms.
+            debug_comms: Debug comms to use.
             interface_visa: VISA interface instance.
-            plugin: Plugin.
+            plugin: Plugin to use.
         """
         self._debug_comms = debug_comms
         self._base_name = 'HP8110A'
@@ -33,12 +41,19 @@ class Agilent_8110a(scpi_instrument):
 
     def add_channel_trigger_source(self, channel_name):
         """Sets the trigger source of the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:ARM:SOUR`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         sources = {"IMMEDIATE": {"COMMAND": "IMM", "COMMENT": "Also known as CONTINUOUS through the front panel, makes it free-run."},
                    "INTERNAL": {"COMMAND": "INT", "COMMENT": "Unknown - Untested - gives SCPI errors. Please update if you know."},
@@ -67,12 +82,19 @@ class Agilent_8110a(scpi_instrument):
 
     def add_channel_trigger_sense(self, channel_name):
         """Sets the trigger sense of the instrument to EDGE or LEVEL.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:ARM:SENS`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def set_trigger_sense(sense):
             if sense not in ["EDGE", "LEVEL"]:
@@ -87,12 +109,19 @@ class Agilent_8110a(scpi_instrument):
 
     def add_channel_trigger_impedance(self, channel_name):
         """Sets the impedance of the EXT INPUT connector.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:ARM:IMP`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def set_trigger_impedance(impedance):
             if impedance not in [50, "10K"]:
@@ -109,12 +138,19 @@ class Agilent_8110a(scpi_instrument):
 
     def add_channel_arm_level(self, channel_name):
         """Sets the trigger level of the front panel EXT INPUT trigger input.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:ARM:LEV`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def set_arm_level(voltage):
             self.get_interface().write(f":ARM:LEV {voltage:0.4f}V")
@@ -126,12 +162,19 @@ class Agilent_8110a(scpi_instrument):
 
     def add_channel_trigger_slope(self, channel_name):
         """Sets the trigger slope of the EXT INPUT connector.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``'.`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         slopes = {"POSITIVE": {"COMMAND": "POS", "COMMENT": "Positive Edge"},
                   "NEGATIVE": {"COMMAND": "NEG", "COMMENT": "Negative Edge"},
@@ -161,7 +204,7 @@ class Agilent_8110a(scpi_instrument):
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def set_ouput_mode(mode):
             if mode not in ["VOLTAGE", "CURRENT"]:
@@ -177,13 +220,20 @@ class Agilent_8110a(scpi_instrument):
 
     def add_channel_ouput_state(self, channel_name, number):
         """Sets the output state of each channel to on or off.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:OUTP`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def set_ouput_state(state):
             if state not in ["ON", "OFF", True, False]:
@@ -202,13 +252,20 @@ class Agilent_8110a(scpi_instrument):
 
     def add_channel_ouput_polarity(self, channel_name, number):
         """Sets the output polarity of each channel to NORMAL or INVERTED.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:OUTP`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def set_ouput_polarity(polarity):
             if polarity not in ["NORMAL", "INVERTED"]:
@@ -234,7 +291,7 @@ class Agilent_8110a(scpi_instrument):
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def set_ouput_impedance(impedance):
             if impedance not in [50, "1K"]:
@@ -261,7 +318,7 @@ class Agilent_8110a(scpi_instrument):
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def set_external_impedance(impedance):
             self.get_interface().write(
@@ -282,10 +339,10 @@ class Agilent_8110a(scpi_instrument):
         Args:
             channel_name: Name for the new channel.
             number: Channel or port number.
-            scale_factor: Scale factor.
+            scale_factor: Scale factor to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def set_high_voltage_level(voltage):
             self.get_interface().write(
@@ -306,10 +363,10 @@ class Agilent_8110a(scpi_instrument):
         Args:
             channel_name: Name for the new channel.
             number: Channel or port number.
-            scale_factor: Scale factor.
+            scale_factor: Scale factor to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def set_low_voltage_level(voltage):
             self.get_interface().write(
@@ -323,13 +380,20 @@ class Agilent_8110a(scpi_instrument):
 
     def add_channel_high_current_level(self, channel_name, number):
         """Sets the high level of the current waveform while being aware of ratio of the downstream impedance and its own source imepdance.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:SOUR:CURR`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def set_high_current_level(current):
             self.get_interface().write(
@@ -343,13 +407,20 @@ class Agilent_8110a(scpi_instrument):
 
     def add_channel_low_current_level(self, channel_name, number):
         """Sets the Low level of the current waveform while being aware of ratio of the downstream impedance and its own source imepdance.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:SOUR:CURR`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def set_low_current_level(current):
             self.get_interface().write(
@@ -363,13 +434,20 @@ class Agilent_8110a(scpi_instrument):
 
     def add_channel_transition_leading(self, channel_name, number):
         """Sets the leading edge speed of the waveform.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:SOUR:PULS:TRAN`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def set_transition_leading(time):
             self.get_interface().write(f":SOUR:PULS:TRAN{number}:LEAD {time}S")
@@ -382,13 +460,20 @@ class Agilent_8110a(scpi_instrument):
 
     def add_channel_transition_trailing(self, channel_name, number):
         """Sets the trailing edge speed of the waveform.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:TRA`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def set_transition_trailing(time):
             self.get_interface().write(f":SOUR:PULS:TRAN{number}:TRA {time}S")
@@ -409,7 +494,7 @@ class Agilent_8110a(scpi_instrument):
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def set_pulse_width(pulse_width):
             self.get_interface().write(
@@ -429,7 +514,7 @@ class Agilent_8110a(scpi_instrument):
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def set_pulse_period(pulse_period):
             self.get_interface().write(f":SOUR:PULS:PER {pulse_period}S")
@@ -454,7 +539,7 @@ class Agilent_8110a(scpi_instrument):
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def set_delay(delay):
             self.get_interface().write(f":SOUR:PULS:DEL{number} {delay}s")
@@ -466,12 +551,20 @@ class Agilent_8110a(scpi_instrument):
 
     def add_channel_trigger(self, channel_name):
         """Triggers the instrument (with SCPI *TRG) assuming it's in manual mode.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def trigger(value):
             self.trigger()
@@ -494,7 +587,7 @@ class Agilent_8110a(scpi_instrument):
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def set_pattern(pattern):
             if type(pattern) is str:
@@ -537,7 +630,7 @@ class Agilent_8110a(scpi_instrument):
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def set_patterns(pattern):
             if type(pattern) is str:
@@ -560,12 +653,19 @@ class Agilent_8110a(scpi_instrument):
 
     def add_channel_pattern_state(self, channel_name):
         """Enables the outputs to follow the pattern generator vs just free running pulses.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``DIG:STIM:PATT:STATE`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def set_pattern_state(state):
             if state not in ["ON", "OFF", True, False]:
@@ -582,13 +682,20 @@ class Agilent_8110a(scpi_instrument):
 
     def add_channel_pattern_format(self, channel_name, number):
         """Sets the per-channel output patterns to be RZ or NRZ (Return to Zero or Non Return to Zero).
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:FORM`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            Formatted string representation.
         """
         def set_pattern_format(pulse_format):
             if pulse_format not in ["RZ", "NRZ"]:
@@ -611,7 +718,7 @@ class Agilent_8110a(scpi_instrument):
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def set_pattern_update(update):
             if update not in ["ON", "OFF", "ONCE"]:

@@ -1,4 +1,8 @@
-"""Oscilloscope tools utilities."""
+"""Oscilloscope tools utilities.
+
+>>> from PyICe.data_utils.oscilloscope_tools import scope_data
+
+"""
 from PyICe.lab_utils.sqlite_data import sqlite_data
 from PyICe.lab_utils.eng_string import eng_string
 from PyICe.lab_utils.banners import print_banner
@@ -10,14 +14,28 @@ class scope_data():
     """This class can be used to convert data read from an oscilloscope's record into a more useful format once it has been logged into a PyICe SQLite database from a normal logger call.
 
     It was mainly used with the Agilent/Keysight Infinivision Series MSO-X 3034A Oscilloscopes. It may work for your scope or at least provide a framework for creating your own.
+
+    >>> from PyICe.data_utils.oscilloscope_tools import scope_data
+    >>> scope_data is not None
+    True
+
     """
     def __init__(self, database, table_name, where_clause=''):
         """Initialize scope_data.
+        Stores configuration in ``readbacks_available``, ``row``,
+        ``trace_params`` for use by other methods.
+
+        Initializes 4 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.data_utils.oscilloscope_tools import scope_data
+        >>> scope_data is not None
+        True
 
         Args:
-            database: Database.
+            database: Database to use.
             table_name: Database table name.
-            where_clause: Where clause.
+            where_clause: Where clause to use.
         """
         query = f'SELECT * FROM {table_name} {where_clause}'
         try:
@@ -63,13 +81,20 @@ class scope_data():
     def raise_error(self, trace_name, request, e):
         """Perform raise error operation.
 
+        Supports the ``scope_data`` workflow by performing the described operation.
+
+
+        >>> from PyICe.data_utils.oscilloscope_tools import scope_data
+        >>> hasattr(scope_data, 'raise_error')
+        True
+
         Args:
-            e: E.
-            request: Request.
-            trace_name: Trace name.
+            e: Exception instance to re-raise.
+            request: Request to use.
+            trace_name: Name identifying the plot trace.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         raise Exception(
             f'\n\nPyICE Oscilloscope Tools:\nNo trace parameters available for "{trace_name}" {request} request.\nTry adding a {trace_name} trace first.\n\n') from e
@@ -77,12 +102,19 @@ class scope_data():
     def raise_sqlite_exception(self, query, e):
         """Perform raise sqlite exception operation.
 
+        Supports the ``scope_data`` workflow by performing the described operation.
+
+
+        >>> from PyICe.data_utils.oscilloscope_tools import scope_data
+        >>> hasattr(scope_data, 'raise_sqlite_exception')
+        True
+
         Args:
-            e: E.
-            query: Query.
+            e: Exception instance to re-raise.
+            query: Query or command string to send.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         raise Exception(
             f'\n\nPyICE Oscilloscope Tools: A failure occurred when querying the database.\nTry pasting this line into a dbBrowser and see what it returns:\n\n{query}') from e
@@ -90,19 +122,33 @@ class scope_data():
     def time_range(self):
         """Return time range result.
 
+        Supports the ``scope_data`` workflow by performing the described operation.
+
+
+        >>> from PyICe.data_utils.oscilloscope_tools import scope_data
+        >>> hasattr(scope_data, 'time_range')
+        True
+
         Returns:
-            Result value.
+            The time range tuple.
         """
         return (self.time_left, self.time_right)
 
     def time_label(self, xlimits=None):
         """Return time label result.
 
+        Supports the ``scope_data`` workflow by performing the described operation.
+
+
+        >>> from PyICe.data_utils.oscilloscope_tools import scope_data
+        >>> hasattr(scope_data, 'time_label')
+        True
+
         Args:
-            xlimits: Xlimits.
+            xlimits: Xlimits to use.
 
         Returns:
-            Result value.
+            The formatted time label string.
         """
         if xlimits is None:
             return f"{eng_string((self.time_right - self.time_left) / 10, fmt=':.3g', si=True)}s/DIV"
@@ -112,8 +158,15 @@ class scope_data():
     def all_time_refmarkers(self):
         """Return all time refmarkers result.
 
+        Supports the ``scope_data`` workflow by performing the described operation.
+
+
+        >>> from PyICe.data_utils.oscilloscope_tools import scope_data
+        >>> hasattr(scope_data, 'all_time_refmarkers')
+        True
+
         Returns:
-            Result value.
+            List of time reference markers.
         """
         return {'xlocation_open': -self.Xposition,
                 'xlocation_closed': 0}
@@ -121,13 +174,20 @@ class scope_data():
     def trace_data(self, trace_name, graticule=None, scale_by=1):
         """Return trace data result.
 
+        Supports the ``scope_data`` workflow by performing the described operation.
+
+
+        >>> from PyICe.data_utils.oscilloscope_tools import scope_data
+        >>> hasattr(scope_data, 'trace_data')
+        True
+
         Args:
-            graticule: Graticule.
-            scale_by: Scale by.
-            trace_name: Trace name.
+            graticule: Graticule to use.
+            scale_by: Scale by to use.
+            trace_name: Name identifying the plot trace.
 
         Returns:
-            Result value.
+            The trace data array.
         """
         self.trace_params[trace_name] = {
             "graticule": graticule, "scale_factor": scale_by}
@@ -155,11 +215,18 @@ class scope_data():
     def marker_location(self, trace_name):  # Expecting use_axes_scale of False
         """Return marker location result.
 
+        Supports the ``scope_data`` workflow by performing the described operation.
+
+
+        >>> from PyICe.data_utils.oscilloscope_tools import scope_data
+        >>> hasattr(scope_data, 'marker_location')
+        True
+
         Args:
-            trace_name: Trace name.
+            trace_name: Name identifying the plot trace.
 
         Returns:
-            Result value.
+            The marker position value.
         """
         try:
             graticule = self.trace_params[trace_name]["graticule"]
@@ -175,12 +242,19 @@ class scope_data():
     def trace_locator(self, trace_name, value=0):
         """Return trace locator result.
 
+        Supports the ``scope_data`` workflow by performing the described operation.
+
+
+        >>> from PyICe.data_utils.oscilloscope_tools import scope_data
+        >>> hasattr(scope_data, 'trace_locator')
+        True
+
         Args:
-            trace_name: Trace name.
+            trace_name: Name identifying the plot trace.
             value: Value to set.
 
         Returns:
-            Result value.
+            The trace locator value.
         """
         try:
             scale_factor = self.trace_params[trace_name]["scale_factor"]
@@ -211,12 +285,19 @@ class scope_data():
     def trace_label(self, trace_name, display_name=None):
         """Return trace label result.
 
+        Supports the ``scope_data`` workflow by performing the described operation.
+
+
+        >>> from PyICe.data_utils.oscilloscope_tools import scope_data
+        >>> hasattr(scope_data, 'trace_label')
+        True
+
         Args:
-            display_name: Display name.
-            trace_name: Trace name.
+            display_name: Column header label shown in output.
+            trace_name: Name identifying the plot trace.
 
         Returns:
-            Result value.
+            The trace label string.
         """
         try:
             scale_factor = self.trace_params[trace_name]["scale_factor"]
@@ -237,11 +318,18 @@ class scope_data():
     def axis_info(self, xlimits=None):
         """Return axis info result.
 
+        Supports the ``scope_data`` workflow by performing the described operation.
+
+
+        >>> from PyICe.data_utils.oscilloscope_tools import scope_data
+        >>> hasattr(scope_data, 'axis_info')
+        True
+
         Args:
-            xlimits: Xlimits.
+            xlimits: Xlimits to use.
 
         Returns:
-            Result value.
+            Dictionary of axis configuration.
         """
         return {'xaxis_label': self.time_label(xlimits=xlimits),
                 'xlims': self.time_range() if xlimits is None else xlimits,
@@ -250,11 +338,18 @@ class scope_data():
     def volts_per_division(self, channel_name):
         """Return volts per division result.
 
+        Supports the ``scope_data`` workflow by performing the described operation.
+
+
+        >>> from PyICe.data_utils.oscilloscope_tools import scope_data
+        >>> hasattr(scope_data, 'volts_per_division')
+        True
+
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The volts-per-division setting.
         """
         return self.row[f'{channel_name}_Yrange_readback'] / 8
 
@@ -262,11 +357,19 @@ class scope_data():
 def plot_waveform(y_data_column_names, db_tablename,
                   db_filename='scope_data.sqlite'):
     """Perform plot waveform operation.
+    Configures or updates the plot with the specified parameters.
+
+    Generates or configures a visual representation of the data.
+
+
+    >>> from PyICe.data_utils.oscilloscope_tools import plot_waveform
+    >>> callable(plot_waveform)
+    True
 
     Args:
-        db_filename: Db filename.
-        db_tablename: Db tablename.
-        y_data_column_names: Y data column names.
+        db_filename: Db filename to use.
+        db_tablename: Db tablename to use.
+        y_data_column_names: Y data column names to use.
     """
     from bokeh import colors
     from bokeh.io import curdoc

@@ -1,4 +1,8 @@
-"""Bus pirate gpio instrument driver."""
+"""Bus pirate gpio instrument driver.
+
+>>> from PyICe.lab_instruments.bus_pirate_gpio import bus_pirate_gpio
+
+"""
 from PyICe.lab_core import *  # noqa: F403
 import time
 
@@ -8,9 +12,13 @@ class bus_pirate_gpio(instrument):
 
     def __init__(self, interface_raw_serial):
         """Creates a bus_pirate_gpio object, serial_port can be a pyserial object or a string.
+        Initializes 6 instance attributes that configure the object's
+        behavior.
+
+        Calls the parent constructor to inherit base behavior, and initializes 6 instance attributes that configure the object's behavior.
 
         Args:
-            interface_raw_serial: Interface raw serial.
+            interface_raw_serial: Raw serial interface instance for communication.
         """
         self._base_name = 'bus_pirate_gpio'
         instrument.__init__(self, f"BUS PIRATE {interface_raw_serial}")
@@ -72,15 +80,15 @@ class bus_pirate_gpio(instrument):
 
         Args:
             channel_name: Name for the new channel.
-            output: Output.
-            pin_names: Pin names.
+            output: Output to use.
+            pin_names: Pin names to use.
             value: Value to set.
 
         Returns:
-            Result value.
+            The newly created channel object.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if isinstance(pin_names, type("")):
             pin_names = [pin_names]  # convert to a list if a string was given
@@ -109,11 +117,11 @@ class bus_pirate_gpio(instrument):
             provided to add_channel().  The remainder of the digital word not included in the channel remains unchanged.
 
         Args:
-            pin_names: Pin names.
+            pin_names: Pin names to use.
             value: Value to set.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if value > pow(2, len(pin_names)):
             raise Exception(f'Buspirate {pin_names}: value {value} too large')
@@ -129,11 +137,13 @@ class bus_pirate_gpio(instrument):
     def _read_pins(self, pin_names):
         """Return the forcing value for the named channel.
 
+        Internal implementation detail; see the public API for usage.
+
         Args:
-            pin_names: Pin names.
+            pin_names: Pin names to use.
 
         Returns:
-            Result value.
+            The measured value.
         """
         data = 0
         pin_data = self._bus_pirate_get_pin_state()

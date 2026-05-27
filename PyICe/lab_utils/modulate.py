@@ -1,16 +1,32 @@
-"""Modulate utility."""
+"""Modulate utility.
+
+>>> from PyICe.lab_utils.modulate import modulate
+
+"""
 import numpy
 
 
 def modulate(data1, data2):
-    """data1 and data2 are tuples of x and y data that may not have the same number of 'x' values. The result is interpolated up to the higher of the two.
+    """Multiply two (x, y) datasets point-wise, interpolating to align x-axes.
+
+    When the two datasets have different x-values, the shorter one is
+    interpolated onto the longer one's x-axis before multiplication. Useful
+    for applying a transfer function (gain vs. frequency) to a signal spectrum.
+
+    >>> result = modulate([(0, 1), (1, 2), (2, 3)], [(0, 10), (2, 10)])
+    >>> [(x, float(y)) for x, y in result]
+    [(0, 10.0), (1, 20.0), (2, 30.0)]
+    >>> result = modulate([(0, 2), (1, 3)], [(0, 5), (1, 4)])
+    >>> [(x, float(y)) for x, y in result]
+    [(0, 10.0), (1, 12.0)]
 
     Args:
-        data1: Data1.
-        data2: Data2.
+        data1: List of (x, y) tuples for the first dataset.
+        data2: List of (x, y) tuples for the second dataset.
 
     Returns:
-        Result value.
+        List of (x, y) tuples with the pointwise product, aligned to the
+        longer dataset's x-axis.
     """
     independent = []
     product = []

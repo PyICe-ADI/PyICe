@@ -1,4 +1,8 @@
-"""E L34143 A instrument driver."""
+"""E L34143 A instrument driver.
+
+>>> from PyICe.lab_instruments.EL34143A import EL34143A
+
+"""
 from ..lab_core import *  # noqa: F403
 
 
@@ -9,6 +13,10 @@ class EL34143A(scpi_instrument):
     """
     def __init__(self, interface_visa):
         """Initialize e l34143 a.
+        Calls the parent class constructor and initializes instance-specific
+        attributes for EL34143A.
+
+        Calls the parent constructor to inherit base behavior, and initializes 6 instance attributes that configure the object's behavior.
 
         Args:
             interface_visa: VISA interface instance.
@@ -44,10 +52,10 @@ class EL34143A(scpi_instrument):
         Args:
             add_extended_channels: If True, add sense and mode channels.
             channel_name: Name for the new channel.
-            set_range: Set range.
+            set_range: Set range to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         ch = self.add_channel_current(channel_name, curr_range=set_range)
         ch.set_description(self.get_name() + ': ' + self.add_channel.__doc__)
@@ -60,13 +68,20 @@ class EL34143A(scpi_instrument):
 
     def add_channel_current(self, channel_name, curr_range='AUTO'):
         """Add single CC forcing channel and force zero current.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
-            curr_range: Curr range.
+            curr_range: Curr range to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, write_function=self._SetCCCurrent)
         new_channel.set_description(
@@ -81,13 +96,16 @@ class EL34143A(scpi_instrument):
 
     def _add_channel_curr_range(self, channel_name, curr_range):
         """Add single range manipulation channel.
+        Internal helper that sends the ``:`` SCPI command.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
             channel_name: Name for the new channel.
-            curr_range: Curr range.
+            curr_range: Curr range to use.
 
         Returns:
-            Result value.
+            The add channel curr range result.
         """
         new_channel = channel(
             channel_name + '_range',
@@ -105,12 +123,20 @@ class EL34143A(scpi_instrument):
 
     def add_channel_isense(self, channel_name):
         """Add single current readback channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -121,12 +147,20 @@ class EL34143A(scpi_instrument):
 
     def add_channel_vsense(self, channel_name):
         """Add single voltage readback channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -137,12 +171,20 @@ class EL34143A(scpi_instrument):
 
     def add_channel_psense(self, channel_name):
         """Read back computed power dissipated in load.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -153,12 +195,20 @@ class EL34143A(scpi_instrument):
 
     def add_channel_mode(self, channel_name):
         """Read back operating mode (Off, Constant Current, Constant Voltage, Constant Power, Constant Resistance).
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name,
                               read_function=lambda: self.GetMode())
@@ -168,45 +218,61 @@ class EL34143A(scpi_instrument):
 
     def _read_vsense(self, channel_name):
         """Return measured voltage float.
+        Internal helper that sends the ``MEAS:VOLT`` SCPI command.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The measured value.
         """
         return self.get_interface().ask("MEAS:VOLT?")
 
     def _read_isense(self, channel_name):
         """Return measured current float.
+        Internal helper that sends the ``MEAS:CURR`` SCPI command.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The measured value.
         """
         return self.get_interface().ask("MEAS:CURR?")
 
     def _read_psense(self, channel_name):
         """Return measured power float.
+        Internal helper that sends the ``MEAS:POW`` SCPI command.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The measured value.
         """
         return self.get_interface().ask("MEAS:POW?")
 
     def add_channel_remote_sense(self, channel_name):
         """Enable/disable remote voltage sense through panel connectors.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = integer_channel(
             channel_name, size=1, write_function=self.SetRemoteSense)
@@ -217,13 +283,21 @@ class EL34143A(scpi_instrument):
 
     def add_channel_voltage(self, channel_name, volt_range='AUTO'):
         """Add single CV forcing channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
-            volt_range: Volt range.
+            volt_range: Volt range to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, write_function=self._SetCVVoltage)
         new_channel.set_description(
@@ -235,13 +309,16 @@ class EL34143A(scpi_instrument):
 
     def _add_channel_volt_range(self, channel_name, volt_range):
         """Add single range manipulation channel.
+        Internal helper that sends the ``:`` SCPI command.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
             channel_name: Name for the new channel.
-            volt_range: Volt range.
+            volt_range: Volt range to use.
 
         Returns:
-            Result value.
+            The add channel volt range result.
         """
         self.volt_range = volt_range
         assert volt_range in [
@@ -260,13 +337,21 @@ class EL34143A(scpi_instrument):
 
     def add_channel_power(self, channel_name, pow_range='AUTO'):
         """Add single CW forcing channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
-            pow_range: Pow range.
+            pow_range: Pow range to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, write_function=self._SetCWPower)
         new_channel.set_description(
@@ -278,13 +363,16 @@ class EL34143A(scpi_instrument):
 
     def _add_channel_pow_range(self, channel_name, pow_range):
         """Add single range manipulation channel.
+        Internal helper that sends the ``:`` SCPI command.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
             channel_name: Name for the new channel.
-            pow_range: Pow range.
+            pow_range: Pow range to use.
 
         Returns:
-            Result value.
+            The add channel pow range result.
         """
         self.pow_range = pow_range
         assert pow_range in [
@@ -304,12 +392,20 @@ class EL34143A(scpi_instrument):
 
     def add_channel_resistance(self, channel_name):
         """Add single CR forcing channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name,
                               write_function=self._SetCRResistance)
@@ -321,12 +417,15 @@ class EL34143A(scpi_instrument):
 
     def _add_channel_res_range(self, channel_name, res_range):
         """Add single range manipulation channel.
+        Internal helper that sends the ``:`` SCPI command.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
-            res_range: Res range.
+            res_range: Res range to use.
 
         Returns:
-            Result value.
+            The add channel res range result.
         """
         self.res_range = res_range
         assert res_range in [
@@ -445,15 +544,24 @@ class EL34143A(scpi_instrument):
         self.TurnLoadOn()  # Because it could be off
 
     def TurnLoadOn(self):
-        """Turn the load on."""
+        """Turn the load on.
+
+        Reads previously saved state or data back into memory.
+        """
         self.get_interface().write("INP 1")
 
     def TurnLoadOff(self):
-        """Turn the load off."""
+        """Turn the load off.
+
+        Reads previously saved state or data back into memory.
+        """
         self.get_interface().write("INP 0")
 
     def SetRemoteControl(self):
         """Set the load to remote control.
+        Sends the ``SYST:COMM:RLST`` SCPI command to the instrument.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Returns:
             Write response string.
@@ -462,6 +570,9 @@ class EL34143A(scpi_instrument):
 
     def SetLocalControl(self):
         """Set the load to local control.
+        Sends the ``SYST:COMM:RLST`` SCPI command to the instrument.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Returns:
             Write response string.
@@ -511,6 +622,8 @@ class EL34143A(scpi_instrument):
     def SetMaxCurrent(self, current):
         """Set the maximum current the load will sink.
 
+        Sends the corresponding SCPI command string to the instrument over the bus.
+
         Args:
             current: Maximum current value.
         """
@@ -518,6 +631,9 @@ class EL34143A(scpi_instrument):
 
     def GetMaxCurrent(self):
         """Return the maximum current the load will sink.
+        Sends the ``CURR:RANG`` SCPI command to the instrument.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Returns:
             str: Maximum current value.
@@ -533,6 +649,8 @@ class EL34143A(scpi_instrument):
     def SetMaxVoltage(self, voltage):
         """Set the maximum voltage the load will allow.
 
+        Sends the corresponding SCPI command string to the instrument over the bus.
+
         Args:
             voltage: Maximum voltage value.
         """
@@ -540,6 +658,9 @@ class EL34143A(scpi_instrument):
 
     def GetMaxVoltage(self):
         """Get the maximum voltage the load will allow.
+        Sends the ``VOLT:RANG`` SCPI command to the instrument.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Returns:
             str: Maximum voltage value.
@@ -555,6 +676,8 @@ class EL34143A(scpi_instrument):
     def SetMaxPower(self, power):
         """Set the maximum power the load will allow.
 
+        Sends the corresponding SCPI command string to the instrument over the bus.
+
         Args:
             power: Maximum power value.
         """
@@ -562,6 +685,9 @@ class EL34143A(scpi_instrument):
 
     def GetMaxPower(self):
         """Get the maximum power the load will allow.
+        Sends the ``POW:RANG`` SCPI command to the instrument.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Returns:
             str: Maximum power value.
@@ -570,6 +696,8 @@ class EL34143A(scpi_instrument):
 
     def SetMode(self, mode):
         """Set the mode (constant current, constant voltage, etc.).
+
+        Supports the ``EL34143A`` workflow by performing the described operation.
 
         Args:
             mode: Operating mode (CURR, VOLT, POW, or RES).
@@ -592,6 +720,8 @@ class EL34143A(scpi_instrument):
     def GetMode(self):
         """Get the mode (constant current, constant voltage, etc.).
 
+        Sends the corresponding SCPI command string to the instrument over the bus.
+
         Returns:
             str: Current operating mode.
         """
@@ -599,6 +729,8 @@ class EL34143A(scpi_instrument):
 
     def SetCCCurrent(self, current):
         """Set the constant current mode's current level.
+
+        Supports the ``EL34143A`` workflow by performing the described operation.
 
         Args:
             current: Current level to set.
@@ -608,6 +740,8 @@ class EL34143A(scpi_instrument):
     def GetCCCurrent(self):
         """Get the constant current mode's current level.
 
+        Sends the corresponding SCPI command string to the instrument over the bus.
+
         Returns:
             str: Current level.
         """
@@ -615,6 +749,8 @@ class EL34143A(scpi_instrument):
 
     def SetCVVoltage(self, voltage):
         """Set the constant voltage mode's voltage level.
+
+        Supports the ``EL34143A`` workflow by performing the described operation.
 
         Args:
             voltage: Voltage level to set.
@@ -624,6 +760,8 @@ class EL34143A(scpi_instrument):
     def GetCVVoltage(self):
         """Get the constant voltage mode's voltage level.
 
+        Sends the corresponding SCPI command string to the instrument over the bus.
+
         Returns:
             str: Voltage level.
         """
@@ -632,6 +770,8 @@ class EL34143A(scpi_instrument):
     def SetCWPower(self, power):
         """Set the constant power mode's power level.
 
+        Supports the ``EL34143A`` workflow by performing the described operation.
+
         Args:
             power: Power level to set.
         """
@@ -639,6 +779,8 @@ class EL34143A(scpi_instrument):
 
     def GetCWPower(self):
         """Get the constant power mode's power level.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Returns:
             str: Power level.
@@ -652,6 +794,8 @@ class EL34143A(scpi_instrument):
     def SetCRResistance(self, resistance):
         """Set the constant resistance mode's resistance level.
 
+        Supports the ``EL34143A`` workflow by performing the described operation.
+
         Args:
             resistance: Resistance level to set.
         """
@@ -660,6 +804,8 @@ class EL34143A(scpi_instrument):
     def GetCRResistance(self):
         """Get the constant resistance mode's resistance level.
 
+        Sends the corresponding SCPI command string to the instrument over the bus.
+
         Returns:
             str: Resistance level.
         """
@@ -667,6 +813,9 @@ class EL34143A(scpi_instrument):
 
     def SetRemoteSense(self, enabled=0):
         """Enable or disable remote sensing.
+        Sends the ``VOLT:SENS`` SCPI command to the instrument.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
             enabled: Enable (1/True/'EXT') or disable (0/False/'INT') remote sensing.
@@ -682,6 +831,9 @@ class EL34143A(scpi_instrument):
 
     def GetRemoteSense(self):
         """Get the state of remote sensing.
+        Sends the ``VOLT:SENS`` SCPI command to the instrument.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Returns:
             str: Remote sensing state.

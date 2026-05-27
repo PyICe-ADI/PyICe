@@ -1,4 +1,8 @@
-"""Delta 9039 instrument driver."""
+"""Delta 9039 instrument driver.
+
+>>> from PyICe.lab_instruments.delta_9039 import delta_9039
+
+"""
 from ..lab_core import *  # noqa: F403
 from .temperature_chamber import temperature_chamber
 
@@ -16,6 +20,9 @@ class delta_9039(temperature_chamber):
     """
     def __init__(self, interface_visa):
         """Initialize delta_9039.
+        Stores configuration in ``_base_name`` for use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
 
         Args:
             interface_visa: VISA interface instance.
@@ -28,6 +35,9 @@ class delta_9039(temperature_chamber):
 
     def _write_temperature(self, value):
         """Set named channel to new temperature "value".
+        Internal implementation detail; see the public API for usage.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
             value: Value to set.
@@ -43,14 +53,19 @@ class delta_9039(temperature_chamber):
 
     def _read_temperature_sense(self):
         """Read back actual chamber temperature.
+        Internal helper that computes and returns a derived value.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Returns:
-            Result value.
+            The measured value.
         """
         return float(self.get_interface().ask("Temperature?"))
 
     def _enable(self, enable):
         """Enable/disable temperature chamber heating and cooling.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
             enable: Enable or disable.

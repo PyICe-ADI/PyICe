@@ -1,4 +1,8 @@
-"""Sun ecxx instrument driver."""
+"""Sun ecxx instrument driver.
+
+>>> from PyICe.lab_instruments.sun_ecxx import sun_ecxx
+
+"""
 from .temperature_chamber import temperature_chamber
 
 
@@ -10,6 +14,8 @@ class sun_ecxx(temperature_chamber):
     def __init__(self, interface_visa):
         """Initialize sun_ecxx.
 
+        Calls the parent constructor to inherit base behavior.
+
         Args:
             interface_visa: VISA interface instance.
         """
@@ -18,8 +24,11 @@ class sun_ecxx(temperature_chamber):
 
     def _read_temperature_sense(self):
         """Read back actual chamber temperature.
+        Internal helper that computes and returns a derived value.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Returns:
-            Result value.
+            The measured value.
         """
         return float(self.get_interface().ask("TEMP?"))

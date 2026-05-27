@@ -1,27 +1,34 @@
-"""Scalar transform utility."""
+"""Scalar transform utility.
+
+>>> from PyICe.lab_utils.scalar_transform import scalar_transform
+
+"""
 from .vector_transform import vector_transform
 
 
 def scalar_transform(rec_array, column_scalar_functions, column_names=None):
-    """Transform column data by processing through user-supplied function.
+    """Apply per-column scalar functions element-wise to a numpy record array.
 
-    column_scalar_functions is a list of functions for each column and should have a length equal to the number of columns.
-    To leave a column unchanged, set column scalar function to None.
-    The column scalar function will be applied to each point in the column individually.
-    Thus it is appropriate for scaling, offsetting changing data type, etc.
-    This function cannot be used for filtering or convolution operations that need access to adjacent data points.
-    Instead, use vector_transform().
-    column_names is a list of names for each column in the returned record array.
-    To leave a column name unchanged from input record array, set column name to None.
-    To leave all column names unchanged from input record array, set column_names to None.
+    Each function receives individual values (not the whole column) and returns
+    the transformed value. Appropriate for scaling, offsetting, or type
+    conversion. For operations needing adjacent data points (filtering,
+    differentiation), use vector_transform instead.
+
+    >>> import numpy as np
+    >>> data = np.rec.fromarrays([[1, 2, 3], [100, 200, 300]], names='code,mv')
+    >>> result = scalar_transform(data, [None, lambda x: x / 1000.0])
+    >>> result.mv.tolist()
+    [0.1, 0.2, 0.3]
+    >>> result.code.tolist()
+    [1, 2, 3]
 
     Args:
-        column_names: Column names.
-        column_scalar_functions: Column scalar functions.
-        rec_array: Rec array.
-
-    Returns:
-        Result value.
+        rec_array: Input numpy record array.
+        column_scalar_functions: List of functions (one per column). Each
+            receives a single element and returns a transformed element.
+            Use None to leave a column unchanged.
+        column_names: Optional list of new column names (None entries keep
+            the original name).
     """
     column_vector_functions = []
     for csf in column_scalar_functions:

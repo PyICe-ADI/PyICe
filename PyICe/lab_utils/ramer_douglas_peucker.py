@@ -1,23 +1,42 @@
-"""Ramer douglas peucker utility."""
+"""Ramer douglas peucker utility.
+
+>>> from PyICe.lab_utils.ramer_douglas_peucker import ramer_douglas_peucker
+
+"""
 import time
 import numpy
 
 
 def ramer_douglas_peucker(rec_array, epsilon, verbose=True):
-    """Reduce number of points in line-segment curve such that reduced line segment count approximates original curve within epsilon tolerance.
+    """Simplify a two-column curve by removing points within *epsilon* of the simplified line.
 
-    https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm
+    Applies the Ramer-Douglas-Peucker algorithm to reduce the number of
+    vertices in a polyline while keeping the maximum perpendicular
+    deviation from the original curve below *epsilon*. Smaller *epsilon*
+    retains more points; larger values yield a coarser approximation.
+
+    Requires the ``rdp`` package (``pip install rdp``).
+
+    See https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm
+
+
+    >>> from PyICe.lab_utils.ramer_douglas_peucker import ramer_douglas_peucker
+    >>> callable(ramer_douglas_peucker)
+    True
 
     Args:
-        epsilon: Epsilon.
-        rec_array: Rec array.
-        verbose: If True, print debug output.
+        rec_array: Two-column numpy record array representing the (x, y)
+            polyline to simplify.
+        epsilon: Maximum allowed perpendicular distance between the
+            simplified curve and the original points (in data units).
+        verbose: If True, print a summary of the reduction (original
+            count, reduced count, percentage, elapsed time).
 
     Returns:
-        Result value.
+        A new numpy record array containing only the retained vertices.
 
     Raises:
-        ImportError: On error condition.
+        ImportError: If the ``rdp`` package is not installed.
     """
     try:
         from rdp import rdp

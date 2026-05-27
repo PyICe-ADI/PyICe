@@ -1,6 +1,9 @@
 """Channel Wrapper for SPI Devices.
 
 ===============================
+
+>>> from PyICe.spi_instrument import spiInstrument
+
 """
 from PyICe.lab_core import instrument, delegator, integer_channel
 from PyICe import spi_interface
@@ -11,6 +14,11 @@ class spiInstrument(instrument, delegator):
 
     Not appropriate for context-sensitive (sub addressed) memory directly.
     Instead, use multiple spiInstrument copies with appropriate preamble_clk_cnt and preamble_data settings.
+
+    >>> from PyICe.spi_instrument import spiInstrument
+    >>> spiInstrument is not None
+    True
+
     """
     def __init__(self, name, spiInterface, write_shift_register=None,
                  read_shift_register=None, preamble_clk_cnt=0, preamble_data=0):
@@ -19,16 +27,21 @@ class spiInstrument(instrument, delegator):
         If read data has the same meaning as write data (memory read-back), send same shift register object to write_shift_register and read_shift_register arguments.
         If both (write_shift_register, read_shift_register) arguments are specified, they must be of the same length.
 
+
+        >>> from PyICe.spi_instrument import spiInstrument
+        >>> hasattr(spiInstrument, '__init__')
+        True
+
         Args:
             name: Name identifier.
-            preamble_clk_cnt: Preamble clk cnt.
-            preamble_data: Preamble data.
-            read_shift_register: Read shift register.
-            spiInterface: Spiinterface.
-            write_shift_register: Write shift register.
+            preamble_clk_cnt: Preamble clk cnt to use.
+            preamble_data: Preamble data to use.
+            read_shift_register: Read shift register to use.
+            spiInterface: Spiinterface to use.
+            write_shift_register: Write shift register to use.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         delegator.__init__(self)
         instrument.__init__(self, '{} SPI instrument wrapper'.format(name))
@@ -95,11 +108,16 @@ class spiInstrument(instrument, delegator):
         Note that communication is disabled independent of this setting if not all writable bit fields have been initialized.
         Also note that after communication is enabled, a SPI transceive will not take place until a bit field is read or written.
 
+
+        >>> from PyICe.spi_instrument import spiInstrument
+        >>> hasattr(spiInstrument, 'add_channel_transceive_enable')
+        True
+
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         trans_en_ch = integer_channel(
             name=channel_name, size=1, write_function=lambda enable: setattr(
@@ -161,12 +179,21 @@ class spiInstrument(instrument, delegator):
 
     def read_delegated_channel_list(self, channels):
         """Private.
+        Sends the appropriate command to the instrument and parses the
+        response.
+
+        Reads data from the underlying source and returns it.
+
+
+        >>> from PyICe.spi_instrument import spiInstrument
+        >>> hasattr(spiInstrument, 'read_delegated_channel_list')
+        True
 
         Args:
             channels: List of channel objects.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
         """
         results_dict = {}
         spi_data = None

@@ -1,4 +1,8 @@
-"""B R24 H64 instrument driver."""
+"""B R24 H64 instrument driver.
+
+>>> from PyICe.lab_instruments.BR24H64 import BR24H64
+
+"""
 from ..lab_core import *  # noqa: F403
 from .. import twi_interface
 from PyICe.lab_utils.banners import print_banner
@@ -37,7 +41,7 @@ class BR24H64(instrument):
             interface_twi: TWI/I2C interface instance.
 
         Raises:
-            ValueError: On error condition.
+            ValueError: If the provided value is out of range or invalid.
         """
         instrument.__init__(
             self,
@@ -93,8 +97,10 @@ class BR24H64(instrument):
     def write_location(self, location, value):
         """Perform write location operation.
 
+        Writes data to the underlying target.
+
         Args:
-            location: Location.
+            location: Position or placement specifier.
             value: Value to set.
         """
         self._write_location(location, value)
@@ -102,25 +108,29 @@ class BR24H64(instrument):
     def read_location(self, location):
         """Return read location result.
 
+        Reads data from the underlying source and returns it.
+
         Args:
-            location: Location.
+            location: Position or placement specifier.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
         """
         return self._read_location(location)
 
     def read_dictionary(self, verbose=False):
         """Return read dictionary result.
 
+        Reads data from the underlying source and returns it.
+
         Args:
             verbose: If True, print debug output.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
 
         Raises:
-            ChannelAccessException: On error condition.
+            ChannelAccessException: If the channel cannot be accessed in this mode.
         """
         file = b''
         if verbose:
@@ -162,14 +172,17 @@ class BR24H64(instrument):
 
     def write_dictionary(self, data_dict, verbose=False):
         """Perform write dictionary operation.
+        Formats and sends the command to the instrument.
+
+        Writes data to the underlying target.
 
         Args:
-            data_dict: Data dict.
+            data_dict: Dictionary mapping channel names to measured values.
             verbose: If True, print debug output.
 
         Raises:
-            ChannelAccessException: On error condition.
-            ChannelValueException: On error condition.
+            ChannelAccessException: If the channel cannot be accessed in this mode.
+            ChannelValueException: If the value is outside the channel\'s valid range.
         """
         file = b''
         for key in data_dict:

@@ -1,10 +1,19 @@
-"""Clean ascii code utility."""
+"""Clean ascii code utility.
+
+>>> from PyICe.lab_utils.clean_ascii_code import clean_ascii_code
+
+"""
 import re
 from .clean_unicode import clean_unicode
 
 
 def clean_ascii_code(ustr):
-    """Convert string to a valid code identifier by replacing special characters.
+    """Transform an arbitrary string into a valid Python/SQL identifier.
+
+    Replaces whitespace, punctuation, and operators with mnemonic tags
+    (e.g., '-' becomes '_MNS_', '+' becomes '_PLS_'). Prepends an underscore
+    if the result would start with a digit. Used to convert channel names from
+    instrument queries into safe attribute names for data tables.
 
     >>> clean_ascii_code('hello world')
     'hello_world'
@@ -14,15 +23,17 @@ def clean_ascii_code(ustr):
     '_3volts'
     >>> clean_ascii_code('x+y')
     'x_PLS_y'
+    >>> clean_ascii_code('Vout(mV)')
+    'Vout_OPNP_mV_CLSP_'
+    >>> clean_ascii_code('1.5V')
+    '_1p5V'
 
     Args:
-        ustr: Ustr.
-
-    Returns:
-        Result value.
+        ustr: Input string (may contain unicode, which is transliterated first).
 
     Raises:
-        Exception: On error condition.
+        Exception: If a control character (< 0x30 or > 0x7A) remains after
+            all substitutions.
     """
     astr = clean_unicode(ustr)
     astr = astr.replace("\t", "_")  # 0x09

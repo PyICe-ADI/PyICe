@@ -1,28 +1,45 @@
-"""Sqlite to easylog utility."""
+"""Sqlite to easylog utility.
+
+>>> from PyICe.lab_utils.sqlite_to_easylog import sqlite_to_easylog
+
+"""
 from .sqlite_to_csv import sqlite_to_csv
 
 
 class sqlite_to_easylog(sqlite_to_csv):
-    """Wrapper to make specific format required by Easy Log Graph software.
+    """Export SQLite data in the CSV dialect consumed by EasyLog Graph.
 
-    Formats data stored in an SQLite database so that it can be browsed interactively.
-    Use EasyLogGraph (http://www.lascarelectronics.com/data-logger/easylogger-software.php) to visualize data.
+    Extends ``sqlite_to_csv`` so that column headers carry parenthesized unit
+    annotations, which is how EasyLog Graph
+    (http://www.lascarelectronics.com/data-logger/easylogger-software.php)
+    determines which trace belongs on which Y-axis. Use this when you want to
+    interactively browse logged bench data with the free EasyLog viewer.
+
+    >>> from PyICe.lab_utils.sqlite_to_easylog import sqlite_to_easylog
+    >>> sqlite_to_easylog is not None
+    True
+
     """
     def __init__(self, chart_name, table_name, y1_axis_units='V',
                  y2_axis_units='A', database_file='data_log.sqlite'):
-        """Chart_name will appear at top of graph.
+        """Configure the EasyLog export with chart title, table source, and axis units.
 
-        table_name is the sqlite database table name
-        y1_axis_units controls the left-side y-axis label
-        y2_axis_units controls the right-side y-axis label
-        database_file is the filename of the sqlite database
+        Automatically inserts ``rowid`` (labelled with *chart_name*) and
+        ``datetime`` columns, which EasyLog requires in fixed positions at
+        the beginning of each row.
+
+
+        >>> from PyICe.lab_utils.sqlite_to_easylog import sqlite_to_easylog
+        >>> hasattr(sqlite_to_easylog, '__init__')
+        True
 
         Args:
-            chart_name: Chart name.
-            database_file: Database file.
-            table_name: Database table name.
-            y1_axis_units: Y1 axis units.
-            y2_axis_units: Y2 axis units.
+            chart_name: Title shown at the top of the EasyLog graph; also
+                used as the display name for the ``rowid`` column.
+            table_name: Name of the SQLite table to query.
+            y1_axis_units: Unit string for the left Y-axis (e.g. ``'V'``).
+            y2_axis_units: Unit string for the right Y-axis (e.g. ``'A'``).
+            database_file: Path to the SQLite database file.
         """
         self.y1_axis_units = y1_axis_units
         self.y2_axis_units = y2_axis_units
@@ -38,32 +55,50 @@ class sqlite_to_easylog(sqlite_to_csv):
             display_name='Time')
 
     def add_comment(self, *args, **kwargs):
-        """Add a comment.
+        """Raise an exception because EasyLog files do not support comment lines.
+
+        Overrides the parent ``sqlite_to_csv.add_comment`` to prevent creation
+        of files that EasyLog Graph cannot parse.
+
+
+        >>> from PyICe.lab_utils.sqlite_to_easylog import sqlite_to_easylog
+        >>> hasattr(sqlite_to_easylog, 'add_comment')
+        True
 
         Args:
-            **kwargs: Additional keyword arguments.
-            *args: Additional positional arguments.
+            *args: Ignored; present only for interface compatibility.
+            **kwargs: Ignored; present only for interface compatibility.
 
         Raises:
-            Exception: On error condition.
+            Exception: Always raised—comment lines are not allowed in EasyLog files.
         """
         raise Exception(
             "Comment lines don't seem to be allowed in EasyLog files.")
 
     def add_column(self, query_name, second_y_axis=False,
                    display_name=None, format='', transform=None):
-        """Query name is the name of the sqlite column.
+        """Register a data column and assign it to a Y-axis via unit annotation.
 
-        second_y_axis is a boolean.  Setting to True places data on the right-side y-axis scale
-        display_name, if not None, sets csv column header title differently from database column name
-        format controls appearance of queried data. Ex: "3.2f"
+        The column header is automatically suffixed with the configured unit
+        string in parentheses (e.g. ``"vout (V)"``), which is how EasyLog
+        Graph decides whether a trace is plotted on the left or right Y-axis.
+
+
+        >>> from PyICe.lab_utils.sqlite_to_easylog import sqlite_to_easylog
+        >>> hasattr(sqlite_to_easylog, 'add_column')
+        True
 
         Args:
-            display_name: Display name.
-            format: Format name string.
-            query_name: Query name.
-            second_y_axis: Second y axis.
-            transform: Transform.
+            query_name: SQLite column name to select from the table.
+            second_y_axis: If ``True``, place this trace on the right-side
+                Y-axis (uses ``y2_axis_units``); otherwise use the left-side
+                Y-axis (``y1_axis_units``).
+            display_name: Column header label shown in the CSV. Defaults to
+                *query_name* when ``None``.
+            format: Python format-spec string controlling numeric display
+                (e.g. ``'3.2f'``).
+            transform: Optional callable applied to each cell value before
+                writing.
         """
         if display_name is None:
             display_name = query_name
@@ -79,15 +114,22 @@ class sqlite_to_easylog(sqlite_to_csv):
             transform=transform)
 
     def add_columns(self, column_list, second_y_axis=False, format=''):
-        """Adds a list of sqlite column names at once.
+        """Register multiple data columns on the same Y-axis in one call.
 
-        all columns will be placed on left-side y-axis scale unless second_y_axis is True
-        format controls appearance of queried data. Ex: "3.2f"
+        Convenience wrapper around ``add_column``; each name in *column_list*
+        is added with identical *second_y_axis* and *format* settings.
+
+
+        >>> from PyICe.lab_utils.sqlite_to_easylog import sqlite_to_easylog
+        >>> hasattr(sqlite_to_easylog, 'add_columns')
+        True
 
         Args:
-            column_list: Column list.
-            format: Format name string.
-            second_y_axis: Second y axis.
+            column_list: Sequence of SQLite column names to add.
+            second_y_axis: If ``True``, assign all columns to the right-side
+                Y-axis; otherwise the left-side.
+            format: Python format-spec string controlling numeric display
+                (e.g. ``'3.2f'``).
         """
         for column in column_list:
             self.add_column(
@@ -98,11 +140,21 @@ class sqlite_to_easylog(sqlite_to_csv):
         # raise Exception("Elapsed time not supported yet. Is it really needed?")
 
     def write(self, output_file, append=False):
-        """Write queried data to output_file after column setup is complete.
+        """Write the configured columns to an EasyLog-compatible CSV file.
+
+        Call this after all desired columns have been added with
+        ``add_column`` / ``add_columns``. The file is written with Windows
+        ANSI encoding (``mbcs``) as expected by EasyLog Graph.
+
+
+        >>> from PyICe.lab_utils.sqlite_to_easylog import sqlite_to_easylog
+        >>> hasattr(sqlite_to_easylog, 'write')
+        True
 
         Args:
-            append: Append.
-            output_file: Output file.
+            output_file: Destination file path for the CSV output.
+            append: If ``True``, append rows to an existing file instead of
+                overwriting it.
         """
         sqlite_to_csv.write(
             self,

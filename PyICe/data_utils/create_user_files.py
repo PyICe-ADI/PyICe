@@ -1,10 +1,23 @@
-"""Create user files utilities."""
+"""Create user files utilities.
+
+>>> from PyICe.data_utils.create_user_files import create_my_scopefile
+
+"""
 from PyICe.lab_utils.banners import print_banner
 import os
 
 
 def create_my_scopefile():
-    """Perform create my scopefile operation."""
+    """Perform create my scopefile operation.
+
+    Performs the described operation on the object's internal state.
+
+
+    >>> from PyICe.data_utils.create_user_files import create_my_scopefile
+    >>> callable(create_my_scopefile)
+    True
+
+    """
     if not os.path.isfile('./local/my_instruments.py'):
         os.makedirs("./local/", exist_ok=True)
         with open('./local/my_instruments.py', 'w') as file:

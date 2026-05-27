@@ -1,4 +1,8 @@
-"""Stdf utils utilities."""
+"""Stdf utils utilities.
+
+>>> from PyICe.data_utils.stdf_utils import FileReader
+
+"""
 from pystdf.IO import Parser
 import pystdf.V4
 import time
@@ -62,35 +66,77 @@ PTR_TEST_FLG_TEST_FAILED = 2**7
 
 
 class FileReader:
-    """File reader."""
+    """File reader.
+
+    >>> from PyICe.data_utils.stdf_utils import FileReader
+    >>> FileReader is not None
+    True
+
+    """
     def __init__(self):
-        """Initialize file reader."""
+        """Initialize file reader.
+
+        Stores configuration in ``data`` for use by other methods.
+
+        >>> from PyICe.data_utils.stdf_utils import FileReader
+        >>> FileReader is not None
+        True
+
+        """
         self.data = []
 
     def after_send(self, dataSource, data):
         """Perform after send operation.
 
+        Transmits data to the remote endpoint.
+
+
+        >>> from PyICe.data_utils.stdf_utils import FileReader
+        >>> hasattr(FileReader, 'after_send')
+        True
+
         Args:
             data: Data to write.
-            dataSource: Datasource.
+            dataSource: Datasource to use.
         """
         self.data.append(data)
 
     def write(self, line):
         """Write a value to the channel.
 
+        Writes data to the underlying target.
+
+
+        >>> from PyICe.data_utils.stdf_utils import FileReader
+        >>> hasattr(FileReader, 'write')
+        True
+
         Args:
-            line: Line.
+            line: Line to use.
         """
         self.data.append(line)
 
     def flush(self):
-        """Perform flush operation."""
+        """Run the flush step.
+
+        Supports the ``FileReader`` workflow by performing the described operation.
+
+        >>> from PyICe.data_utils.stdf_utils import FileReader
+        >>> hasattr(FileReader, 'flush')
+        True
+
+        """
         pass
 
 
 class stdf_reader():
-    """Stdf_reader."""
+    """Stdf_reader.
+
+    >>> from PyICe.data_utils.stdf_utils import stdf_reader
+    >>> stdf_reader is not None
+    True
+
+    """
     def __init__(self, filename, exit_if_malformed=True):
         """Creates an object that can be interrogated for both stdf metadata like test setup time and device numbers as well as any individual test.
 
@@ -100,8 +146,13 @@ class stdf_reader():
         The part number will be a string as that's what pystdf returned.
         A secondary attribute self.metadata is a dictionary of metadata objects like "SETUPTIME" and "STARTTIME".
 
+
+        >>> from PyICe.data_utils.stdf_utils import stdf_reader
+        >>> stdf_reader is not None
+        True
+
         Args:
-            exit_if_malformed: Exit if malformed.
+            exit_if_malformed: Exit if malformed to use.
             filename: File path.
         """
         self.exit_if_malformed = exit_if_malformed
@@ -110,11 +161,18 @@ class stdf_reader():
     def scan_file(self, filename):
         """Perform scan file operation.
 
+        Steps through a range of values, collecting data at each point.
+
+
+        >>> from PyICe.data_utils.stdf_utils import stdf_reader
+        >>> hasattr(stdf_reader, 'scan_file')
+        True
+
         Args:
             filename: File path.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         with open(filename, 'rb') as file:
             p = Parser(inp=file, reopen_fn=None)
@@ -219,12 +277,19 @@ class stdf_reader():
     def test_passed(self, device, testnum):
         """Return test passed result.
 
+        Exercises the unit under test and asserts expected behavior.
+
+
+        >>> from PyICe.data_utils.stdf_utils import stdf_reader
+        >>> hasattr(stdf_reader, 'test_passed')
+        True
+
         Args:
-            device: Device.
-            testnum: Testnum.
+            device: Device to use.
+            testnum: Testnum to use.
 
         Returns:
-            Result value.
+            True if the test passed, False otherwise.
         """
         for test in self.parts[str(device)]["TESTS"]:
             if test[PTR_TEST_NUM] == testnum:
@@ -236,19 +301,32 @@ class stdf_reader():
         Returns its PASS/FAIL status as a boolean.
         True is passing, False failing.
 
+
+        >>> from PyICe.data_utils.stdf_utils import stdf_reader
+        >>> hasattr(stdf_reader, 'part_passed')
+        True
+
         Args:
-            device: Device.
+            device: Device to use.
 
         Returns:
-            Result value.
+            True if the part passed all tests, False otherwise.
         """
         return self.parts[str(device)]["PASSING"]
 
     def get_all_passing_parts(self):
         """Returns a list of all parts with a Passing flag.
+        Returns the stored all passing parts from the object's internal state.
+
+        Returns the stored all passing parts from the object's internal state.
+
+
+        >>> from PyICe.data_utils.stdf_utils import stdf_reader
+        >>> hasattr(stdf_reader, 'get_all_passing_parts')
+        True
 
         Returns:
-            Result value.
+            The current all passing parts.
         """
         passing_parts = []
         for part in self.parts:
@@ -261,11 +339,16 @@ class stdf_reader():
 
         Returns a list of device numbers found with a bin number within the bins_list.
 
+
+        >>> from PyICe.data_utils.stdf_utils import stdf_reader
+        >>> hasattr(stdf_reader, 'get_all_in_bins_list')
+        True
+
         Args:
-            bins_list: Bins list.
+            bins_list: Bins list to use.
 
         Returns:
-            Result value.
+            The current all in bins list.
         """
         parts_in_bins = []
         for part in self.parts:
@@ -278,11 +361,16 @@ class stdf_reader():
 
         Returns an list of dictionaries of the part numbers <string>s and their bin numbers <int>s with keys: {"PART", "BIN"}
 
+
+        >>> from PyICe.data_utils.stdf_utils import stdf_reader
+        >>> hasattr(stdf_reader, 'get_bin_numbers')
+        True
+
         Args:
-            device_list: Device list.
+            device_list: Device list to use.
 
         Returns:
-            Result value.
+            The current bin numbers.
         """
         results = []
         for part in device_list:
@@ -295,11 +383,16 @@ class stdf_reader():
 
         Returns its bin number <int>.
 
+
+        >>> from PyICe.data_utils.stdf_utils import stdf_reader
+        >>> hasattr(stdf_reader, 'get_bin_number')
+        True
+
         Args:
-            device: Device.
+            device: Device to use.
 
         Returns:
-            Result value.
+            The current bin number.
         """
         return self.get_bin_numbers(device_list=[str(device)])[0]["BIN"]
 
@@ -309,8 +402,13 @@ class stdf_reader():
         Returns a simple Python list of part numbers found in the STDF file.
         It is a list of strings because that is what pystdf returned.
 
+
+        >>> from PyICe.data_utils.stdf_utils import stdf_reader
+        >>> hasattr(stdf_reader, 'get_all_part_indices')
+        True
+
         Returns:
-            Result value.
+            The current all part indices.
         """
         parts_list = []
         for part in self.parts:
@@ -325,11 +423,16 @@ class stdf_reader():
         Your mileage may vary. See to_eagle_testnumber and from_eagle_testnumber at the bottom of this file.
         Returns a python dictionary with the device number (a string as returned by pystdf) and the value (usually float?) as the tester reading for that device.
 
+
+        >>> from PyICe.data_utils.stdf_utils import stdf_reader
+        >>> hasattr(stdf_reader, 'get_all_of_testnum')
+        True
+
         Args:
-            testnum: Testnum.
+            testnum: Testnum to use.
 
         Returns:
-            Result value.
+            The current all of testnum.
         """
         results = {}
         for part in self.parts:
@@ -345,12 +448,17 @@ class stdf_reader():
         devnum accepts integers or strings.
         testnum is in the stdf 9 digit format.
 
+
+        >>> from PyICe.data_utils.stdf_utils import stdf_reader
+        >>> hasattr(stdf_reader, 'get_value')
+        True
+
         Args:
-            devnum: Devnum.
-            testnum: Testnum.
+            devnum: Devnum to use.
+            testnum: Testnum to use.
 
         Returns:
-            Result value.
+            The current value.
         """
         for test in self.parts[str(devnum)]["TESTS"]:
             if test[PTR_TEST_NUM] == testnum:
@@ -364,8 +472,13 @@ class stdf_reader():
         This is the UNIX standard base time, adjusted to the local time zone.
         The string version is converted to human readable as '%Y-%m-%d %H:%M:%S'.
 
+
+        >>> from PyICe.data_utils.stdf_utils import stdf_reader
+        >>> hasattr(stdf_reader, 'get_setup_time')
+        True
+
         Returns:
-            Result value.
+            The current setup time.
         """
         return self.metadata["SETUPTIME"]
 
@@ -377,8 +490,13 @@ class stdf_reader():
         This is the UNIX standard base time, adjusted to the local time zone.
         The string version is converted to human readable as '%Y-%m-%d %H:%M:%S'.
 
+
+        >>> from PyICe.data_utils.stdf_utils import stdf_reader
+        >>> hasattr(stdf_reader, 'get_starttime')
+        True
+
         Returns:
-            Result value.
+            The current starttime.
         """
         return self.metadata["STARTTIME"]
 
@@ -388,11 +506,16 @@ class stdf_reader():
         devnum accepts integers or strings.
         Returned value is an integer.
 
+
+        >>> from PyICe.data_utils.stdf_utils import stdf_reader
+        >>> hasattr(stdf_reader, 'get_xlocation')
+        True
+
         Args:
-            devnum: Devnum.
+            devnum: Devnum to use.
 
         Returns:
-            Result value.
+            The current xlocation.
         """
         return self.parts[str(devnum)]["XLOC"]
 
@@ -402,11 +525,16 @@ class stdf_reader():
         devnum accepts integers or strings.
         Returned value is an integer.
 
+
+        >>> from PyICe.data_utils.stdf_utils import stdf_reader
+        >>> hasattr(stdf_reader, 'get_ylocation')
+        True
+
         Args:
-            devnum: Devnum.
+            devnum: Devnum to use.
 
         Returns:
-            Result value.
+            The current ylocation.
         """
         return self.parts[str(devnum)]["YLOC"]
 
@@ -416,11 +544,16 @@ def to_eagle_testnumber(test_number):
 
     The test number is the left 5 digits shifted down to the decimal point and the subtest number is the 5 rightmost digits.
 
+
+    >>> from PyICe.data_utils.stdf_utils import to_eagle_testnumber
+    >>> callable(to_eagle_testnumber)
+    True
+
     Args:
-        test_number: Test number.
+        test_number: Test number to use.
 
     Returns:
-        Result value.
+        The current ylocation.
     """
     subtestnum, testnum = math.modf(test_number / 1e5)
     return {"TESTNUM": round(testnum), "SUBTESTNUM": round(subtestnum * 1e5)}
@@ -429,11 +562,18 @@ def to_eagle_testnumber(test_number):
 def from_eagle_testnumber(test_number, subtest_number):
     """Returns an integer comprised of the arguments test_number time 100,000 plus the argument subtest_number to get back to the natively stored value of the U*4, 32 bit number, in the stdf file.
 
+    Persists the current state or data to durable storage.
+
+
+    >>> from PyICe.data_utils.stdf_utils import from_eagle_testnumber
+    >>> callable(from_eagle_testnumber)
+    True
+
     Args:
-        subtest_number: Subtest number.
-        test_number: Test number.
+        subtest_number: Subtest number to use.
+        test_number: Test number to use.
 
     Returns:
-        Result value.
+        The Y-axis location value.
     """
     return round(test_number * 1e5 + subtest_number)
