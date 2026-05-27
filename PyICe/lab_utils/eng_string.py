@@ -4,24 +4,11 @@ import numbers
 
 
 def eng_string(x, fmt=':.3g', si=True, units=None):
-    """Returns float/int value <x> formatted in a simplified engineering format -.
+    """Format a number using engineering notation (exponents that are multiples of 3).
 
-    using an exponent that is a multiple of 3.
-
-    format: printf-style string used to format the value before the exponent.
-
-    si: if true, use SI suffix for exponent, e.g. k instead of e3, n instead of
-    e-9 etc.
-
-    E.g. with format='%.2f':
-        1.23e-08 => 12.30e-9
-        123 => 123.00
-          1230.0 => 1.23e3
-      -1230000.0 => -1.23e6
-
-    and with si=True:
-          1230.0 => 1.23k
-      -1230000.0 => -1.23M
+    Converts raw numeric values into human-readable strings with SI prefixes
+    (k, M, G, m, µ, n, etc.) — the format typically used on instrument displays
+    and in datasheets.
 
     >>> eng_string(0.001)
     '1m'
@@ -33,15 +20,22 @@ def eng_string(x, fmt=':.3g', si=True, units=None):
     '4.7kV'
     >>> eng_string(-0.000047)
     '-47µ'
+    >>> eng_string(1e-12)
+    '1p'
+    >>> eng_string(2.5e9, units='Hz')
+    '2.5GHz'
+    >>> eng_string(0.1, fmt=':.2f')
+    '100.00m'
+    >>> eng_string(47000, si=False)
+    '47e3'
+    >>> eng_string(float('inf'))
+    'inf'
 
     Args:
-        fmt: Fmt.
-        si: Si.
-        units: Unit string.
-        x: X.
-
-    Returns:
-        Result value.
+        x: Numeric value to format.
+        fmt: Format spec applied to the mantissa (default ':.3g').
+        si: If True, use SI prefix letters; if False, use e-notation.
+        units: Optional unit string appended after the SI prefix.
     """
     assert isinstance(x, numbers.Number)
     if x == 0 or not math.isfinite(x):

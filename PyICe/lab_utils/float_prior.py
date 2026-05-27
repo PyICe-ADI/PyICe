@@ -4,7 +4,10 @@ import sys
 
 
 def float_prior(val):
-    """Return next Python double precision floating point number smaller than x.
+    """Return the largest representable float strictly less than val.
+
+    Equivalent to ``math.nextafter(val, -math.inf)`` but ported from the
+    Boost.Math algorithm for compatibility with older Python versions.
 
     >>> float_prior(1.0) < 1.0
     True
@@ -12,12 +15,13 @@ def float_prior(val):
     True
     >>> float_prior(0.0) < 0.0
     True
+    >>> float_prior(1.0) == 1.0 - 2**-53
+    True
+    >>> float_prior(-1.0) < -1.0
+    True
 
     Args:
-        val: Val.
-
-    Returns:
-        Result value.
+        val: Input value (must be finite and greater than -sys.float_info.max).
     """
     # algorithm copied from Boost:
     # http://www.boost.org/doc/libs/1_45_0/boost/math/special_functions/next.hpp

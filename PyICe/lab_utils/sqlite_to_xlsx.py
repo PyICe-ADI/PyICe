@@ -9,13 +9,22 @@ numpy_missing = False
 
 
 class sqlite_to_xlsx(object):
-    """Dump whole/partial/multiple SQLite database(s) to Excel format."""
+    """Export SQLite tables and views to a formatted Excel ``.xlsx`` workbook.
+
+    Creates a workbook with autofilters, sparklines, alternating-row shading,
+    frozen header panes, and named ranges for each column. Use as a context
+    manager or call ``close`` explicitly when finished writing.
+    """
 
     def __init__(self, output_file):
-        """Specify Excel output filename, with .xlsx extension.
+        """Create the Excel workbook and set up default cell formats.
+
+        Opens *output_file* in constant-memory mode (suitable for very large
+        tables) and disables automatic formula/URL/number conversion so that
+        raw SQLite values are preserved exactly.
 
         Args:
-            output_file: Output file.
+            output_file: Destination path for the ``.xlsx`` file.
         """
         import xlsxwriter
         self.rowcol_to_cell = xlsxwriter.utility.xl_rowcol_to_cell
@@ -36,53 +45,58 @@ class sqlite_to_xlsx(object):
         atexit.register(self.close)
 
     def __enter__(self):
-        """Enter the context manager.
-
-        Returns:
-            Result value.
-        """
+        """Return self for use as a context manager."""
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        """Exit the context manager.
+        """Close the workbook when leaving the ``with`` block.
 
         Args:
-            exc_type: Exc type.
-            exc_value: Exc value.
-            traceback: Traceback.
+            exc_type: Exception type, or ``None`` if no exception occurred.
+            exc_value: Exception instance, or ``None``.
+            traceback: Traceback object, or ``None``.
 
         Returns:
-            Result value.
+            ``None``—exceptions are never suppressed.
         """
         self.close()
         return None
 
     @property
     def workbook(self):
-        """Return xlsxwriter workbook object so that user script can add additioanl chartsheets, etc.
+        """Expose the underlying ``xlsxwriter.Workbook`` for advanced customisation.
 
+        Use this to add extra chartsheets, custom formats, or properties that
+        ``sqlite_to_xlsx`` does not wrap directly.
         See: http://xlsxwriter.readthedocs.io/workbook.html
 
         Returns:
-            Result value.
+            The ``xlsxwriter.Workbook`` instance backing this export.
         """
         return self._workbook
 
     def add_worksheet(self, sqlite_data_obj, elapsed_time_columns=False):
-        """Add a single worksheet corresponding to a single sqlite table/view/query contained within a lab_utils.sqlite_data instance.
+        """Create a worksheet from one ``sqlite_data`` instance and populate it with all rows.
 
-        returns the newly created worksheet instance if creation was successful, or None in case the SQLite data was empty.
+        The worksheet includes auto-sized columns, autofilters, sparklines,
+        named ranges, alternating-row shading, and frozen header panes. If the
+        table contains a ``datetime`` column and *elapsed_time_columns* is
+        ``True``, two extra columns (``elapsed_time`` and ``elapsed_seconds``)
+        are inserted immediately after ``datetime``.
         See: http://xlsxwriter.readthedocs.io/worksheet.html
 
         Args:
-            elapsed_time_columns: Elapsed time columns.
-            sqlite_data_obj: Sqlite data obj.
+            sqlite_data_obj: A ``lab_utils.sqlite_data`` instance pointing at
+                the table, view, or query to export.
+            elapsed_time_columns: If ``True``, add computed elapsed-time
+                columns alongside the ``datetime`` column.
 
         Returns:
-            Result value.
+            The newly created ``xlsxwriter.Worksheet``, or ``None`` if the
+            SQLite table contained no rows.
 
         Raises:
-            Exception: On error condition.
+            Exception: If the workbook has already been closed.
         """
         if self._workbook is None:
             raise Exception(
@@ -287,18 +301,20 @@ class sqlite_to_xlsx(object):
 
     def add_database(self, db_file_name='data_log.sqlite',
                      elapsed_time_columns=False):
-        """Add all tables and views found within a single SQLite database file to workbook.
+        """Import every table and view from an SQLite database, one worksheet per table.
 
-        Each table/view will be added to a separate worksheet.
-        returns a dictionary containing all worksheets with worksheet name keys
+        Iterates over ``sqlite_master`` to discover all tables and views, then
+        calls ``add_worksheet`` for each. Empty tables are silently skipped.
         See: http://xlsxwriter.readthedocs.io/worksheet.html
 
         Args:
-            db_file_name: Db file name.
-            elapsed_time_columns: Elapsed time columns.
+            db_file_name: Path to the SQLite database file.
+            elapsed_time_columns: If ``True``, add elapsed-time columns next
+                to each ``datetime`` column (see ``add_worksheet``).
 
         Returns:
-            Result value.
+            A ``dict`` mapping worksheet names (str) to their
+            ``xlsxwriter.Worksheet`` instances for all non-empty tables.
         """
         from .sqlite_data import sqlite_data  # local import to avoid circular dependency
         conn = sqlite3.connect(db_file_name)
@@ -316,42 +332,43 @@ class sqlite_to_xlsx(object):
         return worksheets
 
     def add_xy_chart(self, subtype='straight_with_markers'):
-        """Add xy (scatter) chart to workbook.
+        """Create an XY (scatter) chart object in the workbook.
 
-        Available subtypes are:
-            straight_with_markers
-            straight
-            smooth_with_markers
-            smooth
+        The returned chart must still be placed into a worksheet
+        (``worksheet.insert_chart``) or a chartsheet (``add_chartsheet``)
+        before it will be visible. Data series, titles, and axis labels must
+        also be configured manually via the chart's own methods.
 
-        Chart must then be placed into a worksheet or chartsheet to be displayed.
-        (worksheet.insert_chart, chartsheet.set_chart methods)
-        See: http://xlsxwriter.readthedocs.io/chartsheet.html
-             http://xlsxwriter.readthedocs.io/worksheet.html
+        Available *subtype* values:
+            ``'straight_with_markers'``, ``'straight'``,
+            ``'smooth_with_markers'``, ``'smooth'``
 
-        Data series must be added manually (add_series method)
-        Title, axes, etc must be configured manually
-           (set_title, set_x_axis, set_y_axis, set_y2_axis, set_style, set_size, set_legend methods)
         See: http://xlsxwriter.readthedocs.io/chart.html
 
         Args:
-            subtype: Subtype.
+            subtype: Line style for the scatter chart (default:
+                ``'straight_with_markers'``).
 
         Returns:
-            Result value.
+            A new ``xlsxwriter.Chart`` instance of type ``'scatter'``.
         """
         return self._workbook.add_chart(
             {'type': 'scatter', 'subtype': subtype})
 
     def add_chartsheet(self, name, chart):
-        """Add a chartsheet.
+        """Add a dedicated chartsheet displaying a single chart.
+
+        A chartsheet is a full-tab chart (no cells). Use ``add_xy_chart`` to
+        create the chart object first, configure its series and axes, then
+        pass it here.
 
         Args:
-            chart: Chart.
-            name: Name identifier.
+            name: Tab name for the new chartsheet (max 31 characters).
+            chart: An ``xlsxwriter.Chart`` instance (e.g. from
+                ``add_xy_chart``).
 
         Returns:
-            Result value.
+            The newly created ``xlsxwriter.Chartsheet`` instance.
         """
         chartsheet = self._workbook.add_chartsheet(name)
         chartsheet.set_chart(chart)

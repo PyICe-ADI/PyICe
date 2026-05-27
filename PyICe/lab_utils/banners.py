@@ -1,25 +1,26 @@
 """Banners utility."""
 def print_banner(*message, offset=1, length=80):
-    """Perform print banner operation.
-
-    Args:
-        *message: Additional positional arguments.
-        length: Length.
-        offset: Offset value.
-    """
+    """Print a box-drawn banner to stdout. See build_banner for details."""
     print(build_banner(*message, offset=offset, length=length))
 
 
 def build_banner(*message, offset=1, length=80):
-    """Return build banner result.
+    """Build a Unicode box-drawing banner around one or more lines of text.
+
+    Used to create visually distinct section headers in console output during
+    long test or measurement runs.
+
+    >>> build_banner('Hello', length=20)
+    '┌──────────────────┐\\n│ Hello            │\\n└──────────────────┘'
+    >>> len(build_banner('Test', length=40).splitlines())
+    3
+    >>> len(build_banner('A', 'B', 'C', length=40).splitlines())
+    5
 
     Args:
-        *message: Additional positional arguments.
-        length: Length.
-        offset: Offset value.
-
-    Returns:
-        Result value.
+        *message: One or more lines of text to display inside the banner.
+        offset: Left padding inside the box (default 1 space).
+        length: Total width of the box including borders (default 80).
     """
     upper_left = u"\u250c"
     bar = u"\u2500"

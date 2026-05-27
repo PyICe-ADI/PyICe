@@ -4,25 +4,37 @@ from .print_hex_bytes import print_hex_bytes
 
 
 class StreamWindow(object):
-    """Wraps any non-seekable stream that has a read(number_of_bytes) method.
+    """Wrap a non-seekable stream with a FIFO buffer to provide rewindable peek access.
 
-    and provides a specifiable amount of rewindability via FIFO buffering.
-    StreamWindow-wrapped streams offer a peek() method which effectively provides
-    a "sliding window" over the head of the stream.
+    Use StreamWindow when you need to inspect upcoming bytes from a stream
+    without consuming them, then later read (consume) those same bytes. This
+    is especially useful for packet parsing: call ``peek(n)`` with
+    progressively larger *n* until a complete packet is identified, then
+    ``read()`` to consume it.
 
-    stream can be any stream that follows the io.RawIOBase protocol,
-    e.g., PySerial's serial.Serial objects.
-    In particular, stream must support the read() method.
+    The wrapped *stream* can be any object that follows the ``io.RawIOBase``
+    protocol (in particular, it must have a ``read()`` method), such as
+    PySerial's ``serial.Serial`` objects or ``io.BytesIO``.
 
-    It's really too bad that io.BufferedReader(RawIOBase, buffer_size) in the Python 2.7.13
-    standard library has a broken peek() method! In testing, I found that
-    io.BufferedReader refuses to read any bytes from stream into the FIFO
-    as long as there is at least one valid byte in the FIFO.
-    This makes it impossible to just keep calling peek(n) with larger
-    and larger values of n until one peeks at a complete data packet, for the
-    example use case of segmenting/parsing packets from a stream of bytes.
+    ``io.BufferedReader`` in the Python 2.7.13 standard library has a broken
+    ``peek()`` method — it refuses to read new bytes from the underlying
+    stream as long as at least one valid byte remains in its internal
+    buffer. This makes incremental peek-based parsing impossible.
+    StreamWindow was developed to fill that gap.
 
-    StreamWindow was developed to fill this gap.
+    Examples:
+        >>> import io
+        >>> sw = StreamWindow(io.BytesIO(b'hello world'), buffer_size=64)
+        >>> sw.peek(5)  # peek at first 5 bytes without consuming
+        bytearray(b'hello')
+        >>> sw.read(5)  # consume those 5 bytes
+        bytearray(b'hello')
+        >>> sw.peek(6)  # peek at remaining bytes
+        bytearray(b' world')
+        >>> len(sw)  # 6 bytes buffered from the peek
+        6
+        >>> sw.read(6)  # consume the rest
+        bytearray(b' world')
     """
     # FYI: This class should be here in PyICe.lab_utils rather than corraled in labcomm
     # because it is generally applicable to any I/O stream that follows the io.RawIOBase
@@ -31,12 +43,25 @@ class StreamWindow(object):
     # but for whatever reason wasn't.  -- F. Lee 7/25/2017
 
     def __init__(self, stream, buffer_size=2**16, debug=False):
-        """Initialize stream window.
+        """Initialize a StreamWindow around the given stream.
+
+        Allocate a fixed-size FIFO buffer and attach it to *stream* so that
+        subsequent ``peek()`` and ``read()`` calls can draw from either the
+        buffer or the live stream transparently.
+
+        Examples:
+            >>> import io
+            >>> sw = StreamWindow(io.BytesIO(b'abc'), buffer_size=32)
+            >>> len(sw)  # nothing buffered yet
+            0
 
         Args:
-            buffer_size: Buffer size.
-            debug: If True, enable debug output.
-            stream: Stream.
+            stream: Any object with a ``read(n)`` method (e.g.,
+                ``io.BytesIO``, ``serial.Serial``). The stream to wrap.
+            buffer_size: Maximum number of bytes the internal FIFO can
+                hold. Determines how far ahead ``peek()`` can look.
+            debug: When ``True``, print diagnostic messages about every
+                ``read()`` and ``peek()`` operation to stdout.
         """
         assert hasattr(stream, "read"), ("stream argument provided to StreamWindow "
                                          "constructor must have a read() method.")
@@ -49,24 +74,31 @@ class StreamWindow(object):
         self.debug = debug
 
     def _shift_buffer(self, num_bytes):
-        """Delete num_bytes of data from the front of buf, overwriting.
+        """Discard the first *num_bytes* from the buffer by sliding remaining data forward.
 
-        it with valid data slid over from the end of buf. This makes
-        room at the end of buf for new data from stream.
+        After this operation the first ``num_bytes`` positions in the buffer
+        are freed for new data from the underlying stream. The valid content
+        that was beyond *num_bytes* is moved to the front of the buffer.
 
         Args:
-            num_bytes: Number of bytes.
+            num_bytes: How many bytes to remove from the head of the
+                internal buffer.
         """
         self.buf[:self.buffer_size - num_bytes] = self.buf[num_bytes:]
 
     def _read_buffer(self, num_bytes):
-        """Consumes bytes from the FIFO buffer.
+        """Consume and return *num_bytes* from the head of the FIFO buffer.
+
+        The consumed bytes are removed from the buffer (via
+        ``_shift_buffer``) and ``content_size`` is decremented accordingly.
+        The caller must ensure *num_bytes* does not exceed ``content_size``.
 
         Args:
-            num_bytes: Number of bytes.
+            num_bytes: How many bytes to extract from the front of the
+                FIFO. Must be ``<= self.content_size``.
 
         Returns:
-            Result value.
+            A ``bytearray`` containing the consumed bytes.
         """
         assert num_bytes <= self.content_size
         # Save result bytes into new bytearray.
@@ -76,28 +108,57 @@ class StreamWindow(object):
         return result
 
     def __len__(self):
-        """Just return the number of valid bytes in the FIFO, as it is already.
+        """Return the number of valid bytes currently in the FIFO buffer.
 
-        known that streams have indefinite length.
+        Because the underlying stream has indefinite length, this reports
+        only how many bytes have been buffered (via ``peek()``) and not yet
+        consumed (via ``read()``).
+
+        Examples:
+            >>> import io
+            >>> sw = StreamWindow(io.BytesIO(b'abcdef'), buffer_size=32)
+            >>> len(sw)  # nothing peeked yet
+            0
+            >>> sw.peek(4)  # buffer 4 bytes
+            bytearray(b'abcd')
+            >>> len(sw)  # now 4 bytes in the FIFO
+            4
 
         Returns:
-            Result value.
+            The count of unread bytes sitting in the FIFO.
         """
         return self.content_size
 
     def __getitem__(self, k):
-        """Support x[i] indexing or x[i:j] slice peeking into the FIFO.
+        """Return buffered bytes by integer index or slice without consuming them.
 
-        0 indexes the head byte in the FIFO, -1 indexes the tail byte.
+        Index ``0`` refers to the head (oldest) byte in the FIFO and ``-1``
+        refers to the tail (newest) byte. Slices are automatically clamped
+        to the valid content range.
+
+        Examples:
+            >>> import io
+            >>> sw = StreamWindow(io.BytesIO(b'abcde'), buffer_size=32)
+            >>> sw.peek(5)  # fill the buffer
+            bytearray(b'abcde')
+            >>> sw[0]  # first byte
+            97
+            >>> sw[-1]  # last buffered byte
+            101
+            >>> sw[1:4]  # slice of buffered content
+            bytearray(b'bcd')
 
         Args:
-            k: K.
+            k: An ``int`` index or ``slice`` selecting bytes from the
+                FIFO buffer.
 
         Returns:
-            Result value.
+            A single byte value (``int``) for integer indexing, or a
+            ``bytearray`` for slicing.
 
         Raises:
-            IndexError: On error condition.
+            IndexError: If an integer index is out of the valid buffered
+                content range.
         """
         if isinstance(k, int):
             if (k > 0 and k >= self.content_size) or (
@@ -111,30 +172,60 @@ class StreamWindow(object):
         return self.buf[k]
 
     def find(self, sub, start=0, end=None):
-        """Return the lowest index in FIFO buffer where subsection sub is found.
+        """Return the lowest index in the FIFO buffer where *sub* is found.
 
-        Returns -1 if not found.
+        Search only the valid buffered content (ignoring any stale bytes
+        beyond ``content_size``). Returns ``-1`` if *sub* is not present.
+
+        Note: The *start* and *end* parameters are accepted for API
+        compatibility but are not used; the search always covers the
+        full valid buffer range ``[0, content_size)``.
+
+        Examples:
+            >>> import io
+            >>> sw = StreamWindow(io.BytesIO(b'hello world'), buffer_size=64)
+            >>> sw.peek(11)  # buffer everything
+            bytearray(b'hello world')
+            >>> sw.find(b'world')  # find a subsequence
+            6
+            >>> sw.find(b'xyz')  # not found
+            -1
 
         Args:
-            end: End.
-            start: Start bit position.
-            sub: Sub.
+            sub: The byte sequence to search for (``bytes`` or
+                ``bytearray``).
+            start: Reserved for API compatibility; currently unused.
+            end: Reserved for API compatibility; currently unused.
 
         Returns:
-            Result value.
+            The zero-based index of the first occurrence of *sub* within
+            the buffered content, or ``-1`` if not found.
         """
         return self.buf.find(sub, 0, self.content_size)
 
     def read(self, num=1):
-        """Try to read and consume num bytes from the FIFO-buffered stream.
+        """Read and consume up to *num* bytes from the FIFO-buffered stream.
 
-        Returns at most num bytes as a string.
+        Bytes already in the FIFO are consumed first; if more are needed
+        they are fetched directly from the underlying stream. The returned
+        ``bytearray`` may be shorter than *num* if the stream is exhausted.
+
+        Examples:
+            >>> import io
+            >>> sw = StreamWindow(io.BytesIO(b'abcdef'), buffer_size=32)
+            >>> sw.peek(3)  # buffer 3 bytes
+            bytearray(b'abc')
+            >>> sw.read(2)  # consume 2 from FIFO
+            bytearray(b'ab')
+            >>> sw.read(3)  # 1 from FIFO + 2 from stream
+            bytearray(b'cde')
 
         Args:
-            num: Count or number.
+            num: Maximum number of bytes to consume. Must be positive.
 
         Returns:
-            Result value.
+            A ``bytearray`` of up to *num* bytes composed of buffered
+            bytes followed by any additional bytes read from the stream.
         """
         assert num > 0
         if self.debug:
@@ -172,18 +263,32 @@ class StreamWindow(object):
         return result
 
     def peek(self, num=1):
-        """Returns a copy of at most num bytes from stream but also saves them in a FIFO.
+        """Return a copy of up to *num* bytes from the stream without consuming them.
 
-        buffer to allow future peek()s and read()s to see them. If FIFO is full,
-        peek() returns only what is in the FIFO and won't read from stream until
-        space is made.
-        Use read() to make some space in the FIFO to continue retrieving bytes from stream.
+        Peeked bytes are saved in the internal FIFO so that subsequent
+        ``peek()`` or ``read()`` calls can see them again. If the FIFO is
+        already full, only the bytes currently in the FIFO are returned and
+        no new data is read from the stream — call ``read()`` first to free
+        space.
+
+        Examples:
+            >>> import io
+            >>> sw = StreamWindow(io.BytesIO(b'abcdef'), buffer_size=32)
+            >>> sw.peek(3)  # look ahead 3 bytes
+            bytearray(b'abc')
+            >>> sw.peek(3)  # same 3 bytes, not consumed
+            bytearray(b'abc')
+            >>> sw.peek(6)  # extend the window
+            bytearray(b'abcdef')
 
         Args:
-            num: Count or number.
+            num: Maximum number of bytes to peek at. Clamped to
+                ``buffer_size`` if larger. Must be positive.
 
         Returns:
-            Result value.
+            A ``bytearray`` containing up to *num* bytes from the head of
+            the buffered stream. May be shorter if the stream is exhausted
+            or the FIFO is full.
         """
         assert num > 0
         if num > self.buffer_size:
@@ -240,9 +345,13 @@ class StreamWindow(object):
         return result
 
     def close(self):
-        """Closes the underlying stream.
+        """Close the underlying stream.
+
+        Delegates to the wrapped stream's ``close()`` method, releasing
+        any associated resources (file descriptors, serial ports, etc.).
 
         Returns:
-            Result value.
+            Whatever the underlying stream's ``close()`` method returns
+            (typically ``None``).
         """
         return self.stream.close()

@@ -44,10 +44,11 @@ class interpolator(object):
     25.0
     """
     def __init__(self, points_list=None):
-        """Initialize interpolator.
+        """Create an interpolator, optionally pre-loaded with calibration points.
 
         Args:
-            points_list: Points list.
+            points_list: Optional list of [x, y] pairs. Must be strictly
+                monotonic in y (but need not be sorted in x).
         """
         self._points = []
         self._points_ysort = []
@@ -57,21 +58,18 @@ class interpolator(object):
             self.sort()
 
     def __call__(self, x_value):
-        """Call the instance.
+        """Interpolate (or extrapolate) to find y at the given x.
 
         Args:
-            x_value: X value.
-
-        Returns:
-            Result value.
+            x_value: X coordinate to evaluate.
         """
         return self.get_y_val(x_value)
 
     def check_monotonicity(self):
-        """Perform check monotonicity operation.
+        """Verify that y-values are strictly monotonic (required for inverse lookup).
 
         Raises:
-            Exception: On error condition.
+            Exception: If duplicate x-values or non-monotonic y-values are found.
         """
         if len(self._points) > 1:
             x_pts = [x[0] for x in self._points]
@@ -88,29 +86,29 @@ class interpolator(object):
                                                  self._points[i][1]))
 
     def sort(self):
-        """Perform sort operation."""
+        """Sort internal points by x-value (and maintain a y-sorted copy)."""
         self._points.sort(key=operator.itemgetter(0))  # increasing values in x
         self._points_ysort = sorted(self._points, key=operator.itemgetter(1))
         # increasing values in y
 
     def add_point(self, x_val, y_val):
-        """Add a point.
+        """Add a single calibration point and re-sort.
 
         Args:
-            x_val: X val.
-            y_val: Y val.
+            x_val: X coordinate (must be unique among existing points).
+            y_val: Y coordinate (must maintain strict monotonicity).
         """
         self._points.append([x_val, y_val])
         self.sort()
         self.check_monotonicity()
 
     def add_points(self, point_list):
-        """Expects 2d list of the form [[x0,y0],[x1,y1],...[xn,yn]].
+        """Add multiple calibration points from a 2D list [[x0,y0], ...].
 
-        the points must be strictly monotonic, but not necessarily sorted
+        Points must be strictly monotonic in y but need not be pre-sorted in x.
 
         Args:
-            point_list: Point list.
+            point_list: List of [x, y] pairs.
         """
         for point in point_list:
             self.add_point(point[0], point[1])

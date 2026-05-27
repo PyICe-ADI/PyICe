@@ -1,6 +1,8 @@
 """Ordinalize utility."""
 def ordinalize(num):
-    """Convert positive integer to ordinal number.
+    """Format a non-negative integer with its English ordinal suffix (st, nd, rd, th).
+
+    Handles the irregular teens (11th, 12th, 13th) correctly.
 
     >>> ordinalize(1)
     '1st'
@@ -14,12 +16,13 @@ def ordinalize(num):
     '112th'
     >>> ordinalize(122)
     '122nd'
+    >>> ordinalize(0)
+    '0th'
+    >>> ordinalize(1001)
+    '1001st'
 
     Args:
-        num: Count or number.
-
-    Returns:
-        Result value.
+        num: Non-negative integer to format.
     """
     assert num >= 0 and isinstance(num, int)
     rem_10, rem_100 = num % 10, num % 100

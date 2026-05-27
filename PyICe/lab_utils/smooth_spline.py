@@ -4,21 +4,29 @@ import scipy
 
 
 def smooth_spline(rec_array, rms_error, verbose=True, **kwargs):
-    """Uses http://scipy.github.io/devdocs/generated/scipy.interpolate.UnivariateSpline.html with movable knots.
+    """Smooth a two-column record array in place with a univariate spline.
 
-    set rms_error to change number of knots to bound smoothed data rms deviation from original data points.
-    Set rms_error to 0 to interpolate through all points.
-    rec_array is modified in place
-    returns number of knots used to construct spline
+    Fits a ``scipy.interpolate.UnivariateSpline`` with movable knots,
+    then overwrites *rec_array* with uniformly-spaced x-values and the
+    corresponding spline-evaluated y-values. The number of knots is
+    chosen automatically so that the RMS deviation between the smoothed
+    curve and the original data stays within *rms_error*. Set
+    *rms_error* to 0 to interpolate exactly through every point.
+
+    **Note:** *rec_array* is modified in place.
 
     Args:
-        **kwargs: Additional keyword arguments.
-        rec_array: Rec array.
-        rms_error: Rms error.
-        verbose: If True, print debug output.
+        rec_array: Two-column numpy record array (x, y). Modified in
+            place with re-sampled smoothed data.
+        rms_error: Target RMS deviation from the original data. Lower
+            values yield more knots and a closer fit; 0 forces exact
+            interpolation.
+        verbose: If True, print the knot count and point count summary.
+        **kwargs: Forwarded to ``scipy.interpolate.UnivariateSpline``
+            (e.g. ``k`` for spline degree).
 
     Returns:
-        Result value.
+        The number of interior knots used to construct the spline.
     """
     point_count = len(rec_array)
     rss = rms_error * point_count**0.5

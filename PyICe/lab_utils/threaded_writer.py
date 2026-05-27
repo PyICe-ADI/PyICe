@@ -7,23 +7,33 @@ DEFAULT_AUTHKEY = b'ltc_lab'
 
 
 class threaded_writer(object):
-    """Helper to perform some task in parallel with test script at fixed rate."""
+    """Execute periodic background tasks in parallel with a test script.
+
+    Use this to run repeating operations at a fixed rate alongside your main
+    test flow, such as keepalive writes to a channel, waveform playback from
+    a sequence, or periodic instrument polling. Each task runs in its own
+    daemon thread managed by this class, and can be stopped individually or
+    all at once.
+    """
     class stop_thread(threading.Thread):
         """Thread extended to have stop() method. Threads cannot be restarted after stopping. Make a new one to restart."""
 
         def __init__(self, stop_event, stopped_event, queue,
                      group=None, target=None, name=None, args=(), kwargs={}):
-            """Initialize stop_thread.
+            """Create a stoppable daemon thread for periodic task execution.
 
             Args:
-                args: Args.
-                group: Group.
-                kwargs: Kwargs.
-                name: Name identifier.
-                queue: Queue.
-                stop_event: Stop event.
-                stopped_event: Stopped event.
-                target: Target value.
+                stop_event: Threading event used to signal the thread to stop.
+                stopped_event: Threading event set by the thread when it has
+                    finished execution.
+                queue: Thread-safe queue for passing runtime parameter updates
+                    (e.g., new time_interval) to the running thread.
+                group: Reserved for future threading.Thread extension; should
+                    be None.
+                target: Callable to invoke when the thread starts.
+                name: Optional name for the thread, used in debugging output.
+                args: Positional arguments passed to the target callable.
+                kwargs: Keyword arguments passed to the target callable.
             """
             self.stop_event = stop_event  # command to stop thread
             # notification that thread has stopped itself.
@@ -39,22 +49,27 @@ class threaded_writer(object):
             self.setDaemon(True)
 
         def stop(self):
-            """Stop thread. thread cannot be restarted."""
+            """Signal the thread to stop. The thread cannot be restarted."""
             self.stop_event.set()
 
         def set_time_interval(self, time_interval):
-            """Set the time interval.
+            """Update the delay between successive task executions.
+
+            Enqueues the new interval so the running thread picks it up on
+            its next iteration without requiring a restart.
 
             Args:
-                time_interval: Time interval.
+                time_interval: Delay in seconds between consecutive calls
+                    to the task function.
             """
             self.queue.put(("time_interval", time_interval))
 
     def __init__(self, verbose=False):
-        """Initialize threaded_writer.
+        """Create a threaded_writer manager for periodic background tasks.
 
         Args:
-            verbose: If True, print debug output.
+            verbose: If True, print timestamped debug messages when tasks
+                execute, stop, or reach the end of a sequence.
         """
         self.verbose = verbose
         # check stopped_event whenever inspecting elements of this list to find
@@ -68,7 +83,7 @@ class threaded_writer(object):
                 self._threads.remove(thread)
 
     def stop_all(self):
-        """Stop all threads. threads cannot be restarted."""
+        """Stop all managed threads. Stopped threads cannot be restarted."""
         self._check_threads()
         for thread in self._threads[:]:
             thread.stop()
@@ -76,23 +91,29 @@ class threaded_writer(object):
 
     def connect_channel(self, channel_name, time_interval, sequence=None,
                         start=True, address='localhost', port=5001, authkey=DEFAULT_AUTHKEY):
-        """Write each element of sequence in turn to channel_name, waiting time_interval between writes.
+        """Write values to a remote channel periodically in a background thread.
 
-        If sequence is None, Periodically read and re-write channel as keepalive.
-        Thread safety provided by remote channel server infrastructure.
-        First thread must call master.serve() and test script should call master.attach().
+        When *sequence* is provided, each element is written in turn to the
+        named channel with *time_interval* seconds between writes. When
+        *sequence* is None, the channel is periodically read and re-written
+        as a keepalive. Thread safety is provided by the remote channel
+        server infrastructure; the first thread must call ``master.serve()``
+        and the test script should call ``master.attach()``.
 
         Args:
-            address: Address.
-            authkey: Authkey.
-            channel_name: Name for the new channel.
-            port: Port.
-            sequence: Sequence.
-            start: Start bit position.
-            time_interval: Time interval.
+            channel_name: Name of the remote channel to write to.
+            time_interval: Delay in seconds between consecutive writes.
+            sequence: Iterable of values to write sequentially. If None,
+                the channel's current value is read back and re-written as
+                a keepalive.
+            start: If True, start the background thread immediately.
+            address: Hostname or IP address of the remote channel server.
+            port: TCP port number of the remote channel server.
+            authkey: Authentication key (bytes) for the remote connection.
 
         Returns:
-            Result value.
+            The stop_thread instance managing the background task, which
+            can be used to stop or reconfigure the thread.
         """
         from PyICe import lab_core
         m = lab_core.master()
@@ -103,38 +124,42 @@ class threaded_writer(object):
         else:
             class sequencer(object):
                 def __init__(self):
-                    """Initialize sequencer."""
+                    """Create a sequencer wrapping the given sequence as a generator."""
                     self.sequence = self.generator(sequence)
 
                 def generator(self, sequence):
-                    """Perform generator operation.
+                    """Yield each value from the sequence one at a time.
 
                     Args:
-                        sequence: Sequence.
+                        sequence: Iterable of values to yield in order.
 
                     Yields:
-                        Next value.
+                        The next value from the sequence.
                     """
                     for i in sequence:
                         yield i
 
                 def __call__(self):
-                    """Call the instance."""
+                    """Write the next value from the sequence to the channel."""
                     m.write(channel_name, next(self.sequence))
             return self.add_function(sequencer(), time_interval, start)
 
     def add_function(self, function, time_interval, start=True):
-        """Periodically execute function.
+        """Schedule a callable for periodic execution in a background thread.
 
-        No thread safety. Use caution with shared interfaces or use separate remote channel clients with each function. See example above.
+        No thread safety is provided for the callable itself. Use caution
+        with shared interfaces, or use separate remote channel clients for
+        each function to avoid conflicts.
 
         Args:
-            function: Function.
-            start: Start bit position.
-            time_interval: Time interval.
+            function: Zero-argument callable to execute on each iteration.
+            time_interval: Delay in seconds between consecutive calls to
+                *function*.
+            start: If True, start the background thread immediately.
 
         Returns:
-            Result value.
+            The stop_thread instance managing the background task, which
+            can be used to stop or adjust the time interval later.
         """
         stop_event = threading.Event()
         stopped_event = threading.Event()
@@ -156,14 +181,25 @@ class threaded_writer(object):
         return thread
 
     def _task(self, function, time_interval, stop_event, stopped_event, qq):
-        """Thread handling loop. processes input Event to request thread termination and sends event back when thread terminates.
+        """Run the periodic task loop inside a background thread.
+
+        Repeatedly calls *function* at the configured interval, checking
+        for a stop request and processing any parameter updates from the
+        queue between iterations. Sets *stopped_event* when the loop exits,
+        either from an explicit stop or when a StopIteration signals the
+        end of a finite sequence.
 
         Args:
-            function: Function.
-            qq: Qq.
-            stop_event: Stop event.
-            stopped_event: Stopped event.
-            time_interval: Time interval.
+            function: Zero-argument callable to execute on each iteration.
+            time_interval: Initial delay in seconds between consecutive
+                calls to *function*.
+            stop_event: Threading event checked each iteration; when set,
+                the loop exits gracefully.
+            stopped_event: Threading event set by this method when the
+                loop has finished, notifying the caller that the thread
+                has terminated.
+            qq: Thread-safe queue from which runtime parameter updates
+                (e.g., a new time_interval) are consumed each iteration.
         """
         dly = delay_loop()
         params = {}
