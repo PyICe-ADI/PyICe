@@ -2362,7 +2362,6 @@ class i2c_scpi(twi_interface):
         if len(cc_bytes) > 1:
             raise ValueError(f'Extended command codes not supported by {type(self).__name__}')
         addr_w = hex(self.write_addr(addr7))[2:].rjust(2,"0")
-        addr_r = hex(self.read_addr(addr7))[2:].rjust(2,"0")
         commandCodeStr = hex(commandCode)[2:].rjust(2,"0")
         write_str = 'SMB:RW:PEC?(@{},{});'.format(addr_w,commandCodeStr)
         self.interface.write(write_str)
