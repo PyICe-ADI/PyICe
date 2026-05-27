@@ -1,10 +1,10 @@
 """Swap endian utility."""
 def swap_endian(word, elementCount, elementSize=8):
-    """Reverse endianness of multi-byte word.
+    """Reverse the order of fixed-size elements within an integer word.
 
-    elementCount is number of bytes, or other atomic memory block if not of elementSize 8 bits
-
-    to reverse bit order, set elementCount to the number of bits and set elementSize to 1.
+    Typically used to byte-swap register values read from I2C/SPI devices that
+    use big-endian format when the host is little-endian (or vice versa). Can
+    also reverse bit order by setting elementSize=1.
 
     >>> hex(swap_endian(0xABCD, 2))
     '0xcdab'
@@ -12,14 +12,14 @@ def swap_endian(word, elementCount, elementSize=8):
     '0x563412'
     >>> bin(swap_endian(0b1100, 4, elementSize=1))
     '0b11'
+    >>> hex(swap_endian(0xDEADBEEF, 4))
+    '0xefbeadde'
 
     Args:
-        elementCount: Elementcount.
-        elementSize: Elementsize.
-        word: Word.
-
-    Returns:
-        Result value.
+        word: Integer value to rearrange.
+        elementCount: Number of elements (e.g., 2 for a 16-bit word of bytes).
+        elementSize: Bits per element (default 8 for byte-swap; use 1 for
+            bit-reversal).
     """
     assert word < 2**(elementSize * elementCount)
     assert word >= 0

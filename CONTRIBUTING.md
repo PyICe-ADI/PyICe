@@ -1,5 +1,5 @@
 # Contributing to PyICe
-# Please download Python [3.10.11](https://www.python.org/downloads/release/python-31011/) to develop on PyICe
+# Please download a Python between [3.10.11](https://www.python.org/downloads/release/python-31011/) and [3.14.15](https://www.python.org/downloads/release/python-3145/) to develop on PyICe
 
 ## Introduction
 Welcome to PyICe!  There is always room for improvement, whether it be new instrument
@@ -15,9 +15,9 @@ A folder such as c:\users\projects is recommended.
 Using a Git client such as Tortoise Git, clone a copy of https://github.com/PyICe-ADI/PyICe.git to that folder
 
 ### Create a virtual Environment
-Be sure you have added Python 3.10 to the system environment variable _Path_.
+Be sure you have added an appropriate Python version to the system environment variable _Path_.
 
-In the event you already have an older or newer version of Python installed, you **must** peg the PyICe virtual environment to Python 3.10 as shown below.
+In the event you already have an unsupported version of Python installed, you **must** peg the PyICe virtual environment to an appropriate Python (such as 3.10) as shown below.
 ```commandline
 py -3.10 -m venv pyice-env
 ```
@@ -30,7 +30,7 @@ Active your virtual environment in Windows:
 ```
 or in Linux:
 ```commandline
-source ./venv/bin/activate
+source ./pyice-env/bin/activate
 ```
 Once the environment is activated, you can install the development packages (
 this includes pytest
@@ -60,7 +60,7 @@ General PyICe inquires:
     Developers: pyice-developers@analog.com
     Zachary Lewko: zachary.lewko@analog.com
     Dave Simmons: david.simmons@analog.com
-    Steve Martin: steve.martin@analog.com
+    Steve Martin: xenomorphxx131@gmail.com
 
 Environment questions or concerns:
     Tim Laracy: Tlaracy@marvell.com

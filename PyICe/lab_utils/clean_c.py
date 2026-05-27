@@ -4,16 +4,25 @@ from .clean_ascii_code import clean_ascii_code
 
 
 def clean_c(str):
-    """Return clean c result.
+    """Sanitize a string for use as a C identifier, rejecting reserved words.
+
+    Applies clean_ascii_code first (special chars to mnemonics), then checks
+    against C reserved keywords and GNU libc reserved name patterns (leading
+    underscores, E+digit, SIG_, str/mem/wcs prefixes, _t suffix, etc.).
+
+    >>> clean_c('my_var')
+    'my_var'
+    >>> clean_c('voltage 1')
+    'voltage_1'
+    >>> clean_c('Vout(mV)')
+    'Vout_OPNP_mV_CLSP_'
 
     Args:
-        str: Str.
-
-    Returns:
-        Result value.
+        str: Input string (will be run through clean_ascii_code first).
 
     Raises:
-        Exception: On error condition.
+        Exception: If the result contains a C reserved keyword or matches a
+            reserved name pattern from the GNU C library.
     """
     str = clean_ascii_code(str)
 

@@ -1,10 +1,10 @@
 """Ascii unicode approx table utility."""
 #
-# ASCII approximate translations for use in unicode.translate()
+# ASCII approximate translations for use in str.translate().
 #
-# print u"Ω = 2.8 µV/°C × β² ± 12nV".translate(ascii_unicode_approx_table).encode("ascii")
-# produces:
-#    _ohm = 2.8 uV/_deg_C x Beta^2 +/- 12nV
+# Example:
+#     "Ω = 2.8 µV/°C × β² ± 12nV".translate(ascii_unicode_approx_table)
+#     # produces: '_ohm = 2.8 uV/_deg_C x Beta^2 +/- 12nV'
 #
 ascii_unicode_approx_table =  \
     {ord('\N{DEGREE SIGN}'): '_deg_',

@@ -1,8 +1,13 @@
 """Dont print utility."""
 def dont_print(*args, **kwargs):
-    """Use this as a function call argument in place of print_to_screen to suppress printing.
+    """Accept and discard all arguments, producing no output.
+
+    Pass this function wherever a ``print_to_screen``-style callback is
+    expected in order to suppress all console output from that caller.
+
+    >>> dont_print("hello", "world", linefeed=False)  # produces no output
 
     Args:
-        **kwargs: Additional keyword arguments.
-        *args: Additional positional arguments.
+        *args: Positional arguments (ignored).
+        **kwargs: Keyword arguments (ignored).
     """

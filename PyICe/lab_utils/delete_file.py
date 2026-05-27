@@ -4,19 +4,20 @@ import os
 
 
 def delete_file(filename, max_tries=20, retry_delay=5):
-    """Tries to delete a file, retrying if the file is locked (e.g. because it is open.
+    """Delete a file, retrying if it is locked, and silently skipping if it does not exist.
 
-    in Notepad++, SQLite Manager, or another program), failing gracefully if the file
-    doesn't (yet) exist. Gives up after a number of retries and raises RuntimeError.
-    Good for removing stale SQLite DBs and log files from old runs.
+    Designed for removing stale SQLite databases and log files from previous
+    test runs.  If the file is held open by another program (e.g. Notepad++,
+    SQLite Manager), the function retries up to *max_tries* times with a
+    *retry_delay*-second pause between attempts.
 
     Args:
-        filename: File path.
-        max_tries: Max tries.
-        retry_delay: Retry delay.
+        filename: Path to the file to delete.
+        max_tries: Maximum number of removal attempts before giving up.
+        retry_delay: Seconds to wait between retries when the file is locked.
 
     Raises:
-        RuntimeError: On error condition.
+        RuntimeError: If the file still cannot be deleted after all retries.
     """
     try:
         _f_stat = os.stat(filename)  # noqa: F841 - See if file already exists.
