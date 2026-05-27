@@ -4,19 +4,26 @@ from .vector_transform import vector_transform
 
 
 def decimate(rec_array, downsample_factor, **kwargs):
-    """Reduce row count by factor of downsample_factor.
+    """Downsample a record array by an integer factor with anti-alias filtering.
 
-     By default an order 8 Chebyshev type I filter is used independently on each column.
-     Set kwarg ftype='fir' to instead use a 30 point FIR filter with hamming window (recommended).
-     http://docs.scipy.org/doc/scipy-0.16.1/reference/generated/scipy.signal.decimate.html
+    Wraps ``scipy.signal.decimate`` column-by-column so every column
+    (including the x-axis) is anti-alias filtered and then sub-sampled.
+    By default an order-8 Chebyshev type I filter is applied; pass
+    ``ftype='fir'`` for a 30-point FIR filter with Hamming window
+    (recommended for most lab data).
+
+    See https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.decimate.html
 
     Args:
-        **kwargs: Additional keyword arguments.
-        downsample_factor: Downsample factor.
-        rec_array: Rec array.
+        rec_array: Input numpy record array whose rows will be reduced.
+        downsample_factor: Integer factor by which to reduce the row count
+            (e.g. 4 keeps every 4th sample after filtering).
+        **kwargs: Forwarded to ``scipy.signal.decimate`` (e.g.
+            ``ftype='fir'``, ``n`` for filter order).
 
     Returns:
-        Result value.
+        A new numpy record array with ``len(rec_array) // downsample_factor``
+        rows and the same column names.
     """
     return vector_transform(rec_array, [lambda col: scipy.signal.decimate(
         x=col, q=downsample_factor, **kwargs)] * len(rec_array.dtype.names))

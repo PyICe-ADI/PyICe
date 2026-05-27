@@ -7,33 +7,30 @@ from .print_to_screen import print_to_screen
 def print_hex_bytes(the_bytes, number_of_bytes_per_line=16,
                     number_of_bytes_to_print=None, prefix='',
                     suffix='', show_offsets=False, write=None):
-    """Given a list of bytes (or other iterable of bytes),.
+    """Print an iterable of bytes as formatted hexadecimal lines.
 
-    print them like this:
+    Produces output like::
 
-    0a 30 01 00 f0 ff 00 00 0a 30 01 00 f0 ff 00 00
-    00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f
-    . . .
+        0a 30 01 00 f0 ff 00 00 0a 30 01 00 f0 ff 00 00
+        00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f
 
-    Defaults to printing all the bytes given,
-    in lines of 16 bytes each, using the built-in
-    print statement. But this is all configurable.
-    In particular, the write argument should be any function
-    that accepts a string to be output, printed,
-    or recorded in some way, such as
-    lab_utils.logfile's print_to_file_and_screen() method.
-    If number_of_bytes_per_line is None, then all bytes will
-    be printed on one line AND the caller is responsible for
-    ensuring that the_bytes is a finite number of bytes.
+    Handy for inspecting TWI/I²C register dumps, firmware images, or raw
+    serial traffic.  By default all bytes are printed 16 per line via
+    ``print_to_screen``, but every aspect is configurable.
 
     Args:
-        number_of_bytes_per_line: Number of bytes per line.
-        number_of_bytes_to_print: Number of bytes to print.
-        prefix: Name prefix string.
-        show_offsets: Show offsets.
-        suffix: Suffix.
-        the_bytes: The bytes.
-        write: Write.
+        the_bytes: Any iterable yielding integer byte values (0–255).
+        number_of_bytes_per_line: Bytes per output line.  ``None`` puts
+            everything on a single line (caller must ensure finite input).
+        number_of_bytes_to_print: Cap on total bytes printed.  ``None``
+            means print all of them.
+        prefix: String prepended to every output line.
+        suffix: String appended to every output line.
+        show_offsets: If ``True``, prefix each line with a six-digit hex
+            byte offset (e.g. ``000010:``).
+        write: Callable that accepts a single string for output.  Defaults
+            to ``print_to_screen``; pass a ``logfile.print_to_file_and_screen``
+            method to simultaneously log and display.
     """
     # Validate arguments.
     assert isinstance(the_bytes, collections.abc.Iterable)

@@ -1,12 +1,21 @@
 """Remove non ascii utility."""
 def remove_non_ascii(text):
-    """Remove a non ascii.
+    """Replace characters above code point 127 with a placeholder marker.
+
+    Used to sanitize instrument responses or filenames that may contain
+    unexpected non-ASCII bytes before writing to logs or constructing paths.
+
+    >>> remove_non_ascii('hello')
+    'hello'
+    >>> remove_non_ascii('100°C')
+    '100(REMOVED_NON_ASCII)C'
+    >>> remove_non_ascii('Résumé')
+    'R(REMOVED_NON_ASCII)sum(REMOVED_NON_ASCII)'
+    >>> remove_non_ascii('')
+    ''
 
     Args:
-        text: Text.
-
-    Returns:
-        Result value.
+        text: Input string potentially containing non-ASCII characters.
     """
     out = ''
     for c in text:

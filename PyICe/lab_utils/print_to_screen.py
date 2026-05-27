@@ -3,17 +3,18 @@ import sys
 
 
 def print_to_screen(*args, **kwargs):
-    """Like Python 2's built-in print statement, but is a function instead of a statement.
+    """Print each positional argument to stdout, optionally suppressing the trailing newline.
 
-    and so can be passed as an argument in a function call.
-    Pass keyword argument 'linefeed=False' to suppress the default trailing linefeed.
+    Unlike a bare ``print()`` call, this is a first-class function designed to
+    be passed as a callback (e.g. to ``print_hex_bytes``'s *write* parameter or
+    anywhere a ``dont_print``-compatible signature is expected).
 
     Args:
-        **kwargs: Additional keyword arguments.
-        *args: Additional positional arguments.
+        *args: Values to print, each separated by a space.
+        **kwargs: Pass ``linefeed=False`` to suppress the trailing newline.
 
     Returns:
-        Result value.
+        The number of positional arguments that were printed.
     """
     sys.stdout.write(
         # Needed to suppress possibility of print statement's default leading

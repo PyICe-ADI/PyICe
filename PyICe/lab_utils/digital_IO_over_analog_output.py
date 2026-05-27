@@ -1,24 +1,40 @@
 """Digital  I O over analog output utility."""
 class digital_IO_over_analog_output(object):
-    """###SCHEDULED FOR DELETION###.
+    """Wrap an analog output channel with a digital logic interface.
 
-    Use lab_instruments.digital_analog_io() virtual instrument instead.
+    **DEPRECATED — SCHEDULED FOR DELETION.**
+    Use ``lab_instruments.digital_analog_io()`` virtual instrument instead.
 
-    Wraps an analog output PyICe channel with a digital interface.
-    domain_channel is the PyICe channel for the logic supply of the digital input
-    we're talking to, e.g. master['vin_supply'] or master['dvcc_supply'].
+    This adapter lets you drive a physical analog output as if it were a
+    digital signal by mapping logical high, low, and testhook states to
+    configurable voltage levels. It tracks the logic-supply voltage via a
+    write callback on *domain_channel* (e.g. ``master['vin_supply']``) and
+    automatically updates the driven voltage when the supply changes.
     """
     def __init__(self, channel, domain_channel, VOL=0.0,
                  delta_Vhook=1.5, tolerance=0.01, abs_max=None):
-        """Initialize digital_ i o_over_analog_output.
+        """Initialize the digital-over-analog output wrapper.
+
+        Configure the voltage levels used to represent logic states and
+        register a write callback on *domain_channel* so that changes to
+        the logic supply are automatically tracked.
 
         Args:
-            VOL: Vol.
-            abs_max: Abs max.
-            channel: Channel object.
-            delta_Vhook: Delta vhook.
-            domain_channel: Domain channel.
-            tolerance: Tolerance value.
+            channel: The analog-output PyICe channel that will be driven
+                with the computed voltage levels.
+            domain_channel: The PyICe channel representing the logic-supply
+                voltage (e.g. ``master['dvcc_supply']``). Its current value
+                sets the initial VOH, and a write callback keeps VOH in
+                sync whenever the supply is changed.
+            VOL: Voltage driven for a logic-low output, in volts.
+            delta_Vhook: Voltage added above VOH when the output is set to
+                the "testhook" state, in volts.
+            tolerance: Maximum allowable difference (volts) between the
+                currently driven voltage and the new supply voltage before
+                the callback will update the output.
+            abs_max: Optional absolute maximum voltage (volts) that the
+                output is allowed to reach; clamps the testhook voltage
+                to this ceiling when set.
         """
         from PyICe import lab_core
         assert isinstance(channel, lab_core.channel)
@@ -53,18 +69,24 @@ class digital_IO_over_analog_output(object):
                 self.channel.write(self._add_with_abs_max(voltage))
 
     def digital_write(self, value):
-        """Write any of (True, 1, 1.0) to set output to VOH,.
+        """Set the output to a logic-high, logic-low, or testhook voltage.
 
-        any of (False, 0, 0.0) to set output to VOL, and
-        any of ("testhook", 2, 2.0) to set output to VOH+delta_Vhook.
-        You can pass this method as the write_function argument
-        to master.add_channel_virtual()
+        Translate a logical value into the corresponding analog voltage and
+        drive it on the underlying channel. Accepts boolean-like values
+        (True/1/1.0 → VOH), (False/0/0.0 → VOL), or a testhook designator
+        (``"testhook"``/2/2.0 → VOH + delta_Vhook). String aliases such as
+        ``"high"``, ``"low"``, ``"h"``, ``"l"`` are also supported. This
+        method can be passed as the *write_function* argument to
+        ``master.add_channel_virtual()``.
 
         Args:
-            value: Value to set.
+            value: The desired logic state. Use True / 1 / ``"high"`` for
+                logic high (VOH), False / 0 / ``"low"`` for logic low
+                (VOL), or ``"testhook"`` / 2 for VOH + delta_Vhook.
 
         Raises:
-            NotImplementedError: On error condition.
+            NotImplementedError: If *value* requests a high-impedance state
+                (e.g. ``"hi-z"``) or is otherwise unrecognised.
         """
         if isinstance(value, str) and value.lower() in (
                 "z", "hiz", "hi-z", "high-z"):
