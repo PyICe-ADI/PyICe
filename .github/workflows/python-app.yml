@@ -53,10 +53,7 @@ jobs:
       env:
         QT_QPA_PLATFORM: offscreen
       run: |
-        flake8 PyICe/ Tests/ --select=D --count --statistics --exit-zero
-    - name: Doctest coverage report (advisory)
-      run: |
-        python Tests/doctest_coverage.py
+        pytest -vvv --tb=long
 
   test-macos:
     name: Test (macOS, Python 3.x)
