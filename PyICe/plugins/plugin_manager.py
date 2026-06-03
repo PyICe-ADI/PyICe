@@ -926,11 +926,14 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
             self.temperature_channel = None
             self._temperature_is_dummy = False
             self.special_channel_actions = {}
-            self_made_bench = self.tests[0].build_a_bench()
-            if len(self.tests) > 1 and self_made_bench is not None:
-                print(f"WARNING: Only the first test's ({self.tests[0].get_name()}) build_a_bench() is used. "
-                      f"The remaining {len(self.tests) - 1} test(s) will share this bench configuration.")
-            if self_made_bench is None:
+            # Check if the primary test script has a build_a_bench method
+            if not self.tests[0].build_a_bench.__qualname__.startswith('Master_Test_Template'):
+                self.tests[0].build_a_bench()
+                if len(self.tests) > 1:
+                    print(f"WARNING: Only the first test's ({self.tests[0].get_name()}) build_a_bench() is used. "
+                        f"The remaining {len(self.tests) - 1} test(s) will share this bench configuration.")
+            # Otherwise use the traditional bench script procedure
+            else:
                 self.add_instrument_channels()
             if self.temperature_channel is None:
                 self.temperature_channel = self.master.add_channel_dummy("tdegc")
