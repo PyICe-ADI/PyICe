@@ -15,6 +15,9 @@ import getpass
 import contextlib
 import io
 import pdb
+import json
+import linecache
+import shutil
 from PyICe.plugins.bench_configuration_management import bench_visualizer
 from PyICe.plugins.test_results import Test_Results, Failed_Eval
 from PyICe.plugins.traceability_items import Traceability_items
@@ -762,7 +765,8 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
         # outer-except guard (if test._crash_log is None) from re-calling this method with
         # a different, unrelated exception and misattributing the failure.
 
-        test._crash_logs = {'build_error': 'crash log construction failed before completion'}
+        if test._crash_logs is None:
+            test._crash_logs = {}
         try:
             typ, value, tb = sys.exc_info()
             crash_log = {}
@@ -847,6 +851,7 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
         except Exception as build_exc:
             print_banner(f'WARNING: Exception while building crash log: {build_exc}')
             traceback.print_exc()
+            test._crash_logs[file_name] =  'crash log construction failed before completion'
         self.notify(json.dumps(crash_log, indent=2), subject=f'{test.get_name()} CRASH LOG')
         return crash_log
 
