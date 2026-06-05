@@ -1,28 +1,36 @@
-"""Vector transform utility."""
+"""Vector transform utility.
+
+>>> from PyICe.lab_utils.vector_transform import vector_transform
+
+"""
 import numpy
 
 
 def vector_transform(rec_array, column_vector_functions, column_names=None):
-    """Generic filter function.
+    """Apply per-column vector functions to a numpy record array.
 
-    column_vector_functions is a list of functions for each column and should have a length equal to the number of columns.
-    To leave a column unchanged, set column vector function to None.
-    Each column vector function will be applied to the whole column vector.
-    Thus it is appropriate for 1-d filtering and decimation where access to values in adjacent columns is not required.
-    column_names is a list of names for each column in the returned record array.
-    To leave a column name unchanged from input record array, set column name to None.
-    To leave all column names unchanged from input record array, set column_names to None.
-    To smooth data, use something like scipy.signal.filtfilt and scipy.signal.butter for the column_vector_functions
-    http://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html
-    http://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.signal.butter.html
+    Each function receives the entire column as an array and returns a
+    transformed array (which may differ in length for decimation/filtering).
+    Use None for columns that should pass through unchanged. For element-wise
+    operations, see scalar_transform instead.
+
+    >>> import numpy as np
+    >>> data = np.rec.fromarrays([[1, 2, 3], [10, 20, 30]], names='x,y')
+    >>> result = vector_transform(data, [None, lambda col: col * 2])
+    >>> result.y.tolist()
+    [20, 40, 60]
+    >>> result.x.tolist()
+    [1, 2, 3]
+    >>> renamed = vector_transform(data, [None, None], column_names=['a', 'b'])
+    >>> renamed.dtype.names
+    ('a', 'b')
 
     Args:
-        column_names: Column names.
-        column_vector_functions: Column vector functions.
-        rec_array: Rec array.
-
-    Returns:
-        Result value.
+        rec_array: Input numpy record array.
+        column_vector_functions: List of functions (one per column). Each
+            receives the column as a numpy array. Use None to pass through.
+        column_names: Optional list of new column names (None entries keep
+            the original name).
     """
     assert len(rec_array.dtype.names) == len(column_vector_functions)
     if column_names is None:

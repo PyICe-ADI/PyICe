@@ -1,4 +1,8 @@
-"""Keithley 4200 instrument driver."""
+"""Keithley 4200 instrument driver.
+
+>>> from PyICe.lab_instruments.keithley_4200 import keithley_4200
+
+"""
 from ..lab_core import *  # noqa: F403
 from .semiconductor_parameter_analyzer import semiconductor_parameter_analyzer
 
@@ -8,6 +12,10 @@ class keithley_4200(semiconductor_parameter_analyzer):
 
     def __init__(self, interface_visa):
         """Interface_visa".
+        Initializes 12 instance attributes that configure the object's
+        behavior.
+
+        Calls the parent constructor to inherit base behavior, and initializes 12 instance attributes that configure the object's behavior.
 
         Args:
             interface_visa: VISA interface instance.
@@ -78,9 +86,14 @@ class keithley_4200(semiconductor_parameter_analyzer):
     def get_slot_configuration(self):
         # only works in EM 1 (4200 extended command mode)
         """Return the slot configuration.
+        Sends the ``:`` SCPI command to the instrument.
+        Queries the instrument for its current slot configuration and returns
+        the parsed response.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         self.slot_conf = self.get_interface().ask("*OPT?").strip('"').split(",")
         self.smu_numbers = []
@@ -115,9 +128,11 @@ class keithley_4200(semiconductor_parameter_analyzer):
     def configure_slot_smu(self, slot_number, smu_number):
         """Reconfigure smu instrument in slot_number to act as an smu.
 
+        Applies the specified configuration to the object or hardware.
+
         Args:
-            slot_number: Slot number.
-            smu_number: Smu number.
+            slot_number: Slot number to use.
+            smu_number: Source-measure unit channel number (1-based).
         """
         assert slot_number >= 1
         assert slot_number <= 8
@@ -131,9 +146,11 @@ class keithley_4200(semiconductor_parameter_analyzer):
     def configure_slot_vs(self, slot_number, vsource_number):
         """Reconfigure smu instrument in slot_number to act as a vs.
 
+        Applies the specified configuration to the object or hardware.
+
         Args:
-            slot_number: Slot number.
-            vsource_number: Vsource number.
+            slot_number: Slot number to use.
+            vsource_number: Vsource number to use.
         """
         assert slot_number >= 1
         assert slot_number <= 8
@@ -147,9 +164,11 @@ class keithley_4200(semiconductor_parameter_analyzer):
     def configure_slot_vm(self, slot_number, vmeter_number):
         """Reconfigure smu instrument in slot_number to act as a vm.
 
+        Applies the specified configuration to the object or hardware.
+
         Args:
-            slot_number: Slot number.
-            vmeter_number: Vmeter number.
+            slot_number: Slot number to use.
+            vmeter_number: Vmeter number to use.
         """
         assert slot_number >= 1
         assert slot_number <= 8
@@ -164,14 +183,18 @@ class keithley_4200(semiconductor_parameter_analyzer):
             self, smu_number, voltage_force_channel_name, current_compliance_channel_name):
         # check smu_number is valid
         """Add a channels smu voltage.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
-            current_compliance_channel_name: Current compliance channel name.
-            smu_number: Smu number.
-            voltage_force_channel_name: Voltage force channel name.
+            current_compliance_channel_name: Current compliance channel name to use.
+            smu_number: Source-measure unit channel number (1-based).
+            voltage_force_channel_name: Voltage force channel name to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         return self._add_channels_smu_voltage(
             smu_number, voltage_force_channel_name, current_compliance_channel_name)
@@ -180,13 +203,17 @@ class keithley_4200(semiconductor_parameter_analyzer):
             self, smu_number, output_range_channel_name):
         # check smu_number is valid
         """Add a channel smu voltage output range.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
-            output_range_channel_name: Output range channel name.
-            smu_number: Smu number.
+            output_range_channel_name: Output range channel name to use.
+            smu_number: Source-measure unit channel number (1-based).
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         return self._add_channel_smu_voltage_output_range(
             smu_number, output_range_channel_name)
@@ -195,14 +222,18 @@ class keithley_4200(semiconductor_parameter_analyzer):
             self, smu_number, current_force_channel_name, voltage_compliance_channel_name):
         # check smu_number is valid
         """Add a channels smu current.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
-            current_force_channel_name: Current force channel name.
-            smu_number: Smu number.
-            voltage_compliance_channel_name: Voltage compliance channel name.
+            current_force_channel_name: Current force channel name to use.
+            smu_number: Source-measure unit channel number (1-based).
+            voltage_compliance_channel_name: Voltage compliance channel name to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         return self._add_channels_smu_current(
             smu_number, current_force_channel_name, voltage_compliance_channel_name)
@@ -211,13 +242,17 @@ class keithley_4200(semiconductor_parameter_analyzer):
             self, smu_number, output_range_channel_name):
         # check smu_number is valid
         """Add a channel smu current output range.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
-            output_range_channel_name: Output range channel name.
-            smu_number: Smu number.
+            output_range_channel_name: Output range channel name to use.
+            smu_number: Source-measure unit channel number (1-based).
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         return self._add_channel_smu_current_output_range(
             smu_number, output_range_channel_name)
@@ -226,13 +261,17 @@ class keithley_4200(semiconductor_parameter_analyzer):
             self, smu_number, voltage_sense_channel_name):
         # check smu_number is valid
         """Add a channel smu voltage sense.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
-            smu_number: Smu number.
-            voltage_sense_channel_name: Voltage sense channel name.
+            smu_number: Source-measure unit channel number (1-based).
+            voltage_sense_channel_name: Voltage sense channel name to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         return self._add_channel_smu_voltage_sense(
             smu_number, voltage_sense_channel_name)
@@ -241,13 +280,17 @@ class keithley_4200(semiconductor_parameter_analyzer):
             self, smu_number, current_sense_channel_name):
         # check smu_number is valid
         """Add a channel smu current sense.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
-            current_sense_channel_name: Current sense channel name.
-            smu_number: Smu number.
+            current_sense_channel_name: Current sense channel name to use.
+            smu_number: Source-measure unit channel number (1-based).
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         return self._add_channel_smu_current_sense(
             smu_number, current_sense_channel_name)
@@ -255,25 +298,33 @@ class keithley_4200(semiconductor_parameter_analyzer):
     def add_channel_vsource(self, vsource_number, vsource_channel_name):
         # check vsource_number is valid
         """Add a channel vsource.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
-            vsource_channel_name: Vsource channel name.
-            vsource_number: Vsource number.
+            vsource_channel_name: Vsource channel name to use.
+            vsource_number: Vsource number to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         return self._add_channel_vsource(vsource_number, vsource_channel_name)
 
     def add_channel_vmeter(self, vmeter_number, vmeter_channel_name):
         # check vmeter_number is valid
         """Add a channel vmeter.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
-            vmeter_channel_name: Vmeter channel name.
-            vmeter_number: Vmeter number.
+            vmeter_channel_name: Vmeter channel name to use.
+            vmeter_number: Vmeter number to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         return self._add_channel_vmeter(vmeter_number, vmeter_channel_name)

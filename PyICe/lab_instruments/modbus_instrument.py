@@ -1,4 +1,8 @@
-"""Modbus instrument instrument driver."""
+"""Modbus instrument instrument driver.
+
+>>> from PyICe.lab_instruments.modbus_instrument import modbus_reg_type
+
+"""
 import collections
 from ..lab_core import *  # noqa: F403
 from enum import Enum, auto
@@ -19,6 +23,9 @@ class modbus_register(channel):
 
     def __init__(self, name, read_function, write_function=None):
         """Initialize modbus_register.
+        Stores configuration in ``_write`` for use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
 
         Args:
             name: Name identifier.
@@ -65,11 +72,14 @@ class modbus_instrument(instrument, minimalmodbus.Instrument):
     def __init__(self, interface_raw_serial,
                  modbus_address, baudrate, mode='rtu'):
         """Initialize modbus_instrument.
+        Stores configuration in ``_base_name`` for use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
 
         Args:
-            baudrate: Baudrate.
-            interface_raw_serial: Interface raw serial.
-            modbus_address: Modbus address.
+            baudrate: Serial baud rate in bits per second.
+            interface_raw_serial: Raw serial interface instance for communication.
+            modbus_address: Modbus address to use.
             mode: Operating mode.
         """
         minimalmodbus.BAUDRATE = baudrate
@@ -115,11 +125,13 @@ class modbus_instrument(instrument, minimalmodbus.Instrument):
         # addresses into one pyice register channel?
         """Add a registers.
 
+        Appends a new registers entry to the object's internal collection.
+
         Args:
-            register_descriptions: Register descriptions.
+            register_descriptions: Register descriptions to use.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         for reg_description in register_descriptions:
             if reg_description.reg_type == modbus_reg_type.bit:

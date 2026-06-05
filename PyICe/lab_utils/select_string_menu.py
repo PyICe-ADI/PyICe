@@ -1,20 +1,36 @@
-"""Select string menu utility."""
+"""Select string menu utility.
+
+>>> from PyICe.lab_utils.select_string_menu import select_string_menu
+
+"""
 from curses import panel
 import curses
 
 
 def select_string_menu(header, items):
-    """Creates a menu in a new window that returns the selected item.
+    """Display a curses-based interactive menu and return the user's selection.
 
-    If there are more than 25 items, multiple pages are made and can be
-    navigated with the 'back' and 'next' item selected.
+    Presents *items* in a terminal window with arrow-key navigation and
+    Enter to confirm. Lists longer than 25 items are automatically paginated
+    with *back* / *more* navigation entries. Selecting *exit* (always last
+    on the final page) returns ``None``.
+
+    Used by the ProjectCreatorWizard and other interactive CLI tools to let
+    the user pick from a dynamic list without typing.
+
+
+    >>> from PyICe.lab_utils.select_string_menu import select_string_menu
+    >>> callable(select_string_menu)
+    True
 
     Args:
-        header: Comment string that appears above the selectable items.
-        items: List of selectable items (strings, numerals, functions, etc.).
+        header: Descriptive text displayed above the menu items.
+        items: Sequence of selectable values. Each item is rendered via
+            its ``str()`` representation.
 
     Returns:
-        The highlighted item upon hitting Return.
+        The chosen item from *items*, or ``None`` if the list is empty or
+        the user selects *exit*.
     """
     if len(items) == 0:
         print('No items to select from. Returning None')

@@ -1,4 +1,8 @@
-"""Bench visualizer plugin."""
+"""Bench visualizer plugin.
+
+>>> from PyICe.plugins.bench_configuration_management.bench_visualizer import visualizer
+
+"""
 from PyICe.lab_utils.banners import print_banner
 import traceback
 import subprocess
@@ -14,30 +18,54 @@ else:
 
 
 class visualizer():
-    """Visualizer."""
+    """Visualizer.
+
+    >>> from PyICe.plugins.bench_configuration_management.bench_visualizer import visualizer
+    >>> visualizer is not None
+    True
+
+    """
     def __init__(self, connections, locations):
         """Initialize visualizer.
+        Stores configuration in ``connections``, ``locations`` for use by
+        other methods.
+
+        Initializes 2 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.plugins.bench_configuration_management.bench_visualizer import visualizer
+        >>> visualizer is not None
+        True
 
         Args:
-            connections: Connections.
-            locations: Locations.
+            connections: Connections to use.
+            locations: Locations to use.
         """
         self.locations = locations
         self.connections = connections
 
     def generate(self, file_base_name, prune=True,
                  file_format='svg', engine='neato', file_location=''):
-        """Return generate result.
+        """Return the generate.
+        Sends the ```` SCPI command to the instrument.
+        Sends the ``data:image/`` SCPI command to the instrument.
+
+        Transmits data to the remote endpoint.
+
+
+        >>> from PyICe.plugins.bench_configuration_management.bench_visualizer import visualizer
+        >>> hasattr(visualizer, 'generate')
+        True
 
         Args:
-            engine: Engine.
-            file_base_name: File base name.
-            file_format: File format.
-            file_location: File location.
-            prune: Prune.
+            engine: Engine to use.
+            file_base_name: File base name to use.
+            file_format: File format to use.
+            file_location: File location to use.
+            prune: Prune to use.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if file_format.upper() not in ['SVG', 'PNG']:
             raise Exception(

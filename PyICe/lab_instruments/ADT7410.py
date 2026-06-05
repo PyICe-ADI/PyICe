@@ -1,4 +1,8 @@
-"""A D T7410 instrument driver."""
+"""A D T7410 instrument driver.
+
+>>> from PyICe.lab_instruments.ADT7410 import ADT7410
+
+"""
 from ..lab_core import *  # noqa: F403
 from PyICe.lab_utils.swap_endian import swap_endian
 from PyICe.lab_utils.twosComplementToSigned import twosComplementToSigned
@@ -48,7 +52,7 @@ class ADT7410(instrument):
         Re-enable by writing enabled=True
 
         Args:
-            enabled: Enabled.
+            enabled: Enabled to use.
         """
         if enabled:
             # self.twi.write_byte(self.addr7, self.registers['config'],
@@ -78,7 +82,7 @@ class ADT7410(instrument):
         16-bit conversion result scaled to signed degrees Celsius
 
         Returns:
-            Result value.
+            The value read from the device or channel.
         """
         # data = self.twi.read_word(self.addr7, self.registers['t_msb'])
         # #command code counter autoincrements
@@ -94,9 +98,12 @@ class ADT7410(instrument):
 
     def read_id(self):
         """Return Manufacturer ID and chip revision ID.
+        Reads the corresponding register from the device via TWI/I2C.
+
+        Performs a register-level transaction over the communication bus.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
         """
         # data = self.twi.read_byte(self.addr7, self.registers['ID'])
         data = self.twi.read_register(
@@ -111,12 +118,20 @@ class ADT7410(instrument):
 
     def add_channel(self, channel_name):
         """Add a channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         temp_channel = channel(channel_name, read_function=self.read_temp)
         return self._add_channel(temp_channel)

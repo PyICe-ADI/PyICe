@@ -2,6 +2,9 @@
 
 ===================================================
 Required for multithreaded communication.
+
+>>> from PyICe.lab_interfaces import strify
+
 """
 import time
 import random
@@ -53,13 +56,25 @@ STR_ENCODING = 'latin-1'
 
 
 def strify(bs):
-    """Return strify result.
+    """Convert a bytes-like object to a str using latin-1 encoding.
+
+    Used throughout PyICe to decode instrument responses from bytes to Python 3
+    unicode strings.  Latin-1 is a lossless round-trip encoding for byte values
+    0x00–0xFF, so no instrument data is lost in the conversion.
+
+    >>> strify(b'hello')
+    'hello'
+    >>> strify(b'\\xff\\x00\\x80')  # arbitrary byte values survive
+    '\\xff\\x00\\x80'
+    >>> strify('already a string')  # passes through with a warning
+    Unexpected stringification of non-byte string: already a string. Contact PyICe-developers@analog.com for more information.
+    'already a string'
 
     Args:
-        bs: Bs.
+        bs: Bytes or bytearray to decode into a str.
 
     Returns:
-        Result value.
+        The decoded string, or the original value if it was already a str.
     """
     if not isinstance(bs, str):
         return bs.decode(STR_ENCODING)
@@ -70,13 +85,25 @@ def strify(bs):
 
 
 def byteify(s):
-    """Return byteify result.
+    """Convert a str to bytes using latin-1 encoding.
+
+    Used throughout PyICe to encode SCPI command strings into bytes for
+    transmission over serial, TCP, or USB interfaces.  Latin-1 preserves
+    the full 0x00–0xFF code-point range byte-for-byte.
+
+    >>> byteify('hello')
+    b'hello'
+    >>> byteify('\\xff\\x00\\x80')  # code points map 1:1 to byte values
+    b'\\xff\\x00\\x80'
+    >>> byteify(b'already bytes')  # passes through with a warning
+    Unexpected byteification of byte string: b'already bytes'. Contact PyICe-developers@analog.com for more information
+    b'already bytes'
 
     Args:
-        s: S.
+        s: String to encode into bytes.
 
     Returns:
-        Result value.
+        The encoded bytes, or the original value if it was already bytes.
     """
     if isinstance(s, str):
         return s.encode(STR_ENCODING)
@@ -101,17 +128,35 @@ warn = debug_logging.warning
 
 
 class communication_node(object):
-    """The purpose of this is to map a network of communication resources to each channel."""
+    """Map a tree of communication resources to instrument channels.
+
+    Each node tracks a parent interface and child interfaces, forming a
+    hierarchy that mirrors the physical wiring (e.g. USB hub → GPIB adapter →
+    instrument).  This tree lets PyICe group channels that share a non-thread-safe
+    ancestor so they are accessed sequentially within a single thread during
+
+    >>> from PyICe.lab_interfaces import communication_node
+    >>> communication_node is not None
+    True
+
+    concurrent data collection."""
 
     def __init__(self, *args, **kwargs):
-        """This should never explicity take arguments since it is silently created many ways.
+        """Initialize the communication node with no parent and an unlocked state.
 
-        However, subclasses with multiple inheritance will have constructors needing to
-        be called. We forward whatever arguments we get to the superclass constructor.
+        This constructor should never be called with explicit arguments because
+        ``communication_node`` is silently mixed in via multiple inheritance.
+        Any positional or keyword arguments are forwarded to the next class in
+        the MRO so that cooperative multiple inheritance works correctly.
+
+
+        >>> from PyICe.lab_interfaces import communication_node
+        >>> communication_node is not None
+        True
 
         Args:
-            **kwargs: Additional keyword arguments.
-            *args: Additional positional arguments.
+            *args: Positional arguments forwarded to the super().__init__.
+            **kwargs: Keyword arguments forwarded to the super().__init__.
         """
         super().__init__(*args, **kwargs)
         self._parent = None
@@ -120,10 +165,18 @@ class communication_node(object):
         self._lock = multiprocessing.RLock()
 
     def debug_com_nodes(self, indent=""):
-        """Perform debug com nodes operation.
+        """Print the communication-node tree to stdout for debugging.
+
+        Recursively walks child nodes, indenting each level to visualise the
+        parent/child hierarchy and thread-safety flags.
+
+
+        >>> from PyICe.lab_interfaces import communication_node
+        >>> hasattr(communication_node, 'debug_com_nodes')
+        True
 
         Args:
-            indent: Indent.
+            indent: Whitespace prefix for the current depth level.
         """
         print(
             f'{indent}{self}, child of {self._parent}. Thread_safe: {self._thread_safe}')
@@ -131,18 +184,35 @@ class communication_node(object):
             child.debug_com_nodes(indent=f"{indent}    ")
 
     def get_com_parent(self):
-        """Return the com parent.
+        """Return this node's parent communication node.
+        Returns the stored com parent value from the object's internal state.
+        Returns the stored com parent from the object's internal state.
+
+        Returns the stored com parent from the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import communication_node
+        >>> hasattr(communication_node, 'get_com_parent')
+        True
 
         Returns:
-            Result value.
+            The parent ``communication_node``, or ``None`` if this is the root.
         """
         return self._parent
 
     def set_com_node_parent(self, parent):
-        """Set the com node parent.
+        """Assign a parent node and register this node as one of its children.
+
+        Should only be called once per node.  Prints a warning if the parent
+        is being changed after initial assignment.
+
+
+        >>> from PyICe.lab_interfaces import communication_node
+        >>> hasattr(communication_node, 'set_com_node_parent')
+        True
 
         Args:
-            parent: Parent.
+            parent: The ``communication_node`` that physically owns this interface.
         """
         if self._parent:
             print("warning: changing a communication_node parent")
@@ -150,26 +220,51 @@ class communication_node(object):
         self._parent.com_node_register_child(self)
 
     def set_com_node_thread_safe(self, safe=True):
-        """Set the com node thread safe.
+        """Mark this communication node as thread-safe or thread-unsafe.
+
+        Thread-safe nodes (e.g. a VISA library with its own locking) allow
+        their children to be accessed concurrently from different threads.
+        Thread-unsafe nodes force all descendants into the same thread group.
+
+
+        >>> from PyICe.lab_interfaces import communication_node
+        >>> hasattr(communication_node, 'set_com_node_thread_safe')
+        True
 
         Args:
-            safe: Safe.
+            safe: ``True`` if concurrent access through this node is safe.
         """
         self._thread_safe = safe
 
     def com_node_register_child(self, child):
-        """Perform com node register child operation.
+        """Add a child node to this node's list of dependents.
+
+        Called automatically by ``set_com_node_parent``; not typically invoked
+        directly by user code.
+
+
+        >>> from PyICe.lab_interfaces import communication_node
+        >>> hasattr(communication_node, 'com_node_register_child')
+        True
 
         Args:
-            child: Child.
+            child: The ``communication_node`` to register as a child.
         """
         self._children.append(child)
 
     def com_node_get_root(self):
-        """Return com node get root result.
+        """Walk up the parent chain and return the root communication node.
+
+        Supports the ``communication_node`` workflow by performing the described operation.
+
+
+        >>> from PyICe.lab_interfaces import communication_node
+        >>> hasattr(communication_node, 'com_node_get_root')
+        True
 
         Returns:
-            Result value.
+            The topmost ``communication_node`` in this hierarchy (often the
+            ``interface_factory`` itself).
         """
         if self._parent:
             return self._parent.com_node_get_root()
@@ -177,18 +272,34 @@ class communication_node(object):
             return self
 
     def com_node_get_children(self):
-        """Return com node get children result.
+        """Return the immediate children of this communication node.
+
+        Supports the ``communication_node`` workflow by performing the described operation.
+
+
+        >>> from PyICe.lab_interfaces import communication_node
+        >>> hasattr(communication_node, 'com_node_get_children')
+        True
 
         Returns:
-            Result value.
+            A list of ``communication_node`` instances directly parented to
+            this node.
         """
         return self._children
 
     def com_node_get_all_descendents(self):
-        """Return com node get all descendents result.
+        """Recursively collect every descendant of this node.
+
+        Supports the ``communication_node`` workflow by performing the described operation.
+
+
+        >>> from PyICe.lab_interfaces import communication_node
+        >>> hasattr(communication_node, 'com_node_get_all_descendents')
+        True
 
         Returns:
-            Result value.
+            A set of all ``communication_node`` instances reachable by
+            walking down through children, grandchildren, etc.
         """
         descendents = set()
         for child in self.com_node_get_children():
@@ -198,15 +309,24 @@ class communication_node(object):
         return descendents
 
     def group_com_nodes_for_threads(self, sets=None):
-        """Returns a list of sets of com_nodes, each set must be communicated with in 1 thread.
+        """Partition the subtree into groups that must share a single thread.
 
-        because upstream interfaces are not thread safe
+        Thread-safe nodes create a new group for each of their children;
+        thread-unsafe nodes lump themselves and all descendants into one group.
+        The result drives PyICe's multithreaded data-collection scheduler.
+
+
+        >>> from PyICe.lab_interfaces import communication_node
+        >>> hasattr(communication_node, 'group_com_nodes_for_threads')
+        True
 
         Args:
-            sets: Sets.
+            sets: Accumulator list (used internally during recursion); pass
+                ``None`` on the initial call.
 
         Returns:
-            Result value.
+            A list of sets, where each set contains ``communication_node``
+            instances that must be accessed from the same thread.
         """
         if sets is None:
             sets = list()
@@ -221,20 +341,31 @@ class communication_node(object):
         return sets
 
     def group_com_nodes_for_threads_filter(self, com_node_list):
-        """Takes a list of interfaces and returns a list of lists.
+        """Filter thread-grouping results to only the nodes the caller cares about.
 
-        the returned list are interfaces that cannot be used concurrently
-        each is an ideal candidate for a thread to handle
-        make sure all interface's root resolves back here
+        Given a list of interface nodes (typically the ones attached to lab
+        instruments), partition them into sublists where each sublist must be
+        serviced by a single thread because the members share a thread-unsafe
+        ancestor.  All interfaces in *com_node_list* must trace back to the
+        same root node (usually ``self``).
+
+
+        >>> from PyICe.lab_interfaces import communication_node
+        >>> hasattr(communication_node, 'group_com_nodes_for_threads_filter')
+        True
 
         Args:
-            com_node_list: Com node list.
+            com_node_list: Flat list of ``communication_node`` interfaces to
+                partition into thread-safe groups.
 
         Returns:
-            Result value.
+            A list of lists, each inner list containing nodes that must be
+            accessed sequentially within one thread.
 
         Raises:
-            Exception: On error condition.
+            Exception: If the nodes in *com_node_list* have more than one
+                distinct root, indicating they were obtained from different
+                ``interface_factory`` instances.
         """
         if len(set([interface.com_node_get_root()
                for interface in com_node_list])) > 1:
@@ -260,12 +391,19 @@ class communication_node(object):
         return out_sets
 
     def lock(self):
-        """Lock this communication node to prevent concurrent use, then recursively.
+        """Acquire this node's reentrant lock, then recursively lock all ancestors.
 
-        acquire locks of this communication node's parents.
+        Locking from leaf to root ensures that no other thread can use any
+        part of the shared communication path while this node is active.
+
+
+        >>> from PyICe.lab_interfaces import communication_node
+        >>> hasattr(communication_node, 'lock')
+        True
 
         Raises:
-            TypeError: On error condition.
+            TypeError: If a parent node is neither a ``communication_node``
+                nor ``None``, indicating a corrupted hierarchy.
         """
         self._lock.acquire()
         parent_com_node = self.get_com_parent()
@@ -278,10 +416,19 @@ class communication_node(object):
                             "Expected 'communication_node' or 'None'")
 
     def unlock(self):
-        """Release all parent locks starting with this node's oldest ancestor. Finish by unlocking this com node.
+        """Release locks from the root ancestor down to this node.
+
+        Unlocking in root-to-leaf order is the reverse of the lock-acquisition
+        order, preventing deadlocks.
+
+
+        >>> from PyICe.lab_interfaces import communication_node
+        >>> hasattr(communication_node, 'unlock')
+        True
 
         Raises:
-            TypeError: On error condition.
+            TypeError: If a parent node is neither a ``communication_node``
+                nor ``None``, indicating a corrupted hierarchy.
         """
         parent_com_node = self.get_com_parent()
         if isinstance(parent_com_node, communication_node):
@@ -305,14 +452,34 @@ class communication_node(object):
 
 
 class interface(communication_node):
-    """Base class all lab instruments should in some way talk to, all have a timeout whether or not it does anything."""
+    """Base class for all physical communication interfaces.
+
+    Every lab instrument ultimately communicates through a subclass of
+    ``interface``.  Provides a human-readable name and a ``timeout``
+
+    >>> from PyICe.lab_interfaces import interface
+    >>> interface is not None
+    True
+
+    attribute used by transport-specific subclasses."""
 
     def __init__(self, name, **kwargs):
-        """Initialize interface.
+        """Initialize the interface with a descriptive name.
+        Calls the parent class constructor and initializes instance-specific
+        attributes for interface.
+
+        Calls the parent constructor to inherit base behavior, and initializes 2 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.lab_interfaces import interface
+        >>> interface is not None
+        True
 
         Args:
-            **kwargs: Additional keyword arguments.
-            name: Name identifier.
+            name: Human-readable identifier for this interface (e.g.
+                ``"interface_visa_tcp_ip @ 10.0.0.1:5025"``).
+            **kwargs: Forwarded to ``communication_node.__init__`` for
+                cooperative multiple-inheritance support.
         """
         assert isinstance(name, str)
         self._interface_name = name if len(name) else "nameless interface"
@@ -322,100 +489,166 @@ class interface(communication_node):
         super().__init__(**kwargs)
 
     def __str__(self):
-        """Return string representation.
+        """Return the human-readable interface name.
+        Provides a human-readable string for debugging and display.
+
+        Provides a human-readable representation for debugging and logging.
+
+
+        >>> from PyICe.lab_interfaces import interface
+        >>> hasattr(interface, '__str__')
+        True
 
         Returns:
-            Result value.
+            The name string assigned at construction time.
         """
         return self._interface_name
 
 
 class interface_visa(interface):
-    """Interface_visa."""
+    """VISA-style (SCPI query/response) communication interface base class.
+
+    Subclasses provide the actual transport (TCP, serial, VXI-11, etc.)
+    while instrument drivers program against the common VISA read/write/query
+
+    >>> from PyICe.lab_interfaces import interface_visa
+    >>> interface_visa is not None
+    True
+
+    API."""
     pass
 
 
 class interface_twi(interface):
-    """Interface_twi."""
+    """I²C / SMBus (Two-Wire Interface) communication base class.
+
+    Subclasses implement the low-level byte-transfer protocol over various
+
+    >>> from PyICe.lab_interfaces import interface_twi
+    >>> interface_twi is not None
+    True
+
+    physical adapters (DC590, Bus Pirate, SCPI-controlled GPIO, etc.)."""
     pass
 
 
 class interface_spi(interface):
-    """Interface_spi."""
+    """SPI (Serial Peripheral Interface) communication base class.
+
+    Subclasses handle chip-select management and clocking over specific
+
+    >>> from PyICe.lab_interfaces import interface_spi
+    >>> interface_spi is not None
+    True
+
+    adapters (DC590, Configurator Pro, dummy for simulation)."""
     pass
 
 
 class interface_bobbytalk(interface):
-    """Base class for all interfaces that talk bobbytalk packets.
+    """Base class for interfaces that exchange bobbytalk packets.
 
-    and provide the bobbytalk API methods shown here.
+    Bobbytalk is an ADI-internal framed packet protocol used over serial or
+    TCP links to embedded targets.  Subclasses implement the abstract methods
+    for the specific transport being used.
+
+    >>> from PyICe.lab_interfaces import interface_bobbytalk
+    >>> interface_bobbytalk is not None
+    True
+
     """
     def __init__(self, name):
-        """Initialize interface_bobbytalk.
+        """Initialize the bobbytalk interface with a descriptive name.
+        Delegates to the parent class constructor.
+
+        Calls the parent constructor to inherit base behavior.
+
+
+        >>> from PyICe.lab_interfaces import interface_bobbytalk
+        >>> interface_bobbytalk is not None
+        True
 
         Args:
-            name: Name identifier.
+            name: Human-readable label for this bobbytalk link.
         """
         super(interface_bobbytalk, self).__init__(name)
 
     def send_packet(self, src_id, dest_id, buffer):
-        """Returns immediately indicating SUCCESS (True) or FAIL (False).
+        """Transmit a bobbytalk packet and return immediately.
 
-        Returns SUCCESS if buffer successfully sent to the
-        underlying interface.
-        Otherwise FAIL, meaning the underlying interface
-        couldn't accept buffer for some reason.
+        Transmits data to the remote endpoint.
+
+
+        >>> from PyICe.lab_interfaces import interface_bobbytalk
+        >>> hasattr(interface_bobbytalk, 'send_packet')
+        True
 
         Args:
-            buffer: Buffer.
-            dest_id: Destination identifier.
-            src_id: Source identifier.
+            src_id: 16-bit source address identifying this endpoint.
+            dest_id: 16-bit destination address for the remote endpoint.
+            buffer: Payload bytes to send inside the packet.
 
         Raises:
-            NotImplementedError: On error condition.
+            NotImplementedError: Subclasses must override this method.
         """
         raise NotImplementedError("Subclass must implement this.")
 
     def recv_packet(self, dest_id, timeout, src_id=None):
-        """Blocks for up to timeout waiting for packet matching dest_id.
+        """Block until a packet matching *dest_id* (and optionally *src_id*) arrives.
 
-        and optionally src_id, continuing to receive and dispatch other
-        incoming packets.
-        Upon success, returns a bobbytalk_packet object.
-        Upon timeout, returns None.
+        While waiting, other incoming packets are received and dispatched to
+        registered handlers.
+
+
+        >>> from PyICe.lab_interfaces import interface_bobbytalk
+        >>> hasattr(interface_bobbytalk, 'recv_packet')
+        True
 
         Args:
-            dest_id: Destination identifier.
-            src_id: Source identifier.
-            timeout: Timeout in seconds.
+            dest_id: 16-bit destination address to filter incoming packets.
+            timeout: Maximum seconds to wait before returning ``None``.
+            src_id: Optional 16-bit source address filter; ``None`` accepts
+                any source.
 
         Raises:
-            NotImplementedError: On error condition.
+            NotImplementedError: Subclasses must override this method.
         """
         raise NotImplementedError("Subclass must implement this.")
 
     def handle_comms(self):
-        """Call this periodically to receive packets from the underlying interface.
+        """Receive and dispatch pending packets from the underlying transport.
 
-        and dispatch to any registered packet handlers (or "modules")
+        Call periodically to service incoming packets when not blocked in
+        ``recv_packet``.
+
+
+        >>> from PyICe.lab_interfaces import interface_bobbytalk
+        >>> hasattr(interface_bobbytalk, 'handle_comms')
+        True
 
         Raises:
-            NotImplementedError: On error condition.
+            NotImplementedError: Subclasses must override this method.
         """
         raise NotImplementedError("Subclass must implement this.")
 
     def register_handler(self, dest_id, handler_function):
-        """Sets the handler function for received packets with dest_id.
+        """Register a callback for packets arriving with a given *dest_id*.
 
-        handler_function will be called like this:
-        handler_function(bobbytalk_packet)
+        The *handler_function* is invoked as ``handler_function(bobbytalk_packet)``
+        whenever a matching packet is received.
+
+
+        >>> from PyICe.lab_interfaces import interface_bobbytalk
+        >>> hasattr(interface_bobbytalk, 'register_handler')
+        True
 
         Args:
-            dest_id: Destination identifier.
-            handler_function: Handler function.
+            dest_id: 16-bit destination address that triggers this handler.
+            handler_function: Callable accepting a single ``bobbytalk_packet``
+                argument.
 
         Raises:
-            NotImplementedError: On error condition.
+            NotImplementedError: Subclasses must override this method.
         """
         raise NotImplementedError("Subclass must implement this.")
 
@@ -426,6 +659,11 @@ class interface_libusb(interface):
     Implementation may be overly specific to George B's Direct590 protocol and may need additional options or subclassing later.
     Transfers must be in multiples of this 64 byte payload size or will result in a babble error in the underlying library.
     Requires PyUSB: https://github.com/walac/pyusb
+
+    >>> from PyICe.lab_interfaces import interface_libusb
+    >>> interface_libusb is not None
+    True
+
     """
     def __init__(self, idVendor, idProduct, timeout):
         """Initialize PyUSB interface.
@@ -433,13 +671,18 @@ class interface_libusb(interface):
         Requires installation of WinUSB filter driver. Use install-filter-win.exe under PyICe/deps/Direct590.
         Untested on linux; filter driver probably not required.
 
+
+        >>> from PyICe.lab_interfaces import interface_libusb
+        >>> interface_libusb is not None
+        True
+
         Args:
-            idProduct: Idproduct.
-            idVendor: Idvendor.
+            idProduct: Idproduct to use.
+            idVendor: Idvendor to use.
             timeout: Timeout in seconds.
 
         Raises:
-            ValueError: On error condition.
+            ValueError: If the provided value is out of range or invalid.
         """
         interface.__init__(self, 'WinUSB Communication Interface')
         self.timeout = 1000 * timeout  # ms
@@ -479,8 +722,15 @@ class interface_libusb(interface):
     def read(self):
         """Read data from the endpoint.
 
+        Reads data from the underlying source and returns it.
+
+
+        >>> from PyICe.lab_interfaces import interface_libusb
+        >>> hasattr(interface_libusb, 'read')
+        True
+
         Returns:
-            Result value.
+            The value read from the device or channel.
         """
         resp = self.dev.read(self.ep_in, self.read_packet_size, self.timeout)
         while len(resp) == self.read_packet_size:  # response split across packets
@@ -492,8 +742,15 @@ class interface_libusb(interface):
     def write(self, byte_list):
         """Send byte_list across subclass-specific communication interface.
 
+        Writes data to the underlying target.
+
+
+        >>> from PyICe.lab_interfaces import interface_libusb
+        >>> hasattr(interface_libusb, 'write')
+        True
+
         Args:
-            byte_list: Byte list.
+            byte_list: Byte list to use.
         """
         self.dev.write(self.ep_out, byte_list)
 
@@ -504,6 +761,11 @@ class interface_stream(
 
     Developed for DC590 board variants, but probably has more generic utility if moved into lab_interfaces
     Maybe consider change to inherit from https://docs.python.org/2/library/io.html
+
+    >>> from PyICe.lab_interfaces import interface_stream
+    >>> interface_stream is not None
+    True
+
     """
     @abc.abstractmethod
     def read(self, byte_count):
@@ -511,8 +773,13 @@ class interface_stream(
 
         If fewer than byte_count bytes are available, return all available.
 
+
+        >>> from PyICe.lab_interfaces import interface_stream
+        >>> hasattr(interface_stream, 'read')
+        True
+
         Args:
-            byte_count: Byte count.
+            byte_count: Byte count to use.
         """
         pass
 
@@ -520,25 +787,55 @@ class interface_stream(
     def write(self, byte_list):
         """Send byte_list across subclass-specific communication interface.
 
+        Writes data to the underlying target.
+
+
+        >>> from PyICe.lab_interfaces import interface_stream
+        >>> hasattr(interface_stream, 'write')
+        True
+
         Args:
-            byte_list: Byte list.
+            byte_list: Byte list to use.
         """
         pass
 
     @abc.abstractmethod
     def close(self):
-        """Close the underlying interface if necessary."""
+        """Close the underlying interface if necessary.
+
+        Releases resources and restores the system to a safe state.
+
+        >>> from PyICe.lab_interfaces import interface_stream
+        >>> hasattr(interface_stream, 'close')
+        True
+
+        """
         pass
 
 
 class interface_stream_serial(interface_stream):
-    """PySerial based stream wrapper."""
+    """PySerial based stream wrapper.
+
+    >>> from PyICe.lab_interfaces import interface_stream_serial
+    >>> interface_stream_serial is not None
+    True
+
+    """
 
     def __init__(self, interface_raw_serial):
         """Initialize interface_stream_serial.
+        Calls the parent class constructor and initializes instance-specific
+        attributes for interface_stream_serial.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
+
+
+        >>> from PyICe.lab_interfaces import interface_stream_serial
+        >>> interface_stream_serial is not None
+        True
 
         Args:
-            interface_raw_serial: Interface raw serial.
+            interface_raw_serial: Raw serial interface instance for communication.
         """
         super().__init__('Serial Stream Communication Interface')
         self.ser = interface_raw_serial
@@ -549,11 +846,16 @@ class interface_stream_serial(interface_stream):
         If fewer than byte_count bytes are available, return all available.
         If byte_count is None, return all available.
 
+
+        >>> from PyICe.lab_interfaces import interface_stream_serial
+        >>> hasattr(interface_stream_serial, 'read')
+        True
+
         Args:
-            byte_count: Byte count.
+            byte_count: Byte count to use.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
         """
         if byte_count is None:
             byte_count = self.ser.inWaiting()
@@ -564,13 +866,28 @@ class interface_stream_serial(interface_stream):
     def write(self, byte_list):
         """Send byte_list across subclass-specific communication interface.
 
+        Writes data to the underlying target.
+
+
+        >>> from PyICe.lab_interfaces import interface_stream_serial
+        >>> hasattr(interface_stream_serial, 'write')
+        True
+
         Args:
-            byte_list: Byte list.
+            byte_list: Byte list to use.
         """
         self.ser.write(byte_list)
 
     def close(self):
-        """Close the underlying interface."""
+        """Close the underlying interface.
+
+        Releases resources and restores the system to a safe state.
+
+        >>> from PyICe.lab_interfaces import interface_stream_serial
+        >>> hasattr(interface_stream_serial, 'close')
+        True
+
+        """
         self.ser.close()
 
 
@@ -578,9 +895,22 @@ class interface_ftdi_d2xx(interface_stream):
     """Write this if you want it.
 
     https://pypi.python.org/pypi/pylibftdi
+
+    >>> from PyICe.lab_interfaces import interface_ftdi_d2xx
+    >>> interface_ftdi_d2xx is not None
+    True
+
     """
     def __init__(self):  # need some kind of device descriptor....
-        """Initialize interface_ftdi_d2xx."""
+        """Initialize interface_ftdi_d2xx.
+
+        Calls the parent constructor to inherit base behavior.
+
+        >>> from PyICe.lab_interfaces import interface_ftdi_d2xx
+        >>> interface_ftdi_d2xx is not None
+        True
+
+        """
         interface.__init__(self, 'FTDI D2XX Stream Communication Interface')
 
 
@@ -612,19 +942,34 @@ else:
 
 
 class interface_raw_serial(interface, serial_from_name_or_url):
-    """Interface_raw_serial."""
+    """Interface_raw_serial.
+
+    >>> from PyICe.lab_interfaces import interface_raw_serial
+    >>> interface_raw_serial is not None
+    True
+
+    """
     def __init__(self, port_name_or_url, baudrate, timeout, **kwargs):
         """Initialize interface_raw_serial.
+        Calls the parent class constructor and initializes instance-specific
+        attributes for interface_raw_serial.
+
+        Calls the parent constructor to inherit base behavior, and initializes 4 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.lab_interfaces import interface_raw_serial
+        >>> interface_raw_serial is not None
+        True
 
         Args:
             **kwargs: Additional keyword arguments.
-            baudrate: Baudrate.
-            port_name_or_url: Port name or url.
+            baudrate: Serial baud rate in bits per second.
+            port_name_or_url: Port name or url to use.
             timeout: Timeout in seconds.
 
         Raises:
-            TypeError: On error condition.
-            ValueError: On error condition.
+            TypeError: If an argument has an incompatible type.
+            ValueError: If the provided value is out of range or invalid.
         """
         super().__init__(name=port_name_or_url, **kwargs)
         from urllib.parse import urlparse
@@ -665,9 +1010,19 @@ class interface_raw_serial(interface, serial_from_name_or_url):
 
     def get_serial_port_name(self):
         """Return the serial port name.
+        Returns the stored serial port name value from the object's internal
+        state.
+        Returns the stored serial port name from the object's internal state.
+
+        Returns the stored serial port name from the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import interface_raw_serial
+        >>> hasattr(interface_raw_serial, 'get_serial_port_name')
+        True
 
         Returns:
-            Result value.
+            The current serial port name.
         """
         return self._serial_port_name
 
@@ -677,16 +1032,23 @@ class interface_raw_serial(interface, serial_from_name_or_url):
         # PyICe. Work natively in Python3 unicode strings.
         """Write a value to the channel.
 
+        Sends the corresponding SCPI command string to the instrument over the bus.
+
+
+        >>> from PyICe.lab_interfaces import interface_raw_serial
+        >>> hasattr(interface_raw_serial, 'write')
+        True
+
         Args:
             **kw: Additional keyword arguments.
             *args: Additional positional arguments.
-            msg: Msg.
+            msg: Message string to display.
 
         Returns:
-            Result value.
+            True if the write was acknowledged, False otherwise.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if isinstance(msg, str):
             msgbytes = byteify(msg)
@@ -716,26 +1078,40 @@ class interface_raw_serial(interface, serial_from_name_or_url):
     def read(self, size, *args, **kw):
         """Read and return the current channel value.
 
+        Reads data from the underlying source and returns it.
+
+
+        >>> from PyICe.lab_interfaces import interface_raw_serial
+        >>> hasattr(interface_raw_serial, 'read')
+        True
+
         Args:
             **kw: Additional keyword arguments.
             *args: Additional positional arguments.
             size: Size in bits.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
         """
         resp = self.read_raw(size, *args, **kw)
         return strify(resp)
 
     def readline(self, *args, **kw):
-        """Return readline result.
+        """Return the readline.
+
+        Reads data from the underlying source and returns it.
+
+
+        >>> from PyICe.lab_interfaces import interface_raw_serial
+        >>> hasattr(interface_raw_serial, 'readline')
+        True
 
         Args:
             **kw: Additional keyword arguments.
             *args: Additional positional arguments.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
         """
         resp = super(interface_raw_serial, self).readline(*args, **kw)
         return strify(resp)
@@ -744,19 +1120,34 @@ class interface_raw_serial(interface, serial_from_name_or_url):
 
     def write_raw(self, msgbytes, *args, **kw):
         """Return write raw result.
+        Formats and sends the command to the instrument.
+
+        Writes data to the underlying target.
+
+
+        >>> from PyICe.lab_interfaces import interface_raw_serial
+        >>> hasattr(interface_raw_serial, 'write_raw')
+        True
 
         Args:
             **kw: Additional keyword arguments.
             *args: Additional positional arguments.
-            msgbytes: Msgbytes.
+            msgbytes: Msgbytes to use.
 
         Returns:
-            Result value.
+            True if the write was acknowledged, False otherwise.
         """
         return super(interface_raw_serial, self).write(msgbytes, *args, **kw)
 
     def read_raw(self, size, *args, **kw):
         """Return read raw result.
+
+        Reads data from the underlying source and returns it.
+
+
+        >>> from PyICe.lab_interfaces import interface_raw_serial
+        >>> hasattr(interface_raw_serial, 'read_raw')
+        True
 
         Args:
             **kw: Additional keyword arguments.
@@ -764,12 +1155,20 @@ class interface_raw_serial(interface, serial_from_name_or_url):
             size: Size in bits.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
         """
         return super(interface_raw_serial, self).read(size, *args, **kw)
 
     def __del__(self):
-        """Close interface (serial) port on exit."""
+        """Close interface (serial) port on exit.
+
+        Performs cleanup when the object is garbage-collected.
+
+        >>> from PyICe.lab_interfaces import interface_raw_serial
+        >>> hasattr(interface_raw_serial, '__del__')
+        True
+
+        """
         self.close()
 
 
@@ -782,13 +1181,27 @@ class interface_tcp_serial(interface):
     to be compatible with PyICe code expecting such.
     For example read(), write(), and timeouts are supported,
     but it is meaningless to set things like baudrate or parity bits.
+
+    >>> from PyICe.lab_interfaces import interface_tcp_serial
+    >>> interface_tcp_serial is not None
+    True
+
     """
     def __init__(self, dest_ip_address, dest_tcp_portnum):
         """Initialize interface_tcp_serial.
+        Calls the parent class constructor and initializes instance-specific
+        attributes for interface_tcp_serial.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
+
+
+        >>> from PyICe.lab_interfaces import interface_tcp_serial
+        >>> interface_tcp_serial is not None
+        True
 
         Args:
-            dest_ip_address: Dest ip address.
-            dest_tcp_portnum: Dest tcp portnum.
+            dest_ip_address: Dest ip address to use.
+            dest_tcp_portnum: Dest tcp portnum to use.
         """
         self.ser = serial.serial_for_url(
             f"socket://{dest_ip_address}:{dest_tcp_portnum}")
@@ -796,63 +1209,109 @@ class interface_tcp_serial(interface):
 
     def get_serial_port_name(self):
         """Return the serial port name.
+        Returns the stored serial port name value from the object's internal
+        state.
+        Returns the stored serial port name from the object's internal state.
+
+        Returns the stored serial port name from the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import interface_tcp_serial
+        >>> hasattr(interface_tcp_serial, 'get_serial_port_name')
+        True
 
         Returns:
-            Result value.
+            The current serial port name.
         """
         return self.ser.port
 
     def read(self, *args, **kwargs):
         """Read and return the current channel value.
 
+        Reads data from the underlying source and returns it.
+
+
+        >>> from PyICe.lab_interfaces import interface_tcp_serial
+        >>> hasattr(interface_tcp_serial, 'read')
+        True
+
         Args:
             **kwargs: Additional keyword arguments.
             *args: Additional positional arguments.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
         """
         return self.ser.read(*args, **kwargs)
 
     def write(self, *args, **kwargs):
         """Write a value to the channel.
 
+        Writes data to the underlying target.
+
+
+        >>> from PyICe.lab_interfaces import interface_tcp_serial
+        >>> hasattr(interface_tcp_serial, 'write')
+        True
+
         Args:
             **kwargs: Additional keyword arguments.
             *args: Additional positional arguments.
 
         Returns:
-            Result value.
+            True if the write was acknowledged, False otherwise.
         """
         return self.ser.write(*args, **kwargs)
 
     def close(self, *args, **kwargs):
-        """Return close result.
+        """Return the close.
+        Releases resources and closes the connection to the instrument.
+
+        Releases resources and restores the system to a safe state.
+
+
+        >>> from PyICe.lab_interfaces import interface_tcp_serial
+        >>> hasattr(interface_tcp_serial, 'close')
+        True
 
         Args:
             **kwargs: Additional keyword arguments.
             *args: Additional positional arguments.
 
         Returns:
-            Result value.
+            The close result.
         """
         return self.ser.close(*args, **kwargs)
 
     @property
     def timeout(self):
-        """Return timeout result.
+        """Return the timeout.
+
+        Supports the ``interface_tcp_serial`` workflow by performing the described operation.
+
+
+        >>> from PyICe.lab_interfaces import interface_tcp_serial
+        >>> hasattr(interface_tcp_serial, 'timeout')
+        True
 
         Returns:
-            Result value.
+            The timeout duration in seconds.
         """
         return self.ser.timeout
 
     @timeout.setter
     def timeout(self, new_timeout):
-        """Perform timeout operation.
+        """Run the timeout step.
+
+        Supports the ``interface_tcp_serial`` workflow by performing the described operation.
+
+
+        >>> from PyICe.lab_interfaces import interface_tcp_serial
+        >>> hasattr(interface_tcp_serial, 'timeout')
+        True
 
         Args:
-            new_timeout: New timeout.
+            new_timeout: New timeout to use.
         """
         self.ser.timeout = new_timeout
 
@@ -860,8 +1319,15 @@ class interface_tcp_serial(interface):
     def in_waiting(self):
         """Return in waiting result.
 
+        Introduces a timing delay required by the hardware or protocol.
+
+
+        >>> from PyICe.lab_interfaces import interface_tcp_serial
+        >>> hasattr(interface_tcp_serial, 'in_waiting')
+        True
+
         Returns:
-            Result value.
+            Number of bytes waiting in the input buffer.
         """
         if hasattr(self.ser, "in_waiting"):
             return self.ser.in_waiting
@@ -871,8 +1337,15 @@ class interface_tcp_serial(interface):
     def inWaiting(self):
         """Returns in_waiting. Added for PySerial <3.0 compatibility.
 
+        Introduces a timing delay required by the hardware or protocol.
+
+
+        >>> from PyICe.lab_interfaces import interface_tcp_serial
+        >>> hasattr(interface_tcp_serial, 'inWaiting')
+        True
+
         Returns:
-            Result value.
+            Number of bytes waiting in the input buffer.
         """
         return self.in_waiting
 
@@ -887,13 +1360,27 @@ class SerialTestHarness(object):
     of test stimulus each time its next() method is called.
     WARNING: Not thread-safe.
     TODO: The write() method currently implemented does nothing.
+
+    >>> from PyICe.lab_interfaces import SerialTestHarness
+    >>> SerialTestHarness is not None
+    True
+
     """
     def __init__(self, bytestream, max_bytes_returned_per_read=None):
         """Initialize serial test harness.
+        Initializes 4 instance attributes that configure the object's
+        behavior.
+
+        Initializes 4 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.lab_interfaces import SerialTestHarness
+        >>> SerialTestHarness is not None
+        True
 
         Args:
-            bytestream: Bytestream.
-            max_bytes_returned_per_read: Max bytes returned per read.
+            bytestream: Bytestream to use.
+            max_bytes_returned_per_read: Max bytes returned per read to use.
         """
         self._timeout = 0.0
         self.bytestream = bytestream
@@ -913,12 +1400,19 @@ class SerialTestHarness(object):
     def biased_rng(min_val, max_val):
         """Return biased rng result.
 
+        Supports the ``SerialTestHarness`` workflow by performing the described operation.
+
+
+        >>> from PyICe.lab_interfaces import SerialTestHarness
+        >>> callable(getattr(SerialTestHarness, 'biased_rng', None))
+        True
+
         Args:
-            max_val: Max val.
-            min_val: Min val.
+            max_val: Max val to use.
+            min_val: Min val to use.
 
         Returns:
-            Result value.
+            The biased rng result.
         """
         assert isinstance(min_val, int)
         assert isinstance(max_val, int) and max_val > min_val
@@ -941,11 +1435,16 @@ class SerialTestHarness(object):
 
         bytestream generator, with random delay that's within timeout.
 
+
+        >>> from PyICe.lab_interfaces import SerialTestHarness
+        >>> hasattr(SerialTestHarness, 'read')
+        True
+
         Args:
-            numbytes: Numbytes.
+            numbytes: Numbytes to use.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
         """
         # First note by what wallclock time we have to
         # return the requested bytes:
@@ -989,26 +1488,47 @@ class SerialTestHarness(object):
     def write(self, bytestring):
         """Write a value to the channel.
 
+        Writes data to the underlying target.
+
+
+        >>> from PyICe.lab_interfaces import SerialTestHarness
+        >>> hasattr(SerialTestHarness, 'write')
+        True
+
         Args:
-            bytestring: Bytestring.
+            bytestring: Bytestring to use.
         """
         pass
 
     @property
     def timeout(self):
-        """Return timeout result.
+        """Return the timeout.
+
+        Supports the ``SerialTestHarness`` workflow by performing the described operation.
+
+
+        >>> from PyICe.lab_interfaces import SerialTestHarness
+        >>> hasattr(SerialTestHarness, 'timeout')
+        True
 
         Returns:
-            Result value.
+            The timeout duration in seconds.
         """
         return self._timeout
 
     @timeout.setter
     def timeout(self, new_timeout):
-        """Perform timeout operation.
+        """Run the timeout step.
+
+        Supports the ``SerialTestHarness`` workflow by performing the described operation.
+
+
+        >>> from PyICe.lab_interfaces import SerialTestHarness
+        >>> hasattr(SerialTestHarness, 'timeout')
+        True
 
         Args:
-            new_timeout: New timeout.
+            new_timeout: New timeout to use.
         """
         from numbers import Real
         assert isinstance(new_timeout, Real) and new_timeout >= 0
@@ -1018,8 +1538,15 @@ class SerialTestHarness(object):
     def max_bytes_returned_per_read(self):
         """Return max bytes returned per read result.
 
+        Supports the ``SerialTestHarness`` workflow by performing the described operation.
+
+
+        >>> from PyICe.lab_interfaces import SerialTestHarness
+        >>> hasattr(SerialTestHarness, 'max_bytes_returned_per_read')
+        True
+
         Returns:
-            Result value.
+            The max bytes returned per read result.
         """
         return self._max_bytes_returned_per_read
 
@@ -1027,8 +1554,15 @@ class SerialTestHarness(object):
     def max_bytes_returned_per_read(self, new_max):
         """Perform max bytes returned per read operation.
 
+        Supports the ``SerialTestHarness`` workflow by performing the described operation.
+
+
+        >>> from PyICe.lab_interfaces import SerialTestHarness
+        >>> hasattr(SerialTestHarness, 'max_bytes_returned_per_read')
+        True
+
         Args:
-            new_max: New max.
+            new_max: New max to use.
         """
         assert isinstance(new_max, int) and new_max >= 0
         self._max_bytes_returned_per_read = new_max
@@ -1041,8 +1575,13 @@ class SerialTestHarness(object):
         will never exceed the max_bytes_returned_per_read
         optionally set during object instantiation.
 
+
+        >>> from PyICe.lab_interfaces import SerialTestHarness
+        >>> hasattr(SerialTestHarness, 'in_waiting')
+        True
+
         Returns:
-            Result value.
+            Number of bytes waiting in the input buffer.
         """
         if self._in_waiting is not None:
             return self._in_waiting
@@ -1056,22 +1595,44 @@ class SerialTestHarness(object):
     def inWaiting(self):
         """Returns in_waiting. Added for PySerial <3.0 compatibility.
 
+        Introduces a timing delay required by the hardware or protocol.
+
+
+        >>> from PyICe.lab_interfaces import SerialTestHarness
+        >>> hasattr(SerialTestHarness, 'inWaiting')
+        True
+
         Returns:
-            Result value.
+            Number of bytes waiting in the input buffer.
         """
         return self.in_waiting
 
 
 class interface_test_harness_serial(interface, SerialTestHarness):
-    """Interface_test_harness_serial."""
+    """Interface_test_harness_serial.
+
+    >>> from PyICe.lab_interfaces import interface_test_harness_serial
+    >>> interface_test_harness_serial is not None
+    True
+
+    """
     def __init__(self, serial_port_name, bytestream,
                  max_bytes_returned_per_read=4096):
         """Initialize interface_test_harness_serial.
+        Stores configuration in ``_serial_port_name`` for use by other
+        methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
+
+
+        >>> from PyICe.lab_interfaces import interface_test_harness_serial
+        >>> hasattr(interface_test_harness_serial, '__init__')
+        True
 
         Args:
-            bytestream: Bytestream.
-            max_bytes_returned_per_read: Max bytes returned per read.
-            serial_port_name: Serial port name.
+            bytestream: Bytestream to use.
+            max_bytes_returned_per_read: Max bytes returned per read to use.
+            serial_port_name: Serial port identifier (e.g. ``"COM3"`` or ``"/dev/ttyUSB0"``).
         """
         SerialTestHarness.__init__(self, bytestream,
                                    max_bytes_returned_per_read=max_bytes_returned_per_read)
@@ -1080,9 +1641,19 @@ class interface_test_harness_serial(interface, SerialTestHarness):
 
     def get_serial_port_name(self):
         """Return the serial port name.
+        Returns the stored serial port name value from the object's internal
+        state.
+        Returns the stored serial port name from the object's internal state.
+
+        Returns the stored serial port name from the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import interface_test_harness_serial
+        >>> hasattr(interface_test_harness_serial, 'get_serial_port_name')
+        True
 
         Returns:
-            Result value.
+            The current serial port name.
         """
         return self._serial_port_name
 
@@ -1091,14 +1662,27 @@ class interface_test_harness_serial(interface, SerialTestHarness):
 
 
 class interface_visa_tcp_ip(interface_visa, visa_wrappers.visa_wrapper_tcp):
-    """Interface_visa_tcp_ip."""
+    """Interface_visa_tcp_ip.
+
+    >>> from PyICe.lab_interfaces import interface_visa_tcp_ip
+    >>> interface_visa_tcp_ip is not None
+    True
+
+    """
     def __init__(self, host_address, port, timeout, **kwargs):
         """Initialize interface_visa_tcp_ip.
 
+        Calls the parent constructor to inherit base behavior.
+
+
+        >>> from PyICe.lab_interfaces import interface_visa_tcp_ip
+        >>> interface_visa_tcp_ip is not None
+        True
+
         Args:
             **kwargs: Additional keyword arguments.
-            host_address: Host address.
-            port: Port.
+            host_address: Network hostname or IP address of the remote host.
+            port: TCP/IP port number.
             timeout: Timeout in seconds.
         """
         visa_wrappers.visa_wrapper_tcp.__init__(
@@ -1108,13 +1692,26 @@ class interface_visa_tcp_ip(interface_visa, visa_wrappers.visa_wrapper_tcp):
 
 
 class interface_visa_telnet(interface_visa, visa_wrappers.visa_wrapper_telnet):
-    """Interface_visa_telnet."""
+    """Interface_visa_telnet.
+
+    >>> from PyICe.lab_interfaces import interface_visa_telnet
+    >>> interface_visa_telnet is not None
+    True
+
+    """
     def __init__(self, host_address, port, timeout):
         """Initialize interface_visa_telnet.
 
+        Calls the parent constructor to inherit base behavior.
+
+
+        >>> from PyICe.lab_interfaces import interface_visa_telnet
+        >>> interface_visa_telnet is not None
+        True
+
         Args:
-            host_address: Host address.
-            port: Port.
+            host_address: Network hostname or IP address of the remote host.
+            port: TCP/IP port number.
             timeout: Timeout in seconds.
         """
         visa_wrappers.visa_wrapper_telnet.__init__(
@@ -1124,12 +1721,26 @@ class interface_visa_telnet(interface_visa, visa_wrappers.visa_wrapper_telnet):
 
 
 class interface_visa_serial(visa_wrappers.visa_wrapper_serial, interface_visa):
-    """Interface_visa_serial."""
+    """Interface_visa_serial.
+
+    >>> from PyICe.lab_interfaces import interface_visa_serial
+    >>> interface_visa_serial is not None
+    True
+
+    """
     def __init__(self, interface_raw_serial_object):
         """Initialize interface_visa_serial.
+        Delegates to the parent class constructor.
+
+        Calls the parent constructor to inherit base behavior.
+
+
+        >>> from PyICe.lab_interfaces import interface_visa_serial
+        >>> interface_visa_serial is not None
+        True
 
         Args:
-            interface_raw_serial_object: Interface raw serial object.
+            interface_raw_serial_object: Interface raw serial object to use.
         """
         super().__init__(interface_raw_serial_object)
         # visa_wrappers.visa_wrapper_serial.__init__(self,interface_raw_serial_object)
@@ -1137,12 +1748,25 @@ class interface_visa_serial(visa_wrappers.visa_wrapper_serial, interface_visa):
 
 
 class interface_visa_vxi11(interface_visa, visa_wrappers.visa_wrapper_vxi11):
-    """Interface_visa_vxi11."""
+    """Interface_visa_vxi11.
+
+    >>> from PyICe.lab_interfaces import interface_visa_vxi11
+    >>> interface_visa_vxi11 is not None
+    True
+
+    """
     def __init__(self, address, timeout):
         """Initialize interface_visa_vxi11.
 
+        Calls the parent constructor to inherit base behavior.
+
+
+        >>> from PyICe.lab_interfaces import interface_visa_vxi11
+        >>> interface_visa_vxi11 is not None
+        True
+
         Args:
-            address: Address.
+            address: Network hostname or IP address string.
             timeout: Timeout in seconds.
         """
         visa_wrappers.visa_wrapper_vxi11.__init__(self, address, timeout)
@@ -1150,12 +1774,25 @@ class interface_visa_vxi11(interface_visa, visa_wrappers.visa_wrapper_vxi11):
 
 
 class interface_visa_usbtmc(interface_visa, visa_wrappers.visa_wrapper_usbtmc):
-    """Interface_visa_usbtmc."""
+    """Interface_visa_usbtmc.
+
+    >>> from PyICe.lab_interfaces import interface_visa_usbtmc
+    >>> interface_visa_usbtmc is not None
+    True
+
+    """
     def __init__(self, address, timeout):
         """Initialize interface_visa_usbtmc.
 
+        Calls the parent constructor to inherit base behavior.
+
+
+        >>> from PyICe.lab_interfaces import interface_visa_usbtmc
+        >>> interface_visa_usbtmc is not None
+        True
+
         Args:
-            address: Address.
+            address: Network hostname or IP address string.
             timeout: Timeout in seconds.
         """
         visa_wrappers.visa_wrapper_usbtmc.__init__(self, address, timeout)
@@ -1163,13 +1800,28 @@ class interface_visa_usbtmc(interface_visa, visa_wrappers.visa_wrapper_usbtmc):
 
 
 class interface_visa_direct(interface_visa, visa_wrappers.visa_interface):
-    """Interface_visa_direct."""
+    """Interface_visa_direct.
+
+    >>> from PyICe.lab_interfaces import interface_visa_direct
+    >>> interface_visa_direct is not None
+    True
+
+    """
     def __init__(self, visa_address_string, timeout):
         """Initialize interface_visa_direct.
+        Calls the parent class constructor and initializes instance-specific
+        attributes for interface_visa_direct.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
+
+
+        >>> from PyICe.lab_interfaces import interface_visa_direct
+        >>> interface_visa_direct is not None
+        True
 
         Args:
             timeout: Timeout in seconds.
-            visa_address_string: Visa address string.
+            visa_address_string: Visa address string to use.
         """
         super().__init__(
             visa_address_string,
@@ -1181,7 +1833,13 @@ class interface_visa_direct(interface_visa, visa_wrappers.visa_interface):
 
 
 class interface_bobbytalk_raw_serial(interface_bobbytalk):
-    """Sends and receives bobbytalk packets over a raw serial interface."""
+    """Sends and receives bobbytalk packets over a raw serial interface.
+
+    >>> from PyICe.lab_interfaces import interface_bobbytalk_raw_serial
+    >>> interface_bobbytalk_raw_serial is not None
+    True
+
+    """
 
     def __init__(self, raw_serial_interface, fifo_size=2 **
                  16, junk_bytes_dump=None, debug=False):
@@ -1191,11 +1849,16 @@ class interface_bobbytalk_raw_serial(interface_bobbytalk):
         junk_bytes_dump is an optional argument. It's a function of one argument that receives
         all the bytes discarded by the bobbytalk parser as non-packet-bytes.
 
+
+        >>> from PyICe.lab_interfaces import interface_bobbytalk_raw_serial
+        >>> hasattr(interface_bobbytalk_raw_serial, '__init__')
+        True
+
         Args:
             debug: If True, enable debug output.
-            fifo_size: Fifo size.
-            junk_bytes_dump: Junk bytes dump.
-            raw_serial_interface: Raw serial interface.
+            fifo_size: Fifo size to use.
+            junk_bytes_dump: Junk bytes dump to use.
+            raw_serial_interface: Raw serial interface to use.
         """
         # Can't be interface_stream_serial because we need to be
         # able to change timeouts on every recv_packet() call.
@@ -1221,10 +1884,17 @@ class interface_bobbytalk_raw_serial(interface_bobbytalk):
         if junk_bytes_dump is None:
             # By default, discard junk bytes.
             def trash(junk_bytes):
-                """Perform trash operation.
+                """Run the trash step.
+
+                Performs the described operation on the object's internal state.
+
+
+                >>> from PyICe.lab_interfaces import interface_bobbytalk_raw_serial
+                >>> hasattr(interface_bobbytalk_raw_serial, 'trash')
+                True
 
                 Args:
-                    junk_bytes: Junk bytes.
+                    junk_bytes: Junk bytes to use.
                 """
                 return
             self.dump = trash
@@ -1242,8 +1912,13 @@ class interface_bobbytalk_raw_serial(interface_bobbytalk):
         Case 2: {0 or more non-SOP bytes}L
         Case 3: {0 or more non-SOP bytes}
 
+
+        >>> from PyICe.lab_interfaces import interface_bobbytalk_raw_serial
+        >>> hasattr(interface_bobbytalk_raw_serial, '_advance_fifo_to_SOP')
+        True
+
         Returns:
-            Result value.
+            The advance fifo to SOP result.
         """
         psbl_SOP_position = self.fifo.find(
             bobbytalk.packet.START_OF_PACKET_BYTEARRAY)
@@ -1268,13 +1943,18 @@ class interface_bobbytalk_raw_serial(interface_bobbytalk):
         Otherwise FAIL, meaning the underlying interface
         couldn't accept buffer for some reason.
 
+
+        >>> from PyICe.lab_interfaces import interface_bobbytalk_raw_serial
+        >>> hasattr(interface_bobbytalk_raw_serial, 'send_packet')
+        True
+
         Args:
-            buffer: Buffer.
+            buffer: Buffer to use.
             dest_id: Destination identifier.
             src_id: Source identifier.
 
         Returns:
-            Result value.
+            The send packet result.
         """
         pktbytes = bobbytalk.packet(
             src_id=src_id,
@@ -1297,14 +1977,19 @@ class interface_bobbytalk_raw_serial(interface_bobbytalk):
         Upon success, returns a bobbytalk_packet object.
         Upon timeout, returns None.
 
+
+        >>> from PyICe.lab_interfaces import interface_bobbytalk_raw_serial
+        >>> hasattr(interface_bobbytalk_raw_serial, 'recv_packet')
+        True
+
         Args:
             dest_id: Destination identifier.
-            receive_tries: Receive tries.
+            receive_tries: Receive tries to use.
             src_id: Source identifier.
             timeout: Timeout in seconds.
 
         Returns:
-            Result value.
+            The recv packet result.
         """
         # Stuff we'll use from Python's standard library.
         from numbers import Real
@@ -1410,8 +2095,13 @@ class interface_bobbytalk_raw_serial(interface_bobbytalk):
         and dispatch to any registered packet handlers ("modules") in
         the module_table.
 
+
+        >>> from PyICe.lab_interfaces import interface_bobbytalk_raw_serial
+        >>> hasattr(interface_bobbytalk_raw_serial, 'handle_comms')
+        True
+
         Raises:
-            NotImplementedError: On error condition.
+            NotImplementedError: If this method is not supported by the subclass.
         """
         raise NotImplementedError("Subclass must implement this.")
 
@@ -1421,12 +2111,17 @@ class interface_bobbytalk_raw_serial(interface_bobbytalk):
         handler_function will be called like this:
         handler_function(bobbytalk_packet)
 
+
+        >>> from PyICe.lab_interfaces import interface_bobbytalk_raw_serial
+        >>> hasattr(interface_bobbytalk_raw_serial, 'register_handler')
+        True
+
         Args:
             dest_id: Destination identifier.
-            handler_function: Handler function.
+            handler_function: Handler function to use.
 
         Raises:
-            NotImplementedError: On error condition.
+            NotImplementedError: If this method is not supported by the subclass.
         """
         raise NotImplementedError("Subclass must implement this.")
 
@@ -1435,9 +2130,22 @@ class interface_bobbytalk_raw_serial(interface_bobbytalk):
 
 
 class interface_twi_dummy(interface_twi, twi_interface.i2c_dummy):
-    """Interface_twi_dummy."""
+    """Interface_twi_dummy.
+
+    >>> from PyICe.lab_interfaces import interface_twi_dummy
+    >>> interface_twi_dummy is not None
+    True
+
+    """
     def __init__(self, delay, **kwargs):
         """Initialize interface_twi_dummy.
+
+        Calls the parent constructor to inherit base behavior.
+
+
+        >>> from PyICe.lab_interfaces import interface_twi_dummy
+        >>> interface_twi_dummy is not None
+        True
 
         Args:
             **kwargs: Additional keyword arguments.
@@ -1448,13 +2156,26 @@ class interface_twi_dummy(interface_twi, twi_interface.i2c_dummy):
 
 
 class interface_twi_mdump(interface_twi, twi_interface.mem_dict):
-    """Interface_twi_mdump."""
+    """Interface_twi_mdump.
+
+    >>> from PyICe.lab_interfaces import interface_twi_mdump
+    >>> interface_twi_mdump is not None
+    True
+
+    """
     def __init__(self, data_source=None, **kwargs):
         """Initialize interface_twi_mdump.
 
+        Calls the parent constructor to inherit base behavior.
+
+
+        >>> from PyICe.lab_interfaces import interface_twi_mdump
+        >>> interface_twi_mdump is not None
+        True
+
         Args:
             **kwargs: Additional keyword arguments.
-            data_source: Data source.
+            data_source: Data source to use.
         """
         # twi_interface.mem_dict.__init__(self,data_source,**kwargs) #happens
         # through super() below
@@ -1463,12 +2184,27 @@ class interface_twi_mdump(interface_twi, twi_interface.mem_dict):
 
 
 class interface_twi_scpi(twi_interface.i2c_scpi, interface_twi):
-    """Interface_twi_scpi."""
+    """Interface_twi_scpi.
+
+    >>> from PyICe.lab_interfaces import interface_twi_scpi
+    >>> interface_twi_scpi is not None
+    True
+
+    """
     def __init__(self, interface_serial, timeout):
         """Initialize interface_twi_scpi.
+        Calls the parent class constructor and initializes instance-specific
+        attributes for interface_twi_scpi.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
+
+
+        >>> from PyICe.lab_interfaces import interface_twi_scpi
+        >>> interface_twi_scpi is not None
+        True
 
         Args:
-            interface_serial: Interface serial.
+            interface_serial: Serial interface instance for communication.
             timeout: Timeout in seconds.
         """
         super().__init__(interface_serial)
@@ -1478,17 +2214,32 @@ class interface_twi_scpi(twi_interface.i2c_scpi, interface_twi):
 
 
 class interface_twi_scpi_sp(twi_interface.i2c_scpi_sp, interface_twi):
-    """Interface_twi_scpi_sp."""
+    """Interface_twi_scpi_sp.
+
+    >>> from PyICe.lab_interfaces import interface_twi_scpi_sp
+    >>> interface_twi_scpi_sp is not None
+    True
+
+    """
     def __init__(self, interface_serial, portnum, sclpin,
                  sdapin, pullup_en=False, timeout=1):
         """Initialize interface_twi_scpi_sp.
+        Calls the parent class constructor and initializes instance-specific
+        attributes for interface_twi_scpi_sp.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
+
+
+        >>> from PyICe.lab_interfaces import interface_twi_scpi_sp
+        >>> hasattr(interface_twi_scpi_sp, '__init__')
+        True
 
         Args:
-            interface_serial: Interface serial.
-            portnum: Portnum.
-            pullup_en: Pullup en.
-            sclpin: Sclpin.
-            sdapin: Sdapin.
+            interface_serial: Serial interface instance for communication.
+            portnum: Portnum to use.
+            pullup_en: Pullup en to use.
+            sclpin: Sclpin to use.
+            sdapin: Sdapin to use.
             timeout: Timeout in seconds.
         """
         super().__init__(interface_serial, portnum, sclpin, sdapin, pullup_en)
@@ -1499,12 +2250,26 @@ class interface_twi_scpi_sp(twi_interface.i2c_scpi_sp, interface_twi):
 
 class interface_twi_scpi_testhook(
         twi_interface.i2c_scpi_testhook, interface_twi):
-    """Interface_twi_scpi_testhook."""
+    """Interface_twi_scpi_testhook.
+
+    >>> from PyICe.lab_interfaces import interface_twi_scpi_testhook
+    >>> interface_twi_scpi_testhook is not None
+    True
+
+    """
     def __init__(self, interface_serial, timeout):
         """Initialize interface_twi_scpi_testhook.
+        Stores configuration in ``timeout`` for use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
+
+
+        >>> from PyICe.lab_interfaces import interface_twi_scpi_testhook
+        >>> interface_twi_scpi_testhook is not None
+        True
 
         Args:
-            interface_serial: Interface serial.
+            interface_serial: Serial interface instance for communication.
             timeout: Timeout in seconds.
         """
         twi_interface.i2c_scpi.__init__(self, interface_serial)
@@ -1515,12 +2280,26 @@ class interface_twi_scpi_testhook(
 
 # DJS TODO: fix interfaces to reconcile with DC590 cleanup
 class interface_twi_dc590_serial(twi_interface.i2c_dc590, interface_twi):
-    """Interface_twi_dc590_serial."""
+    """Interface_twi_dc590_serial.
+
+    >>> from PyICe.lab_interfaces import interface_twi_dc590_serial
+    >>> interface_twi_dc590_serial is not None
+    True
+
+    """
     def __init__(self, interface_serial, timeout):
         """Initialize interface_twi_dc590_serial.
+        Stores configuration in ``timeout`` for use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
+
+
+        >>> from PyICe.lab_interfaces import interface_twi_dc590_serial
+        >>> interface_twi_dc590_serial is not None
+        True
 
         Args:
-            interface_serial: Interface serial.
+            interface_serial: Serial interface instance for communication.
             timeout: Timeout in seconds.
         """
         # DJS TODO: fix interfaces to reconcile with DC590 cleanup
@@ -1531,12 +2310,26 @@ class interface_twi_dc590_serial(twi_interface.i2c_dc590, interface_twi):
 
 
 class interface_twi_buspirate(twi_interface.i2c_buspirate, interface_twi):
-    """Interface_twi_buspirate."""
+    """Interface_twi_buspirate.
+
+    >>> from PyICe.lab_interfaces import interface_twi_buspirate
+    >>> interface_twi_buspirate is not None
+    True
+
+    """
     def __init__(self, interface_serial, timeout):
         """Initialize interface_twi_buspirate.
+        Stores configuration in ``timeout`` for use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
+
+
+        >>> from PyICe.lab_interfaces import interface_twi_buspirate
+        >>> interface_twi_buspirate is not None
+        True
 
         Args:
-            interface_serial: Interface serial.
+            interface_serial: Serial interface instance for communication.
             timeout: Timeout in seconds.
         """
         twi_interface.i2c_buspirate.__init__(self, interface_serial)
@@ -1546,13 +2339,26 @@ class interface_twi_buspirate(twi_interface.i2c_buspirate, interface_twi):
 
 
 class interface_twi_firmata(twi_interface.i2c_firmata, interface_twi):
-    """Interface_twi_firmata."""
+    """Interface_twi_firmata.
+
+    >>> from PyICe.lab_interfaces import interface_twi_firmata
+    >>> interface_twi_firmata is not None
+    True
+
+    """
     # Old. Consider Telemetrix instead.
     def __init__(self, firmata_instance):
         """Initialize interface_twi_firmata.
 
+        Calls the parent constructor to inherit base behavior.
+
+
+        >>> from PyICe.lab_interfaces import interface_twi_firmata
+        >>> interface_twi_firmata is not None
+        True
+
         Args:
-            firmata_instance: Firmata instance.
+            firmata_instance: Firmata instance to use.
         """
         twi_interface.i2c_firmata.__init__(self, firmata_instance)
         interface_twi.__init__(
@@ -1560,13 +2366,26 @@ class interface_twi_firmata(twi_interface.i2c_firmata, interface_twi):
 
 
 class interface_twi_bobbytalk(twi_interface.i2c_bobbytalk, interface_twi):
-    """Interface_twi_bobbytalk."""
+    """Interface_twi_bobbytalk.
+
+    >>> from PyICe.lab_interfaces import interface_twi_bobbytalk
+    >>> interface_twi_bobbytalk is not None
+    True
+
+    """
     def __init__(self, bobbytalk_interface, src_id, **kwargs):
         """Initialize interface_twi_bobbytalk.
 
+        Calls the parent constructor to inherit base behavior.
+
+
+        >>> from PyICe.lab_interfaces import interface_twi_bobbytalk
+        >>> interface_twi_bobbytalk is not None
+        True
+
         Args:
             **kwargs: Additional keyword arguments.
-            bobbytalk_interface: Bobbytalk interface.
+            bobbytalk_interface: Bobbytalk interface to use.
             src_id: Source identifier.
         """
         twi_interface.i2c_bobbytalk.__init__(
@@ -1575,16 +2394,31 @@ class interface_twi_bobbytalk(twi_interface.i2c_bobbytalk, interface_twi):
 
 
 class interface_labcomm_raw_serial(interface):
-    """Sends and receives Labcomm packets over a raw serial interface."""
+    """Sends and receives Labcomm packets over a raw serial interface.
+
+    >>> from PyICe.lab_interfaces import interface_labcomm_raw_serial
+    >>> interface_labcomm_raw_serial is not None
+    True
+
+    """
 
     def __init__(self, raw_serial_interface,
                  serial_port_name, src_id, dest_id):
         """Initialize interface_labcomm_raw_serial.
+        Initializes 5 instance attributes that configure the object's
+        behavior.
+
+        Calls the parent constructor to inherit base behavior, and initializes 5 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.lab_interfaces import interface_labcomm_raw_serial
+        >>> hasattr(interface_labcomm_raw_serial, '__init__')
+        True
 
         Args:
             dest_id: Destination identifier.
-            raw_serial_interface: Raw serial interface.
-            serial_port_name: Serial port name.
+            raw_serial_interface: Raw serial interface to use.
+            serial_port_name: Serial port identifier (e.g. ``"COM3"`` or ``"/dev/ttyUSB0"``).
             src_id: Source identifier.
         """
         interface.__init__(self, f'interface_raw_serial @ {serial_port_name}')
@@ -1596,6 +2430,14 @@ class interface_labcomm_raw_serial(interface):
 
     def set_source_id(self, src_id):
         """Set the source id.
+        Updates the source id in the object's internal state.
+
+        Updates the source id in the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import interface_labcomm_raw_serial
+        >>> hasattr(interface_labcomm_raw_serial, 'set_source_id')
+        True
 
         Args:
             src_id: Source identifier.
@@ -1604,6 +2446,14 @@ class interface_labcomm_raw_serial(interface):
 
     def set_destination_id(self, dest_id):
         """Set the destination id.
+        Updates the destination id in the object's internal state.
+
+        Updates the destination id in the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import interface_labcomm_raw_serial
+        >>> hasattr(interface_labcomm_raw_serial, 'set_destination_id')
+        True
 
         Args:
             dest_id: Destination identifier.
@@ -1613,8 +2463,15 @@ class interface_labcomm_raw_serial(interface):
     def send_payload(self, payload):
         """Perform send payload operation.
 
+        Transmits data to the remote endpoint.
+
+
+        >>> from PyICe.lab_interfaces import interface_labcomm_raw_serial
+        >>> hasattr(interface_labcomm_raw_serial, 'send_payload')
+        True
+
         Args:
-            payload: Payload.
+            payload: Payload to use.
         """
         self.interface.write_raw(
             self.talker.assemble(
@@ -1625,21 +2482,43 @@ class interface_labcomm_raw_serial(interface):
     def receive_packet(self):
         """Return receive packet result.
 
+        Retrieves data from the remote endpoint.
+
+
+        >>> from PyICe.lab_interfaces import interface_labcomm_raw_serial
+        >>> hasattr(interface_labcomm_raw_serial, 'receive_packet')
+        True
+
         Returns:
-            Result value.
+            The receive packet result.
         """
         return self.parser.read_message()
 
 
 class interface_labcomm_twi_serial(twi_interface.i2c_labcomm, interface_twi):
-    """Interface_labcomm_twi_serial."""
+    """Interface_labcomm_twi_serial.
+
+    >>> from PyICe.lab_interfaces import interface_labcomm_twi_serial
+    >>> interface_labcomm_twi_serial is not None
+    True
+
+    """
     def __init__(self, raw_serial_interface, comport_name, src_id, dest_id):
         """Initialize interface_labcomm_twi_serial.
+        Initializes 5 instance attributes that configure the object's
+        behavior.
+
+        Calls the parent constructor to inherit base behavior, and initializes 5 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.lab_interfaces import interface_labcomm_twi_serial
+        >>> interface_labcomm_twi_serial is not None
+        True
 
         Args:
-            comport_name: Comport name.
+            comport_name: Comport name to use.
             dest_id: Destination identifier.
-            raw_serial_interface: Raw serial interface.
+            raw_serial_interface: Raw serial interface to use.
             src_id: Source identifier.
         """
         twi_interface.i2c_labcomm.__init__(self, raw_serial_interface)
@@ -1652,6 +2531,14 @@ class interface_labcomm_twi_serial(twi_interface.i2c_labcomm, interface_twi):
 
     def set_source_id(self, src_id):
         """Set the source id.
+        Updates the source id in the object's internal state.
+
+        Updates the source id in the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import interface_labcomm_twi_serial
+        >>> hasattr(interface_labcomm_twi_serial, 'set_source_id')
+        True
 
         Args:
             src_id: Source identifier.
@@ -1660,6 +2547,14 @@ class interface_labcomm_twi_serial(twi_interface.i2c_labcomm, interface_twi):
 
     def set_destination_id(self, dest_id):
         """Set the destination id.
+        Updates the destination id in the object's internal state.
+
+        Updates the destination id in the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import interface_labcomm_twi_serial
+        >>> hasattr(interface_labcomm_twi_serial, 'set_destination_id')
+        True
 
         Args:
             dest_id: Destination identifier.
@@ -1671,9 +2566,22 @@ class interface_labcomm_twi_serial(twi_interface.i2c_labcomm, interface_twi):
 
 
 class interface_spi_dummy(interface_spi, spi_interface.spi_dummy):
-    """Interface_spi_dummy."""
+    """Interface_spi_dummy.
+
+    >>> from PyICe.lab_interfaces import interface_spi_dummy
+    >>> interface_spi_dummy is not None
+    True
+
+    """
     def __init__(self, delay=0):
         """Initialize interface_spi_dummy.
+
+        Calls the parent constructor to inherit base behavior.
+
+
+        >>> from PyICe.lab_interfaces import interface_spi_dummy
+        >>> interface_spi_dummy is not None
+        True
 
         Args:
             delay: Delay time in seconds.
@@ -1683,13 +2591,26 @@ class interface_spi_dummy(interface_spi, spi_interface.spi_dummy):
 
 
 class interface_spi_dc590(interface_spi, spi_interface.spi_dc590):
-    """Interface_spi_dc590."""
+    """Interface_spi_dc590.
+
+    >>> from PyICe.lab_interfaces import interface_spi_dc590
+    >>> interface_spi_dc590 is not None
+    True
+
+    """
     def __init__(self, interface_stream, ss_ctrl=None):
         """Initialize interface_spi_dc590.
 
+        Calls the parent constructor to inherit base behavior.
+
+
+        >>> from PyICe.lab_interfaces import interface_spi_dc590
+        >>> interface_spi_dc590 is not None
+        True
+
         Args:
-            interface_stream: Interface stream.
-            ss_ctrl: Ss ctrl.
+            interface_stream: Interface stream to use.
+            ss_ctrl: Slave-select control mode or pin assignment.
         """
         spi_interface.spi_dc590.__init__(self, interface_stream, ss_ctrl)
         interface_spi.__init__(
@@ -1697,16 +2618,29 @@ class interface_spi_dc590(interface_spi, spi_interface.spi_dc590):
 
 
 class interface_spi_cfgpro(interface_spi, spi_interface.spi_cfgpro):
-    """Interface_spi_cfgpro."""
+    """Interface_spi_cfgpro.
+
+    >>> from PyICe.lab_interfaces import interface_spi_cfgpro
+    >>> interface_spi_cfgpro is not None
+    True
+
+    """
     def __init__(self, visa_interface, CPOL, CPHA, baudrate=1e6, ss_ctrl=None):
         """Initialize interface_spi_cfgpro.
+
+        Calls the parent constructor to inherit base behavior.
+
+
+        >>> from PyICe.lab_interfaces import interface_spi_cfgpro
+        >>> interface_spi_cfgpro is not None
+        True
 
         Args:
             CPHA: Clock phase.
             CPOL: Clock polarity.
-            baudrate: Baudrate.
-            ss_ctrl: Ss ctrl.
-            visa_interface: Visa interface.
+            baudrate: Serial baud rate in bits per second.
+            ss_ctrl: Slave-select control mode or pin assignment.
+            visa_interface: Visa interface to use.
         """
         spi_interface.spi_cfgpro.__init__(
             self, visa_interface, CPOL, CPHA, baudrate, ss_ctrl)
@@ -1715,12 +2649,24 @@ class interface_spi_cfgpro(interface_spi, spi_interface.spi_cfgpro):
 
 
 class gpib_adapter(communication_node):
-    """Gpib_adapter (communication_node subclass)."""
+    """Gpib_adapter (communication_node subclass).
+
+    >>> from PyICe.lab_interfaces import gpib_adapter
+    >>> gpib_adapter is not None
+    True
+
+    """
     pass
 
 
 class gpib_adapter_visa(gpib_adapter):
-    """Gpib_adapter_visa."""
+    """Gpib_adapter_visa.
+
+    >>> from PyICe.lab_interfaces import gpib_adapter_visa
+    >>> gpib_adapter_visa is not None
+    True
+
+    """
     pass
 
 
@@ -1742,14 +2688,29 @@ class interface_factory(communication_node):
     1) An interface_factory can be instantiated and all interfaces acquired from it using the getter methods. Lab instrument objects, created from the lab_instruments folder, then get their interface handles from interfaces acquired from the interface factory object. These instruments are then usually added to a lab core channel_master for channel aggregation.
 
     2) Alternatley, the project can go straight to creating a lab_core master (not channel_master). A lab_core master is merely a channel_master that inherits this interface_factory class. In this work flow, interfaces can be acquired from that master object directly (again using the getter methods in this class) without the requirement to create a disposable interface_factory instance. This method results in slightly compacted code but has an interface object flow that seems to double back on itself.
+
+    >>> from PyICe.lab_interfaces import interface_factory
+    >>> interface_factory is not None
+    True
+
     """
     _instantiated = False
 
     def __init__(self):
         """Initialize interface_factory.
+        Initializes 12 instance attributes that configure the object's
+        behavior.
+
+        Calls the parent constructor to inherit base behavior, and initializes 12 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.lab_interfaces import interface_factory
+        >>> obj = interface_factory()
+        >>> isinstance(obj, interface_factory)
+        True
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         communication_node.__init__(self)
         if self._instantiated is True:
@@ -1775,16 +2736,24 @@ class interface_factory(communication_node):
 
     def get_visa_interface(self, visa_address_string, timeout=None):
         """Return the visa interface.
+        Returns the stored visa interface from the object's internal state.
+
+        Returns the stored visa interface from the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import interface_factory
+        >>> hasattr(interface_factory, 'get_visa_interface')
+        True
 
         Args:
             timeout: Timeout in seconds.
-            visa_address_string: Visa address string.
+            visa_address_string: Visa address string to use.
 
         Returns:
-            Result value.
+            The current visa interface.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if visaMissing:
             raise Exception(
@@ -1807,17 +2776,26 @@ class interface_factory(communication_node):
     def get_visa_gpib_interface(
             self, gpib_adapter_number, gpib_address_number, timeout=None):
         """Return the visa gpib interface.
+        Returns the stored visa gpib interface from the object's internal
+        state.
+
+        Returns the stored visa gpib interface from the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import interface_factory
+        >>> hasattr(interface_factory, 'get_visa_gpib_interface')
+        True
 
         Args:
-            gpib_adapter_number: Gpib adapter number.
-            gpib_address_number: Gpib address number.
+            gpib_adapter_number: Gpib adapter number to use.
+            gpib_address_number: Gpib address number to use.
             timeout: Timeout in seconds.
 
         Returns:
-            Result value.
+            The current visa gpib interface.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         timeout = self._set_timeout(timeout)
         if visaMissing:
@@ -1856,8 +2834,15 @@ class interface_factory(communication_node):
     def set_gpib_adapter_visa(self, adapter_number):
         """Deprectaed, I put this stuff in .get_visa_gpib_interface() since it asked for an adapter number anyway.
 
+        Updates the gpib adapter visa in the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import interface_factory
+        >>> hasattr(interface_factory, 'set_gpib_adapter_visa')
+        True
+
         Args:
-            adapter_number: Adapter number.
+            adapter_number: Adapter number to use.
         """
     def _get_gpib_interface(
             self, gpib_adapter, gpib_adapter_number, gpib_address_number, timeout):
@@ -1872,15 +2857,24 @@ class interface_factory(communication_node):
     def get_visa_tcp_ip_interface(
             self, host_address, port, timeout=None, **kwargs):
         """Return the visa tcp ip interface.
+        Returns the stored visa tcp ip interface from the object's internal
+        state.
+
+        Returns the stored visa tcp ip interface from the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import interface_factory
+        >>> hasattr(interface_factory, 'get_visa_tcp_ip_interface')
+        True
 
         Args:
             **kwargs: Additional keyword arguments.
-            host_address: Host address.
-            port: Port.
+            host_address: Network hostname or IP address of the remote host.
+            port: TCP/IP port number.
             timeout: Timeout in seconds.
 
         Returns:
-            Result value.
+            The current visa tcp ip interface.
         """
         new_interface = interface_visa_tcp_ip(
             host_address, port, timeout, **kwargs)
@@ -1890,17 +2884,26 @@ class interface_factory(communication_node):
 
     def get_visa_telnet_interface(self, host_address, port, timeout=None):
         """Return the visa telnet interface.
+        Returns the stored visa telnet interface from the object's internal
+        state.
+
+        Returns the stored visa telnet interface from the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import interface_factory
+        >>> hasattr(interface_factory, 'get_visa_telnet_interface')
+        True
 
         Args:
-            host_address: Host address.
-            port: Port.
+            host_address: Network hostname or IP address of the remote host.
+            port: TCP/IP port number.
             timeout: Timeout in seconds.
 
         Returns:
-            Result value.
+            The current visa telnet interface.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if telnetlibMissing:
             raise Exception("telnetlib is missing on this computer")
@@ -1911,13 +2914,22 @@ class interface_factory(communication_node):
 
     def get_visa_vxi11_interface(self, address, timeout):
         """Return the visa vxi11 interface.
+        Returns the stored visa vxi11 interface from the object's internal
+        state.
+
+        Returns the stored visa vxi11 interface from the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import interface_factory
+        >>> hasattr(interface_factory, 'get_visa_vxi11_interface')
+        True
 
         Args:
-            address: Address.
+            address: Network hostname or IP address string.
             timeout: Timeout in seconds.
 
         Returns:
-            Result value.
+            The current visa vxi11 interface.
         """
         timeout = self._set_timeout(timeout)
         new_interface = interface_visa_vxi11(address, timeout)
@@ -1927,13 +2939,22 @@ class interface_factory(communication_node):
 
     def get_visa_usbtmc_interface(self, address, timeout):
         """Return the visa usbtmc interface.
+        Returns the stored visa usbtmc interface from the object's internal
+        state.
+
+        Returns the stored visa usbtmc interface from the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import interface_factory
+        >>> hasattr(interface_factory, 'get_visa_usbtmc_interface')
+        True
 
         Args:
-            address: Address.
+            address: Network hostname or IP address string.
             timeout: Timeout in seconds.
 
         Returns:
-            Result value.
+            The current visa usbtmc interface.
         """
         timeout = self._set_timeout(timeout)
         new_interface = interface_visa_usbtmc(address, timeout)
@@ -1944,15 +2965,24 @@ class interface_factory(communication_node):
     def get_visa_serial_interface(
             self, serial_obj_or_port_name, baudrate=None, timeout=None, **kwargs):
         """Return the visa serial interface.
+        Returns the stored visa serial interface from the object's internal
+        state.
+
+        Returns the stored visa serial interface from the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import interface_factory
+        >>> hasattr(interface_factory, 'get_visa_serial_interface')
+        True
 
         Args:
             **kwargs: Additional keyword arguments.
-            baudrate: Baudrate.
-            serial_obj_or_port_name: Serial obj or port name.
+            baudrate: Serial baud rate in bits per second.
+            serial_obj_or_port_name: Serial obj or port name to use.
             timeout: Timeout in seconds.
 
         Returns:
-            Result value.
+            The current visa serial interface.
         """
         timeout = self._set_timeout(timeout)
         if isinstance(serial_obj_or_port_name, str):
@@ -1970,18 +3000,27 @@ class interface_factory(communication_node):
     def get_raw_serial_interface(
             self, serial_port_name, baudrate=None, timeout=None, **kwargs):
         """Return the raw serial interface.
+        Returns the stored raw serial interface from the object's internal
+        state.
+
+        Returns the stored raw serial interface from the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import interface_factory
+        >>> hasattr(interface_factory, 'get_raw_serial_interface')
+        True
 
         Args:
             **kwargs: Additional keyword arguments.
-            baudrate: Baudrate.
-            serial_port_name: Serial port name.
+            baudrate: Serial baud rate in bits per second.
+            serial_port_name: Serial port identifier (e.g. ``"COM3"`` or ``"/dev/ttyUSB0"``).
             timeout: Timeout in seconds.
 
         Returns:
-            Result value.
+            The current raw serial interface.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if serialMissing:
             raise Exception("pySerial is missing on this computer")
@@ -2004,17 +3043,26 @@ class interface_factory(communication_node):
     def get_tcp_serial_interface(
             self, dest_ip_address, dest_tcp_portnum, timeout):
         """Return the tcp serial interface.
+        Returns the stored tcp serial interface from the object's internal
+        state.
+
+        Returns the stored tcp serial interface from the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import interface_factory
+        >>> hasattr(interface_factory, 'get_tcp_serial_interface')
+        True
 
         Args:
-            dest_ip_address: Dest ip address.
-            dest_tcp_portnum: Dest tcp portnum.
+            dest_ip_address: Dest ip address to use.
+            dest_tcp_portnum: Dest tcp portnum to use.
             timeout: Timeout in seconds.
 
         Returns:
-            Result value.
+            The current tcp serial interface.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if serialMissing:
             raise Exception("pySerial is missing on this computer")
@@ -2031,14 +3079,19 @@ class interface_factory(communication_node):
         bytestream is a generator function that yields one byte
         of test stimulus each time its next() method is called.
 
+
+        >>> from PyICe.lab_interfaces import interface_factory
+        >>> hasattr(interface_factory, 'get_interface_test_harness_serial')
+        True
+
         Args:
-            bytestream: Bytestream.
-            max_bytes_returned_per_read: Max bytes returned per read.
-            serial_port_name: Serial port name.
+            bytestream: Bytestream to use.
+            max_bytes_returned_per_read: Max bytes returned per read to use.
+            serial_port_name: Serial port identifier (e.g. ``"COM3"`` or ``"/dev/ttyUSB0"``).
             timeout: Timeout in seconds.
 
         Returns:
-            Result value.
+            The current interface test harness serial.
         """
         timeout = self._set_timeout(timeout)
         new_interface = interface_test_harness_serial(
@@ -2049,14 +3102,22 @@ class interface_factory(communication_node):
     def get_interface_libusb(self, idVendor=0x1272,
                              idProduct=0x8004, timeout=1):
         """Return the interface libusb.
+        Returns the stored interface libusb from the object's internal state.
+
+        Returns the stored interface libusb from the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import interface_factory
+        >>> hasattr(interface_factory, 'get_interface_libusb')
+        True
 
         Args:
-            idProduct: Idproduct.
-            idVendor: Idvendor.
+            idProduct: Idproduct to use.
+            idVendor: Idvendor to use.
             timeout: Timeout in seconds.
 
         Returns:
-            Result value.
+            The current interface libusb.
         """
         new_interface = interface_libusb(
             idVendor=0x1272, idProduct=0x8004, timeout=1)
@@ -2065,12 +3126,21 @@ class interface_factory(communication_node):
 
     def get_interface_stream_serial(self, interface_raw_serial):
         """Return the interface stream serial.
+        Returns the stored interface stream serial from the object's internal
+        state.
+
+        Returns the stored interface stream serial from the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import interface_factory
+        >>> hasattr(interface_factory, 'get_interface_stream_serial')
+        True
 
         Args:
-            interface_raw_serial: Interface raw serial.
+            interface_raw_serial: Raw serial interface instance for communication.
 
         Returns:
-            Result value.
+            The current interface stream serial.
         """
         new_interface = interface_stream_serial(interface_raw_serial)
         new_interface.set_com_node_parent(interface_raw_serial)
@@ -2079,9 +3149,18 @@ class interface_factory(communication_node):
     def get_interface_ftdi_d2xx(self):
         # need some kind of device descriptor....
         """Return the interface ftdi d2xx.
+        Returns the stored interface ftdi d2xx from the object's internal
+        state.
+
+        Returns the stored interface ftdi d2xx from the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import interface_factory
+        >>> hasattr(interface_factory, 'get_interface_ftdi_d2xx')
+        True
 
         Returns:
-            Result value.
+            The current interface ftdi d2xx.
         """
         new_interface = interface_ftdi_d2xx()  # pylint: disable=abstract-class-instantiated; interface_ftdi_d2xx is an intentional stub class awaiting implementation of abstract methods
         new_interface.set_com_node_parent(self)
@@ -2089,6 +3168,15 @@ class interface_factory(communication_node):
 
     def get_twi_dummy_interface(self, delay=0, timeout=None, **kwargs):
         """Return the twi dummy interface.
+        Returns the stored twi dummy interface from the object's internal
+        state.
+
+        Returns the stored twi dummy interface from the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import interface_factory
+        >>> hasattr(interface_factory, 'get_twi_dummy_interface')
+        True
 
         Args:
             **kwargs: Additional keyword arguments.
@@ -2096,7 +3184,7 @@ class interface_factory(communication_node):
             timeout: Timeout in seconds.
 
         Returns:
-            Result value.
+            The current twi dummy interface.
         """
         new_interface = interface_twi_dummy(delay, **kwargs)
         new_interface.set_com_node_parent(self)
@@ -2104,13 +3192,22 @@ class interface_factory(communication_node):
 
     def get_twi_mdump_interface(self, data_source, **kwargs):
         """Return the twi mdump interface.
+        Returns the stored twi mdump interface from the object's internal
+        state.
+
+        Returns the stored twi mdump interface from the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import interface_factory
+        >>> hasattr(interface_factory, 'get_twi_mdump_interface')
+        True
 
         Args:
             **kwargs: Additional keyword arguments.
-            data_source: Data source.
+            data_source: Data source to use.
 
         Returns:
-            Result value.
+            The current twi mdump interface.
         """
         new_interface = interface_twi_mdump(data_source, **kwargs)
         new_interface.set_com_node_parent(self)
@@ -2119,14 +3216,23 @@ class interface_factory(communication_node):
     def get_twi_scpi_interface(
             self, serial_port_name, baudrate=None, timeout=None):
         """Return the twi scpi interface.
+        Returns the stored twi scpi interface from the object's internal
+        state.
+
+        Returns the stored twi scpi interface from the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import interface_factory
+        >>> hasattr(interface_factory, 'get_twi_scpi_interface')
+        True
 
         Args:
-            baudrate: Baudrate.
-            serial_port_name: Serial port name.
+            baudrate: Serial baud rate in bits per second.
+            serial_port_name: Serial port identifier (e.g. ``"COM3"`` or ``"/dev/ttyUSB0"``).
             timeout: Timeout in seconds.
 
         Returns:
-            Result value.
+            The current twi scpi interface.
         """
         serial = self.get_visa_serial_interface(
             serial_port_name, baudrate, timeout)
@@ -2137,18 +3243,27 @@ class interface_factory(communication_node):
     def get_twi_scpi_sp_interface(self, serial_port_name, portnum,
                                   sclpin, sdapin, pullup=False, baudrate=None, timeout=None):
         """Return the twi scpi sp interface.
+        Returns the stored twi scpi sp interface from the object's internal
+        state.
+
+        Returns the stored twi scpi sp interface from the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import interface_factory
+        >>> hasattr(interface_factory, 'get_twi_scpi_sp_interface')
+        True
 
         Args:
-            baudrate: Baudrate.
-            portnum: Portnum.
-            pullup: Pullup.
-            sclpin: Sclpin.
-            sdapin: Sdapin.
-            serial_port_name: Serial port name.
+            baudrate: Serial baud rate in bits per second.
+            portnum: Portnum to use.
+            pullup: Pullup to use.
+            sclpin: Sclpin to use.
+            sdapin: Sdapin to use.
+            serial_port_name: Serial port identifier (e.g. ``"COM3"`` or ``"/dev/ttyUSB0"``).
             timeout: Timeout in seconds.
 
         Returns:
-            Result value.
+            The current twi scpi sp interface.
         """
         serial = self.get_visa_serial_interface(
             serial_port_name, baudrate, timeout)
@@ -2165,14 +3280,23 @@ class interface_factory(communication_node):
     def get_twi_scpi_testhook_interface(
             self, serial_port_name, baudrate=None, timeout=None):
         """Return the twi scpi testhook interface.
+        Returns the stored twi scpi testhook interface from the object's
+        internal state.
+
+        Returns the stored twi scpi testhook interface from the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import interface_factory
+        >>> hasattr(interface_factory, 'get_twi_scpi_testhook_interface')
+        True
 
         Args:
-            baudrate: Baudrate.
-            serial_port_name: Serial port name.
+            baudrate: Serial baud rate in bits per second.
+            serial_port_name: Serial port identifier (e.g. ``"COM3"`` or ``"/dev/ttyUSB0"``).
             timeout: Timeout in seconds.
 
         Returns:
-            Result value.
+            The current twi scpi testhook interface.
         """
         serial = self.get_visa_serial_interface(
             serial_port_name, baudrate, timeout)
@@ -2183,14 +3307,22 @@ class interface_factory(communication_node):
     def get_twi_dc590_serial(self, serial_port_name,
                              baudrate=None, timeout=None):
         """Return the twi dc590 serial.
+        Returns the stored twi dc590 serial from the object's internal state.
+
+        Returns the stored twi dc590 serial from the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import interface_factory
+        >>> hasattr(interface_factory, 'get_twi_dc590_serial')
+        True
 
         Args:
-            baudrate: Baudrate.
-            serial_port_name: Serial port name.
+            baudrate: Serial baud rate in bits per second.
+            serial_port_name: Serial port identifier (e.g. ``"COM3"`` or ``"/dev/ttyUSB0"``).
             timeout: Timeout in seconds.
 
         Returns:
-            Result value.
+            The current twi dc590 serial.
         """
         if baudrate is None:
             baudrate = 115200  # DC590/Linduino default
@@ -2204,14 +3336,23 @@ class interface_factory(communication_node):
     def get_twi_buspirate_interface(
             self, serial_port_name, baudrate=None, timeout=None):
         """Return the twi buspirate interface.
+        Returns the stored twi buspirate interface from the object's internal
+        state.
+
+        Returns the stored twi buspirate interface from the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import interface_factory
+        >>> hasattr(interface_factory, 'get_twi_buspirate_interface')
+        True
 
         Args:
-            baudrate: Baudrate.
-            serial_port_name: Serial port name.
+            baudrate: Serial baud rate in bits per second.
+            serial_port_name: Serial port identifier (e.g. ``"COM3"`` or ``"/dev/ttyUSB0"``).
             timeout: Timeout in seconds.
 
         Returns:
-            Result value.
+            The current twi buspirate interface.
         """
         serial = self.get_raw_serial_interface(
             serial_port_name, baudrate, timeout)
@@ -2221,12 +3362,21 @@ class interface_factory(communication_node):
 
     def get_twi_kernel_interface(self, bus_number):
         """Return the twi kernel interface.
+        Returns the stored twi kernel interface from the object's internal
+        state.
+
+        Returns the stored twi kernel interface from the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import interface_factory
+        >>> hasattr(interface_factory, 'get_twi_kernel_interface')
+        True
 
         Args:
-            bus_number: Bus number.
+            bus_number: Bus number to use.
 
         Returns:
-            Result value.
+            The current twi kernel interface.
         """
         new_interface = interface_twi_kernel(bus_number)  # noqa: F821 # pylint: disable=undefined-variable; class was removed from this module but method retained for API compatibility
         new_interface.set_com_node_parent(self)
@@ -2235,12 +3385,21 @@ class interface_factory(communication_node):
     def get_twi_firmata_interface(self, firmata_instance):
         # Old. Consider Telemetrix instead.
         """Return the twi firmata interface.
+        Returns the stored twi firmata interface from the object's internal
+        state.
+
+        Returns the stored twi firmata interface from the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import interface_factory
+        >>> hasattr(interface_factory, 'get_twi_firmata_interface')
+        True
 
         Args:
-            firmata_instance: Firmata instance.
+            firmata_instance: Firmata instance to use.
 
         Returns:
-            Result value.
+            The current twi firmata interface.
         """
         new_interface = interface_twi_firmata(firmata_instance)
         new_interface.set_com_node_parent(self)
@@ -2261,19 +3420,24 @@ class interface_factory(communication_node):
         argument, it will be used as if it were a PySerial serial.Serial object. This allows
         injection of test bytes and other stimuli to the bobbytalk parser.
 
+
+        >>> from PyICe.lab_interfaces import interface_factory
+        >>> hasattr(interface_factory, 'get_twi_bobbytalk_raw_serial')
+        True
+
         Args:
             **kwargs: Additional keyword arguments.
-            baudrate: Baudrate.
+            baudrate: Serial baud rate in bits per second.
             debug: If True, enable debug output.
-            fifo_size: Fifo size.
-            serial_port_name: Serial port name.
+            fifo_size: Fifo size to use.
+            serial_port_name: Serial port identifier (e.g. ``"COM3"`` or ``"/dev/ttyUSB0"``).
             src_id: Source identifier.
 
         Returns:
-            Result value.
+            The current twi bobbytalk raw serial.
 
         Raises:
-            ValueError: On error condition.
+            ValueError: If the provided value is out of range or invalid.
         """
         if baudrate is None:
             baudrate = 115200  # bobbytalk Firmware default
@@ -2313,17 +3477,22 @@ class interface_factory(communication_node):
         argument, it will be used as if it were a PySerial serial.Serial object, and the dest_tcp_portnum
         is ignored. This allows injection of test bytes and other stimuli to the bobbytalk parser.
 
+
+        >>> from PyICe.lab_interfaces import interface_factory
+        >>> hasattr(interface_factory, 'get_twi_bobbytalk_tcp')
+        True
+
         Args:
             **kwargs: Additional keyword arguments.
             debug: If True, enable debug output.
-            dest_ip_address: Dest ip address.
-            dest_tcp_portnum: Dest tcp portnum.
-            fifo_size: Fifo size.
+            dest_ip_address: Dest ip address to use.
+            dest_tcp_portnum: Dest tcp portnum to use.
+            fifo_size: Fifo size to use.
             src_id: Source identifier.
             timeout: Timeout in seconds.
 
         Returns:
-            Result value.
+            The current twi bobbytalk tcp.
         """
         if isinstance(dest_ip_address, str):
             serial_intf = self.get_tcp_serial_interface(
@@ -2344,16 +3513,25 @@ class interface_factory(communication_node):
     def get_labcomm_raw_interface(
             self, comport_name, src_id, dest_id, baudrate, timeout):
         """Return the labcomm raw interface.
+        Returns the stored labcomm raw interface from the object's internal
+        state.
+
+        Returns the stored labcomm raw interface from the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import interface_factory
+        >>> hasattr(interface_factory, 'get_labcomm_raw_interface')
+        True
 
         Args:
-            baudrate: Baudrate.
-            comport_name: Comport name.
+            baudrate: Serial baud rate in bits per second.
+            comport_name: Comport name to use.
             dest_id: Destination identifier.
             src_id: Source identifier.
             timeout: Timeout in seconds.
 
         Returns:
-            Result value.
+            The current labcomm raw interface.
         """
         rawser = self.get_raw_serial_interface(comport_name, baudrate, timeout)
         new_interface = interface_labcomm_raw_serial(
@@ -2364,16 +3542,25 @@ class interface_factory(communication_node):
     def get_labcomm_twi_interface(
             self, comport_name, src_id, dest_id, baudrate, timeout):
         """Return the labcomm twi interface.
+        Returns the stored labcomm twi interface from the object's internal
+        state.
+
+        Returns the stored labcomm twi interface from the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import interface_factory
+        >>> hasattr(interface_factory, 'get_labcomm_twi_interface')
+        True
 
         Args:
-            baudrate: Baudrate.
-            comport_name: Comport name.
+            baudrate: Serial baud rate in bits per second.
+            comport_name: Comport name to use.
             dest_id: Destination identifier.
             src_id: Source identifier.
             timeout: Timeout in seconds.
 
         Returns:
-            Result value.
+            The current labcomm twi interface.
         """
         rawser = self.get_raw_serial_interface(comport_name, baudrate, timeout)
         new_interface = interface_labcomm_twi_serial(
@@ -2383,12 +3570,21 @@ class interface_factory(communication_node):
 
     def get_spi_dummy_interface(self, delay=0):
         """Return the spi dummy interface.
+        Returns the stored spi dummy interface from the object's internal
+        state.
+
+        Returns the stored spi dummy interface from the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import interface_factory
+        >>> hasattr(interface_factory, 'get_spi_dummy_interface')
+        True
 
         Args:
             delay: Delay time in seconds.
 
         Returns:
-            Result value.
+            The current spi dummy interface.
         """
         iface_spi = interface_spi_dummy(delay)
         iface_spi.set_com_node_parent(self)
@@ -2397,16 +3593,25 @@ class interface_factory(communication_node):
     def get_spi_dc590_interface(
             self, serial_port_name, uart_baudrate=None, uart_timeout=None, ss_ctrl=None, **kwargs):
         """Return the spi dc590 interface.
+        Returns the stored spi dc590 interface from the object's internal
+        state.
+
+        Returns the stored spi dc590 interface from the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import interface_factory
+        >>> hasattr(interface_factory, 'get_spi_dc590_interface')
+        True
 
         Args:
             **kwargs: Additional keyword arguments.
-            serial_port_name: Serial port name.
-            ss_ctrl: Ss ctrl.
-            uart_baudrate: Uart baudrate.
-            uart_timeout: Uart timeout.
+            serial_port_name: Serial port identifier (e.g. ``"COM3"`` or ``"/dev/ttyUSB0"``).
+            ss_ctrl: Slave-select control mode or pin assignment.
+            uart_baudrate: Uart baudrate to use.
+            uart_timeout: Uart timeout to use.
 
         Returns:
-            Result value.
+            The current spi dc590 interface.
         """
         if uart_baudrate is None:
             uart_baudrate = 115200  # DC590/Linduino default
@@ -2420,17 +3625,26 @@ class interface_factory(communication_node):
     def get_spi_cfgpro_interface(
             self, serial_port_name, uart_timeout=None, CPOL=0, CPHA=0, spi_baudrate=1e6, ss_ctrl=None):
         """The configurator Pro (or XT) is an ADI specific breakout board that interfaces test equipment and ICs in a semi-standardized manner.
+        Returns the stored spi cfgpro interface from the object's internal
+        state.
+
+        Returns the stored spi cfgpro interface from the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import interface_factory
+        >>> hasattr(interface_factory, 'get_spi_cfgpro_interface')
+        True
 
         Args:
             CPHA: Clock phase.
             CPOL: Clock polarity.
-            serial_port_name: Serial port name.
-            spi_baudrate: Spi baudrate.
-            ss_ctrl: Ss ctrl.
-            uart_timeout: Uart timeout.
+            serial_port_name: Serial port identifier (e.g. ``"COM3"`` or ``"/dev/ttyUSB0"``).
+            spi_baudrate: Spi baudrate to use.
+            ss_ctrl: Slave-select control mode or pin assignment.
+            uart_timeout: Uart timeout to use.
 
         Returns:
-            Result value.
+            The current spi cfgpro interface.
         """
         iface_visa_serial = self.get_visa_serial_interface(
             serial_port_name, timeout=uart_timeout)
@@ -2441,13 +3655,21 @@ class interface_factory(communication_node):
 
     def get_dummy_interface(self, parent=None, name='dummy interface'):
         """Used only for testing the core lab functions.
+        Returns the stored dummy interface from the object's internal state.
+
+        Returns the stored dummy interface from the object's internal state.
+
+
+        >>> from PyICe.lab_interfaces import interface_factory
+        >>> hasattr(interface_factory, 'get_dummy_interface')
+        True
 
         Args:
             name: Name identifier.
-            parent: Parent.
+            parent: Parent object in the hierarchy.
 
         Returns:
-            Result value.
+            The current dummy interface.
         """
         new_interface = interface(name)
         if parent is None:

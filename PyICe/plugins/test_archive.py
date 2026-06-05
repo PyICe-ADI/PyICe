@@ -1,13 +1,32 @@
-"""Test archive plugin."""
+"""Test archive plugin.
+
+>>> from PyICe.plugins.test_archive import database_archive
+
+"""
 import os
 import re
 import sqlite3
 
 
 class database_archive():
-    """Database_archive."""
+    """Database_archive.
+
+    >>> from PyICe.plugins.test_archive import database_archive
+    >>> database_archive is not None
+    True
+
+    """
     def __init__(self, test_script_file, db_source_file):
         """Initialize database archive for manipulating tables in a given SQLite database.
+        Initializes 4 instance attributes that configure the object's
+        behavior.
+
+        Initializes 4 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.plugins.test_archive import database_archive
+        >>> database_archive is not None
+        True
 
         Args:
             test_script_file: File location of the test that collected the data.
@@ -22,6 +41,14 @@ class database_archive():
 
     def has_data(self, tablename):
         """A quick check that the given table has some data in it.
+        Returns a boolean reflecting the object's current state.
+
+        Returns a boolean reflecting the object's current state.
+
+
+        >>> from PyICe.plugins.test_archive import database_archive
+        >>> hasattr(database_archive, 'has_data')
+        True
 
         Args:
             tablename: Name of the table to be reviewed.
@@ -40,6 +67,13 @@ class database_archive():
     def copy_table(self, db_source_table, db_dest_table,
                    db_dest_file, db_indices=None):
         """Copies a table from the given database to a different database.
+
+        Issues a SCPI query to the instrument and parses the response.
+
+
+        >>> from PyICe.plugins.test_archive import database_archive
+        >>> hasattr(database_archive, 'copy_table')
+        True
 
         Args:
             db_source_table: The name of the table to be copied.
@@ -135,6 +169,14 @@ class database_archive():
 
     def delete_table(self, db_source_table, commit=True):
         """Deletes the given table from the database.
+        Permanently removes the specified table.
+
+        Removes the specified item from the object's internal collection.
+
+
+        >>> from PyICe.plugins.test_archive import database_archive
+        >>> hasattr(database_archive, 'delete_table')
+        True
 
         Args:
             db_source_table: Name of the table to be deleted.
@@ -149,9 +191,18 @@ class database_archive():
 
     def get_table_names(self):
         """Returns the names of all the tables in the initially given database.
+        Returns the stored table names value from the object's internal state.
+        Returns the stored table names from the object's internal state.
+
+        Returns the stored table names from the object's internal state.
+
+
+        >>> from PyICe.plugins.test_archive import database_archive
+        >>> hasattr(database_archive, 'get_table_names')
+        True
 
         Returns:
-            Result value.
+            The current table names.
         """
         table_query = "SELECT name FROM sqlite_master WHERE type ='table'"
         return [row[0] for row in self.source_conn.execute(table_query)]
@@ -159,6 +210,13 @@ class database_archive():
     @classmethod
     def ask_archive_folder(cls, suggestion=None):
         """Asks the user for a name for a folder in the archive folder to store the archived data.
+
+        Persists the current state or data to durable storage.
+
+
+        >>> from PyICe.plugins.test_archive import database_archive
+        >>> callable(getattr(database_archive, 'ask_archive_folder', None))
+        True
 
         Args:
             suggestion: Default answer offered to the user, or None.
@@ -178,6 +236,14 @@ class database_archive():
 
     def compute_db_destination(self, archive_folder):
         """Creates the path to the archived database.
+        Computes the db destination from the available data.
+
+        Supports the ``database_archive`` workflow by performing the described operation.
+
+
+        >>> from PyICe.plugins.test_archive import database_archive
+        >>> hasattr(database_archive, 'compute_db_destination')
+        True
 
         Args:
             archive_folder: Name of the folder under the archive folder for the archived data.
@@ -193,6 +259,13 @@ class database_archive():
 
     def copy_interactive(self, archive_folder=None):
         """A manual version of the archiving process. Useful when something goes wrong and archiving failed to complete.
+
+        Issues a SCPI query to the instrument and parses the response.
+
+
+        >>> from PyICe.plugins.test_archive import database_archive
+        >>> hasattr(database_archive, 'copy_interactive')
+        True
 
         Args:
             archive_folder: Name of the directory inside the archive folder for the data. Default None.
@@ -231,6 +304,13 @@ class database_archive():
 
     def disposition_table(self, table_name, db_dest_file, db_indices=None):
         """Asks the user what action to perform on a given table and executes it immediately.
+
+        Issues a SCPI query to the instrument and parses the response.
+
+
+        >>> from PyICe.plugins.test_archive import database_archive
+        >>> hasattr(database_archive, 'disposition_table')
+        True
 
         Args:
             table_name: Name of a table in the initially declared database.
@@ -275,17 +355,27 @@ class database_archive():
     @classmethod
     def write_plot_script(cls, import_str, db_table, db_file):
         """This creates a file that can be run to replot data in an adjacent database using a given test's plot method.
+        Formats and sends the command to the instrument.
+        Sends the ``if`` SCPI command to the instrument.
+        Formats and sends the command to the instrument.
+
+        Writes data to the underlying target.
+
+
+        >>> from PyICe.plugins.test_archive import database_archive
+        >>> callable(getattr(database_archive, 'write_plot_script', None))
+        True
 
         Args:
             import_str - str. Folder path from a PYTHONPATH to the directory containing the test script.
 
         Args:
-            db_file: Db file.
-            db_table: Db table.
-            import_str: Import str.
+            db_file: Db file to use.
+            db_table: Db table to use.
+            import_str: Import str to use.
 
         Returns:
-            Result value.
+            True if the write was acknowledged, False otherwise.
         """
         (dest_folder, f) = os.path.split(os.path.abspath(db_file))
         dest_file = os.path.join(dest_folder, "replot_data.py")
@@ -306,13 +396,26 @@ class database_archive():
 
 
 class manual_archive():
-    """Manual_archive."""
+    """Manual_archive.
+
+    >>> from PyICe.plugins.test_archive import manual_archive
+    >>> manual_archive is not None
+    True
+
+    """
     def __init__(self, archive_location=None, db_location=None):
         """Initialize manual_archive.
 
+        Prepares the object for use by setting up internal state.
+
+
+        >>> from PyICe.plugins.test_archive import manual_archive
+        >>> manual_archive is not None
+        True
+
         Args:
-            archive_location: Archive location.
-            db_location: Db location.
+            archive_location: Archive location to use.
+            db_location: Db location to use.
         """
         if archive_location is None:
             archive_location = input(

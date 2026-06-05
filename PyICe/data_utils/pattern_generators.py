@@ -1,4 +1,8 @@
-"""Pattern generators utilities."""
+"""Pattern generators utilities.
+
+>>> from PyICe.data_utils.pattern_generators import TWI_Pattern
+
+"""
 from PyICe.lab_utils.eng_string import eng_string
 from PyICe import LTC_plot
 
@@ -8,17 +12,31 @@ class TWI_Pattern():
 
     It's meant to feed into a pattern generator instrument such as the old HP8110A dual pattern generator or its modern equivalent.
     It has two channels, one for the I²C pins SDA and SCL as well as a strobe channel (which the HP811xx family supports) to trigger a scope.
+
+    >>> from PyICe.data_utils.pattern_generators import TWI_Pattern
+    >>> TWI_Pattern is not None
+    True
+
     """
     class Leader():
         def __init__(self, pattern, SCL, SDA, tleader, strobe=False):
             """Initialize leader.
+            Initializes 5 instance attributes that configure the object's
+            behavior.
+
+            Initializes 5 instance attributes that configure the object's behavior.
+
+
+            >>> from PyICe.data_utils.pattern_generators import TWI_Pattern
+            >>> TWI_Pattern is not None
+            True
 
             Args:
-                SCL: Scl.
-                SDA: Sda.
-                pattern: Pattern.
-                strobe: Strobe.
-                tleader: Tleader.
+                SCL: Scl to use.
+                SDA: Sda to use.
+                pattern: Bit pattern or regex pattern string.
+                strobe: Strobe signal pin or enable flag.
+                tleader: Tleader to use.
             """
             self.pattern = pattern
             self.tleader = pattern.quantize(tleader)
@@ -27,10 +45,17 @@ class TWI_Pattern():
             self.STB = strobe
 
         def extend(self, previous_item):
-            """Perform extend operation.
+            """Run the extend step.
+
+            Supports the ``Leader`` workflow by performing the described operation.
+
+
+            >>> from PyICe.data_utils.pattern_generators import TWI_Pattern
+            >>> hasattr(TWI_Pattern.Leader, "extend")
+            True
 
             Args:
-                previous_item: Previous item.
+                previous_item: The preceding item for comparison or linking.
             """
             self.pattern.dwell(
                 SCL=self.SCL,
@@ -41,33 +66,58 @@ class TWI_Pattern():
     class Start():
         def __init__(self, pattern, thd_sta, strobe=False):
             """Initialize start.
+            Stores configuration in ``STB``, ``pattern``, ``thd_sta`` for use
+            by other methods.
+
+            Initializes 3 instance attributes that configure the object's behavior.
+
+
+            >>> from PyICe.data_utils.pattern_generators import TWI_Pattern
+            >>> TWI_Pattern is not None
+            True
 
             Args:
-                pattern: Pattern.
-                strobe: Strobe.
-                thd_sta: Thd sta.
+                pattern: Bit pattern or regex pattern string.
+                strobe: Strobe signal pin or enable flag.
+                thd_sta: Thd sta to use.
             """
             self.pattern = pattern
             self.thd_sta = pattern.quantize(thd_sta)
             self.STB = strobe
 
         def extend(self, previous_item):
-            """Perform extend operation.
+            """Run the extend step.
+
+            Supports the ``Start`` workflow by performing the described operation.
+
+
+            >>> from PyICe.data_utils.pattern_generators import TWI_Pattern
+            >>> hasattr(TWI_Pattern.Start, "extend")
+            True
 
             Args:
-                previous_item: Previous item.
+                previous_item: The preceding item for comparison or linking.
             """
             self.pattern.dwell(SCL=1, SDA=0, STB=self.STB, tdwell=self.thd_sta)
 
     class Stop():
         def __init__(self, pattern, tsu_sto, tbuf, strobe=False):
             """Initialize stop.
+            Initializes 4 instance attributes that configure the object's
+            behavior.
+
+            Initializes 4 instance attributes that configure the object's behavior.
+
+
+            >>> from PyICe.data_utils.pattern_generators import TWI_Pattern
+            >>> TWI_Pattern is not None
+            True
 
             Args:
-                pattern: Pattern.
-                strobe: Strobe.
-                tbuf: Tbuf.
-                tsu_sto: Tsu sto.
+                pattern: Bit pattern or regex pattern string.
+                strobe: Strobe signal pin or enable flag.
+                tbuf: Tbuf to use.
+                tsu_sto: Tsu sto to use.
             """
             self.pattern = pattern
             self.tsu_sto = pattern.quantize(tsu_sto)
@@ -75,10 +125,17 @@ class TWI_Pattern():
             self.STB = strobe
 
         def extend(self, previous_item):
-            """Perform extend operation.
+            """Run the extend step.
+
+            Supports the ``Stop`` workflow by performing the described operation.
+
+
+            >>> from PyICe.data_utils.pattern_generators import TWI_Pattern
+            >>> hasattr(TWI_Pattern.Stop, "extend")
+            True
 
             Args:
-                previous_item: Previous item.
+                previous_item: The preceding item for comparison or linking.
             """
             self.pattern.dwell(SCL=1, SDA=0, STB=self.STB, tdwell=self.tsu_sto)
             self.pattern.dwell(SCL=1, SDA=1, STB=self.STB, tdwell=self.tbuf)
@@ -86,21 +143,37 @@ class TWI_Pattern():
     class Bitend():
         def __init__(self, pattern, tdwell, strobe=False):
             """Initialize bitend.
+            Stores configuration in ``STB``, ``pattern``, ``tdwell`` for use
+            by other methods.
+
+            Initializes 3 instance attributes that configure the object's behavior.
+
+
+            >>> from PyICe.data_utils.pattern_generators import TWI_Pattern
+            >>> TWI_Pattern is not None
+            True
 
             Args:
-                pattern: Pattern.
-                strobe: Strobe.
-                tdwell: Tdwell.
+                pattern: Bit pattern or regex pattern string.
+                strobe: Strobe signal pin or enable flag.
+                tdwell: Tdwell to use.
             """
             self.pattern = pattern
             self.STB = strobe
             self.tdwell = tdwell
 
         def extend(self, previous_item):
-            """Perform extend operation.
+            """Run the extend step.
+
+            Supports the ``Bitend`` workflow by performing the described operation.
+
+
+            >>> from PyICe.data_utils.pattern_generators import TWI_Pattern
+            >>> hasattr(TWI_Pattern.Bitend, "extend")
+            True
 
             Args:
-                previous_item: Previous item.
+                previous_item: The preceding item for comparison or linking.
             """
             if previous_item.thd_dat >= 0:  # Previous bit had Positive or Zero hold time
                 self.pattern.dwell(
@@ -116,12 +189,21 @@ class TWI_Pattern():
     class SDA_Spike():
         def __init__(self, pattern, value, tstart, twidth, strobe=False):
             """Initialize s d a_ spike.
+            Initializes 5 instance attributes that configure the object's
+            behavior.
+
+            Initializes 5 instance attributes that configure the object's behavior.
+
+
+            >>> from PyICe.data_utils.pattern_generators import TWI_Pattern
+            >>> TWI_Pattern is not None
+            True
 
             Args:
-                pattern: Pattern.
-                strobe: Strobe.
-                tstart: Tstart.
-                twidth: Twidth.
+                pattern: Bit pattern or regex pattern string.
+                strobe: Strobe signal pin or enable flag.
+                tstart: Tstart to use.
+                twidth: Twidth to use.
                 value: Value to set.
             """
             self.pattern = pattern
@@ -132,22 +214,38 @@ class TWI_Pattern():
             assert self.twidth > 0, f"TWI Pattern Generator: Requested SDA spike starting at {tstart} rounded to 0 width in pattern, not acheivable."
 
         def extend(self, previous_item):
-            """Perform extend operation.
+            """Run the extend step.
+
+            Supports the ``SDA_Spike`` workflow by performing the described operation.
+
+
+            >>> from PyICe.data_utils.pattern_generators import TWI_Pattern
+            >>> hasattr(TWI_Pattern.SDA_Spike, "extend")
+            True
 
             Args:
-                previous_item: Previous item.
+                previous_item: The preceding item for comparison or linking.
             """
             self.pattern.sda_spikes.append(self)
 
     class SCL_Spike():
         def __init__(self, pattern, value, tstart, twidth, strobe=False):
             """Initialize s c l_ spike.
+            Initializes 5 instance attributes that configure the object's
+            behavior.
+
+            Initializes 5 instance attributes that configure the object's behavior.
+
+
+            >>> from PyICe.data_utils.pattern_generators import TWI_Pattern
+            >>> TWI_Pattern is not None
+            True
 
             Args:
-                pattern: Pattern.
-                strobe: Strobe.
-                tstart: Tstart.
-                twidth: Twidth.
+                pattern: Bit pattern or regex pattern string.
+                strobe: Strobe signal pin or enable flag.
+                tstart: Tstart to use.
+                twidth: Twidth to use.
                 value: Value to set.
             """
             self.pattern = pattern
@@ -158,10 +256,17 @@ class TWI_Pattern():
             assert self.twidth > 0, f"TWI Pattern Generator: Requested SCL spike starting at {tstart} rounded to 0 width in pattern, not acheivable."
 
         def extend(self, previous_item):
-            """Perform extend operation.
+            """Run the extend step.
+
+            Supports the ``SCL_Spike`` workflow by performing the described operation.
+
+
+            >>> from PyICe.data_utils.pattern_generators import TWI_Pattern
+            >>> hasattr(TWI_Pattern.SCL_Spike, "extend")
+            True
 
             Args:
-                previous_item: Previous item.
+                previous_item: The preceding item for comparison or linking.
             """
             self.pattern.scl_spikes.append(self)
 
@@ -190,14 +295,23 @@ class TWI_Pattern():
         def __init__(self, pattern, value, tlow, thigh,
                      tsu_dat, thd_dat, strobe=False):
             """Initialize bit.
+            Initializes 7 instance attributes that configure the object's
+            behavior.
+
+            Initializes 7 instance attributes that configure the object's behavior.
+
+
+            >>> from PyICe.data_utils.pattern_generators import TWI_Pattern
+            >>> hasattr(TWI_Pattern, '__init__')
+            True
 
             Args:
-                pattern: Pattern.
-                strobe: Strobe.
-                thd_dat: Thd dat.
-                thigh: Thigh.
-                tlow: Tlow.
-                tsu_dat: Tsu dat.
+                pattern: Bit pattern or regex pattern string.
+                strobe: Strobe signal pin or enable flag.
+                thd_dat: Thd dat to use.
+                thigh: Thigh to use.
+                tlow: Tlow to use.
+                tsu_dat: Tsu dat to use.
                 value: Value to set.
             """
             self.pattern = pattern
@@ -209,10 +323,17 @@ class TWI_Pattern():
             self.STB = strobe
 
         def extend(self, previous_item):
-            """Perform extend operation.
+            """Run the extend step.
+
+            Supports the ``Bit`` workflow by performing the described operation.
+
+
+            >>> from PyICe.data_utils.pattern_generators import TWI_Pattern
+            >>> hasattr(TWI_Pattern.Bit, "extend")
+            True
 
             Args:
-                previous_item: Previous item.
+                previous_item: The preceding item for comparison or linking.
             """
             if isinstance(previous_item, self.pattern.Start):
                 previous_thd_dat = 0
@@ -263,10 +384,19 @@ class TWI_Pattern():
     '''
     def __init__(self, tstep, max_record_size):
         """Initialize t w i_ pattern.
+        Stores configuration in ``max_record_size``, ``tstep`` for use by
+        other methods.
+
+        Initializes 2 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.data_utils.pattern_generators import TWI_Pattern
+        >>> TWI_Pattern is not None
+        True
 
         Args:
-            max_record_size: Max record size.
-            tstep: Tstep.
+            max_record_size: Max record size to use.
+            tstep: Tstep to use.
         """
         self.tstep = tstep
         self.max_record_size = max_record_size
@@ -275,6 +405,11 @@ class TWI_Pattern():
         """Call this whenever you want to start a new pattern or flush an existing pattern to change settings.
 
         Otherwise the pattern will keep on growing if you keep adding items.
+
+        >>> from PyICe.data_utils.pattern_generators import TWI_Pattern
+        >>> hasattr(TWI_Pattern, 'initialize')
+        True
+
         """
         self.items = []
         self.SDA = []
@@ -286,30 +421,51 @@ class TWI_Pattern():
     def add_item(self, item):
         """Add a item.
 
+        Appends a new item entry to the object's internal collection.
+
+
+        >>> from PyICe.data_utils.pattern_generators import TWI_Pattern
+        >>> hasattr(TWI_Pattern, 'add_item')
+        True
+
         Args:
-            item: Item.
+            item: Item to process or look up.
         """
         self.items.append(item)
 
     def quantize(self, time):
-        """Return quantize result.
+        """Return the quantize.
+
+        Supports the ``TWI_Pattern`` workflow by performing the described operation.
+
+
+        >>> from PyICe.data_utils.pattern_generators import TWI_Pattern
+        >>> hasattr(TWI_Pattern, 'quantize')
+        True
 
         Args:
-            time: Time.
+            time: Time to use.
 
         Returns:
-            Result value.
+            The quantized value.
         """
         return round(time / self.tstep) * self.tstep
 
     def dwell(self, SCL, SDA, STB, tdwell):
-        """Perform dwell operation.
+        """Run the dwell step.
+
+        Supports the ``TWI_Pattern`` workflow by performing the described operation.
+
+
+        >>> from PyICe.data_utils.pattern_generators import TWI_Pattern
+        >>> hasattr(TWI_Pattern, 'dwell')
+        True
 
         Args:
-            SCL: Scl.
-            SDA: Sda.
-            STB: Stb.
-            tdwell: Tdwell.
+            SCL: Scl to use.
+            SDA: Sda to use.
+            STB: Stb to use.
+            tdwell: Tdwell to use.
         """
         cycles = round(tdwell / self.tstep)
         assert cycles >= 0, f"TWI Pattern Generator: tdwell of {tdwell} results in the addition of a negative time slice, not acheivable."
@@ -318,14 +474,30 @@ class TWI_Pattern():
         self.STB.extend([STB] * cycles)
 
     def pad_out(self):
-        """Perform pad out operation."""
+        """Perform pad out operation.
+
+        Supports the ``TWI_Pattern`` workflow by performing the described operation.
+
+        >>> from PyICe.data_utils.pattern_generators import TWI_Pattern
+        >>> hasattr(TWI_Pattern, 'pad_out')
+        True
+
+        """
         cycles = self.max_record_size - len(self.SCL)
         self.SCL.extend(self.SCL[-1:] * cycles)
         self.SDA.extend(self.SDA[-1:] * cycles)
         self.STB.extend(self.STB[-1:] * cycles)
 
     def finalize(self):
-        """Perform finalize operation."""
+        """Run the finalize step.
+
+        Supports the ``TWI_Pattern`` workflow by performing the described operation.
+
+        >>> from PyICe.data_utils.pattern_generators import TWI_Pattern
+        >>> hasattr(TWI_Pattern, 'finalize')
+        True
+
+        """
         previous = None
         for item in self.items:
             item.extend(previous)
@@ -349,26 +521,53 @@ class TWI_Pattern():
         self.audit()
 
     def get_SDA(self):
-        """Return the SDA.
+        """Return the current sda.
+        Returns the stored sda value from the object's internal state.
+        Returns the stored sda from the object's internal state.
+
+        Returns the stored SDA from the object's internal state.
+
+
+        >>> from PyICe.data_utils.pattern_generators import TWI_Pattern
+        >>> hasattr(TWI_Pattern, 'get_SDA')
+        True
 
         Returns:
-            Result value.
+            The current sda.
         """
         return self.SDA
 
     def get_SCL(self):
-        """Return the SCL.
+        """Return the current scl.
+        Returns the stored scl value from the object's internal state.
+        Returns the stored scl from the object's internal state.
+
+        Returns the stored SCL from the object's internal state.
+
+
+        >>> from PyICe.data_utils.pattern_generators import TWI_Pattern
+        >>> hasattr(TWI_Pattern, 'get_SCL')
+        True
 
         Returns:
-            Result value.
+            The current scl.
         """
         return self.SCL
 
     def get_STB(self):
-        """Return the STB.
+        """Return the current stb.
+        Returns the stored stb value from the object's internal state.
+        Returns the stored stb from the object's internal state.
+
+        Returns the stored STB from the object's internal state.
+
+
+        >>> from PyICe.data_utils.pattern_generators import TWI_Pattern
+        >>> hasattr(TWI_Pattern, 'get_STB')
+        True
 
         Returns:
-            Result value.
+            The current stb.
         """
         return self.STB
 
@@ -377,13 +576,18 @@ class TWI_Pattern():
 
         On the HP8110a, for example, the two output channels and the Strobe channel are binarily weighted so it takes values of 0-7 for 3 bits.
 
+
+        >>> from PyICe.data_utils.pattern_generators import TWI_Pattern
+        >>> hasattr(TWI_Pattern, 'get_ALL')
+        True
+
         Args:
-            SCL_channel: Scl channel.
-            SDA_channel: Sda channel.
-            STB_channel: Stb channel.
+            SCL_channel: Scl channel to use.
+            SDA_channel: Sda channel to use.
+            STB_channel: Stb channel to use.
 
         Returns:
-            Result value.
+            The current all.
         """
         values = []
         for position in range(len(self.SCL)):
@@ -399,7 +603,15 @@ class TWI_Pattern():
         return values
 
     def audit(self):
-        """Perform audit operation."""
+        """Run the audit step.
+
+        Supports the ``TWI_Pattern`` workflow by performing the described operation.
+
+        >>> from PyICe.data_utils.pattern_generators import TWI_Pattern
+        >>> hasattr(TWI_Pattern, 'audit')
+        True
+
+        """
         assert len(
             self.SDA) == len(
             self.SCL), "TWI Pattern Generator: SDA and SCL records unequal length!"
@@ -411,16 +623,23 @@ class TWI_Pattern():
 
     def visualize(self, title=None, file_basename=None, offset_SCL=5,
                   offset_SDA=3, offset_STB=1, plot_sizex=5, plot_sizey=4):
-        """Perform visualize operation.
+        """Run the visualize step.
+
+        Supports the ``TWI_Pattern`` workflow by performing the described operation.
+
+
+        >>> from PyICe.data_utils.pattern_generators import TWI_Pattern
+        >>> hasattr(TWI_Pattern, 'visualize')
+        True
 
         Args:
-            file_basename: File basename.
-            offset_SCL: Offset scl.
-            offset_SDA: Offset sda.
-            offset_STB: Offset stb.
-            plot_sizex: Plot sizex.
-            plot_sizey: Plot sizey.
-            title: Title.
+            file_basename: Base filename without extension.
+            offset_SCL: Offset scl to use.
+            offset_SDA: Offset sda to use.
+            offset_STB: Offset stb to use.
+            plot_sizex: Plot sizex to use.
+            plot_sizey: Plot sizey to use.
+            title: Title string for display or report heading.
         """
         times = [index * self.tstep for index in range(len(self.SCL))]
         G0 = LTC_plot.scope_plot(plot_title="TWI Pattern" if title is None else title,

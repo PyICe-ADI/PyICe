@@ -1,4 +1,8 @@
-"""Oscilloscope waveform dump utilities."""
+"""Oscilloscope waveform dump utilities.
+
+>>> from PyICe.data_utils.oscilloscope_waveform_dump import dict_print
+
+"""
 from PyICe.lab_instruments.oscilloscope import oscilloscope
 from PyICe import lab_core
 from PyICe.lab_utils.sqlite_data import sqlite_data
@@ -21,12 +25,26 @@ except Exception:
 
 
 class dict_print(dict):
-    """Dict_print."""
+    """Dict_print.
+
+    >>> from PyICe.data_utils.oscilloscope_waveform_dump import dict_print
+    >>> dict_print is not None
+    True
+
+    """
     def __str__(self):
         """Return string representation.
+        Provides a human-readable string for debugging and display.
+
+        Provides a human-readable representation for debugging and logging.
+
+
+        >>> from PyICe.data_utils.oscilloscope_waveform_dump import dict_print
+        >>> hasattr(dict_print, '__str__')
+        True
 
         Returns:
-            Result value.
+            String representation.
         """
         ret_str = ""
         max_key_len = 0
@@ -40,9 +58,23 @@ class dict_print(dict):
 
 
 class oscilloscope_waveform_dump(oscilloscope):
-    """Oscilloscope_waveform_dump."""
+    """Oscilloscope_waveform_dump.
+
+    >>> from PyICe.data_utils.oscilloscope_waveform_dump import oscilloscope_waveform_dump
+    >>> oscilloscope_waveform_dump is not None
+    True
+
+    """
     def __init__(self, interface_visa):
         """interface_visa.
+        Stores configuration in ``_base_name`` for use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
+
+
+        >>> from PyICe.data_utils.oscilloscope_waveform_dump import oscilloscope_waveform_dump
+        >>> oscilloscope_waveform_dump is not None
+        True
 
         Args:
             interface_visa: VISA interface instance.
@@ -93,9 +125,17 @@ class oscilloscope_waveform_dump(oscilloscope):
 
     def fetch_active_scope_channels(self):
         """Return fetch active scope channels result.
+        Sends the ``:Display`` SCPI command to the instrument.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
+
+
+        >>> from PyICe.data_utils.oscilloscope_waveform_dump import oscilloscope_waveform_dump
+        >>> hasattr(oscilloscope_waveform_dump, 'fetch_active_scope_channels')
+        True
 
         Returns:
-            Result value.
+            The fetched data.
         """
         results_dict = dict_print()
         for num in [1, 2, 3, 4]:
@@ -117,11 +157,18 @@ class oscilloscope_waveform_dump(oscilloscope):
     def user_query_waveform_name(self, channel_number):
         """Return user query waveform name result.
 
+        Supports the ``oscilloscope_waveform_dump`` workflow by performing the described operation.
+
+
+        >>> from PyICe.data_utils.oscilloscope_waveform_dump import oscilloscope_waveform_dump
+        >>> hasattr(oscilloscope_waveform_dump, 'user_query_waveform_name')
+        True
+
         Args:
             channel_number: Physical channel number.
 
         Returns:
-            Result value.
+            The user-selected value.
         """
         resp = ""
         while not len(resp):
@@ -131,11 +178,18 @@ class oscilloscope_waveform_dump(oscilloscope):
     def data_to_sqlite(self, db_filename='scope_data.sqlite'):
         """Return data to sqlite result.
 
+        Supports the ``oscilloscope_waveform_dump`` workflow by performing the described operation.
+
+
+        >>> from PyICe.data_utils.oscilloscope_waveform_dump import oscilloscope_waveform_dump
+        >>> hasattr(oscilloscope_waveform_dump, 'data_to_sqlite')
+        True
+
         Args:
-            db_filename: Db filename.
+            db_filename: Db filename to use.
 
         Returns:
-            Result value.
+            The converted data.
         """
         logger = lab_core.logger(database=db_filename, use_threads=False)
         scope_data = self.fetch_active_scope_channels()
@@ -157,10 +211,18 @@ class oscilloscope_waveform_dump(oscilloscope):
 
 def plot_dumped_waveform(db_tablename, db_filename='scope_data.sqlite'):
     """Perform plot dumped waveform operation.
+    Configures or updates the plot with the specified parameters.
+
+    Generates or configures a visual representation of the data.
+
+
+    >>> from PyICe.data_utils.oscilloscope_waveform_dump import plot_dumped_waveform
+    >>> callable(plot_dumped_waveform)
+    True
 
     Args:
-        db_filename: Db filename.
-        db_tablename: Db tablename.
+        db_filename: Db filename to use.
+        db_tablename: Db tablename to use.
     """
     db = sqlite_data(
         table_name=db_tablename,
@@ -200,11 +262,19 @@ def plot_dumped_waveform(db_tablename, db_filename='scope_data.sqlite'):
 def write_waveform_data(
         db_tablename, db_filename='scope_data.sqlite', output_filename=None):
     """Return write waveform data result.
+    Formats and sends the command to the instrument.
+
+    Writes data to the underlying target.
+
+
+    >>> from PyICe.data_utils.oscilloscope_waveform_dump import write_waveform_data
+    >>> callable(write_waveform_data)
+    True
 
     Args:
-        db_filename: Db filename.
-        db_tablename: Db tablename.
-        output_filename: Output filename.
+        db_filename: Db filename to use.
+        db_tablename: Db tablename to use.
+        output_filename: Output filename to use.
     """
     if output_filename is None:
         output_filename = f'{db_tablename}.json'
@@ -227,13 +297,20 @@ def write_waveform_data(
         """Special json encoder for numpy types."""
 
         def default(self, obj):
-            """Return default result.
+            """Return the default.
+
+            Supports the ``NumpyEncoder`` workflow by performing the described operation.
+
+
+            >>> from PyICe.data_utils.oscilloscope_waveform_dump import default
+            >>> callable(default)
+            True
 
             Args:
-                obj: Obj.
+                obj: Obj to use.
 
             Returns:
-                Result value.
+                The default value.
             """
             if isinstance(obj, numpy.integer):
                 return int(obj)

@@ -1,17 +1,38 @@
-"""Float distance utility."""
+"""Float distance utility.
+
+>>> from PyICe.lab_utils.float_distance import float_distance
+
+"""
 import math
 import sys
 
 
 def float_distance(x, y):
-    """Return signed difference between x and y expressed as distance between representable floating point numbers.
+    """Count how many representable floats lie between x and y (signed ULP distance).
+
+    Useful for verifying that a computed result is within N ULPs of the expected
+    value — a hardware-independent measure of floating-point accuracy. Ported from
+    the Boost.Math library's ``next.hpp``.
+
+    >>> float_distance(1.0, 1.0)
+    0
+    >>> float_distance(1.0, math.nextafter(1.0, math.inf))
+    1
+    >>> float_distance(1.0, math.nextafter(math.nextafter(1.0, math.inf), math.inf))
+    2
+    >>> float_distance(1.0, 2.0)  # 2^52 representable doubles in [1, 2)
+    4503599627370496
+    >>> float_distance(2.0, 1.0)  # sign convention: negative when x > y
+    -4503599627370496
+    >>> float_distance(0.0, sys.float_info.min)  # zero to smallest normal
+    4503599627370496
 
     Args:
-        x: X.
-        y: Y.
+        x: First floating-point value.
+        y: Second floating-point value.
 
     Returns:
-        Result value.
+        Signed integer count of representable floats between x and y.
     """
     # Boost library algorithm port:
     # http://www.boost.org/doc/libs/1_45_0/boost/math/special_functions/next.hpp

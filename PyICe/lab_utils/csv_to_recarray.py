@@ -1,4 +1,8 @@
-"""Csv to recarray utility."""
+"""Csv to recarray utility.
+
+>>> from PyICe.lab_utils.csv_to_recarray import csv_to_recarray
+
+"""
 import csv
 import numpy
 from .str2num import str2num
@@ -7,24 +11,38 @@ from .clean_c import clean_c
 
 # , force_float_dtype=False, data_types=None):
 def csv_to_recarray(csv_input_file):
-    """Return NumPy record array containing data from CSV input file.
+    """Load a CSV file into a NumPy record array with float columns.
 
-    CSV data can be ASCII or UTF-8 encoded, but Unicode support inside Numpy is lacking.
-    Rows can be accessed by index, ex arr[2].
-    Columns can be accessed by column name attribute, ex arr.vbat.
-    Use with data filtering, smoothing, compressing, etc matrix operations provided by SciPy and lab_utils.transform, lab_utils.decimate.
-    Use automatic column names, but force data type to float with force_float_dtype boolean argument.
-    Override automatic column names and data types (first row) by specifying data_type iterable of (column_name,example_contents) for each column matching query order.
-    http://docs.scipy.org/doc/numpy-1.10.1/reference/generated/numpy.recarray.html
+    Use this function to quickly pull CSV lab-measurement data into NumPy for
+    post-processing with SciPy, ``lab_utils.transform``, ``lab_utils.decimate``,
+    or any other array-based workflow.  The CSV dialect (delimiter, quoting,
+    etc.) is detected automatically via ``csv.Sniffer``, so no manual format
+    configuration is required.
+
+    The first row of the file must be a header that provides column names.
+    Column names are sanitised with ``clean_c`` so they form valid Python
+    identifiers, which enables attribute-style column access (e.g.
+    ``arr.vbat``).  All data cells are converted to ``float`` via ``str2num``;
+    mixed-type or purely-string columns are not supported.  The file may be
+    ASCII or UTF-8 encoded; a UTF-8 BOM on the first column name is stripped
+    automatically.
+
+    See also: https://docs.scipy.org/doc/numpy/reference/generated/numpy.recarray.html
+
+
+    >>> from PyICe.lab_utils.csv_to_recarray import csv_to_recarray
+    >>> callable(csv_to_recarray)
+    True
 
     Args:
-        csv_input_file: Csv input file.
+        csv_input_file: Path to the CSV file to read.  The file must contain
+            a header row followed by one or more data rows.  All values must
+            be numeric (or convertible to float).
 
     Returns:
-        Result value.
-
-    Raises:
-        Exception: On error condition.
+        A ``numpy.recarray`` whose fields correspond to the sanitised CSV
+        column names.  Rows are accessible by integer index (e.g. ``arr[2]``)
+        and columns by attribute name (e.g. ``arr.vbat``).
     """
     ##########################################################################
     # It's likely this whole thing should be replaced with numpy.genfromtxt, numpy.recfromcsv or numpy.recfromtxt.   #

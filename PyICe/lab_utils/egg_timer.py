@@ -1,19 +1,33 @@
-"""Egg timer utility."""
+"""Egg timer utility.
+
+>>> from PyICe.lab_utils.egg_timer import egg_timer
+
+"""
 import time
 
 
 def egg_timer(timeout, message=None, length=30, display_callback=None):
-    """Provides a blocking delay with a graphic to indicate progress so far so the computer doesn't look idle.
+    """Block for a specified duration while displaying a text-based progress bar.
 
-    optionally, display a message on the line above the timer graphic
-    optionally, specify a display_callback function to insert extra progress information after the timer display.
-    display_callback function should accept a single dictionary argument and return a string.
+    Useful during long hardware settling times or calibration waits so the
+    console does not appear idle.  The progress bar updates at ~10 Hz and shows
+    elapsed/remaining time plus a percentage.  An optional *display_callback*
+    can append live telemetry (e.g. temperature readings) after the bar.
+
+
+    >>> from PyICe.lab_utils.egg_timer import egg_timer
+    >>> callable(egg_timer)
+    True
 
     Args:
-        display_callback: Display callback.
-        length: Length.
-        message: Message.
-        timeout: Timeout in seconds.
+        timeout: Duration to wait, in seconds.
+        message: Optional message printed on the line above the progress bar
+            before the countdown begins.
+        length: Width of the progress bar in characters (default 30).
+        display_callback: Optional callable that receives a status dict
+            (keys: ``start_time``, ``total_time``, ``elapsed_time``,
+            ``remaining_time``, ``percent_complete``, ``message``) and returns
+            a string to append after the progress bar on each refresh.
     """
     _light_shade = "▒"  # noqa: F841 - \u2592
     _dark_shade = "█"  # noqa: F841 - \u2588

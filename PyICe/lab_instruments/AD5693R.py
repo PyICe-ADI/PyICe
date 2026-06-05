@@ -1,4 +1,8 @@
-"""A D5693 R instrument driver."""
+"""A D5693 R instrument driver.
+
+>>> from PyICe.lab_instruments.AD5693R import AD5693R
+
+"""
 from ..lab_core import *  # noqa: F403
 from PyICe.lab_utils.swap_endian import swap_endian
 
@@ -52,9 +56,12 @@ class AD5693R(instrument):
 
     def _set_code(self, code):
         """Set the code of the AD5693R.
+        Internal helper for register-level device communication.
+
+        Performs a register-level transaction over the communication bus.
 
         Args:
-            code: Code.
+            code: Code to use.
         """
         # self.twi.write_word(self.addr7, self.dac_reg, swap_endian(code, elementCount = 2))
         self.twi.write_register(
@@ -91,6 +98,8 @@ class AD5693R(instrument):
 
     def _set_voltage(self, voltage):
         """Set the voltage of the AD5693R.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
             voltage: Voltage value.
@@ -146,12 +155,20 @@ class AD5693R(instrument):
 
     def add_channel(self, channel_name):
         """Add a channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         output = channel(channel_name, write_function=self._set_voltage)
         output.set_attribute('ch_type', 'voltage')
@@ -160,12 +177,20 @@ class AD5693R(instrument):
 
     def add_channel_code(self, channel_name):
         """Add a channel code.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         int_output = integer_channel(
             channel_name, size=16, write_function=self._set_code)
@@ -175,24 +200,40 @@ class AD5693R(instrument):
 
     def add_channel_outputz(self, channel_name):
         """Add a channel outputz.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         output = channel(channel_name, write_function=self._set_outputz)
         return self._add_channel(output)
 
     def add_channel_gain(self, channel_name):
         """Add a channel gain.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         output = channel(channel_name, write_function=self._set_gain)
         # TODO - sync up?

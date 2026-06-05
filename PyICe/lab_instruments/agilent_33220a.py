@@ -1,4 +1,8 @@
-"""Agilent 33220a instrument driver."""
+"""Agilent 33220a instrument driver.
+
+>>> from PyICe.lab_instruments.agilent_33220a import agilent_33220a
+
+"""
 from ..lab_core import *  # noqa: F403
 import time
 
@@ -12,6 +16,9 @@ class agilent_33220a(scpi_instrument):
     """
     def __init__(self, interface_visa):
         """Interface_visa.
+        Stores configuration in ``_base_name`` for use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
 
         Args:
             interface_visa: VISA interface instance.
@@ -30,13 +37,16 @@ class agilent_33220a(scpi_instrument):
     def _config_pulse_func(self, high_voltage=3.3, low_voltage=0,
                            period=1e-3, pulse_width=100e-6, cycle_count=1):
         """Set to instrument to output pulse.
+        Internal helper that sends the ``TRIGger:SOURce`` SCPI command.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
-            cycle_count: Cycle count.
-            high_voltage: High voltage.
-            low_voltage: Low voltage.
-            period: Period.
-            pulse_width: Pulse width.
+            cycle_count: Cycle count to use.
+            high_voltage: High voltage to use.
+            low_voltage: Low voltage to use.
+            period: Signal period.
+            pulse_width: Pulse width to use.
         """
         self.get_interface().write("FUNCtion PULSe")
         self.get_interface().write("OUTPut:LOAD 50")
@@ -52,38 +62,64 @@ class agilent_33220a(scpi_instrument):
         self.get_interface().write("OUTPut on")
 
     def config_sinusoid_func(self):
-        """Perform config sinusoid func operation."""
+        """Perform config sinusoid func operation.
+
+        Applies the specified configuration to the object or hardware.
+        """
         pass
 
     def config_square_func(self):
-        """Perform config square func operation."""
+        """Perform config square func operation.
+
+        Applies the specified configuration to the object or hardware.
+        """
         pass
 
     def config_ramp_func(self):
-        """Perform config ramp func operation."""
+        """Perform config ramp func operation.
+
+        Applies the specified configuration to the object or hardware.
+        """
         pass
 
     def config_noise_func(self):
-        """Perform config noise func operation."""
+        """Perform config noise func operation.
+
+        Applies the specified configuration to the object or hardware.
+        """
         pass
 
     def config_dc_func(self):
-        """Perform config dc func operation."""
+        """Perform config dc func operation.
+
+        Applies the specified configuration to the object or hardware.
+        """
         pass
 
     def config_user_func(self):
-        """Perform config user func operation."""
+        """Perform config user func operation.
+
+        Applies the specified configuration to the object or hardware.
+        """
         pass
 
     def add_channel(self, channel_name, add_extended_channels=True):
         """Add a channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             add_extended_channels: If True, add sense and mode channels.
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         trigger_channel = self.add_channel_trigger(channel_name)
         # self.write_channel(channel_name,0)
@@ -101,12 +137,20 @@ class agilent_33220a(scpi_instrument):
 
     def add_channel_low_voltage(self, channel_name):
         """Add a channel low voltage.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -116,12 +160,20 @@ class agilent_33220a(scpi_instrument):
 
     def add_channel_high_voltage(self, channel_name):
         """Add a channel high voltage.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -131,12 +183,20 @@ class agilent_33220a(scpi_instrument):
 
     def add_channel_pulse_width(self, channel_name):
         """Add a channel pulse width.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -148,12 +208,20 @@ class agilent_33220a(scpi_instrument):
 
     def add_channel_pulse_period(self, channel_name):
         """Add a channel pulse period.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -165,12 +233,20 @@ class agilent_33220a(scpi_instrument):
 
     def add_channel_slew_rate(self, channel_name):
         """Add a channel slew rate.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -182,12 +258,20 @@ class agilent_33220a(scpi_instrument):
 
     def add_channel_trigger(self, channel_name):
         """Add a channel trigger.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         self.trigger_channel = channel(
             channel_name, write_function=lambda trigger: self._send_trigger(trigger))
@@ -197,12 +281,20 @@ class agilent_33220a(scpi_instrument):
 
     def add_channel_cycle_count(self, channel_name):
         """Add a channel cycle count.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The count.
         """
         new_channel = channel(
             channel_name,
@@ -239,9 +331,12 @@ class agilent_33220a(scpi_instrument):
 
     def _set_remote_mode(self, remote=True):
         """Required for RS-232 control.  Not allowed for GPIB control.
+        Internal helper that sends the ``SYSTem:LOCal`` SCPI command.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
-            remote: Remote.
+            remote: Remote to use.
         """
         if remote:
             self.get_interface().write("SYSTem:REMote")

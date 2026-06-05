@@ -1,4 +1,8 @@
-"""Bk8600 instrument driver."""
+"""Bk8600 instrument driver.
+
+>>> from PyICe.lab_instruments.bk8600 import bk8600
+
+"""
 from ..lab_core import *  # noqa: F403
 
 
@@ -7,10 +11,14 @@ class bk8600(scpi_instrument):
 
     def __init__(self, interface_visa, remote_sense):
         """Initialize bk8600.
+        Calls the parent class constructor and initializes instance-specific
+        attributes for bk8600.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
 
         Args:
             interface_visa: VISA interface instance.
-            remote_sense: Remote sense.
+            remote_sense: Remote sense to use.
         """
         self._base_name = 'bk8600'
         super(bk8600, self).__init__(f"BK8600 @ {interface_visa}")
@@ -24,13 +32,21 @@ class bk8600(scpi_instrument):
 
     def add_channel(self, channel_name, add_extended_channels=True):
         """Helper channel adds primary current forcing channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             add_extended_channels: If True, add sense and mode channels.
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         current_channel = self.add_channel_current(channel_name)
         current_channel.set_description(
@@ -48,12 +64,20 @@ class bk8600(scpi_instrument):
 
     def add_channel_voltage(self, channel_name):
         """Add single CV forcing channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, write_function=self._write_voltage)
         new_channel.set_description(
@@ -63,12 +87,20 @@ class bk8600(scpi_instrument):
 
     def add_channel_vsense(self, channel_name):
         """Add output voltage reading channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, read_function=self._read_vsense)
         new_channel.set_description(
@@ -78,12 +110,20 @@ class bk8600(scpi_instrument):
 
     def add_channel_current(self, channel_name):
         """Add single CC forcing channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, write_function=self._write_current)
         new_channel.set_description(
@@ -93,12 +133,20 @@ class bk8600(scpi_instrument):
 
     def add_channel_isense(self, channel_name):
         """Add output current reading channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, read_function=self._read_isense)
         new_channel.set_description(
@@ -108,12 +156,20 @@ class bk8600(scpi_instrument):
 
     def add_channel_power(self, channel_name):
         """Add single CW forcing channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, write_function=self._write_power)
         new_channel.set_description(
@@ -123,12 +179,20 @@ class bk8600(scpi_instrument):
 
     def add_channel_psense(self, channel_name):
         """Add output power reading channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, read_function=self._read_psense)
         new_channel.set_description(
@@ -138,24 +202,39 @@ class bk8600(scpi_instrument):
 
     def add_channel_mode(self, channel_name):
         """Add a channel mode.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, read_function=self._read_mode)
         return self._add_channel(new_channel)
 
     def add_channel_remote_sense(self, channel_name):
         """Enable/disable remote voltage sense through rear panel connectors.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = integer_channel(
             channel_name, size=1, write_function=self.SetRemoteSense)
@@ -167,6 +246,8 @@ class bk8600(scpi_instrument):
     def _write_voltage(self, voltage):
         """Set output voltage.
 
+        Internal implementation detail; see the public API for usage.
+
         Args:
             voltage: Voltage value.
         """
@@ -176,6 +257,8 @@ class bk8600(scpi_instrument):
     def _write_current(self, current):
         """Set output current.
 
+        Internal implementation detail; see the public API for usage.
+
         Args:
             current: Current value.
         """
@@ -184,6 +267,9 @@ class bk8600(scpi_instrument):
 
     def _write_current_range(self, range=3):
         """Set current measurement range. Acceptable ranges are 3 and 30.
+        Internal helper that sends the ``CURRent:RANGe`` SCPI command.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
             range: Measurement or output range.
@@ -193,14 +279,18 @@ class bk8600(scpi_instrument):
     def _write_power(self, power):
         """Set output power.
 
+        Internal implementation detail; see the public API for usage.
+
         Args:
-            power: Power.
+            power: Power level.
         """
         self.get_interface().write("FUNC POWer")
         self.get_interface().write(f"POWer {power}")
 
     def _write_output_enable(self, enable):
         """Set output enable.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
             enable: Enable or disable.
@@ -213,8 +303,10 @@ class bk8600(scpi_instrument):
     def SetRemoteSense(self, remote_sense):
         """Set Remote Sense.
 
+        Sends the corresponding SCPI command string to the instrument over the bus.
+
         Args:
-            remote_sense: Remote sense.
+            remote_sense: Remote sense to use.
         """
         if remote_sense:
             self.get_interface().write("REMote:SENSe 1")
@@ -222,13 +314,16 @@ class bk8600(scpi_instrument):
             self.get_interface().write("REMote:SENSe 0")
 
     def GetRemoteSense(self):
-        """Return GetRemoteSense result.
+        """Return the GetRemoteSense.
+        Sends the ``REMote:SENSe`` SCPI command to the instrument.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Returns:
-            Result value.
+            The GetRemoteSense result.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         resp = self.get_interface().ask("REMote:SENSe?")
         if resp == '0':
@@ -241,32 +336,44 @@ class bk8600(scpi_instrument):
 
     def _read_vsense(self):
         """Returns instrument's measured output voltage.
+        Internal helper that sends the ``MEAS:VOLT`` SCPI command.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Returns:
-            Result value.
+            The measured value.
         """
         return float(self.get_interface().ask("MEAS:VOLT?"))
 
     def _read_isense(self):
         """Returns instrument's measured current output.
+        Internal helper that sends the ``MEAS:CURR`` SCPI command.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Returns:
-            Result value.
+            The measured value.
         """
         return float(self.get_interface().ask("MEAS:CURR?"))
 
     def _read_psense(self):
         """Returns instrument's measured power output.
+        Internal helper that sends the ``FETCH:POW`` SCPI command.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Returns:
-            Result value.
+            The measured value.
         """
         return float(self.get_interface().ask("FETCH:POW?"))
 
     def _read_mode(self):
         """Returns instrument's mode.
+        Internal helper that computes and returns a derived value.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Returns:
-            Result value.
+            The measured value.
         """
         return self.get_interface().ask("FUNC?")

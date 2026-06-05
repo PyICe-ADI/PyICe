@@ -1,4 +1,8 @@
-"""Watlow f4 instrument driver."""
+"""Watlow f4 instrument driver.
+
+>>> from PyICe.lab_instruments.watlow_f4 import watlow_f4
+
+"""
 
 from .temperature_chamber import temperature_chamber
 from .modbus_instrument import modbus_instrument, register_description as rd
@@ -22,11 +26,15 @@ class watlow_f4(temperature_chamber, modbus_instrument):
 
     def __init__(self, interface_raw_serial, modbus_address, baudrate=19200):
         """Initialize watlow_f4.
+        Stores configuration in ``_base_name``, ``_pv``, ``_sv`` for use by
+        other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 3 instance attributes that configure the object's behavior.
 
         Args:
-            baudrate: Baudrate.
-            interface_raw_serial: Interface raw serial.
-            modbus_address: Modbus address.
+            baudrate: Serial baud rate in bits per second.
+            interface_raw_serial: Raw serial interface instance for communication.
+            modbus_address: Modbus address to use.
         """
         self._base_name = 'Watlow F4'
         temperature_chamber.__init__(self)
@@ -43,12 +51,20 @@ class watlow_f4(temperature_chamber, modbus_instrument):
 
     def add_channels(self, channel_name):
         """Add a channels.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         self.remove_channel(self._sv)
         self.remove_channel(self._pv)
@@ -56,6 +72,8 @@ class watlow_f4(temperature_chamber, modbus_instrument):
 
     def _write_temperature(self, value):
         """Program tempertaure setpoint to value. Implement for specific hardware.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
             value: Value to set.
@@ -66,14 +84,19 @@ class watlow_f4(temperature_chamber, modbus_instrument):
 
     def _read_temperature_sense(self):
         """Read back actual chamber temperature.  Implement for specific hardware.
+        Internal helper that computes and returns a derived value.
+
+        Internal implementation detail; see the public API for usage.
 
         Returns:
-            Result value.
+            The measured value.
         """
         return self._pv.read()
 
     def _enable(self, enable):
         """Enable/disable temperature chamber heating and cooling. Also accepts heat/cool only arguments if chamber supports it.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
             enable: Enable or disable.
@@ -90,6 +113,6 @@ class watlow_f4(temperature_chamber, modbus_instrument):
         otherwise, default to disable heating and cooling.
 
         Args:
-            shutdown: Shutdown.
+            shutdown: Shutdown to use.
         """
         self._enable(not shutdown)

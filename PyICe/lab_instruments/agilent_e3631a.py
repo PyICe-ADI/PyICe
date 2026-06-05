@@ -1,4 +1,8 @@
-"""Agilent e3631a instrument driver."""
+"""Agilent e3631a instrument driver.
+
+>>> from PyICe.lab_instruments.agilent_e3631a import agilent_e3631a
+
+"""
 from PyICe.lab_core import *  # noqa: F403
 from .agilent_e36xxa import agilent_e36xxa
 import time
@@ -9,6 +13,10 @@ class agilent_e3631a(agilent_e36xxa):
 
     def __init__(self, interface_visa):
         """Initialize agilent_e3631a.
+        Calls the parent class constructor and initializes instance-specific
+        attributes for agilent_e3631a.
+
+        Calls the parent constructor to inherit base behavior, and initializes 3 instance attributes that configure the object's behavior.
 
         Args:
             interface_visa: VISA interface instance.
@@ -41,16 +49,16 @@ class agilent_e3631a(agilent_e36xxa):
             optionally add _isense and _vsense readback channels
 
         Args:
-            add_sense_channels: Add sense channels.
+            add_sense_channels: Add sense channels to use.
             channel_name: Name for the new channel.
             ilim: Current limit.
             num: Count or number.
 
         Returns:
-            Result value.
+            The newly created channel object.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         num = num.upper()
         if num not in ['P6V', 'P25V', 'N25V']:

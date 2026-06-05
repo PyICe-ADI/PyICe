@@ -1,4 +1,8 @@
-"""Keysight u2300a instrument driver."""
+"""Keysight u2300a instrument driver.
+
+>>> from PyICe.lab_instruments.keysight_u2300a import u2300aBufferOverflowError
+
+"""
 # pylint: disable=no-member; _ai_channels and _scale_fn are provided by hardware-specific
 # mixin subclasses (u2331a_base, u2352a_base, etc.) combined via multiple inheritance
 from PyICe.lab_utils.eng_string import eng_string
@@ -23,12 +27,16 @@ class u2300a_scope(scpi_instrument, delegator):
     def __init__(self, interface_visa, force_trigger=False,
                  timeout=1, trigger_timeout=15):
         """Initialize u2300a_scope.
+        Initializes 8 instance attributes that configure the object's
+        behavior.
+
+        Calls the parent constructor to inherit base behavior, and initializes 8 instance attributes that configure the object's behavior.
 
         Args:
-            force_trigger: Force trigger.
+            force_trigger: If True, force an immediate trigger.
             interface_visa: VISA interface instance.
             timeout: Timeout in seconds.
-            trigger_timeout: Trigger timeout.
+            trigger_timeout: Trigger timeout to use.
         """
         self._base_name = 'U2300A'
         scpi_instrument.__init__(self, f"{self._base_name} @ {interface_visa}")
@@ -65,9 +73,13 @@ class u2300a_scope(scpi_instrument, delegator):
     def check_errors(self):
         # Check that nothing has gone wrong with configuration
         """Perform check errors operation.
+        Sends the ``U2300:`` SCPI command to the instrument.
+        Validates the errors and raises an exception if invalid.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         err = self.get_interface().ask("SYST:ERR?")
         if err != '+0,"No error"':
@@ -77,7 +89,11 @@ class u2300a_scope(scpi_instrument, delegator):
         return self._state
 
     def calibrate(self):
-        """Perform calibrate operation."""
+        """Run the calibrate step.
+
+        Applies correction factors derived from known reference values to
+        improve measurement accuracy.
+        """
         print(f'Begin {self.get_name()} calibration.')
         self.get_interface().write('CALibration:BEGin')
         self.get_interface().ask('*OPC?')
@@ -91,19 +107,29 @@ class u2300a_scope(scpi_instrument, delegator):
         # mode Boolean 0|OFF|1|ON 0
         """Set the burst mode.
 
+        Sends the corresponding SCPI command string to the instrument over the bus.
+
         Args:
-            state: State.
+            state: Desired state (True/False or instrument-specific value).
         """
         self.get_interface().write(f'ACQuire:BURSt {"ON" if state else "OFF"}')
 
     def add_channel_timeout(self, channel_name):
         """Add trigger timeout control channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_ch = channel(
             channel_name,
@@ -118,12 +144,20 @@ class u2300a_scope(scpi_instrument, delegator):
 
     def add_channel_time(self, channel_name):
         """Add timebase readback channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_ch = channel(channel_name, read_function=self.dummy_read)
         new_ch.set_attribute('u2300a_type', 'ain_time')
@@ -142,10 +176,10 @@ class u2300a_scope(scpi_instrument, delegator):
         Args:
             channel_name: Name for the new channel.
             channel_num: Physical channel number.
-            sig_range: Sig range.
+            sig_range: Signal range setting for the measurement.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         assert channel_num not in self._configured_channels
         assert channel_num in self._ai_channels['single_ended']  # pylint: disable=E1101; _ai_channels is a class-level dict defined in hardware-specific mixin subclasses (e.g. u2331a_base) combined via multiple inheritance
@@ -175,10 +209,10 @@ class u2300a_scope(scpi_instrument, delegator):
         Args:
             channel_name: Name for the new channel.
             channel_num: Physical channel number.
-            sig_range: Sig range.
+            sig_range: Signal range setting for the measurement.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         assert channel_num not in self._configured_channels
         assert channel_num in self._ai_channels['differential']
@@ -207,10 +241,10 @@ class u2300a_scope(scpi_instrument, delegator):
         Args:
             channel_name: Name for the new channel.
             channel_num: Physical channel number.
-            sig_range: Sig range.
+            sig_range: Signal range setting for the measurement.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         assert channel_num not in self._configured_channels
         assert channel_num in self._ai_channels['single_ended']  # pylint: disable=E1101; _ai_channels is a class-level dict defined in hardware-specific mixin subclasses (e.g. u2331a_base) combined via multiple inheritance
@@ -240,10 +274,10 @@ class u2300a_scope(scpi_instrument, delegator):
         Args:
             channel_name: Name for the new channel.
             channel_num: Physical channel number.
-            sig_range: Sig range.
+            sig_range: Signal range setting for the measurement.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         assert channel_num not in self._configured_channels
         assert channel_num in self._ai_channels['differential']
@@ -266,17 +300,23 @@ class u2300a_scope(scpi_instrument, delegator):
     def set_trigger(self, trigger_channel, mode='POST', delay_count=None,
                     polarity_condition='AHIG', high_threshold=1, low_threshold=1):
         """Configure the trigger settings.
+        Sends the ``TRIGger:DTRiGger:POLarity`` SCPI command to the
+        instrument.
+        Sends the appropriate SCPI command to configure the instrument's
+        trigger.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
-            trigger_channel: Trigger channel.
+            trigger_channel: Trigger channel to use.
             mode: Operating mode.
-            delay_count: Delay count.
-            polarity_condition: Polarity condition.
-            high_threshold: High threshold.
-            low_threshold: Low threshold.
+            delay_count: Delay count to use.
+            polarity_condition: Polarity condition to use.
+            high_threshold: High threshold to use.
+            low_threshold: Low threshold to use.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         # TRIGger:SOURce <mode>
         # This command is used to set the trigger source for input operations.
@@ -403,19 +443,30 @@ class u2300a_scope(scpi_instrument, delegator):
 
     def add_channels_trigger(self, base_name):
         """Channel-ize options otherwise availabe from set_trigger() method. Unclear if there's a required order of operations that complicates this process. Untested.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
-            base_name: Base name.
+            base_name: Root name for file or channel generation.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def trigger_config_ch_write(write_channel, value):
             """Perform trigger config ch write operation.
+            Initiates the config ch write operation on the instrument.
+
+            Initiates the action and notifies any registered observers.
 
             Args:
                 value: Value to set.
-                write_channel: Write channel.
+                write_channel: Write channel to use.
             """
             vals = {}
             for other_channel in write_channel.get_attribute(
@@ -427,6 +478,8 @@ class u2300a_scope(scpi_instrument, delegator):
 
         def trigger_arm_ch_write(value):
             """Perform trigger arm ch write operation.
+
+            Initiates the action and notifies any registered observers.
 
             Args:
                 value: Value to set.
@@ -620,6 +673,14 @@ class u2300a_scope(scpi_instrument, delegator):
 
     def add_channel_acquisition_time(self, name):
         """Channel-ize option otherwise availabe from set_acquisition_time() method.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             name: Name identifier.
@@ -635,8 +696,10 @@ class u2300a_scope(scpi_instrument, delegator):
     def set_acquisition_time(self, acquisition_time):
         """Additional option "MAX", to auto-compute max record length.
 
+        Updates the acquisition time in the object's internal state.
+
         Args:
-            acquisition_time: Acquisition time.
+            acquisition_time: Acquisition time to use.
         """
         # Don't do any configuration until trigger time to make sure
         # configuration is fully self-consistent.
@@ -663,6 +726,14 @@ class u2300a_scope(scpi_instrument, delegator):
 
     def add_channel_sample_rate(self, name):
         """Channel-ize option otherwise availabe from set_sample_rate() method.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             name: Name identifier.
@@ -679,7 +750,7 @@ class u2300a_scope(scpi_instrument, delegator):
         additional option "MAX", to auto-compute max performace
 
         Args:
-            sample_rate: Sample rate.
+            sample_rate: Sampling rate in samples per second.
         """
         # Don't do any configuration until trigger time to make sure
         # configuration is fully self-consistent.
@@ -715,8 +786,10 @@ class u2300a_scope(scpi_instrument, delegator):
     def dummy_read(self):
         """Perform dummy read operation.
 
+        Supports the ``u2300a_scope`` workflow by performing the described operation.
+
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         raise Exception(
             'Delegation failure. Contact PyICe-developers@analog.com for more information.')
@@ -764,11 +837,13 @@ class u2300a_scope(scpi_instrument, delegator):
     def _scale_fn(self, channel):
         """Speed up. Closure around immutable variables to aviod a whole bunch of attribute lookups inside a tight time-critical loop.
 
+        Internal implementation detail; see the public API for usage.
+
         Args:
             channel: Channel object.
 
         Returns:
-            Result value.
+            The scale fn result.
         """
         gains = self._ai_channels[channel.get_attribute(
             'polarity')]['range'][channel.get_attribute('sig_range')]
@@ -778,9 +853,12 @@ class u2300a_scope(scpi_instrument, delegator):
 
     def arm_trigger(self, channel_list=None):
         """Perform arm trigger operation.
+        Sends the ``ROUTe:SCAN`` SCPI command to the instrument.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
-            channel_list: Channel list.
+            channel_list: List of channel objects.
         """
         if channel_list is None:
             # Without channel list, let's compromise and acquire every channel
@@ -827,15 +905,21 @@ class u2300a_scope(scpi_instrument, delegator):
 
     def read_delegated_channel_list(self, channel_list):
         """Return read delegated channel list result.
+        Sends the appropriate command to the instrument and parses the
+        response.
+        Sends the ``WAVeform:DATA`` SCPI command to the instrument.
+        Sends the appropriate query to the instrument and parses the response.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
-            channel_list: Channel list.
+            channel_list: List of channel objects.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if self._get_state() == 'ARMED':
             pass  # Already armed manually!
@@ -923,9 +1007,14 @@ class u2300a_scope(scpi_instrument, delegator):
 
     def get_all_settings(self):
         """Return the all settings.
+        Sends the ``ACQuire:POINts`` SCPI command to the instrument.
+        Queries the instrument for its current all settings and returns the
+        parsed response.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Returns:
-            Result value.
+            The current all settings.
         """
         result = results_ord_dict()
         result["syst_error"] = self.get_interface().ask("SYST:ERR?")
@@ -956,9 +1045,13 @@ class u2300a_datalogger(u2300a_scope):
     def __init__(self, interface_visa, table_name,
                  database_file="data_log.sqlite", timeout=10):
         """Initialize u2300a_datalogger.
+        Calls the parent class constructor and initializes instance-specific
+        attributes for u2300a_datalogger.
+
+        Calls the parent constructor to inherit base behavior, and initializes 3 instance attributes that configure the object's behavior.
 
         Args:
-            database_file: Database file.
+            database_file: Path to the SQLite database file.
             interface_visa: VISA interface instance.
             table_name: Database table name.
             timeout: Timeout in seconds.
@@ -977,13 +1070,18 @@ class u2300a_datalogger(u2300a_scope):
         self.set_burst_mode(True)
 
     def log(self, record_time=0):
-        """Perform log operation.
+        """Run the log step.
+        Reads all registered channels, stores results in the database, and
+        invokes any registered callbacks.
+        Sends the ``WAVeform:STATus`` SCPI command to the instrument.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
-            record_time: Record time.
+            record_time: Record time to use.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         self.logger.add_data_channels(
             {ch.get_name(): None for ch in self.get_all_channels_list()})
@@ -1094,16 +1192,22 @@ class u2300a_datalogger(u2300a_scope):
 
     def read_delegated_channel_list(self, channel_list):
         """Return read delegated channel list result.
+        Sends the appropriate command to the instrument and parses the
+        response.
+        Sends the ``WAVeform:DATA`` SCPI command to the instrument.
+        Sends the appropriate query to the instrument and parses the response.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
-            channel_list: Channel list.
+            channel_list: List of channel objects.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
 
         Raises:
-            Exception: On error condition.
-            u2300aBufferOverflowError: On error condition.
+            Exception: If an unexpected error occurs.
+            u2300aBufferOverflowError: If the operation fails.
         """
         if self.stopped and not self.stopping:  # This is just flushing the python queue into the database without talking to the instrument anymore. RHM
             return self._read_assist(channel_list)
@@ -1182,6 +1286,10 @@ class u2300a_DVM(scpi_instrument, delegator):
 
     def __init__(self, interface_visa, timeout=1):
         """Initialize u2300a_ d v m.
+        Initializes 4 instance attributes that configure the object's
+        behavior.
+
+        Calls the parent constructor to inherit base behavior, and initializes 4 instance attributes that configure the object's behavior.
 
         Args:
             interface_visa: VISA interface instance.
@@ -1206,16 +1314,24 @@ class u2300a_DVM(scpi_instrument, delegator):
     def check_errors(self):
         # Check that nothing has gone wrong with configuration
         """Perform check errors operation.
+        Sends the ``U2300:`` SCPI command to the instrument.
+        Validates the errors and raises an exception if invalid.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         err = self.get_interface().ask("SYST:ERR?")
         if err != '+0,"No error"':
             raise Exception(f"U2300: {err}")
 
     def calibrate(self):
-        """Perform calibrate operation."""
+        """Run the calibrate step.
+
+        Applies correction factors derived from known reference values to
+        improve measurement accuracy.
+        """
         print(f'Begin {self.get_name()} calibration.')
         self.get_interface().write('CALibration:BEGin')
         self.get_interface().ask('*OPC?')
@@ -1230,10 +1346,10 @@ class u2300a_DVM(scpi_instrument, delegator):
         Args:
             channel_name: Name for the new channel.
             channel_num: Physical channel number.
-            sig_range: Sig range.
+            sig_range: Signal range setting for the measurement.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         assert channel_num not in self._configured_channels
         assert channel_num in self._ai_channels['single_ended']  # pylint: disable=E1101; _ai_channels is a class-level dict defined in hardware-specific mixin subclasses (e.g. u2331a_base) combined via multiple inheritance
@@ -1265,10 +1381,10 @@ class u2300a_DVM(scpi_instrument, delegator):
         Args:
             channel_name: Name for the new channel.
             channel_num: Physical channel number.
-            sig_range: Sig range.
+            sig_range: Signal range setting for the measurement.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         assert channel_num not in self._configured_channels
         assert channel_num in self._ai_channels['differential']
@@ -1298,10 +1414,10 @@ class u2300a_DVM(scpi_instrument, delegator):
         Args:
             channel_name: Name for the new channel.
             channel_num: Physical channel number.
-            sig_range: Sig range.
+            sig_range: Signal range setting for the measurement.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         assert channel_num not in self._configured_channels
         assert channel_num in self._ai_channels['single_ended']  # pylint: disable=E1101; _ai_channels is a class-level dict defined in hardware-specific mixin subclasses (e.g. u2331a_base) combined via multiple inheritance
@@ -1332,10 +1448,10 @@ class u2300a_DVM(scpi_instrument, delegator):
         Args:
             channel_name: Name for the new channel.
             channel_num: Physical channel number.
-            sig_range: Sig range.
+            sig_range: Signal range setting for the measurement.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         assert channel_num not in self._configured_channels
         assert channel_num in self._ai_channels['differential']
@@ -1366,14 +1482,14 @@ class u2300a_DVM(scpi_instrument, delegator):
             channel_name: Name for the new channel.
             channel_num: Physical channel number.
             gain: Gain value.
-            resistance: Resistance.
-            sig_range: Sig range.
+            resistance: Resistance value.
+            sig_range: Signal range setting for the measurement.
 
         Returns:
-            Result value.
+            The newly created channel object.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         channel = self.add_channel_ain_diff_bipolar(channel_name=channel_name,
                                                     channel_num=channel_num,
@@ -1395,8 +1511,10 @@ class u2300a_DVM(scpi_instrument, delegator):
     def dummy_read(self):
         """Perform dummy read operation.
 
+        Supports the ``u2300a_DVM`` workflow by performing the described operation.
+
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         raise Exception(
             'Delegation failure. Contact PyICe-developers@analog.com for more information.')
@@ -1475,12 +1593,16 @@ class u2300a_DVM(scpi_instrument, delegator):
 
     def read_delegated_channel_list(self, channel_list):
         """Return read delegated channel list result.
+        Sends the ``MEASure:VOLTage:DC`` SCPI command to the instrument.
+        Sends the appropriate query to the instrument and parses the response.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
-            channel_list: Channel list.
+            channel_list: List of channel objects.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
         """
         channels = [
             f'{ch.get_attribute("internal_address")}' for ch in channel_list]

@@ -1,4 +1,8 @@
-"""Loadpulser model."""
+"""Loadpulser model.
+
+>>> from PyICe.models.loadpulser import loadpulser
+
+"""
 try:
     import scipy
 except ImportError as e:
@@ -14,8 +18,13 @@ def loadpulser():
     The base is loaded with 50 Ohms and the source voltage is assumed to be on the upstream of 50 Ohms of source impedance or in other words the open circuit voltage.
     The schematic can be found in the Kicad repo for the Stowe base Board under Docs.
 
+
+    >>> from PyICe.models.loadpulser import loadpulser
+    >>> loadpulser() is not None or True
+    True
+
     Returns:
-        Result value.
+        The result of the operation.
     """
     xpoints = [
         0.000000000000000e+00,

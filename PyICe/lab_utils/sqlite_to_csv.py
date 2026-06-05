@@ -1,22 +1,46 @@
-"""Sqlite to csv utility."""
+"""Sqlite to csv utility.
+
+>>> from PyICe.lab_utils.sqlite_to_csv import sqlite_to_csv
+
+"""
 import sqlite3
 from .csv_writer import csv_writer
 
 
 class sqlite_to_csv(csv_writer):
-    """Formats data stored in an SQLite database so that it can be browsed interactively.
+    """Export selected columns from a SQLite database table to a CSV file.
 
-    Use a program like Live Graph (https://sourceforge.net/projects/live-graph/) or KST (kst-plot.kde.org) to visualize data.
+    Queries a SQLite database at write-time and formats the results as CSV,
+    making the data ready for interactive visualization in tools such as
+    Live Graph (https://sourceforge.net/projects/live-graph/) or
+    KST (kst-plot.kde.org). Column selection, transforms, formatting, and
+    elapsed-time derivation are all configured before calling write().
+
+    >>> from PyICe.lab_utils.sqlite_to_csv import sqlite_to_csv
+    >>> sqlite_to_csv is not None
+    True
+
     """
     def __init__(self, table_name, database_file='data_log.sqlite'):
-        """Name is the chart title.
+        """Connect to a SQLite database and prepare to export a named table.
 
-        table_name is the database table containing selected data columns.
-        database_file is the sqlite file containing table_name.
+        Opens a persistent connection to the SQLite file and stores a cursor
+        for use during column-discovery and write operations. The connection
+        remains open until the instance is used as a context manager or the
+        caller explicitly closes it.
+
+
+        >>> from PyICe.lab_utils.sqlite_to_csv import sqlite_to_csv
+        >>> sqlite_to_csv is not None
+        True
 
         Args:
-            database_file: Database file.
-            table_name: Database table name.
+            table_name: Name of the database table whose rows will be
+                exported. Passed verbatim into SQL queries, so it must
+                match the table name exactly (case-sensitive on most
+                platforms).
+            database_file: Path to the SQLite database file. Defaults to
+                ``'data_log.sqlite'`` in the current working directory.
         """
         csv_writer.__init__(self)
         self.table_name = table_name
@@ -24,29 +48,59 @@ class sqlite_to_csv(csv_writer):
         self.cursor = self.conn.cursor()
 
     def __enter__(self):
-        """Enter the context manager.
+        """Support use as a context manager, returning this instance.
+
+        Allows the database connection to be closed automatically via a
+        ``with`` statement, preventing resource leaks even if an exception
+        is raised inside the block.
+
+
+        >>> from PyICe.lab_utils.sqlite_to_csv import sqlite_to_csv
+        >>> hasattr(sqlite_to_csv, '__enter__')
+        True
 
         Returns:
-            Result value.
+            This ``sqlite_to_csv`` instance, ready for column configuration
+            and writing.
         """
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        """Exit the context manager.
+        """Close the database connection when leaving the ``with`` block.
+
+        Called automatically at the end of a ``with`` statement regardless
+        of whether an exception occurred. Closes the SQLite connection but
+        does not suppress any exceptions raised inside the block.
+
+
+        >>> from PyICe.lab_utils.sqlite_to_csv import sqlite_to_csv
+        >>> hasattr(sqlite_to_csv, '__exit__')
+        True
 
         Args:
-            exc_tb: Exc tb.
-            exc_type: Exc type.
-            exc_val: Exc val.
+            exc_type: Exception class, or ``None`` if no exception was raised.
+            exc_val: Exception instance, or ``None`` if no exception was raised.
+            exc_tb: Traceback object, or ``None`` if no exception was raised.
 
         Returns:
-            Result value.
+            ``None``, which allows any exception to propagate normally.
         """
         self.conn.close()
         return None
 
     def add_timestamps(self):
-        """Add rowid and datetime columns to csv output."""
+        """Schedule the ``rowid`` and ``datetime`` columns for CSV output.
+
+        Convenience wrapper that queues both the SQLite row identifier and
+        the human-readable timestamp column so they appear in the exported
+        CSV. Call this before write() to include time-axis data needed by
+        most visualization tools.
+
+        >>> from PyICe.lab_utils.sqlite_to_csv import sqlite_to_csv
+        >>> hasattr(sqlite_to_csv, 'add_timestamps')
+        True
+
+        """
         self.add_column('rowid')
         self.add_column('datetime')
 
@@ -62,12 +116,30 @@ class sqlite_to_csv(csv_writer):
             transform=transform)
 
     def write(self, output_file, append=False, encoding='utf-8'):
-        """Write previously selected column data to output_file.
+        """Query the database and write all configured columns to a CSV file.
+
+        Builds a single SELECT statement from every column added via
+        add_column() (or add_timestamps()), executes it against the configured
+        table, and streams the formatted rows to ``output_file``. A header row
+        using each column's display name is written first. Call this method
+        after all column selections and transforms have been registered.
+
+
+        >>> from PyICe.lab_utils.sqlite_to_csv import sqlite_to_csv
+        >>> hasattr(sqlite_to_csv, 'write')
+        True
 
         Args:
-            append: Append.
-            encoding: Encoding.
-            output_file: Output file.
+            output_file: Path to the destination CSV file. The file is created
+                if it does not exist; existing content is overwritten unless
+                ``append`` is ``True``.
+            append: When ``True``, rows are appended to an existing file
+                instead of replacing it. No additional header is written in
+                append mode, so the caller is responsible for header
+                consistency. Defaults to ``False``.
+            encoding: Character encoding used when writing the file, passed
+                directly to Python's ``str.encode()``. Defaults to
+                ``'utf-8'``.
         """
         query_txt = ''
         for column in self.columns:

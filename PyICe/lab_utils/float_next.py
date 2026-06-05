@@ -1,10 +1,17 @@
-"""Float next utility."""
+"""Float next utility.
+
+>>> from PyICe.lab_utils.float_next import float_next
+
+"""
 import math
 import sys
 
 
 def float_next(val):
-    """Return next Python double precision floating point number larger than x.
+    """Return the smallest representable float strictly greater than val.
+
+    Equivalent to ``math.nextafter(val, math.inf)`` but ported from the
+    Boost.Math algorithm for compatibility with older Python versions.
 
     >>> float_next(1.0) > 1.0
     True
@@ -12,12 +19,13 @@ def float_next(val):
     True
     >>> float_next(0.0) > 0.0
     True
+    >>> float_next(1.0) == 1.0 + 2**-52
+    True
+    >>> float_next(-1.0) > -1.0
+    True
 
     Args:
-        val: Val.
-
-    Returns:
-        Result value.
+        val: Input value (must be finite and less than sys.float_info.max).
     """
     # algorithm copied from Boost:
     # http://www.boost.org/doc/libs/1_45_0/boost/math/special_functions/next.hpp

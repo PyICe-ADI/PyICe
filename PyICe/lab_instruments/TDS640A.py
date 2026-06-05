@@ -1,4 +1,8 @@
-"""T D S640 A instrument driver."""
+"""T D S640 A instrument driver.
+
+>>> from PyICe.lab_instruments.TDS640A import TDS640A
+
+"""
 from ..lab_core import *  # noqa: F403
 
 
@@ -7,9 +11,13 @@ class TDS640A(scpi_instrument, delegator):
 
     def __init__(self, interface_visa, force_trigger=False):
         """Interface_visa".
+        Stores configuration in ``_base_name``, ``force_trigger`` for use by
+        other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 2 instance attributes that configure the object's behavior.
 
         Args:
-            force_trigger: Force trigger.
+            force_trigger: If True, force an immediate trigger.
             interface_visa: VISA interface instance.
         """
         self._base_name = 'TDS640A'
@@ -25,12 +33,20 @@ class TDS640A(scpi_instrument, delegator):
 
     def add_channel_time(self, channel_name):
         """Add a channel time.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         time_channel = channel(
             channel_name,
@@ -40,13 +56,21 @@ class TDS640A(scpi_instrument, delegator):
 
     def add_channel(self, channel_name, scope_channel_number):
         """Add named channel to instrument. num is 1-4.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
-            scope_channel_number: Scope channel number.
+            scope_channel_number: Oscilloscope channel number (1-based).
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         scope_channel = channel(
             channel_name,
@@ -68,7 +92,7 @@ class TDS640A(scpi_instrument, delegator):
         time = [(data point number - xreference) * xincrement] + xorigin
 
         Returns:
-            Result value.
+            The measured value.
         """
         preamble = self.get_interface().ask('WFMOUTPRE?').split(';')
         # remove junk that doesn't really belong to first field
@@ -97,10 +121,10 @@ class TDS640A(scpi_instrument, delegator):
             data from a single trigger may be retrieved from each of the four channels in turn by read_channels()
 
         Args:
-            scope_channel_number: Scope channel number.
+            scope_channel_number: Oscilloscope channel number (1-based).
 
         Returns:
-            Result value.
+            The measured value.
         """
         # trigger / single arm sequence commands need investigation.  Forcing trigger here is not correct
         # if trigger:
@@ -154,11 +178,13 @@ class TDS640A(scpi_instrument, delegator):
     def read_delegated_channel_list(self, channels):
         """Return read delegated channel list result.
 
+        Reads data from the underlying source and returns it.
+
         Args:
             channels: List of channel objects.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
         """
         if self.force_trigger:
             self.trigger_force()

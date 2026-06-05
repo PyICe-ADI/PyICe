@@ -1,7 +1,7 @@
 [build-system]
 #requires = ["setuptools>=61.0"]
 #build-backend = "setuptools.build_meta"
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 
@@ -67,7 +67,10 @@ dependencies=[
 
 #dynamic = ["version"]
 [tool.hatch.version]
-path = "PyICe/__init__.py"
+source = "vcs"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "PyICe/_version.py"
 
 [tool.hatch.build]
 include = [
@@ -75,7 +78,7 @@ include = [
 ]
 
 [project.optional-dependencies]
-dev = ["flake8", "flake8-docstrings", "interrogate", "xdoctest", "pip-tools", "pytest", "pytest-mock", "pytest-cov", "sphinx", "sphinx_rtd_theme", "html5lib", "beautifulsoup4"]
+dev = ["flake8", "flake8-docstrings", "interrogate; sys_platform != 'win32'", "xdoctest", "pip-tools", "pytest", "pytest-mock", "pytest-cov", "sphinx", "sphinx_rtd_theme", "html5lib", "beautifulsoup4"]
 #[tool.hatch.envs.default]
 #dependencies = ["pytest", "pytest-mock"]
 [tool.hatch.build.targets.sdist]

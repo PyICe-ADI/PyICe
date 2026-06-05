@@ -1,4 +1,8 @@
-"""Htx9001 instrument driver."""
+"""Htx9001 instrument driver.
+
+>>> from PyICe.lab_instruments.htx9001 import htx9001
+
+"""
 from ..lab_core import *  # noqa: F403
 import datetime
 
@@ -15,9 +19,13 @@ class htx9001(scpi_instrument):
     """
     def __init__(self, interface_visa, interface_twi, calibrating=False):
         """Creates a htx9001 object.
+        Initializes 7 instance attributes that configure the object's
+        behavior.
+
+        Calls the parent constructor to inherit base behavior, and initializes 7 instance attributes that configure the object's behavior.
 
         Args:
-            calibrating: Calibrating.
+            calibrating: If True, the device is in calibration mode.
             interface_twi: TWI/I2C interface instance.
             interface_visa: VISA interface instance.
         """
@@ -67,12 +75,20 @@ class htx9001(scpi_instrument):
 
     def add_channel_dvcc(self, channel_name):
         """Adds a channel controlling the dvcc voltage.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         dvcc = channel(channel_name, write_function=self._set_dvcc)
         dvcc.set_write_delay(0.2)
@@ -87,13 +103,13 @@ class htx9001(scpi_instrument):
 
         Args:
             channel_name: Name for the new channel.
-            relay_number: Relay number.
+            relay_number: Relay position number (1-based).
 
         Returns:
-            Result value.
+            The newly created channel object.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if relay_number not in self.relay_pins:
             raise Exception(f"Invalid relay number {relay_number}")
@@ -119,13 +135,13 @@ class htx9001(scpi_instrument):
 
         Args:
             channel_name: Name for the new channel.
-            test_hook_number: Test hook number.
+            test_hook_number: Test hook number to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if test_hook_number not in self.test_hook_pins:
             raise Exception(f"Invalid test hook number {test_hook_number}")
@@ -153,15 +169,15 @@ class htx9001(scpi_instrument):
 
         Args:
             channel_name: Name for the new channel.
-            gpio_list: Gpio list.
-            output: Output.
-            pin_state: Pin state.
+            gpio_list: Gpio list to use.
+            output: Output to use.
+            pin_state: Pin state to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if not isinstance(gpio_list, list):
             gpio_list = [gpio_list]
@@ -205,17 +221,22 @@ class htx9001(scpi_instrument):
     def read_channel_pin(self, channel_name):
         """Return read channel pin result.
 
+        Reads data from the underlying source and returns it.
+
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
         """
         return self.read_channel_generic(  # pylint: disable=E1101; legacy dead code - read_channel_generic is undefined; method is never called and preserved only for historical API compatibility
             channel_name, function=self.read_pins_values)  # pylint: disable=E1101; legacy dead code - read_pins_values (without underscore prefix) is undefined; method is never called and preserved only for historical API compatibility
 
     def resync(self):
-        """Perform resync operation."""
+        """Run the resync step.
+
+        Brings the cached state into agreement with the authoritative source.
+        """
         self._twi.init_i2c()
 
     def _clean_value(self, value):
@@ -382,13 +403,20 @@ class htx9001(scpi_instrument):
 
     def set_resistor_calibration(self, resistor_number, value):
         """Set the resistor calibration.
+        Applies correction factors derived from known reference values to
+        improve measurement accuracy.
+        Sends the ``CAL:DATA`` SCPI command to the instrument.
+        Sends the appropriate SCPI command to configure the instrument's
+        resistor calibration.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
-            resistor_number: Resistor number.
+            resistor_number: Resistor selector number.
             value: Value to set.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         try:
             float(value)
@@ -399,12 +427,19 @@ class htx9001(scpi_instrument):
 
     def get_resistor_calibration(self, resistor_number):
         """Return the resistor calibration.
+        Applies correction factors derived from known reference values to
+        improve measurement accuracy.
+        Sends the ``CAL:DATA`` SCPI command to the instrument.
+        Queries the instrument for its current resistor calibration and
+        returns the parsed response.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
-            resistor_number: Resistor number.
+            resistor_number: Resistor selector number.
 
         Returns:
-            Result value.
+            The current resistor calibration.
         """
         read_str = f"CAL:DATA?({resistor_number});"
         self.get_interface().write(read_str)
@@ -414,9 +449,16 @@ class htx9001(scpi_instrument):
     def get_calibration_date(self):
         # datetime.datetime.now().strftime("%Y-%m-%d")
         """Return the calibration date.
+        Applies correction factors derived from known reference values to
+        improve measurement accuracy.
+        Sends the ``Board`` SCPI command to the instrument.
+        Queries the instrument for its current calibration date and returns
+        the parsed response.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Returns:
-            Result value.
+            The current calibration date.
         """
         datestr = self.get_interface().ask('CAL:DATE?')
         try:
@@ -429,9 +471,17 @@ class htx9001(scpi_instrument):
 
     def get_days_since_calibration(self):
         """Return the days since calibration.
+        Applies correction factors derived from known reference values to
+        improve measurement accuracy.
+        Returns the stored days since calibration value from the object's
+        internal state.
+        Returns the stored days since calibration from the object's internal
+        state.
+
+        Returns the stored days since calibration from the object's internal state.
 
         Returns:
-            Result value.
+            The current days since calibration.
         """
         cal_date = self.get_calibration_date()
         if cal_date is not None:
@@ -439,12 +489,17 @@ class htx9001(scpi_instrument):
 
     def check_calibration_valid(self, calibrating):
         """Perform check calibration valid operation.
+        Applies correction factors derived from known reference values to
+        improve measurement accuracy.
+        Validates the calibration valid and raises an exception if invalid.
+
+        Evaluates the condition and raises or returns a diagnostic result.
 
         Args:
-            calibrating: Calibrating.
+            calibrating: If True, the device is in calibration mode.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         cal_duration = 365  # days
         days = self.get_days_since_calibration()
@@ -468,6 +523,8 @@ class htx9001(scpi_instrument):
     def set_all_relays(self, value):
         """Set the all relays.
 
+        Updates the all relays in the object's internal state.
+
         Args:
             value: Value to set.
         """
@@ -481,10 +538,10 @@ class htx9001(scpi_instrument):
         there is currently no way to connect this with channels so the pin is the raw pin name like PB1 etc
 
         Args:
-            write_list: Write list.
+            write_list: Write list to use.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         write_str = ''
         for pin, value in write_list:
