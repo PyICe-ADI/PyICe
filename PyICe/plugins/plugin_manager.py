@@ -1279,10 +1279,14 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
             self.far_enough = True
             if len(temperatures):
                 self.temperature_run_startup()
+            idx=0
             for temp in temperatures or ["ambient"]:
                 if temp != "ambient":
+                    idx+=1
                     print_banner(f'Setting temperature to {temp}°C')
+                    self.notify(f'Setting temperature to {temp}°C', subject='Next Temperature')
                     self.temperature_channel.write(temp)
+                    summary_msg=f'{temp}°C Summary\n'
                 for test in self.tests:
                     if not test._is_crashed:
                         try:
@@ -1292,9 +1296,11 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                             test._capture_crash = lambda crash_source='test_collect', _ct=(temp if temp != "ambient" else None): self._build_crash_log(test, temp=_ct, crash_source=crash_source, file_name=f'crash_log_{datetime.datetime.now(datetime.timezone.utc).strftime("%Y_%m_%d_%H_%M")}')
                             test.collect()
                             test._restore()
-                        except Exception as e:
+                            summary_msg+=f"{test.get_name()} ran successfully.\n"
+                        except (Exception, BaseException) as e:
                             traceback.print_exc()
                             test._is_crashed = True
+                            summary_msg+=f"{test.get_name()} crashed this temperature.\n"
                             test._crash_info = sys.exc_info()
                             self.notify(
                                 self._crash_str(test), subject='CRASHED!!!')
@@ -1311,11 +1317,16 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                         self.cleanup()
                         if self.cleanup_failure:
                             break
+                    else:
+                        summary_msg+=f'{test.get_name()} crashed/skipped.\n'
                 if temp != "ambient":
+                    summary_msg+=f'{idx} of {len(temperatures)} temperatures complete.\n'
                     if all([x._is_crashed for x in self.tests]):
+                        summary_msg+='All tests have crashed. Skipping remaining temperatures.'
                         print_banner(
                             'All tests have crashed. Skipping remaining temperatures.')
                         break
+                self.notify(summary_msg, subject='TEMP SUMMARY')
                 if self.cleanup_failure:
                     break
             self.shutdown()
