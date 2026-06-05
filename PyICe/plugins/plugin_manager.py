@@ -1161,6 +1161,7 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
             for temp in temperatures or ["ambient"]:
                 if temp != "ambient":
                     print_banner(f'Setting temperature to {temp}°C')
+                    self.notify(f'Setting temperature to {temp}°C', subject='Next Temperature')
                     self.temperature_channel.write(temp)
                 for test in self.tests:
                     if not test._is_crashed:
