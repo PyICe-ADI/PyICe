@@ -4191,11 +4191,18 @@ class background_worker(QtCore.QThread):
             print("background error")
             print(e)
             print(traceback.format_exc())
-            # print "attempting to read individually"
+            print("attempting to read individually")
             results = {}
             for channel in channels:
-                results[channel.get_name()] = lab_core.ChannelReadException(
-                    'READ_ERROR')
+                try:
+                    result = self._channel_group.read_channel_list([channel])
+                    results.update(result)
+                except Exception as e2:
+                    print("individual read error on '{}'".format(channel.get_name()))
+                    print(e2)
+                    print(traceback.format_exc())
+                    results[channel.get_name()] = lab_core.ChannelReadException(
+                        'READ_ERROR')
         return results
 
     def _read_channel_list(self, read_list):
