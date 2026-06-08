@@ -1294,7 +1294,7 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                             print_banner(f'{test.get_name()} Collecting. . .')
                             self.startup()
                             test._reconfigure()
-                            test._capture_crash = lambda crash_source='test_collect', _ct=(temp if temp != "ambient" else None): self._build_crash_log(test, temp=_ct, crash_source=crash_source, file_name=f'crash_log_{datetime.datetime.now(datetime.timezone.utc).strftime("%Y_%m_%d_%H_%M")}')
+                            test._capture_crash = lambda crash_source='test_collect', _ct=(temp if temp != "ambient" else None), _test=test: self._build_crash_log(_test, temp=_ct, crash_source=crash_source, file_name=f'crash_log_{datetime.datetime.now(datetime.timezone.utc).strftime("%Y_%m_%d_%H_%M")}')
                             test.collect()
                             test._restore()
                             if temp != "ambient":
