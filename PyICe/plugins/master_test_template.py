@@ -1,6 +1,16 @@
-"""Master test template plugin."""
+"""Master test template plugin.
+
+>>> from PyICe.plugins.master_test_template import Master_Test_Template
+
+"""
 class Master_Test_Template():  # pylint: disable=no-member; this is a mixin/template class whose attributes (_logger, _name, _test_results, _corr_results, _channel_reconfiguration_settings, project_folder_name, _debug, verbose) are set by Plugin_Manager at runtime
-    """Master_ test_ template."""
+    """Master_ test_ template.
+
+    >>> from PyICe.plugins.master_test_template import Master_Test_Template
+    >>> Master_Test_Template is not None
+    True
+
+    """
     ###
     # SCRIPT METHODS
     ###
@@ -11,6 +21,11 @@ class Master_Test_Template():  # pylint: disable=no-member; this is a mixin/temp
         read_function and write_function should be conjugate methods of a particular channel to help the system unwind after _this_ test.
         "value" is the value to which the channel will be assigned for _this_ test.
 
+
+        >>> from PyICe.plugins.master_test_template import Master_Test_Template
+        >>> hasattr(Master_Test_Template, 'reconfigure')
+        True
+
         Args:
             read_function: Callable for reading the channel.
             value: Value to set.
@@ -20,12 +35,28 @@ class Master_Test_Template():  # pylint: disable=no-member; this is a mixin/temp
             (read_function(), write_function, value))
 
     def _reconfigure(self):
-        """Save channel setting before writing to value."""
+        """Save channel setting before writing to value.
+
+        Internal implementation detail; see the public API for usage.
+
+        >>> from PyICe.plugins.master_test_template import Master_Test_Template
+        >>> hasattr(Master_Test_Template, '_reconfigure')
+        True
+
+        """
         for (old, write_function, new) in self._channel_reconfiguration_settings:
             write_function(new)
 
     def _restore(self):
-        """Undo any changes made by reconfigure."""
+        """Undo any changes made by reconfigure.
+
+        Internal implementation detail; see the public API for usage.
+
+        >>> from PyICe.plugins.master_test_template import Master_Test_Template
+        >>> hasattr(Master_Test_Template, '_restore')
+        True
+
+        """
         for (old, write_function, new) in self._channel_reconfiguration_settings:
             write_function(old)
 
@@ -42,57 +73,135 @@ class Master_Test_Template():  # pylint: disable=no-member; this is a mixin/temp
         return None
 
     def customize(self):
-        """Optional method to alter the logger before the test begins."""
+        """Optional method to alter the logger before the test begins.
+
+        Captures data for later analysis or replay.
+
+        >>> from PyICe.plugins.master_test_template import Master_Test_Template
+        >>> hasattr(Master_Test_Template, 'customize')
+        True
+
+        """
 
     def declare_bench_connections(self):
-        """Optional method to log the setup needed to run the test. Plugin required."""
+        """Optional method to log the setup needed to run the test. Plugin required.
+
+        Captures data for later analysis or replay.
+
+        >>> from PyICe.plugins.master_test_template import Master_Test_Template
+        >>> hasattr(Master_Test_Template, 'declare_bench_connections')
+        True
+
+        """
 
     def collect(self):
-        """Mandatory method to operate the bench and collect the data."""
+        """Mandatory method to operate the bench and collect the data.
+
+        Supports the ``Master_Test_Template`` workflow by performing the described operation.
+
+        >>> from PyICe.plugins.master_test_template import Master_Test_Template
+        >>> hasattr(Master_Test_Template, 'collect')
+        True
+
+        """
 
     def plot(self):
         """Optional method to retrieve the data collected and create plots. Can be run over and over once a collect has run. User must return a list or tuple of plots and/or pages, or an individual LTC_plot.Page, or a single LTC_plot.plot.
+        Configures or updates the plot with the specified parameters.
+
+        Generates or configures a visual representation of the data.
+
+
+        >>> from PyICe.plugins.master_test_template import Master_Test_Template
+        >>> hasattr(Master_Test_Template, 'plot')
+        True
 
         Returns:
-            Result value.
+            The plot result.
         """
         return []
 
     def _modify_metalogger(self):
-        """Method used to make any changes to the metalog before it is merged with a sqlite table. Not to be used itself, but to be overwritten in a project specific test_template. Plugin required."""
+        """Method used to make any changes to the metalog before it is merged with a sqlite table. Not to be used itself, but to be overwritten in a project specific test_template. Plugin required.
+
+        Internal implementation detail; see the public API for usage.
+
+        >>> from PyICe.plugins.master_test_template import Master_Test_Template
+        >>> hasattr(Master_Test_Template, '_modify_metalogger')
+        True
+
+        """
 
     ###
     # GET METHODS
     ###
     def get_channels(self):
-        """Return the channels.
+        """Return the current channels.
+        Returns the stored channels value from the object's internal state.
+        Returns the stored channels from the object's internal state.
+
+        Returns the stored channels from the object's internal state.
+
+
+        >>> from PyICe.plugins.master_test_template import Master_Test_Template
+        >>> hasattr(Master_Test_Template, 'get_channels')
+        True
 
         Returns:
-            Result value.
+            The current channels.
         """
         return self._logger
 
     def get_name(self):
-        """Return the name.
+        """Return the current name.
+        Returns the stored name value from the object's internal state.
+        Returns the stored name from the object's internal state.
+
+        Returns the stored name from the object's internal state.
+
+
+        >>> from PyICe.plugins.master_test_template import Master_Test_Template
+        >>> hasattr(Master_Test_Template, 'get_name')
+        True
 
         Returns:
-            Result value.
+            The current name.
         """
         return self._name
 
     def get_project_folder_name(self):
         """Return the project folder name.
+        Returns the stored project folder name value from the object's
+        internal state.
+        Returns the stored project folder name from the object's internal
+        state.
+
+        Returns the stored project folder name from the object's internal state.
+
+
+        >>> from PyICe.plugins.master_test_template import Master_Test_Template
+        >>> hasattr(Master_Test_Template, 'get_project_folder_name')
+        True
 
         Returns:
-            Result value.
+            The current project folder name.
         """
         return self.project_folder_name
 
     def get_module_path(self):
         """Return the module path.
+        Returns the stored module path value from the object's internal state.
+        Returns the stored module path from the object's internal state.
+
+        Returns the stored module path from the object's internal state.
+
+
+        >>> from PyICe.plugins.master_test_template import Master_Test_Template
+        >>> hasattr(Master_Test_Template, 'get_module_path')
+        True
 
         Returns:
-            Result value.
+            The current module path.
         """
         if hasattr(self, '_module_path'):
             return self._module_path
@@ -101,26 +210,53 @@ class Master_Test_Template():  # pylint: disable=no-member; this is a mixin/temp
                 f"Attempted to access the module path for {self.get_name()}. It would be created upon adding a test to the plugin manager but you didn't get that far.")
 
     def get_debug(self):
-        """Return the debug.
+        """Return the current debug.
+        Returns the stored debug value from the object's internal state.
+        Returns the stored debug from the object's internal state.
+
+        Returns the stored debug from the object's internal state.
+
+
+        >>> from PyICe.plugins.master_test_template import Master_Test_Template
+        >>> hasattr(Master_Test_Template, 'get_debug')
+        True
 
         Returns:
-            Result value.
+            The current debug.
         """
         return self._debug
 
     def get_verbose(self):
-        """Return the verbose.
+        """Return the current verbose.
+        Returns the stored verbose value from the object's internal state.
+        Returns the stored verbose from the object's internal state.
+
+        Returns the stored verbose from the object's internal state.
+
+
+        >>> from PyICe.plugins.master_test_template import Master_Test_Template
+        >>> hasattr(Master_Test_Template, 'get_verbose')
+        True
 
         Returns:
-            Result value.
+            The current verbose.
         """
         return self.verbose
 
     def get_db_file(self):
         """Return the db file.
+        Returns the stored db file value from the object's internal state.
+        Returns the stored db file from the object's internal state.
+
+        Returns the stored db file from the object's internal state.
+
+
+        >>> from PyICe.plugins.master_test_template import Master_Test_Template
+        >>> hasattr(Master_Test_Template, 'get_db_file')
+        True
 
         Returns:
-            Result value.
+            The current db file.
         """
         if hasattr(self, '_db_file'):
             return self._db_file
@@ -129,10 +265,19 @@ class Master_Test_Template():  # pylint: disable=no-member; this is a mixin/temp
                 f"Attempted to access the database file for {self.get_name()}. It would be created upon adding a test to the plugin manager but you didn't get that far.")
 
     def get_database(self):
-        """Return the database.
+        """Return the current database.
+        Returns the stored database value from the object's internal state.
+        Returns the stored database from the object's internal state.
+
+        Returns the stored database from the object's internal state.
+
+
+        >>> from PyICe.plugins.master_test_template import Master_Test_Template
+        >>> hasattr(Master_Test_Template, 'get_database')
+        True
 
         Returns:
-            Result value.
+            The current database.
         """
         if hasattr(self, '_db'):
             return self._db
@@ -142,9 +287,18 @@ class Master_Test_Template():  # pylint: disable=no-member; this is a mixin/temp
 
     def get_table_name(self):
         """Return the table name.
+        Returns the stored table name value from the object's internal state.
+        Returns the stored table name from the object's internal state.
+
+        Returns the stored table name from the object's internal state.
+
+
+        >>> from PyICe.plugins.master_test_template import Master_Test_Template
+        >>> hasattr(Master_Test_Template, 'get_table_name')
+        True
 
         Returns:
-            Result value.
+            The current table name.
         """
         if hasattr(self, '_table_name'):
             return self._table_name
@@ -154,9 +308,18 @@ class Master_Test_Template():  # pylint: disable=no-member; this is a mixin/temp
 
     def get_plot_filepath(self):
         """Return the plot filepath.
+        Configures or updates the plot with the specified parameters.
+        Returns the stored plot filepath from the object's internal state.
+
+        Returns the stored plot filepath from the object's internal state.
+
+
+        >>> from PyICe.plugins.master_test_template import Master_Test_Template
+        >>> hasattr(Master_Test_Template, 'get_plot_filepath')
+        True
 
         Returns:
-            Result value.
+            The current plot filepath.
         """
         if hasattr(self, '_plot_filepath'):
             return self._plot_filepath
@@ -166,12 +329,23 @@ class Master_Test_Template():  # pylint: disable=no-member; this is a mixin/temp
 
     def get_bench_image_locations(self):
         """Return the bench image locations.
+        Returns the stored bench image locations value from the object's
+        internal state.
+        Returns the stored bench image locations from the object's internal
+        state.
+
+        Returns the stored bench image locations from the object's internal state.
+
+
+        >>> from PyICe.plugins.master_test_template import Master_Test_Template
+        >>> hasattr(Master_Test_Template, 'get_bench_image_locations')
+        True
 
         Returns:
-            Result value.
+            The current bench image locations.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if hasattr(self, 'bench_image_locations'):
             return self.bench_image_locations
@@ -183,20 +357,43 @@ class Master_Test_Template():  # pylint: disable=no-member; this is a mixin/temp
     # EVALUATION/CORRELATION METHODS
     ###
     def evaluate_results(self):
-        """Optional evaluate_results method placeholder."""
+        """Optional evaluate_results method placeholder.
+
+        Supports the ``Master_Test_Template`` workflow by performing the described operation.
+
+        >>> from PyICe.plugins.master_test_template import Master_Test_Template
+        >>> hasattr(Master_Test_Template, 'evaluate_results')
+        True
+
+        """
 
     def correlate_results(self):
-        """Optional correlate_results method placeholder."""
+        """Optional correlate_results method placeholder.
+
+        Supports the ``Master_Test_Template`` workflow by performing the described operation.
+
+        >>> from PyICe.plugins.master_test_template import Master_Test_Template
+        >>> hasattr(Master_Test_Template, 'correlate_results')
+        True
+
+        """
 
     def declare_test(self, name: str, lower_limit=None,
                      upper_limit=None, **kwargs):
         """Optional means to manually set declarations apart from the evaluation methods.
 
+        Supports the ``Master_Test_Template`` workflow by performing the described operation.
+
+
+        >>> from PyICe.plugins.master_test_template import Master_Test_Template
+        >>> hasattr(Master_Test_Template, 'declare_test')
+        True
+
         Args:
             **kwargs: Additional keyword arguments.
-            lower_limit: Lower limit.
+            lower_limit: Lower limit to use.
             name: Name identifier.
-            upper_limit: Upper limit.
+            upper_limit: Upper limit to use.
         """
         established_declarations = self._test_results.test_limits
         if name not in established_declarations.keys():
@@ -212,6 +409,13 @@ class Master_Test_Template():  # pylint: disable=no-member; this is a mixin/temp
     def evaluate_rawdata(self, name, data, conditions=None):
         """Compare submitted data to limits for the named test.
 
+        Supports the ``Master_Test_Template`` workflow by performing the described operation.
+
+
+        >>> from PyICe.plugins.master_test_template import Master_Test_Template
+        >>> hasattr(Master_Test_Template, 'evaluate_rawdata')
+        True
+
         Args:
             name: The name of the test whose limits will be used.
             data: Boolean or iterable object to compare against limits.
@@ -224,6 +428,13 @@ class Master_Test_Template():  # pylint: disable=no-member; this is a mixin/temp
 
     def evaluate_query(self, name, query):
         """Compare submitted query results to limits for the named test.
+
+        Supports the ``Master_Test_Template`` workflow by performing the described operation.
+
+
+        >>> from PyICe.plugins.master_test_template import Master_Test_Template
+        >>> hasattr(Master_Test_Template, 'evaluate_query')
+        True
 
         Args:
             name: The name of the test whose limits will be used.
@@ -238,6 +449,13 @@ class Master_Test_Template():  # pylint: disable=no-member; this is a mixin/temp
     def evaluate_db(self, name):
         """Evaluate a pre-massaged SQLite database against limits for the named test.
 
+        Supports the ``Master_Test_Template`` workflow by performing the described operation.
+
+
+        >>> from PyICe.plugins.master_test_template import Master_Test_Template
+        >>> hasattr(Master_Test_Template, 'evaluate_db')
+        True
+
         Args:
             name: The name of the test whose limits will be used.
         """
@@ -248,6 +466,13 @@ class Master_Test_Template():  # pylint: disable=no-member; this is a mixin/temp
 
     def evaluate(self, name, values, conditions=None, where_clause=''):
         """Compare data from a SQLite database to a named test with more control over the query.
+
+        Supports the ``Master_Test_Template`` workflow by performing the described operation.
+
+
+        >>> from PyICe.plugins.master_test_template import Master_Test_Template
+        >>> hasattr(Master_Test_Template, 'evaluate')
+        True
 
         Args:
             name: The name of the test whose limits will be used.
@@ -267,11 +492,18 @@ class Master_Test_Template():  # pylint: disable=no-member; this is a mixin/temp
     def register_test_failure(self, name, reason, conditions=None, query=None):
         """Submit a result for a test that is considered a FAIL so the test, regardless of other data submitted, will result in a FAIL overall.
 
+        Supports the ``Master_Test_Template`` workflow by performing the described operation.
+
+
+        >>> from PyICe.plugins.master_test_template import Master_Test_Template
+        >>> hasattr(Master_Test_Template, 'register_test_failure')
+        True
+
         Args:
-            conditions: Conditions.
+            conditions: Conditions to use.
             name: Name identifier.
-            query: Query.
-            reason: Reason.
+            query: Query or command string to send.
+            reason: Reason to use.
         """
         self._test_results._register_test_failure(
             name=name, reason=reason, conditions=conditions, query=query)
@@ -279,6 +511,13 @@ class Master_Test_Template():  # pylint: disable=no-member; this is a mixin/temp
     def evaluate_test_conditions(
             self, name, expected_conditions='', report_conditions=[], where_clause=''):
         """Check that expected conditions return only True values in the test database.
+
+        Supports the ``Master_Test_Template`` workflow by performing the described operation.
+
+
+        >>> from PyICe.plugins.master_test_template import Master_Test_Template
+        >>> hasattr(Master_Test_Template, 'evaluate_test_conditions')
+        True
 
         Args:
             name: The name of the test that will fail if conditions are not met.
@@ -313,6 +552,13 @@ class Master_Test_Template():  # pylint: disable=no-member; this is a mixin/temp
                        test_values=None, spec=None, conditions=None):
         """Compare test values to reference values and evaluate against named test limits.
 
+        Supports the ``Master_Test_Template`` workflow by performing the described operation.
+
+
+        >>> from PyICe.plugins.master_test_template import Master_Test_Template
+        >>> hasattr(Master_Test_Template, 'correlate_data')
+        True
+
         Args:
             name: The name of the test whose limits will be used.
             reference_values: Base values to compare against.
@@ -334,9 +580,17 @@ class Master_Test_Template():  # pylint: disable=no-member; this is a mixin/temp
 
     def get_test_results(self):
         """Returns a string that reports the Pass/Fail status for all the tests evaluated in the script and the test script as a whole.
+        Returns the stored test results from the object's internal state.
+
+        Returns the stored test results from the object's internal state.
+
+
+        >>> from PyICe.plugins.master_test_template import Master_Test_Template
+        >>> hasattr(Master_Test_Template, 'get_test_results')
+        True
 
         Returns:
-            Result value.
+            The current test results.
         """
         res_str = ''
         res_str += f'*** Module {self.get_name()} ***\n'
@@ -346,9 +600,17 @@ class Master_Test_Template():  # pylint: disable=no-member; this is a mixin/temp
 
     def get_corr_results(self):
         """Returns a string that reports the Pass/Fail status for all the tests correlated in the script and the test script as a whole.
+        Returns the stored corr results from the object's internal state.
+
+        Returns the stored corr results from the object's internal state.
+
+
+        >>> from PyICe.plugins.master_test_template import Master_Test_Template
+        >>> hasattr(Master_Test_Template, 'get_corr_results')
+        True
 
         Returns:
-            Result value.
+            The current corr results.
         """
         res_str = ''
         res_str += f'*** Module {self.get_name()} ***\n'
@@ -359,11 +621,18 @@ class Master_Test_Template():  # pylint: disable=no-member; this is a mixin/temp
     def get_test_limits(self, name):
         """Return the test limits.
 
+        Returns the stored test limits from the object's internal state.
+
+
+        >>> from PyICe.plugins.master_test_template import Master_Test_Template
+        >>> hasattr(Master_Test_Template, 'get_test_limits')
+        True
+
         Args:
             name: Name identifier.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         raise Exception(
             "MASTER TEST TEMPLATE ERROR: This project indicated a use of the TEST_LIMIT plugin but no project specific 'get_test_limits' method was provided.")

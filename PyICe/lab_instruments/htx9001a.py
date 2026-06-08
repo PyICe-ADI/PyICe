@@ -1,4 +1,8 @@
-"""Htx9001a instrument driver."""
+"""Htx9001a instrument driver.
+
+>>> from PyICe.lab_instruments.htx9001a import htx9001a
+
+"""
 from ..lab_core import *  # noqa: F403
 from .htx9001 import htx9001
 str_encoding = 'latin-1'
@@ -21,9 +25,13 @@ class htx9001a(htx9001):
     """
     def __init__(self, interface_visa, calibrating=False):
         """Creates a htx9001a object.
+        Initializes 14 instance attributes that configure the object's
+        behavior.
+
+        Calls the parent constructor to inherit base behavior, and initializes 14 instance attributes that configure the object's behavior.
 
         Args:
-            calibrating: Calibrating.
+            calibrating: If True, the device is in calibration mode.
             interface_visa: VISA interface instance.
         """
         self._base_name = 'htx9001a'
@@ -81,7 +89,10 @@ class htx9001a(htx9001):
         self.get_interface().write(":I2C:PORT:DISable;")
 
     def resync(self):
-        """Perform resync operation."""
+        """Run the resync step.
+
+        Brings the cached state into agreement with the authoritative source.
+        """
         line = self.get_interface().readline()
         while len(line):
             print(f"HTX9001 resync clearing out serial port data '{line}'")
@@ -96,13 +107,13 @@ class htx9001a(htx9001):
 
         Args:
             channel_name: Name for the new channel.
-            irelay_number: Irelay number.
+            irelay_number: Irelay number to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if irelay_number not in self.irelay_pins:
             raise Exception(f"Invalid irelay number {irelay_number}")
@@ -122,6 +133,8 @@ class htx9001a(htx9001):
     def set_all_irelays(self, value):
         """Set the all irelays.
 
+        Updates the all irelays in the object's internal state.
+
         Args:
             value: Value to set.
         """
@@ -130,12 +143,19 @@ class htx9001a(htx9001):
 
     def get_resistor_calibration(self, resistor_number):
         """Return the resistor calibration.
+        Applies correction factors derived from known reference values to
+        improve measurement accuracy.
+        Sends the ``CAL:DATA`` SCPI command to the instrument.
+        Queries the instrument for its current resistor calibration and
+        returns the parsed response.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
-            resistor_number: Resistor number.
+            resistor_number: Resistor selector number.
 
         Returns:
-            Result value.
+            The current resistor calibration.
         """
         read_str = f"CAL:DATA? {resistor_number};"
         self.get_interface().write(read_str)
@@ -156,13 +176,21 @@ class htx9001a(htx9001):
 
     def add_channel_pwm(self, channel_name, pin):
         """Add a channel pwm.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
             pin: Pin number.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if pin not in self.pwm_pins:
             raise Exception(
@@ -187,11 +215,13 @@ class htx9001a(htx9001):
         def set_pwm_frequency(value):
             """Set the pwm frequency.
 
+            Updates the pwm frequency in the object's internal state.
+
             Args:
                 value: Value to set.
 
             Raises:
-                Exception: On error condition.
+                Exception: If an unexpected error occurs.
             """
             flow = 16e6 / 1024 / 65536
             fhigh = 8e6  # datasheet, fmax = fclkio / 2
@@ -207,6 +237,8 @@ class htx9001a(htx9001):
         def set_pwm_duty_cycle(value):
             """Set the pwm duty cycle.
 
+            Updates the pwm duty cycle in the object's internal state.
+
             Args:
                 value: Value to set.
             """
@@ -219,11 +251,13 @@ class htx9001a(htx9001):
         def set_pwm_enable(value):
             """Set the pwm enable.
 
+            Updates the pwm enable in the object's internal state.
+
             Args:
                 value: Value to set.
 
             Raises:
-                Exception: On error condition.
+                Exception: If an unexpected error occurs.
             """
             value = self._clean_value(value)
             if value not in [0, 1]:
@@ -238,11 +272,13 @@ class htx9001a(htx9001):
         def compute_f(pin):
             """Return compute f result.
 
+            Performs the described operation on the object's internal state.
+
             Args:
                 pin: Pin number.
 
             Returns:
-                Result value.
+                The computed result.
             """
             return self.FCLK / \
                 float(self.prescale[pin]) / float(1 + self.top[pin])
@@ -282,16 +318,24 @@ class htx9001a(htx9001):
 
     def add_channel_servo(self, channel_name, servo_number):
         """Add a channel servo.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
-            servo_number: Servo number.
+            servo_number: Servo number to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if servo_number not in self.pwm_pins:
             raise Exception(
@@ -312,16 +356,24 @@ class htx9001a(htx9001):
 
     def add_channel_servo_enable(self, channel_name, servo_number):
         """Add a channel servo enable.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
-            servo_number: Servo number.
+            servo_number: Servo number to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if servo_number not in self.pwm_pins:
             raise Exception(
@@ -357,6 +409,8 @@ class htx9001a(htx9001):
 
     def set_all_relays(self, value):
         """Set the all relays.
+
+        Updates the all relays in the object's internal state.
 
         Args:
             value: Value to set.

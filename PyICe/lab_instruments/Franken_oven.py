@@ -1,4 +1,8 @@
-"""Franken oven instrument driver."""
+"""Franken oven instrument driver.
+
+>>> from PyICe.lab_instruments.Franken_oven import Franken_oven
+
+"""
 from .temperature_chamber import temperature_chamber
 from .autonicstk import autonicstk
 
@@ -8,10 +12,14 @@ class Franken_oven(autonicstk, temperature_chamber):
 
     def __init__(self, interface_raw_serial, power_up=True):
         """Initialize franken_oven.
+        Stores configuration in ``_base_name``, ``modbus_pid`` for use by
+        other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 2 instance attributes that configure the object's behavior.
 
         Args:
-            interface_raw_serial: Interface raw serial.
-            power_up: Power up.
+            interface_raw_serial: Raw serial interface instance for communication.
+            power_up: Power up to use.
         """
         import minimalmodbus
         minimalmodbus.BAUDRATE = 9600
@@ -27,12 +35,20 @@ class Franken_oven(autonicstk, temperature_chamber):
 
     def add_channels(self, channel_name):
         """Add a channels.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         temp_channel = temperature_chamber.add_channels(self, channel_name)
         return temp_channel

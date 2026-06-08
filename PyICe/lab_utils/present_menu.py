@@ -1,19 +1,17 @@
-"""Present menu utility."""
+"""Present menu utility.
+
+>>> from PyICe.lab_utils.present_menu import present_menu
+
+"""
 def present_menu(intro_msg, prompt_msg, item_list):
-    """Command-line interface. Presents item_list as a menu to the user, and prompts for a choice.
+    """Print a numbered menu on stdout and return the item the user selects.
 
-    For example:
+    Useful for interactive bench scripts where the operator must choose among
+    hardware configurations, sweep sources, or test modes at run-time.
+    Each item is printed as ``<index>: <str(item)>``, so every element in
+    *item_list* should have a descriptive ``__str__`` method.
 
-        sweep_dac = dac_type(name="AD5693R DAC", bits=16, input_channel_name="sweep_dac", output_meter_channel_name="sweep_dac_meter")
-        epot = dac_type(name="CAT5140 ePot", bits=8, input_channel_name="scale_epot_code", output_meter_channel_name="scale_meter")
-        hameg = source_type(name="Hameg bench supply", min=0.0, max=32.0, input_channel_name="hameg", output_meter_channel_name="vtest_meter")
-        bipdac = dac_type(name="8-bit bipolar DAC", bits=8, input_channel_name="val", output_meter_channel_name="bipdac_meter", bipolar=True)
-
-        choice = present_menu(intro_msg="I can force the SCALE ADC input using the following:",
-                              prompt_msg="What method should I use?",
-                              item_list=[bipdac, epot, hameg, sweep_dac])
-
-    prints the following:
+    Example output::
 
         I can force the SCALE ADC input using the following:
            0: 8-bit bipolar DAC
@@ -22,18 +20,24 @@ def present_menu(intro_msg, prompt_msg, item_list):
            3: AD5693R DAC
         What method should I use?
 
-    The menu items are formatted as <item #>: <str(item)>
-    so it is important that each item in item_list has a descriptive __str__() method.
+    The user types an index number; invalid input re-displays the menu.
 
-    Returns the chosen item from item_list.
+
+    >>> from PyICe.lab_utils.present_menu import present_menu
+    >>> callable(present_menu)
+    True
 
     Args:
-        intro_msg: Intro msg.
-        item_list: Item list.
-        prompt_msg: Prompt msg.
+        intro_msg: Explanatory text printed before the numbered list.
+        prompt_msg: Question printed after the list to solicit user input.
+            A trailing space is added automatically if absent.
+        item_list: Indexable sequence of objects to choose from (must
+            support ``__getitem__``, ``__len__``, and ``__str__`` on
+            elements).
 
     Returns:
-        Result value.
+        The element of *item_list* corresponding to the index the user
+        entered.
     """
     assert hasattr(item_list, "__getitem__") and hasattr(item_list, "__len__")
     assert len(item_list) > 0 and hasattr(item_list[0], "__str__")

@@ -1,6 +1,14 @@
-"""Bounded utility."""
+"""Bounded utility.
+
+>>> from PyICe.lab_utils.bounded import bounded
+
+"""
 def bounded(value, min_value=None, max_value=None, key=None):
-    """Clamp value between min_value and max_value.
+    """Clamp a value to stay within [min_value, max_value].
+
+    Either bound can be omitted to apply only a floor or only a ceiling.
+    Useful for constraining DAC codes, voltage setpoints, or loop variables
+    to safe operating limits.
 
     >>> bounded(5, min_value=0, max_value=10)
     5
@@ -12,15 +20,14 @@ def bounded(value, min_value=None, max_value=None, key=None):
     10
     >>> bounded(-3, min_value=0)
     0
+    >>> bounded(42)  # no bounds applied
+    42
 
     Args:
-        key: Key.
-        max_value: Max value.
-        min_value: Min value.
-        value: Value to set.
-
-    Returns:
-        Result value.
+        value: The value to clamp.
+        min_value: Lower bound (inclusive), or None for no floor.
+        max_value: Upper bound (inclusive), or None for no ceiling.
+        key: Optional comparison key function (passed to min/max builtins).
     """
     kwargs = {}
     if key is not None:

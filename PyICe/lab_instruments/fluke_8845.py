@@ -1,4 +1,8 @@
-"""Fluke 8845 instrument driver."""
+"""Fluke 8845 instrument driver.
+
+>>> from PyICe.lab_instruments.fluke_8845 import fluke_8845
+
+"""
 from ..lab_core import *  # noqa: F403
 
 
@@ -9,6 +13,9 @@ class fluke_8845(scpi_instrument):
     """
     def __init__(self, interface_visa):
         """Interface_visa.
+        Stores configuration in ``_base_name`` for use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
 
         Args:
             interface_visa: VISA interface instance.
@@ -24,7 +31,10 @@ class fluke_8845(scpi_instrument):
         self.config_dc_voltage()
 
     def config_dc_voltage(self):
-        """Set meter to measure DC volts with default settings."""
+        """Set meter to measure DC volts with default settings.
+
+        Applies the specified configuration to the object or hardware.
+        """
         self.get_interface().write('FUNCtion "VOLT:DC"')
 
     # def config_dc_voltage(self, NPLC=1, range="AUTO", BW=20):
@@ -45,6 +55,11 @@ class fluke_8845(scpi_instrument):
 
     def set_autozero_mode(self, mode):
         """[SENSe:]ZERO:AUTO {OFF|ONCE|ON}.
+        Sends the ``SENSe:ZERO:AUTO`` SCPI command to the instrument.
+        Sends the appropriate SCPI command to configure the instrument's
+        autozero mode.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
             mode: Operating mode.
@@ -64,12 +79,12 @@ class fluke_8845(scpi_instrument):
         Valid values are in amps: [0.01, 0.1, 1, 3]
 
         Args:
-            BW: Bw.
+            BW: Bandwidth limit setting.
             NPLC: Number of power line cycles for integration.
             range: Measurement or output range.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if NPLC not in [.02, .2, 1, 10, 100]:
             raise Exception(
@@ -92,29 +107,43 @@ class fluke_8845(scpi_instrument):
 
     def add_channel(self, channel_name):
         """Add named channel to instrument without configuring measurement type.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         meter_channel = channel(channel_name, read_function=self.read_meter)
         return self._add_channel(meter_channel)
 
     def read_meter(self):
         """Return float representing meter measurement.  Units are V,A,Ohm, etc depending on meter configuration.
+        Sends the appropriate query to the instrument and parses the response.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
         """
         return float(self.get_interface().ask("READ?"))
 
     def _set_remote_mode(self, remote=True):
         """Required for RS-232 control.  Not allowed for GPIB control.
+        Internal helper that sends the ``SYSTem:LOCal`` SCPI command.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
-            remote: Remote.
+            remote: Remote to use.
         """
         if remote:
             self.get_interface().write("SYSTem:REMote")

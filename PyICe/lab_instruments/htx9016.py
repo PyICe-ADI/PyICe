@@ -1,4 +1,8 @@
-"""Htx9016 instrument driver."""
+"""Htx9016 instrument driver.
+
+>>> from PyICe.lab_instruments.htx9016 import htx9016
+
+"""
 from ..lab_core import *  # noqa: F403
 import math
 
@@ -11,6 +15,9 @@ class htx9016(scpi_instrument):
     """
     def __init__(self, interface_visa):
         """Initialize htx9016.
+        Stores configuration in ``_base_name`` for use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
 
         Args:
             interface_visa: VISA interface instance.
@@ -20,7 +27,10 @@ class htx9016(scpi_instrument):
         self.add_interface_visa(interface_visa, timeout=0.5)
 
     def __del__(self):
-        """Close interface (serial) port on exit."""
+        """Close interface (serial) port on exit.
+
+        Performs cleanup when the object is garbage-collected.
+        """
         self.get_interface().close()
 
     def _decode_readback(self):
@@ -35,12 +45,19 @@ class htx9016(scpi_instrument):
 
     def add_channel(self, channel_name):
         """Add a channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:SELEct:CHANnel`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -60,8 +77,12 @@ class htx9016(scpi_instrument):
 
     def get_serial_number(self):
         """Return the serial number.
+        Sends the ``:STORe:SERIalnum`` SCPI command to the instrument.
+        Returns the stored serial number from the object's internal state.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Returns:
-            Result value.
+            The current serial number.
         """
         return self.get_interface().ask(":STORe:SERIalnum?")

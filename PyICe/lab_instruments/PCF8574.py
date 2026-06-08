@@ -1,4 +1,8 @@
-"""P C F8574 instrument driver."""
+"""P C F8574 instrument driver.
+
+>>> from PyICe.lab_instruments.PCF8574 import PCF8574
+
+"""
 from ..lab_core import *  # noqa: F403
 
 
@@ -6,13 +10,17 @@ class PCF8574(instrument):
     """P c f8574 (instrument subclass)."""
     def __init__(self, interface_twi, addr7):
         """Multi-vendor 8bit I2C GPIO on Configurator XT. http://www.ti.com/lit/ds/symlink/pcf8574.pdf.
+        Initializes 4 instance attributes that configure the object's
+        behavior.
+
+        Calls the parent constructor to inherit base behavior, and initializes 4 instance attributes that configure the object's behavior.
 
         Args:
             addr7: 7-bit I2C device address.
             interface_twi: TWI/I2C interface instance.
 
         Raises:
-            ValueError: On error condition.
+            ValueError: If the provided value is out of range or invalid.
         """
         instrument.__init__(self, f'PCF8574 GPIO expander at 0x{addr7:X}')
         self._base_name = 'PCF8574'
@@ -25,13 +33,21 @@ class PCF8574(instrument):
 
     def add_channel_writepin(self, channel_name, pin):
         """Adds a single output pin to control. State is held locally since the pins are hi Z up they can't be relied upon to hold state.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
             pin: Pin number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -43,13 +59,21 @@ class PCF8574(instrument):
 
     def add_channel_readpin(self, channel_name, pin):
         """Adds a single input pin to read back.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
             pin: Pin number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name,
                               read_function=lambda: self._readpin(pin))

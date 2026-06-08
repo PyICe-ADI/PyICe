@@ -1,4 +1,8 @@
-"""Sun ec1x instrument driver."""
+"""Sun ec1x instrument driver.
+
+>>> from PyICe.lab_instruments.sun_ec1x import sun_ec1x
+
+"""
 from ..lab_core import *  # noqa: F403
 from .sun_ecxx import sun_ecxx
 
@@ -18,6 +22,10 @@ class sun_ec1x(sun_ecxx):
     """
     def __init__(self, interface_visa):
         """Initialize sun_ec1x.
+        Stores configuration in ``_base_name``, ``lower_temp_limit``,
+        ``upper_temp_limit`` for use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 3 instance attributes that configure the object's behavior.
 
         Args:
             interface_visa: VISA interface instance.
@@ -35,12 +43,19 @@ class sun_ec1x(sun_ecxx):
 
     def add_channel_user_sense(self, channel_name):
         """Channel_name represents secondary non-control thermocouple readback.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name, read_function=lambda: float(
@@ -51,6 +66,9 @@ class sun_ec1x(sun_ecxx):
 
     def _write_temperature(self, value):
         """Set named channel to new temperature "value".
+        Internal implementation detail; see the public API for usage.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
             value: Value to set.
@@ -64,12 +82,15 @@ class sun_ec1x(sun_ecxx):
 
     def _enable(self, enable):
         """Individually control heat/cool outputs. Usually used through channel framework.
+        Internal helper that sends the ``Unknown`` SCPI command.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
             enable: Enable or disable.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if enable is False or enable == 0:
             time.sleep(0.5)
@@ -103,8 +124,10 @@ class sun_ec1x(sun_ecxx):
     def shutdown(self, shutdown):
         """Turn entire temp controller on or off. This is different than enabling/disabling the heat and cool outputs.
 
+        Supports the ``sun_ec1x`` workflow by performing the described operation.
+
         Args:
-            shutdown: Shutdown.
+            shutdown: Shutdown to use.
         """
         if shutdown:
             time.sleep(0.5)

@@ -1,4 +1,8 @@
-"""Semiconductor parameter analyzer instrument driver."""
+"""Semiconductor parameter analyzer instrument driver.
+
+>>> from PyICe.lab_instruments.semiconductor_parameter_analyzer import semiconductor_parameter_analyzer
+
+"""
 # pylint: disable=E1101; this is an abstract base class - members like _smu_configuration,
 # _smu_voltage_range, _smu_current_range, _smu_voltage_force_channels, smu_numbers, vs_numbers,
 # _voltage_measure_channels, _current_measure_channels, _smu_voltage_measure_channels,
@@ -16,12 +20,15 @@ class semiconductor_parameter_analyzer(scpi_instrument):
     def _set_smu_voltage(self, smu_number, v_output=None,
                          i_compliance=None, v_output_range=None):
         """Set smu voltage and current compliance if enough arguments specified.
+        Internal implementation detail; see the public API for usage.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
-            i_compliance: I compliance.
-            smu_number: Smu number.
-            v_output: V output.
-            v_output_range: V output range.
+            i_compliance: I compliance to use.
+            smu_number: Source-measure unit channel number (1-based).
+            v_output: V output to use.
+            v_output_range: V output range to use.
         """
         if smu_number not in list(self._smu_configuration.keys()):
             self._smu_configuration[smu_number] = {
@@ -49,12 +56,15 @@ class semiconductor_parameter_analyzer(scpi_instrument):
     def _set_smu_current(self, smu_number, i_output=None,
                          v_compliance=None, i_output_range=None):
         """Set smu current and voltage compliance if enough arguments specified.
+        Internal implementation detail; see the public API for usage.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
-            i_output: I output.
-            i_output_range: I output range.
-            smu_number: Smu number.
-            v_compliance: V compliance.
+            i_output: I output to use.
+            i_output_range: I output range to use.
+            smu_number: Source-measure unit channel number (1-based).
+            v_compliance: V compliance to use.
         """
         if smu_number not in list(self._smu_configuration.keys()):
             self._smu_configuration[smu_number] = {
@@ -96,9 +106,11 @@ class semiconductor_parameter_analyzer(scpi_instrument):
     def _set_vsource_voltage(self, vsource_number, output):
         """Set vsource voltage.
 
+        Internal implementation detail; see the public API for usage.
+
         Args:
-            output: Output.
-            vsource_number: Vsource number.
+            output: Output to use.
+            vsource_number: Vsource number to use.
         """
         self.get_interface().write((f"DS {vsource_number:G}, {output:G}"))
 
@@ -106,7 +118,10 @@ class semiconductor_parameter_analyzer(scpi_instrument):
         self.get_interface().write((f"DS {vs_number}"))
 
     def shutdown(self):
-        """Perform shutdown operation."""
+        """Run the shutdown step.
+
+        Releases resources and closes the connection to the instrument.
+        """
         for smu in self.smu_numbers:
             self._disable_smu(smu)
         for vs in self.vs_numbers:
@@ -262,12 +277,20 @@ class semiconductor_parameter_analyzer(scpi_instrument):
 
     def add_channel_integration_time(self, integration_time_channel_name):
         """Add a channel integration time.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
-            integration_time_channel_name: Integration time channel name.
+            integration_time_channel_name: Integration time channel name to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         integration_time_channel = channel(
             integration_time_channel_name,

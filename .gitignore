@@ -4,3 +4,4 @@ dist/
 venv/
 PyICePad/PyICepad++.bat
 env/
+PyICe/_version.py

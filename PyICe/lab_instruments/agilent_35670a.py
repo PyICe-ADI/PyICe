@@ -1,4 +1,8 @@
-"""Agilent 35670a instrument driver."""
+"""Agilent 35670a instrument driver.
+
+>>> from PyICe.lab_instruments.agilent_35670a import agilent_35670a
+
+"""
 import sys
 import time
 from ..lab_core import scpi_instrument, channel
@@ -11,6 +15,9 @@ class agilent_35670a(scpi_instrument):
     """
     def __init__(self, interface_visa):
         """Interface_visa.
+        Stores configuration in ``_base_name`` for use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
 
         Args:
             interface_visa: VISA interface instance.
@@ -22,13 +29,20 @@ class agilent_35670a(scpi_instrument):
     def add_channel_noise(self, channel_name, channel_num=1,
                           freqs=None, res=None, count=None):
         """Add a channel noise.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``INPut1:COUPling`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
             channel_num: Physical channel number.
-            count: Count.
-            freqs: Freqs.
-            res: Res.
+            count: Number of items or iterations.
+            freqs: Freqs to use.
+            res: Res to use.
         """
         if freqs is None:
             freqs = [0, 12.5, 100, 1000, 10000, 100000]
@@ -61,13 +75,21 @@ class agilent_35670a(scpi_instrument):
 
     def add_channel(self, channel_name, channel_num):
         """Add named channel to instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
             channel_num: Physical channel number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         meter_channel = channel(
             channel_name,
@@ -76,12 +98,19 @@ class agilent_35670a(scpi_instrument):
 
     def read_channel(self, channel_num):
         """Return float representing meter measurement.  Units are {} etc depending on meter configuration.
+        Sends the appropriate command to the instrument and parses the
+        response.
+        Sends the ``STATus:OPERation:CONDition`` SCPI command to the
+        instrument.
+        Sends the appropriate query to the instrument and parses the response.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
             channel_num: Physical channel number.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
         """
         for ii in range(0, len(self.count)):
             print((f'Start : {self.freqs[ii]}, Stop : {self.freqs[ii + 1]}'))

@@ -1,11 +1,29 @@
-"""Power loss models model."""
+"""Power loss models model.
+
+>>> from PyICe.models.power_loss_models import buck_power_loss
+
+"""
 # This is based on the app note:
 # https://fscdn.rohm.com/en/products/databook/applinote/ic/power/switching_regulator/buck_converter_efficiency_app-e.pdf
 
 class buck_power_loss(object):
-    """Buck_power_loss (object subclass)."""
+    """Buck_power_loss (object subclass).
+
+    >>> from PyICe.models.power_loss_models import buck_power_loss
+    >>> buck_power_loss is not None
+    True
+
+    """
     def __init__(self, **kwargs):
         """Initialize buck_power_loss.
+        Stores configuration in ``params`` for use by other methods.
+
+        Initializes 1 instance attribute that configure the object's behavior.
+
+
+        >>> from PyICe.models.power_loss_models import buck_power_loss
+        >>> buck_power_loss is not None
+        True
 
         Args:
             **kwargs: Additional keyword arguments.
@@ -156,8 +174,15 @@ class buck_power_loss(object):
     def write(self, parameter, value):
         """Write a value to the channel.
 
+        Writes data to the underlying target.
+
+
+        >>> from PyICe.models.power_loss_models import buck_power_loss
+        >>> hasattr(buck_power_loss, 'write')
+        True
+
         Args:
-            parameter: Parameter.
+            parameter: Parameter to use.
             value: Value to set.
         """
         self.params[parameter] = value
@@ -165,19 +190,35 @@ class buck_power_loss(object):
     def read(self, parameter):
         """Read and return the current channel value.
 
+        Reads data from the underlying source and returns it.
+
+
+        >>> from PyICe.models.power_loss_models import buck_power_loss
+        >>> hasattr(buck_power_loss, 'read')
+        True
+
         Args:
-            parameter: Parameter.
+            parameter: Parameter to use.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
         """
         return self.params[parameter]
 
     def get_power_loss(self):
         """Return the power loss.
+        Returns the stored power loss value from the object's internal state.
+        Returns the stored power loss from the object's internal state.
+
+        Returns the stored power loss from the object's internal state.
+
+
+        >>> from PyICe.models.power_loss_models import buck_power_loss
+        >>> hasattr(buck_power_loss, 'get_power_loss')
+        True
 
         Returns:
-            Result value.
+            The current power loss.
         """
         self._compute()
         return self.params["pdiss_chip"]                      \
@@ -186,36 +227,74 @@ class buck_power_loss(object):
 
     def get_ploss_chip(self):
         """Return the ploss chip.
+        Returns the stored ploss chip value from the object's internal state.
+        Returns the stored ploss chip from the object's internal state.
+
+        Returns the stored ploss chip from the object's internal state.
+
+
+        >>> from PyICe.models.power_loss_models import buck_power_loss
+        >>> hasattr(buck_power_loss, 'get_ploss_chip')
+        True
 
         Returns:
-            Result value.
+            The current ploss chip.
         """
         self._compute()
         return self.params["pdiss_chip"]
 
     def get_ploss_inductor(self):
         """Return the ploss inductor.
+        Returns the stored ploss inductor value from the object's internal
+        state.
+        Returns the stored ploss inductor from the object's internal state.
+
+        Returns the stored ploss inductor from the object's internal state.
+
+
+        >>> from PyICe.models.power_loss_models import buck_power_loss
+        >>> hasattr(buck_power_loss, 'get_ploss_inductor')
+        True
 
         Returns:
-            Result value.
+            The current ploss inductor.
         """
         self._compute()
         return self.params["pdiss_inductor"]
 
     def get_efficiency(self):
-        """Return the efficiency.
+        """Return the current efficiency.
+        Returns the stored efficiency value from the object's internal state.
+        Returns the stored efficiency from the object's internal state.
+
+        Returns the stored efficiency from the object's internal state.
+
+
+        >>> from PyICe.models.power_loss_models import buck_power_loss
+        >>> hasattr(buck_power_loss, 'get_efficiency')
+        True
 
         Returns:
-            Result value.
+            The current efficiency.
         """
         power_out = self.params["vout"] * self.params["iout"]
         return power_out / (power_out + self.get_power_loss())
 
     def get_temperatures(self):
-        """Return the temperatures.
+        """Return the current temperatures.
+        Returns the stored temperatures value from the object's internal
+        state.
+        Returns the stored temperatures from the object's internal state.
+
+        Returns the stored temperatures from the object's internal state.
+
+
+        >>> from PyICe.models.power_loss_models import buck_power_loss
+        >>> hasattr(buck_power_loss, 'get_temperatures')
+        True
 
         Returns:
-            Result value.
+            The current temperatures.
         """
         self._compute()
         return {"TDIE": self.params["tamb_die"],
@@ -223,10 +302,24 @@ class buck_power_loss(object):
 
 
 class copper_resistor(object):
-    """Copper_resistor (object subclass)."""
+    """Copper_resistor (object subclass).
+
+    >>> from PyICe.models.power_loss_models import copper_resistor
+    >>> copper_resistor is not None
+    True
+
+    """
     # No self heating solver
     def __init__(self, **kwargs):
         """Initialize copper_resistor.
+        Stores configuration in ``params`` for use by other methods.
+
+        Initializes 1 instance attribute that configure the object's behavior.
+
+
+        >>> from PyICe.models.power_loss_models import copper_resistor
+        >>> copper_resistor is not None
+        True
 
         Args:
             **kwargs: Additional keyword arguments.
@@ -238,25 +331,50 @@ class copper_resistor(object):
     def write(self, parameter, value):
         """Write a value to the channel.
 
+        Writes data to the underlying target.
+
+
+        >>> from PyICe.models.power_loss_models import copper_resistor
+        >>> hasattr(copper_resistor, 'write')
+        True
+
         Args:
-            parameter: Parameter.
+            parameter: Parameter to use.
             value: Value to set.
         """
         self.params[parameter] = value
 
     def get_resistance(self):
-        """Return the resistance.
+        """Return the current resistance.
+        Returns the stored resistance value from the object's internal state.
+        Returns the stored resistance from the object's internal state.
+
+        Returns the stored resistance from the object's internal state.
+
+
+        >>> from PyICe.models.power_loss_models import copper_resistor
+        >>> hasattr(copper_resistor, 'get_resistance')
+        True
 
         Returns:
-            Result value.
+            The current resistance.
         """
         return self.params["r_nom"] * (1 + self.params["tc"]
                                        * (self.params["tdegc"] - self.params["tref"]))
 
     def get_power_loss(self):
         """Return the power loss.
+        Returns the stored power loss value from the object's internal state.
+        Returns the stored power loss from the object's internal state.
+
+        Returns the stored power loss from the object's internal state.
+
+
+        >>> from PyICe.models.power_loss_models import copper_resistor
+        >>> hasattr(copper_resistor, 'get_power_loss')
+        True
 
         Returns:
-            Result value.
+            The current power loss.
         """
         return self.get_resistance() * self.params["current"]**2

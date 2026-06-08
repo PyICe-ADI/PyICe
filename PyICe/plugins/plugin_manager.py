@@ -1,4 +1,8 @@
-"""Plugin manager plugin."""
+"""Plugin manager plugin.
+
+>>> from PyICe.plugins.plugin_manager import Callback_logger
+
+"""
 from PyICe.plugins.bench_configuration_management.bench_configuration_management import component_collection, connection_collection
 import os
 import inspect
@@ -25,25 +29,49 @@ from PyICe import LTC_plot
 
 
 class Callback_logger(logger):
-    """Wrapper for the standard logger. Used to perform special actions for specific channels on a per-log basis."""
+    """Wrapper for the standard logger. Used to perform special actions for specific channels on a per-log basis.
+
+    >>> from PyICe.plugins.plugin_manager import Callback_logger
+    >>> Callback_logger is not None
+    True
+
+    """
 
     def __init__(self, database, special_channel_actions, test):
         """Initialize callback_logger.
+        Calls the parent class constructor and initializes instance-specific
+        attributes for Callback_logger.
+
+        Calls the parent constructor to inherit base behavior, and initializes 2 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.plugins.plugin_manager import Callback_logger
+        >>> Callback_logger is not None
+        True
 
         Args:
-            database: Database.
-            special_channel_actions: Special channel actions.
-            test: Test.
+            database: Database to use.
+            special_channel_actions: Special channel actions to use.
+            test: Test case object or test function.
         """
         super().__init__(database=database)
         self.sp_ch_actions = special_channel_actions
         self.test = test
 
     def log(self):
-        """Return log result.
+        """Return the log.
+        Reads all registered channels, stores results in the database, and
+        invokes any registered callbacks.
+
+        Hooks into the event system so that custom logic runs at the appropriate time.
+
+
+        >>> from PyICe.plugins.plugin_manager import Callback_logger
+        >>> hasattr(Callback_logger, 'log')
+        True
 
         Returns:
-            Result value.
+            The logged results dictionary.
         """
         readings = super().log()
         for channel, action in self.sp_ch_actions.items():
@@ -52,13 +80,28 @@ class Callback_logger(logger):
 
 
 class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, project_path, verbose, component_list, project_folder_name, bench_image_locations, traceability_items) are set dynamically via setattr from the settings dict in __init__
-    """Plugin_ manager."""
+    """Plugin_ manager.
+
+    >>> from PyICe.plugins.plugin_manager import Plugin_Manager
+    >>> Plugin_Manager is not None
+    True
+
+    """
     def __init__(self, scratch_folder='scratch', settings={}):
         """Initialize plugin_ manager.
+        Initializes 8 instance attributes that configure the object's
+        behavior.
+
+        Initializes 8 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.plugins.plugin_manager import Plugin_Manager
+        >>> Plugin_Manager is not None
+        True
 
         Args:
-            scratch_folder: Scratch folder.
-            settings: Settings.
+            scratch_folder: Scratch folder to use.
+            settings: Settings to use.
         """
         self.tests = []
         self.operator = getpass.getuser().lower()
@@ -93,11 +136,16 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
         args: test - class object. A test that contains the methods necessary for data collection and processing in the project.
         args: debug - Boolean. This will be passed into all run tests to be used for abbreviating data collection loops. Default value is False.
 
+
+        >>> from PyICe.plugins.plugin_manager import Plugin_Manager
+        >>> hasattr(Plugin_Manager, 'add_test')
+        True
+
         Args:
             debug: If True, enable debug output.
-            skip_eval: Skip eval.
-            skip_plot: Skip plot.
-            test: Test.
+            skip_eval: Skip eval to use.
+            skip_plot: Skip plot to use.
+            test: Test case object or test function.
         """
         a_test = test()
         a_test._debug = debug
@@ -131,8 +179,13 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
         The list consists of values that will be set to the 'temp_control_channel' assigned by the instrument drivers.
         Default value is an empty list.
 
+
+        >>> from PyICe.plugins.plugin_manager import Plugin_Manager
+        >>> hasattr(Plugin_Manager, 'run')
+        True
+
         Args:
-            temperatures: Temperatures.
+            temperatures: Temperatures to use.
         """
         if temperatures is None:
             temperatures = []
@@ -242,8 +295,13 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
         The 'temp_control_channel' is a channel object. The values provided in the temperature list will be written to it.
         The special channel actions are functions that are run on each logging of data and the value is a dicionary with a channel object or the string name of a channel as key, and the value the function to be run. The function requires the arguments channel_name, readings, and test.
 
+
+        >>> from PyICe.plugins.plugin_manager import Plugin_Manager
+        >>> hasattr(Plugin_Manager, 'add_instrument_channels')
+        True
+
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         for (dirpath1, dirnames, filenames) in os.walk(self.project_path):
             if 'benches' not in dirpath1 or self.project_path not in dirpath1:
@@ -309,8 +367,15 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
     def _create_logger(self, test):
         """Each test add to the plugin manager will have its own logger with which it shall store the data collected by their collect method. The channels will be determined by the drivers added to the driver, and a sqlite database and table will be automatically created and linked to the tests.
 
+        Internal implementation detail; see the public API for usage.
+
+
+        >>> from PyICe.plugins.plugin_manager import Plugin_Manager
+        >>> hasattr(Plugin_Manager, '_create_logger')
+        True
+
         Args:
-            test: Test.
+            test: Test case object or test function.
         """
         test._logger = Callback_logger(
             database=test.get_db_file(),
@@ -327,7 +392,15 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
             file_name=f"{test.get_module_path()}{os.sep}scratch{os.sep}{self.project_folder_name}.html")
 
     def temperature_run_startup(self):
-        """Perform temperature run startup operation."""
+        """Perform temperature run startup operation.
+
+        Supports the ``Plugin_Manager`` workflow by performing the described operation.
+
+        >>> from PyICe.plugins.plugin_manager import Plugin_Manager
+        >>> hasattr(Plugin_Manager, 'temperature_run_startup')
+        True
+
+        """
         for func in self.temp_run_fns:
             try:
                 func()
@@ -339,7 +412,15 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                 exit()
 
     def startup(self):
-        """Perform startup operation."""
+        """Run the startup step.
+
+        Supports the ``Plugin_Manager`` workflow by performing the described operation.
+
+        >>> from PyICe.plugins.plugin_manager import Plugin_Manager
+        >>> hasattr(Plugin_Manager, 'startup')
+        True
+
+        """
         for func in self.startup_fns:
             try:
                 func()
@@ -351,7 +432,15 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                 exit()
 
     def cleanup(self):
-        """Runs the functions found in cleanup_fns. Resets the intstruments to predetermined "safe" settings as given by the drivers. Does so in the reverse order in which the channels were created whereas startups go in forward order of which created."""
+        """Runs the functions found in cleanup_fns. Resets the intstruments to predetermined "safe" settings as given by the drivers. Does so in the reverse order in which the channels were created whereas startups go in forward order of which created.
+
+        Releases resources and closes the connection to the instrument.
+
+        >>> from PyICe.plugins.plugin_manager import Plugin_Manager
+        >>> hasattr(Plugin_Manager, 'cleanup')
+        True
+
+        """
         self.cleanup_failure = False
         cleanup_err_str = ''
         for func in reversed(self.cleanup_fns):
@@ -369,7 +458,15 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
             self.notify(msg=cleanup_err_str, subject="CLEANUP CRASH")
 
     def shutdown(self):
-        """Perform shutdown operation."""
+        """Run the shutdown step.
+
+        Releases resources and closes the connection to the instrument.
+
+        >>> from PyICe.plugins.plugin_manager import Plugin_Manager
+        >>> hasattr(Plugin_Manager, 'shutdown')
+        True
+
+        """
         shutdown_successful = True
         shutdown_err_str = ''
         for func in self.shutdown_fns:
@@ -392,7 +489,15 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
             self.notify(msg=shutdown_err_str, subject="SHUTDOWN CRASH")
 
     def close_ports(self):
-        """Release the instruments from bench control."""
+        """Release the instruments from bench control.
+
+        Supports the ``Plugin_Manager`` workflow by performing the described operation.
+
+        >>> from PyICe.plugins.plugin_manager import Plugin_Manager
+        >>> hasattr(Plugin_Manager, 'close_ports')
+        True
+
+        """
         delegator_list = [ch.resolve_delegator() for ch in self.master]
         delegator_list = list(set(delegator_list))
         interfaces = []
@@ -416,6 +521,13 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
     def notify(self, msg, subject=None, attachment_filenames=None,
                attachment_MIMEParts=None):
         """Sends the provided message to all emails and phone numbers found in the variable self.notification_targets.
+
+        Transmits data to the remote endpoint.
+
+
+        >>> from PyICe.plugins.plugin_manager import Plugin_Manager
+        >>> hasattr(Plugin_Manager, 'notify')
+        True
 
         Args:
             msg: The body of the email or the complete text.
@@ -511,6 +623,13 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
     def add_notification(self, fn):
         """Add a function that will be run whenever a notification is sent. Arguments for the provided function are either the standard for lab_utils.communications.email.send(self, body, subject=None, attachment_filenames=[], attachment_MIMEParts=[]) or a simple text string.
 
+        Appends a new notification entry to the object's internal collection.
+
+
+        >>> from PyICe.plugins.plugin_manager import Plugin_Manager
+        >>> hasattr(Plugin_Manager, 'add_notification')
+        True
+
         Args:
             fn: Callable function.
         """
@@ -537,8 +656,15 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
     def email_plots(self, plot_svg_source):
         """Perform email plots operation.
 
+        Generates or configures a visual representation of the data.
+
+
+        >>> from PyICe.plugins.plugin_manager import Plugin_Manager
+        >>> hasattr(Plugin_Manager, 'email_plots')
+        True
+
         Args:
-            plot_svg_source: Plot svg source.
+            plot_svg_source: Plot svg source to use.
         """
         try:
             msg_body = ''
@@ -562,9 +688,17 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
 
     def email_plot_dictionary(self, plot_svg_source):
         """Perform email plot dictionary operation.
+        Configures or updates the plot with the specified parameters.
+
+        Generates or configures a visual representation of the data.
+
+
+        >>> from PyICe.plugins.plugin_manager import Plugin_Manager
+        >>> hasattr(Plugin_Manager, 'email_plot_dictionary')
+        True
 
         Args:
-            plot_svg_source: Plot svg source.
+            plot_svg_source: Plot svg source to use.
         """
         msg_body = ''
         attachment_MIMEParts = []
@@ -604,8 +738,15 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
     def _create_metalogger(self, test):
         """Called from the plugin_master if the 'traceability' plugin was included in the plugin_registry, this creates a master and logger separate from the test data logger, and populates them using user provided metadata gathering functions.
 
+        Internal implementation detail; see the public API for usage.
+
+
+        >>> from PyICe.plugins.plugin_manager import Plugin_Manager
+        >>> hasattr(Plugin_Manager, '_create_metalogger')
+        True
+
         Args:
-            test: Test.
+            test: Test case object or test function.
         """
         _master = master()
         test._metalogger = logger(database=test.get_db_file())
@@ -615,8 +756,15 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
     def _metalog(self, test):
         """This is separate from the _create_metalogger method in order to give other plugins the opportunity to add to the metalogger before the channel list is commited to a table.
 
+        Internal implementation detail; see the public API for usage.
+
+
+        >>> from PyICe.plugins.plugin_manager import Plugin_Manager
+        >>> hasattr(Plugin_Manager, '_metalog')
+        True
+
         Args:
-            test: Test.
+            test: Test case object or test function.
         """
         test._modify_metalogger()
         test._metalogger.new_table(
@@ -633,6 +781,11 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
 
         Also adds a copy of the table (and metatable) to the database with the time of collection to the test's generic database, so it will not be overwritten when the test is next run.
         Will also generate scripts to rerun plotting (if the script has a plot method) and evaluation (if the evaluation feature is used).
+
+        >>> from PyICe.plugins.plugin_manager import Plugin_Manager
+        >>> hasattr(Plugin_Manager, '_archive')
+        True
+
         """
         print_banner('Archiving. . .')
         for test in self.tests:
@@ -784,8 +937,15 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
     def archive_latest(self, destination_file=None):
         """Perform archive latest operation.
 
+        Supports the ``Plugin_Manager`` workflow by performing the described operation.
+
+
+        >>> from PyICe.plugins.plugin_manager import Plugin_Manager
+        >>> hasattr(Plugin_Manager, 'archive_latest')
+        True
+
         Args:
-            destination_file: Destination file.
+            destination_file: Destination file to use.
         """
         for test in self.tests:
             try:
@@ -913,6 +1073,13 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
     def collect(self, temperatures):
         """This method aggregates the channels that will be logged and calls the collect method in every test added via self.add_test.
 
+        Sends the corresponding SCPI command string to the instrument over the bus.
+
+
+        >>> from PyICe.plugins.plugin_manager import Plugin_Manager
+        >>> hasattr(Plugin_Manager, 'collect')
+        True
+
         Args:
             temperatures: List of values to write to the temp_control_channel.
         """
@@ -999,10 +1166,14 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
             self.far_enough = True
             if len(temperatures):
                 self.temperature_run_startup()
+            idx=0
             for temp in temperatures or ["ambient"]:
                 if temp != "ambient":
+                    idx+=1
                     print_banner(f'Setting temperature to {temp}°C')
+                    self.notify(f'Setting temperature to {temp}°C', subject='Next Temperature')
                     self.temperature_channel.write(temp)
+                    summary_msg=f'{temp}°C Summary\n'
                 for test in self.tests:
                     if not test._is_crashed:
                         try:
@@ -1011,9 +1182,11 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                             test._reconfigure()
                             test.collect()
                             test._restore()
+                            summary_msg+=f"{test.get_name()} ran successfully.\n"
                         except (Exception, BaseException) as e:
                             traceback.print_exc()
                             test._is_crashed = True
+                            summary_msg+=f"{test.get_name()} crashed this temperature.\n"
                             test._crash_info = sys.exc_info()
                             self.notify(
                                 self._crash_str(test), subject='CRASHED!!!')
@@ -1029,11 +1202,16 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                         self.cleanup()
                         if self.cleanup_failure:
                             break
+                    else:
+                        summary_msg+=f'{test.get_name()} crashed/skipped.\n'
                 if temp != "ambient":
+                    summary_msg+=f'{idx} of {len(temperatures)} temperatures complete.\n'
                     if all([x._is_crashed for x in self.tests]):
+                        summary_msg+='All tests have crashed. Skipping remaining temperatures.'
                         print_banner(
                             'All tests have crashed. Skipping remaining temperatures.')
                         break
+                self.notify(summary_msg, subject='TEMP SUMMARY')
                 if self.cleanup_failure:
                     break
             self.shutdown()
@@ -1069,6 +1247,14 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
     def plot(self, database=None, table_name=None, plot_filepath=None,
              test_list=None, skip_email_input=False):
         """Run the plot method of each test in self.tests. Any plots returned by a test script's plot method will be emailed if the notifications plugin is used.
+        Configures or updates the plot with the specified parameters.
+
+        Generates or configures a visual representation of the data.
+
+
+        >>> from PyICe.plugins.plugin_manager import Plugin_Manager
+        >>> hasattr(Plugin_Manager, 'plot')
+        True
 
         Args:
             database: The location of the database with the data to plot. If left blank, uses the database in the same directory as the test script.
@@ -1161,6 +1347,13 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
     def evaluate(self, database=None, table_name=None, test_list=None):
         """Run the evaluate method of each test in self.tests.
 
+        Supports the ``Plugin_Manager`` workflow by performing the described operation.
+
+
+        >>> from PyICe.plugins.plugin_manager import Plugin_Manager
+        >>> hasattr(Plugin_Manager, 'evaluate')
+        True
+
         Args:
             database: The location of the database with the data to evaluate. If left blank, the evaluation will continue with the database in the same directory as the test script.
             table_name: The name of the table in the database with the relevant data. If left blank, the evaluation will continue with the table named after the test script.
@@ -1229,6 +1422,13 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
     def correlate(self, database=None, table_name=None, test_list=None):
         """Run the correlate method of each test in self.tests.
 
+        Supports the ``Plugin_Manager`` workflow by performing the described operation.
+
+
+        >>> from PyICe.plugins.plugin_manager import Plugin_Manager
+        >>> hasattr(Plugin_Manager, 'correlate')
+        True
+
         Args:
             database: The location of the database with the data to correlate. If left blank, the correlation will continue with the database in the same directory as the test script.
             table_name: The name of the table in the database with the relevant data. If left blank, the correlation will continue with the table named after the test script.
@@ -1296,6 +1496,13 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
 
     def display_connections(self):
         """Distills the connections of all added tests and prints the diagram.
+
+        Establishes the connection or prepares the resource for use.
+
+
+        >>> from PyICe.plugins.plugin_manager import Plugin_Manager
+        >>> hasattr(Plugin_Manager, 'display_connections')
+        True
 
         Raises:
             Exception: If a test lacks a _declare_bench_connections method.

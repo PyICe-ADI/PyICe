@@ -1,4 +1,8 @@
-"""Modbus relay instrument driver."""
+"""Modbus relay instrument driver.
+
+>>> from PyICe.lab_instruments.modbus_relay import modbus_relay
+
+"""
 from ..lab_core import *  # noqa: F403
 from .modbus_instrument import modbus_register
 
@@ -7,10 +11,14 @@ class modbus_relay(instrument):
     """Modbus_relay (instrument subclass)."""
     def __init__(self, serial_port, modbus_address):
         """Initialize modbus_relay.
+        Stores configuration in ``_base_name``, ``modbus_relay`` for use by
+        other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 2 instance attributes that configure the object's behavior.
 
         Args:
-            modbus_address: Modbus address.
-            serial_port: Serial port.
+            modbus_address: Modbus address to use.
+            serial_port: Serial port to use.
         """
         import minimalmodbus
         minimalmodbus.BAUDRATE = 9600
@@ -29,12 +37,20 @@ class modbus_relay(instrument):
 
     def add_channel_relay1(self, channel_name='relay1'):
         """Add a channel relay1.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument and maps it to the underlying device register for read/write access.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_register = modbus_register(channel_name,
                                        read_function=lambda: self.modbus_relay.read_register(
@@ -52,12 +68,20 @@ class modbus_relay(instrument):
 
     def add_channel_relay2(self, channel_name='relay2'):
         """Add a channel relay2.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument and maps it to the underlying device register for read/write access.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_register = register(channel_name,
                                 size=1,
@@ -73,10 +97,12 @@ class modbus_relay(instrument):
                 256 if data else 512), functioncode=6)
 
     def flush(self):
-        """Return flush result.
+        """Return the flush.
+
+        Supports the ``modbus_relay`` workflow by performing the described operation.
 
         Returns:
-            Result value.
+            The flush result.
         """
         return self.modbus_relay.serial.read(
             self.modbus_relay.serial.inWaiting())

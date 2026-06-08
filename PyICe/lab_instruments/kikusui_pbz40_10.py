@@ -1,4 +1,8 @@
-"""Kikusui pbz40 10 instrument driver."""
+"""Kikusui pbz40 10 instrument driver.
+
+>>> from PyICe.lab_instruments.kikusui_pbz40_10 import kikusui_pbz40_10
+
+"""
 from PyICe.lab_core import *  # noqa: F403
 from .kikusui_pbz import kikusui_pbz
 
@@ -8,6 +12,9 @@ class kikusui_pbz40_10(kikusui_pbz):
 
     def __init__(self, interface_visa):
         """Initialize kikusui_pbz40_10.
+        Stores configuration in ``_base_name`` for use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
 
         Args:
             interface_visa: VISA interface instance.

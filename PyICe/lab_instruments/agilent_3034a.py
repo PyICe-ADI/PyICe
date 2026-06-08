@@ -1,4 +1,8 @@
-"""Agilent 3034a instrument driver."""
+"""Agilent 3034a instrument driver.
+
+>>> from PyICe.lab_instruments.agilent_3034a import agilent_3034a
+
+"""
 from PyICe.lab_instruments.oscilloscope import oscilloscope
 from PyICe.lab_utils.ranges import decadeListRange
 from PyICe.lab_utils.banners import print_banner
@@ -16,11 +20,15 @@ class agilent_3034a(oscilloscope):
     def __init__(self, interface_visa, force_trigger=False,
                  reset=False, verbose=False, timeout=10):
         """Interface_visa.
+        Initializes 6 instance attributes that configure the object's
+        behavior.
+
+        Calls the parent constructor to inherit base behavior, and initializes 6 instance attributes that configure the object's behavior.
 
         Args:
-            force_trigger: Force trigger.
+            force_trigger: If True, force an immediate trigger.
             interface_visa: VISA interface instance.
-            reset: Reset.
+            reset: If True, perform a reset.
             timeout: Timeout in seconds.
             verbose: If True, print debug output.
         """
@@ -61,32 +69,41 @@ class agilent_3034a(oscilloscope):
         This method was created, in lieu of just a time.sleep(), as a way of possibly adding additional value to some scope operations going forward.
 
         Args:
-            duration: Duration.
+            duration: Duration to use.
         """
         time.sleep(duration)
 
     def scope_stopped(self):
         """From the Keysight Programmer's Guide regarding Status Reporting (Chapter 37) pages 205 and 1114.
+        Sends the ``:OPERegister:CONDition`` SCPI command to the instrument.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Returns:
-            Result value.
+            The scope stopped result.
         """
         return (int(self.get_interface().ask(
             ":OPERegister:CONDition?")) & 1 << 3) != 1 << 3
 
     def disable_all_Ychannels(self):
-        """Disable all Ychannels."""
+        """Disable all Ychannels.
+
+        Deactivates all Ychannels so that subsequent operations skip it.
+        """
         for number in [1, 2, 3, 4]:
             self.channel_display(number=number, value=False)
 
     def enable_channels(self, channels):
         """Enable channels.
+        Enables the channels function.
+
+        Activates channels so that subsequent operations include it.
 
         Args:
             channels: List of channel objects.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if len(channels) > 4:
             raise Exception(
@@ -107,7 +124,7 @@ class agilent_3034a(oscilloscope):
         containing a tuple of all channels required to be turned on. (None,) is acceptable for timebase channels, etc.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         self.get_interface().clear()  # Clear command in \deps\usbtmc\usmtmc.py. Helps if the scope is not responding because it was asked about data that isn't there because it didn't trigger.
         self.reset()
@@ -137,9 +154,11 @@ class agilent_3034a(oscilloscope):
     def setup_channels(self, scope_channels, prefix="scope"):
         """Shortcut to quickly setup scope channels for most common use cases.  If vector data is not desired when using a measurement channels, manual setup of channels is required.
 
+        Supports the ``agilent_3034a`` workflow by performing the described operation.
+
         Args:
             prefix: Name prefix string.
-            scope_channels: Scope channels.
+            scope_channels: Scope channels to use.
         """
         for channel in scope_channels:
             self.add_Ychannel_waveform(
@@ -148,13 +167,16 @@ class agilent_3034a(oscilloscope):
 
     def add_Ychannel_waveform(self, name, number):
         """Add named waveform channels to instrument. num is 1-4.  Add all control and readback channels by calling add_Ycontrol_Yreadback_channels().
+        Creates and registers a new ychannel waveform.
+
+        Appends a new Ychannel waveform entry to the object's internal collection.
 
         Args:
             name: Name identifier.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created Y-axis channel.
         """
         assert number in range(1, 5)
         new_channel = channel(
@@ -192,6 +214,9 @@ class agilent_3034a(oscilloscope):
 
     def add_Xcontrol_Xreadback_channels(self, prefix):
         """Add a Xcontrol Xreadback channels.
+        Creates and registers a new xcontrol xreadback channels.
+
+        Appends a new Xcontrol Xreadback channels entry to the object's internal collection.
 
         Args:
             prefix: Name prefix string.
@@ -207,6 +232,9 @@ class agilent_3034a(oscilloscope):
 
     def add_trigger_channels(self, prefix):
         """Add a trigger channels.
+        Creates and registers a new trigger channels.
+
+        Appends a new trigger channels entry to the object's internal collection.
 
         Args:
             prefix: Name prefix string.
@@ -250,6 +278,9 @@ class agilent_3034a(oscilloscope):
 
     def add_aquire_channels(self, prefix):
         """Add a aquire channels.
+        Creates and registers a new aquire channels.
+
+        Appends a new aquire channels entry to the object's internal collection.
 
         Args:
             prefix: Name prefix string.
@@ -259,12 +290,20 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_timebase(self, name):
         """Add a channel timebase.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def compute_x_points(self):
             """Data conversion:.
@@ -273,10 +312,10 @@ class agilent_3034a(oscilloscope):
             time = [(data point number - xreference) * xincrement] + xorigin
 
             Args:
-                self: Self.
+                self: Self to use.
 
             Returns:
-                Result value.
+                The computed result.
             """
             self._read_scope_time_info()
             xpoints_gen = map(
@@ -327,6 +366,9 @@ class agilent_3034a(oscilloscope):
 
     def add_all_timebase_trigger_aquisition_channels(self, prefix="scope"):
         """Add a all timebase trigger aquisition channels.
+        Creates and registers a new all timebase trigger aquisition channels.
+
+        Appends a new all timebase trigger aquisition channels entry to the object's internal collection.
 
         Args:
             prefix: Name prefix string.
@@ -342,12 +384,17 @@ class agilent_3034a(oscilloscope):
 
     def set_points(self, points):
         """Set the number of points returned by read_channel() or read_channels() points must be in range [100,250,500] or [1000,2000,5000]*10^[0-4] or [8000000].
+        Sends the ``:`` SCPI command to the instrument.
+        Sends the appropriate SCPI command to configure the instrument's
+        points.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
-            points: Points.
+            points: Points to use.
 
         Raises:
-            ValueError: On error condition.
+            ValueError: If the provided value is out of range or invalid.
         """
         allowed_points = [100, 250, 500]
         allowed_points.extend(decadeListRange([1000, 2000, 5000], 4))
@@ -359,20 +406,29 @@ class agilent_3034a(oscilloscope):
 
     def get_channel_enable_status(self, number):
         """Return the channel enable status.
+        Sends the ``:CHANnel`` SCPI command to the instrument.
+        Returns the stored channel enable status from the object's internal
+        state.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The current channel enable status.
         """
         return int(self.get_interface().ask(f":CHANnel{number}:DISPlay?"))
 
     def get_time_base(self):
         """Return the time base.
+        Sends the ``:TIMebase:RANGe`` SCPI command to the instrument.
+        Returns the stored time base from the object's internal state.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Returns:
-            Result value.
+            The current time base.
         """
         return float(self.get_interface().ask(":TIMebase:RANGe?")
                      ) / 10  # Always 10 horizontal divisions
@@ -406,7 +462,10 @@ class agilent_3034a(oscilloscope):
             self.delay()
 
     def trigger_force(self):
-        """Perform trigger force operation."""
+        """Perform trigger force operation.
+
+        Sends the ``:TRIGger:FORCe`` SCPI command to the instrument.
+        """
         self._set_runmode('SINGLE')
         xrange = float(self.get_interface().ask(":TIMebase:RANGe?"))
         self.delay(1.5 * xrange)
@@ -424,10 +483,10 @@ class agilent_3034a(oscilloscope):
         data from a single trigger may be retrieved from each of the four channels in turn by read_channels()
 
         Args:
-            scope_channel_number: Scope channel number.
+            scope_channel_number: Oscilloscope channel number (1-based).
 
         Returns:
-            Result value.
+            The measured value.
         """
         self.get_interface().write(
             f':WAVeform:SOURce CHANnel{scope_channel_number}')
@@ -436,11 +495,13 @@ class agilent_3034a(oscilloscope):
     def read_delegated_channel_list(self, channels):
         """Return read delegated channel list result.
 
+        Reads data from the underlying source and returns it.
+
         Args:
             channels: List of channel objects.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
         """
         if self.force_trigger:
             self.trigger_force()
@@ -478,13 +539,20 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_probe_gain(self, name, number):
         """Add a channel probe gain.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:PROBe`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_probe_gain(number, value):
             self.get_interface().write(f":CHANnel{number}:PROBe {value}")
@@ -500,13 +568,20 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_BWLimit(self, name, number):
         """Add a channel BWLimit.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:BWLimit`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_BWLimit(number, value):
             self.get_interface().write(
@@ -522,12 +597,19 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_HFReject(self, name):
         """Add a channel trigger HFReject.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:TRIGger:HFReject`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_trigger_HFReject(value):
             self.get_interface().write(
@@ -540,13 +622,20 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_invert(self, name, number):
         """Add a channel invert.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:INVert`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_invert(number, value):
             self.get_interface().write(
@@ -562,13 +651,20 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_Yrange(self, name, number):
         """Add a channel Yrange.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:CHANnel`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             name: Name identifier.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_Yrange(number, value):
             self.get_interface().write(f":CHANnel{number}:RANGe {value}")
@@ -581,13 +677,20 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_Yoffset(self, name, number):
         """Add a channel Yoffset.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:CHANnel`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             name: Name identifier.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_Yoffset(number, value):
             self.get_interface().write(f":CHANnel{number}:OFFSet {-value}")
@@ -600,13 +703,20 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_Yrange_readback(self, name, number):
         """Add a channel Yrange readback.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:RANGe`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             name, read_function=lambda: float(
@@ -618,13 +728,20 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_Yoffset_readback(self, name, number):
         """Add a channel Yoffset readback.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:CHANnel`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             name,
@@ -638,13 +755,20 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_impedance(self, name, number):
         """Add a channel impedance.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:IMPedance`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_impedance(number, value):
             if value in [50, "50", 1000000, 1e6, "1000000", "1e6", "1M"]:
@@ -667,13 +791,20 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_units(self, name, number):
         """Add a channel units.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:UNITs`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_units(number, value):
             if value.upper() in ["V", "A", "VOLTS", "AMPS"]:
@@ -696,13 +827,20 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_coupling(self, name, number):
         """Add a channel coupling.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:COUPling`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_coupling(number, value):
             if value.upper() not in ["AC", "DC"]:
@@ -723,12 +861,19 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_Xrange(self, name):
         """Add a channel Xrange.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:TIMebase:RANGe`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             name, write_function=lambda value: self.get_interface().write(
@@ -739,12 +884,19 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_Xposition(self, name):
         """Add a channel Xposition.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:TIMebase:POSition`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(name, write_function=lambda value: self.get_interface(
         ).write(f":TIMebase:POSition {-value}"))
@@ -755,12 +907,19 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_Xreference(self, name):
         """Add a channel Xreference.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:TIMebase:REFerence`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_xreference(value):
             if value.upper() not in ["LEFT", "CENTER",
@@ -787,12 +946,19 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_Xrange_readback(self, name):
         """Add a channel Xrange readback.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:TIMebase:RANGe`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             name, read_function=lambda: float(
@@ -804,12 +970,19 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_Xposition_readback(self, name):
         """Add a channel Xposition readback.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:TIMebase:POSition`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             name,
@@ -823,12 +996,19 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_Xreference_readback(self, name):
         """Add a channel Xreference readback.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:TIMebase:REFerence`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             name, read_function=lambda: self.get_interface().ask(
@@ -839,12 +1019,20 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_runmode(self, name):
         """Add a channel runmode.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(name, write_function=self._set_runmode)
         new_channel.add_preset("RUN", "Free running mode")
@@ -856,12 +1044,19 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_triggerlevel(self, name):
         """Add a channel triggerlevel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:TRIGger:LEVel`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_trigger_level(value):
             self.get_interface().write(f":TRIGger:LEVel {value}")
@@ -874,12 +1069,19 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_triggermode(self, name):
         """Add a channel triggermode.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:TRIGger:SWEep`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_triggermode(value):
             if value.upper() not in ["AUTO", "NORMAL"]:
@@ -897,12 +1099,19 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_triggerslope(self, name):
         """Add a channel triggerslope.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:TRIGger:SLOPe`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_triggerslope(value):
             if value.upper() not in ["NEGATIVE",
@@ -923,12 +1132,19 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_triggersource(self, name):
         """Add a channel triggersource.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:TRIGger:SOURce`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_triggersource(value):
             valid_sources = [
@@ -959,12 +1175,19 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_acquire_type(self, name):
         """Add a channel acquire type.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:ACQuire:TYPE`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_acquiretype(value):
             if value.upper() not in [
@@ -988,12 +1211,19 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_acquire_count(self, name):
         """Add a channel acquire count.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:ACQuire:COUNt`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The count.
         """
         def _set_acquirecount(value):
             if value not in range(2, 65536 + 1):
@@ -1012,12 +1242,20 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_pointcount(self, name):
         """Add a channel pointcount.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The count.
         """
         new_channel = channel(name, write_function=self.set_points)
         self._add_channel(new_channel)
@@ -1026,12 +1264,20 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_pointcount_readback(self, name):
         """Add a channel pointcount readback.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The count.
         """
         new_channel = channel(
             name, read_function=lambda: self.time_info["points"])
@@ -1041,12 +1287,19 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_triggertype(self, name):
         """Add a channel triggertype.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the `` Agilent`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_triggertype(value):
             if value.upper() not in ["EDGE", "GLITCH", "PATTERN", "TV", "DELAY",
@@ -1076,12 +1329,19 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_pattern(self, name):
         """Add a channel trigger pattern.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:TRIGger:PATTern`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_trigger_pattern(value):
             self.get_interface().write(f':TRIGger:PATTern "{value}"')
@@ -1094,12 +1354,20 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_pattern_qualifier(self, name):
         """Add a channel trigger pattern qualifier.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:TRIGger:PATTern:QUALifier`` SCPI command to the
+        instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_trigger_pattern_qualifier(value):
             if value not in ["ENTered", "GREaterthan",
@@ -1124,12 +1392,19 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_pattern_format(self, name):
         """Add a channel trigger pattern format.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:TRIGger:PATTern:FORMat`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            Formatted string representation.
         """
         def _set_trigger_pattern_format(value):
             if value.upper() not in ['ASCII', 'HEX']:
@@ -1146,12 +1421,20 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_pattern_greaterthan(self, name):
         """Add a channel trigger pattern greaterthan.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:TRIGger:PATTern:GREaterthan`` SCPI command to the
+        instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_trigger_pattern_greaterthan(value):
             self.get_interface().write(f":TRIGger:PATTern:GREaterthan {value}")
@@ -1166,12 +1449,20 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_pattern_lessthan(self, name):
         """Add a channel trigger pattern lessthan.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:TRIGger:PATTern:LESSthan`` SCPI command to the
+        instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_trigger_pattern_lessthan(value):
             self.get_interface().write(f":TRIGger:PATTern:LESSthan {value}")
@@ -1186,12 +1477,19 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_pattern_range(self, name):
         """Add a channel trigger pattern range.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:TRIGger:PATTern:RANGe`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_trigger_pattern_range(less_than, greater_than):
             self.get_interface().write(
@@ -1211,12 +1509,20 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_glitch_greaterthan(self, name):
         """Add a channel trigger glitch greaterthan.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:TRIGger:GLITch:GREaterthan`` SCPI command to the
+        instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_trigger_glitch_greaterthan(value):
             self.get_interface().write(f":TRIGger:GLITch:GREaterthan {value}")
@@ -1231,12 +1537,19 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_glitch_lessthan(self, name):
         """Add a channel trigger glitch lessthan.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:TRIGger:GLITch:LESSthan`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_trigger_glitch_lessthan(value):
             self.get_interface().write(f":TRIGger:GLITch:LESSthan {value}")
@@ -1251,12 +1564,19 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_glitch_level(self, name):
         """Add a channel trigger glitch level.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:TRIGger:GLITch:LEVel`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_trigger_glitch_level(value):
             self.get_interface().write(f":TRIGger:GLITch:LEVel {value}")
@@ -1270,12 +1590,19 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_glitch_source(self, name):
         """Add a channel trigger glitch source.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:TRIGger:GLITch:SOURce`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_trigger_glitch_source(value):
             self.get_interface().write(f":TRIGger:GLITch:SOURce {value}")
@@ -1289,12 +1616,19 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_glitch_polarity(self, name):
         """Add a channel trigger glitch polarity.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:TRIGger:GLITch:POLarity`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_trigger_glitch_polarity(value):
             if value.upper() not in ["POSITIVE", "NEGATIVE"]:
@@ -1314,12 +1648,20 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_glitch_qualifier(self, name):
         """Add a channel trigger glitch qualifier.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:TRIGger:GLITch:QUALifier`` SCPI command to the
+        instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_trigger_glitch_qualifier(value):
             if value.upper() not in ["GREATERTHAN", "LESSTHAN", "RANGE"]:
@@ -1340,12 +1682,19 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_glitch_range(self, name):
         """Add a channel trigger glitch range.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:TRIGger:GLITch:RANGe`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_trigger_glitch_range(less_than, greater_than):
             self.get_interface().write(
@@ -1365,12 +1714,19 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_runt_polarity(self, name):
         """Add a channel trigger runt polarity.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:TRIGger:RUNT:POLarity`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_trigger_runt_polarity(value):
             if value.upper() not in ["POSITIVE", "NEGATIVE", "EITHER"]:
@@ -1390,12 +1746,19 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_runt_qualifier(self, name):
         """Add a channel trigger runt qualifier.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:TRIGger:RUNT:QUALifier`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_trigger_runt_qualifier(value):
             if value.upper() not in ["GREATERTHAN", "LESSTHAN", "RANGE"]:
@@ -1415,12 +1778,19 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_runt_source(self, name):
         """Add a channel trigger runt source.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:TRIGger:RUNT:SOURce`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_trigger_runt_source(value):
             self.get_interface().write(f":TRIGger:RUNT:SOURce {value}")
@@ -1434,12 +1804,19 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_runt_time(self, name):
         """Add a channel trigger runt time.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:TRIGger:RUNT:TIME`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_trigger_runt_time(value):
             self.get_interface().write(f":TRIGger:RUNT:TIME {value}")
@@ -1452,12 +1829,19 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_runt_level_high(self, name):
         """Add a channel trigger runt level high.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:TRIGger:LEVel:HIGH`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_trigger_level_high(value):
             source = self.get_interface().ask(":TRIGger:RUNT:SOURce?")
@@ -1471,12 +1855,19 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_runt_level_low(self, name):
         """Add a channel trigger runt level low.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:TRIGger:RUNT:SOURce`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_trigger_level_low(value):
             source = self.get_interface().ask(":TRIGger:RUNT:SOURce?")
@@ -1489,13 +1880,20 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_frequency(self, name, number):
         """Add a channel meas frequency.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:MEASure:FREQuency`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _get_frequency_measurement(number):
             scope_was_not_stopped = not self.scope_stopped()
@@ -1517,13 +1915,20 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_period(self, name, number):
         """Add a channel meas period.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:MEASure:PERiod`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _get_period_measurement():
             scope_was_not_stopped = not self.scope_stopped()
@@ -1551,13 +1956,20 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_stats_current(self, name, number):
         """Add a channel meas stats current.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:MEASure:RESults`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _get_stats_current():
             self.get_interface().write(":MEASure:STATistics CURRent")
@@ -1569,13 +1981,20 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_stats_minimum(self, name, number):
         """Add a channel meas stats minimum.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:MEASure:STATistics`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _get_stats_minimum():
             self.get_interface().write(":MEASure:STATistics MINimum")
@@ -1587,13 +2006,20 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_stats_maximum(self, name, number):
         """Add a channel meas stats maximum.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:MEASure:RESults`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _get_stats_maximum():
             self.get_interface().write(":MEASure:STATistics MAXimum")
@@ -1605,13 +2031,20 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_stats_mean(self, name, number):
         """Add a channel meas stats mean.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:MEASure:STATistics`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _get_stats_mean():
             self.get_interface().write(":MEASure:STATistics MEAN")
@@ -1623,13 +2056,20 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_stats_stdev(self, name, number):
         """Add a channel meas stats stdev.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:MEASure:RESults`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _get_stats_stdev():
             self.get_interface().write(":MEASure:STATistics STDDev")
@@ -1641,13 +2081,20 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_stats_count(self, name, number):
         """Add a channel meas stats count.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:MEASure:STATistics`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The count.
         """
         def _get_stats_count():
             self.get_interface().write(":MEASure:STATistics COUNt")
@@ -1659,13 +2106,21 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_stats_reset(self, name, number):
         """Add a channel meas stats reset.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:MEASure:STATistics:RESet`` SCPI command to the
+        instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _reset_stats(unused):
             self.get_interface().write(":MEASure:STATistics:RESet")
@@ -1676,13 +2131,20 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_dutycycle(self, name, number):
         """Add a channel meas dutycycle.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:MEASure:SOURce`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _get_dutycycle_measurement(number):
             scope_was_not_stopped = not self.scope_stopped()
@@ -1701,13 +2163,20 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_risetime(self, name, number):
         """Add a channel meas risetime.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:MEASure:SOURce`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _get_risetime_measurement(number):
             scope_was_not_stopped = not self.scope_stopped()
@@ -1726,13 +2195,20 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_falltime(self, name, number):
         """Add a channel meas falltime.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:MEASure:SOURce`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _get_falltime_measurement(number):
             scope_was_not_stopped = not self.scope_stopped()
@@ -1751,6 +2227,9 @@ class agilent_3034a(oscilloscope):
 
     def channel_display(self, number, value):
         """Perform channel display operation.
+        Sends the ``:CHANnel`` SCPI command to the instrument.
+
+        Transmits data to the remote endpoint.
 
         Args:
             number: Channel or port number.
@@ -1762,13 +2241,21 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_display(self, name, number):
         """Add a channel display.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             name: Name identifier.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             name, write_function=lambda value: self.channel_display(
@@ -1779,14 +2266,21 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_delay(self, name, first_channel, second_channel):
         """Add a channel meas delay.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:MEASure:DELay`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
-            first_channel: First channel.
+            first_channel: First channel to use.
             name: Name identifier.
-            second_channel: Second channel.
+            second_channel: Second channel to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _get_delay_measurement(first_channel, second_channel):
             self.get_interface().write(
@@ -1809,12 +2303,19 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_delay_spec1(self, name):
         """Add a channel meas delay spec1.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:MEASure:DEFine`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_define_delay(edge_spec1):
             edge_spec = self.get_interface().ask(":MEASure:DEFine?").split(",")
@@ -1828,12 +2329,19 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_delay_spec2(self, name):
         """Add a channel meas delay spec2.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:MEASure:DEFine`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_define_delay(edge_spec2):
             edge_spec = self.get_interface().ask(":MEASure:DEFine?").split(",")
@@ -1847,13 +2355,20 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_define_abs_thresh(self, name, number):
         """Add a channel meas define abs thresh.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:MEASure:DEFine`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_define_absolute_threshold(number, thresh):
             self.get_interface().write(
@@ -1868,13 +2383,20 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_pwidth(self, name, number):
         """Add a channel meas pwidth.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:MEASure:PWIDth`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _get_pwidth_measurement(number):
             scope_was_not_stopped = not self.scope_stopped()
@@ -1893,13 +2415,20 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_nwidth(self, name, number):
         """Add a channel meas nwidth.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:MEASure:SOURce`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _get_nwidth_measurement(number):
             scope_was_not_stopped = not self.scope_stopped()
@@ -1918,13 +2447,20 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_vmax(self, name, number):
         """Add a channel meas vmax.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:MEASure:SOURce`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _get_vmax_measurement(number):
             scope_was_not_stopped = not self.scope_stopped()
@@ -1943,13 +2479,20 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_vaverage(self, name, number):
         """Add a channel meas vaverage.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:MEASure:VAVerage`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             name: Name identifier.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _get_vaverage_measurement(number):
             scope_was_not_stopped = not self.scope_stopped()
@@ -1972,13 +2515,17 @@ class agilent_3034a(oscilloscope):
     def save_to_usb(self, file_name, format):
         # todo (, referenceh5, multichh5, analysiscsv)
         """Perform save to usb operation.
+        Sends the ``:SAVE:SETup:STARt`` SCPI command to the instrument.
+        Saves the to usb to persistent storage.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
-            file_name: File name.
+            file_name: File path string.
             format: Format name string.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         formats = ('setup', 'bmp8', 'bmp24', 'png', 'csv', 'asciixy', 'binary')
         assert format in formats, f'Format {format} not in set {formats}'
@@ -2015,13 +2562,16 @@ class agilent_3034a(oscilloscope):
     @deprecated(version='47', reason="You are using old scope driver methods.  Consider updating to new scope binding.  See https://confluence.analog.com/display/stowe/Preferred+Practices")
     def add_Ychannel(self, name, number):
         """Add named channel to instrument. num is 1-4.
+        Configures and adds a ychannel via instrument commands.
+
+        Appends a new Ychannel entry to the object's internal collection.
 
         Args:
             name: Name identifier.
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created Y-axis channel.
         """
         assert number in range(1, 5)
         self.Ychannels[number] = {}
@@ -2060,14 +2610,20 @@ class agilent_3034a(oscilloscope):
     @deprecated(version='47',
                 reason="You are using old scope driver methods. Consider updating to new scope binding.")
     def purge_all_Xchannels(self):
-        """Perform purge all Xchannels operation."""
+        """Perform purge all Xchannels operation.
+
+        Supports the ``agilent_3034a`` workflow by performing the described operation.
+        """
         for channel in self.Xchannels:
             self.remove_channel(self.Xchannels[channel])
 
     @deprecated(version='47',
                 reason="You are using old scope driver methods. Consider updating to new scope binding.")
     def purge_all_Ychannels(self):
-        """Perform purge all Ychannels operation."""
+        """Perform purge all Ychannels operation.
+
+        Supports the ``agilent_3034a`` workflow by performing the described operation.
+        """
         remove_channels = []
         for channel_number in self.Ychannels:
             for channel_name in self.Ychannels[channel_number]:
@@ -2084,12 +2640,15 @@ class agilent_3034a(oscilloscope):
     @deprecated(version='47', reason="You are using old scope driver methods. Consider updating to new scope binding. See https://confluence.analog.com/display/stowe/Preferred+Practices")
     def add_Xchannels(self, prefix):
         """Add a Xchannels.
+        Creates and registers a new xchannels.
+
+        Appends a new Xchannels entry to the object's internal collection.
 
         Args:
             prefix: Name prefix string.
 
         Returns:
-            Result value.
+            The add Xchannels result.
         """
         self.Xchannels["Xrange"] = self.add_channel_Xrange(
             name=f"{prefix}_Xrange")
@@ -2157,22 +2716,34 @@ class agilent_3034a(oscilloscope):
 
     @deprecated(version='47', reason="You are using old scope driver methods. Consider updating to new scope binding. See https://confluence.analog.com/display/stowe/Preferred+Practices")
     def get_Xchannels(self):
-        """Return the Xchannels.
+        """Return the current xchannels.
+        Returns the stored xchannels value from the object's internal state.
+        Returns the stored xchannels from the object's internal state.
+
+        Returns the stored Xchannels from the object's internal state.
 
         Returns:
-            Result value.
+            The current xchannels.
         """
         return self.Xchannels
 
     @deprecated(version='47', reason="You are using old scope driver methods. Consider updating to new scope binding. See https://confluence.analog.com/display/stowe/Preferred+Practices")
     def add_channel_time(self, name):
         """Add a channel time.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def compute_x_points(self):
             """Data conversion:.
@@ -2181,10 +2752,10 @@ class agilent_3034a(oscilloscope):
             time = [(data point number - xreference) * xincrement] + xorigin
 
             Args:
-                self: Self.
+                self: Self to use.
 
             Returns:
-                Result value.
+                The computed result.
             """
             xpoints = [
                 (x -
@@ -2201,12 +2772,17 @@ class agilent_3034a(oscilloscope):
 
         def get_time_info(self):
             """Return the time info.
+            Returns the stored time info value from the object's internal
+            state.
+            Returns the stored time info from the object's internal state.
+
+            Returns the stored time info from the object's internal state.
 
             Args:
-                self: Self.
+                self: Self to use.
 
             Returns:
-                Result value.
+                The current time info.
             """
             return self.time_info
         time_info = channel(name + "_info",

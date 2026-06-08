@@ -1,4 +1,8 @@
-"""Tektronix mso4104b instrument driver."""
+"""Tektronix mso4104b instrument driver.
+
+>>> from PyICe.lab_instruments.tektronix_mso4104b import tektronix_4104b
+
+"""
 from PyICe.lab_core import *  # noqa: F403
 
 
@@ -7,11 +11,15 @@ class tektronix_4104b(scpi_instrument, delegator):
 
     def __init__(self, interface_visa, force_trigger=False, reset=False):
         """Interface_visa".
+        Stores configuration in ``_base_name``, ``force_trigger``,
+        ``str_encoding`` for use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 3 instance attributes that configure the object's behavior.
 
         Args:
-            force_trigger: Force trigger.
+            force_trigger: If True, force an immediate trigger.
             interface_visa: VISA interface instance.
-            reset: Reset.
+            reset: If True, perform a reset.
         """
         self.str_encoding = 'latin-1'
         self._base_name = 'tektronix_4104B'
@@ -27,13 +35,17 @@ class tektronix_4104b(scpi_instrument, delegator):
 
     def add_Ychannel(self, channel_name, channel_number):
         """Add named vertical channel to instrument.  channel_number is 1-4.
+        Sends the ``:TERmination`` SCPI command to the instrument.
+        Configures and adds a ychannel via instrument commands.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
 
         Returns:
-            Result value.
+            The newly created Y-axis channel.
         """
         assert isinstance(channel_number, int)
         scope_channel = channel(
@@ -50,12 +62,17 @@ class tektronix_4104b(scpi_instrument, delegator):
 
         def get_channel_settings(channel_number):
             """Return the channel settings.
+            Sends the ``:TERmination`` SCPI command to the instrument.
+            Queries the instrument for its current channel settings and
+            returns the parsed response.
+
+            Sends the corresponding SCPI command string to the instrument over the bus.
 
             Args:
                 channel_number: Physical channel number.
 
             Returns:
-                Result value.
+                The current channel settings.
             """
             result = {}
             result['scale'] = float(
@@ -126,6 +143,9 @@ class tektronix_4104b(scpi_instrument, delegator):
 
     def add_Xchannels(self, prefix):
         """Add a Xchannels.
+        Creates and registers a new xchannels.
+
+        Appends a new Xchannels entry to the object's internal collection.
 
         Args:
             prefix: Name prefix string.
@@ -145,12 +165,20 @@ class tektronix_4104b(scpi_instrument, delegator):
 
     def add_channel_time(self, channel_name):
         """Add a channel time.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _compute_x_points(self):
             """Data conversion:.
@@ -159,10 +187,10 @@ class tektronix_4104b(scpi_instrument, delegator):
             time = [(data point number - xreference) * xincrement] + xorigin
 
             Args:
-                self: Self.
+                self: Self to use.
 
             Returns:
-                Result value.
+                The compute x points result.
             """
             xpoints = [
                 (x -
@@ -187,6 +215,11 @@ class tektronix_4104b(scpi_instrument, delegator):
 
     def set_points(self, stop, start=1):
         """No. of acquired points: DATA:STOP value - DATA:STARt value should be less than time_info['points'] or WFMOutpre:NR_PT?
+        Sends the ``DATA:STOP`` SCPI command to the instrument.
+        Sends the appropriate SCPI command to configure the instrument's
+        points.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
             start: Start bit position.
@@ -201,21 +234,30 @@ class tektronix_4104b(scpi_instrument, delegator):
 
     def get_channel_enable_status(self, channel_number):
         """Return the channel enable status.
+        Sends the ``SELect:CH`` SCPI command to the instrument.
+        Returns the stored channel enable status from the object's internal
+        state.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
             channel_number: Physical channel number.
 
         Returns:
-            Result value.
+            The current channel enable status.
         """
         return int(self.get_interface().ask((f"SELect:CH{channel_number}?").encode(
             self.str_encoding)).decode(self.str_encoding))
 
     def get_time_base(self):
         """Return the time base.
+        Sends the ``HORizontal:SCAle`` SCPI command to the instrument.
+        Returns the stored time base from the object's internal state.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Returns:
-            Result value.
+            The current time base.
         """
         return float(self.get_interface().ask(
             "HORizontal:SCAle?").encode(self.str_encoding))
@@ -230,10 +272,10 @@ class tektronix_4104b(scpi_instrument, delegator):
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
-            measurement: Measurement.
+            measurement: Measurement to use.
 
         Returns:
-            Result value.
+            The add measurement channel result.
         """
         new_channel = channel(
             channel_name + f"_Meas_{measurement}",
@@ -243,7 +285,10 @@ class tektronix_4104b(scpi_instrument, delegator):
         return self._add_channel(new_channel)
 
     def trigger_force(self):
-        """Will only complete if TRIGger:STATE? is set to READy, otherwise ignored."""
+        """Will only complete if TRIGger:STATE? is set to READy, otherwise ignored.
+
+        Initiates the force operation on the instrument.
+        """
         self.get_interface().write(("TRIGger FORCe").encode(self.str_encoding))
         self.operation_complete()
 
@@ -284,7 +329,7 @@ class tektronix_4104b(scpi_instrument, delegator):
             channel_number: Physical channel number.
 
         Returns:
-            Result value.
+            The measured value.
         """
         self.get_interface().write(
             (f'DATA:SOUrce CH{channel_number}').encode(
@@ -314,11 +359,13 @@ class tektronix_4104b(scpi_instrument, delegator):
     def read_delegated_channel_list(self, channels):
         """Return read delegated channel list result.
 
+        Reads data from the underlying source and returns it.
+
         Args:
             channels: List of channel objects.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
         """
         if self.force_trigger:
             self.trigger_force()
@@ -331,13 +378,20 @@ class tektronix_4104b(scpi_instrument, delegator):
 
     def add_channel_probe_gain(self, channel_name, channel_number):
         """Add a channel probe gain.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:PRObe:GAIN`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_probe_gain(channel_number, value):
             value = 1 / value
@@ -354,13 +408,20 @@ class tektronix_4104b(scpi_instrument, delegator):
 
     def add_channel_BWLimit(self, channel_name, channel_number):
         """Available bandwidth limits vary by model and are also influenced by probes.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:BANdwidth`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_BWLimit(channel_number, value):
             if value in [
@@ -386,13 +447,20 @@ class tektronix_4104b(scpi_instrument, delegator):
 
     def add_channel_Yrange(self, channel_name, channel_number):
         """Range = Scale x 8?
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:SCAle`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_Yrange(channel_number, value):
             value = value / 8
@@ -409,13 +477,20 @@ class tektronix_4104b(scpi_instrument, delegator):
 
     def add_channel_Yscale(self, channel_name, channel_number):
         """Add a channel Yscale.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:SCAle`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -427,13 +502,20 @@ class tektronix_4104b(scpi_instrument, delegator):
 
     def add_channel_Yoffset(self, channel_name, channel_number):
         """Add a channel Yoffset.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:OFFSet`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -445,13 +527,20 @@ class tektronix_4104b(scpi_instrument, delegator):
 
     def add_channel_Yposition(self, channel_name, channel_number):
         """Add a channel Yposition.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:POSition`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -463,13 +552,20 @@ class tektronix_4104b(scpi_instrument, delegator):
 
     def add_channel_impedance(self, channel_name, channel_number):
         """Add a channel impedance.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:CH`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_impedance(channel_number, value):
             if value in [50, "50", 1000000, 1e6, "1000000", "1e6", "1M"]:
@@ -490,13 +586,20 @@ class tektronix_4104b(scpi_instrument, delegator):
 
     def add_channel_units(self, channel_name, channel_number):
         """Add a channel units.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:YUNits`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_units(channel_number, value):
             if value.upper() in ["V", "A", "VOLTS", "AMPS"]:
@@ -519,13 +622,20 @@ class tektronix_4104b(scpi_instrument, delegator):
 
     def add_channel_coupling(self, channel_name, channel_number):
         """Add a channel coupling.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:COUPling`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_coupling(channel_number, value):
             if value.upper() not in ["AC", "DC", "DCREJect"]:
@@ -546,12 +656,19 @@ class tektronix_4104b(scpi_instrument, delegator):
 
     def add_channel_Xrange(self, channel_name):
         """Xrange = SCALE x 10.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``HORizontal:SCALE`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_Xrange(value):
             value = value / 10
@@ -566,12 +683,19 @@ class tektronix_4104b(scpi_instrument, delegator):
 
     def add_channel_Xscale(self, channel_name):
         """Add a channel Xscale.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``HORizontal:SCALE`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -583,12 +707,19 @@ class tektronix_4104b(scpi_instrument, delegator):
 
     def add_channel_Xposition(self, channel_name):
         """Add a channel Xposition.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``HORizontal:DELay:TIMe`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_Xposition(value):
             self.get_interface().write(
@@ -604,12 +735,19 @@ class tektronix_4104b(scpi_instrument, delegator):
     # TODO - for check on actual scope
     def add_channel_Xreference(self, channel_name):
         """Add a channel Xreference.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``HORizontal:POSition`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_xreference(value):
             self.get_interface().write(
@@ -638,12 +776,19 @@ class tektronix_4104b(scpi_instrument, delegator):
 
     def add_channel_runmode(self, channel_name):  # TODO - for check on actual scope
         """Add a channel runmode.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``ACQuire:STATE`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_runmode(value):
             if value.upper() not in ["RUN", "STOP", "OFF", "ON" "SINGLE"]:
@@ -673,12 +818,19 @@ class tektronix_4104b(scpi_instrument, delegator):
     # TODO Needs operation complete
     def add_channel_triggerlevel(self, channel_name):
         """Add a channel triggerlevel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``TRIGger:A:LEVel:`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_triggerlevel(value):
             trigger_source = self.get_interface().ask(
@@ -694,12 +846,19 @@ class tektronix_4104b(scpi_instrument, delegator):
 
     def add_channel_triggermode(self, channel_name):
         """Add a channel triggermode.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``TRIGger:A:MODe`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_triggermode(value):
             if value.upper() not in ["AUTO", "NORMAL"]:
@@ -719,12 +878,19 @@ class tektronix_4104b(scpi_instrument, delegator):
 
     def add_channel_triggerslope(self, channel_name):
         """Add a channel triggerslope.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the `` Trigger`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_triggerslope(value):
             if value.upper() not in ["NEGATIVE", "POSITIVE", "EITHER"]:
@@ -745,12 +911,19 @@ class tektronix_4104b(scpi_instrument, delegator):
 
     def add_channel_triggersource(self, channel_name):
         """Add a channel triggersource.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``TRIGger:A:EDGE:SOUrce`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_triggersource(value):
             if value.upper() in ["CHANNEL1", "CHANNEL2", "CHANNEL3", "CHANNEL4",
@@ -789,12 +962,19 @@ class tektronix_4104b(scpi_instrument, delegator):
 
     def add_channel_acquire_type(self, channel_name):
         """Add a channel acquire type.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``ACQuire:MODe`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_acquiretype(value):
             if value.upper() in ["NORMAL", "HRESOLUTION"]:
@@ -830,12 +1010,19 @@ class tektronix_4104b(scpi_instrument, delegator):
     # number of acquisitions for averaging
     def add_channel_acquire_count(self, channel_name):
         """Add a channel acquire count.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``ACQuire:NUMAVg`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The count.
         """
         def _set_acquirecount(value):
             if value not in [2, 4, 8, 16, 32, 64, 128, 256, 512]:
@@ -853,12 +1040,20 @@ class tektronix_4104b(scpi_instrument, delegator):
 
     def add_channel_pointcount(self, channel_name):
         """Add a channel pointcount.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The count.
         """
         new_channel = channel(
             channel_name,
@@ -868,13 +1063,17 @@ class tektronix_4104b(scpi_instrument, delegator):
 
     def _read_immediate_measurement(self, channel_number, measurement):
         """Return float value of selected measurement corresponding to the named channel.
+        Internal helper that sends the ``MEASurement:IMMed:SOUrce1`` SCPI
+        command.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
             channel_number: Physical channel number.
-            measurement: Measurement.
+            measurement: Measurement to use.
 
         Returns:
-            Result value.
+            The measured value.
         """
         self.get_interface().write(
             (f"MEASurement:IMMed:SOUrce1 CH{channel_number}; Type {measurement}").encode(
@@ -883,7 +1082,10 @@ class tektronix_4104b(scpi_instrument, delegator):
         return float(self.get_interface().ask("MEASurement:IMMed:Value?"))
 
     def clear_display(self):
-        """Perform clear display operation."""
+        """Perform clear display operation.
+
+        Sends the ``DISplay:PERSistence`` SCPI command to the instrument.
+        """
         self.get_interface().write(("MESSage:STATE 0").encode(self.str_encoding))
         self.get_interface().write(
             ("DISplay:PERSistence CLEAR").encode(
@@ -891,12 +1093,16 @@ class tektronix_4104b(scpi_instrument, delegator):
 
     def fetch_display_screenshot(self, format='png'):
         """Return fetch display screenshot result.
+        Sends the ``SAVe:IMAGE:FILEFORMAT`` SCPI command to the instrument.
+        Sends the ``HARDCopy:INKSaver`` SCPI command to the instrument.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
             format: Format name string.
 
         Returns:
-            Result value.
+            The fetched data.
         """
         format = self._display_screenshot_image_format_mapping[format]  # pylint: disable=E1101; _display_screenshot_image_format_mapping is intended to be defined in a subclass or configured at runtime for instruments supporting multiple screenshot formats - this method is incomplete/WIP
         self.get_interface().write(("HARDCopy:INKSaver").encode(self.str_encoding))
@@ -909,9 +1115,11 @@ class tektronix_4104b(scpi_instrument, delegator):
     def set_channel_label_text(self, channel_number, label_text):
         """Sets channel label.
 
+        Updates the channel label text in the object's internal state.
+
         Args:
             channel_number: Physical channel number.
-            label_text: Label text.
+            label_text: Label text to use.
         """
         self.get_interface().write(
             (f"CH{channel_number}:LABel '{label_text}'").encode(

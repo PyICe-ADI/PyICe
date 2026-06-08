@@ -1,4 +1,8 @@
-"""Saleae instrument driver."""
+"""Saleae instrument driver.
+
+>>> from PyICe.lab_instruments.saleae import saleae
+
+"""
 from ..lab_core import *  # noqa: F403
 import tempfile
 import struct
@@ -13,10 +17,14 @@ class saleae(instrument, delegator):
     """
     def __init__(self, host='localhost', port=10429):
         """Initialize saleae.
+        Stores configuration in ``_channels``, ``_saleae`` for use by other
+        methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 2 instance attributes that configure the object's behavior.
 
         Args:
-            host: Host.
-            port: Port.
+            host: Hostname or IP address string.
+            port: TCP/IP port number.
         """
         import saleae as saleae_lib  # pylint: disable=E0401; saleae is an optional dependency required only when using Saleae Logic hardware
         instrument.__init__(self, f"Saleae Logic @ {host}:{port}")
@@ -32,27 +40,34 @@ class saleae(instrument, delegator):
         because valid sample rates change with ???number of configured channels???, may need to call after adding all channels.
 
         Args:
-            num_samples_per_channel: Num samples per channel.
+            num_samples_per_channel: Num samples per channel to use.
         """
         self._saleae.set_num_samples(num_samples_per_channel)
 
     def get_sample_rates(self):
         # why throw out analog rates Dave?
         """Return the sample rates.
+        Returns the stored sample rates value from the object's internal
+        state.
+        Returns the stored sample rates from the object's internal state.
+
+        Returns the stored sample rates from the object's internal state.
 
         Returns:
-            Result value.
+            The current sample rates.
         """
         return [i[1] for i in self._saleae.get_all_sample_rates()]
 
     def set_sample_rates(self, sample_rates=None):
         """Set the sample rates.
 
+        Issues a SCPI query to the instrument and parses the response.
+
         Args:
-            sample_rates: Sample rates.
+            sample_rates: Sample rates to use.
 
         Returns:
-            Result value.
+            The set sample rates result.
 
         Raises:
             ValueError: If the requested sample rate is not available.
@@ -79,10 +94,10 @@ class saleae(instrument, delegator):
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
-            scaling: Scaling.
+            scaling: Scale factor or scaling mode.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         assert isinstance(channel_number, int)
         assert channel_number < 16
@@ -107,10 +122,10 @@ class saleae(instrument, delegator):
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
-            scaling: Scaling.
+            scaling: Scale factor or scaling mode.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         assert isinstance(channel_number, int)
         assert channel_number < 16
@@ -133,16 +148,18 @@ class saleae(instrument, delegator):
     def _read_from_file(self, file, bytes, timeout=10):
         """Intermittently, data is slow to flush to disk...
 
+        Internal implementation detail; see the public API for usage.
+
         Args:
-            bytes: Bytes.
-            file: File.
+            bytes: Bytes to use.
+            file: File to use.
             timeout: Timeout in seconds.
 
         Returns:
-            Result value.
+            The measured value.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         start_time = time.time()
         str = file.read(bytes)
@@ -155,14 +172,16 @@ class saleae(instrument, delegator):
     def read_delegated_channel_list(self, channels):
         """Private.
 
+        Reads data from the underlying source and returns it.
+
         Args:
             channels: List of channel objects.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         results_dict = results_ord_dict()
         temp_dir = tempfile.mkdtemp(prefix='saleae_tmp')

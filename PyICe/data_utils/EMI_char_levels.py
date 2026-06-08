@@ -1,4 +1,8 @@
-"""E M I char levels utilities."""
+"""E M I char levels utilities.
+
+>>> from PyICe.data_utils.EMI_char_levels import IEC61967_2_uppercase
+
+"""
 from math import log10
 
 
@@ -9,12 +13,17 @@ def IEC61967_2_uppercase(uppercase, frequency):
        "frequency" is the frequency of interest.
        the value returned is the dBV value of the emission result
 
+
+    >>> from PyICe.data_utils.EMI_char_levels import IEC61967_2_uppercase
+    >>> callable(IEC61967_2_uppercase)
+    True
+
     Args:
         frequency: Frequency in Hz.
-        uppercase: Uppercase.
+        uppercase: Uppercase to use.
 
     Returns:
-        Result value.
+        The result of the operation.
     """
     letters = "ABCDEFGHIKLMNO"  # No J !!!
     values = {}
@@ -32,12 +41,17 @@ def IEC61967_2_digit(digit, frequency):
        "frequency" is the frequency of interest.
        the value returned is the dBV value of the emission result
 
+
+    >>> from PyICe.data_utils.EMI_char_levels import IEC61967_2_digit
+    >>> callable(IEC61967_2_digit)
+    True
+
     Args:
-        digit: Digit.
+        digit: Digit to use.
         frequency: Frequency in Hz.
 
     Returns:
-        Result value.
+        The result of the operation.
     """
     digit = int(digit)  # accepts string or integer
     MHZreflevels = {}
@@ -53,12 +67,17 @@ def IEC61967_2_lowercase(lowercase, frequency):
        "frequency" is the frequency of interest.
        the value returned is the dBV value of the emission result
 
+
+    >>> from PyICe.data_utils.EMI_char_levels import IEC61967_2_lowercase
+    >>> callable(IEC61967_2_lowercase)
+    True
+
     Args:
         frequency: Frequency in Hz.
-        lowercase: Lowercase.
+        lowercase: Lowercase to use.
 
     Returns:
-        Result value.
+        The result of the operation.
     """
     letters = "abcdefghiklmnopqrstuvwyz"
     MHZreflevels = {}

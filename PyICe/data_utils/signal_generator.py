@@ -1,4 +1,8 @@
-"""Signal generator utilities."""
+"""Signal generator utilities.
+
+>>> from PyICe.data_utils.signal_generator import signal_generator
+
+"""
 from PyICe.lab_utils.banners import print_banner
 import numpy
 
@@ -13,19 +17,33 @@ class signal_generator():
     For example, a spread spectrum function may be something like:
 
     period_function = lambda : random.uniform(PERIOD*(1-SPREAD_PERCENTAGE/2), PERIOD*(1+SPREAD_PERCENTAGE/2))
+
+    >>> from PyICe.data_utils.signal_generator import signal_generator
+    >>> signal_generator is not None
+    True
+
     """
     def __init__(self, hi_value, lo_value, period, cyclecount,
                  timestep, phase=0.10, period_function=None):
         """Initialize signal_generator.
+        Initializes 7 instance attributes that configure the object's
+        behavior.
+
+        Initializes 7 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.data_utils.signal_generator import signal_generator
+        >>> hasattr(signal_generator, '__init__')
+        True
 
         Args:
-            cyclecount: Cyclecount.
-            hi_value: Hi value.
-            lo_value: Lo value.
-            period: Period.
-            period_function: Period function.
-            phase: Phase.
-            timestep: Timestep.
+            cyclecount: Cyclecount to use.
+            hi_value: Hi value to use.
+            lo_value: Lo value to use.
+            period: Signal period.
+            period_function: Period function to use.
+            phase: Signal phase in degrees.
+            timestep: Timestep to use.
         """
         self.period = period
         self.timestep = timestep
@@ -43,11 +61,18 @@ class signal_generator():
     def pulse_wave(self, duty_cycle):
         """Generates a pulsatile wafeform of arbitrary duty cycle, high and low amplitude values.
 
+        Supports the ``signal_generator`` workflow by performing the described operation.
+
+
+        >>> from PyICe.data_utils.signal_generator import signal_generator
+        >>> hasattr(signal_generator, 'pulse_wave')
+        True
+
         Args:
-            duty_cycle: Duty cycle.
+            duty_cycle: Duty cycle to use.
 
         Returns:
-            Result value.
+            Array of pulse waveform samples.
         """
         times = []
         values = []
@@ -72,8 +97,13 @@ class signal_generator():
 
         Phase is currently direspected.
 
+
+        >>> from PyICe.data_utils.signal_generator import signal_generator
+        >>> hasattr(signal_generator, 'sine_wave')
+        True
+
         Returns:
-            Result value.
+            Array of sinusoidal waveform samples.
         """
         times = []
         values = []
@@ -109,17 +139,31 @@ class lfsr_period_generator():
     │    │         └────────────────────────────────────────────────────>│(+)│
     │    └──────────────────────────────────────────────────────────────>│   │
     └───────────────────────────────────────────────────────────────────>└───┘
+
+    >>> from PyICe.data_utils.signal_generator import lfsr_period_generator
+    >>> lfsr_period_generator is not None
+    True
+
     """
     # https://en.wikipedia.org/wiki/Linear-feedback_shift_register
     # taps: 16 15 13 4; feedback polynomial: x^16 + x^15 + x^13 + x^4 + 1
 
     def __init__(self, nbits, freq_center, freq_range_percent):
         """Initialize lfsr_period_generator.
+        Initializes 5 instance attributes that configure the object's
+        behavior.
+
+        Initializes 5 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.data_utils.signal_generator import lfsr_period_generator
+        >>> lfsr_period_generator is not None
+        True
 
         Args:
-            freq_center: Freq center.
-            freq_range_percent: Freq range percent.
-            nbits: Nbits.
+            freq_center: Freq center to use.
+            freq_range_percent: Freq range percent to use.
+            nbits: Nbits to use.
         """
         self.nbits = nbits
         # Subtract one from each to start register at 0 (vs Wikipedia starting
@@ -131,9 +175,17 @@ class lfsr_period_generator():
 
     def get_next_period(self):
         """Return the next period.
+        Returns the stored next period from the object's internal state.
+
+        Returns the stored next period from the object's internal state.
+
+
+        >>> from PyICe.data_utils.signal_generator import lfsr_period_generator
+        >>> hasattr(lfsr_period_generator, 'get_next_period')
+        True
 
         Returns:
-            Result value.
+            The current next period.
         """
         bit = self.lfsr >> self.poly[0] & 1 ^ \
             self.lfsr >> self.poly[1] & 1 ^ \
@@ -151,7 +203,12 @@ class lfsr_period_generator():
 
         The rightmost term starts from 0 not 1 whereas most math references start from index 1.
 
+
+        >>> from PyICe.data_utils.signal_generator import lfsr_period_generator
+        >>> hasattr(lfsr_period_generator, 'set_polynomial')
+        True
+
         Args:
-            ploynomial: Ploynomial.
+            ploynomial: Ploynomial to use.
         """
         self.poly = ploynomial

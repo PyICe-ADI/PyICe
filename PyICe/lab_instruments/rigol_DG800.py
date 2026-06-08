@@ -1,4 +1,8 @@
-"""Rigol  D G800 instrument driver."""
+"""Rigol  D G800 instrument driver.
+
+>>> from PyICe.lab_instruments.rigol_DG800 import rigol_DG800
+
+"""
 from ..lab_core import *  # noqa: F403
 
 
@@ -12,9 +16,13 @@ class rigol_DG800(scpi_instrument):
     """
     def __init__(self, instrument_visa):
         """Instrument_visa.
+        Stores configuration in ``_base_name``, ``instrument`` for use by
+        other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 2 instance attributes that configure the object's behavior.
 
         Args:
-            instrument_visa: Instrument visa.
+            instrument_visa: Instrument visa to use.
         """
         self._base_name = 'Rigol_DG800'
         scpi_instrument.__init__(self, f"DG800 @ {instrument_visa}")
@@ -25,15 +33,23 @@ class rigol_DG800(scpi_instrument):
     def add_channel(self, channel_name, channel_number,
                     function="PULSe", add_extended_channels=True):
         """Add a channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             add_extended_channels: If True, add sense and mode channels.
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
-            function: Function.
+            function: Callable to execute.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         if function == "PULSe":
             self._config_pulse_func(channel_number, function)
@@ -63,15 +79,18 @@ class rigol_DG800(scpi_instrument):
     def _config_pulse_func(self, channel_number, function, high_voltage=3.3,
                            low_voltage=0, period=500e-6, pulse_width=50e-6, cycle_count=1):
         """Set instrument output function to pulse generation.
+        Internal helper that sends the ``:BURSt:STATe`` SCPI command.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
             channel_number: Physical channel number.
-            cycle_count: Cycle count.
-            function: Function.
-            high_voltage: High voltage.
-            low_voltage: Low voltage.
-            period: Period.
-            pulse_width: Pulse width.
+            cycle_count: Cycle count to use.
+            function: Callable to execute.
+            high_voltage: High voltage to use.
+            low_voltage: Low voltage to use.
+            period: Signal period.
+            pulse_width: Pulse width to use.
         """
         self.instrument.write(
             f"SOURce{channel_number}:FUNCtion:SHAPe {function}")
@@ -101,38 +120,64 @@ class rigol_DG800(scpi_instrument):
         # breakpoint()
 
     def config_sinusoid_func(self):
-        """Perform config sinusoid func operation."""
+        """Perform config sinusoid func operation.
+
+        Applies the specified configuration to the object or hardware.
+        """
         pass
 
     def config_square_func(self):
-        """Perform config square func operation."""
+        """Perform config square func operation.
+
+        Applies the specified configuration to the object or hardware.
+        """
         pass
 
     def config_ramp_func(self):
-        """Perform config ramp func operation."""
+        """Perform config ramp func operation.
+
+        Applies the specified configuration to the object or hardware.
+        """
         pass
 
     def config_noise_func(self):
-        """Perform config noise func operation."""
+        """Perform config noise func operation.
+
+        Applies the specified configuration to the object or hardware.
+        """
         pass
 
     def config_dc_func(self):
-        """Perform config dc func operation."""
+        """Perform config dc func operation.
+
+        Applies the specified configuration to the object or hardware.
+        """
         pass
 
     def config_user_func(self):
-        """Perform config user func operation."""
+        """Perform config user func operation.
+
+        Applies the specified configuration to the object or hardware.
+        """
         pass
 
     def add_channel_enable(self, channel_name, channel_number):
         """Add a channel enable.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -145,13 +190,21 @@ class rigol_DG800(scpi_instrument):
 
     def add_channel_low_voltage(self, channel_name, channel_number):
         """Add a channel low voltage.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -163,13 +216,21 @@ class rigol_DG800(scpi_instrument):
 
     def add_channel_high_voltage(self, channel_name, channel_number):
         """Add a channel high voltage.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -181,13 +242,21 @@ class rigol_DG800(scpi_instrument):
 
     def add_channel_pulse_width(self, channel_name, channel_number):
         """Add a channel pulse width.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -200,13 +269,21 @@ class rigol_DG800(scpi_instrument):
 
     def add_channel_pulse_period(self, channel_name, channel_number):
         """Add a channel pulse period.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -218,13 +295,21 @@ class rigol_DG800(scpi_instrument):
 
     def add_channel_rise_time(self, channel_name, channel_number):
         """Add a channel rise time.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -237,13 +322,21 @@ class rigol_DG800(scpi_instrument):
 
     def add_channel_fall_time(self, channel_name, channel_number):
         """Add a channel fall time.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -256,13 +349,21 @@ class rigol_DG800(scpi_instrument):
 
     def add_channel_trigger(self, channel_name, channel_number):
         """Add a channel trigger.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         self.trigger_channel = channel(
             channel_name, write_function=lambda value: self._send_trigger(
@@ -273,13 +374,21 @@ class rigol_DG800(scpi_instrument):
 
     def add_channel_cycle_count(self, channel_name, channel_number):
         """Add a channel cycle count.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
 
         Returns:
-            Result value.
+            The count.
         """
         new_channel = channel(
             channel_name,
