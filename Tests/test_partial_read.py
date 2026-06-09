@@ -1,7 +1,7 @@
 """Tests for PartialReadException and per-delegator read isolation."""
 import pytest
 from PyICe.lab_core import (ChannelReadException, PartialReadException,
-                            channel_group, delegator)
+                            delegator)
 
 
 class TestChannelReadException:
