@@ -1973,6 +1973,11 @@ class ChannelReadException(ChannelException):
     PyICe.lab_core.ChannelReadException: read failed
     """
 
+    def __init__(self, message, original_exception=None, original_traceback=None):
+        super().__init__(message)
+        self.original_exception = original_exception
+        self.original_traceback = original_traceback
+
     def __eq__(self, other):
         """Check equality.
         Enables equality comparison with ``==``.
@@ -2015,6 +2020,31 @@ class ChannelReadException(ChannelException):
             True if the comparison holds, False otherwise.
         """
         return not self.__eq__(other)
+
+
+class PartialReadException(Exception):
+    """Raised when some channels failed to read but others succeeded.
+
+    Carries partial results so callers (e.g. the GUI) can recover good data
+    while still propagating a failure to scripted sessions.
+
+    >>> from PyICe.lab_core import PartialReadException, ChannelReadException
+    >>> cre = ChannelReadException('READ_ERROR', original_exception=IOError("timeout"))
+    >>> exc = PartialReadException({'ch': cre}, {'ch': cre})
+    >>> 'ch' in exc.failures
+    True
+    """
+
+    def __init__(self, results, failures):
+        self.results = results
+        self.failures = failures
+        causes = set()
+        for cre in failures.values():
+            if cre.original_exception:
+                causes.add(f"{type(cre.original_exception).__name__}: {cre.original_exception}")
+        msg = (f"{len(failures)} channel(s) failed to read: "
+               + "; ".join(causes) if causes else f"{len(failures)} channel(s) failed to read")
+        super().__init__(msg)
 
 
 class RemoteChannelGroupException(ChannelException):
@@ -4017,6 +4047,10 @@ class channel_group(object):
                     self._self_delegation_channels))
         self._partial_delegation_results = results_ord_dict()
         self._self_delegation_channels = results_ord_dict()
+        failures = {name: val for name, val in results.items()
+                    if isinstance(val, ChannelReadException)}
+        if failures:
+            raise PartialReadException(results, failures)
         return results
 
     def _read_channels_non_threaded(self, channel_list):
@@ -4034,8 +4068,15 @@ class channel_group(object):
             for channel in channel_list:
                 if delegator == channel.resolve_delegator():
                     channel_delegation_list.append(channel)
-            results.update(
-                delegator._read_delegated_channel_list(channel_delegation_list))
+            try:
+                results.update(
+                    delegator._read_delegated_channel_list(channel_delegation_list))
+            except Exception as e:
+                tb = traceback.format_exc()
+                debug_logging.error(f"Delegator read failed: {e}\n{tb}")
+                for channel in channel_delegation_list:
+                    results[channel.get_name()] = ChannelReadException(
+                        'READ_ERROR', original_exception=e, original_traceback=tb)
         return results
 
     def _read_channels_threaded(self, channel_list):
