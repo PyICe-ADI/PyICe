@@ -1292,6 +1292,7 @@ class Page():
         self.plot_list = []
         self.page_type = None
         self.next_position = 0
+        self._svg_comments = []
         matplotlib.rcParams['axes.linewidth'] = 0.6
         matplotlib.rcParams['font.family'] = 'Arial'  # 'Linear Helv Cond'
         # 'Linear Helv Cond'
@@ -1327,6 +1328,14 @@ class Page():
             return str(int(x))
         else:
             return str(x)
+
+    def add_comment(self, text):
+        """Add an XML comment to be embedded in the SVG output.
+
+        Args:
+            text: String content to include in an XML comment.
+        """
+        self._svg_comments.append(str(text).replace("--", "‐‐"))
 
     def add_plot(self, plot,
                  position=None,     # This is if there's just one plot.
@@ -2017,6 +2026,10 @@ class Page():
                                                                       "font-size:9.5px;font-weight:bold").replace("font-size:8.14285714286px;font-style:bold",
                                                                                                                   "font-size:8.14285714286px;font-weight:bold").replace("font-size:9.5px;font-style:bold",
                                                                                                                                                                         "font-size:9.5px;font-weight:bold").encode("utf-8")
+        if self._svg_comments:
+            comment_block = b"\n".join(
+                b"<!-- " + c.encode("utf-8") + b" -->" for c in self._svg_comments)
+            output = output.replace(b"<svg ", comment_block + b"\n<svg ", 1)
         if file_basename is not None:
             filepath = './plots/' if filepath is None else os.path.join(
                 filepath, 'plots')
