@@ -1,7 +1,7 @@
 """Tests for PartialReadException and per-delegator read isolation."""
 import pytest
-from unittest.mock import patch, MagicMock
-from PyICe.lab_core import (master, ChannelReadException, PartialReadException,
+from unittest.mock import MagicMock
+from PyICe.lab_core import (ChannelReadException, PartialReadException,
                             results_ord_dict, channel_group, delegator)
 
 
