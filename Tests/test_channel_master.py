@@ -342,6 +342,7 @@ class TestChannelMasterThreading:
         Args:
             master_instance: Master instance.
         """
+        from PyICe.lab_core import PartialReadException, ChannelReadException
         m = master_instance
 
         def bad_read():
@@ -353,8 +354,14 @@ class TestChannelMasterThreading:
             raise ValueError("simulated failure")
 
         m.add_channel_virtual('bad', read_function=bad_read)
-        with pytest.raises(ValueError, match="simulated failure"):
+        with pytest.raises(PartialReadException) as exc_info:
             m.read_all_channels()
+        exc = exc_info.value
+        assert 'bad' in exc.failures
+        assert isinstance(exc.failures['bad'], ChannelReadException)
+        assert isinstance(exc.failures['bad'].original_exception, ValueError)
+        assert "simulated failure" in str(exc.failures['bad'].original_exception)
+        assert exc.failures['bad'].original_traceback is not None
 
 
 class TestMaster:
