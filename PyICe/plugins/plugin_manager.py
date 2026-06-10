@@ -25,7 +25,7 @@ from PyICe.lab_utils.timed_response import timed_input
 from PyICe.lab_utils.communications import email, sms
 from PyICe.lab_utils.sqlite_data import sqlite_data
 from PyICe.lab_utils.banners import print_banner
-from PyICe.lab_core import logger, master
+from PyICe.lab_core import logger, master, PartialReadException, ChannelReadException
 from PyICe.plugins import test_archive
 from email.mime.image import MIMEImage
 from PyICe import LTC_plot
@@ -833,13 +833,28 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                     crash_log['last_logged_row'] = f'ERROR: {row_exc}'
             # Live re-read of every channel — represents current instrument state but may
             # block or fail if a device is wedged. Errors are recorded per-channel.
+            # If the crash was caused by a PartialReadException, reuse its successful
+            # results and only re-read the channels that failed.
             live_readings = {}
             if hasattr(test, '_logger'):
+                partial_results = None
+                if isinstance(value, PartialReadException):
+                    partial_results = value.results
                 for channel in test._logger.get_all_channel_names():
-                    try:
-                        live_readings[channel] = test._logger.read(channel)
-                    except Exception as read_exc:
-                        live_readings[channel] = f'READ ERROR: {read_exc}'
+                    if partial_results is not None and channel in partial_results:
+                        ch_val = partial_results[channel]
+                        if isinstance(ch_val, ChannelReadException):
+                            try:
+                                live_readings[channel] = test._logger.read(channel)
+                            except Exception as read_exc:
+                                live_readings[channel] = f'READ ERROR: {read_exc}'
+                        else:
+                            live_readings[channel] = ch_val
+                    else:
+                        try:
+                            live_readings[channel] = test._logger.read(channel)
+                        except Exception as read_exc:
+                            live_readings[channel] = f'READ ERROR: {read_exc}'
             crash_log['live_channel_readings'] = live_readings
             test._crash_logs[file_name] = crash_log
             try:

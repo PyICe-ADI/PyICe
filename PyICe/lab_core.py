@@ -6749,7 +6749,14 @@ class logger(master):
                 scan_list.remove_channel(channel)
         # remove the excluded items from the scan list
         scan_list.remove_channel_list(exclusions)
-        channel_data = self.master.read_channel_list(scan_list)
+        try:
+            channel_data = self.master.read_channel_list(scan_list)
+        except PartialReadException as e:
+            e.results['rowid'] = None
+            if 'datetime' not in e.results:
+                e.results['datetime'] = datetime.datetime.now(
+                    datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+            raise
         # add additional database columns
         channel_data['rowid'] = None
         if 'datetime' not in channel_data:
@@ -6781,7 +6788,12 @@ class logger(master):
         if exclusions is None:
             exclusions = []
         self._backend.check_exception()
-        data = self._fetch_channel_data(exclusions)
+        try:
+            data = self._fetch_channel_data(exclusions)
+        except PartialReadException as e:
+            self._backend.store(e.results)
+            self._previously_logged_data = e.results
+            raise
         self._backend.store(data)
         self._previously_logged_data = data
         for (key, value) in data.items():
@@ -6867,7 +6879,12 @@ class logger(master):
         if compare_exclusions is None:
             compare_exclusions = []
         self._backend.check_exception()
-        data = self._fetch_channel_data(log_exclusions)
+        try:
+            data = self._fetch_channel_data(log_exclusions)
+        except PartialReadException as e:
+            self._backend.store(e.results)
+            self._previously_logged_data = e.results
+            raise
         if self.check_data_changed(data, compare_exclusions):
             self._backend.store(data)
             self._previously_logged_data = data
