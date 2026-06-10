@@ -13,6 +13,17 @@ import collections
 from .time_zones import UTC
 from .str2num import str2num
 
+ChannelFailure = collections.namedtuple('ChannelFailure', ['exception_type', 'message'])
+"""Structured representation of a channel read failure deserialized from the database.
+
+>>> from PyICe.lab_utils.sqlite_data import ChannelFailure
+>>> cf = ChannelFailure(exception_type='RuntimeError', message='bus timeout')
+>>> cf.exception_type
+'RuntimeError'
+>>> cf.message
+'bus timeout'
+"""
+
 
 class sqlite_data(
         collections.abc.Sequence):  # collections.Iterable to disable slicing?
@@ -154,6 +165,8 @@ class sqlite_data(
         {'a': 1}
         >>> sqlite_data.convert_vector(b"(4, 5)")
         (4, 5)
+        >>> sqlite_data.convert_vector(b"READ_ERROR:RuntimeError:bus timeout")
+        ChannelFailure(exception_type='RuntimeError', message='bus timeout')
 
         Args:
             col_data_bytes: Raw bytes read from a NUMERIC, PyICeDict,
@@ -165,7 +178,12 @@ class sqlite_data(
             numeric conversion fails.
         """
         col_data_str = col_data_bytes.decode('utf-8')
-        if re.match(r'^\[.*\]$', col_data_str):
+        if col_data_str.startswith('READ_ERROR:'):
+            parts = col_data_str.split(':', 2)
+            exc_type = parts[1] if len(parts) > 1 else 'Unknown'
+            exc_msg = parts[2] if len(parts) > 2 else ''
+            return ChannelFailure(exception_type=exc_type, message=exc_msg)
+        elif re.match(r'^\[.*\]$', col_data_str):
             return ast.literal_eval(col_data_str)  # This is slow!
         elif re.match(r'^\{.*\}$', col_data_str):
             return ast.literal_eval(col_data_str)

@@ -1971,6 +1971,17 @@ class ChannelReadException(ChannelException):
     Traceback (most recent call last):
         ...
     PyICe.lab_core.ChannelReadException: read failed
+    >>> cre = ChannelReadException('TIMEOUT', original_exception=IOError("bus hung"))
+    >>> cre.original_exception
+    OSError('bus hung')
+    >>> cre.original_traceback is None
+    True
+    >>> str(cre)
+    'TIMEOUT'
+    >>> ChannelReadException('A') == ChannelReadException('A')
+    True
+    >>> ChannelReadException('A') == ChannelReadException('B')
+    False
     """
 
     def __init__(self, message, original_exception=None, original_traceback=None):
@@ -2030,8 +2041,14 @@ class PartialReadException(Exception):
 
     >>> from PyICe.lab_core import PartialReadException, ChannelReadException
     >>> cre = ChannelReadException('READ_ERROR', original_exception=IOError("timeout"))
-    >>> exc = PartialReadException({'ch': cre}, {'ch': cre})
+    >>> exc = PartialReadException({'ok': 3.14, 'ch': cre}, {'ch': cre})
+    >>> exc.results['ok']
+    3.14
     >>> 'ch' in exc.failures
+    True
+    >>> 'ok' not in exc.failures
+    True
+    >>> 'IOError' in str(exc) or 'OSError' in str(exc)
     True
     """
 
@@ -7554,7 +7571,9 @@ class logger_backend(object):
             bytes_coldata = column_data.tobytes()
             return dtype_header + bytes_coldata
         elif isinstance(column_data, ChannelReadException):
-            return None
+            exc_type = type(column_data.original_exception).__name__ if column_data.original_exception else 'Unknown'
+            exc_msg = str(column_data.original_exception) if column_data.original_exception else str(column_data)
+            return f'READ_ERROR:{exc_type}:{exc_msg}'
         elif isinstance(column_data, channel):
             return str(column_data)
         return column_data

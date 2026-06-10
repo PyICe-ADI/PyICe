@@ -2,7 +2,7 @@
 import os
 import sqlite3
 import pytest
-from PyICe.lab_core import logger, master
+from PyICe.lab_core import logger, master, PartialReadException, ChannelReadException
 
 
 @pytest.fixture
@@ -314,3 +314,111 @@ class TestLoggerDataChannels:
         conn.close()
         assert count == 10
         lg.stop()
+
+@pytest.mark.database
+class TestLoggerPartialRead:
+    """Tests that logger stores partial results before re-raising PartialReadException."""
+
+    @pytest.fixture
+    def partial_logger(self, tmp_path):
+        """Logger with one good and one failing channel.
+
+        Args:
+            tmp_path: Tmp path.
+
+        Yields:
+            Next value.
+        """
+        m = master()
+        m.add_channel_dummy('good_ch').write(42.0)
+        m.add_channel_virtual('bad_ch',
+                              read_function=lambda: (_ for _ in ()).throw(
+                                  RuntimeError("comm failure")))
+        db_path = str(tmp_path / "partial.sqlite")
+        lg = logger(m, database=db_path, use_threads=False)
+        lg.new_table('test_partial', replace_table=True)
+        yield lg, db_path, m
+        lg.stop()
+        m.stop_threads()
+
+    def test_log_stores_partial_row_before_raising(self, partial_logger):
+        """logger.log() commits partial results to DB then raises PartialReadException."""
+        lg, db_path, m = partial_logger
+        with pytest.raises(PartialReadException):
+            lg.log()
+        conn = sqlite3.connect(db_path)
+        row = conn.execute("SELECT good_ch, bad_ch FROM test_partial").fetchone()
+        conn.close()
+        assert row is not None
+        assert row[0] == 42.0
+        assert row[1].startswith('READ_ERROR:RuntimeError:comm failure')
+
+    def test_log_partial_row_has_datetime(self, partial_logger):
+        """Partial row includes datetime metadata column."""
+        lg, db_path, m = partial_logger
+        with pytest.raises(PartialReadException):
+            lg.log()
+        conn = sqlite3.connect(db_path)
+        row = conn.execute("SELECT datetime FROM test_partial").fetchone()
+        conn.close()
+        assert row[0] is not None
+        assert 'T' in row[0]
+
+    def test_log_updates_previously_logged_data(self, partial_logger):
+        """_previously_logged_data is set even on partial failure."""
+        lg, db_path, m = partial_logger
+        with pytest.raises(PartialReadException):
+            lg.log()
+        assert lg._previously_logged_data is not None
+        assert lg._previously_logged_data['good_ch'] == 42.0
+        assert isinstance(lg._previously_logged_data['bad_ch'], ChannelReadException)
+
+    def test_log_if_changed_stores_partial_row(self, partial_logger):
+        """log_if_changed() also commits partial results before raising."""
+        lg, db_path, m = partial_logger
+        with pytest.raises(PartialReadException):
+            lg.log_if_changed()
+        conn = sqlite3.connect(db_path)
+        row = conn.execute("SELECT good_ch, bad_ch FROM test_partial").fetchone()
+        conn.close()
+        assert row is not None
+        assert row[0] == 42.0
+
+    def test_exception_carries_enriched_results(self, partial_logger):
+        """PartialReadException.results includes rowid and datetime."""
+        lg, db_path, m = partial_logger
+        with pytest.raises(PartialReadException) as exc_info:
+            lg.log()
+        results = exc_info.value.results
+        assert 'rowid' in results
+        assert 'datetime' in results
+        assert results['good_ch'] == 42.0
+
+    def test_all_good_channels_no_exception(self, tmp_path):
+        """No PartialReadException when all channels succeed."""
+        m = master()
+        m.add_channel_dummy('a').write(1.0)
+        m.add_channel_dummy('b').write(2.0)
+        db_path = str(tmp_path / "allgood.sqlite")
+        lg = logger(m, database=db_path, use_threads=False)
+        lg.new_table('t', replace_table=True)
+        data = lg.log()
+        assert data['a'] == 1.0
+        assert data['b'] == 2.0
+        lg.stop()
+        m.stop_threads()
+
+    def test_sqlite_data_deserializes_channel_failure(self, partial_logger):
+        """sqlite_data returns ChannelFailure namedtuple for failed channels."""
+        from PyICe.lab_utils.sqlite_data import sqlite_data, ChannelFailure
+        lg, db_path, m = partial_logger
+        with pytest.raises(PartialReadException):
+            lg.log()
+        lg.stop()
+        sd = sqlite_data(table_name='test_partial', database_file=db_path)
+        row = sd[0]
+        assert row['good_ch'] == 42.0
+        failure = row['bad_ch']
+        assert isinstance(failure, ChannelFailure)
+        assert failure.exception_type == 'RuntimeError'
+        assert failure.message == 'comm failure'
