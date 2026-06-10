@@ -15,6 +15,9 @@ import getpass
 import contextlib
 import io
 import pdb
+import json
+import linecache
+import shutil
 from PyICe.plugins.bench_configuration_management import bench_visualizer
 from PyICe.plugins.test_results import Test_Results, Failed_Eval
 from PyICe.plugins.traceability_items import Traceability_items
@@ -22,7 +25,7 @@ from PyICe.lab_utils.timed_response import timed_input
 from PyICe.lab_utils.communications import email, sms
 from PyICe.lab_utils.sqlite_data import sqlite_data
 from PyICe.lab_utils.banners import print_banner
-from PyICe.lab_core import logger, master
+from PyICe.lab_core import logger, master, PartialReadException, ChannelReadException
 from PyICe.plugins import test_archive
 from email.mime.image import MIMEImage
 from PyICe import LTC_plot
@@ -87,6 +90,8 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
     True
 
     """
+    _CRASH_LOG_MAX_CHAIN_DEPTH = 10
+
     def __init__(self, scratch_folder='scratch', settings={}):
         """Initialize plugin_ manager.
         Initializes 8 instance attributes that configure the object's
@@ -169,6 +174,7 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
             self.scratch_folder,
             'data_log.sqlite')
         a_test._is_crashed = False
+        a_test._crash_logs = None
 
     def run(self, temperatures=None):
         """This method goes through the complete data collection process the project set out.
@@ -727,6 +733,131 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
         crash_str += crash_sep
         return crash_str
 
+    def _build_crash_log(self, test, temp=None, crash_source='test_collect', file_name='crash_log'):
+        '''Build and persist a crash log capturing the DUT channel state, stack frame locals,
+        structured exception metadata, and temperature context at the time of the crash.
+        Must be called from within an active except block so that sys.exc_info() is populated.
+        Writes to the test's scratch folder immediately. Stores result in test._crash_log.
+        args:
+            temp         - The temperature step active at the time of the crash, or None if
+                           no temperature control is in use.
+            crash_source - 'test_collect' if the exception originated inside test.collect()
+                           (DUT/test-script failure); 'framework' if it originated in
+                           plugin manager setup, teardown, or temperature control (all tests
+                           on a given run are then marked crashed as a side effect).
+        Note: live_channel_readings re-queries every instrument channel. If a device is in a
+        wedged state this can block for each channel's full read timeout. last_logged_row is
+        always the safer first source of truth as it requires no instrument communication.'''
+        # Set a sentinel immediately so test._crash_log is never None after this method
+        # returns, even if construction fails partway through. The sentinel prevents the
+        # outer-except guard (if test._crash_log is None) from re-calling this method with
+        # a different, unrelated exception and misattributing the failure.
+
+        if test._crash_logs is None:
+            test._crash_logs = {}
+        try:
+            typ, value, tb = sys.exc_info()
+            crash_log = {}
+            crash_log['test_name'] = test.get_name()
+            crash_log['test_module_path'] = test._module_path
+            crash_log['crash_source'] = crash_source
+            crash_log['operator'] = self.operator
+            crash_log['hostname'] = self.thismachine
+            crash_log['timestamp'] = datetime.datetime.utcnow().isoformat()
+            if temp is not None:
+                crash_log['temperature'] = temp
+            crash_log['exception_type'] = typ.__name__ if typ is not None else None
+            crash_log['exception_message'] = str(value)
+            # Walk to the deepest frame to record where the exception actually occurred
+            deepest = tb
+            if deepest is not None:
+                while deepest.tb_next:
+                    deepest = deepest.tb_next
+                crash_log['exception_file'] = deepest.tb_frame.f_code.co_filename
+                crash_log['exception_line'] = deepest.tb_lineno
+                crash_log['exception_source_line'] = linecache.getline(
+                    crash_log['exception_file'], crash_log['exception_line']
+                ).strip()
+            # Walk the exception __cause__/__context__ chain starting at the first cause,
+            # not the current exception (which is already in exception_type/exception_message).
+            # Capped to avoid infinite loops from pathological or circular chains.
+            chain = []
+            exc = value.__cause__ if value.__cause__ is not None else (
+                  value.__context__ if not value.__suppress_context__ else None)
+            while exc is not None and len(chain) < self._CRASH_LOG_MAX_CHAIN_DEPTH:
+                chain.append({'type': type(exc).__name__, 'message': str(exc)})
+                exc = exc.__cause__ if exc.__cause__ is not None else (
+                      exc.__context__ if not exc.__suppress_context__ else None)
+            crash_log['exception_chain'] = chain
+            crash_log['stacktrace'] = traceback.format_exc()
+            # Capture locals from every frame in the traceback, innermost last.
+            # 'self' is excluded from each frame — it is large, opaque without __repr__,
+            # and the test's public instance state is captured separately below.
+            frames = []
+            current_tb = tb
+            while current_tb is not None:
+                frame = current_tb.tb_frame
+                frames.append({
+                    'file': frame.f_code.co_filename,
+                    'line': current_tb.tb_lineno,
+                    'function': frame.f_code.co_name,
+                    'locals': {k: repr(v) for k, v in frame.f_locals.items() if k != 'self'},
+                })
+                current_tb = current_tb.tb_next
+            crash_log['frames'] = frames
+            # Capture the test's public instance variables (loop counters, condition dicts,
+            # iteration state, etc. assigned as self.x during collect()).
+            try:
+                crash_log['test_instance_vars'] = {
+                    k: repr(v) for k, v in vars(test).items() if not k.startswith('_')
+                }
+            except Exception as vars_exc:
+                crash_log['test_instance_vars'] = f'ERROR: {vars_exc}'
+            # Last successfully committed log row — fast, reliable, no instrument communication.
+            if hasattr(test, '_logger') and test._logger._previously_logged_data is not None:
+                try:
+                    crash_log['last_logged_row'] = dict(test._logger._previously_logged_data)
+                except Exception as row_exc:
+                    crash_log['last_logged_row'] = f'ERROR: {row_exc}'
+            # Live re-read of every channel — represents current instrument state but may
+            # block or fail if a device is wedged. Errors are recorded per-channel.
+            # If the crash was caused by a PartialReadException, reuse its successful
+            # results and only re-read the channels that failed.
+            live_readings = {}
+            if hasattr(test, '_logger'):
+                partial_results = None
+                if isinstance(value, PartialReadException):
+                    partial_results = value.results
+                for channel in test._logger.get_all_channel_names():
+                    if partial_results is not None and channel in partial_results:
+                        ch_val = partial_results[channel]
+                        if isinstance(ch_val, ChannelReadException):
+                            try:
+                                live_readings[channel] = test._logger.read(channel)
+                            except Exception as read_exc:
+                                live_readings[channel] = f'READ ERROR: {read_exc}'
+                        else:
+                            live_readings[channel] = ch_val
+                    else:
+                        try:
+                            live_readings[channel] = test._logger.read(channel)
+                        except Exception as read_exc:
+                            live_readings[channel] = f'READ ERROR: {read_exc}'
+            crash_log['live_channel_readings'] = live_readings
+            test._crash_logs[file_name] = crash_log
+            try:
+                scratch_path = os.path.join(test._module_path, self.scratch_folder, f'{file_name}.json')
+                with open(scratch_path, 'w') as f:
+                    json.dump(crash_log, f, indent=2, default=repr)
+            except Exception as write_exc:
+                print_banner(f'WARNING: Failed to write crash_log.json: {write_exc}')
+        except Exception as build_exc:
+            print_banner(f'WARNING: Exception while building crash log: {build_exc}')
+            traceback.print_exc()
+            test._crash_logs[file_name] =  'crash log construction failed before completion'
+        self.notify(json.dumps(crash_log, indent=2), subject=f'{test.get_name()} CRASH LOG')
+        return crash_log
+
     ###
     # TRACEABILITY METHODS
     ###
@@ -841,6 +972,11 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                     archive_folder +
                     '_metadata')
             archived_tables.append((test, archived_table_name, db_dest_file))
+            if test._crash_logs is not None: # Move crash_logs
+                for crash_file in test._crash_logs.keys():
+                    scratch_json = os.path.join(test._module_path, self.scratch_folder, f'{crash_file}.json')
+                    if os.path.exists(scratch_json):
+                        shutil.copy(scratch_json, os.path.join(test._module_path, 'archives', this_archive_folder, f'{crash_file}.json'))
         if len(archived_tables):
             arch_plot_scripts = []
             for (test, db_table, db_file) in archived_tables:
@@ -1174,19 +1310,23 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                     self.notify(f'Setting temperature to {temp}°C', subject='Next Temperature')
                     self.temperature_channel.write(temp)
                     summary_msg=f'{temp}°C Summary\n'
+                
                 for test in self.tests:
                     if not test._is_crashed:
                         try:
                             print_banner(f'{test.get_name()} Collecting. . .')
                             self.startup()
                             test._reconfigure()
+                            test._capture_crash = lambda crash_source='test_collect', _ct=(temp if temp != "ambient" else None), _test=test: self._build_crash_log(_test, temp=_ct, crash_source=crash_source, file_name=f'crash_log_{datetime.datetime.now(datetime.timezone.utc).strftime("%Y_%m_%d_%H_%M")}')
                             test.collect()
                             test._restore()
-                            summary_msg+=f"{test.get_name()} ran successfully.\n"
+                            if temp != "ambient":
+                                summary_msg+=f"{test.get_name()} ran successfully.\n"
                         except (Exception, BaseException) as e:
                             traceback.print_exc()
                             test._is_crashed = True
-                            summary_msg+=f"{test.get_name()} crashed this temperature.\n"
+                            if temp != "ambient":
+                                summary_msg+=f"{test.get_name()} crashed this temperature.\n"
                             test._crash_info = sys.exc_info()
                             self.notify(
                                 self._crash_str(test), subject='CRASHED!!!')
@@ -1199,11 +1339,13 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                                 if response is not None and response.lower() in [
                                         'y', 'yes']:
                                     pdb.post_mortem()
+                            self._build_crash_log(test, temp=temp if temp != "ambient" else None)
                         self.cleanup()
                         if self.cleanup_failure:
                             break
                     else:
-                        summary_msg+=f'{test.get_name()} crashed/skipped.\n'
+                        if temp != "ambient":
+                            summary_msg+=f'{test.get_name()} crashed/skipped.\n'
                 if temp != "ambient":
                     summary_msg+=f'{idx} of {len(temperatures)} temperatures complete.\n'
                     if all([x._is_crashed for x in self.tests]):
@@ -1211,7 +1353,7 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                         print_banner(
                             'All tests have crashed. Skipping remaining temperatures.')
                         break
-                self.notify(summary_msg, subject='TEMP SUMMARY')
+                    self.notify(summary_msg, subject='TEMP SUMMARY')
                 if self.cleanup_failure:
                     break
             self.shutdown()
@@ -1220,6 +1362,8 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
             for test in self.tests:
                 test._is_crashed = True
                 test._crash_info = sys.exc_info()
+                if test._crash_logs is None:
+                    self._build_crash_log(test, crash_source='framework')
             try:
                 if self.far_enough:
                     self.cleanup()

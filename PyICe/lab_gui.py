@@ -4187,11 +4187,13 @@ class background_worker(QtCore.QThread):
                 channels.append(self._channel_group[name])
         try:
             results = self._channel_group.read_channel_list(channels)
+        except lab_core.PartialReadException as e:
+            print("Partial read failure: {}".format(e))
+            results = e.results
         except Exception as e:
             print("background error")
             print(e)
             print(traceback.format_exc())
-            # print "attempting to read individually"
             results = {}
             for channel in channels:
                 results[channel.get_name()] = lab_core.ChannelReadException(

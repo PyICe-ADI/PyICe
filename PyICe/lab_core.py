@@ -1971,7 +1971,23 @@ class ChannelReadException(ChannelException):
     Traceback (most recent call last):
         ...
     PyICe.lab_core.ChannelReadException: read failed
+    >>> cre = ChannelReadException('TIMEOUT', original_exception=IOError("bus hung"))
+    >>> cre.original_exception
+    OSError('bus hung')
+    >>> cre.original_traceback is None
+    True
+    >>> str(cre)
+    'TIMEOUT'
+    >>> ChannelReadException('A') == ChannelReadException('A')
+    True
+    >>> ChannelReadException('A') == ChannelReadException('B')
+    False
     """
+
+    def __init__(self, message, original_exception=None, original_traceback=None):
+        super().__init__(message)
+        self.original_exception = original_exception
+        self.original_traceback = original_traceback
 
     def __eq__(self, other):
         """Check equality.
@@ -2015,6 +2031,37 @@ class ChannelReadException(ChannelException):
             True if the comparison holds, False otherwise.
         """
         return not self.__eq__(other)
+
+
+class PartialReadException(Exception):
+    """Raised when some channels failed to read but others succeeded.
+
+    Carries partial results so callers (e.g. the GUI) can recover good data
+    while still propagating a failure to scripted sessions.
+
+    >>> from PyICe.lab_core import PartialReadException, ChannelReadException
+    >>> cre = ChannelReadException('READ_ERROR', original_exception=IOError("timeout"))
+    >>> exc = PartialReadException({'ok': 3.14, 'ch': cre}, {'ch': cre})
+    >>> exc.results['ok']
+    3.14
+    >>> 'ch' in exc.failures
+    True
+    >>> 'ok' not in exc.failures
+    True
+    >>> 'IOError' in str(exc) or 'OSError' in str(exc)
+    True
+    """
+
+    def __init__(self, results, failures):
+        self.results = results
+        self.failures = failures
+        causes = set()
+        for cre in failures.values():
+            if cre.original_exception:
+                causes.add(f"{type(cre.original_exception).__name__}: {cre.original_exception}")
+        msg = (f"{len(failures)} channel(s) failed to read: "
+               + "; ".join(causes) if causes else f"{len(failures)} channel(s) failed to read")
+        super().__init__(msg)
 
 
 class RemoteChannelGroupException(ChannelException):
@@ -4017,6 +4064,10 @@ class channel_group(object):
                     self._self_delegation_channels))
         self._partial_delegation_results = results_ord_dict()
         self._self_delegation_channels = results_ord_dict()
+        failures = {name: val for name, val in results.items()
+                    if isinstance(val, ChannelReadException)}
+        if failures:
+            raise PartialReadException(results, failures)
         return results
 
     def _read_channels_non_threaded(self, channel_list):
@@ -4034,8 +4085,15 @@ class channel_group(object):
             for channel in channel_list:
                 if delegator == channel.resolve_delegator():
                     channel_delegation_list.append(channel)
-            results.update(
-                delegator._read_delegated_channel_list(channel_delegation_list))
+            try:
+                results.update(
+                    delegator._read_delegated_channel_list(channel_delegation_list))
+            except Exception as e:
+                tb = traceback.format_exc()
+                debug_logging.error(f"Delegator read failed: {e}\n{tb}")
+                for channel in channel_delegation_list:
+                    results[channel.get_name()] = ChannelReadException(
+                        'READ_ERROR', original_exception=e, original_traceback=tb)
         return results
 
     def _read_channels_threaded(self, channel_list):
@@ -6708,7 +6766,14 @@ class logger(master):
                 scan_list.remove_channel(channel)
         # remove the excluded items from the scan list
         scan_list.remove_channel_list(exclusions)
-        channel_data = self.master.read_channel_list(scan_list)
+        try:
+            channel_data = self.master.read_channel_list(scan_list)
+        except PartialReadException as e:
+            e.results['rowid'] = None
+            if 'datetime' not in e.results:
+                e.results['datetime'] = datetime.datetime.now(
+                    datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+            raise
         # add additional database columns
         channel_data['rowid'] = None
         if 'datetime' not in channel_data:
@@ -6740,7 +6805,12 @@ class logger(master):
         if exclusions is None:
             exclusions = []
         self._backend.check_exception()
-        data = self._fetch_channel_data(exclusions)
+        try:
+            data = self._fetch_channel_data(exclusions)
+        except PartialReadException as e:
+            self._backend.store(e.results)
+            self._previously_logged_data = e.results
+            raise
         self._backend.store(data)
         self._previously_logged_data = data
         for (key, value) in data.items():
@@ -6826,7 +6896,12 @@ class logger(master):
         if compare_exclusions is None:
             compare_exclusions = []
         self._backend.check_exception()
-        data = self._fetch_channel_data(log_exclusions)
+        try:
+            data = self._fetch_channel_data(log_exclusions)
+        except PartialReadException as e:
+            self._backend.store(e.results)
+            self._previously_logged_data = e.results
+            raise
         if self.check_data_changed(data, compare_exclusions):
             self._backend.store(data)
             self._previously_logged_data = data
@@ -7496,7 +7571,9 @@ class logger_backend(object):
             bytes_coldata = column_data.tobytes()
             return dtype_header + bytes_coldata
         elif isinstance(column_data, ChannelReadException):
-            return None
+            exc_type = type(column_data.original_exception).__name__ if column_data.original_exception else 'Unknown'
+            exc_msg = str(column_data.original_exception) if column_data.original_exception else str(column_data)
+            return f'READ_ERROR:{exc_type}:{exc_msg}'
         elif isinstance(column_data, channel):
             return str(column_data)
         return column_data
