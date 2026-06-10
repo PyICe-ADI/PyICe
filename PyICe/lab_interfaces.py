@@ -136,7 +136,11 @@ class communication_node(object):
     ancestor so they are accessed sequentially within a single thread during
 
     >>> from PyICe.lab_interfaces import communication_node
-    >>> communication_node is not None
+    >>> root = communication_node()
+    >>> root.set_com_node_thread_safe(True)
+    >>> child = communication_node()
+    >>> child.set_com_node_parent(root)
+    >>> root.com_node_get_children() == [child]
     True
 
     concurrent data collection."""
@@ -151,8 +155,11 @@ class communication_node(object):
 
 
         >>> from PyICe.lab_interfaces import communication_node
-        >>> communication_node is not None
+        >>> node = communication_node()
+        >>> node.get_com_parent() is None
         True
+        >>> node.com_node_get_children()
+        []
 
         Args:
             *args: Positional arguments forwarded to the super().__init__.
@@ -171,8 +178,19 @@ class communication_node(object):
         parent/child hierarchy and thread-safety flags.
 
 
+        >>> import io, sys
         >>> from PyICe.lab_interfaces import communication_node
-        >>> hasattr(communication_node, 'debug_com_nodes')
+        >>> root = communication_node()
+        >>> root.set_com_node_thread_safe(True)
+        >>> child = communication_node()
+        >>> child.set_com_node_parent(root)
+        >>> buf = io.StringIO()
+        >>> _old = sys.stdout; sys.stdout = buf
+        >>> root.debug_com_nodes()
+        >>> sys.stdout = _old
+        >>> 'Thread_safe: True' in buf.getvalue()
+        True
+        >>> 'Thread_safe: False' in buf.getvalue()
         True
 
         Args:
@@ -192,7 +210,10 @@ class communication_node(object):
 
 
         >>> from PyICe.lab_interfaces import communication_node
-        >>> hasattr(communication_node, 'get_com_parent')
+        >>> parent = communication_node()
+        >>> child = communication_node()
+        >>> child.set_com_node_parent(parent)
+        >>> child.get_com_parent() is parent
         True
 
         Returns:
@@ -208,7 +229,12 @@ class communication_node(object):
 
 
         >>> from PyICe.lab_interfaces import communication_node
-        >>> hasattr(communication_node, 'set_com_node_parent')
+        >>> root = communication_node()
+        >>> leaf = communication_node()
+        >>> leaf.set_com_node_parent(root)
+        >>> leaf.get_com_parent() is root
+        True
+        >>> leaf in root.com_node_get_children()
         True
 
         Args:
@@ -228,7 +254,11 @@ class communication_node(object):
 
 
         >>> from PyICe.lab_interfaces import communication_node
-        >>> hasattr(communication_node, 'set_com_node_thread_safe')
+        >>> node = communication_node()
+        >>> node._thread_safe
+        False
+        >>> node.set_com_node_thread_safe(True)
+        >>> node._thread_safe
         True
 
         Args:
@@ -244,7 +274,10 @@ class communication_node(object):
 
 
         >>> from PyICe.lab_interfaces import communication_node
-        >>> hasattr(communication_node, 'com_node_register_child')
+        >>> parent = communication_node()
+        >>> child = communication_node()
+        >>> parent.com_node_register_child(child)
+        >>> child in parent.com_node_get_children()
         True
 
         Args:
@@ -259,7 +292,12 @@ class communication_node(object):
 
 
         >>> from PyICe.lab_interfaces import communication_node
-        >>> hasattr(communication_node, 'com_node_get_root')
+        >>> root = communication_node()
+        >>> mid = communication_node()
+        >>> mid.set_com_node_parent(root)
+        >>> leaf = communication_node()
+        >>> leaf.set_com_node_parent(mid)
+        >>> leaf.com_node_get_root() is root
         True
 
         Returns:
@@ -278,7 +316,12 @@ class communication_node(object):
 
 
         >>> from PyICe.lab_interfaces import communication_node
-        >>> hasattr(communication_node, 'com_node_get_children')
+        >>> root = communication_node()
+        >>> a = communication_node()
+        >>> b = communication_node()
+        >>> a.set_com_node_parent(root)
+        >>> b.set_com_node_parent(root)
+        >>> root.com_node_get_children() == [a, b]
         True
 
         Returns:
@@ -294,7 +337,12 @@ class communication_node(object):
 
 
         >>> from PyICe.lab_interfaces import communication_node
-        >>> hasattr(communication_node, 'com_node_get_all_descendents')
+        >>> root = communication_node()
+        >>> child = communication_node()
+        >>> child.set_com_node_parent(root)
+        >>> grandchild = communication_node()
+        >>> grandchild.set_com_node_parent(child)
+        >>> root.com_node_get_all_descendents() == {child, grandchild}
         True
 
         Returns:
@@ -317,7 +365,15 @@ class communication_node(object):
 
 
         >>> from PyICe.lab_interfaces import communication_node
-        >>> hasattr(communication_node, 'group_com_nodes_for_threads')
+        >>> root = communication_node()
+        >>> root.set_com_node_thread_safe(True)
+        >>> bus = communication_node()
+        >>> bus.set_com_node_thread_safe(False)
+        >>> bus.set_com_node_parent(root)
+        >>> dev = communication_node()
+        >>> dev.set_com_node_parent(bus)
+        >>> groups = root.group_com_nodes_for_threads()
+        >>> any(bus in g and dev in g for g in groups)
         True
 
         Args:
@@ -351,7 +407,19 @@ class communication_node(object):
 
 
         >>> from PyICe.lab_interfaces import communication_node
-        >>> hasattr(communication_node, 'group_com_nodes_for_threads_filter')
+        >>> root = communication_node()
+        >>> root.set_com_node_thread_safe(True)
+        >>> bus = communication_node()
+        >>> bus.set_com_node_thread_safe(False)
+        >>> bus.set_com_node_parent(root)
+        >>> dev_a = communication_node()
+        >>> dev_a.set_com_node_parent(bus)
+        >>> dev_b = communication_node()
+        >>> dev_b.set_com_node_parent(bus)
+        >>> groups = root.group_com_nodes_for_threads_filter([dev_a, dev_b])
+        >>> len(groups)
+        1
+        >>> set(groups[0]) == {dev_a, dev_b}
         True
 
         Args:
@@ -398,8 +466,11 @@ class communication_node(object):
 
 
         >>> from PyICe.lab_interfaces import communication_node
-        >>> hasattr(communication_node, 'lock')
-        True
+        >>> node = communication_node()
+        >>> node.lock()
+        >>> node.lock()
+        >>> node.unlock()
+        >>> node.unlock()
 
         Raises:
             TypeError: If a parent node is neither a ``communication_node``
@@ -423,8 +494,9 @@ class communication_node(object):
 
 
         >>> from PyICe.lab_interfaces import communication_node
-        >>> hasattr(communication_node, 'unlock')
-        True
+        >>> node = communication_node()
+        >>> node.lock()
+        >>> node.unlock()
 
         Raises:
             TypeError: If a parent node is neither a ``communication_node``
