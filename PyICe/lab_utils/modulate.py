@@ -1,4 +1,8 @@
-"""Modulate utility."""
+"""Modulate utility.
+
+>>> from PyICe.lab_utils.modulate import modulate
+
+"""
 import numpy
 
 

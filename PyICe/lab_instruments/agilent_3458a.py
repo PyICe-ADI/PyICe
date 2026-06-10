@@ -1,4 +1,8 @@
-"""Agilent 3458a instrument driver."""
+"""Agilent 3458a instrument driver.
+
+>>> from PyICe.lab_instruments.agilent_3458a import hp_3458a
+
+"""
 from ..lab_core import instrument, channel
 
 
@@ -7,6 +11,10 @@ class hp_3458a(instrument):
 
     def __init__(self, interface_visa):
         """Interface_visa".
+        Stores configuration in ``_base_name``, ``meter_channel`` for use by
+        other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 2 instance attributes that configure the object's behavior.
 
         Args:
             interface_visa: VISA interface instance.
@@ -29,7 +37,7 @@ class hp_3458a(instrument):
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         # raise Exception('Use add_channel_dc_voltage, add_channel_dc_current, etc to configure instrument.')
         print(
@@ -50,7 +58,7 @@ class hp_3458a(instrument):
             range: Measurement or output range.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         if self.meter_channel is not None:
             print("WARNING: Re-defining 3458 DMM channel configuration")
@@ -72,7 +80,7 @@ class hp_3458a(instrument):
             range: Measurement or output range.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         if self.meter_channel is not None:
             print("WARNING: Re-defining 3458 DMM channel configuration")
@@ -94,7 +102,7 @@ class hp_3458a(instrument):
             range: Measurement or output range.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         if self.meter_channel is not None:
             print("WARNING: Re-defining 3458 DMM channel configuration")
@@ -116,7 +124,7 @@ class hp_3458a(instrument):
             range: Measurement or output range.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         if self.meter_channel is not None:
             print("WARNING: Re-defining 3458 DMM channel configuration")
@@ -138,7 +146,7 @@ class hp_3458a(instrument):
             range: Measurement or output range.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         if self.meter_channel is not None:
             print("WARNING: Re-defining 3458 DMM channel configuration")
@@ -157,10 +165,10 @@ class hp_3458a(instrument):
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if self.meter_channel is None:
             raise Exception(
@@ -180,10 +188,10 @@ class hp_3458a(instrument):
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if self.meter_channel is None:
             raise Exception(
@@ -208,9 +216,12 @@ class hp_3458a(instrument):
 
     def _read_meter(self):
         """Return float representing meter measurement.
+        Internal helper that computes and returns a derived value.
+
+        Internal implementation detail; see the public API for usage.
 
         Returns:
-            Result value.
+            The measured value.
         """
         # why does float conversion raise exception? - TODO: Debug!
         self.get_interface().write(('TARM SGL, 1'))
@@ -219,7 +230,9 @@ class hp_3458a(instrument):
     def display(self, message):
         """Write message to instrument front panel display.
 
+        Supports the ``hp_3458a`` workflow by performing the described operation.
+
         Args:
-            message: Message.
+            message: Human-readable message string.
         """
         self.get_interface().write(('DISP MSG,"' + message + '"'))

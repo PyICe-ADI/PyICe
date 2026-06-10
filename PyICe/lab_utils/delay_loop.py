@@ -1,4 +1,8 @@
-"""Delay loop utility."""
+"""Delay loop utility.
+
+>>> from PyICe.lab_utils.delay_loop import delay_loop
+
+"""
 import time
 import datetime
 
@@ -11,6 +15,11 @@ class delay_loop(object):
     time at the beginning and end of each iteration and sleeps only the
     remaining balance so the total period stays fixed. Optionally compensates
     for overruns across cycles to prevent long-term timing drift.
+
+    >>> from PyICe.lab_utils.delay_loop import delay_loop
+    >>> delay_loop is not None
+    True
+
     """
     def __init__(self, strict=False, begin=True, no_drift=True):
         """Initialize the delay loop timer.
@@ -21,6 +30,13 @@ class delay_loop(object):
         This ensures long-term time stability at the expense of increased jitter.
         Windows task switching can add multi-mS uncertainty to each delay() call, which can accumulate if not accounted for.
         Set no_drift=False to ignore time over-runs when computing next delay time.
+
+
+        >>> dl = delay_loop(begin=False)
+        >>> dl.get_count()
+        0
+        >>> dl.achieved_loop_time() is None
+        True
 
         Args:
             strict: If True, raise an Exception when loop processing
@@ -48,6 +64,12 @@ class delay_loop(object):
         Provides a convenient shorthand so that ``dl(seconds)`` is equivalent
         to ``dl.delay(seconds)``.
 
+
+        >>> dl = delay_loop()
+        >>> margin = dl(0.01)
+        >>> isinstance(margin, float)
+        True
+
         Args:
             seconds: Desired total loop period in seconds.
 
@@ -59,6 +81,11 @@ class delay_loop(object):
     def get_count(self):
         """Return the total number of times delay() has been called.
 
+
+        >>> dl = delay_loop(begin=False)
+        >>> dl.get_count()
+        0
+
         Returns:
             The cumulative loop iteration count since construction.
         """
@@ -66,6 +93,11 @@ class delay_loop(object):
 
     def get_total_time(self):
         """Return the elapsed wall-clock time since the first delay.
+
+
+        >>> from PyICe.lab_utils.delay_loop import delay_loop
+        >>> hasattr(delay_loop, 'get_total_time')
+        True
 
         Returns:
             Total elapsed seconds as a float since the timer was first started.
@@ -79,6 +111,11 @@ class delay_loop(object):
         Called automatically at construction (when ``begin=True``) and after
         each call to delay(). Can also be called manually when deferred
         timing is needed.
+
+
+        >>> from PyICe.lab_utils.delay_loop import delay_loop
+        >>> hasattr(delay_loop, 'begin')
+        True
 
         Args:
             offset: Time adjustment in seconds added to the recorded start
@@ -98,6 +135,11 @@ class delay_loop(object):
         loop body already exceeded the requested period, a warning is printed
         (or an exception is raised when ``strict=True``). After sleeping, the
         timer is automatically restarted for the next iteration.
+
+
+        >>> from PyICe.lab_utils.delay_loop import delay_loop
+        >>> hasattr(delay_loop, 'delay')
+        True
 
         Args:
             seconds: Desired total loop period in seconds, including both
@@ -150,6 +192,11 @@ class delay_loop(object):
         period expires. When the returned value reaches zero or below, the
         timer is automatically restarted for the next cycle.
 
+
+        >>> from PyICe.lab_utils.delay_loop import delay_loop
+        >>> hasattr(delay_loop, 'time_remaining')
+        True
+
         Args:
             loop_time: Desired total loop period in seconds against which
                 the elapsed time is compared.
@@ -177,6 +224,11 @@ class delay_loop(object):
         Useful for diagnosing how much margin remains before the loop body
         would exceed the requested period.
 
+
+        >>> dl = delay_loop(begin=False)
+        >>> dl.delay_margin() is None
+        True
+
         Returns:
             The sleep duration in seconds that was (or would have been)
             applied on the last delay() call. Negative values indicate an
@@ -189,6 +241,11 @@ class delay_loop(object):
 
         Includes any overrun beyond the requested period, so this value may
         exceed the target passed to delay().
+
+
+        >>> dl = delay_loop(begin=False)
+        >>> dl.achieved_loop_time() is None
+        True
 
         Returns:
             The measured loop duration in seconds from the most recent

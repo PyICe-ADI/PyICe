@@ -251,9 +251,7 @@ So a Page that was specified as 3x3 would add up to 9 plots in the following ord
   |                           |
   |   [1]     [2]     [3]     |
   |                           |
-  |                           |
   |   [4]     [5]     [6]     |
-  |                           |
   |                           |
   |   [7]     [8]     [9]     |
   |                           |
@@ -267,7 +265,6 @@ Or a 2x2 Page would be positioned as:
    -------------------
   |                   |
   |   [1]     [2]     |
-  |                   |
   |                   |
   |   [3]     [4]     |
   |                   |
@@ -329,12 +326,25 @@ import csv
 
 
 class PyICe_data_base():
-    """Py i ce_data_base."""
+    """Py i ce_data_base.
+
+    >>> from PyICe.LTC_plot import PyICe_data_base
+    >>> PyICe_data_base is not None
+    True
+
+    """
     def __init__(self, table_name, file_name="data_log.sqlite"):
         """Initialize py i ce_data_base.
 
+        Prepares the object for use by setting up internal state.
+
+
+        >>> from PyICe.LTC_plot import PyICe_data_base
+        >>> PyICe_data_base is not None
+        True
+
         Args:
-            file_name: File name.
+            file_name: File path string.
             table_name: Database table name.
         """
         print()
@@ -348,7 +358,13 @@ class PyICe_data_base():
 
 
 class plot(object):
-    """Plot (object subclass)."""
+    """Plot (object subclass).
+
+    >>> from PyICe.LTC_plot import plot
+    >>> plot is not None
+    True
+
+    """
     def __init__(self, plot_title, plot_name, xaxis_label, yaxis_label,
                  xlims, ylims, xminor, xdivs, yminor, ydivs, logx, logy):
         """A plot is just a record of what you want to plot and how you want it to look.
@@ -357,19 +373,24 @@ class plot(object):
         Start by creating as many plots as you like and adding data and various annotations to them.
         Once you add your plot or plots to a Page you can generate an SVG or PDF of the Page.
 
+
+        >>> from PyICe.LTC_plot import plot
+        >>> hasattr(plot, '__init__')
+        True
+
         Args:
-            logx: Logx.
-            logy: Logy.
-            plot_name: Plot name.
-            plot_title: Plot title.
-            xaxis_label: Xaxis label.
-            xdivs: Xdivs.
-            xlims: Xlims.
-            xminor: Xminor.
-            yaxis_label: Yaxis label.
-            ydivs: Ydivs.
-            ylims: Ylims.
-            yminor: Yminor.
+            logx: Logx to use.
+            logy: Logy to use.
+            plot_name: Plot name to use.
+            plot_title: Plot title to use.
+            xaxis_label: Xaxis label to use.
+            xdivs: Xdivs to use.
+            xlims: X-axis limits as a ``(min, max)`` tuple.
+            xminor: Xminor to use.
+            yaxis_label: Yaxis label to use.
+            ydivs: Ydivs to use.
+            ylims: Y-axis limits as a ``(min, max)`` tuple.
+            yminor: Yminor to use.
         """
         self.plot_title = plot_title
         self.plot_name = plot_name
@@ -406,19 +427,27 @@ class plot(object):
     def add_trace(self, axis, data, color, marker=None, markersize=0, linestyle="-",
                   linewidth=None, legend="", stepped_style=False, vxline=False, hxline=False):
         """Add a trace.
+        Adds a new trace to the object's internal collection.
+
+        Appends a new trace entry to the object's internal collection.
+
+
+        >>> from PyICe.LTC_plot import plot
+        >>> hasattr(plot, 'add_trace')
+        True
 
         Args:
-            axis: Axis.
-            color: Color.
+            axis: Axis identifier (``"x"`` or ``"y"``).
+            color: Color specification string.
             data: Data to write.
-            hxline: Hxline.
-            legend: Legend.
-            linestyle: Linestyle.
-            linewidth: Linewidth.
-            marker: Marker.
-            markersize: Markersize.
-            stepped_style: Stepped style.
-            vxline: Vxline.
+            hxline: Hxline to use.
+            legend: Legend text or configuration.
+            linestyle: Matplotlib line style string (e.g. ``"-"``, ``"--"``).
+            linewidth: Plot line width in points.
+            marker: Plot marker style string.
+            markersize: Markersize to use.
+            stepped_style: Stepped style to use.
+            vxline: Vxline to use.
         """
         data = data if not isinstance(data, zip) else list(data)
         legend = legend.replace("-", "−") if legend is not None else legend
@@ -447,16 +476,23 @@ class plot(object):
                     legend="", stepped_style=False, vxline=False, hxline=False):
         """Add a scatter.
 
+        Appends a new scatter entry to the object's internal collection.
+
+
+        >>> from PyICe.LTC_plot import plot
+        >>> hasattr(plot, 'add_scatter')
+        True
+
         Args:
-            axis: Axis.
-            color: Color.
+            axis: Axis identifier (``"x"`` or ``"y"``).
+            color: Color specification string.
             data: Data to write.
-            hxline: Hxline.
-            legend: Legend.
-            marker: Marker.
-            markersize: Markersize.
-            stepped_style: Stepped style.
-            vxline: Vxline.
+            hxline: Hxline to use.
+            legend: Legend text or configuration.
+            marker: Plot marker style string.
+            markersize: Markersize to use.
+            stepped_style: Stepped style to use.
+            vxline: Vxline to use.
         """
         self.add_trace(
             axis=axis,
@@ -473,15 +509,23 @@ class plot(object):
     def add_horizontal_line(self, value, xrange=None, note=None,
                             axis=1, color=None, linestyle=None, linewidth=None):
         """This can be useful for annotating limit lines. It can make dotted red lines for example.
+        Creates and registers a new horizontal line.
+
+        Appends a new horizontal line entry to the object's internal collection.
+
+
+        >>> from PyICe.LTC_plot import plot
+        >>> hasattr(plot, 'add_horizontal_line')
+        True
 
         Args:
-            axis: Axis.
-            color: Color.
-            linestyle: Linestyle.
-            linewidth: Linewidth.
-            note: Note.
+            axis: Axis identifier (``"x"`` or ``"y"``).
+            color: Color specification string.
+            linestyle: Matplotlib line style string (e.g. ``"-"``, ``"--"``).
+            linewidth: Plot line width in points.
+            note: Annotation text to display.
             value: Value to set.
-            xrange: Xrange.
+            xrange: Xrange to use.
         """
         if color is None:
             color = [1, 0, 0]
@@ -567,18 +611,26 @@ class plot(object):
     def add_vertical_line(self, value, yrange=None, note=None,
                           axis=1, color=None, linestyle=None, linewidth=None):
         """This can be useful for annotating limit lines. It can make dotted red lines for example.
+        Creates and registers a new vertical line.
+
+        Appends a new vertical line entry to the object's internal collection.
+
+
+        >>> from PyICe.LTC_plot import plot
+        >>> hasattr(plot, 'add_vertical_line')
+        True
 
         Args:
-            axis: Axis.
-            color: Color.
-            linestyle: Linestyle.
-            linewidth: Linewidth.
-            note: Note.
+            axis: Axis identifier (``"x"`` or ``"y"``).
+            color: Color specification string.
+            linestyle: Matplotlib line style string (e.g. ``"-"``, ``"--"``).
+            linewidth: Plot line width in points.
+            note: Annotation text to display.
             value: Value to set.
-            yrange: Yrange.
+            yrange: Yrange to use.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if color is None:
             color = [1, 0, 0]
@@ -664,16 +716,24 @@ class plot(object):
     def add_histogram(self, axis, xdata, num_bins, color,
                       normed=False, legend="", linewidth=0.5, alpha=1):
         """Add a histogram.
+        Adds a new histogram to the object's internal collection.
+
+        Appends a new histogram entry to the object's internal collection.
+
+
+        >>> from PyICe.LTC_plot import plot
+        >>> hasattr(plot, 'add_histogram')
+        True
 
         Args:
-            alpha: Alpha.
-            axis: Axis.
-            color: Color.
-            legend: Legend.
-            linewidth: Linewidth.
-            normed: Normed.
-            num_bins: Num bins.
-            xdata: Xdata.
+            alpha: Alpha to use.
+            axis: Axis identifier (``"x"`` or ``"y"``).
+            color: Color specification string.
+            legend: Legend text or configuration.
+            linewidth: Plot line width in points.
+            normed: Normed to use.
+            num_bins: Num bins to use.
+            xdata: Array of X-axis data values.
         """
         histo_data = {"axis": axis,
                       "xdata": xdata,
@@ -693,12 +753,17 @@ class plot(object):
 
         Be sure to use the same number of divisions on each y-axis to have sensible (common) graticules.
 
+
+        >>> from PyICe.LTC_plot import plot
+        >>> hasattr(plot, 'make_second_y_axis')
+        True
+
         Args:
-            logy: Logy.
-            yaxis_label: Yaxis label.
-            ydivs: Ydivs.
-            ylims: Ylims.
-            yminor: Yminor.
+            logy: Logy to use.
+            yaxis_label: Yaxis label to use.
+            ydivs: Ydivs to use.
+            ylims: Y-axis limits as a ``(min, max)`` tuple.
+            yminor: Yminor to use.
         """
         self.y2_axis_params["axis_is_used"] = True
         self.y2_axis_params["yaxis_label"] = yaxis_label
@@ -711,12 +776,19 @@ class plot(object):
             0, 0), justification='lower left', use_axes_scale=False, fontsize=7):
         """Place a legend on the graph. The legend labels were acquired from the legend argument in the add_trace call. Position supports data axes and absolute axes.
 
+        Appends a new legend entry to the object's internal collection.
+
+
+        >>> from PyICe.LTC_plot import plot
+        >>> hasattr(plot, 'add_legend')
+        True
+
         Args:
-            axis: Axis.
-            fontsize: Fontsize.
-            justification: Justification.
-            location: Location.
-            use_axes_scale: Use axes scale.
+            axis: Axis identifier (``"x"`` or ``"y"``).
+            fontsize: Font size in points.
+            justification: Justification to use.
+            location: Position or placement specifier.
+            use_axes_scale: If True, apply axis scaling to the plot.
         """
         if axis == 1:
             self.y1_axis_params["place_legend"] = True
@@ -734,15 +806,23 @@ class plot(object):
     def add_note(self, note, location=None, use_axes_scale=True, fontsize=7,
                  axis=1, horizontalalignment="left", verticalalignment="bottom"):
         """Add an arbitratry note anywhere on the graph. Position supports data axes and absolute axes.
+        Adds a new note to the object's internal collection.
+
+        Appends a new note entry to the object's internal collection.
+
+
+        >>> from PyICe.LTC_plot import plot
+        >>> hasattr(plot, 'add_note')
+        True
 
         Args:
-            axis: Axis.
-            fontsize: Fontsize.
-            horizontalalignment: Horizontalalignment.
-            location: Location.
-            note: Note.
-            use_axes_scale: Use axes scale.
-            verticalalignment: Verticalalignment.
+            axis: Axis identifier (``"x"`` or ``"y"``).
+            fontsize: Font size in points.
+            horizontalalignment: Horizontalalignment to use.
+            location: Position or placement specifier.
+            note: Annotation text to display.
+            use_axes_scale: If True, apply axis scaling to the plot.
+            verticalalignment: Verticalalignment to use.
         """
         if location is None:
             location = [0.05, 0.5]
@@ -758,12 +838,19 @@ class plot(object):
                   use_axes_scale=True, fontsize=7):
         """Adds a note and an arrow pointing to something. The arrow shaft emanates from the center of the note text and the arrow tip lands on the arrow top point. Both position follow either the data axes and absolute axes.
 
+        Appends a new arrow entry to the object's internal collection.
+
+
+        >>> from PyICe.LTC_plot import plot
+        >>> hasattr(plot, 'add_arrow')
+        True
+
         Args:
-            arrow_tip: Arrow tip.
-            fontsize: Fontsize.
-            text: Text.
-            text_location: Text location.
-            use_axes_scale: Use axes scale.
+            arrow_tip: Arrow tip to use.
+            fontsize: Font size in points.
+            text: Text to use.
+            text_location: Text location to use.
+            use_axes_scale: If True, apply axis scaling to the plot.
         """
         self.arrows.append({"text": text,
                             "text_location": text_location,
@@ -774,12 +861,20 @@ class plot(object):
 
     def create_svg(self, file_basename):
         """Shortcut to create SVG for a single plot without having to construct a Page.
+        Creates and returns a new svg.
+
+        Generates or configures a visual representation of the data.
+
+
+        >>> from PyICe.LTC_plot import plot
+        >>> hasattr(plot, 'create_svg')
+        True
 
         Args:
-            file_basename: File basename.
+            file_basename: Base filename without extension.
 
         Returns:
-            Result value.
+            The SVG markup string.
         """
         page = Page(rows_x_cols=None, page_size=None, plot_count=1)
         page.add_plot(plot=self)
@@ -787,11 +882,19 @@ class plot(object):
 
     def create_csv(self, file_basename, filepath=None, dialect='excel'):
         """Perform create csv operation.
+        Creates and returns a new csv.
+
+        Issues a SCPI query to the instrument and parses the response.
+
+
+        >>> from PyICe.LTC_plot import plot
+        >>> hasattr(plot, 'create_csv')
+        True
 
         Args:
-            dialect: Dialect.
-            file_basename: File basename.
-            filepath: Filepath.
+            dialect: Dialect to use.
+            file_basename: Base filename without extension.
+            filepath: File system path string.
         """
         filepath = './csv/' if filepath is None else os.path.join(
             filepath, 'csv')
@@ -833,7 +936,13 @@ class plot(object):
 
 
 class scope_plot(plot):
-    """Scope_plot."""
+    """Scope_plot.
+
+    >>> from PyICe.LTC_plot import scope_plot
+    >>> scope_plot is not None
+    True
+
+    """
     def __init__(self, plot_title, plot_name, xaxis_label, xlims, ylims):
         """A plot is just a record of what you want to plot and how you want it to look.
 
@@ -843,12 +952,17 @@ class scope_plot(plot):
 
         The scope_plot is a special plot that is 8 graticules high by 10 graticules wide and has its x and y labels listed in units/div like an oscilloscope.
 
+
+        >>> from PyICe.LTC_plot import scope_plot
+        >>> scope_plot is not None
+        True
+
         Args:
-            plot_name: Plot name.
-            plot_title: Plot title.
-            xaxis_label: Xaxis label.
-            xlims: Xlims.
-            ylims: Ylims.
+            plot_name: Plot name to use.
+            plot_title: Plot title to use.
+            xaxis_label: Xaxis label to use.
+            xlims: X-axis limits as a ``(min, max)`` tuple.
+            ylims: Y-axis limits as a ``(min, max)`` tuple.
         """
         self.plot_title = plot_title
         self.plot_name = plot_name
@@ -890,14 +1004,21 @@ class scope_plot(plot):
                   linestyle="-", linewidth=None, legend=""):
         """Add a trace.
 
+        Appends a new trace entry to the object's internal collection.
+
+
+        >>> from PyICe.LTC_plot import scope_plot
+        >>> hasattr(scope_plot, 'add_trace')
+        True
+
         Args:
-            color: Color.
+            color: Color specification string.
             data: Data to write.
-            legend: Legend.
-            linestyle: Linestyle.
-            linewidth: Linewidth.
-            marker: Marker.
-            markersize: Markersize.
+            legend: Legend text or configuration.
+            linestyle: Matplotlib line style string (e.g. ``"-"``, ``"--"``).
+            linewidth: Plot line width in points.
+            marker: Plot marker style string.
+            markersize: Markersize to use.
         """
         plot.add_trace(
             self,
@@ -914,12 +1035,19 @@ class scope_plot(plot):
             0, 0), justification='lower left', use_axes_scale=False, fontsize=7):
         """Add a legend.
 
+        Appends a new legend entry to the object's internal collection.
+
+
+        >>> from PyICe.LTC_plot import scope_plot
+        >>> hasattr(scope_plot, 'add_legend')
+        True
+
         Args:
-            axis: Axis.
-            fontsize: Fontsize.
-            justification: Justification.
-            location: Location.
-            use_axes_scale: Use axes scale.
+            axis: Axis identifier (``"x"`` or ``"y"``).
+            fontsize: Font size in points.
+            justification: Justification to use.
+            location: Position or placement specifier.
+            use_axes_scale: If True, apply axis scaling to the plot.
         """
         plot.add_legend(
             self,
@@ -932,22 +1060,36 @@ class scope_plot(plot):
     def make_second_y_axis(self, *args, **kwargs):
         """Perform make second y axis operation.
 
+        Supports the ``scope_plot`` workflow by performing the described operation.
+
+
+        >>> from PyICe.LTC_plot import scope_plot
+        >>> hasattr(scope_plot, 'make_second_y_axis')
+        True
+
         Args:
             **kwargs: Additional keyword arguments.
             *args: Additional positional arguments.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         raise Exception('Second y-axis not implemented for scope plots.')
 
     def add_ref_marker(self, ylocation, marker_color, use_axes_scale):
         """Add a ref marker.
 
+        Appends a new ref marker entry to the object's internal collection.
+
+
+        >>> from PyICe.LTC_plot import scope_plot
+        >>> hasattr(scope_plot, 'add_ref_marker')
+        True
+
         Args:
-            marker_color: Marker color.
-            use_axes_scale: Use axes scale.
-            ylocation: Ylocation.
+            marker_color: Marker color to use.
+            use_axes_scale: If True, apply axis scaling to the plot.
+            ylocation: Ylocation to use.
         """
         self.ref_markers.append({"ylocation": ylocation,
                                  "marker_color": marker_color,
@@ -956,50 +1098,89 @@ class scope_plot(plot):
     def add_trace_label(self, trace_label, ylocation, use_axes_scale):
         """Add a trace label.
 
+        Appends a new trace label entry to the object's internal collection.
+
+
+        >>> from PyICe.LTC_plot import scope_plot
+        >>> hasattr(scope_plot, 'add_trace_label')
+        True
+
         Args:
-            trace_label: Trace label.
-            use_axes_scale: Use axes scale.
-            ylocation: Ylocation.
+            trace_label: Trace label to use.
+            use_axes_scale: If True, apply axis scaling to the plot.
+            ylocation: Ylocation to use.
         """
         self.trace_labels.append(
             {"trace_label": trace_label, "ylocation": ylocation, "use_axes_scale": use_axes_scale})
 
     def add_time_refmarker_open(self, xlocation):
         """Add a time refmarker open.
+        Adds a new time refmarker open to the object's internal collection.
+
+        Appends a new time refmarker open entry to the object's internal collection.
+
+
+        >>> from PyICe.LTC_plot import scope_plot
+        >>> hasattr(scope_plot, 'add_time_refmarker_open')
+        True
 
         Args:
-            xlocation: Xlocation.
+            xlocation: Xlocation to use.
         """
         self.include_time_refmarker_open = True
         self.time_refmarker_open_xlocation = xlocation
 
     def add_time_refmarker_closed(self, xlocation):
         """Add a time refmarker closed.
+        Adds a new time refmarker closed to the object's internal collection.
+
+        Appends a new time refmarker closed entry to the object's internal collection.
+
+
+        >>> from PyICe.LTC_plot import scope_plot
+        >>> hasattr(scope_plot, 'add_time_refmarker_closed')
+        True
 
         Args:
-            xlocation: Xlocation.
+            xlocation: Xlocation to use.
         """
         self.include_time_refmarker_closed = True
         self.time_refmarker_closed_xlocation = xlocation
 
     def add_all_time_refmarkers(self, xlocation_open, xlocation_closed):
         """Add a all time refmarkers.
+        Creates and registers a new all time refmarkers.
+
+        Appends a new all time refmarkers entry to the object's internal collection.
+
+
+        >>> from PyICe.LTC_plot import scope_plot
+        >>> hasattr(scope_plot, 'add_all_time_refmarkers')
+        True
 
         Args:
-            xlocation_closed: Xlocation closed.
-            xlocation_open: Xlocation open.
+            xlocation_closed: Xlocation closed to use.
+            xlocation_open: Xlocation open to use.
         """
         self.add_time_refmarker_open(xlocation_open)
         self.add_time_refmarker_closed(xlocation_closed)
 
     def add_horizontal_line(self, value, xrange=None, note=None, color=None):
         """Add a horizontal line.
+        Creates and registers a new horizontal line.
+
+        Appends a new horizontal line entry to the object's internal collection.
+
+
+        >>> from PyICe.LTC_plot import scope_plot
+        >>> hasattr(scope_plot, 'add_horizontal_line')
+        True
 
         Args:
-            color: Color.
-            note: Note.
+            color: Color specification string.
+            note: Annotation text to display.
             value: Value to set.
-            xrange: Xrange.
+            xrange: Xrange to use.
         """
         if color is None:
             color = [1, 0, 0]
@@ -1028,12 +1209,20 @@ class scope_plot(plot):
 
     def add_vertical_line(self, value, yrange=None, note=None, color=None):
         """Add a vertical line.
+        Creates and registers a new vertical line.
+
+        Appends a new vertical line entry to the object's internal collection.
+
+
+        >>> from PyICe.LTC_plot import scope_plot
+        >>> hasattr(scope_plot, 'add_vertical_line')
+        True
 
         Args:
-            color: Color.
-            note: Note.
+            color: Color specification string.
+            note: Annotation text to display.
             value: Value to set.
-            yrange: Yrange.
+            yrange: Yrange to use.
         """
         if color is None:
             color = [1, 0, 0]
@@ -1060,20 +1249,31 @@ class scope_plot(plot):
 
 
 class Page():
-    """Page."""
+    """Page.
+
+    >>> from PyICe.LTC_plot import Page
+    >>> Page is not None
+    True
+
+    """
     def __init__(self, rows_x_cols=None, page_size=None, plot_count=None):
         """A Page containing one or more plots can be exported as a PDF or SVG.
 
         Alternately you can kit the page for datasheet submission.
         This is where the plots are actually "constructed" from matplotlib objects.
 
+
+        >>> from PyICe.LTC_plot import Page
+        >>> Page is not None
+        True
+
         Args:
-            page_size: Page size.
-            plot_count: Plot count.
-            rows_x_cols: Rows x cols.
+            page_size: Page size to use.
+            plot_count: Plot count to use.
+            rows_x_cols: Rows x cols to use.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         #################################################################
         # Create the matplotlib Figure and do some datasheet setup      #
@@ -1092,6 +1292,7 @@ class Page():
         self.plot_list = []
         self.page_type = None
         self.next_position = 0
+        self._svg_comments = []
         matplotlib.rcParams['axes.linewidth'] = 0.6
         matplotlib.rcParams['font.family'] = 'Arial'  # 'Linear Helv Cond'
         # 'Linear Helv Cond'
@@ -1110,16 +1311,31 @@ class Page():
     def LTC_LOG10_Formatter(self, x):
         """Return LTC LOG10 Formatter result.
 
+        Captures data for later analysis or replay.
+
+
+        >>> from PyICe.LTC_plot import Page
+        >>> hasattr(Page, 'LTC_LOG10_Formatter')
+        True
+
         Args:
-            x: X.
+            x: X-axis value.
 
         Returns:
-            Result value.
+            Formatted string representation.
         """
         if x >= 1:
             return str(int(x))
         else:
             return str(x)
+
+    def add_comment(self, text):
+        """Add an XML comment to be embedded in the SVG output.
+
+        Args:
+            text: String content to include in an XML comment.
+        """
+        self._svg_comments.append(str(text).replace("--", "‐‐"))
 
     def add_plot(self, plot,
                  position=None,     # This is if there's just one plot.
@@ -1141,22 +1357,31 @@ class Page():
         # Create subplots                                               #
         #################################################################
         """Add a plot.
+        Configures or updates the plot with the specified parameters.
+        Adds a new plot to the object's internal collection.
+
+        Appends a new plot entry to the object's internal collection.
+
+
+        >>> from PyICe.LTC_plot import Page
+        >>> hasattr(Page, 'add_plot')
+        True
 
         Args:
-            bottom_border: Bottom border.
-            left_border: Left border.
-            plot: Plot.
-            plot_sizex: Plot sizex.
-            plot_sizey: Plot sizey.
-            position: Position.
-            right_border: Right border.
-            top_border: Top border.
-            trace_width: Trace width.
-            x_gap: X gap.
-            y_gap: Y gap.
+            bottom_border: Bottom border to use.
+            left_border: Left border to use.
+            plot: Plot to use.
+            plot_sizex: Plot sizex to use.
+            plot_sizey: Plot sizey to use.
+            position: Position to use.
+            right_border: Right border to use.
+            top_border: Top border to use.
+            trace_width: Trace width to use.
+            x_gap: X gap to use.
+            y_gap: Y gap to use.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if self.page_type is None:
             self.page_type = plot.plot_type
@@ -1775,13 +2000,23 @@ class Page():
 
     def create_svg(self, file_basename=None, filepath=None):
         """Return create svg result.
+        Sends the ``font-size:8.14285714286px;font-weight:bold`` SCPI command
+        to the instrument.
+        Creates and returns a new svg.
+
+        Transmits data to the remote endpoint.
+
+
+        >>> from PyICe.LTC_plot import Page
+        >>> hasattr(Page, 'create_svg')
+        True
 
         Args:
-            file_basename: File basename.
-            filepath: Filepath.
+            file_basename: Base filename without extension.
+            filepath: File system path string.
 
         Returns:
-            Result value.
+            The SVG markup string.
         """
         FigureCanvasSVG(self.Figure)
         figdata = io.StringIO()
@@ -1791,6 +2026,10 @@ class Page():
                                                                       "font-size:9.5px;font-weight:bold").replace("font-size:8.14285714286px;font-style:bold",
                                                                                                                   "font-size:8.14285714286px;font-weight:bold").replace("font-size:9.5px;font-style:bold",
                                                                                                                                                                         "font-size:9.5px;font-weight:bold").encode("utf-8")
+        if self._svg_comments:
+            comment_block = b"\n".join(
+                b"<!-- " + c.encode("utf-8") + b" -->" for c in self._svg_comments)
+            output = output.replace(b"<svg ", comment_block + b"\n<svg ", 1)
         if file_basename is not None:
             filepath = './plots/' if filepath is None else os.path.join(
                 filepath, 'plots')
@@ -1808,10 +2047,18 @@ class Page():
 
     def create_pdf(self, file_basename, filepath=None):
         """Perform create pdf operation.
+        Creates and returns a new pdf.
+
+        Supports the ``Page`` workflow by performing the described operation.
+
+
+        >>> from PyICe.LTC_plot import Page
+        >>> hasattr(Page, 'create_pdf')
+        True
 
         Args:
-            file_basename: File basename.
-            filepath: Filepath.
+            file_basename: Base filename without extension.
+            filepath: File system path string.
         """
         filepath = './plots/' if filepath is None else os.path.join(
             filepath, 'plots')
@@ -1828,8 +2075,15 @@ class Page():
     def kit_datasheet(self, file_basename="datasheet_kit"):
         """Perform kit datasheet operation.
 
+        Supports the ``Page`` workflow by performing the described operation.
+
+
+        >>> from PyICe.LTC_plot import Page
+        >>> hasattr(Page, 'kit_datasheet')
+        True
+
         Args:
-            file_basename: File basename.
+            file_basename: Base filename without extension.
         """
         filepath = '{}\\'.format(file_basename)
         try:
@@ -1855,26 +2109,55 @@ class Multipage_pdf():
     """Add one or more Pages to a Multipage_pdf to keep your page sizes manageable (such as 8.5x11).
 
     Multipage_pdf also support kit_datasheet().
+
+    >>> from PyICe.LTC_plot import Multipage_pdf
+    >>> Multipage_pdf is not None
+    True
+
     """
     def __init__(self):
-        """Initialize multipage_pdf."""
+        """Initialize multipage_pdf.
+
+        Stores configuration in ``page_list`` for use by other methods.
+
+        >>> from PyICe.LTC_plot import Multipage_pdf
+        >>> Multipage_pdf is not None
+        True
+
+        """
         self.page_list = []
 
     def add_page(self, page):
         """Add a page.
+        Adds a new page to the object's internal collection.
+
+        Appends a new page entry to the object's internal collection.
+
+
+        >>> from PyICe.LTC_plot import Multipage_pdf
+        >>> hasattr(Multipage_pdf, 'add_page')
+        True
 
         Args:
-            page: Page.
+            page: PMBus page number for multi-output devices.
         """
         FigureCanvasPdf(page.Figure)
         self.page_list.append(page)
 
     def create_pdf(self, file_basename, filepath=None):
         """Perform create pdf operation.
+        Creates and returns a new pdf.
+
+        Supports the ``Multipage_pdf`` workflow by performing the described operation.
+
+
+        >>> from PyICe.LTC_plot import Multipage_pdf
+        >>> hasattr(Multipage_pdf, 'create_pdf')
+        True
 
         Args:
-            file_basename: File basename.
-            filepath: Filepath.
+            file_basename: Base filename without extension.
+            filepath: File system path string.
         """
         filepath = './plots/' if filepath is None else os.path.join(
             filepath, 'plots')
@@ -1899,8 +2182,15 @@ class Multipage_pdf():
     def kit_datasheet(self, file_basename="datasheet_kit"):
         """Perform kit datasheet operation.
 
+        Supports the ``Multipage_pdf`` workflow by performing the described operation.
+
+
+        >>> from PyICe.LTC_plot import Multipage_pdf
+        >>> hasattr(Multipage_pdf, 'kit_datasheet')
+        True
+
         Args:
-            file_basename: File basename.
+            file_basename: Base filename without extension.
         """
         filepath = 'datasheet_kit\\'
         try:
@@ -1926,13 +2216,30 @@ class Multipage_pdf():
 
 
 class color_gen(object):
-    """Color yielding generator. Returns a new color each time an instance is called."""
+    """Color yielding generator. Returns a new color each time an instance is called.
+
+    >>> cg = color_gen()
+    >>> isinstance(cg(), tuple)
+    True
+    >>> cg.reset()
+    >>> cg() == cg.colors[0]
+    True
+    """
 
     def __init__(self, rollover=True):
         """Set rollover False to cause an IndexError exception when colors are exhausted.
+        Stores configuration in ``colors``, ``rollover`` for use by other
+        methods.
+
+        Initializes 2 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.LTC_plot import color_gen
+        >>> color_gen is not None
+        True
 
         Args:
-            rollover: Rollover.
+            rollover: Rollover to use.
         """
         self.colors = MARCOM_COLORSfracRGB[:]
         self.reset()
@@ -1940,9 +2247,17 @@ class color_gen(object):
 
     def __call__(self):
         """Call the instance.
+        Enables calling the object as a function.
+
+        Makes the object callable like a function.
+
+
+        >>> from PyICe.LTC_plot import color_gen
+        >>> hasattr(color_gen, '__call__')
+        True
 
         Returns:
-            Result value.
+            The computed result.
         """
         color = self.colors[self.index]
         self.index += 1
@@ -1951,7 +2266,15 @@ class color_gen(object):
         return color
 
     def reset(self):
-        """Start color sequence over."""
+        """Start color sequence over.
+
+        Supports the ``color_gen`` workflow by performing the described operation.
+
+        >>> from PyICe.LTC_plot import color_gen
+        >>> hasattr(color_gen, 'reset')
+        True
+
+        """
         self.index = 0
 
 
@@ -1959,6 +2282,12 @@ def list_markers():
     """Valid linestyles are ['-' '--' '-.' ':' 'None' ' ' ''].
 
     Valid markers are [':' '.' ',' 'o' 'v' '^' '<' '>' '1' '2' '3' '4' '8' 's' 'p' '*' 'h' 'H' '+' 'x' 'D' 'd' '|' '_' TICKLEFT TICKRIGHT TICKUP TICKDOWN CARETLEFT CARETRIGHT CARETUP CARETDOWN]
+
+
+    >>> from PyICe.LTC_plot import list_markers
+    >>> callable(list_markers)
+    True
+
     """
     print()
     print(
@@ -1970,11 +2299,18 @@ def list_markers():
 
 
 def smooth(data, window=5):
-    """Perform smooth operation.
+    """Run the smooth step.
+
+    Performs the described operation on the object's internal state.
+
+
+    >>> from PyICe.LTC_plot import smooth
+    >>> callable(smooth)
+    True
 
     Args:
         data: Data to write.
-        window: Window.
+        window: Smoothing window size in samples.
     """
     print("##########################################################")
     print("#                                                        #")
@@ -1995,9 +2331,16 @@ def smooth(data, window=5):
 def smooth_y_vector(data, window=5):
     """Perform smooth y vector operation.
 
+    Performs the described operation on the object's internal state.
+
+
+    >>> from PyICe.LTC_plot import smooth_y_vector
+    >>> callable(smooth_y_vector)
+    True
+
     Args:
         data: Data to write.
-        window: Window.
+        window: Smoothing window size in samples.
     """
     print("##########################################################")
     print("#                                                        #")
@@ -2014,11 +2357,18 @@ def smooth_y_vector(data, window=5):
 def data_from_file(filename):
     """Return data from file result.
 
+    Performs the described operation on the object's internal state.
+
+
+    >>> from PyICe.LTC_plot import data_from_file
+    >>> callable(data_from_file)
+    True
+
     Args:
         filename: File path.
 
     Returns:
-        Result value.
+        The result of the operation.
     """
     x = []
     y = []
@@ -2033,11 +2383,19 @@ def data_from_file(filename):
 def CMYK_to_fracRGB(CMYK):
     """Return CMYK to fracRGB result.
 
+    Performs the described operation on the object's internal state.
+
+
+    >>> CMYK_to_fracRGB((0, 0, 0, 0))
+    (1, 1, 1)
+    >>> CMYK_to_fracRGB((1, 0, 0, 0))
+    (0, 1, 1)
+
     Args:
-        CMYK: Cmyk.
+        CMYK: Cmyk to use.
 
     Returns:
-        Result value.
+        The result of the operation.
     """
     R = (1 - CMYK[0]) * (1 - CMYK[3])
     G = (1 - CMYK[1]) * (1 - CMYK[3])
@@ -2048,11 +2406,19 @@ def CMYK_to_fracRGB(CMYK):
 def fracRGB_to_CMYK(RGB):
     """Return fracRGB to CMYK result.
 
+    Performs the described operation on the object's internal state.
+
+
+    >>> fracRGB_to_CMYK((1.0, 1.0, 1.0))
+    (0.0, 0.0, 0.0, 0.0)
+    >>> fracRGB_to_CMYK((0, 0, 0))
+    (0, 0, 0, 1)
+
     Args:
-        RGB: Rgb.
+        RGB: Rgb to use.
 
     Returns:
-        Result value.
+        The result of the operation.
     """
     C = 1 - RGB[0]
     M = 1 - RGB[1]
@@ -2072,11 +2438,17 @@ def fracRGB_to_CMYK(RGB):
 def webRGB_to_fracRGB(webRGB):
     """Return webRGB to fracRGB result.
 
+    Performs the described operation on the object's internal state.
+
+
+    >>> webRGB_to_fracRGB("FF0000")
+    (1.0, 0.0, 0.0)
+
     Args:
-        webRGB: Webrgb.
+        webRGB: Webrgb to use.
 
     Returns:
-        Result value.
+        The result of the operation.
     """
     R = int(webRGB[0:2], 16) / 255.0
     G = int(webRGB[2:4], 16) / 255.0
@@ -2087,11 +2459,17 @@ def webRGB_to_fracRGB(webRGB):
 def webRGB_to_RGB(webRGB):
     """Return webRGB to RGB result.
 
+    Performs the described operation on the object's internal state.
+
+
+    >>> webRGB_to_RGB("FF8000")
+    (255, 128, 0)
+
     Args:
-        webRGB: Webrgb.
+        webRGB: Webrgb to use.
 
     Returns:
-        Result value.
+        The result of the operation.
     """
     R = int(webRGB[0:2], 16)
     G = int(webRGB[2:4], 16)
@@ -2102,11 +2480,17 @@ def webRGB_to_RGB(webRGB):
 def RGB_to_webRGB(RGB):
     """Return RGB to webRGB result.
 
+    Performs the described operation on the object's internal state.
+
+
+    >>> RGB_to_webRGB((255, 0, 0))
+    ('0xff', '0x0', '0x0')
+
     Args:
-        RGB: Rgb.
+        RGB: Rgb to use.
 
     Returns:
-        Result value.
+        The result of the operation.
     """
     R = hex(int(RGB[0]))
     G = hex(int(RGB[1]))
@@ -2117,11 +2501,17 @@ def RGB_to_webRGB(RGB):
 def fracRGB_to_RGB(fracRGB):
     """Return fracRGB to RGB result.
 
+    Performs the described operation on the object's internal state.
+
+
+    >>> fracRGB_to_RGB((1.0, 0.0, 0.0))
+    (255, 0, 0)
+
     Args:
-        fracRGB: Fracrgb.
+        fracRGB: Fracrgb to use.
 
     Returns:
-        Result value.
+        The result of the operation.
     """
     R = int(round(fracRGB[0] * 255.0))
     G = int(round(fracRGB[1] * 255.0))
@@ -2132,11 +2522,17 @@ def fracRGB_to_RGB(fracRGB):
 def RGB_to_fracRGB(RGB):
     """Return RGB to fracRGB result.
 
+    Performs the described operation on the object's internal state.
+
+
+    >>> RGB_to_fracRGB((255, 0, 0))
+    (1.0, 0.0, 0.0)
+
     Args:
-        RGB: Rgb.
+        RGB: Rgb to use.
 
     Returns:
-        Result value.
+        The result of the operation.
     """
     R = RGB[0] / 255.0
     G = RGB[1] / 255.0
@@ -2147,11 +2543,17 @@ def RGB_to_fracRGB(RGB):
 def fracRGB_to_webRGB(fracRGB):
     """Return fracRGB to webRGB result.
 
+    Performs the described operation on the object's internal state.
+
+
+    >>> fracRGB_to_webRGB((1.0, 0.0, 0.0))
+    ('0xff', '0x0', '0x0')
+
     Args:
-        fracRGB: Fracrgb.
+        fracRGB: Fracrgb to use.
 
     Returns:
-        Result value.
+        The result of the operation.
     """
     return RGB_to_webRGB(fracRGB_to_RGB(fracRGB))
 

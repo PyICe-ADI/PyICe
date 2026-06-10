@@ -1,4 +1,8 @@
-"""Stream Window utility."""
+"""Stream Window utility.
+
+>>> from PyICe.lab_utils.StreamWindow import StreamWindow
+
+"""
 import sys
 from .print_hex_bytes import print_hex_bytes
 
@@ -80,6 +84,11 @@ class StreamWindow(object):
         are freed for new data from the underlying stream. The valid content
         that was beyond *num_bytes* is moved to the front of the buffer.
 
+
+        >>> from PyICe.lab_utils.StreamWindow import StreamWindow
+        >>> hasattr(StreamWindow, '_shift_buffer')
+        True
+
         Args:
             num_bytes: How many bytes to remove from the head of the
                 internal buffer.
@@ -92,6 +101,11 @@ class StreamWindow(object):
         The consumed bytes are removed from the buffer (via
         ``_shift_buffer``) and ``content_size`` is decremented accordingly.
         The caller must ensure *num_bytes* does not exceed ``content_size``.
+
+
+        >>> from PyICe.lab_utils.StreamWindow import StreamWindow
+        >>> hasattr(StreamWindow, '_read_buffer')
+        True
 
         Args:
             num_bytes: How many bytes to extract from the front of the
@@ -349,6 +363,11 @@ class StreamWindow(object):
 
         Delegates to the wrapped stream's ``close()`` method, releasing
         any associated resources (file descriptors, serial ports, etc.).
+
+
+        >>> from PyICe.lab_utils.StreamWindow import StreamWindow
+        >>> hasattr(StreamWindow, 'close')
+        True
 
         Returns:
             Whatever the underlying stream's ``close()`` method returns

@@ -1,4 +1,8 @@
-"""Print hex bytes utility."""
+"""Print hex bytes utility.
+
+>>> from PyICe.lab_utils.print_hex_bytes import print_hex_bytes
+
+"""
 import collections
 import collections.abc
 from .print_to_screen import print_to_screen
@@ -17,6 +21,11 @@ def print_hex_bytes(the_bytes, number_of_bytes_per_line=16,
     Handy for inspecting TWI/I²C register dumps, firmware images, or raw
     serial traffic.  By default all bytes are printed 16 per line via
     ``print_to_screen``, but every aspect is configurable.
+
+
+    >>> from PyICe.lab_utils.print_hex_bytes import print_hex_bytes
+    >>> callable(print_hex_bytes)
+    True
 
     Args:
         the_bytes: Any iterable yielding integer byte values (0–255).

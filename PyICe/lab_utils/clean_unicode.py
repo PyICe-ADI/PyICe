@@ -1,4 +1,8 @@
-"""Clean unicode utility."""
+"""Clean unicode utility.
+
+>>> from PyICe.lab_utils.clean_unicode import clean_unicode
+
+"""
 import unicodedata
 
 

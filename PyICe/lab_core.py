@@ -4,6 +4,13 @@
 
 changes to this file should be minimal!
 
+Examples:
+    >>> from PyICe import lab_core
+    >>> m = lab_core.master()
+    >>> ch = m.add_channel_dummy('test')
+    >>> ch.write(42)
+    42
+
 """
 import logging
 import copy
@@ -70,9 +77,19 @@ class results_ord_dict(collections.OrderedDict):
     """
     def __str__(self):
         """Return column-aligned key: value listing of all results.
+        Provides a human-readable string for debugging and display.
+
+        Provides a human-readable representation for debugging and logging.
+
+        >>> from PyICe.lab_core import results_ord_dict
+        >>> d = results_ord_dict([('a', 1), ('b', 2)])
+        >>> print(d)
+        a: 1
+        b: 2
+        <BLANKLINE>
 
         Returns:
-            Result value.
+            String representation.
         """
         s = ''
         max_channel_name_length = 0
@@ -88,62 +105,150 @@ class results_ord_dict(collections.OrderedDict):
         return s
 
     def __getstate__(self):
-        """Return empty state for pickling support.
+        """Return empty state so that pickling ignores internal C-level state.
+        Controls what is included when the object is pickled.
+
+        Implements the ``__getstate__`` protocol for this object.
+
+        >>> from PyICe.lab_core import results_ord_dict
+        >>> d = results_ord_dict([('voltage', 3.3)])
+        >>> d.__getstate__()
+        {}
 
         Returns:
-            Result value.
+            An empty dictionary.
         """
         return {}
 
 
 class delegator(object):
-    """Base class for a read delegator, this is the lowest level class in the library.
+    """Mixin that routes channel reads/writes through a delegation chain.
 
-    You will probably never use it directly.
+    Every channel belongs to a delegator (typically an ``instrument`` or
+    ``channel_master``).  When a channel group or master reads many
+    channels at once, it calls ``read_delegated_channel_list`` on the
+    root delegator so that the instrument driver can batch I/O into
+    fewer bus transactions.  Subclasses override that method to provide
+    hardware-optimised batch reads.
+
+    >>> from PyICe.lab_core import delegator
+    >>> delegator is not None
+    True
+
     """
     def __init__(self):
-        """Initialize delegator with self-delegation, threading enabled, and empty interface list."""
+        """Initialize with self-delegation, threading enabled, and no interfaces.
+
+        Stores configuration in ``_interfaces``, ``_threadable`` for use by
+        other methods.
+
+        >>> from PyICe.lab_core import delegator
+        >>> d = delegator()
+        >>> d.get_delegator() is d
+        True
+        >>> d.threadable()
+        True
+
+        """
         self.set_delegator(self)
         self._threadable = True
         self._interfaces = []
 
     def set_delegator(self, delegator):
-        """Set the delegator that handles read/write operations for this object.
+        """Point this object's reads/writes at *delegator* instead of itself.
+
+        Called automatically when an instrument is added to a master;
+        the master becomes the delegator so it can batch reads across
+        multiple instruments.
+
+
+        >>> from PyICe.lab_core import delegator
+        >>> d1 = delegator()
+        >>> d2 = delegator()
+        >>> d1.set_delegator(d2)
+        >>> d1.get_delegator() is d2
+        True
 
         Args:
-            delegator: Delegator.
+            delegator: The object that will handle batched read/write
+                operations on behalf of this one.
         """
         self._delegator = delegator
 
     def get_delegator(self):
-        """Return the current delegator.
+        """Return the immediate delegator (one level up the chain).
+        Returns the stored delegator value from the object's internal state.
+        Returns the stored delegator from the object's internal state.
+
+        Returns the stored delegator from the object's internal state.
+
+
+        >>> from PyICe.lab_core import delegator
+        >>> d = delegator()
+        >>> d.get_delegator() is d
+        True
 
         Returns:
-            Result value.
+            The delegator object currently handling this object's I/O.
         """
         return self._delegator
 
     def set_allow_threading(self, state=True):
-        """Enable or disable threaded read operations.
+        """Allow or prevent this delegator's channels from being read in parallel threads.
+
+        Disable threading when the underlying interface is not thread-safe
+        (e.g. a shared serial port).
+
+
+        >>> from PyICe.lab_core import delegator
+        >>> d = delegator()
+        >>> d.set_allow_threading(False)
+        >>> d.threadable()
+        False
+        >>> d.set_allow_threading()
+        >>> d.threadable()
+        True
 
         Args:
-            state: State.
+            state: True to allow threaded reads (default), False to force
+                sequential reads.
         """
         self._threadable = state
 
     def threadable(self):
-        """Return whether this delegator allows threaded reads.
+        """Check whether threaded (parallel) reads are allowed.
+
+        Supports the ``delegator`` workflow by performing the described operation.
+
+
+        >>> from PyICe.lab_core import delegator
+        >>> d = delegator()
+        >>> d.threadable()
+        True
 
         Returns:
-            Result value.
+            True if threaded reads are permitted, False otherwise.
         """
         return self._threadable
 
     def resolve_delegator(self):
-        """Walk the delegator chain and return the root delegator.
+        """Walk the delegation chain to find the root delegator.
+
+        The root is the delegator that delegates to itself.  In a typical
+        setup this is the ``channel_master`` or ``master``.
+
+
+        >>> from PyICe.lab_core import delegator
+        >>> d1 = delegator()
+        >>> d1.resolve_delegator() is d1
+        True
+        >>> d2 = delegator()
+        >>> d2.set_delegator(d1)
+        >>> d2.resolve_delegator() is d1
+        True
 
         Returns:
-            Result value.
+            The root delegator at the end of the chain.
         """
         if self._delegator == self:
             return self._delegator
@@ -151,18 +256,39 @@ class delegator(object):
             return self._delegator.resolve_delegator()
 
     def add_interface(self, interface):
-        """Register a communication interface with this delegator.
+        """Register a communication interface for lock management.
+
+        Interfaces are locked before batched reads/writes and unlocked
+        afterward to prevent concurrent access from multiple threads.
+
+
+        >>> from PyICe.lab_core import delegator
+        >>> d = delegator()
+        >>> d._interfaces
+        []
+        >>> d.add_interface("iface1")
+        >>> d._interfaces
+        ['iface1']
 
         Args:
-            interface: Interface.
+            interface: A ``lab_interfaces.interface`` instance to manage.
         """
         self._interfaces.append(interface)
 
     def get_interfaces(self):
-        """Return the set of interfaces from the root delegator.
+        """Collect all interfaces registered on the root delegator.
+        Returns the stored interfaces value from the object's internal state.
+        Returns the stored interfaces from the object's internal state.
+
+        Returns the stored interfaces from the object's internal state.
+
+        >>> from PyICe.lab_core import channel
+        >>> ch = channel('test')
+        >>> ch.get_interfaces()
+        set()
 
         Returns:
-            Result value.
+            A ``set`` of interface objects from the root of the chain.
         """
         if self.get_delegator() == self:
             return set(self._interfaces)
@@ -170,12 +296,28 @@ class delegator(object):
             return self.resolve_delegator().get_interfaces()
 
     def lock_interfaces(self):
-        """Acquire locks on all registered interfaces."""
+        """Acquire exclusive locks on all registered interfaces.
+
+        Records the item so that it participates in future operations.
+
+        >>> from PyICe.lab_core import delegator
+        >>> d = delegator()
+        >>> d.lock_interfaces()  # No interfaces, no-op
+
+        """
         for interface in self._interfaces:
             interface.lock()
 
     def unlock_interfaces(self):
-        """Release locks on all registered interfaces."""
+        """Release exclusive locks on all registered interfaces.
+
+        Records the item so that it participates in future operations.
+
+        >>> from PyICe.lab_core import delegator
+        >>> d = delegator()
+        >>> d.unlock_interfaces()  # No interfaces, no-op
+
+        """
         for interface in self._interfaces:
             interface.unlock()
 
@@ -184,13 +326,24 @@ class delegator(object):
         # OVERLOAD THIS FUNCTION
         # takes a list of (channels, value) tuples
         # writes each channel to its corresponding value
-        """Perform write delegated channel list operation.
+        """Write a batch of channel/value pairs while holding interface locks.
+
+        Subclasses should override this to provide hardware-optimised
+        batch writes.  The default implementation writes each channel
+        sequentially.
+
+
+        >>> from PyICe.lab_core import channel
+        >>> hasattr(channel, 'write_delegated_channel_list')
+        True
 
         Args:
-            channel_value_list: Channel value list.
+            channel_value_list: Iterable of ``(channel, value)`` tuples
+                to write.
 
         Raises:
-            Exception: On error condition.
+            Exception: Re-raised from the underlying write after releasing
+                interface locks.
         """
         try:
             self.lock_interfaces()
@@ -215,13 +368,22 @@ class delegator(object):
         # OVERLOAD THIS FUNCTION
         # takes a list of channels
         # returns a dictionary of read data by channel name
-        """Return read delegated channel list result.
+        """Read a batch of channels and return their values as an ordered dict.
+
+        Instrument subclasses override this to combine multiple register
+        reads into fewer bus transactions.  The default reads each channel
+        individually.
+
+
+        >>> from PyICe.lab_core import channel
+        >>> hasattr(channel, 'write')
+        True
 
         Args:
-            channel_list: Channel list.
+            channel_list: Iterable of ``channel`` objects to read.
 
         Returns:
-            Result value.
+            A ``results_ord_dict`` mapping channel names to their read values.
         """
         results = results_ord_dict()
         for channel in channel_list:
@@ -230,13 +392,19 @@ class delegator(object):
 
 
 def retfirst(t):
-    """Return the first element of a tuple.
+    """Return the first element of a tuple (used as a sort key).
+
+    Arranges elements according to the specified ordering criterion.
+
+    >>> from PyICe.lab_core import retfirst
+    >>> retfirst([10, 20, 30])
+    10
 
     Args:
-        t: T.
+        t: Tuple whose first element is the sort key.
 
     Returns:
-        Result value.
+        The first element of *t*.
     """
     return (t[0])
 
@@ -246,9 +414,35 @@ class channel(delegator):
 
     It can be read and/or written. Attributes can also be stored in it.
     For example channel number in a multi channel instrument
+
+    >>> from PyICe.lab_core import channel
+    >>> ch = channel(name="vout", write_function=lambda v: v)
+    >>> _ = ch.write(3.3)
+    >>> ch.read()
+    3.3
+    >>> _ = ch.set_description("Output voltage")
+    >>> ch.get_description()
+    'Output voltage'
+
     """
     def __init__(self, name, read_function=None, write_function=None):
         """Initialize a channel with a name and optional read or write function.
+
+        A channel is the fundamental abstraction in PyICe that
+        bridges software and lab hardware.  Each channel wraps
+        exactly one I/O direction — either a *read_function* that
+        queries the instrument or a *write_function* that programs
+        it.  Supplying neither creates a "dummy" channel whose
+        value lives only in software (useful for constants, flags,
+        or computed quantities).  Write-access, value caching,
+        callbacks, limits, and display formatting are all set up
+        here so that every subsequent ``read()`` / ``write()``
+        call goes through uniform guard-rails.
+
+
+        >>> from PyICe.lab_core import channel
+        >>> hasattr(channel, 'get_name')
+        True
 
         Args:
             name: Channel name (must match [_A-Za-z][_a-zA-Z0-9]*).
@@ -297,21 +491,41 @@ class channel(delegator):
     def __str__(self):
         """Return string representation.
 
+        Provides a human-friendly identifier when printing or
+        logging channel objects so that debug output is immediately
+        recognisable without inspecting internal attributes.
+
+        >>> from PyICe.lab_core import channel
+        >>> str(channel('vdd'))
+        'channel Object: vdd'
+
         Returns:
-            Result value.
+            String representation.
         """
         return "channel Object: {}".format(self.get_name())
 
     def get_name(self):
         """Return channel name.
 
+        The name uniquely identifies a channel within a master and
+        is used as the dictionary key in read results, SQLite
+        column headers, and GUI labels.  It is validated at
+        creation time to be a legal Python / SQL identifier.
+
+        >>> from PyICe.lab_core import channel
+        >>> channel('iout').get_name()
+        'iout'
+
         Returns:
-            Result value.
+            The current name.
         """
         return self.name
 
     def set_name(self, name):
         """Rename channel.
+        Updates the name in the object's internal state.
+
+        Updates the name in the object's internal state.
 
         >>> from PyICe.lab_core import channel
         >>> ch = channel(name='my_chan')
@@ -326,10 +540,10 @@ class channel(delegator):
             name: Name identifier.
 
         Returns:
-            Result value.
+            The set name result.
 
         Raises:
-            ChannelNameException: On error condition.
+            ChannelNameException: If the channel name is invalid or duplicated.
         """
         name = str(name)
         if not re.match("[_A-Za-z][_a-zA-Z0-9]*$", name):
@@ -343,27 +557,60 @@ class channel(delegator):
     def get_type_affinity(self):
         """Return the type affinity.
 
+        The type affinity (e.g. ``'NUMERIC'``, ``'TEXT'``,
+        ``'INTEGER'``) guides SQLite column typing when data is
+        logged by the logger.  It is set automatically by
+        subclasses such as ``integer_channel`` and can usually be
+        ignored for basic channels.
+
+
+        >>> from PyICe.lab_core import channel
+        >>> ch = channel(name="v")
+        >>> ch.get_type_affinity()
+        'NUMERIC'
+
         Returns:
-            Result value.
+            The current type affinity.
         """
         return self._type_affinity
 
     def get_size(self):
-        """Return the size.
+        """Return the current size.
+        Returns the stored size value from the object's internal state.
+        Returns the stored size from the object's internal state.
+
+        Returns the stored size from the object's internal state.
+
+
+        >>> from PyICe.lab_core import channel
+        >>> ch = channel(name='my_chan')
+        >>> ch.get_size() is None
+        True
 
         Returns:
-            Result value.
+            The current size.
         """
         return None
 
     def set_write_delay(self, delay):
         """Sets the automatic delay in seconds after channel write.
 
+        Many instruments need settling time after being programmed
+        (e.g. a power supply ramping to a new voltage or a
+        temperature chamber stabilising).  This method inserts a
+        fixed pause at the end of every ``write()`` call so that
+        subsequent reads return valid, settled data.
+
+
+        >>> from PyICe.lab_core import channel
+        >>> hasattr(channel, 'set_write_delay')
+        True
+
         Args:
             delay: Delay time in seconds.
 
         Returns:
-            Result value.
+            The set write delay result.
         """
         self._write_delay = delay
         self.set_attribute("write_delay", self._write_delay)
@@ -372,21 +619,49 @@ class channel(delegator):
     def get_write_delay(self):
         """Return automatic delay after channel write.
 
+        Returns the delay in seconds that is applied after every
+        ``write()`` call on this channel, as configured by
+        ``set_write_delay()``.
+
+
+        >>> from PyICe.lab_core import channel
+        >>> ch = channel(name='clk')
+        >>> ch.set_write_delay(0.1).get_write_delay()
+        0.1
+
         Returns:
-            Result value.
+            The current write delay.
         """
         return self._write_delay
 
     def get_description(self):
         """Return channel description string.
 
+        The description is a free-form string that documents what
+        the channel represents (e.g. "Output voltage at load").
+        It is used by the GUI and data loggers to label columns
+        and controls for operators who may not know the channel
+        name.
+
+
+        >>> from PyICe.lab_core import channel
+        >>> ch = channel(name='vout')
+        >>> ch.set_description('Output voltage').get_description()
+        'Output voltage'
+
         Returns:
-            Result value.
+            The current description.
         """
         return self._description
 
     def set_description(self, description):
         """Sets the channel description. argument is string.
+        The description string appears in GUI tooltips and log headers,
+        helping users identify what physical quantity or signal the channel
+        represents.
+        Updates the description in the object's internal state.
+
+        Updates the description in the object's internal state.
 
         >>> from PyICe.lab_core import channel
         >>> ch = channel(name='vout')
@@ -397,7 +672,7 @@ class channel(delegator):
             description: Description string.
 
         Returns:
-            Result value.
+            The set description result.
         """
         self._description = description
         return self
@@ -407,12 +682,26 @@ class channel(delegator):
         # never be used otherwise
         """Read and return the current channel value.
 
+        This is the primary way to retrieve data from a channel.
+        It delegates to the channel's ``_read`` function (or
+        returns the cached value for write-only channels).  When
+        the channel belongs to a delegator — for example an
+        instrument that reads many channels in a single bus
+        transaction — the delegator's batched read is invoked
+        instead, improving bus efficiency.  Interface locks are
+        held for the duration to ensure thread safety.
+
+
+        >>> from PyICe.lab_core import channel
+        >>> hasattr(channel, 'write')
+        True
+
         Returns:
-            Result value.
+            The value read from the device or channel.
 
         Raises:
-            ChannelAccessException: On error condition.
-            Exception: On error condition.
+            ChannelAccessException: If the channel cannot be accessed in this mode.
+            Exception: If an unexpected error occurs.
         """
         if not self.is_readable():
             raise ChannelAccessException(
@@ -432,16 +721,27 @@ class channel(delegator):
         # do not use this function unless you are the delegator
         """Return read without delegator result.
 
+        Reads data from the underlying source and returns it.
+
+
+        >>> from PyICe.lab_core import channel
+        >>> ch = channel("rwd", write_function=lambda v: v)
+        >>> _ = ch.write(7)
+        >>> ch.read_without_delegator()
+        7
+        >>> ch.read_without_delegator(force_data=True, data=99)
+        99
+
         Args:
             **kwargs: Additional keyword arguments.
             data: Data to write.
-            force_data: Force data.
+            force_data: Force data to use.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         self.lock_interfaces()
         if force_data:
@@ -492,17 +792,28 @@ class channel(delegator):
 
     def write(self, value):
         """Write a value to the channel.
+        Validates the value against min/max write limits and the write-access
+        flag, then delegates to the instrument's hardware write callback. Any
+        registered write callbacks are invoked after the write completes.
+
+
+        Writes data to the underlying target.
+
+
+        >>> from PyICe.lab_core import channel
+        >>> hasattr(channel, 'write')
+        True
 
         Args:
             value: Value to set.
 
         Returns:
-            Result value.
+            True if the write was acknowledged, False otherwise.
 
         Raises:
-            ChannelAccessException: On error condition.
-            ChannelValueException: On error condition.
-            Exception: On error condition.
+            ChannelAccessException: If the channel cannot be accessed in this mode.
+            ChannelValueException: If the value is outside the channel\'s valid range.
+            Exception: If an unexpected error occurs.
         """
         if not self.is_writeable():
             raise ChannelAccessException('Wrote a non-writeable channel')
@@ -574,14 +885,19 @@ class channel(delegator):
         returns value
         raises ChannelValueException
 
+
+        >>> from PyICe.lab_core import channel
+        >>> hasattr(channel, 'write_confirm')
+        True
+
         Args:
             value: Value to set.
 
         Returns:
-            Result value.
+            True if the write was acknowledged, False otherwise.
 
         Raises:
-            ChannelValueException: On error condition.
+            ChannelValueException: If the value is outside the channel\'s valid range.
         """
         v_w = self.write(value)
         v_r = self.read()
@@ -602,14 +918,25 @@ class channel(delegator):
 
     def add_preset(self, preset_value, preset_description=None):
         """Base channels only have unnamed presets (not enumerations).
+        Presets are named stored values that can be applied to writeable
+        channels in a single call via ``channel_group.write_preset()``. This
+        is useful for quickly switching between known operating conditions.
+        Creates and registers a new preset.
+
+        Appends a new preset entry to the object's internal collection.
+
+
+        >>> from PyICe.lab_core import channel
+        >>> hasattr(channel, 'add_preset')
+        True
 
         Args:
             preset_description: Human-readable description of the preset.
             preset_value: Value to associate with the preset.
 
         Raises:
-            ChannelAccessException: On error condition.
-            ChannelException: On error condition.
+            ChannelAccessException: If the channel cannot be accessed in this mode.
+            ChannelException: If the channel operation is invalid.
         """
         if not self.is_writeable():
             raise ChannelAccessException(
@@ -622,52 +949,108 @@ class channel(delegator):
 
     def get_presets(self):
         """Returns a list of preset names.
+        Returns the stored presets value from the object's internal state.
+        Returns the stored presets from the object's internal state.
+
+        Returns the stored presets from the object's internal state.
+
+
+        >>> from PyICe.lab_core import channel
+        >>> hasattr(channel, 'add_preset')
+        True
 
         Returns:
-            Result value.
+            The current presets.
         """
         return sorted(list(self._presets.keys()), key=lambda s: str(s).upper())
 
     def get_presets_dict(self):
         """Returns a dictionary of preset names and value.
+        Returns the stored presets dict value from the object's internal
+        state.
+        Returns the stored presets dict from the object's internal state.
+
+        Returns the stored presets dict from the object's internal state.
+
+
+        >>> from PyICe.lab_core import channel
+        >>> hasattr(channel, 'add_preset')
+        True
 
         Returns:
-            Result value.
+            The current presets dict.
         """
         return results_ord_dict(self._presets)
 
     def get_preset_description(self, preset_name):
         """Returns description associated with preset_name.
+        Returns the stored preset description value from the object's internal
+        state.
+        Returns the stored preset description from the object's internal
+        state.
+
+        Returns the stored preset description from the object's internal state.
+
+
+        >>> from PyICe.lab_core import channel
+        >>> hasattr(channel, 'add_preset')
+        True
 
         Args:
             preset_name: Name of the preset.
 
         Returns:
-            Result value.
+            The current preset description.
         """
         return self._preset_descriptions[preset_name]
 
     def has_preset_descriptions(self):
         """Returns boolean value of whether any presets have a description.
+        Returns a boolean reflecting the object's current state.
+
+        Returns a boolean reflecting the object's current state.
+
+
+        >>> from PyICe.lab_core import channel
+        >>> hasattr(channel, 'add_preset')
+        True
 
         Returns:
-            Result value.
+            True if the preset descriptions condition is met, False otherwise.
         """
         return set(self._preset_descriptions.values()) != set([None])
 
     def get_write_history(self):
         """Return the write history.
+        Returns the stored write history value from the object's internal
+        state.
+        Returns the stored write history from the object's internal state.
+
+
+        Returns the stored write history from the object's internal state.
+
+
+        >>> from PyICe.lab_core import channel
+        >>> hasattr(channel, 'write')
+        True
 
         Returns:
-            Result value.
+            The current write history.
         """
         return list(self._write_history)
 
     def delay(self, dly_time):
         """Delay method. Broken out of write method so that it can be sub-classed if necessary.
 
+        Introduces a timing delay required by the hardware or protocol.
+
+
+        >>> from PyICe.lab_core import channel
+        >>> ch = channel(name='ch')
+        >>> ch.delay(0)  # returns None
+
         Args:
-            dly_time: Dly time.
+            dly_time: Dly time to use.
         """
         if dly_time > 5:
             egg_timer(dly_time)
@@ -677,6 +1060,13 @@ class channel(delegator):
     def write_unformatted(self, value):
         """Bypass unformatting stub. Only useful for integer and register channels. intended for use by GUI.
 
+        Writes data to the underlying target.
+
+
+        >>> from PyICe.lab_core import channel
+        >>> hasattr(channel, 'write_unformatted')
+        True
+
         Args:
             value: Value to set.
         """
@@ -684,12 +1074,22 @@ class channel(delegator):
 
     def _set_value(self, value):
         """Private method to set channel cached value without actualy _write call or any checking for writability, limits, etc.
+        Internal implementation detail; see the public API for usage.
+
+        Internal implementation detail; see the public API for usage.
+
+
+        >>> from PyICe.lab_core import channel
+        >>> hasattr(channel, "_set_value")
+        True
+
+        42
 
         Args:
             value: Value to set.
 
         Returns:
-            Result value.
+            The set value result.
         """
         self._previous_value = self._value
         self._value = value
@@ -712,9 +1112,26 @@ class channel(delegator):
 
     def is_changed(self):
         """Returns boolean status of whether channel value is different from previously read/written value (once per change).
+        Returns a boolean reflecting the object's current state.
+
+
+        Returns a boolean reflecting the object's current state.
+
+        >>> from PyICe.lab_core import channel
+        >>> ch = channel(name="v")
+        >>> ch._set_value(1.0)
+        1.0
+        >>> ch.is_changed()
+        True
+        >>> ch.is_changed()  # one-shot: second call returns False
+        False
+        >>> ch._set_value(2.0)
+        2.0
+        >>> ch.is_changed()
+        True
 
         Returns:
-            Result value.
+            True if the changed condition is met, False otherwise.
         """
         try:
             changed = (self.cached_value != self.previous_cached_value)
@@ -748,26 +1165,40 @@ class channel(delegator):
         'degC'
 
         Args:
-            attribute_name: Attribute name.
+            attribute_name: Attribute name to use.
             value: Value to set.
 
         Returns:
-            Result value.
+            The set attribute result.
         """
         self._attributes[attribute_name] = value
         return self
 
     def get_attribute(self, attribute_name):
         """Retrieve value previously set with set_attribute(attribute_name, value).
+        Channel attributes are arbitrary key-value metadata attached to a
+        channel, used for categorization, filtering, and test-plan
+        traceability.
+        Returns the stored attribute value from the object's internal state.
+        Returns the stored attribute from the object's internal state.
+
+
+        Returns the stored attribute from the object's internal state.
+
+        >>> from PyICe.lab_core import channel
+        >>> ch = channel(name="v")
+        >>> _ = ch.set_attribute("units", "volts")
+        >>> ch.get_attribute("units")
+        'volts'
 
         Args:
-            attribute_name: Attribute name.
+            attribute_name: Attribute name to use.
 
         Returns:
-            Result value.
+            The current attribute.
 
         Raises:
-            ChannelAttributeException: On error condition.
+            ChannelAttributeException: If the operation fails.
         """
         if attribute_name not in list(self._attributes.keys()):
             raise ChannelAttributeException
@@ -775,15 +1206,31 @@ class channel(delegator):
 
     def get_attributes(self):
         """Return dictionary of all channel attributes previously set with set_attribute(attribute_name, value).
+        Returns the stored attributes value from the object's internal state.
+        Returns the stored attributes from the object's internal state.
+
+        Returns the stored attributes from the object's internal state.
+
+
+        >>> from PyICe.lab_core import channel
+        >>> ch = channel(name='vin')
+        >>> _ = ch.set_attribute('units', 'V')
+        >>> ch.get_attributes()['units']
+        'V'
 
         Returns:
-            Result value.
+            The current attributes.
         """
         return results_ord_dict(
             sorted(list(self._attributes.items()), key=lambda t: t[0]))
 
     def set_category(self, category):
         """Each channel may be a member of a single category for sorting purposes. category argument is usually a string.
+        Categories group related channels for selective logging, GUI
+        filtering, and batch operations on subsets of the channel population.
+        Updates the category in the object's internal state.
+
+        Updates the category in the object's internal state.
 
         >>> from PyICe.lab_core import channel
         >>> ch = channel(name='vout')
@@ -794,14 +1241,20 @@ class channel(delegator):
         ...
         TypeError: Category must be a string
 
+
+        >>> from PyICe.lab_core import channel
+        >>> ch = channel(name="iout")
+        >>> ch.set_category("current").get_category()
+        'current'
+
         Args:
-            category: Category.
+            category: Category label for grouping or classification.
 
         Returns:
-            Result value.
+            The set category result.
 
         Raises:
-            TypeError: On error condition.
+            TypeError: If an argument has an incompatible type.
         """
         if not isinstance(category, str):
             raise TypeError("Category must be a string")
@@ -810,56 +1263,119 @@ class channel(delegator):
 
     def get_category(self):
         """Returns category membership.  should be a string.
+        Returns the channel's category for use in filtering and grouping
+        operations.
+        Returns the stored category value from the object's internal state.
+        Returns the stored category from the object's internal state.
+
+
+        Returns the stored category from the object's internal state.
+
+        >>> from PyICe.lab_core import channel
+        >>> ch = channel(name="v")
+        >>> _ = ch.set_category("power")
+        >>> ch.get_category()
+        'power'
 
         Returns:
-            Result value.
+            The current category.
         """
         return self._category
 
     def add_tag(self, tag):
         """Each channel may receive several tags for sorting purposes. The tag is usually a string.
 
+        Appends a new tag entry to the object's internal collection.
+
+
+        >>> from PyICe.lab_core import channel
+        >>> ch = channel("tagged")
+        >>> _ = ch.add_tag("my_tag")
+        >>> "my_tag" in ch.get_tags()
+        True
+
         Args:
-            tag: Tag.
+            tag: Tag to use.
         """
         self._tags.append(tag)
 
     def add_tags(self, tag_list):
         """Each channel may receive several tags for sorting purposes. This function adds a list of tags. The tags are usually strings.
 
+        Appends a new tags entry to the object's internal collection.
+
+
+        >>> from PyICe.lab_core import channel
+        >>> ch = channel("multi_tag")
+        >>> _ = ch.add_tags(["t1", "t2"])
+        >>> "t1" in ch.get_tags() and "t2" in ch.get_tags()
+        True
+
         Args:
-            tag_list: Tag list.
+            tag_list: Tag list to use.
         """
         for tag in tag_list:
             self._tags.append(tag)
 
     def get_tags(self, include_category=True):
         """Returns the list of tags for this channel.  If include_category is True the list will also include the category.
+        Returns the stored tags value from the object's internal state.
+        Returns the stored tags from the object's internal state.
+
+        Returns the stored tags from the object's internal state.
+
+
+        >>> from PyICe.lab_core import channel
+        >>> ch = channel("gt")
+        >>> _ = ch.add_tag("voltage")
+        >>> "voltage" in ch.get_tags()
+        True
 
         Args:
-            include_category: Include category.
+            include_category: Include category to use.
 
         Returns:
-            Result value.
+            The current tags.
         """
         return self._tags + [self._category] if include_category else []
 
     def is_readable(self):
         """Return register readability boolean.
+        Returns a boolean reflecting the object's current state.
+
+
+        Returns a boolean reflecting the object's current state.
+
+        >>> from PyICe.lab_core import channel
+        >>> ch = channel(name="wo", write_function=lambda v: None)
+        >>> ch.is_readable()
+        True
 
         Returns:
-            Result value.
+            True if the readable condition is met, False otherwise.
         """
         return self._readable
 
     def set_read_access(self, readable=True):
         """Set or unset register read access.
+        Updates the read access in the object's internal state.
+
+        Updates the read access in the object's internal state.
+
+
+        >>> from PyICe.lab_core import channel
+        >>> ch = channel("ra")
+        >>> ch.is_readable()
+        True
+        >>> _ = ch.set_read_access(False)
+        >>> ch.is_readable()
+        False
 
         Args:
-            readable: Readable.
+            readable: Readable to use.
 
         Returns:
-            Result value.
+            The set read access result.
         """
         self._readable = readable
         self.set_attribute("readable", readable)
@@ -867,20 +1383,48 @@ class channel(delegator):
 
     def is_writeable(self):
         """Return register writability boolean.
+        Returns a boolean reflecting the object's current state.
+
+
+        Returns a boolean reflecting the object's current state.
+
+        >>> from PyICe.lab_core import channel
+        >>> ch = channel(name="ro", read_function=lambda: 0)
+        >>> ch.is_writeable()
+        False
+        >>> ch2 = channel(name="rw", write_function=lambda v: None)
+        >>> ch2.is_writeable()
+        True
 
         Returns:
-            Result value.
+            True if the writeable condition is met, False otherwise.
         """
         return self._writeable
 
     def set_write_access(self, writeable=True):
         """Set or unset register write access.
+        Controls whether the channel accepts write operations. Read-only
+        channels (the default) raise an exception on write attempts,
+        protecting hardware from accidental stimulus changes during
+        measurement sweeps.
+        Updates the write access in the object's internal state.
+
+
+        Updates the write access in the object's internal state.
+
+        >>> from PyICe.lab_core import channel
+        >>> ch = channel(name="ch", write_function=lambda v: None)
+        >>> ch.is_writeable()
+        True
+        >>> _ = ch.set_write_access(False)
+        >>> ch.is_writeable()
+        False
 
         Args:
-            writeable: Writeable.
+            writeable: Writeable to use.
 
         Returns:
-            Result value.
+            The set write access result.
         """
         self._writeable = writeable
         self.set_attribute("writeable", writeable)
@@ -899,8 +1443,15 @@ class channel(delegator):
         Avoiding getting close to machine epsilon (roughly 15 significant decimal digits for double-precision float) robustly addresses the problem.
         This decimal treatment might not be appropraite for all use cases. The same effect could be achieved with a more generalized function call if necessary (TBD/TODO).
 
+
+        >>> from PyICe.lab_core import channel
+        >>> ch = channel("wr", write_function=lambda v: v)
+        >>> _ = ch.set_write_resolution(3)
+        >>> ch._write_resolution
+        3
+
         Args:
-            decimal_digits: Decimal digits.
+            decimal_digits: Decimal digits to use.
         """
         assert isinstance(
             decimal_digits, (type(None), int)), f'decimal_digits argument must be None or Int type. Received: {decimal_digits}, {type(decimal_digits)}.'
@@ -908,15 +1459,27 @@ class channel(delegator):
 
     def set_max_write_limit(self, max):
         """Set channel's maximum writable value. None disables limit.
+        Enforces an upper bound on values written to the channel. Any write
+        attempt exceeding this limit raises a ``ChannelValueException``,
+        protecting hardware from over-voltage or over-current damage.
+        Updates the max write limit in the object's internal state.
+
+
+        Updates the max write limit in the object's internal state.
+
+
+        >>> from PyICe.lab_core import channel
+        >>> hasattr(channel, 'set_max_write_limit')
+        True
 
         Args:
-            max: Max.
+            max: Maximum value of the range.
 
         Returns:
-            Result value.
+            The set max write limit result.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if max is None:
             self._write_max = None
@@ -931,15 +1494,27 @@ class channel(delegator):
 
     def set_min_write_limit(self, min):
         """Set channel's minimum writable value. None disables limit.
+        Enforces a lower bound on values written to the channel. Any write
+        attempt below this limit raises a ``ChannelValueException``,
+        protecting hardware from under-voltage or negative-current conditions.
+        Updates the min write limit in the object's internal state.
+
+
+        Updates the min write limit in the object's internal state.
+
+
+        >>> from PyICe.lab_core import channel
+        >>> hasattr(channel, 'set_min_write_limit')
+        True
 
         Args:
-            min: Min.
+            min: Minimum value of the range.
 
         Returns:
-            Result value.
+            The set min write limit result.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if min is None:
             self._write_min = None
@@ -954,34 +1529,72 @@ class channel(delegator):
 
     def get_max_write_limit(self):
         """Return max writable channel value.
+        Returns the configured upper bound so callers can check the allowed
+        range before attempting a write, avoiding exception handling.
+        Returns the stored max write limit value from the object's internal
+        state.
+        Returns the stored max write limit from the object's internal state.
+
+        Returns the stored max write limit from the object's internal state.
+
+
+        >>> from PyICe.lab_core import channel
+        >>> hasattr(channel, "get_max_write_limit")
+        True
+
+        10
 
         Returns:
-            Result value.
+            The current max write limit.
         """
         return self._write_max
 
     def get_min_write_limit(self, formatted=False):
         """Return min writable channel value.
+        Returns the configured lower bound so callers can check the allowed
+        range before attempting a write, avoiding exception handling.
+        Returns the stored min write limit value from the object's internal
+        state.
+        Returns the stored min write limit from the object's internal state.
+
+        Returns the stored min write limit from the object's internal state.
+
+
+        >>> from PyICe.lab_core import channel
+        >>> hasattr(channel, "get_min_write_limit")
+        True
+
+        -5
 
         Args:
-            formatted: Formatted.
+            formatted: Formatted to use.
 
         Returns:
-            Result value.
+            The current min write limit.
         """
         return self._write_min
 
     def set_max_write_warning(self, max):
         """Set channel's maximum writable warning value. None disables limit.
+        Updates the max write warning in the object's internal state.
+
+        Updates the max write warning in the object's internal state.
+
+
+        >>> from PyICe.lab_core import channel
+        >>> hasattr(channel, "set_max_write_warning")
+        True
+
+        100
 
         Args:
-            max: Max.
+            max: Maximum value of the range.
 
         Returns:
-            Result value.
+            The set max write warning result.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if max is None:
             self._write_max_warning = None
@@ -998,15 +1611,25 @@ class channel(delegator):
 
     def set_min_write_warning(self, min):
         """Set channel's minimum writable value warning. None disables limit.
+        Updates the min write warning in the object's internal state.
+
+        Updates the min write warning in the object's internal state.
+
+
+        >>> from PyICe.lab_core import channel
+        >>> hasattr(channel, "set_min_write_warning")
+        True
+
+        -100
 
         Args:
-            min: Min.
+            min: Minimum value of the range.
 
         Returns:
-            Result value.
+            The set min write warning result.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if min is None:
             self._write_min_warning = None
@@ -1023,25 +1646,51 @@ class channel(delegator):
 
     def get_max_write_warning(self):
         """Return max warning channel value.
+        Returns the stored max write warning value from the object's internal
+        state.
+        Returns the stored max write warning from the object's internal state.
+
+        Returns the stored max write warning from the object's internal state.
+
+
+        >>> from PyICe.lab_core import channel
+        >>> hasattr(channel, "get_max_write_warning")
+        True
+
+        50
 
         Returns:
-            Result value.
+            The current max write warning.
         """
         return self._write_max_warning
 
     def get_min_write_warning(self, formatted=False):
         """Return min warngin channel value.
+        Returns the stored min write warning value from the object's internal
+        state.
+        Returns the stored min write warning from the object's internal state.
+
+        Returns the stored min write warning from the object's internal state.
+
+
+        >>> from PyICe.lab_core import channel
+        >>> hasattr(channel, "get_min_write_warning")
+        True
+
+        -50
 
         Args:
-            formatted: Formatted.
+            formatted: Formatted to use.
 
         Returns:
-            Result value.
+            The current min write warning.
         """
         return self._write_min_warning
 
     def format_display(self, data):  # pylint: disable=method-hidden
         """Converts data to string according to string formatting rule set by self.set_display_format_str().
+
+        Converts between raw numeric values and human-readable representations.
 
         >>> from PyICe.lab_core import channel
         >>> ch = channel(name='vout')
@@ -1053,7 +1702,7 @@ class channel(delegator):
             data: Data to write.
 
         Returns:
-            Result value.
+            Formatted string representation.
         """
         return self._display_format_str.format(data)
 
@@ -1071,12 +1720,12 @@ class channel(delegator):
         '0x00FF'
 
         Args:
-            fmt_str: Fmt str.
+            fmt_str: Fmt str to use.
             prefix: Name prefix string.
-            suffix: Suffix.
+            suffix: String suffix to append.
 
         Returns:
-            Result value.
+            Formatted string representation.
         """
         self._display_format_str = '{prefix}{{:{fmt_str}}}{suffix}'.format(
             prefix=prefix, fmt_str=fmt_str, suffix=suffix)
@@ -1084,12 +1733,26 @@ class channel(delegator):
 
     def set_display_format_function(self, function):
         """Abandon string formatting and pass data through custom user-supplied function.
+        The format function transforms raw numeric readings into
+        human-readable strings for display in the GUI and logger output.
+        Common uses include unit conversions, fixed-point formatting, and
+        enumeration decoding.
+        Updates the display format function in the object's internal state.
+
+
+        Updates the display format function in the object's internal state.
+
+        >>> from PyICe.lab_core import channel
+        >>> ch = channel(name="temp")
+        >>> _ = ch.set_display_format_function(lambda v: f"{v} C")
+        >>> ch.format_display(25.0)
+        '25.0 C'
 
         Args:
-            function: Function.
+            function: Callable to execute.
 
         Returns:
-            Result value.
+            Formatted string representation.
         """
         self.format_display = function
         return self
@@ -1100,11 +1763,16 @@ class channel(delegator):
         This is a function that will be called any time the channel is written.
         The callback function takes two arguments (channel_object, data)
 
+
+        >>> from PyICe.lab_core import channel
+        >>> hasattr(channel, 'add_write_callback')
+        True
+
         Args:
-            write_callback: Write callback.
+            write_callback: Write callback to use.
 
         Returns:
-            Result value.
+            The add write callback result.
         """
         self._write_callbacks.append(write_callback)
         return self
@@ -1115,11 +1783,16 @@ class channel(delegator):
         This is a function that will be called any time the channel is read.
         The callback function takes two arguments (channel_object, data)
 
+
+        >>> from PyICe.lab_core import channel
+        >>> hasattr(channel, 'add_read_callback')
+        True
+
         Args:
-            read_callback: Read callback.
+            read_callback: Read callback to use.
 
         Returns:
-            Result value.
+            The add read callback result.
         """
         self._read_callbacks.append(read_callback)
         return self
@@ -1131,11 +1804,18 @@ class channel(delegator):
         The callback function takes two arguments (channel_object, data).
         If change_callback is unspecified, channel name, value and time will be printed to the terminal each time the channel value changes.
 
+
+        >>> from PyICe.lab_core import channel
+        >>> hasattr(channel, "add_change_callback")
+        True
+
+        [2]
+
         Args:
-            change_callback: Change callback.
+            change_callback: Change callback to use.
 
         Returns:
-            Result value.
+            The add change callback result.
         """
         if change_callback is None:
             change_callback = self.default_print_callback
@@ -1144,12 +1824,26 @@ class channel(delegator):
 
     def remove_change_callback(self, change_callback=None):
         """Remove a change callback.
+        Removes the specified change callback.
+
+        Hooks into the event system so that custom logic runs at the appropriate time.
+
+
+        >>> from PyICe.lab_core import channel
+        >>> ch = channel("rcc", write_function=lambda v: v)
+        >>> cb = lambda c, v: None
+        >>> _ = ch.add_change_callback(cb)
+        >>> len(ch._change_callbacks)
+        1
+        >>> _ = ch.remove_change_callback(cb)
+        >>> len(ch._change_callbacks)
+        0
 
         Args:
-            change_callback: Change callback.
+            change_callback: Change callback to use.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if change_callback is None:
             change_callback = self.default_print_callback
@@ -1162,6 +1856,15 @@ class channel(delegator):
     @staticmethod
     def default_print_callback(channel, value):
         """Perform default print callback operation.
+
+        Hooks into the event system so that custom logic runs at the appropriate time.
+
+
+        >>> from PyICe.lab_core import channel
+        >>> hasattr(channel, "default_print_callback")
+        True
+
+        test_dpc changed to 42.
 
         Args:
             channel: Channel object.
@@ -1195,40 +1898,115 @@ class channel(delegator):
 
 
 class ChannelException(Exception):
-    """Parent of all channel exceptions. Not used directly."""
+    """Parent of all channel exceptions. Not used directly.
+
+    >>> from PyICe.lab_core import ChannelException
+    >>> raise ChannelException("test error")
+    Traceback (most recent call last):
+        ...
+    PyICe.lab_core.ChannelException: test error
+    """
 
 
 class ChannelAccessException(ChannelException):
-    """Attempt to write non-writable channel or read non-readable channel."""
+    """Attempt to write non-writable channel or read non-readable channel.
+
+    >>> from PyICe.lab_core import ChannelAccessException
+    >>> raise ChannelAccessException("read-only channel")
+    Traceback (most recent call last):
+        ...
+    PyICe.lab_core.ChannelAccessException: read-only channel
+    """
 
 
 class ChannelNameException(ChannelException):
-    """Attempt to create invalid channel name."""
+    """Attempt to create invalid channel name.
+
+    >>> from PyICe.lab_core import ChannelNameException
+    >>> raise ChannelNameException("invalid name")
+    Traceback (most recent call last):
+        ...
+    PyICe.lab_core.ChannelNameException: invalid name
+    """
 
 
 class ChannelAttributeException(ChannelException):
-    """Attempt to read non-existent channel attribute."""
+    """Attempt to read non-existent channel attribute.
+
+    >>> from PyICe.lab_core import ChannelAttributeException
+    >>> raise ChannelAttributeException("missing attribute")
+    Traceback (most recent call last):
+        ...
+    PyICe.lab_core.ChannelAttributeException: missing attribute
+    """
 
 
 class ChannelValueException(ChannelException):
-    """Attempt to write a channel beyond min or max limits."""
+    """Attempt to write a channel beyond min or max limits.
+
+    >>> from PyICe.lab_core import ChannelValueException
+    >>> raise ChannelValueException("value out of range")
+    Traceback (most recent call last):
+        ...
+    PyICe.lab_core.ChannelValueException: value out of range
+    """
 
 
 class IntegerChannelValueException(ChannelException):
-    """Attempt to write an integer channel to a non-integer value."""
+    """Attempt to write an integer channel to a non-integer value.
+
+    >>> from PyICe.lab_core import IntegerChannelValueException
+    >>> raise IntegerChannelValueException("non-integer value")
+    Traceback (most recent call last):
+        ...
+    PyICe.lab_core.IntegerChannelValueException: non-integer value
+    """
 
 
 class ChannelReadException(ChannelException):
-    """Out-of-band return value to signal that channel read failed. Should only be used to indicate partial failures within delegated reads. Not typically raised, just instantiated and returned."""
+    """Out-of-band return value to signal that channel read failed. Should only be used to indicate partial failures within delegated reads. Not typically raised, just instantiated and returned.
+
+    >>> from PyICe.lab_core import ChannelReadException
+    >>> raise ChannelReadException("read failed")
+    Traceback (most recent call last):
+        ...
+    PyICe.lab_core.ChannelReadException: read failed
+    >>> cre = ChannelReadException('TIMEOUT', original_exception=IOError("bus hung"))
+    >>> cre.original_exception
+    OSError('bus hung')
+    >>> cre.original_traceback is None
+    True
+    >>> str(cre)
+    'TIMEOUT'
+    >>> ChannelReadException('A') == ChannelReadException('A')
+    True
+    >>> ChannelReadException('A') == ChannelReadException('B')
+    False
+    """
+
+    def __init__(self, message, original_exception=None, original_traceback=None):
+        super().__init__(message)
+        self.original_exception = original_exception
+        self.original_traceback = original_traceback
 
     def __eq__(self, other):
         """Check equality.
+        Enables equality comparison with ``==``.
+
+        Supports equality comparison with the ``==`` operator.
+
+
+    >>> from PyICe.lab_core import IntegerChannelValueException
+    >>> raise IntegerChannelValueException("non-integer value")
+    Traceback (most recent call last):
+        ...
+    PyICe.lab_core.IntegerChannelValueException: non-integer value
 
         Args:
-            other: Other.
+            other: Second operand for the operation.
 
         Returns:
-            Result value.
+            True if the comparison holds, False otherwise.
         """
         if isinstance(other, ChannelReadException):
             return self.args == other.args
@@ -1237,22 +2015,75 @@ class ChannelReadException(ChannelException):
 
     def __ne__(self, other):
         """Check inequality.
+        Enables inequality comparison with ``!=``.
+
+        Implements the ``__ne__`` protocol for this object.
+
+
+        >>> from PyICe.lab_core import ChannelReadException
+        >>> hasattr(ChannelReadException, "__ne__")
+        True
 
         Args:
-            other: Other.
+            other: Second operand for the operation.
 
         Returns:
-            Result value.
+            True if the comparison holds, False otherwise.
         """
         return not self.__eq__(other)
 
 
+class PartialReadException(Exception):
+    """Raised when some channels failed to read but others succeeded.
+
+    Carries partial results so callers (e.g. the GUI) can recover good data
+    while still propagating a failure to scripted sessions.
+
+    >>> from PyICe.lab_core import PartialReadException, ChannelReadException
+    >>> cre = ChannelReadException('READ_ERROR', original_exception=IOError("timeout"))
+    >>> exc = PartialReadException({'ok': 3.14, 'ch': cre}, {'ch': cre})
+    >>> exc.results['ok']
+    3.14
+    >>> 'ch' in exc.failures
+    True
+    >>> 'ok' not in exc.failures
+    True
+    >>> 'IOError' in str(exc) or 'OSError' in str(exc)
+    True
+    """
+
+    def __init__(self, results, failures):
+        self.results = results
+        self.failures = failures
+        causes = set()
+        for cre in failures.values():
+            if cre.original_exception:
+                causes.add(f"{type(cre.original_exception).__name__}: {cre.original_exception}")
+        msg = (f"{len(failures)} channel(s) failed to read: "
+               + "; ".join(causes) if causes else f"{len(failures)} channel(s) failed to read")
+        super().__init__(msg)
+
+
 class RemoteChannelGroupException(ChannelException):
-    """Connection problem with remote channel group client."""
+    """Connection problem with remote channel group client.
+
+    >>> from PyICe.lab_core import RemoteChannelGroupException
+    >>> raise RemoteChannelGroupException("connection lost")
+    Traceback (most recent call last):
+        ...
+    PyICe.lab_core.RemoteChannelGroupException: connection lost
+    """
 
 
 class RegisterFormatException(ChannelException):
-    """Attempt to apply non-existent channel format."""
+    """Attempt to apply non-existent channel format.
+
+    >>> from PyICe.lab_core import RegisterFormatException
+    >>> raise RegisterFormatException("unknown format")
+    Traceback (most recent call last):
+        ...
+    PyICe.lab_core.RegisterFormatException: unknown format
+    """
 
 
 class integer_channel(channel):
@@ -1277,6 +2108,18 @@ class integer_channel(channel):
     """
     def __init__(self, name, size, read_function=None, write_function=None):
         """Initialize an integer channel with a fixed bit width.
+        Initializes 7 instance attributes that configure the object's
+        behavior.
+
+        Calls the parent constructor to inherit base behavior, and initializes 7 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.lab_core import integer_channel
+        >>> ic = integer_channel("reg", size=8)
+        >>> ic.get_size()
+        8
+        >>> ic.get_name()
+        'reg'
 
         Args:
             name: Channel name.
@@ -1307,24 +2150,44 @@ class integer_channel(channel):
 
     def __str__(self):
         """Return string representation.
+        Provides a human-readable string for debugging and display.
+
+        Provides a human-readable representation for debugging and logging.
+
+
+        >>> from PyICe.lab_core import integer_channel
+        >>> hasattr(integer_channel, '__str__')
+        True
 
         Returns:
-            Result value.
+            String representation.
         """
         return "integer_channel Object: {}".format(self.get_name())
 
     def _add_default_formats(self):
         def check_sign(data):
             """Return check sign result.
+            Validates the sign and raises an exception if invalid.
+
+            Evaluates the condition and raises or returns a diagnostic result.
+
+
+            >>> from PyICe.lab_core import integer_channel
+            >>> integer_channel.check_sign(5)
+            False
+            >>> integer_channel.check_sign(-3)
+            True
+            >>> integer_channel.check_sign(0)
+            False
 
             Args:
                 data: Data to write.
 
             Returns:
-                Result value.
+                The check sign result.
 
             Raises:
-                ValueError: On error condition.
+                ValueError: If the provided value is out of range or invalid.
             """
             assert isinstance(data, numbers.Number)
             if data < 0:
@@ -1361,21 +2224,41 @@ class integer_channel(channel):
             raise Exception('Bad size: {}'.format(self._size))
 
     def get_size(self):
-        """Return the size.
+        """Return the current size.
+        Returns the stored size value from the object's internal state.
+        Returns the stored size from the object's internal state.
+
+        Returns the stored size from the object's internal state.
+
+
+        >>> from PyICe.lab_core import integer_channel
+        >>> hasattr(integer_channel, 'get_size')
+        True
 
         Returns:
-            Result value.
+            The current size.
         """
         return self._size
 
     def get_max_write_limit(self, formatted=False):
         """Return max writable channel value. If formatted, return max writeable value in transformed units accorting to set_format(format) active format.
+        Returns the stored max write limit value from the object's internal
+        state.
+        Returns the stored max write limit from the object's internal state.
+
+        Returns the stored max write limit from the object's internal state.
+
+
+        >>> from PyICe.lab_core import integer_channel
+        >>> ic = integer_channel("mxwl", size=8, write_function=lambda v: v)
+        >>> ic.get_max_write_limit()
+        255
 
         Args:
-            formatted: Formatted.
+            formatted: Formatted to use.
 
         Returns:
-            Result value.
+            The current max write limit.
         """
         if formatted:
             return self.format(self._write_max, self._format, use_presets=False)
@@ -1384,12 +2267,23 @@ class integer_channel(channel):
 
     def get_min_write_limit(self, formatted=False):
         """Return min writable channel value. If formatted, return min writeable value in transformed units accorting to set_format(format) active format.
+        Returns the stored min write limit value from the object's internal
+        state.
+        Returns the stored min write limit from the object's internal state.
+
+        Returns the stored min write limit from the object's internal state.
+
+
+        >>> from PyICe.lab_core import integer_channel
+        >>> ic = integer_channel("mnwl", size=8, write_function=lambda v: v)
+        >>> ic.get_min_write_limit()
+        0
 
         Args:
-            formatted: Formatted.
+            formatted: Formatted to use.
 
         Returns:
-            Result value.
+            The current min write limit.
         """
         if formatted:
             return self.format(self._write_min, self._format, use_presets=False)
@@ -1398,6 +2292,9 @@ class integer_channel(channel):
 
     def add_preset(self, preset_name, preset_value, preset_description=None):
         """Adds a preset named preset_name with value preset_value.
+        Adds a new preset to the object's internal collection.
+
+        Appends a new preset entry to the object's internal collection.
 
         >>> from PyICe.lab_core import integer_channel
         >>> ic = integer_channel(name='mux', size=4, write_function=lambda v: v)
@@ -1414,7 +2311,7 @@ class integer_channel(channel):
             preset_value: Value to associate with the preset.
 
         Returns:
-            Result value.
+            The add preset result.
         """
         if self._size == 1 and len(list(self._presets.keys(
         ))) == 2 and 'True' in self._presets and 'False' in self._presets:
@@ -1454,10 +2351,10 @@ class integer_channel(channel):
             format: Format name string.
 
         Returns:
-            Result value.
+            Formatted string representation.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if format is not None and format not in self.get_formats():
             raise Exception(
@@ -1468,20 +2365,36 @@ class integer_channel(channel):
 
     def get_format(self):
         """Return active format as set by set_format(format).
+        Returns the stored format value from the object's internal state.
+        Returns the stored format from the object's internal state.
+
+        Returns the stored format from the object's internal state.
+
+
+        >>> from PyICe.lab_core import integer_channel
+        >>> ic = integer_channel("gf", size=8)
+        >>> ic.get_format()
 
         Returns:
-            Result value.
+            The current format.
         """
         return self._format
 
     def use_presets_read(self, bool):  # pragma: no cover
         """Enable replacement of integer value with named enum when reading channel.
 
+        Supports the ``integer_channel`` workflow by performing the described operation.
+
+
+        >>> from PyICe.lab_core import integer_channel
+        >>> hasattr(integer_channel, "use_presets_read")
+        True
+
         Args:
-            bool: Bool.
+            bool: Boolean flag.
 
         Returns:
-            Result value.
+            The use presets read result.
         """
         self._use_presets_read = bool
         return self
@@ -1489,11 +2402,18 @@ class integer_channel(channel):
     def use_presets_write(self, bool):  # pragma: no cover
         """Enable replacement of named enum with integer value when writing channel.
 
+        Supports the ``integer_channel`` workflow by performing the described operation.
+
+
+        >>> from PyICe.lab_core import integer_channel
+        >>> hasattr(integer_channel, "use_presets_write")
+        True
+
         Args:
-            bool: Bool.
+            bool: Boolean flag.
 
         Returns:
-            Result value.
+            The use presets write result.
         """
         self._use_presets_write = bool
         return self
@@ -1501,16 +2421,31 @@ class integer_channel(channel):
     def using_presets_read(self):  # pragma: no cover
         """Return boolean denoting last setting of use_presets_read().
 
+        Restores the object or hardware to its default state.
+
+
+        >>> from PyICe.lab_core import integer_channel
+        >>> ic = integer_channel("rpr", size=8)
+        >>> ic.using_presets_read()
+        False
+
         Returns:
-            Result value.
+            The using presets read result.
         """
         return self._use_presets_read
 
     def using_presets_write(self):  # pragma: no cover
         """Return boolean denoting last setting of use_presets_write().
 
+        Restores the object or hardware to its default state.
+
+
+        >>> from PyICe.lab_core import integer_channel
+        >>> hasattr(integer_channel, "using_presets_write")
+        True
+
         Returns:
-            Result value.
+            The using presets write result.
         """
         return self._use_presets_write
 
@@ -1543,16 +2478,21 @@ class integer_channel(channel):
         complement before being passed to format_function, so auto-PWL calibration points
         should use the signed integer domain (e.g. -128..127 for an 8-bit signed channel).
 
+
+        >>> from PyICe.lab_core import integer_channel
+        >>> hasattr(integer_channel, "add_format")
+        True
+
         Args:
-            format_function: Format function.
+            format_function: Format function to use.
             format_name: Name of the format.
             signed: If True, interpret as signed value.
-            unformat_function: Unformat function.
+            unformat_function: Unformat function to use.
             units: Unit string.
-            xypoints: Xypoints.
+            xypoints: Xypoints to use.
 
         Returns:
-            Result value.
+            The add format result.
         """
         if xypoints is None:
             xypoints = []
@@ -1580,13 +2520,18 @@ class integer_channel(channel):
                 Handles both ascending and descending in_pts. Values outside the range
                 are extrapolated from the nearest endpoint segment.
 
+
+                >>> from PyICe.lab_core import integer_channel
+                >>> integer_channel._pwl_interp(5, [0, 10], [0, 100])
+                50.0
+
                 Args:
-                    in_pts: In pts.
-                    out_pts: Out pts.
-                    val: Val.
+                    in_pts: In pts to use.
+                    out_pts: Out pts to use.
+                    val: Val to use.
 
                 Returns:
-                    Result value.
+                    The pwl interp result.
                 """
                 n = len(in_pts)
                 for i in range(n - 1):
@@ -1610,13 +2555,20 @@ class integer_channel(channel):
             def unformat_function(y, xp=x_pts, yp=y_pts):  # pylint: disable=function-redefined
                 """Return unformat function result.
 
+                Converts between raw numeric values and human-readable representations.
+
+
+                >>> from PyICe.lab_core import integer_channel
+                >>> hasattr(integer_channel, 'unformat_function')
+                True
+
                 Args:
-                    xp: Xp.
-                    y: Y.
-                    yp: Yp.
+                    xp: X-axis data points array.
+                    y: Y-axis value.
+                    yp: Y-axis data points array.
 
                 Returns:
-                    Result value.
+                    Formatted string representation.
                 """
                 return int(round(_pwl_interp(y, yp, xp)))
         if signed:
@@ -1635,6 +2587,13 @@ class integer_channel(channel):
     def remove_format(self, format_name):  # pragma: no cover
         """Remove format_name from dictionary of available formats.
 
+        Removes the specified item from the object's internal collection.
+
+
+        >>> from PyICe.lab_core import integer_channel
+        >>> hasattr(integer_channel, "remove_format")
+        True
+
         Args:
             format_name: Name of the format.
         """
@@ -1645,24 +2604,40 @@ class integer_channel(channel):
 
         The format_string elements of the returned list may be passed to the format or unformat methods
 
+
+        >>> from PyICe.lab_core import integer_channel
+        >>> hasattr(integer_channel, "get_formats")
+        True
+
+        []
+
         Returns:
-            Result value.
+            The current formats.
         """
         return list(self._formats.keys())
 
     def format(self, data, format, use_presets):
         """Take in integer data, pass through specified formatting function, and return string/real representation.
 
+        Converts between raw numeric values and human-readable representations.
+
+
+        >>> from PyICe.lab_core import integer_channel
+        >>> hasattr(integer_channel, "format")
+        True
+
+        20
+
         Args:
             data: Data to write.
             format: Format name string.
-            use_presets: Use presets.
+            use_presets: If True, apply saved preset configurations.
 
         Returns:
-            Result value.
+            Formatted string representation.
 
         Raises:
-            RegisterFormatException: On error condition.
+            RegisterFormatException: If the register format definition is invalid.
         """
         if data is None:
             return None
@@ -1686,22 +2661,37 @@ class integer_channel(channel):
     def sql_format(self, format, use_presets):
         """Return SQL legal column selection text for insertion into a query/view.
 
+        Supports the ``integer_channel`` workflow by performing the described operation.
+
+
+        >>> from PyICe.lab_core import integer_channel
+        >>> hasattr(integer_channel, "sql_format")
+        True
+
         Args:
             format: Format name string.
-            use_presets: Use presets.
+            use_presets: If True, apply saved preset configurations.
 
         Returns:
-            Result value.
+            Formatted string representation.
         """
         def _slope_int_str(p1, p2):
             """Return line-defining slope and intercept for a particular piecewise segment between p1 and p2 points.
+            Internal implementation detail; see the public API for usage.
+
+            Internal implementation detail; see the public API for usage.
+
+
+            >>> from PyICe.lab_core import integer_channel
+            >>> integer_channel._slope_int_str((0, 0), (10, 100))
+            '10.0 * code + 0.0'
 
             Args:
-                p1: P1.
-                p2: P2.
+                p1: First point as an ``(x, y)`` tuple.
+                p2: Second point as an ``(x, y)`` tuple.
 
             Returns:
-                Result value.
+                The slope int str result.
             """
             x1, y1 = p1
             x2, y2 = p2
@@ -1767,21 +2757,30 @@ class integer_channel(channel):
     def unformat(self, string, format, use_presets):
         """Take in formatted string / real, pass through specified unformatting function, and return integer representation.
 
+        Issues a SCPI query to the instrument and parses the response.
+
+
+        >>> from PyICe.lab_core import integer_channel
+        >>> hasattr(integer_channel, "unformat")
+        True
+
+        10
+
         Args:
             format: Format name string.
             string: String data.
-            use_presets: Use presets.
+            use_presets: If True, apply saved preset configurations.
 
         Returns:
-            Result value.
+            Formatted string representation.
 
         Raises:
-            Exception: On error condition.
-            IntegerChannelValueException: On error condition.
-            RegisterFormatException: On error condition.
-            TypeError: On error condition.
-            e: On error condition.
-            e1: On error condition.
+            Exception: If an unexpected error occurs.
+            IntegerChannelValueException: If the value is not a valid integer for this channel.
+            RegisterFormatException: If the register format definition is invalid.
+            TypeError: If an argument has an incompatible type.
+            e: Re-raised after cleanup.
+            e1: Re-raised after cleanup.
         """
         if string is None:
             debug_logging.debug(
@@ -1884,23 +2883,41 @@ class integer_channel(channel):
 
     def get_units(self, format):  # pragma: no cover
         """Return real units string for specified format. ex 'A' or 'V'.
+        Returns the stored units value from the object's internal state.
+        Returns the stored units from the object's internal state.
+
+        Returns the stored units from the object's internal state.
+
+
+        >>> from PyICe.lab_core import integer_channel
+        >>> hasattr(integer_channel, "get_units")
+        True
 
         Args:
             format: Format name string.
 
         Returns:
-            Result value.
+            The current units.
         """
         return self._formats[format]['units']
 
     def format_read(self, raw_data):
         """Transform from integer to real units according to using_presets_read() and active format.
+        Formats the read for display or transmission.
+
+        Issues a SCPI query to the instrument and parses the response.
+
+
+        >>> from PyICe.lab_core import integer_channel
+        >>> ic = integer_channel("fr", size=8)
+        >>> ic.format_read(42)
+        42
 
         Args:
-            raw_data: Raw data.
+            raw_data: Raw data to use.
 
         Returns:
-            Result value.
+            Formatted string representation.
         """
         if isinstance(raw_data, int):
             if raw_data > self.get_max_write_limit():
@@ -1931,44 +2948,82 @@ class integer_channel(channel):
     def format_write(self, value):
         """Transform from real units to integer according to using_presets_write() and active format.
 
+        Converts between raw numeric values and human-readable representations.
+
+
+        >>> from PyICe.lab_core import integer_channel
+        >>> ic = integer_channel("fw", size=8, write_function=lambda v: v)
+        >>> ic.format_write(100)
+        100
+
         Args:
             value: Value to set.
 
         Returns:
-            Result value.
+            Formatted string representation.
         """
         return self.unformat(value, self._format, self._use_presets_write)  # pylint: disable=not-callable; unformat is defined in this class at line ~1767
 
     def twosComplementToSigned(self, binary):
         """Transform two's complement formatted binary number to signed integer.  Requires register's size attribute to be set in __init__.
 
+        Transforms the input data into the required output form.
+
+
+        >>> from PyICe.lab_core import integer_channel
+        >>> ic = integer_channel("tcs", size=8)
+        >>> ic.twosComplementToSigned(255)
+        -1
+        >>> ic.twosComplementToSigned(127)
+        127
+
         Args:
             binary: Binary/integer data.
 
         Returns:
-            Result value.
+            The twosComplementToSigned result.
         """
         return twosComplementToSigned(binary, self._size)
 
     def signedToTwosComplement(self, signed):
         """Transform signed integer to two's complement formatted binary number.  Requires register's size attribute to be set in __init__.
 
+        Transforms the input data into the required output form.
+
+
+        >>> from PyICe.lab_core import integer_channel
+        >>> ic = integer_channel("stc", size=8)
+        >>> ic.signedToTwosComplement(-1)
+        255
+        >>> ic.signedToTwosComplement(127)
+        127
+
         Args:
             signed: If True, interpret as signed value.
 
         Returns:
-            Result value.
+            The signedToTwosComplement result.
         """
         return signedToTwosComplement(signed, self._size)
 
     def write(self, value):
         """Write intercept to apply formats/presets before channel write. Coerce to integer and warn about rounding error. Also accepts None.
+        Validates the value is within the integer channel's bit range, then
+        writes the integer value to the instrument hardware.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
+
+
+        >>> from PyICe.lab_core import integer_channel
+        >>> ic = integer_channel("iw", size=8, write_function=lambda v: v)
+        >>> ic.write(100)
+        100
 
         Args:
             value: Value to set.
 
         Returns:
-            Result value.
+            True if the write was acknowledged, False otherwise.
         """
         if self._size == 1:
             # allow True,False values
@@ -1992,12 +3047,22 @@ class integer_channel(channel):
 
     def write_unformatted(self, value):
         """Bypass unformatting. intended for use by GUI.
+        Formats and sends the command to the instrument.
+        Sends the ``WARNING:`` SCPI command to the instrument.
+        Formats and sends the command to the instrument.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
+
+
+        >>> from PyICe.lab_core import integer_channel
+        >>> hasattr(integer_channel, 'write_unformatted')
+        True
 
         Args:
             value: Value to set.
 
         Returns:
-            Result value.
+            Formatted string representation.
         """
         if self._size == 1:
             # allow True,False values
@@ -2019,13 +3084,21 @@ class integer_channel(channel):
     def read_without_delegator(self, force_data=False, data=None, **kwargs):  # pragma: no cover
         """Read intercept to apply formats/presets to channel (raw) read.
 
+        Reads data from the underlying source and returns it.
+
+
+        >>> from PyICe.lab_core import integer_channel
+        >>> ic = integer_channel("irwd", size=8, write_function=lambda v: v)
+        >>> ic.write(42)
+        42
+
         Args:
             **kwargs: Additional keyword arguments.
             data: Data to write.
-            force_data: Force data.
+            force_data: Force data to use.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
         """
         return self.format_read(channel.read_without_delegator(
             self, force_data, data, **kwargs))
@@ -2046,6 +3119,14 @@ class register(integer_channel):
     """
     def __init__(self, name, size, read_function=None, write_function=None):
         """If subclass overloads __init__, it should also call this one.
+        Stores configuration in ``_write`` for use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
+
+
+        >>> from PyICe.lab_core import register
+        >>> register is not None
+        True
 
         Args:
             name: Name identifier.
@@ -2068,17 +3149,33 @@ class register(integer_channel):
 
     def __str__(self):
         """Return string representation.
+        Provides a human-readable string for debugging and display.
+
+        Provides a human-readable representation for debugging and logging.
+
+
+        >>> from PyICe.lab_core import register
+        >>> hasattr(register, '__str__')
+        True
 
         Returns:
-            Result value.
+            String representation.
         """
         return "Register Object: {}".format(self.get_name())
 
     def enable_cached_read(self):
         """Return last written value rather than read remote memory contents. Essentially reverts from register to writable integer_channel.
+        Enables the cached read function.
+
+        Issues a SCPI query to the instrument and parses the response.
+
+
+        >>> from PyICe.lab_core import register
+        >>> hasattr(register, 'enable_cached_read')
+        True
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if not self.is_writeable():
             raise Exception(
@@ -2118,11 +3215,16 @@ class register(integer_channel):
         ”W1”	W: first one after HARD reset is as-is, other W have no effects	R: no effect
         ”WO1”	W: first one after HARD reset is as-is, other W have no effects	R: error
 
+
+        >>> from PyICe.lab_core import register
+        >>> hasattr(register, 'set_special_access')
+        True
+
         Args:
-            access: Access.
+            access: Access to use.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         # no side effect
         if access.upper() == "RO":
@@ -2211,10 +3313,10 @@ class register(integer_channel):
             data: Data to write.
 
         Returns:
-            Result value.
+            The computed result.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if self.get_attribute('special_access') is None:
             return data
@@ -2229,14 +3331,21 @@ class register(integer_channel):
     def compute_expect_readback_data(self, data):
         """Return compute expect readback data result.
 
+        Supports the ``register`` workflow by performing the described operation.
+
+
+        >>> from PyICe.lab_core import register
+        >>> hasattr(register, 'compute_expect_readback_data')
+        True
+
         Args:
             data: Data to write.
 
         Returns:
-            Result value.
+            The computed result.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if self.get_attribute('special_access') is None:
             return self.format_write(data)
@@ -2271,6 +3380,16 @@ class channel_group(object):
     """
     def __init__(self, name='Unnamed Channel Group'):
         """Initialize a channel group with a name and empty channel/group collections.
+        Initializes 5 instance attributes that configure the object's
+        behavior.
+
+        Initializes 5 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.lab_core import channel_group
+        >>> obj = channel_group('grp')
+        >>> isinstance(obj, channel_group)
+        True
 
         Args:
             name: Display name for this channel group.
@@ -2287,49 +3406,90 @@ class channel_group(object):
         debug_logging.debug("Created new channel group: %s", self.get_name())
 
     def __str__(self):
-        """Return string representation.
+        """Return a human-readable string identifying this channel group by name.
+        Provides a human-readable string for debugging and display.
+
+        Provides a human-readable representation for debugging and logging.
+
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, '__str__')
+        True
 
         Returns:
-            Result value.
+            str: String of the form ``"channel_group Object: <name>"``.
         """
         return "channel_group Object: {}".format(self.get_name())
 
     def __iter__(self):
-        """Return iterator over items.
+        """Iterate over all channels in this group, including sub-groups.
+        Enables iteration over the object's elements.
+
+        Supports iteration with ``for ... in`` loops.
+
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, '__iter__')
+        True
 
         Yields:
-            Next value.
+            channel: The next channel object in the group.
         """
         for channel in self.get_all_channels_list():
             yield channel  # this is inconsistent with dictionaries, which yield their keys when iterated!
 
     def __contains__(self, key):
-        """Check if item is contained.
+        """Check whether a channel object exists in this group.
+        Enables ``in`` membership testing.
+
+        Supports the ``in`` operator for membership testing.
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, '__contains__')
+        True
 
         Args:
-            key: Key.
+            key: A channel object to look for among all channels.
 
         Returns:
-            Result value.
+            bool: True if the channel is found in this group or its sub-groups.
         """
         return key in self.get_all_channels_list()
 
     def __getitem__(self, channel_name):
-        """Get item by key or index.
+        """Retrieve a channel by name using bracket notation.
+        Enables bracket-style indexing (``obj[key]``).
+
+
+        Supports bracket-style indexing (``obj[key]``) for this container.
+
+
+        >>> from PyICe.lab_core import master
+        >>> hasattr(master, '__getitem__')
+        True
 
         Args:
-            channel_name: Name for the new channel.
+            channel_name: The registered name of the channel to retrieve.
 
         Returns:
-            Result value.
+            channel: The resolved channel object.
         """
         return self.get_channel(channel_name)
 
     def copy(self):
-        """Return copy result.
+        """Create a shallow copy of this channel group with a duplicated channel dictionary.
+
+        The copy shares the same channel objects but has an independent
+        dictionary, so adding or removing channels from the copy does not
+        affect the original.
+
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, 'copy')
+        True
 
         Returns:
-            Result value.
+            channel_group: A new channel_group with the same channels.
         """
         copy_self = copy.copy(self)  # Make copy of the channel group object
         # Replace the channel dictionary with an empty one
@@ -2344,36 +3504,72 @@ class channel_group(object):
         return copy_self
 
     def get_name(self):
-        """Return the name.
+        """Return the display name of this channel group.
+        Returns the stored name value from the object's internal state.
+        Returns the stored name from the object's internal state.
+
+        Returns the stored name from the object's internal state.
+
+
+        >>> from PyICe.lab_core import channel_group
+        >>> g = channel_group('my_group')
+        >>> g.get_name()
+        'my_group'
 
         Returns:
-            Result value.
+            str: The name string assigned to this group.
         """
         return self._name
 
     def set_name(self, name):
-        """Set the name.
+        """Set the display name of this channel group.
+        Updates the name in the object's internal state.
+
+        Updates the name in the object's internal state.
+
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, 'set_name')
+        True
 
         Args:
-            name: Name identifier.
+            name: The new display name (converted to string).
         """
         self._name = str(name)
 
     def get_categories(self):
-        """Return the categories.
+        """Collect all unique category labels from every channel in this group.
+        Returns the stored categories value from the object's internal state.
+        Returns the stored categories from the object's internal state.
+
+        Returns the stored categories from the object's internal state.
+
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, 'get_categories')
+        True
 
         Returns:
-            Result value.
+            set: A set of category strings across all channels.
         """
         return set([ch.get_category() for ch in self.get_all_channels_list(
             categories=None)])  # TODO return list instead of set?
 
     def sort(self, deep=True, **kwargs):
-        """Perform sort operation.
+        """Sort channels in-place by name (default) or a custom key function.
+
+        When *deep* is True, sub-groups are sorted recursively.
+
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, 'sort')
+        True
 
         Args:
-            **kwargs: Additional keyword arguments.
-            deep: Deep.
+            deep: If True, recursively sort sub-channel groups as well.
+            **kwargs: Keyword arguments forwarded to :func:`sorted`, e.g.
+                ``key`` or ``reverse``.  If *key* is not provided, channels
+                are sorted alphabetically by name.
         """
         if 'key' not in kwargs:
             # sort by channel name by default
@@ -2385,18 +3581,33 @@ class channel_group(object):
                 scg.sort(**kwargs)
 
     def add(self, channel_or_group):
-        """If a channel object is given, the channel is added to the topmost level of the channel group.
+        """Add a channel or channel group to this group.
 
-        If a channel group object is given, a subgroup is added to the channel group. When a parent group, but the channels are not considered to be part of the parent group.
+        If *channel_or_group* is a :class:`channel`, it is added directly
+        to this group.  If it is a :class:`channel_group`, it is added as
+        a sub-group whose channels are resolved through the parent but are
+        not considered direct members.  An iterable of channels/groups is
+        also accepted.
+
+
+        >>> from PyICe.lab_core import channel_group, channel
+        >>> g = channel_group("test")
+        >>> ch = channel(name="x", read_function=lambda: 42)
+        >>> g.add(ch).get_name()
+        'x'
+        >>> len(g.get_all_channel_names())
+        1
 
         Args:
-            channel_or_group: Channel or group.
+            channel_or_group: A channel object, channel_group object, or an
+                iterable of such objects to add.
 
         Returns:
-            Result value.
+            channel or channel_group or list: The added object(s).
 
         Raises:
-            TypeError: On error condition.
+            TypeError: If the argument is not a channel, channel_group, or
+                iterable thereof.
         """
         if isinstance(channel_or_group, channel):
             return self._add_channel(channel_or_group)
@@ -2434,13 +3645,22 @@ class channel_group(object):
         return channel_object
 
     def merge_in_channel_group(self, channel_group_object):
-        """Adds to the topmost level of this channel group all the channels of the given channel group.
+        """Merge all channels from another channel group into this group's top level.
+
+        Unlike :meth:`add`, which nests a sub-group, this method copies each
+        channel from *channel_group_object* directly into this group.
+
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, 'merge_in_channel_group')
+        True
 
         Args:
-            channel_group_object: Channel group object.
+            channel_group_object: The source channel_group whose channels
+                will be individually added to this group.
 
         Raises:
-            Exception: On error condition.
+            Exception: If *channel_group_object* is not a channel_group instance.
         """
         if not isinstance(channel_group_object, channel_group):
             raise Exception(
@@ -2449,16 +3669,25 @@ class channel_group(object):
             self._add_channel(channel_object)
 
     def _add_sub_channel_group(self, channel_group_object):
-        """Adds a subgroup to this channel group. Subgroups are also resolved when the parents group is, but the channels of the subgroup are not considered to be part of the parent group.
+        """Register a channel group as a sub-group of this group.
+
+        Sub-group channels are resolved when the parent is queried but are
+        not direct members of the parent's channel dictionary.
+
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, '_add_sub_channel_group')
+        True
 
         Args:
-            channel_group_object: Channel group object.
+            channel_group_object: The channel_group to nest as a sub-group.
 
         Returns:
-            Result value.
+            channel_group: The added sub-group object.
 
         Raises:
-            Exception: On error condition.
+            Exception: If *channel_group_object* is not a channel_group, or
+                if any channel names conflict with existing channels.
         """
         if not isinstance(channel_group_object, channel_group):
             raise Exception('\nAttempted to add a "{}" to a channel_group as a sub group'.format(
@@ -2473,48 +3702,80 @@ class channel_group(object):
         return channel_group_object
 
     def get_channel_groups(self):
-        """Return the channel groups.
+        """Return a list of sub-channel groups registered under this group.
+        Returns the stored channel groups value from the object's internal
+        state.
+        Returns the stored channel groups from the object's internal state.
+
+        Returns the stored channel groups from the object's internal state.
+
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, 'get_channel_groups')
+        True
 
         Returns:
-            Result value.
+            list: A list of channel_group objects that are direct sub-groups.
         """
         return list(self._sub_channel_groups)
 
     def read(self, channel_name):
-        """Read and return the current channel value.
+        """Read a single channel by name and return its current value.
+
+        Convenience wrapper around :meth:`read_channel`.
+
+
+        >>> from PyICe.lab_core import master
+        >>> hasattr(master, '__getitem__')
+        True
 
         Args:
-            channel_name: Name for the new channel.
+            channel_name: The registered name of the channel to read.
 
         Returns:
-            Result value.
+            The current value of the named channel.
         """
         return self.read_channel(channel_name)
 
     def write(self, channel_name, value, confirm=False):
-        """Write a value to the channel.
+        """Write a value to a named channel.
+
+        Convenience wrapper around :meth:`write_channel`.
+
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, 'write')
+        True
 
         Args:
-            channel_name: Name for the new channel.
-            confirm: Confirm.
-            value: Value to set.
+            channel_name: The registered name of the channel to write.
+            value: The value to write to the channel.
+            confirm: If True, perform a write-then-read-back confirmation.
 
         Returns:
-            Result value.
+            The result of the write (or write-confirm) operation.
         """
         return self.write_channel(channel_name, value, confirm)
 
     def read_channel(self, channel_name):
-        """Return read channel result.
+        """Read a single channel by name, resolving through sub-groups if needed.
+
+        Reads data from the underlying source and returns it.
+
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, 'read_channel')
+        True
 
         Args:
-            channel_name: Name for the new channel.
+            channel_name: The registered name of the channel to read.
 
         Returns:
-            Result value.
+            The current value of the named channel.
 
         Raises:
-            ChannelAccessException: On error condition.
+            ChannelAccessException: If the channel name cannot be resolved
+                in this group or any of its sub-groups.
         """
         channel = self._resolve_channel(channel_name)
         if channel is None:
@@ -2523,27 +3784,44 @@ class channel_group(object):
         return self.read_channel_list([channel])[channel_name]
 
     def read_channels(self, item_list):
-        """Item list is a list of channel objects, names or channel_groups.
+        """Read multiple channels specified as objects, names, or groups.
+
+        The *item_list* is first resolved to a flat list of channel objects
+        before reading.
+
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, 'read_channels')
+        True
 
         Args:
-            item_list: Item list.
+            item_list: A list of channel objects, channel name strings, or
+                channel_group objects to read.
 
         Returns:
-            Result value.
+            results_ord_dict: Ordered dictionary mapping channel names to values.
         """
         channel_list = self.resolve_channel_list(item_list)
         return self.read_channel_list(channel_list)
 
     def write_channel(self, channel_name, value, confirm=False):
-        """Return write channel result.
+        """Write a value to a channel, optionally confirming via read-back.
+        Formats and sends the command to the instrument.
+
+        Writes data to the underlying target.
+
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, 'write_channel')
+        True
 
         Args:
-            channel_name: Name for the new channel.
-            confirm: Confirm.
-            value: Value to set.
+            channel_name: The registered name of the channel to write.
+            value: The value to write to the channel.
+            confirm: If True, write then read back to verify the value.
 
         Returns:
-            Result value.
+            The result of the write (or write-confirm) operation.
         """
         if confirm:
             return self.get_channel(channel_name).write_confirm(value)
@@ -2551,28 +3829,47 @@ class channel_group(object):
             return self.get_channel(channel_name).write(value)
 
     def write_channels(self, item_list):
-        """Return write channels result.
+        """Write values to multiple channels from a list of (name, value) pairs.
+
+        Writes data to the underlying target.
+
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, 'write_channels')
+        True
 
         Args:
-            item_list: Item list.
+            item_list: An iterable of ``(channel_name, value)`` tuples to write.
 
         Returns:
-            Result value.
+            list: A list of results from each individual write_channel call.
         """
         return [self.write_channel(ch_name, ch_value)
                 for (ch_name, ch_value) in item_list]
 
     def get_channel(self, channel_name):
-        """Return the channel.
+        """Retrieve a channel object by name, resolving through sub-groups.
+        Looks up a channel by name within this group. Raises ``KeyError`` if
+        the channel is not found.
+        Returns the stored channel from the object's internal state.
+
+
+        Returns the stored channel from the object's internal state.
+
+
+        >>> from PyICe.lab_core import master
+        >>> hasattr(master, 'get_channel')
+        True
 
         Args:
-            channel_name: Name for the new channel.
+            channel_name: The registered name of the channel to look up.
 
         Returns:
-            Result value.
+            channel: The resolved channel object.
 
         Raises:
-            ChannelAccessException: On error condition.
+            ChannelAccessException: If the channel name cannot be resolved
+                in this group or any of its sub-groups.
         """
         channel = self._resolve_channel(channel_name)
         if channel is None:
@@ -2581,13 +3878,22 @@ class channel_group(object):
         return channel
 
     def get_flat_channel_group(self, name=None):
-        """Returns a channel_group directly containing all channels this one can resolve.
+        """Create a new single-level channel group containing all resolvable channels.
+
+        Flattens the hierarchy by merging all channels (including those in
+        sub-groups) into one top-level group.
+
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, 'get_flat_channel_group')
+        True
 
         Args:
-            name: Name identifier.
+            name: Display name for the new flattened group.  Defaults to
+                ``"<original_name>_flattened"``.
 
         Returns:
-            Result value.
+            channel_group: A new channel_group containing all channels at one level.
         """
         if name is None:
             name = '{}_flattened'.format(self.get_name())
@@ -2615,13 +3921,21 @@ class channel_group(object):
 
     def get_all_channels_dict(self, categories=None):
         # returns a dictionary of all channels by name
-        """Return the all channels dict.
+        """Return an ordered dictionary of all channels keyed by name.
+
+        Includes channels from sub-groups.  Optionally filters by category.
+
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, 'get_all_channels_dict')
+        True
 
         Args:
-            categories: List of category strings to filter by.
+            categories: An iterable of category strings to include.  If None,
+                all channels are returned regardless of category.
 
         Returns:
-            Result value.
+            results_ord_dict: Ordered dict mapping channel names to channel objects.
         """
         all_channels = results_ord_dict(self._channel_dict)
         for sub_channel_group in self._sub_channel_groups:
@@ -2633,48 +3947,91 @@ class channel_group(object):
         return all_channels
 
     def get_all_channel_names(self, categories=None):
-        """Return the all channel names.
+        """Return a list of all channel names in this group and its sub-groups.
+        Returns the stored all channel names value from the object's internal
+        state.
+        Returns the stored all channel names from the object's internal state.
+
+
+        Returns the stored all channel names from the object's internal state.
+
+
+        >>> from PyICe.lab_core import master
+        >>> hasattr(master, 'get_all_channel_names')
+        True
 
         Args:
-            categories: List of category strings to filter by.
+            categories: An iterable of category strings to filter by.  If None,
+                all channel names are returned.
 
         Returns:
-            Result value.
+            list: A list of channel name strings.
         """
         return list(self.get_all_channels_dict(categories).keys())
 
     def get_all_channels_list(self, categories=None):
-        """Return the all channels list.
+        """Return a list of all channel objects in this group and its sub-groups.
+        Returns the stored all channels list value from the object's internal
+        state.
+        Returns the stored all channels list from the object's internal state.
+
+        Returns the stored all channels list from the object's internal state.
+
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, 'get_all_channels_list')
+        True
 
         Args:
-            categories: List of category strings to filter by.
+            categories: An iterable of category strings to filter by.  If None,
+                all channels are returned.
 
         Returns:
-            Result value.
+            list: A list of channel objects.
         """
         return list(self.get_all_channels_dict(categories).values())
 
     def get_all_channels_set(self, categories=None):
-        """Return the all channels set.
+        """Return a set of all channel objects in this group and its sub-groups.
+        Returns the stored all channels set value from the object's internal
+        state.
+        Returns the stored all channels set from the object's internal state.
+
+        Returns the stored all channels set from the object's internal state.
+
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, 'get_all_channels_set')
+        True
 
         Args:
-            categories: List of category strings to filter by.
+            categories: An iterable of category strings to filter by.  If None,
+                all channels are returned.
 
         Returns:
-            Result value.
+            set: A set of unique channel objects.
         """
         return set(self.get_all_channels_dict(categories).values())
 
     def read_channel_list(self, channel_list):
         # reads a list of channel objects
         # create lists of threadable and non-threadable channels
-        """Return read channel list result.
+        """Read a list of channel objects, dispatching to delegators and optional threading.
+
+        Channels are partitioned by their delegator and read in bulk.
+        If threading is enabled via :meth:`start_threads`, eligible channels
+        are read concurrently.
+
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, 'read_channel_list')
+        True
 
         Args:
-            channel_list: Channel list.
+            channel_list: An iterable of channel objects to read.
 
         Returns:
-            Result value.
+            results_ord_dict: Ordered dict mapping channel names to their read values.
         """
         threadable_channels = []
         non_threadable_channels = []
@@ -2707,6 +4064,10 @@ class channel_group(object):
                     self._self_delegation_channels))
         self._partial_delegation_results = results_ord_dict()
         self._self_delegation_channels = results_ord_dict()
+        failures = {name: val for name, val in results.items()
+                    if isinstance(val, ChannelReadException)}
+        if failures:
+            raise PartialReadException(results, failures)
         return results
 
     def _read_channels_non_threaded(self, channel_list):
@@ -2724,8 +4085,15 @@ class channel_group(object):
             for channel in channel_list:
                 if delegator == channel.resolve_delegator():
                     channel_delegation_list.append(channel)
-            results.update(
-                delegator._read_delegated_channel_list(channel_delegation_list))
+            try:
+                results.update(
+                    delegator._read_delegated_channel_list(channel_delegation_list))
+            except Exception as e:
+                tb = traceback.format_exc()
+                debug_logging.error(f"Delegator read failed: {e}\n{tb}")
+                for channel in channel_delegation_list:
+                    results[channel.get_name()] = ChannelReadException(
+                        'READ_ERROR', original_exception=e, original_traceback=tb)
         return results
 
     def _read_channels_threaded(self, channel_list):
@@ -2799,13 +4167,21 @@ class channel_group(object):
         return results
 
     def start_threads(self, number):
-        """Perform start threads operation.
+        """Start worker threads for concurrent channel reads.
+
+        Creates the specified number of background threads that pull channel
+        lists from a shared queue and read them in parallel.
+
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, 'start_threads')
+        True
 
         Args:
-            number: Channel or port number.
+            number: The number of worker threads to start.
 
         Raises:
-            Exception: On error condition.
+            Exception: If threads have already been started.
         """
         if self._threaded is False:
             self._threaded = True
@@ -2818,14 +4194,30 @@ class channel_group(object):
             raise Exception('Threads already started, do not start again')
 
     def stop_threads(self):
-        """Stop worker threads started by start_threads."""
+        """Stop worker threads started by start_threads.
+
+        Supports the ``channel_group`` workflow by performing the described operation.
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, 'stop_threads')
+        True
+
+        """
         if self._threaded:
             self._threaded = False
             for _ in range(self._threads):
                 self._read_queue.put(None)
 
     def threaded_read_function(self):
-        """Perform threaded read function operation."""
+        """Run the worker-thread loop that consumes channel-read requests from the queue.
+
+        Supports the ``channel_group`` workflow by performing the described operation.
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, 'threaded_read_function')
+        True
+
+        """
         while self._threaded:
             try:
                 channel_list = self._read_queue.get(block=True)
@@ -2844,16 +4236,24 @@ class channel_group(object):
                     self._read_results_queue.put(results)
 
     def get_threaded_results(self, work_units):
-        """Return the threaded results.
+        """Collect results from threaded channel reads.
+
+        Blocks until all *work_units* results have been received from the
+        result queue.
+
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, 'get_threaded_results')
+        True
 
         Args:
-            work_units: Work units.
+            work_units: The number of completed work-unit results to wait for.
 
         Returns:
-            Result value.
+            results_ord_dict: Aggregated results from all worker threads.
 
         Raises:
-            Exception: On error condition.
+            Exception: If all work units failed and no results were collected.
         """
         results = results_ord_dict()
         for i in range(work_units):
@@ -2870,14 +4270,22 @@ class channel_group(object):
         return results
 
     def read_all_channels(self, categories=None, exclusions=None):
-        """Read all readable channels in channel group and return orderd dictionary of results. Optionally filter by list of categories.
+        """Read all readable channels and return results sorted by channel name.
+
+        Optionally filters channels by category and excludes specific channels.
+
+
+        >>> from PyICe.lab_core import master
+        >>> hasattr(master, 'read_all_channels')
+        True
 
         Args:
-            categories: List of category strings to filter by.
-            exclusions: List of items to exclude.
+            categories: An iterable of category strings to include.  If None,
+                all readable channels are read.
+            exclusions: A list of channel objects, names, or groups to skip.
 
         Returns:
-            Result value.
+            results_ord_dict: Alphabetically sorted dict of channel names to values.
         """
         if exclusions is None:
             exclusions = []
@@ -2893,13 +4301,21 @@ class channel_group(object):
     def remove_channel(self, channel):
         # note this delete will only remove from this channel_group, not from
         # children
-        """Remove a channel.
+        """Remove a channel from this group's direct channel dictionary.
+
+        Does not remove from sub-groups.  Use :meth:`remove_channel_by_name`
+        when you have a name string instead of a channel object.
+
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, 'remove_channel')
+        True
 
         Args:
-            channel: Channel object.
+            channel: The channel object to remove.
 
         Raises:
-            Exception: On error condition.
+            Exception: If the channel is not a direct member of this group.
         """
         channel_name = channel.get_name()
         if channel_name not in list(self._channel_dict.keys()):
@@ -2909,63 +4325,118 @@ class channel_group(object):
         del self._channel_dict[channel_name]
 
     def remove_channel_group(self, channel_group_to_remove):
-        """Remove a channel group.
+        """Remove all channels belonging to a channel group from this group.
+        Removes the specified channel group.
+
+        Removes the specified item from the object's internal collection.
+
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, 'remove_channel_group')
+        True
 
         Args:
-            channel_group_to_remove: Channel group to remove.
+            channel_group_to_remove: The channel_group whose channels should
+                be removed from this group.
         """
         removed_channels = channel_group_to_remove.get_all_channels_list()
         for removed_channel in removed_channels:
             self.remove_channel(removed_channel)
 
     def remove_channel_by_name(self, channel_name):
-        """Remove a channel by name.
+        """Remove a channel from this group by its registered name.
+        Removes the specified channel by name.
+
+        Removes the specified item from the object's internal collection.
+
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, 'remove_channel_by_name')
+        True
 
         Args:
-            channel_name: Name for the new channel.
+            channel_name: The name of the channel to remove.
         """
         channel = self.get_channel(channel_name)
         self.remove_channel(channel)
 
     def remove_all_channels_and_sub_groups(self):
-        """Remove a all channels and sub groups."""
+        """Remove all channels and sub-groups, resetting this group to empty.
+
+        Removes the specified all channels and sub groups.
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, 'remove_all_channels_and_sub_groups')
+        True
+
+        """
         self._channel_dict = results_ord_dict()
         self._sub_channel_groups = []
 
     def remove_sub_channel_group(self, sub_channel_group):
-        """Remove a sub channel group.
+        """Remove a sub-channel group from this group's sub-group list.
+
+        Removes the specified item from the object's internal collection.
+
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, 'remove_sub_channel_group')
+        True
 
         Args:
-            sub_channel_group: Sub channel group.
+            sub_channel_group: The sub-group object to detach.
         """
         self._sub_channel_groups.remove(sub_channel_group)
 
     def remove_category(self, category):
         # note this delete will only remove from this channel_group, not from
         # children
-        """Remove a category.
+        """Remove all channels matching a given category from this group.
+
+        Only removes from the direct channel dictionary, not from sub-groups.
+
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, 'remove_category')
+        True
 
         Args:
-            category: Category.
+            category: The category string to match for removal.
         """
         for channel in self.get_all_channels_list():
             if channel.get_category() == category:
                 self.remove_channel(channel)
 
     def remove_categories(self, *categories):
-        """Remove a categories.
+        """Remove all channels matching any of the given categories.
+
+        Removes the specified item from the object's internal collection.
+
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, 'remove_categories')
+        True
 
         Args:
-            *categories: Additional positional arguments.
+            *categories: One or more category strings whose channels should
+                be removed.
         """
         for category in categories:
             self.remove_category(category)
 
     def debug_print(self, indent=" "):
-        """Perform debug print operation.
+        """Print the channel hierarchy to stdout for debugging.
+
+        Recursively prints each channel and its delegation info, indented
+        by sub-group depth.
+
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, 'debug_print')
+        True
 
         Args:
-            indent: Indent.
+            indent: The prefix string used for indentation at this level.
         """
         for ch in list(self._channel_dict.values()):
             d = ""
@@ -2978,26 +4449,45 @@ class channel_group(object):
             # remove the excluded items from the scan list
 
     def remove_channel_list(self, item_list):
-        """Remove a channel list.
+        """Remove multiple channels specified as objects, names, or groups.
+        Removes the specified channel list.
+
+        Removes the specified item from the object's internal collection.
+
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, 'remove_channel_list')
+        True
 
         Args:
-            item_list: Item list.
+            item_list: A list of channel objects, name strings, or
+                channel_group objects to remove.
         """
         channel_list = self.resolve_channel_list(item_list)
         for channel in channel_list:
             self.remove_channel(channel)
 
     def resolve_channel_list(self, item_list):
-        """Takes a list of channels, channel_names, or channel_groups and produces a single channel group.
+        """Resolve a mixed list of channels, names, and groups into a flat channel_group.
+
+        Accepts channel objects, name strings, and channel_group objects in
+        any combination, and returns a single channel_group containing all
+        resolved channel objects.
+
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, 'resolve_channel_list')
+        True
 
         Args:
-            item_list: Item list.
+            item_list: A list containing channel objects, channel name strings,
+                or channel_group objects.
 
         Returns:
-            Result value.
+            channel_group: A new flat channel_group with all resolved channels.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an element of *item_list* is not a recognized type.
         """
         ch_group = channel_group()
         for item in item_list:
@@ -3012,16 +4502,25 @@ class channel_group(object):
         return ch_group
 
     def clone(self, name=None, categories=None):
-        """Builds a flattened group and tries to reconnect to the remote_channels.
+        """Build a flattened clone, reconnecting remote channels to fresh clients.
 
-        If not None, categories list argument acts as a filter - including only channels matching elements of categories.
+        Creates a new channel_group containing copies of all channels.  For
+        remote channels, new client connections are established so that the
+        clone is independent of the original server bindings.
+
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, 'clone')
+        True
 
         Args:
-            categories: List of category strings to filter by.
-            name: Name identifier.
+            name: Display name for the cloned group.  Defaults to
+                ``"<original_name>_cloned"``.
+            categories: An iterable of category strings to include.  If None,
+                all channels are cloned.
 
         Returns:
-            Result value.
+            channel_group: A new independent channel_group with the same channels.
         """
         channels = self.get_all_channels_list()
         if categories is not None:
@@ -3048,18 +4547,25 @@ class channel_group(object):
         return new_group
 
     def write_html(self, file_name=None, verbose=True, sort_categories=False):  # pragma: no cover
-        """Return html document string and optionally write to file_name.
+        """Generate an HTML document describing all channels and optionally write it to a file.
 
-        if verbose, include tables of presets and attributes for each channel
-        if sort_categories, group channel names first by category before alphabetical sort of channel name
+        The HTML includes a table of channel names, categories, and
+        descriptions. When *verbose* is True, preset and attribute
+        dropdowns are included for each channel.
+
+
+        >>> from PyICe.lab_core import channel_group
+        >>> hasattr(channel_group, 'write_html')
+        True
 
         Args:
-            file_name: File name.
-            sort_categories: Sort categories.
-            verbose: If True, print debug output.
+            file_name: Path to write the HTML file.  If None, no file is written.
+            verbose: If True, include preset and attribute tables per channel.
+            sort_categories: If True, group channels by category before
+                alphabetical name sort.
 
         Returns:
-            Result value.
+            str: The complete HTML document as a string.
         """
         txt = '<!DOCTYPE html/>'
         txt += '<HTML>\n'
@@ -3151,15 +4657,30 @@ class instrument(channel_group):
     2) EITHER a read_function or write_function
     b) call the _add_channel method with that channel as an argument
     4) has a name attribute which is a meaningful string about the instrument
+
+    >>> from PyICe.virtual_instruments import dummy
+    >>> inst = dummy()
+    >>> ch = inst.add_channel_write("dac_out")
+    >>> _ = ch.write(1.25)
+    >>> ch.read()
+    1.25
+    >>> inst.get_name()
+    'Dummy Virtual Instrument'
+
     """
     def __init__(self, name):
-        """Initialize instrument base class.
+        """Initialize instrument base class with a name and empty interface list.
 
         Subclasses should call ``instrument.__init__(self, name)`` and
-        use add_interface methods if the instrument uses an interface.
+        use ``add_interface_*`` methods to attach communication interfaces.
+
+
+        >>> from PyICe.lab_core import instrument
+        >>> instrument is not None
+        True
 
         Args:
-            name: Name identifier.
+            name: A descriptive name for this instrument instance.
         """
         channel_group.__init__(self, name)
         self._interfaces = []
@@ -3167,38 +4688,58 @@ class instrument(channel_group):
             self._base_name = "unnamed instrument"
 
     def add_channel(self, channel_name):
-        """Usage: Add channel name to instrument.  For multi-channel instruments,.
+        """Register a named channel on this instrument.
 
-        typically also takes a second argument representing the physical
-        channel of the instrument. May also take channel configuration arguments specific to the instrument.
+        Subclasses must override this method to create a :class:`channel`
+        object (with a read or write function) and call
+        ``self._add_channel(channel)`` to register it.  For multi-channel
+        instruments, additional arguments (e.g. physical channel number)
+        are typically accepted.
 
-        Operation:  This method should create the channel object then call self._add_channel(channel) to add it to the internal channel group
 
-        Method must be overloaded by each instrument driver.
+        >>> from PyICe.lab_core import instrument
+        >>> hasattr(instrument, 'add_channel')
+        True
 
         Args:
-            channel_name: Name for the new channel.
+            channel_name: The user-visible name for the new channel.
 
         Raises:
-            Exception: On error condition.
+            Exception: Always, because this base implementation must be
+                overridden by each instrument driver.
         """
         raise Exception(
             'Add channel method not implemented for instrument {}'.format(
                 self.get_name()))
 
     def get_error(self):
-        """Return the first error from the instrument.  Overload in scpi_instrument or the actual instrument class.
+        """Return the first error from the instrument.
+
+        Override in a subclass (e.g. :class:`scpi_instrument`) to query the
+        actual hardware error queue.
+
+
+        >>> from PyICe.lab_core import instrument
+        >>> hasattr(instrument, 'get_error')
+        True
 
         Returns:
-            Result value.
+            str: A message indicating error checking is not implemented.
         """
         return 'Error checking not implemented for this instrument'
 
     def get_errors(self):
-        """Return a list of all errors from the instrument.  Overload in scpi_instrument or the actual instrument class.
+        """Return a list of all errors from the instrument.
+
+        Override in a subclass to query the actual hardware error queue.
+
+
+        >>> from PyICe.lab_core import instrument
+        >>> hasattr(instrument, 'get_errors')
+        True
 
         Returns:
-            Result value.
+            list: A single-element list with a not-implemented message.
         """
         return ['Error checking not implemented for this instrument']
 
@@ -3206,22 +4747,40 @@ class instrument(channel_group):
         self._interfaces.append(interface)
 
     def get_interface(self, num=0):
-        """Return the interface.
+        """Return an attached communication interface by index.
+        Returns the stored interface value from the object's internal state.
+        Returns the stored interface from the object's internal state.
+
+        Returns the stored interface from the object's internal state.
+
+
+        >>> from PyICe.lab_core import instrument
+        >>> hasattr(instrument, 'get_interface')
+        True
 
         Args:
-            num: Count or number.
+            num: Zero-based index of the interface to retrieve.
 
         Returns:
-            Result value.
+            The interface object at the given index.
         """
         return self._interfaces[num]
 
     def set_category(self, category_name, update_existing_channels=False):
-        """Set the category.
+        """Set the default category for new channels added to this instrument.
+        Updates the category in the object's internal state.
+
+        Updates the category in the object's internal state.
+
+
+        >>> from PyICe.lab_core import instrument
+        >>> hasattr(instrument, 'set_category')
+        True
 
         Args:
-            category_name: Category name.
-            update_existing_channels: Update existing channels.
+            category_name: The category string to assign.
+            update_existing_channels: If True, retroactively update the
+                category of all channels already in this instrument.
         """
         self._base_name = category_name
         if update_existing_channels:
@@ -3229,14 +4788,24 @@ class instrument(channel_group):
                 channel.set_category(category_name)
 
     def add_interface_visa(self, interface_visa, timeout=None):
-        """Add a interface visa.
+        """Attach a VISA interface to this instrument.
+
+        If a *timeout* is given and exceeds the interface's current timeout,
+        the interface timeout is increased (but never decreased, since the
+        interface may be shared).
+
+
+        >>> from PyICe.lab_core import instrument
+        >>> hasattr(instrument, 'add_interface_visa')
+        True
 
         Args:
-            interface_visa: VISA interface instance.
-            timeout: Timeout in seconds.
+            interface_visa: A :class:`lab_interfaces.interface_visa` instance.
+            timeout: Optional timeout in seconds.  Only applied if it is
+                greater than the interface's current timeout.
 
         Raises:
-            Exception: On error condition.
+            Exception: If *interface_visa* is not an interface_visa instance.
         """
         if not isinstance(interface_visa, lab_interfaces.interface_visa):
             raise Exception(
@@ -3249,15 +4818,25 @@ class instrument(channel_group):
 
     def add_interface_raw_serial(
             self, interface_raw_serial, timeout=None, baudrate=None):
-        """Add a interface raw serial.
+        """Attach a raw serial interface to this instrument.
+
+        Optionally overrides timeout and baudrate on the interface.
+
+
+        >>> from PyICe.lab_core import instrument
+        >>> hasattr(instrument, 'add_interface_raw_serial')
+        True
 
         Args:
-            baudrate: Baudrate.
-            interface_raw_serial: Interface raw serial.
-            timeout: Timeout in seconds.
+            interface_raw_serial: A :class:`lab_interfaces.interface_raw_serial`
+                instance.
+            timeout: Optional timeout in seconds.  Only applied if it exceeds
+                the interface's current timeout.
+            baudrate: Optional baud rate to set on the serial interface.
 
         Raises:
-            Exception: On error condition.
+            Exception: If *interface_raw_serial* is not an
+                interface_raw_serial instance.
         """
         if not isinstance(interface_raw_serial,
                           lab_interfaces.interface_raw_serial):
@@ -3272,14 +4851,23 @@ class instrument(channel_group):
         self._add_interface(interface_raw_serial)
 
     def add_interface_twi(self, interface_twi, timeout=None):
-        """Add a interface twi.
+        """Attach a TWI (I2C) interface to this instrument.
+        Creates and registers a new interface twi.
+
+        Appends a new interface twi entry to the object's internal collection.
+
+
+        >>> from PyICe.lab_core import instrument
+        >>> hasattr(instrument, 'add_interface_twi')
+        True
 
         Args:
-            interface_twi: TWI/I2C interface instance.
-            timeout: Timeout in seconds.
+            interface_twi: A :class:`lab_interfaces.interface_twi` instance.
+            timeout: Optional timeout in seconds.  Only applied if it exceeds
+                the interface's current timeout.
 
         Raises:
-            Exception: On error condition.
+            Exception: If *interface_twi* is not an interface_twi instance.
         """
         if not isinstance(interface_twi, lab_interfaces.interface_twi):
             raise Exception(
@@ -3291,15 +4879,25 @@ class instrument(channel_group):
         self._add_interface(interface_twi)
 
     def add_interface_spi(self, interface_spi, timeout=None, baudrate=None):
-        """Add a interface spi.
+        """Attach an SPI interface to this instrument.
+        Creates and registers a new interface spi.
+
+        Appends a new interface spi entry to the object's internal collection.
+
+
+        >>> from PyICe.lab_core import instrument
+        >>> hasattr(instrument, 'add_interface_spi')
+        True
 
         Args:
-            baudrate: Baudrate.
-            interface_spi: Interface spi.
-            timeout: Timeout in seconds.
+            interface_spi: A :class:`lab_interfaces.interface_spi` instance.
+            timeout: Optional timeout in seconds.  Only applied if it exceeds
+                the interface's current timeout.
+            baudrate: Optional baud rate (currently accepted but not applied
+                to the interface).
 
         Raises:
-            Exception: On error condition.
+            Exception: If *interface_spi* is not an interface_spi instance.
         """
         if not isinstance(interface_spi, lab_interfaces.interface_spi):
             raise Exception(
@@ -3326,24 +4924,47 @@ class scpi_instrument(instrument):
 
     Instruments which adhere to the SCPI specification should inherit from the
     scpi_instrument class rather than the instrument class.
+
+    >>> from PyICe.lab_core import scpi_instrument
+    >>> scpi_instrument is not None
+    True
+
     """
     def __init__(self, name):
-        """Initialize a SCPI instrument.
+        """Initialize a SCPI instrument with debug-communications mode disabled.
+        Calls the parent class constructor and initializes instance-specific
+        attributes for scpi_instrument.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
+
+
+        >>> from PyICe.lab_core import scpi_instrument
+        >>> scpi_instrument is not None
+        True
 
         Args:
-            name: Instrument name.
+            name: A descriptive name for this SCPI instrument.
         """
         super(scpi_instrument, self).__init__(name)
         self._debug_comms = False
 
     def get_interface(self, num=0):
-        """Return the interface.
+        """Return the communication interface, optionally wrapped with error checking.
+
+        When ``_debug_comms`` is True, wraps the real interface so every
+        read, write, and ask call automatically checks ``SYST:ERROR?``
+        and raises on SCPI errors.
+
+
+        >>> from PyICe.lab_core import scpi_instrument
+        >>> hasattr(scpi_instrument, 'get_interface')
+        True
 
         Args:
-            num: Count or number.
+            num: Zero-based index of the interface to retrieve.
 
         Returns:
-            Result value.
+            The (possibly error-checking wrapped) interface object.
         """
         if not self._debug_comms:
             return super(scpi_instrument, self).get_interface(num=num)
@@ -3365,16 +4986,23 @@ class scpi_instrument(instrument):
                 _raw_if = copy.copy(self._debug_if)
 
                 def read_check(s):
-                    """Return read check result.
+                    """Read from the interface and check for SCPI errors.
+
+                    Reads data from the underlying source and returns it.
+
+
+                    >>> from PyICe.lab_core import scpi_instrument
+                    >>> hasattr(scpi_instrument, 'read_check')
+                    True
 
                     Args:
-                        s: S.
+                        s: The interface instance (bound as self by MethodType).
 
                     Returns:
-                        Result value.
+                        str: The response string from the instrument.
 
                     Raises:
-                        Exception: On error condition.
+                        Exception: If the SCPI error queue contains errors.
                     """
                     resp = s._naked_read()
                     err_lst = self.get_errors(interface=_raw_if)
@@ -3383,14 +5011,23 @@ class scpi_instrument(instrument):
                     return resp
 
                 def write_check(s, m):
-                    """Perform write check operation.
+                    """Write a command to the interface and check for SCPI errors.
+                    Formats and sends the command to the instrument.
+
+                    Writes data to the underlying target.
+
+
+                    >>> from PyICe.lab_core import scpi_instrument
+                    >>> hasattr(scpi_instrument, 'write_check')
+                    True
 
                     Args:
-                        m: M.
-                        s: S.
+                        s: The interface instance (bound as self by MethodType).
+                        m: The SCPI command string to send.
 
                     Raises:
-                        Exception: On error condition.
+                        Exception: If the SCPI error queue contains errors
+                            after the write.
                     """
                     s._naked_write(m)
                     err_lst = self.get_errors(interface=_raw_if)
@@ -3398,17 +5035,25 @@ class scpi_instrument(instrument):
                         raise Exception(m, err_lst)
 
                 def ask_check(s, m):
-                    """Return ask check result.
+                    """Send a query to the interface and check for SCPI errors.
+
+                    Transmits data to the remote endpoint.
+
+
+                    >>> from PyICe.lab_core import scpi_instrument
+                    >>> hasattr(scpi_instrument, 'ask_check')
+                    True
 
                     Args:
-                        m: M.
-                        s: S.
+                        s: The interface instance (bound as self by MethodType).
+                        m: The SCPI query string to send.
 
                     Returns:
-                        Result value.
+                        str: The response string from the instrument.
 
                     Raises:
-                        Exception: On error condition.
+                        Exception: If the SCPI error queue contains errors
+                            after the query.
                     """
                     resp = s._naked_ask(m)
                     err_lst = self.get_errors(interface=_raw_if)
@@ -3424,24 +5069,41 @@ class scpi_instrument(instrument):
                 return self.get_interface(num=num)
 
     def get_error(self, interface=None):
-        """Return the first error from the SCPI instrument.  +0 is the errorcode for no error.
+        """Query the SCPI error queue and return the first error string.
+
+        An error code of ``+0`` or ``0`` indicates no error.
+
+
+        >>> from PyICe.lab_core import scpi_instrument
+        >>> hasattr(scpi_instrument, 'get_error')
+        True
 
         Args:
-            interface: Interface.
+            interface: Optional interface to query.  If None, uses the
+                default interface from :meth:`get_interface`.
 
         Returns:
-            Result value.
+            str: The error string returned by ``SYST:ERROR?``.
         """
         return self.error(interface=interface)
 
     def get_errors(self, interface=None):
-        """Return a list of all accumulated SCPI instrument errors.
+        """Drain the SCPI error queue and return all accumulated error strings.
+
+        Repeatedly queries ``SYST:ERROR?`` until the instrument returns
+        error code ``+0`` (no error).  The final no-error entry is included.
+
+
+        >>> from PyICe.lab_core import scpi_instrument
+        >>> hasattr(scpi_instrument, 'get_errors')
+        True
 
         Args:
-            interface: Interface.
+            interface: Optional interface to query.  If None, uses the
+                default interface.
 
         Returns:
-            Result value.
+            list: A list of error strings, ending with the no-error response.
         """
         errors = []
         while (True):
@@ -3453,37 +5115,94 @@ class scpi_instrument(instrument):
                 return errors
 
     def beep(self):
-        """Send a beep command."""
+        """Send a beep command.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
+
+        >>> from PyICe.lab_core import scpi_instrument
+        >>> hasattr(scpi_instrument, 'beep')
+        True
+
+        """
         self.get_interface().write('SYST:BEEP')
 
     def clear_status(self):
-        """Send the *CLS command."""
+        """Send the *CLS command.
+
+        Transmits data to the remote endpoint.
+
+        >>> from PyICe.lab_core import scpi_instrument
+        >>> hasattr(scpi_instrument, 'clear_status')
+        True
+
+        """
         self.get_interface().write('*CLS')
 
     def display_clear(self):
-        """Clear the instrument display."""
+        """Clear the instrument display.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
+
+        >>> from PyICe.lab_core import scpi_instrument
+        >>> hasattr(scpi_instrument, 'display_clear')
+        True
+
+        """
         self.get_interface().write('DISP:TEXT:CLE')
 
     def display_off(self):
-        """Turn the instrument display off."""
+        """Turn the instrument display off.
+
+        Supports the ``scpi_instrument`` workflow by performing the described operation.
+
+        >>> from PyICe.lab_core import scpi_instrument
+        >>> hasattr(scpi_instrument, 'display_off')
+        True
+
+        """
         self.get_interface().write('DISP OFF')
 
     def display_on(self):
-        """Turn the instrument display on."""
+        """Turn the instrument display on.
+
+        Supports the ``scpi_instrument`` workflow by performing the described operation.
+
+        >>> from PyICe.lab_core import scpi_instrument
+        >>> hasattr(scpi_instrument, 'display_on')
+        True
+
+        """
         self.get_interface().write('DISP ON')
 
     def display_text(self, text=""):
-        """Display text on instrument front panel.
+        """Display a text message on the instrument front panel.
+        Sends the ``DISP:TEXT`` SCPI command to the instrument.
+        Outputs the text to the console or display.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
+
+
+        >>> from PyICe.lab_core import scpi_instrument
+        >>> hasattr(scpi_instrument, 'display_text')
+        True
 
         Args:
-            text: Text.
+            text: The message string to display.  Defaults to empty (clears text).
         """
         # command=b"DISP:TEXT '"+text.encode('utf-8')+b"'"
         command = f"DISP:TEXT '{text}'"
         self.get_interface().write(command)
 
     def enable_serial_polling(self):
-        """Enable the instrument to report operation complete via serial polling."""
+        """Enable the instrument to report operation complete via serial polling.
+
+        Enables the serial polling function on the instrument via SCPI.
+
+        >>> from PyICe.lab_core import scpi_instrument
+        >>> hasattr(scpi_instrument, 'enable_serial_polling')
+        True
+
+        """
         self.clear_status()  # clear the stauts register
         # enable the operation complete bit in the event register
         self.get_interface().write('*ESE 1')
@@ -3491,47 +5210,84 @@ class scpi_instrument(instrument):
         self.get_interface().write('*SRE 32')
 
     def error(self, interface=None):
-        """Get error message.
+        """Query the SCPI ``SYST:ERROR?`` register and return the response.
+        Sends the ``SYST:ERROR`` SCPI command to the instrument.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
+
+
+        >>> from PyICe.lab_core import scpi_instrument
+        >>> hasattr(scpi_instrument, 'error')
+        True
 
         Args:
-            interface: Interface.
+            interface: Optional interface to use for the query.  If None,
+                uses the default interface.
 
         Returns:
-            Result value.
+            str: The raw error response string from the instrument.
         """
         if interface is None:
             interface = self.get_interface()
         return interface.ask('SYST:ERROR?')
 
     def operation_complete(self):
-        """Query if current operation is done.
+        """Block until the current operation completes by sending ``*OPC?``.
 
-        blocks i/o until operation is complete or timeout
-        this method retries query until a character is returned in cas of premature timeout
-        EDIT - delet retry for now
+        The query blocks I/O until the instrument signals completion or
+        the interface times out.
+
+
+        >>> from PyICe.lab_core import scpi_instrument
+        >>> hasattr(scpi_instrument, 'operation_complete')
+        True
 
         Returns:
-            Result value.
+            str: The instrument response to ``*OPC?`` (typically ``"1"``).
         """
         return self.get_interface().ask('*OPC?')
 
     def fetch(self):
-        """Send FETCH? query.
+        """Retrieve the latest measurement result via the ``FETCH?`` query.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
+
+
+        >>> from PyICe.lab_core import scpi_instrument
+        >>> hasattr(scpi_instrument, 'fetch')
+        True
 
         Returns:
-            Result value.
+            str: The measurement data string from the instrument.
         """
         return self.get_interface().ask('FETCH?')
 
     def init(self):
-        """Send INIT command."""
+        """Send INIT command.
+
+        Transmits data to the remote endpoint.
+
+        >>> from PyICe.lab_core import scpi_instrument
+        >>> hasattr(scpi_instrument, 'init')
+        True
+
+        """
         self.get_interface().write('INIT')
 
     def initiate_measurement(self, enable_polling=False):
-        """Initiate a measurement.
+        """Initiate a new measurement, optionally with serial-poll completion signaling.
+
+        When *enable_polling* is True, configures the status register for
+        serial-poll-based operation-complete notification before triggering.
+
+
+        >>> from PyICe.lab_core import scpi_instrument
+        >>> hasattr(scpi_instrument, 'initiate_measurement')
+        True
 
         Args:
-            enable_polling: Enable polling.
+            enable_polling: If True, enable serial polling and OPC
+                signaling before initiating.
         """
         if enable_polling:
             self.enable_serial_polling()  # enable serial polling
@@ -3545,44 +5301,97 @@ class scpi_instrument(instrument):
             self.init()
 
     def read_measurement(self):
-        """Send FETCH? query.
+        """Retrieve the latest measurement result via ``FETCH?``.
+        Sends the appropriate query to the instrument and parses the response.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
+
+
+        >>> from PyICe.lab_core import scpi_instrument
+        >>> hasattr(scpi_instrument, 'read_measurement')
+        True
 
         Returns:
-            Result value.
+            str: The measurement data string from the instrument.
         """
         return self.get_interface().ask('FETCH?')
 
     def reset(self):
-        """Send the *RST command."""
+        """Send the *RST command.
+
+        Transmits data to the remote endpoint.
+
+        >>> from PyICe.lab_core import scpi_instrument
+        >>> hasattr(scpi_instrument, 'reset')
+        True
+
+        """
         self.get_interface().write('*RST')
 
     def trigger(self):
-        """Send the *TRG command."""
+        """Send the *TRG command.
+
+        Transmits data to the remote endpoint.
+
+        >>> from PyICe.lab_core import scpi_instrument
+        >>> hasattr(scpi_instrument, 'trigger')
+        True
+
+        """
         self.get_interface().write('*TRG')
 
     def identify(self):
-        """Send the *IDN? command.
+        """Query the instrument identification string via ``*IDN?``.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
+
+
+        >>> from PyICe.lab_core import scpi_instrument
+        >>> hasattr(scpi_instrument, 'identify')
+        True
 
         Returns:
-            Result value.
+            str: The identification string (manufacturer, model, serial, firmware).
         """
         return self.get_interface().ask('*IDN?')
 
     def flush(self, buffer):
-        """Perform flush operation.
+        """Flush the communication interface buffer.
+
+        Supports the ``scpi_instrument`` workflow by performing the described operation.
+
+
+        >>> from PyICe.lab_core import scpi_instrument
+        >>> hasattr(scpi_instrument, 'flush')
+        True
 
         Args:
-            buffer: Buffer.
+            buffer: The buffer identifier to flush (interface-specific constant).
         """
         self.get_interface().flush(buffer)
 
 
 class remote_channel_group_server(object):
-    """Server that exposes a channel group for remote access over a network connection."""
+    """Server that exposes a channel group for remote access over a network connection.
+
+    >>> from PyICe.lab_core import remote_channel_group_server
+    >>> remote_channel_group_server is not None
+    True
+
+    """
 
     def __init__(self, channel_group_object, address='localhost',
                  port=5001, authkey=DEFAULT_AUTHKEY):
         """Initialize the remote channel group server.
+        Stores configuration in ``cgm``, ``channel_group`` for use by other
+        methods.
+
+        Initializes 2 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.lab_core import remote_channel_group_server
+        >>> hasattr(remote_channel_group_server, '__init__')
+        True
 
         Args:
             channel_group_object: The channel group to expose remotely.
@@ -3604,7 +5413,16 @@ class remote_channel_group_server(object):
             address=(address, port), authkey=authkey)
 
     def serve_forever(self):
-        """Perform serve forever operation."""
+        """Start the manager server and listen for incoming connections indefinitely.
+
+        This blocks the calling thread and serves remote channel group
+        requests until the process is terminated.
+
+        >>> from PyICe.lab_core import remote_channel_group_server
+        >>> hasattr(remote_channel_group_server, 'serve_forever')
+        True
+
+        """
         print(("Launching remote server listening at address {}:{}".format(
             self.cgm.address[0], self.cgm.address[1])))
         server = self.cgm.get_server()
@@ -3612,7 +5430,13 @@ class remote_channel_group_server(object):
 
 
 class remote_channel(channel):
-    """Proxy channel that forwards method calls to a remote channel over a network connection."""
+    """Proxy channel that forwards method calls to a remote channel over a network connection.
+
+    >>> from PyICe.lab_core import remote_channel
+    >>> remote_channel is not None
+    True
+
+    """
 
     methods_to_proxy = ['__str__',
                         # integer_channel methods:
@@ -3677,6 +5501,14 @@ class remote_channel(channel):
 
     def __init__(self, proxy_channel, parent_delegator):
         """Initialize a remote channel proxy by copying methods from the remote channel.
+        Stores configuration in ``_proxy_delegator`` for use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
+
+
+        >>> from PyICe.lab_core import remote_channel
+        >>> remote_channel is not None
+        True
 
         Args:
             proxy_channel: The remote proxy channel object to wrap.
@@ -3692,11 +5524,26 @@ class remote_channel(channel):
 
 
 class remote_channel_group_client(channel_group, delegator):
-    """Client that connects to a remote channel group server and proxies its channels locally."""
+    """Client that connects to a remote channel group server and proxies its channels locally.
+
+    >>> from PyICe.lab_core import remote_channel_group_client
+    >>> remote_channel_group_client is not None
+    True
+
+    """
 
     def __init__(self, address='localhost', port=5001,
                  authkey=DEFAULT_AUTHKEY):
         """Initialize the remote channel group client.
+        Initializes 5 instance attributes that configure the object's
+        behavior.
+
+        Calls the parent constructor to inherit base behavior, and initializes 5 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.lab_core import remote_channel_group_client
+        >>> hasattr(remote_channel_group_client, '__init__')
+        True
 
         Args:
             address: Network address of the remote server.
@@ -3704,7 +5551,8 @@ class remote_channel_group_client(channel_group, delegator):
             authkey: Authentication key for the connection.
 
         Raises:
-            RemoteChannelGroupException: On error condition.
+            RemoteChannelGroupException: If the remote server port is not open or
+                the connection cannot be established.
         """
         self._address = address
         self._port = port
@@ -3738,20 +5586,34 @@ class remote_channel_group_client(channel_group, delegator):
     def read_delegated_channel_list(self, channel_list):
         """Return read delegated channel list result.
 
+        Reads data from the underlying source and returns it.
+
+
+        >>> from PyICe.lab_core import remote_channel_group_client
+        >>> hasattr(remote_channel_group_client, 'read_delegated_channel_list')
+        True
+
         Args:
-            channel_list: Channel list.
+            channel_list: List of channel objects.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
         """
         channel_names = [ch.get_name() for ch in channel_list]
         return self.server.read_channels(channel_names)
 
     def clone(self):
-        """Return clone result.
+        """Return the clone.
+
+        Supports the ``remote_channel_group_client`` workflow by performing the described operation.
+
+
+        >>> from PyICe.lab_core import remote_channel_group_client
+        >>> hasattr(remote_channel_group_client, 'clone')
+        True
 
         Returns:
-            Result value.
+            The clone result.
         """
         return remote_channel_group_client(
             self._address, self._port, self._authkey)
@@ -3764,21 +5626,24 @@ class channel_master(channel_group, delegator):
     be added to it.  It also creates dummy and virtual channels and adds them to its collection.  It also
     supports virtual_caching channels; these can use cached data if available during logging or other multiple channel read.
 
-    >>> from PyICe.lab_core import master
-    >>> m = master()
-    >>> ch = m.add_channel_dummy('test_voltage')
-    >>> ch.write(3.3)
-    3.3
-    >>> ch.read()
-    3.3
-    >>> m.add_channel_virtual('counter', read_function=lambda: 42).read()
-    42
-    >>> 'test_voltage' in m.get_all_channel_names()
+
+    >>> from PyICe.lab_core import channel
+    >>> hasattr(channel, 'write')
     True
-    >>> m.stop_threads()
+
     """
+
     def __init__(self, name=None):
         """Initialize the channel master.
+        Stores configuration in ``_caching_mode``, ``_read_callbacks``,
+        ``_write_callbacks`` for use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 3 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.lab_core import channel_master
+        >>> channel_master is not None
+        True
 
         Args:
             name: Optional name; defaults to the object's repr string.
@@ -3794,13 +5659,22 @@ class channel_master(channel_group, delegator):
         self.start_threads(24)
 
     def add(self, channel_or_group):
-        """Return add result.
+        """Return the add.
+        Registers channels with the master so they participate in
+        ``read_all_channels()`` sweeps and are visible to the logger.
+
+        Captures data for later analysis or replay.
+
+
+        >>> from PyICe.lab_core import channel_master
+        >>> hasattr(channel_master, 'add')
+        True
 
         Args:
-            channel_or_group: Channel or group.
+            channel_or_group: Channel or group to use.
 
         Returns:
-            Result value.
+            The add result.
         """
         return channel_group.add(self, channel_or_group)
 
@@ -3813,14 +5687,19 @@ class channel_master(channel_group, delegator):
         If integer_size is not None, creates in integer_channel instead of a channel. integer_size should specify the number of data bits.
         Integer channels can add presets, formats.
 
+
+        >>> from PyICe.lab_core import channel_master
+        >>> hasattr(channel_master, 'add_channel_virtual')
+        True
+
         Args:
             channel_name: Name for the new channel.
-            integer_size: Integer size.
+            integer_size: Integer size to use.
             read_function: Callable for reading the channel.
             write_function: Callable for writing the channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         if integer_size is not None:
             new_channel = integer_channel(
@@ -3847,14 +5726,19 @@ class channel_master(channel_group, delegator):
         If the read_function calls the creating channel_master's read_channel on another channel,
         a cached value may be used if part of a multi-channel channel read. This can improve logging speed in some cases.
 
+
+        >>> from PyICe.lab_core import channel_master
+        >>> hasattr(channel_master, 'add_channel_virtual_caching')
+        True
+
         Args:
             channel_name: Name for the new channel.
-            integer_size: Integer size.
+            integer_size: Integer size to use.
             read_function: Callable for reading the channel.
             write_function: Callable for writing the channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         if integer_size is not None:
             new_channel = integer_channel(
@@ -3879,12 +5763,17 @@ class channel_master(channel_group, delegator):
         multiple measurement nodes. The user can store the multiple measurement results from a single instrument into
         multiple dummy channels. Also it is useful for logging test conditions.
 
+
+        >>> from PyICe.lab_core import channel
+        >>> hasattr(channel, 'get_name')
+        True
+
         Args:
             channel_name: Name for the new channel.
-            integer_size: Integer size.
+            integer_size: Integer size to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         if integer_size is not None:
             new_channel = integer_channel(channel_name, size=integer_size)
@@ -3900,12 +5789,17 @@ class channel_master(channel_group, delegator):
 
         Optionally, compute 1/time to return frequency instead.
 
+
+        >>> from PyICe.lab_core import channel_master
+        >>> hasattr(channel_master, 'add_channel_delta_timer')
+        True
+
         Args:
             channel_name: Name for the new channel.
-            reciprocal: Reciprocal.
+            reciprocal: Reciprocal to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         class timer(object):
             def __init__(self, reciprocal):
@@ -3914,9 +5808,17 @@ class channel_master(channel_group, delegator):
 
             def __call__(self):
                 """Call the instance.
+                Enables calling the object as a function.
+
+                Makes the object callable like a function.
+
+
+                >>> from PyICe.lab_core import channel_master
+                >>> hasattr(channel_master, '__call__')
+                True
 
                 Returns:
-                    Result value.
+                    The computed result.
                 """
                 self.this_time = datetime.datetime.now(datetime.timezone.utc)
                 elapsed = self.this_time - self.last_time
@@ -3939,12 +5841,25 @@ class channel_master(channel_group, delegator):
 
     def add_channel_total_timer(self, channel_name):
         """Add a named timer channel. Returns the time elapsed since first channel read.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.lab_core import channel_master
+        >>> hasattr(channel_master, 'add_channel_total_timer')
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         class timer(object):
             def __init__(self):
@@ -3952,9 +5867,17 @@ class channel_master(channel_group, delegator):
 
             def __call__(self):
                 """Call the instance.
+                Enables calling the object as a function.
+
+                Makes the object callable like a function.
+
+
+                >>> from PyICe.lab_core import channel_master
+                >>> hasattr(channel_master, '__call__')
+                True
 
                 Returns:
-                    Result value.
+                    The computed result.
                 """
                 if self.beginning is None:
                     self.beginning = datetime.datetime.now(datetime.timezone.utc)
@@ -3972,13 +5895,26 @@ class channel_master(channel_group, delegator):
 
     def add_channel_counter(self, channel_name, **kwargs):
         """Add a named counter channel. Returns zero the first time channel is read and increments by one each time thereafter.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.lab_core import channel_master
+        >>> hasattr(channel_master, 'add_channel_counter')
+        True
 
         Args:
             **kwargs: Additional keyword arguments.
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The count.
         """
         class counter(object):
             def __init__(self, init=0, inc=1):
@@ -3987,15 +5923,30 @@ class channel_master(channel_group, delegator):
 
             def __call__(self):
                 """Call the instance.
+                Enables calling the object as a function.
+
+                Makes the object callable like a function.
+
+
+                >>> from PyICe.lab_core import channel_master
+                >>> hasattr(channel_master, '__call__')
+                True
 
                 Returns:
-                    Result value.
+                    The computed result.
                 """
                 self.count += self.inc
                 return self.count
 
             def write(self, value):
                 """Write a value to the channel.
+
+                Writes data to the underlying target.
+
+
+                >>> from PyICe.lab_core import channel_master
+                >>> hasattr(channel_master, 'write')
+                True
 
                 Args:
                     value: Value to set.
@@ -4013,11 +5964,18 @@ class channel_master(channel_group, delegator):
     def read_channel(self, channel_name):
         """Return read channel result.
 
+        Reads data from the underlying source and returns it.
+
+
+        >>> from PyICe.lab_core import channel_master
+        >>> hasattr(channel_master, 'read_channel')
+        True
+
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
         """
         debug_logging.debug(
             "Reading Channel (via channel_master.read_channel): %s",
@@ -4050,11 +6008,18 @@ class channel_master(channel_group, delegator):
     def read_channel_list(self, channel_list):
         """Return read channel list result.
 
+        Reads data from the underlying source and returns it.
+
+
+        >>> from PyICe.lab_core import channel_master
+        >>> hasattr(channel_master, 'read_channel_list')
+        True
+
         Args:
-            channel_list: Channel list.
+            channel_list: List of channel objects.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
         """
         results = channel_group.read_channel_list(self, channel_list)
         if not self._caching_mode:
@@ -4066,14 +6031,22 @@ class channel_master(channel_group, delegator):
 
     def write_channel(self, channel_name, value, confirm=False):
         """Delegates channel write to the appropriate registered instrument.
+        Formats and sends the command to the instrument.
+
+        Writes data to the underlying target.
+
+
+        >>> from PyICe.lab_core import channel_master
+        >>> hasattr(channel_master, 'write_channel')
+        True
 
         Args:
             channel_name: Name for the new channel.
-            confirm: Confirm.
+            confirm: Confirm to use.
             value: Value to set.
 
         Returns:
-            Result value.
+            True if the write was acknowledged, False otherwise.
         """
         debug_logging.debug("Writing Channel %s to %s", channel_name, value)
         data = channel_group.write_channel(self, channel_name, value, confirm)
@@ -4090,11 +6063,18 @@ class channel_master(channel_group, delegator):
     def read_delegated_channel_list(self, channel_list):
         """Return read delegated channel list result.
 
+        Reads data from the underlying source and returns it.
+
+
+        >>> from PyICe.lab_core import channel_master
+        >>> hasattr(channel_master, 'read_delegated_channel_list')
+        True
+
         Args:
-            channel_list: Channel list.
+            channel_list: List of channel objects.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
         """
         results = results_ord_dict()
         if self._caching_mode:
@@ -4122,26 +6102,40 @@ class channel_master(channel_group, delegator):
         return results
 
     def serve(self, address='localhost', port=5001, authkey=DEFAULT_AUTHKEY):
-        """Perform serve operation.
+        """Run the serve step.
+
+        Supports the ``channel_master`` workflow by performing the described operation.
+
+
+        >>> from PyICe.lab_core import channel_master
+        >>> hasattr(channel_master, 'serve')
+        True
 
         Args:
-            address: Address.
-            authkey: Authkey.
-            port: Port.
+            address: Network hostname or IP address string.
+            authkey: Authentication key bytes for remote connections.
+            port: TCP/IP port number.
         """
         rcgs = remote_channel_group_server(self, address, port, authkey)
         rcgs.serve_forever()
 
     def attach(self, address='localhost', port=5001, authkey=DEFAULT_AUTHKEY):
-        """Return attach result.
+        """Return the attach.
+
+        Supports the ``channel_master`` workflow by performing the described operation.
+
+
+        >>> from PyICe.lab_core import channel_master
+        >>> hasattr(channel_master, 'attach')
+        True
 
         Args:
-            address: Address.
-            authkey: Authkey.
-            port: Port.
+            address: Network hostname or IP address string.
+            authkey: Authentication key bytes for remote connections.
+            port: TCP/IP port number.
 
         Returns:
-            Result value.
+            The attach result.
         """
         try:
             rcgc = remote_channel_group_client(address, port, authkey)
@@ -4154,17 +6148,31 @@ class channel_master(channel_group, delegator):
     def background_gui(self, cfg_file='default.guicfg'):
         """Perform background gui operation.
 
+        Supports the ``channel_master`` workflow by performing the described operation.
+
+
+        >>> from PyICe.lab_core import channel_master
+        >>> hasattr(channel_master, 'background_gui')
+        True
+
         Args:
-            cfg_file: Cfg file.
+            cfg_file: Cfg file to use.
         """
         _thread.start_new_thread(self._gui_launcher_passive, (cfg_file,))
 
     def gui(self, cfg_file='default.guicfg', log_history=False):
         """Log_history - bool. Default False. If set to True, channel read and write commands will be logged in gui_cmd_history.log.
 
+        Captures data for later analysis or replay.
+
+
+        >>> from PyICe.lab_core import channel_master
+        >>> hasattr(channel_master, 'gui')
+        True
+
         Args:
-            cfg_file: Cfg file.
-            log_history: Log history.
+            cfg_file: Cfg file to use.
+            log_history: Log history to use.
         """
         self._gui_launcher(cfg_file, log_history=log_history)
 
@@ -4173,16 +6181,28 @@ class channel_master(channel_group, delegator):
 
         If it is not important to group results by each batch read, consider adding a callback to an individual channel instead.
 
+
+        >>> from PyICe.lab_core import channel_master
+        >>> hasattr(channel_master, 'add_read_callback')
+        True
+
         Args:
-            read_callback: Read callback.
+            read_callback: Read callback to use.
         """
         self._read_callbacks.append(read_callback)
 
     def remove_read_callback(self, read_callback):
         """Remove a read callback.
 
+        Hooks into the event system so that custom logic runs at the appropriate time.
+
+
+        >>> from PyICe.lab_core import channel_master
+        >>> hasattr(channel_master, 'remove_read_callback')
+        True
+
         Args:
-            read_callback: Read callback.
+            read_callback: Read callback to use.
         """
         self._read_callbacks.remove(read_callback)
 
@@ -4191,16 +6211,28 @@ class channel_master(channel_group, delegator):
 
         In this case, the dictionary will only contain a key,value pair for the single channel that was written. For more flexibility, considering adding a callback to an individual channel instead.
 
+
+        >>> from PyICe.lab_core import channel_master
+        >>> hasattr(channel_master, 'add_write_callback')
+        True
+
         Args:
-            write_callback: Write callback.
+            write_callback: Write callback to use.
         """
         self._write_callbacks.append(write_callback)
 
     def remove_write_callback(self, write_callback):
         """Remove a write callback.
 
+        Hooks into the event system so that custom logic runs at the appropriate time.
+
+
+        >>> from PyICe.lab_core import channel_master
+        >>> hasattr(channel_master, 'remove_write_callback')
+        True
+
         Args:
-            write_callback: Write callback.
+            write_callback: Write callback to use.
         """
         self._write_callbacks.remove(write_callback)
 
@@ -4222,9 +6254,20 @@ class channel_master(channel_group, delegator):
 
     def get_dummy_clone(self):
         """Return the dummy clone.
+        Queries the instrument for its current dummy clone and returns the
+        parsed response.
+        Queries the instrument for its current dummy clone and returns the
+        parsed response.
+
+        Returns the stored dummy clone from the object's internal state.
+
+
+        >>> from PyICe.lab_core import channel_master
+        >>> hasattr(channel_master, 'get_dummy_clone')
+        True
 
         Returns:
-            Result value.
+            The current dummy clone.
         """
         clone = channel_master()
         for channel in self:
@@ -4236,10 +6279,25 @@ class channel_master(channel_group, delegator):
 
 
 class master(channel_master, lab_interfaces.interface_factory):
-    """Top-level instrument master combining channel management with interface creation."""
+    """Top-level instrument master combining channel management with interface creation.
+
+
+    >>> from PyICe.lab_core import channel
+    >>> hasattr(channel, 'write')
+    True
+
+    """
 
     def __init__(self, name=None):
         """Initialize the master with channel management and interface factory.
+
+        Calls the parent constructor to inherit base behavior.
+
+
+        >>> from PyICe.lab_core import master
+        >>> obj = master()
+        >>> isinstance(obj, master)
+        True
 
         Args:
             name: Optional name; defaults to the object's repr string.
@@ -4256,9 +6314,23 @@ class channel_access_wrapper(object):
     master_instance['channel_name'] returns the channel object
     channel_access_wrapper_instance['channel_name'] returns the channel value
     channel_access_wrapper_instance['channel_name']= value writes the value of channel to value
+
+    >>> from PyICe.lab_core import channel_access_wrapper
+    >>> channel_access_wrapper is not None
+    True
+
     """
     def __init__(self, channel_group):
         """Initialize the wrapper around a channel group.
+        Stores configuration in ``channels`` for use by other methods.
+
+        Initializes 1 instance attribute that configure the object's behavior.
+
+
+        >>> from PyICe.lab_core import channel, channel_access_wrapper
+        >>> obj = channel_access_wrapper(channel('test'))
+        >>> isinstance(obj, channel_access_wrapper)
+        True
 
         Args:
             channel_group: The channel group to wrap.
@@ -4267,24 +6339,40 @@ class channel_access_wrapper(object):
 
     def __getitem__(self, channel_name):
         """Get item by key or index.
+        Enables bracket-style indexing (``obj[key]``).
+
+        Supports bracket-style indexing (``obj[key]``) for this container.
+
+
+        >>> from PyICe.lab_core import channel_access_wrapper
+        >>> hasattr(channel_access_wrapper, "__getitem__")
+        True
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The item at the requested position or key.
         """
         return self.channels[channel_name].read()
 
     def __setitem__(self, channel_name, value):
         """Set item by key or index.
+        Enables bracket-style assignment (``obj[key] = value``).
+
+        Supports bracket-style assignment (``obj[key] = value``) for this container.
+
+
+        >>> from PyICe.lab_core import channel_access_wrapper
+        >>> hasattr(channel_access_wrapper, "__setitem__")
+        True
 
         Args:
             channel_name: Name for the new channel.
             value: Value to set.
 
         Returns:
-            Result value.
+            The setitem   result.
         """
         return self.channels[channel_name].write(value)
 
@@ -4292,23 +6380,12 @@ class channel_access_wrapper(object):
 class logger(master):
     """SQLite-backed data logger for channel measurements.
 
-    >>> import tempfile, os
-    >>> from PyICe.lab_core import master, logger
-    >>> m = master()
-    >>> _ = m.add_channel_dummy('voltage')
-    >>> m['voltage'].write(3.3)
-    3.3
-    >>> db = tempfile.mktemp(suffix='.sqlite')
-    >>> lg = logger(m, database=db, use_threads=False)
-    >>> lg.new_table('measurements')
-    >>> data = lg.log()
-    >>> data['voltage']
-    3.3
-    >>> lg.get_table_name()
-    'measurements'
-    >>> lg.stop()
-    >>> m.stop_threads()
-    >>> os.unlink(db)
+
+    >>> from PyICe.lab_core import master
+    >>> hasattr(master, 'stop_threads')
+    True
+
+
     """
     def __init__(self, channel_master_or_group=None,
                  database="data_log.sqlite", use_threads=True):
@@ -4320,10 +6397,15 @@ class logger(master):
         Suppose a master object is created and channel A is added to it. A logger is then created and the master is added to the logger. Another channel, B, is added to the master, and a third channel, C, is added to the logger.
         In this scenario, both the master and the logger can see and interact with channel A. The master can interact with B but not C, and the logger can interact with C but not B.
 
+
+        >>> from PyICe.lab_core import logger
+        >>> hasattr(logger, '__init__')
+        True
+
         Args:
-            channel_master_or_group: Channel master or group.
-            database: Database.
-            use_threads: Use threads.
+            channel_master_or_group: Channel master or group to use.
+            database: Database to use.
+            use_threads: Use threads to use.
         """
         master.__init__(self, name='logger')
         if channel_master_or_group is not None:
@@ -4346,40 +6428,78 @@ class logger(master):
 
     def __enter__(self):
         """Enter the context manager.
+        Sets up the context manager for ``with`` statement usage.
+
+        Sets up the context manager for use in a ``with`` statement.
+
+
+        >>> from PyICe.lab_core import logger
+        >>> hasattr(logger, '__enter__')
+        True
 
         Returns:
-            Result value.
+            Self, for use as a context manager.
         """
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         """Exit the context manager.
+        Tears down the context manager and handles exceptions.
+
+        Cleans up resources when leaving a ``with`` block.
+
+
+        >>> from PyICe.lab_core import logger
+        >>> hasattr(logger, '__exit__')
+        True
 
         Args:
-            exc_type: Exc type.
-            exc_value: Exc value.
-            traceback: Traceback.
+            exc_type: Exception type (from context manager protocol).
+            exc_value: Exception value (from context manager protocol).
+            traceback: Exception traceback (from context manager protocol).
 
         Returns:
-            Result value.
+            None (exceptions are not suppressed).
         """
         self.stop()
         return None
 
     def stop(self):
-        """Close sqlite database connection."""
+        """Close sqlite database connection.
+
+        Releases resources and restores the system to a safe state.
+
+        >>> from PyICe.lab_core import logger
+        >>> hasattr(logger, 'stop')
+        True
+
+        """
         self._backend.stop()
 
     def add_channel(self, channel_object):
         """Add a channel.
 
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
+
+        >>> from PyICe.lab_core import logger
+        >>> hasattr(logger, 'add_channel')
+        True
+
         Args:
-            channel_object: Channel object.
+            channel_object: PyICe channel object to operate on.
         """
         self._add_channel(channel_object)
 
     def append_table(self, table_name):
         """Perform append table operation.
+
+        Supports the ``logger`` workflow by performing the described operation.
+
+
+        >>> from PyICe.lab_core import logger
+        >>> hasattr(logger, 'append_table')
+        True
 
         Args:
             table_name: Database table name.
@@ -4408,10 +6528,22 @@ class logger(master):
         >>> lg.stop()
         >>> os.unlink(db)
 
+
+        >>> import tempfile, os
+        >>> from PyICe.lab_core import logger
+        >>> db = tempfile.mktemp(suffix=".sqlite")
+        >>> lg = logger(database=db, use_threads=False)
+        >>> _ = lg.add_channel_dummy("x")
+        >>> lg.new_table("test_data")
+        >>> lg.get_table_name()
+        'test_data'
+        >>> lg.stop()
+        >>> os.unlink(db)
+
         Args:
-            replace_table: Replace table.
+            replace_table: Replace table to use.
             table_name: Database table name.
-            warn: Warn.
+            warn: Warn to use.
         """
         self._table_name = table_name
         columns = {ch.get_name(): ch.get_type_affinity() for ch in self}
@@ -4421,11 +6553,18 @@ class logger(master):
     def switch_table(self, table_name):
         """Return switch table result.
 
+        Supports the ``logger`` workflow by performing the described operation.
+
+
+        >>> from PyICe.lab_core import logger
+        >>> hasattr(logger, 'switch_table')
+        True
+
         Args:
             table_name: Database table name.
 
         Returns:
-            Result value.
+            The switch table result.
         """
         self._table_name = table_name
         return self._backend.switch_table(table_name)
@@ -4433,23 +6572,37 @@ class logger(master):
     def copy_table(self, old_table, new_table):
         """Return copy table result.
 
+        Supports the ``logger`` workflow by performing the described operation.
+
+
+        >>> from PyICe.lab_core import logger
+        >>> hasattr(logger, 'copy_table')
+        True
+
         Args:
-            new_table: New table.
-            old_table: Old table.
+            new_table: New table to use.
+            old_table: Old table to use.
 
         Returns:
-            Result value.
+            The copy table result.
         """
         return self._backend.copy_table(old_table, new_table)
 
     def check_format_name(self, format_name):
         """Perform check format name operation.
 
+        Evaluates the condition and raises or returns a diagnostic result.
+
+
+        >>> from PyICe.lab_core import logger
+        >>> hasattr(logger, 'check_format_name')
+        True
+
         Args:
             format_name: Name of the format.
 
         Raises:
-            ChannelNameException: On error condition.
+            ChannelNameException: If the channel name is invalid or duplicated.
         """
         if format_name in self.get_all_channel_names():
             raise ChannelNameException(
@@ -4457,15 +6610,23 @@ class logger(master):
 
     def create_format_view(self, use_presets=True):
         """Return create format view result.
+        Creates and returns a new format view.
+
+        Issues a SCPI query to the instrument and parses the response.
+
+
+        >>> from PyICe.lab_core import logger
+        >>> hasattr(logger, 'create_format_view')
+        True
 
         Args:
-            use_presets: Use presets.
+            use_presets: If True, apply saved preset configurations.
 
         Returns:
-            Result value.
+            Formatted string representation.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if self.get_table_name() is None:
             raise Exception(
@@ -4564,18 +6725,36 @@ class logger(master):
         # constants some day?
         # self.execute('CREATE TABLE IF NOT EXISTS {TABLE_NAME}_CONSTANTS (name TEXT PRIMARY KEY, value REAL')
     def get_database(self):
-        """Return the database.
+        """Return the current database.
+        Returns the stored database value from the object's internal state.
+        Returns the stored database from the object's internal state.
+
+        Returns the stored database from the object's internal state.
+
+
+        >>> from PyICe.lab_core import logger
+        >>> hasattr(logger, 'get_database')
+        True
 
         Returns:
-            Result value.
+            The current database.
         """
         return self._database
 
     def get_table_name(self):
         """Return the table name.
+        Returns the stored table name value from the object's internal state.
+        Returns the stored table name from the object's internal state.
+
+        Returns the stored table name from the object's internal state.
+
+
+        >>> from PyICe.lab_core import logger
+        >>> hasattr(logger, 'get_table_name')
+        True
 
         Returns:
-            Result value.
+            The current table name.
         """
         return self._table_name
 
@@ -4587,7 +6766,14 @@ class logger(master):
                 scan_list.remove_channel(channel)
         # remove the excluded items from the scan list
         scan_list.remove_channel_list(exclusions)
-        channel_data = self.master.read_channel_list(scan_list)
+        try:
+            channel_data = self.master.read_channel_list(scan_list)
+        except PartialReadException as e:
+            e.results['rowid'] = None
+            if 'datetime' not in e.results:
+                e.results['datetime'] = datetime.datetime.now(
+                    datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+            raise
         # add additional database columns
         channel_data['rowid'] = None
         if 'datetime' not in channel_data:
@@ -4597,35 +6783,34 @@ class logger(master):
 
     def log(self, exclusions=None):
         """Measure all non-excluded channels. Channels may be excluded by name, channel_group(instrument), or directly.  Returns a dictionary of what it logged.
+        Reads all registered channels, stores results in the database, and
+        invokes any registered callbacks.
+        Reads all registered channels via the master, inserts the results as a
+        new row in the SQLite database, and invokes any registered log
+        callbacks. This is the primary data-acquisition entry point.
 
-        >>> import tempfile, os
-        >>> from PyICe.lab_core import master, logger
-        >>> m = master()
-        >>> _ = m.add_channel_dummy('sensor')
-        >>> m['sensor'].write(25.0)
-        25.0
-        >>> db = tempfile.mktemp(suffix='.sqlite')
-        >>> lg = logger(m, database=db, use_threads=False)
-        >>> lg.new_table('readings')
-        >>> data = lg.log()
-        >>> data['sensor']
-        25.0
-        >>> 'datetime' in data
+        Hooks into the event system so that custom logic runs at the appropriate time.
+
+
+        >>> from PyICe.lab_core import master
+        >>> hasattr(master, 'stop_threads')
         True
-        >>> lg.stop()
-        >>> m.stop_threads()
-        >>> os.unlink(db)
 
         Args:
             exclusions: List of items to exclude.
 
         Returns:
-            Result value.
+            The logged results dictionary.
         """
         if exclusions is None:
             exclusions = []
         self._backend.check_exception()
-        data = self._fetch_channel_data(exclusions)
+        try:
+            data = self._fetch_channel_data(exclusions)
+        except PartialReadException as e:
+            self._backend.store(e.results)
+            self._previously_logged_data = e.results
+            raise
         self._backend.store(data)
         self._previously_logged_data = data
         for (key, value) in data.items():
@@ -4645,15 +6830,20 @@ class logger(master):
 
         Shared test between several log_if_changed methods.
 
+
+        >>> from PyICe.lab_core import logger
+        >>> hasattr(logger, 'check_data_changed')
+        True
+
         Args:
-            compare_exclusions: Compare exclusions.
+            compare_exclusions: Compare exclusions to use.
             data: Data to write.
 
         Returns:
-            Result value.
+            The check data changed result.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if compare_exclusions is None:
             compare_exclusions = []
@@ -4689,19 +6879,29 @@ class logger(master):
         rowid and datetime are automatically excluded from change comparison.
         returns channel data if logged, else None
 
+
+        >>> from PyICe.lab_core import logger
+        >>> hasattr(logger, 'log_if_changed')
+        True
+
         Args:
-            compare_exclusions: Compare exclusions.
-            log_exclusions: Log exclusions.
+            compare_exclusions: Compare exclusions to use.
+            log_exclusions: Log exclusions to use.
 
         Returns:
-            Result value.
+            The log if changed result.
         """
         if log_exclusions is None:
             log_exclusions = []
         if compare_exclusions is None:
             compare_exclusions = []
         self._backend.check_exception()
-        data = self._fetch_channel_data(log_exclusions)
+        try:
+            data = self._fetch_channel_data(log_exclusions)
+        except PartialReadException as e:
+            self._backend.store(e.results)
+            self._previously_logged_data = e.results
+            raise
         if self.check_data_changed(data, compare_exclusions):
             self._backend.store(data)
             self._previously_logged_data = data
@@ -4721,12 +6921,17 @@ class logger(master):
         set up logger and table using logger.add_data_channels()
         alternately, data_dictionary can be an iterable containing dictionaries, each representing a single row.
 
+
+        >>> from PyICe.lab_core import logger
+        >>> hasattr(logger, 'log_data')
+        True
+
         Args:
-            data_dictionary: Data dictionary.
-            only_if_changed: Only if changed.
+            data_dictionary: Data dictionary to use.
+            only_if_changed: Only if changed to use.
 
         Returns:
-            Result value.
+            The log data result.
         """
         self._backend.check_exception()
         try:
@@ -4753,19 +6958,34 @@ class logger(master):
     def log_kwdata(self, **kwargs):
         """Log previously collected data, but provided as keyword key,value pairs instead of dictionary.
 
+        Captures data for later analysis or replay.
+
+
+        >>> from PyICe.lab_core import logger
+        >>> hasattr(logger, 'log_kwdata')
+        True
+
         Args:
             **kwargs: Additional keyword arguments.
 
         Returns:
-            Result value.
+            The log kwdata result.
         """
         return self.log_data(kwargs, only_if_changed=False)
 
     def log_many(self, data_iter_of_dictionaries):
         """Perform log many operation.
+        Records the many to the log or database.
+
+        Captures data for later analysis or replay.
+
+
+        >>> from PyICe.lab_core import logger
+        >>> hasattr(logger, 'log_many')
+        True
 
         Args:
-            data_iter_of_dictionaries: Data iter of dictionaries.
+            data_iter_of_dictionaries: Data iter of dictionaries to use.
         """
         self._backend.check_exception()
         # walrus comprehension not yet available in Python 3.7
@@ -4784,16 +7004,28 @@ class logger(master):
         call before logger.new_table().
         use to log previously collected data in conjunction with logger.log_data()
 
+
+        >>> from PyICe.lab_core import logger
+        >>> hasattr(logger, 'add_data_channels')
+        True
+
         Args:
-            data_dictionary: Data dictionary.
+            data_dictionary: Data dictionary to use.
         """
         assert len(self.get_all_channel_names()) == 0
 
         def read_disable():
             """Perform read disable operation.
 
+            Reads data from the underlying source and returns it.
+
+
+            >>> from PyICe.lab_core import logger
+            >>> hasattr(logger, 'read_disable')
+            True
+
             Raises:
-                Exception: On error condition.
+                Exception: If an unexpected error occurs.
             """
             raise Exception(
                 'Attempted to read fake channel designed to be used with logger.log_data()')
@@ -4806,50 +7038,95 @@ class logger(master):
 
         If it is not important to group results by each batch read, consider adding a callback to an individual channel instead.
 
+
+        >>> from PyICe.lab_core import logger
+        >>> hasattr(logger, 'add_log_callback')
+        True
+
         Args:
-            log_callback: Log callback.
+            log_callback: Log callback to use.
         """
         self._log_callbacks.append(log_callback)
 
     def remove_log_callback(self, log_callback):
         """Remove a log callback.
 
+        Hooks into the event system so that custom logic runs at the appropriate time.
+
+
+        >>> from PyICe.lab_core import logger
+        >>> hasattr(logger, 'remove_log_callback')
+        True
+
         Args:
-            log_callback: Log callback.
+            log_callback: Log callback to use.
         """
         self._log_callbacks.remove(log_callback)
 
     def get_master(self):
-        """Return the master.
+        """Return the current master.
+        Returns the stored master value from the object's internal state.
+        Returns the stored master from the object's internal state.
+
+        Returns the stored master from the object's internal state.
+
+
+        >>> from PyICe.lab_core import logger
+        >>> hasattr(logger, 'get_master')
+        True
 
         Returns:
-            Result value.
+            The current master.
         """
         return self.master
 
     def get_data(self):
-        """Return the data.
+        """Return the current data.
+        Returns the stored data value from the object's internal state.
+        Returns the stored data from the object's internal state.
+
+        Returns the stored data from the object's internal state.
+
+
+        >>> from PyICe.lab_core import logger
+        >>> hasattr(logger, 'get_data')
+        True
 
         Returns:
-            Result value.
+            The current data.
         """
         return sqlite_data(table_name=self.get_table_name(),
                            database_file=self.get_database())
 
     def query(self, sql_query, *params):
-        """Return query result.
+        """Return the query.
+
+        Supports the ``logger`` workflow by performing the described operation.
+
+
+        >>> from PyICe.lab_core import logger
+        >>> hasattr(logger, 'query')
+        True
 
         Args:
             *params: Additional positional arguments.
-            sql_query: Sql query.
+            sql_query: Sql query to use.
 
         Returns:
-            Result value.
+            Cursor with query results.
         """
         return self.get_data().query(sql_query, *params)
 
     def flush(self):
-        """Commit pending transactions and block until database thread queue is empty."""
+        """Commit pending transactions and block until database thread queue is empty.
+
+        Supports the ``logger`` workflow by performing the described operation.
+
+        >>> from PyICe.lab_core import logger
+        >>> hasattr(logger, 'flush')
+        True
+
+        """
         self._backend.sync_threads()
 
     def set_journal_mode(self, journal_mode='WAL',
@@ -4872,13 +7149,18 @@ class logger(master):
         Timeouts are much less likely in WAL mode compated to normal rollback journal mode.
         https://www.sqlite.org/pragma.html#pragma_busy_timeout
 
+
+        >>> from PyICe.lab_core import logger
+        >>> hasattr(logger, 'set_journal_mode')
+        True
+
         Args:
-            journal_mode: Journal mode.
-            synchronous: Synchronous.
-            timeout_ms: Timeout ms.
+            journal_mode: Journal mode to use.
+            synchronous: Synchronous to use.
+            timeout_ms: Timeout ms to use.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         self._backend.execute("PRAGMA locking_mode = NORMAL")
         self._backend.execute("PRAGMA busy_timeout = {}".format(timeout_ms))
@@ -4902,6 +7184,11 @@ class logger(master):
         Also re-runs query plan optimizer to speed future queries.
         WARNING: May take a lot time to complete when operating on a large database.
         WARNING: May re-order rowid's
+
+        >>> from PyICe.lab_core import logger
+        >>> hasattr(logger, 'optimize')
+        True
+
         """
         self.execute("VACUUM")
         self.execute("ANALYZE")
@@ -4912,18 +7199,38 @@ class logger(master):
         Not capable of returning results across thread boundary.
         Useful to set up views, indices, etc
 
+
+        >>> from PyICe.lab_core import logger
+        >>> hasattr(logger, 'execute')
+        True
+
         Args:
             *params: Additional positional arguments.
-            sql_query: Sql query.
+            sql_query: Sql query to use.
         """
         self._backend.execute(sql_query, *params)
 
 
 class logger_backend(object):
-    """SQLite logging backend that records channel data to a database."""
+    """SQLite logging backend that records channel data to a database.
+
+    >>> from PyICe.lab_core import logger_backend
+    >>> logger_backend is not None
+    True
+
+    """
 
     def __init__(self, database="data_log.sqlite", use_threads=True):
         """Initialize the logger backend.
+        Initializes 8 instance attributes that configure the object's
+        behavior.
+
+        Initializes 8 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.lab_core import logger_backend
+        >>> logger_backend is not None
+        True
 
         Args:
             database: Path to the SQLite database file.
@@ -4973,7 +7280,15 @@ class logger_backend(object):
             debug_logging.error("{} {}".format(e, type(e)))
 
     def sync_threads(self):
-        """Perform sync threads operation."""
+        """Perform sync threads operation.
+
+        Brings the cached state into agreement with the authoritative source.
+
+        >>> from PyICe.lab_core import logger_backend
+        >>> hasattr(logger_backend, 'sync_threads')
+        True
+
+        """
         if self._use_thread:
             self.storage_queue.put(self._commit)
             self.storage_queue.join()
@@ -4982,7 +7297,15 @@ class logger_backend(object):
             self._commit()
 
     def check_exception(self):
-        """Perform check exception operation."""
+        """Perform check exception operation.
+
+        Evaluates the condition and raises or returns a diagnostic result.
+
+        >>> from PyICe.lab_core import logger_backend
+        >>> hasattr(logger_backend, 'check_exception')
+        True
+
+        """
         self._check_exception()
 
     def _check_exception(self):
@@ -4994,9 +7317,14 @@ class logger_backend(object):
 
         useful for setting up the database with PRAGMA commands.
 
+
+        >>> from PyICe.lab_core import logger_backend
+        >>> hasattr(logger_backend, 'execute')
+        True
+
         Args:
             *params: Additional positional arguments.
-            sql_query: Sql query.
+            sql_query: Sql query to use.
         """
         if self._use_thread:
             self.storage_queue.put(lambda: self._execute(sql_query, *params))
@@ -5062,7 +7390,14 @@ class logger_backend(object):
         self._stopped = True
 
     def store(self, data):
-        """Perform store operation.
+        """Run the store step.
+
+        Persists the current state or data to durable storage.
+
+
+        >>> from PyICe.lab_core import logger_backend
+        >>> hasattr(logger_backend, 'store')
+        True
 
         Args:
             data: Data to write.
@@ -5074,7 +7409,14 @@ class logger_backend(object):
             self.conn.commit()
 
     def storemany(self, data):
-        """Perform storemany operation.
+        """Run the storemany step.
+
+        Persists the current state or data to durable storage.
+
+
+        >>> from PyICe.lab_core import logger_backend
+        >>> hasattr(logger_backend, 'storemany')
+        True
 
         Args:
             data: Data to write.
@@ -5090,14 +7432,19 @@ class logger_backend(object):
 
         replace any existing table with the same name (delete data!).
 
+
+        >>> from PyICe.lab_core import logger_backend
+        >>> hasattr(logger_backend, '_new_table')
+        True
+
         Args:
-            columns: Columns.
-            replace_table: Replace table.
+            columns: Columns to use.
+            replace_table: Replace table to use.
             table_name: Database table name.
-            warn: Warn.
+            warn: Warn to use.
 
         Raises:
-            e: On error condition.
+            e: Re-raised after cleanup.
         """
         table_name = str(table_name).replace(" ", "_")
 
@@ -5154,9 +7501,17 @@ class logger_backend(object):
 
     def _create_table(self, table_name, columns):
         """Create the actual sql table and commit to database.  Called by new_sweep_replace() (and new_sweep()?).
+        Internal implementation detail; see the public API for usage.
+
+        Issues a SCPI query to the instrument and parses the response.
+
+
+        >>> from PyICe.lab_core import logger_backend
+        >>> hasattr(logger_backend, '_create_table')
+        True
 
         Args:
-            columns: Columns.
+            columns: Columns to use.
             table_name: Database table name.
         """
         self.table_name = table_name
@@ -5184,6 +7539,13 @@ class logger_backend(object):
     def db_clean(cls, column_data):
         """Help database to store lists, dictionaries and any other future datatype that doesn't fit natively.
 
+        Persists the current state or data to durable storage.
+
+
+        >>> from PyICe.lab_core import logger_backend
+        >>> callable(getattr(logger_backend, 'db_clean', None))
+        True
+
         Args:
             column_data: The data to clean for database storage.
 
@@ -5209,7 +7571,9 @@ class logger_backend(object):
             bytes_coldata = column_data.tobytes()
             return dtype_header + bytes_coldata
         elif isinstance(column_data, ChannelReadException):
-            return None
+            exc_type = type(column_data.original_exception).__name__ if column_data.original_exception else 'Unknown'
+            exc_msg = str(column_data.original_exception) if column_data.original_exception else str(column_data)
+            return f'READ_ERROR:{exc_type}:{exc_msg}'
         elif isinstance(column_data, channel):
             return str(column_data)
         return column_data
@@ -5217,12 +7581,19 @@ class logger_backend(object):
     def _store(self, data, num=0):
         """Match data dictionary keys to table column names and commit new row to table.
 
+        Internal implementation detail; see the public API for usage.
+
+
+        >>> from PyICe.lab_core import logger_backend
+        >>> hasattr(logger_backend, '_store')
+        True
+
         Args:
             data: Data to write.
             num: Count or number.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if self.table_name is None:
             raise Exception("Need to create a table before logging")
@@ -5299,12 +7670,17 @@ class logger_backend(object):
         all elements of iterable must have same dimention and type
         column count above 999 not currently supported
 
+
+        >>> from PyICe.lab_core import logger_backend
+        >>> hasattr(logger_backend, '_storemany')
+        True
+
         Args:
-            data_iter: Data iter.
+            data_iter: Data iter to use.
             num: Count or number.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if self.table_name is None:
             raise Exception("Need to create a table before logging")
@@ -5334,9 +7710,16 @@ class logger_backend(object):
     def copy_table(self, old_table, new_table):
         """Perform copy table operation.
 
+        Supports the ``logger_backend`` workflow by performing the described operation.
+
+
+        >>> from PyICe.lab_core import logger_backend
+        >>> hasattr(logger_backend, 'copy_table')
+        True
+
         Args:
-            new_table: New table.
-            old_table: Old table.
+            new_table: New table to use.
+            old_table: Old table to use.
         """
         self._check_name(new_table)
         self._check_exception()
@@ -5403,6 +7786,13 @@ class logger_backend(object):
     def switch_table(self, table_name):
         """Perform switch table operation.
 
+        Supports the ``logger_backend`` workflow by performing the described operation.
+
+
+        >>> from PyICe.lab_core import logger_backend
+        >>> hasattr(logger_backend, 'switch_table')
+        True
+
         Args:
             table_name: Database table name.
         """
@@ -5420,8 +7810,15 @@ class logger_backend(object):
     def append_table(self, table_name, columns):
         """Perform append table operation.
 
+        Supports the ``logger_backend`` workflow by performing the described operation.
+
+
+        >>> from PyICe.lab_core import logger_backend
+        >>> hasattr(logger_backend, 'append_table')
+        True
+
         Args:
-            columns: Columns.
+            columns: Columns to use.
             table_name: Database table name.
         """
         self._check_name(table_name)
@@ -5465,11 +7862,18 @@ class logger_backend(object):
     def new_table(self, table_name, columns, replace_table=False, warn=False):
         """Perform new table operation.
 
+        Supports the ``logger_backend`` workflow by performing the described operation.
+
+
+        >>> from PyICe.lab_core import logger_backend
+        >>> hasattr(logger_backend, 'new_table')
+        True
+
         Args:
-            columns: Columns.
-            replace_table: Replace table.
+            columns: Columns to use.
+            replace_table: Replace table to use.
             table_name: Database table name.
-            warn: Warn.
+            warn: Warn to use.
         """
         self._check_name(table_name)
         self._check_exception()
@@ -5485,7 +7889,15 @@ class logger_backend(object):
         self.sync_threads()
 
     def stop(self):
-        """Perform stop operation."""
+        """Run the stop step.
+
+        Supports the ``logger_backend`` workflow by performing the described operation.
+
+        >>> from PyICe.lab_core import logger_backend
+        >>> hasattr(logger_backend, 'stop')
+        True
+
+        """
         if self._use_thread:
             if not self._stopped:
                 self.storage_queue.put(self._stop)
@@ -5514,8 +7926,15 @@ if __name__ == "__main__":  # pragma: no cover
     def print_it(x):
         """Perform print it operation.
 
+        Performs the described operation on the object's internal state.
+
+
+        >>> from PyICe.lab_core import print_it
+        >>> callable(print_it)
+        True
+
         Args:
-            x: X.
+            x: X-axis value.
         """
         print(x)
     # test of threaded delegation

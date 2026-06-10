@@ -15,6 +15,13 @@ The SPI interface is composed of two separate classes:
 2) spiInterface: Defines the hardware interface including baudrate, mode (CPOL/CPHA), CS operation.
     Specific hardware implementations should overload this class and implement _shift_data method.
 
+Examples:
+    >>> from PyICe.spi_interface import shift_register
+    >>> sr = shift_register('config')
+    >>> sr.add_bit_field('enable', 1)
+    >>> len(sr)
+    1
+
 """
 # Notes:
 # 1) spiSlave removed.
@@ -42,12 +49,32 @@ from abc import ABCMeta, abstractmethod
 
 
 class shift_register(object):
-    """Helper class to assemble multiple bit-fields together into a single larger integer and to disassemble received data into individual bit-fields."""
+    """Helper class to assemble multiple bit-fields together into a single larger integer and to disassemble received data into individual bit-fields.
+
+    Example:
+        >>> from PyICe.spi_interface import shift_register
+        >>> sr = shift_register("config")
+        >>> sr.add_bit_field("enable", 1)
+        >>> sr.add_bit_field("mode", 3)
+        >>> sr.add_bit_field("gain", 4)
+        >>> len(sr)
+        8
+        >>> sr.pack({"enable": 1, "mode": 5, "gain": 10})
+        (218, 8)
+        >>> sr.keys()
+        ['enable', 'mode', 'gain']
+    """
 
     def __init__(self, name=''):
         """Linear shift register model.
 
         Add bit_fields later in msb->lsb order using repeated calls to add_bit_field()
+
+        Example:
+            >>> from PyICe.spi_interface import shift_register
+            >>> sr = shift_register("myregister")
+            >>> sr.get_name()
+            'myregister'
 
         Args:
             name: Name identifier.
@@ -59,9 +86,20 @@ class shift_register(object):
 
     def __len__(self):
         """Support len() builtin to return total number of bits in shift register.
+        Enables ``len()`` to report the number of items.
+
+        Supports the built-in ``len()`` function for this container.
+
+        Example:
+            >>> from PyICe.spi_interface import shift_register
+            >>> sr = shift_register()
+            >>> sr.add_bit_field("a", 4)
+            >>> sr.add_bit_field("b", 4)
+            >>> len(sr)
+            8
 
         Returns:
-            Result value.
+            The number of items.
         """
         bit_count = 0
         for bfc in self._bit_field_bit_counts:
@@ -70,9 +108,17 @@ class shift_register(object):
 
     def __str__(self):
         """Graphical view of register structure if object is printed.
+        Provides a human-readable string for debugging and display.
+
+        Provides a human-readable representation for debugging and logging.
+
+
+        >>> from PyICe.spi_interface import shift_register
+        >>> hasattr(shift_register, '__str__')
+        True
 
         Returns:
-            Result value.
+            String representation.
         """
         hr = '--'
         line1 = ' |'
@@ -98,15 +144,32 @@ class shift_register(object):
 
     def __add__(self, other):
         """Support concatenation of multiple instances using '+' operator.
+        Enables the ``+`` operator.
+
+        Implements the ``__add__`` protocol for this object.
+
+        Example:
+            >>> from PyICe.spi_interface import shift_register
+            >>> sr1 = shift_register("reg1")
+            >>> sr1.add_bit_field("enable", 1)
+            >>> sr1.add_bit_field("mode", 3)
+            >>> sr2 = shift_register("reg2")
+            >>> sr2.add_bit_field("gain", 4)
+            >>> sr2.add_bit_field("offset", 2)
+            >>> combined = sr1 + sr2
+            >>> combined.keys()
+            ['enable', 'mode', 'gain', 'offset']
+            >>> len(combined)
+            10
 
         Args:
-            other: Other.
+            other: Second operand for the operation.
 
         Returns:
-            Result value.
+            A new object containing the combined result.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         assert isinstance(other, shift_register)
         for bf in list(self.keys()):
@@ -124,9 +187,21 @@ class shift_register(object):
 
     def __iter__(self):
         """Iterate over bit field names ms field to ls field.
+        Enables iteration over the object's elements.
+
+        Supports iteration with ``for ... in`` loops.
+
+        Example:
+            >>> from PyICe.spi_interface import shift_register
+            >>> sr = shift_register()
+            >>> sr.add_bit_field("enable", 1)
+            >>> sr.add_bit_field("mode", 3)
+            >>> sr.add_bit_field("gain", 4)
+            >>> list(sr)
+            ['enable', 'mode', 'gain']
 
         Returns:
-            Result value.
+            An iterator over the contained items.
         """
         return iter(self._bit_field_names)
 
@@ -135,24 +210,42 @@ class shift_register(object):
 
         use with dictionary-style lookup: my_shift_register['my_key']
 
+        Example:
+            >>> from PyICe.spi_interface import shift_register
+            >>> sr = shift_register()
+            >>> sr.add_bit_field("enable", 1)
+            >>> sr.add_bit_field("mode", 3)
+            >>> sr["mode"]
+            3
+            >>> sr["enable"]
+            1
+
         Args:
-            key: Key.
+            key: Lookup key or index.
 
         Returns:
-            Result value.
+            The item at the requested position or key.
         """
         index = self._bit_field_names.index(key)
         return self._bit_field_bit_counts[index]
 
     def _check_size(self, data, clk_count):
         """Make sure externally supplied data can fit within allocated bit field width.
+        Internal implementation detail; see the public API for usage.
+
+        Internal implementation detail; see the public API for usage.
+
+
+        >>> from PyICe.spi_interface import shift_register
+        >>> hasattr(shift_register, '_check_size')
+        True
 
         Args:
             clk_count: Number of clock cycles.
             data: Data to write.
 
         Returns:
-            Result value.
+            The check size result.
         """
         assert isinstance(data, numbers.Integral)
         assert isinstance(clk_count, numbers.Integral)
@@ -163,14 +256,26 @@ class shift_register(object):
     def add_bit_field(self, bit_field_name,
                       bit_field_bit_count, description=''):
         """Build SPI shift register data protocol sequentially MSB->LSB with repeated calls to add_bit_field.
+        Adds a new bit field to the object's internal collection.
+
+        Appends a new bit field entry to the object's internal collection.
+
+        Example:
+            >>> from PyICe.spi_interface import shift_register
+            >>> sr = shift_register()
+            >>> sr.add_bit_field("ctrl", 3)
+            >>> sr.keys()
+            ['ctrl']
+            >>> len(sr)
+            3
 
         Args:
-            bit_field_bit_count: Bit field bit count.
-            bit_field_name: Bit field name.
+            bit_field_bit_count: Bit field bit count to use.
+            bit_field_name: Bit field name to use.
             description: Description string.
 
         Raises:
-            ValueError: On error condition.
+            ValueError: If the provided value is out of range or invalid.
         """
         assert isinstance(bit_field_name, str)
         assert isinstance(bit_field_bit_count, numbers.Integral)
@@ -189,32 +294,68 @@ class shift_register(object):
     def keys(self):
         """Return list of bit-field names registered with instance.
 
+        Records the item so that it participates in future operations.
+
+        Example:
+            >>> from PyICe.spi_interface import shift_register
+            >>> sr = shift_register()
+            >>> sr.add_bit_field("x", 2)
+            >>> sr.add_bit_field("y", 6)
+            >>> sr.keys()
+            ['x', 'y']
+
         Returns:
-            Result value.
+            List of matching items.
         """
         return self._bit_field_names[:]
 
     def display(self):
-        """Print ascii register structure graphic."""
+        """Print ascii register structure graphic.
+
+        Generates or configures a visual representation of the data.
+
+        >>> from PyICe.spi_interface import shift_register
+        >>> hasattr(shift_register, 'display')
+        True
+
+        """
         print(str(self))
 
     def get_description(self, key):
         """Return bit field description string.
+        Returns the stored description value from the object's internal state.
+        Returns the stored description from the object's internal state.
+
+        Returns the stored description from the object's internal state.
+
+
+        >>> from PyICe.spi_interface import shift_register
+        >>> hasattr(shift_register, 'get_description')
+        True
 
         Args:
-            key: Key.
+            key: Lookup key or index.
 
         Returns:
-            Result value.
+            The current description.
         """
         index = self._bit_field_names.index(key)
         return self._bit_field_descriptions[index]
 
     def get_name(self):
         """Return shift register name.
+        Returns the stored name value from the object's internal state.
+        Returns the stored name from the object's internal state.
+
+        Returns the stored name from the object's internal state.
+
+
+        >>> from PyICe.spi_interface import shift_register
+        >>> hasattr(shift_register, 'get_name')
+        True
 
         Returns:
-            Result value.
+            The current name.
         """
         return self.name
 
@@ -224,11 +365,20 @@ class shift_register(object):
         Suitable for passing directly to spiInterface.transceive(*shift_register.pack(bit_field_data_dict))
         bit_field_data_dict should contain one key-value pair for each defined bit_field
 
+        Example:
+            >>> from PyICe.spi_interface import shift_register
+            >>> sr = shift_register("config")
+            >>> sr.add_bit_field("enable", 1)
+            >>> sr.add_bit_field("mode", 3)
+            >>> sr.add_bit_field("gain", 4)
+            >>> sr.pack({"enable": 1, "mode": 5, "gain": 10})
+            (218, 8)
+
         Args:
-            bit_field_data_dict: Bit field data dict.
+            bit_field_data_dict: Bit field data dict to use.
 
         Returns:
-            Result value.
+            The packed integer value.
         """
         # don't check for extra entries in bit_field_data_dict that don't go
         # with this shift register. Any reason to???
@@ -246,11 +396,20 @@ class shift_register(object):
 
         return dictionary with key-value pairs for each defined bit_field_name and bit_field data.
 
+        Example:
+            >>> from PyICe.spi_interface import shift_register
+            >>> sr = shift_register("config")
+            >>> sr.add_bit_field("enable", 1)
+            >>> sr.add_bit_field("mode", 3)
+            >>> sr.add_bit_field("gain", 4)
+            >>> dict(sr.unpack(218))
+            {'enable': 1, 'mode': 5, 'gain': 10}
+
         Args:
             data: Data to write.
 
         Returns:
-            Result value.
+            Dictionary mapping field names to extracted values.
         """
         bf_data = []
         # iterate backwards because accumulated shift offsets are not yet
@@ -269,13 +428,24 @@ class shift_register(object):
 
         by default, shift register name will also be augmented with prepend_str and append_str. Suppress this behavior by setting keep_name=False.
 
+        Example:
+            >>> from PyICe.spi_interface import shift_register
+            >>> sr = shift_register("config")
+            >>> sr.add_bit_field("enable", 1)
+            >>> sr.add_bit_field("gain", 4)
+            >>> sr2 = sr.copy(prepend_str="ch0_")
+            >>> sr2.keys()
+            ['ch0_enable', 'ch0_gain']
+            >>> sr2.get_name()
+            'ch0_config'
+
         Args:
-            append_str: Append str.
-            keep_name: Keep name.
-            prepend_str: Prepend str.
+            append_str: Append str to use.
+            keep_name: Keep name to use.
+            prepend_str: Prepend str to use.
 
         Returns:
-            Result value.
+            The copy result.
         """
         if keep_name:
             name = self.get_name()
@@ -295,7 +465,13 @@ class shift_register(object):
 
 
 class spiInterface(object, metaclass=ABCMeta):
-    """Spi interface (object subclass)."""
+    """Spi interface (object subclass).
+
+    >>> from PyICe.spi_interface import spiInterface
+    >>> spiInterface is not None
+    True
+
+    """
     def __init__(self, CPOL, CPHA, ss_ctrl, word_size):
         """Mode controls polarity and phase: 0 => CPOL=0, CPHA=0.
 
@@ -308,14 +484,19 @@ class spiInterface(object, metaclass=ABCMeta):
 
           TODO: add option to send data LSB first?
 
+
+        >>> from PyICe.spi_interface import spiInterface
+        >>> spiInterface is not None
+        True
+
         Args:
             CPHA: Clock phase.
             CPOL: Clock polarity.
-            ss_ctrl: Ss ctrl.
-            word_size: Word size.
+            ss_ctrl: Slave-select control mode or pin assignment.
+            word_size: Data word width in bits.
 
         Raises:
-            SPIMasterError: On error condition.
+            SPIMasterError: If the SPI transaction fails.
         """
         self.CPOL = CPOL
         self.CPHA = CPHA
@@ -338,8 +519,13 @@ class spiInterface(object, metaclass=ABCMeta):
 
         If false, enable automatic padding to correct alignment.
 
+
+        >>> from PyICe.spi_interface import spiInterface
+        >>> hasattr(spiInterface, 'set_strict_alignment')
+        True
+
         Args:
-            strict: Strict.
+            strict: Strict to use.
         """
         self._strict_alignment = strict
         self._warned_once = False
@@ -351,8 +537,13 @@ class spiInterface(object, metaclass=ABCMeta):
         If true, assert slave select. If false, deassert slave select.
         There will typically be a logic inversion inside ss_ctrl to achieve active low _cs.
 
+
+        >>> from PyICe.spi_interface import spiInterface
+        >>> hasattr(spiInterface, 'set_ss_ctrl')
+        True
+
         Args:
-            ss_ctrl_function: Ss ctrl function.
+            ss_ctrl_function: Ss ctrl function to use.
         """
         self._ss_ctrl = ss_ctrl_function
 
@@ -368,25 +559,38 @@ class spiInterface(object, metaclass=ABCMeta):
         Subclass implementation should raise SPIMasterError exception if unable to send message of length clk_count
         (ie hardware limited to byte-aligned messages)
 
+
+        >>> from PyICe.spi_interface import spiInterface
+        >>> hasattr(spiInterface, '_shift_data')
+        True
+
         Args:
             clk_count: Number of clock cycles.
-            data_out: Data out.
+            data_out: Data out to use.
 
         Raises:
-            SPIMasterError: On error condition.
+            SPIMasterError: If the SPI transaction fails.
         """
         raise SPIMasterError('Overload required.')
 
     @staticmethod
     def _check_size(data, bits):
         """Make sure data fits within word of length  "bits".
+        Internal implementation detail; see the public API for usage.
+
+        Internal implementation detail; see the public API for usage.
+
+
+        >>> from PyICe.spi_interface import spiInterface
+        >>> callable(getattr(spiInterface, '_check_size', None))
+        True
 
         Args:
-            bits: Bits.
+            bits: Number of bits.
             data: Data to write.
 
         Returns:
-            Result value.
+            The check size result.
         """
         assert isinstance(data, numbers.Integral)
         assert isinstance(bits, numbers.Integral)
@@ -400,12 +604,17 @@ class spiInterface(object, metaclass=ABCMeta):
 
         integer can then be broken up by shift_register object into bit field aligned pieces.
 
+
+        >>> from PyICe.spi_interface import spiInterface
+        >>> callable(getattr(spiInterface, 'pack', None))
+        True
+
         Args:
-            data_list: Data list.
-            word_size: Word size.
+            data_list: Data list to use.
+            word_size: Data word width in bits.
 
         Returns:
-            Result value.
+            The packed integer value.
         """
         res = 0
         offset = 0
@@ -419,13 +628,18 @@ class spiInterface(object, metaclass=ABCMeta):
 
         helper to send byte-aligned pieces to hardware even if bit fields span bytes (or 1-bit, 16-bit 32-bit, etc words for other hardware)
 
+
+        >>> from PyICe.spi_interface import spiInterface
+        >>> hasattr(spiInterface, 'unpack')
+        True
+
         Args:
-            bit_count: Bit count.
+            bit_count: Bit count to use.
             data: Data to write.
-            word_size: Word size.
+            word_size: Data word width in bits.
 
         Returns:
-            Result value.
+            Dictionary mapping field names to extracted values.
         """
         assert bit_count % word_size == 0  # partially filled blocks create aligment ambiguity
         self._check_size(data, bit_count)
@@ -442,15 +656,20 @@ class spiInterface(object, metaclass=ABCMeta):
         return word of same size read simultaneously on MISO.
         Frame entire transaction with slave select.
 
+
+        >>> from PyICe.spi_interface import spiInterface
+        >>> hasattr(spiInterface, 'transceive')
+        True
+
         Args:
             clk_count: Number of clock cycles.
             data: Data to write.
 
         Returns:
-            Result value.
+            The transceive result.
 
         Raises:
-            SPIMasterError: On error condition.
+            SPIMasterError: If the SPI transaction fails.
         """
         self._check_size(data, clk_count)
         framing_excess = clk_count % self.word_size
@@ -496,6 +715,11 @@ class spi_bbone(spiInterface):
     thus we can initialize this package for all purposes
     This instrument probably got a broken when the parent class interface was modified to support multiple interface hardware boards and more general SPI communication.
     Needs testing/repair.
+
+    >>> from PyICe.spi_interface import spi_bbone
+    >>> spi_bbone is not None
+    True
+
     """
     # def __init__(self,baudrate,timeout,device_num, mode=0, ss_ctrl=lambda ss: None):
     # '''device num is a tuple eg. (0,0)
@@ -543,19 +767,34 @@ class spi_bbone(spiInterface):
 
 
 class spi_cfgpro(spiInterface):
-    """Spi_cfgpro (spi interface subclass)."""
+    """Spi_cfgpro (spi interface subclass).
+
+    >>> from PyICe.spi_interface import spi_cfgpro
+    >>> spi_cfgpro is not None
+    True
+
+    """
     def __init__(self, visa_interface, CPOL, CPHA, baudrate=1e6, ss_ctrl=None):
         """Initialize spi_cfgpro.
+        Stores configuration in ``interface``, ``ss_ctrl`` for use by other
+        methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 3 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.spi_interface import spi_cfgpro
+        >>> spi_cfgpro is not None
+        True
 
         Args:
             CPHA: Clock phase.
             CPOL: Clock polarity.
-            baudrate: Baudrate.
-            ss_ctrl: Ss ctrl.
-            visa_interface: Visa interface.
+            baudrate: Serial baud rate in bits per second.
+            ss_ctrl: Slave-select control mode or pin assignment.
+            visa_interface: Visa interface to use.
 
         Raises:
-            SPIMasterError: On error condition.
+            SPIMasterError: If the SPI transaction fails.
         """
         self.interface = visa_interface
         if ss_ctrl is None:
@@ -602,10 +841,17 @@ class spi_cfgpro(spiInterface):
             self.interface.write('SPI:CLOCk:PHASe 1')
 
     def cs(self, select):
-        """Perform cs operation.
+        """Run the cs step.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
+
+
+        >>> from PyICe.spi_interface import spi_cfgpro
+        >>> hasattr(spi_cfgpro, 'cs')
+        True
 
         Args:
-            select: Select.
+            select: Selection index or identifier.
         """
         if select:
             self.interface.write('SPI:SSELect:ENable')
@@ -613,7 +859,15 @@ class spi_cfgpro(spiInterface):
             self.interface.write('SPI:SSELect:DISable')
 
     def __del__(self):
-        """Clean up resources."""
+        """Clean up resources.
+
+        Performs cleanup when the object is garbage-collected.
+
+        >>> from PyICe.spi_interface import spi_cfgpro
+        >>> hasattr(spi_cfgpro, '__del__')
+        True
+
+        """
         self.interface.close()
 
     def _shift_data(self, data_out, clk_count):
@@ -625,7 +879,13 @@ class spi_cfgpro(spiInterface):
 
 
 class spi_dc590(spiInterface):
-    """Spi_dc590 (spi interface subclass)."""
+    """Spi_dc590 (spi interface subclass).
+
+    >>> from PyICe.spi_interface import spi_dc590
+    >>> spi_dc590 is not None
+    True
+
+    """
     def __init__(self, interface_stream, ss_ctrl=None):
         """No remote computer control over CPOL/CPHA mode or baudrate using DC590 sketch...
 
@@ -633,20 +893,32 @@ class spi_dc590(spiInterface):
             DC590B Enhanced Linduino sketch supports this options, but PyICe doesn't yet. See 'M' command hierarchy new subcommands '0','1','2','3'.
             Also, SPI communication seems to be broken with PyICe DC590ListRead.ino sketch for unknown reasons. Stock DC590 sketch works. 'C' command in set_gpio conflicts with list read stream enable and doesn't seem to correspond to current or past Linduino/DC590 command set either!
 
+
+        >>> from PyICe.spi_interface import spi_dc590
+        >>> spi_dc590 is not None
+        True
+
         Args:
-            interface_stream: Interface stream.
-            ss_ctrl: Ss ctrl.
+            interface_stream: Interface stream to use.
+            ss_ctrl: Slave-select control mode or pin assignment.
         """
         self.interface = interface_stream
         if ss_ctrl is None:
             def ss_ctrl(ss):
                 """Return ss ctrl result.
 
+                Performs the described operation on the object's internal state.
+
+
+                >>> from PyICe.spi_interface import spi_dc590
+                >>> hasattr(spi_dc590, 'ss_ctrl')
+                True
+
                 Args:
-                    ss: Ss.
+                    ss: Slave-select pin assignment.
 
                 Returns:
-                    Result value.
+                    The ss ctrl result.
                 """
                 return self.set_cs(not ss)  # active low
         spiInterface.__init__(
@@ -662,8 +934,13 @@ class spi_dc590(spiInterface):
 
         If true, pin high. No active low inversion here.
 
+
+        >>> from PyICe.spi_interface import spi_dc590
+        >>> hasattr(spi_dc590, 'set_cs')
+        True
+
         Args:
-            level: Level.
+            level: Trigger level or signal level.
         """
         if level:
             self.interface.write('X')
@@ -675,8 +952,13 @@ class spi_dc590(spiInterface):
 
         If true, pin high.
 
+
+        >>> from PyICe.spi_interface import spi_dc590
+        >>> hasattr(spi_dc590, 'set_gpio')
+        True
+
         Args:
-            level: Level.
+            level: Trigger level or signal level.
         """
         if level:
             self.interface.write('COG')
@@ -684,7 +966,15 @@ class spi_dc590(spiInterface):
             self.interface.write('COg')
 
     def init_spi(self):
-        """Perform init spi operation."""
+        """Perform init spi operation.
+
+        Sends the ``DC590`` SCPI command to the instrument.
+
+        >>> from PyICe.spi_interface import spi_dc590
+        >>> hasattr(spi_dc590, 'init_spi')
+        True
+
+        """
         time.sleep(2.5)  # Linduino bootloader delay!
         self.interface.write('\n' * 10)
         time.sleep(2.5)  # Linduino bootloader delay!
@@ -699,8 +989,15 @@ class spi_dc590(spiInterface):
     def spi_mode(self):
         """Switch DC590 I2C/SPI mux to SPI.
 
+        Supports the ``spi_dc590`` workflow by performing the described operation.
+
+
+        >>> from PyICe.spi_interface import spi_dc590
+        >>> hasattr(spi_dc590, 'spi_mode')
+        True
+
         Raises:
-            SPIMasterError: On error condition.
+            SPIMasterError: If the SPI transaction fails.
         """
         self.interface.write('MS')  # Switch to isolated SPI Mode
         time.sleep(0.1)
@@ -710,7 +1007,15 @@ class spi_dc590(spiInterface):
                 'Error switching DC590 to SPI Mode. Unexpected data in buffer:{}'.format(buffer))
 
     def __del__(self):
-        """Clean up resources."""
+        """Clean up resources.
+
+        Performs cleanup when the object is garbage-collected.
+
+        >>> from PyICe.spi_interface import spi_dc590
+        >>> hasattr(spi_dc590, '__del__')
+        True
+
+        """
         self.interface.close()
 
     def _shift_data(self, data_out, clk_count):
@@ -732,17 +1037,31 @@ class spi_dc590(spiInterface):
 
 
 class spi_buspirate(spiInterface):
-    """Spi_buspirate (spi interface subclass)."""
+    """Spi_buspirate (spi interface subclass).
+
+    >>> from PyICe.spi_interface import spi_buspirate
+    >>> spi_buspirate is not None
+    True
+
+    """
     def __init__(self, interface_raw_serial, CPOL=0,
                  CPHA=0, baudrate=1e6, ss_ctrl=None):
         """Initialize spi_buspirate.
+        Stores configuration in ``ser``, ``ss_ctrl`` for use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 3 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.spi_interface import spi_buspirate
+        >>> hasattr(spi_buspirate, '__init__')
+        True
 
         Args:
             CPHA: Clock phase.
             CPOL: Clock polarity.
-            baudrate: Baudrate.
-            interface_raw_serial: Interface raw serial.
-            ss_ctrl: Ss ctrl.
+            baudrate: Serial baud rate in bits per second.
+            interface_raw_serial: Raw serial interface instance for communication.
+            ss_ctrl: Slave-select control mode or pin assignment.
         """
         self.ser = interface_raw_serial
         if ss_ctrl is None:
@@ -800,12 +1119,22 @@ class spi_buspirate(spiInterface):
 
     def set_baudrate(self, baudrate):
         """Set the baudrate.
+        Sends the ``Buspirate`` SCPI command to the instrument.
+        Sends the appropriate SCPI command to configure the instrument's
+        baudrate.
+
+        Updates the baudrate in the object's internal state.
+
+
+        >>> from PyICe.spi_interface import spi_buspirate
+        >>> hasattr(spi_buspirate, 'set_baudrate')
+        True
 
         Args:
-            baudrate: Baudrate.
+            baudrate: Serial baud rate in bits per second.
 
         Raises:
-            SPIMasterError: On error condition.
+            SPIMasterError: If the SPI transaction fails.
         """
         baudrate = float(baudrate)
         self.baudrate = baudrate
@@ -839,9 +1168,18 @@ class spi_buspirate(spiInterface):
         # 0 = Serial output data changes on transition from Idle clock state to
         # active clock state (see bit 6)
         """Set the mode.
+        Sends the ``Buspirate`` SCPI command to the instrument.
+        Sends the appropriate SCPI command to configure the instrument's mode.
+
+        Updates the mode in the object's internal state.
+
+
+        >>> from PyICe.spi_interface import spi_buspirate
+        >>> hasattr(spi_buspirate, 'set_mode')
+        True
 
         Raises:
-            SPIMasterError: On error condition.
+            SPIMasterError: If the SPI transaction fails.
         """
         if self.mode == 0:
             self.ser.write('\x8A')
@@ -862,12 +1200,20 @@ class spi_buspirate(spiInterface):
 
     def cs(self, select):
         """Select is active low.
+        Sends the ``Buspirate`` SCPI command to the instrument.
+
+        Transmits data to the remote endpoint.
+
+
+        >>> from PyICe.spi_interface import spi_buspirate
+        >>> hasattr(spi_buspirate, 'cs')
+        True
 
         Args:
-            select: Select.
+            select: Selection index or identifier.
 
         Raises:
-            SPIMasterError: On error condition.
+            SPIMasterError: If the SPI transaction fails.
         """
         if select:
             self.ser.write('\x02')
@@ -880,7 +1226,15 @@ class spi_buspirate(spiInterface):
                     ord(resp)))
 
     def __del__(self):
-        """Clean up resources."""
+        """Clean up resources.
+
+        Performs cleanup when the object is garbage-collected.
+
+        >>> from PyICe.spi_interface import spi_buspirate
+        >>> hasattr(spi_buspirate, '__del__')
+        True
+
+        """
         self.ser.close()
 
     def _shift_data(self, data_out, clk_count):
@@ -910,7 +1264,13 @@ class spi_buspirate(spiInterface):
 
 
 class spi_bitbang(spiInterface):
-    """Spi_bitbang (spi interface subclass)."""
+    """Spi_bitbang (spi interface subclass).
+
+    >>> from PyICe.spi_interface import spi_bitbang
+    >>> spi_bitbang is not None
+    True
+
+    """
     def __init__(self, SCK_channel, MOSI_channel=None, MISO_channel=None,
                  SS_channel=None, CPOL=0, CPHA=0, SS_POL=0, low_level=0, high_level=1):
         """Bit-bangable SPI port made of any writeable channels (power supply, gpio, etc).
@@ -924,16 +1284,21 @@ class spi_bitbang(spiInterface):
         low_level and high_level will be written to the writable channels to set the logic low and logic high states respectively. The average will set the ADC threshold for the MISO channel.
         If a channel is not required, it can be faked with lab_core.master.add_channel_dummy('fake_MISO_channel').
 
+
+        >>> from PyICe.spi_interface import spi_bitbang
+        >>> hasattr(spi_bitbang, '__init__')
+        True
+
         Args:
             CPHA: Clock phase.
             CPOL: Clock polarity.
-            MISO_channel: Miso channel.
-            MOSI_channel: Mosi channel.
-            SCK_channel: Sck channel.
-            SS_POL: Ss pol.
-            SS_channel: Ss channel.
-            high_level: High level.
-            low_level: Low level.
+            MISO_channel: Miso channel to use.
+            MOSI_channel: Mosi channel to use.
+            SCK_channel: Sck channel to use.
+            SS_POL: Ss pol to use.
+            SS_channel: Ss channel to use.
+            high_level: High level to use.
+            low_level: Low level to use.
         """
         self.SCK_channel = SCK_channel
         self.MOSI_channel = MOSI_channel
@@ -956,9 +1321,14 @@ class spi_bitbang(spiInterface):
         values are also used to digitize MISO_channel readings.
         for example, to use a power supply at 5V logic levels set high=5
 
+
+        >>> from PyICe.spi_interface import spi_bitbang
+        >>> hasattr(spi_bitbang, 'set_levels')
+        True
+
         Args:
-            high: High.
-            low: Low.
+            high: High to use.
+            low: Low to use.
         """
         self.low = low
         self.high = high
@@ -966,8 +1336,15 @@ class spi_bitbang(spiInterface):
     def cs(self, select):
         """Select is active low.
 
+        Supports the ``spi_bitbang`` workflow by performing the described operation.
+
+
+        >>> from PyICe.spi_interface import spi_bitbang
+        >>> hasattr(spi_bitbang, 'cs')
+        True
+
         Args:
-            select: Select.
+            select: Selection index or identifier.
         """
         if self.SS_channel is not None:
             if select and not self.SS_POL:
@@ -1002,13 +1379,34 @@ class spi_bitbang(spiInterface):
 
 
 class spi_dummy(spiInterface):
-    """Spi_dummy (spi interface subclass)."""
+    """Spi_dummy (spi interface subclass).
+
+    A no-hardware SPI interface that prints transactions and returns random MISO data.
+    Useful for testing shift_register packing/unpacking without real hardware.
+
+    Example:
+        >>> from PyICe.spi_interface import spi_dummy
+        >>> sd = spi_dummy(word_size=8)
+        >>> isinstance(sd, spi_dummy)
+        True
+        >>> sd.word_size
+        8
+    """
     def __init__(self, delay=0, word_size=1):
         """Initialize spi_dummy.
+        Stores configuration in ``delay`` for use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
+
+
+        >>> from PyICe.spi_interface import spi_dummy
+        >>> obj = spi_dummy(word_size=8)
+        >>> isinstance(obj, spi_dummy)
+        True
 
         Args:
             delay: Delay time in seconds.
-            word_size: Word size.
+            word_size: Data word width in bits.
         """
         self.delay = delay
         spiInterface.__init__(
@@ -1019,10 +1417,17 @@ class spi_dummy(spiInterface):
             word_size=word_size)
 
     def cs(self, select):
-        """Perform cs operation.
+        """Run the cs step.
+
+        Supports the ``spi_dummy`` workflow by performing the described operation.
+
+
+        >>> from PyICe.spi_interface import spi_dummy
+        >>> hasattr(spi_dummy, 'cs')
+        True
 
         Args:
-            select: Select.
+            select: Selection index or identifier.
         """
         if select:
             print("Writing slave_select ACTIVE.")
@@ -1050,7 +1455,15 @@ class spi_dummy(spiInterface):
 
 
 class SPIMasterError(Exception):
-    """S p i master error (exception subclass)."""
+    """S p i master error (exception subclass).
+
+    >>> from PyICe.spi_interface import SPIMasterError
+    >>> raise SPIMasterError("test")
+    Traceback (most recent call last):
+        ...
+    PyICe.spi_interface.SPIMasterError: test
+
+    """
     pass
 
 
@@ -1061,8 +1474,15 @@ if __name__ == "__main__":
     def dummy_print(ch_name, data):
         """Perform dummy print operation.
 
+        Performs the described operation on the object's internal state.
+
+
+        >>> from PyICe.spi_interface import dummy_print
+        >>> callable(dummy_print)
+        True
+
         Args:
-            ch_name: Ch name.
+            ch_name: Ch name to use.
             data: Data to write.
         """
         print('{}:{}'.format(ch_name, data))

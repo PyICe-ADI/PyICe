@@ -1,4 +1,8 @@
-"""Digital  I O over analog output utility."""
+"""Digital  I O over analog output utility.
+
+>>> from PyICe.lab_utils.digital_IO_over_analog_output import digital_IO_over_analog_output
+
+"""
 class digital_IO_over_analog_output(object):
     """Wrap an analog output channel with a digital logic interface.
 
@@ -10,6 +14,11 @@ class digital_IO_over_analog_output(object):
     configurable voltage levels. It tracks the logic-supply voltage via a
     write callback on *domain_channel* (e.g. ``master['vin_supply']``) and
     automatically updates the driven voltage when the supply changes.
+
+    >>> from PyICe.lab_utils.digital_IO_over_analog_output import digital_IO_over_analog_output
+    >>> digital_IO_over_analog_output is not None
+    True
+
     """
     def __init__(self, channel, domain_channel, VOL=0.0,
                  delta_Vhook=1.5, tolerance=0.01, abs_max=None):
@@ -18,6 +27,11 @@ class digital_IO_over_analog_output(object):
         Configure the voltage levels used to represent logic states and
         register a write callback on *domain_channel* so that changes to
         the logic supply are automatically tracked.
+
+
+        >>> from PyICe.lab_utils.digital_IO_over_analog_output import digital_IO_over_analog_output
+        >>> hasattr(digital_IO_over_analog_output, '__init__')
+        True
 
         Args:
             channel: The analog-output PyICe channel that will be driven
@@ -78,6 +92,11 @@ class digital_IO_over_analog_output(object):
         ``"high"``, ``"low"``, ``"h"``, ``"l"`` are also supported. This
         method can be passed as the *write_function* argument to
         ``master.add_channel_virtual()``.
+
+
+        >>> from PyICe.lab_utils.digital_IO_over_analog_output import digital_IO_over_analog_output
+        >>> hasattr(digital_IO_over_analog_output, 'digital_write')
+        True
 
         Args:
             value: The desired logic state. Use True / 1 / ``"high"`` for

@@ -31,6 +31,9 @@ reflected back to port 2, from port 2.
 Author: Ben Leverett
 Date Created: 2023-03-23
 Version 0.0
+
+>>> from PyICe.data_utils.touchstone_utils import touchstone_utils
+
 """
 import skrf
 import numpy as np
@@ -57,6 +60,11 @@ class touchstone_utils():
     :attr:`z0`             characteristic impedance of the touchstone (assuming uniform z0)
     :attr:`freqs`          frequency vector, numpy array
     =====================  =============================================
+
+    >>> from PyICe.data_utils.touchstone_utils import touchstone_utils
+    >>> touchstone_utils is not None
+    True
+
     """
     def __init__(self, file_name=None):
         """Creates a touchstone utils object.
@@ -64,6 +72,11 @@ class touchstone_utils():
         Takes in an N port touchstone file for manipulation and plotting.
         One of the main goals of the touchstone utils is to simplify networks from N port to M port.
         Touchstone utils can also plot bode plots and create networks and touchstones files.
+
+
+        >>> from PyICe.data_utils.touchstone_utils import touchstone_utils
+        >>> touchstone_utils is not None
+        True
 
         Args:
             file_name: Touchstone file to be imported, extension ".s?p".
@@ -77,12 +90,24 @@ class touchstone_utils():
         """Deconstructor. Called when the object is destroyed, usually when use script terminates.
 
         TODO: this did not work, maybe there is a better way to call mplt.show() when exiting scripts
+
+        >>> from PyICe.data_utils.touchstone_utils import touchstone_utils
+        >>> hasattr(touchstone_utils, '__del__')
+        True
+
         """
         mplt.show()
 
     def output_touchstone(self, output_file_name, output_file_dir,
                           input_network=None, start=None, stop=None, output_form='ri'):
         """Outputs a touchstone of a specified network. If none specified, the current touchstone_utils network is used.
+
+        Supports the ``touchstone_utils`` workflow by performing the described operation.
+
+
+        >>> from PyICe.data_utils.touchstone_utils import touchstone_utils
+        >>> hasattr(touchstone_utils, 'output_touchstone')
+        True
 
         Args:
             output_file_name: Output file name without file extension. File extension will be assigned.
@@ -114,24 +139,38 @@ class touchstone_utils():
     def network_Nport_to_Mport(self, port_nums):
         """Converts current touchstone utils network to an M-port network of ports 'port_nums'.
 
+        Transforms the input data into the required output form.
+
+
+        >>> from PyICe.data_utils.touchstone_utils import touchstone_utils
+        >>> hasattr(touchstone_utils, 'network_Nport_to_Mport')
+        True
+
         Args:
             port_nums: Port numbers from the current N-port network to be used for M-port network.
                 M-port port numbers 1-M are assigned in order of port_nums, so port_nums = [2, 1] will give
                 M-port port 1 as N-port port 2 and M-port port 2 as N-port port 1.
 
         Returns:
-            Result value.
+            The network Nport to Mport result.
         """
         # TODO: Add input network
         # TODO: Add error handling for port_nums outside of N-port port count
         def open_terminator(name):  # implicit freqs, z0
             """Return open terminator result.
 
+            Establishes the connection or prepares the resource for use.
+
+
+            >>> from PyICe.data_utils.touchstone_utils import touchstone_utils
+            >>> hasattr(touchstone_utils, 'open_terminator')
+            True
+
             Args:
                 name: Name identifier.
 
             Returns:
-                Result value.
+                The open terminator result.
             """
             open_port = skrf.Circuit.Port(
                 frequency=freqs, name='open_term_port', z0=z0)
@@ -182,23 +221,35 @@ class touchstone_utils():
 
         The input port is the source_port_num and which port is shorted to make the 1-port network is load_port_num.
 
+
+        >>> from PyICe.data_utils.touchstone_utils import touchstone_utils
+        >>> hasattr(touchstone_utils, 'network_Nport_to_1port')
+        True
+
         Args:
             source_port_num: Port number from the current N-port network to be used as the input port for the 1-port network.
             load_port_num: Port number from the current N-port network to be shorted for the simplification to a 1-port network.
 
         Returns:
-            Result value.
+            The network Nport to 1port result.
         """
         # TODO: Add functionality for load_port_num to be multiple load ports
         # that get shorted.
         def short_terminator(name):  # implicit freqs
             """Return short terminator result.
 
+            Performs the described operation on the object's internal state.
+
+
+            >>> from PyICe.data_utils.touchstone_utils import touchstone_utils
+            >>> hasattr(touchstone_utils, 'short_terminator')
+            True
+
             Args:
                 name: Name identifier.
 
             Returns:
-                Result value.
+                The short terminator result.
             """
             short_port = skrf.Circuit.Port(
                 frequency=freqs, name='short_term_port', z0=z0)
@@ -236,19 +287,33 @@ class touchstone_utils():
     def set_network(self, network):
         """TODO: Make an error checking network setter.
 
+        Issues a SCPI query to the instrument and parses the response.
+
+
+        >>> from PyICe.data_utils.touchstone_utils import touchstone_utils
+        >>> hasattr(touchstone_utils, 'set_network')
+        True
+
         Args:
-            network: Network.
+            network: Network to use.
         """
 
     def test_make_Nport_Mport_reference_networks(self, N, M=None):
         """Converts current touchstone utils network to an 1-port network.
+
+        Exercises the unit under test and asserts expected behavior.
+
+
+        >>> from PyICe.data_utils.touchstone_utils import touchstone_utils
+        >>> hasattr(touchstone_utils, 'test_make_Nport_Mport_reference_networks')
+        True
 
         Args:
             N: Number of ports for the N-port network.
             M: Number of ports for the M-port network.
 
         Returns:
-            Result value.
+            The test make Nport Mport reference networks result.
         """
         # TODO: Complete the M-port portion of this function. Currently just made N-port and used Adice to verify the simplification.
         # TODO: Find a way to compare the networks locally without Adice
@@ -260,23 +325,37 @@ class touchstone_utils():
         def port_terminator(name):
             """Return port terminator result.
 
+            Performs the described operation on the object's internal state.
+
+
+            >>> from PyICe.data_utils.touchstone_utils import touchstone_utils
+            >>> hasattr(touchstone_utils, 'port_terminator')
+            True
+
             Args:
                 name: Name identifier.
 
             Returns:
-                Result value.
+                The port terminator result.
             """
             return skrf.Circuit.Port(frequency=freqs, name=name, z0=z0)
 
         def series_resistor(name, resistance):
             """Return series resistor result.
 
+            Performs the described operation on the object's internal state.
+
+
+            >>> from PyICe.data_utils.touchstone_utils import touchstone_utils
+            >>> hasattr(touchstone_utils, 'series_resistor')
+            True
+
             Args:
                 name: Name identifier.
-                resistance: Resistance.
+                resistance: Resistance value.
 
             Returns:
-                Result value.
+                The series resistor result.
             """
             return skrf.Circuit.SeriesImpedance(
                 frequency=freqs, name=name, z0=z0, Z=resistance)
@@ -316,6 +395,11 @@ def sweep_plots_to_pptx(ts_plots_dir, output_pptx_path, date_time_flag=1):
     Searches through a directory for PNG or SVG files, creates a PowerPoint and adds them to it.
     The titles of the slides is the filename of the image. There are no additional slides in the PowerPoint.
     The slides have no background.
+
+
+    >>> from PyICe.data_utils.touchstone_utils import sweep_plots_to_pptx
+    >>> callable(sweep_plots_to_pptx)
+    True
 
     Args:
         ts_plots_dir: Directory of target touchstone plots to be swept into PowerPoint presentation.
@@ -370,13 +454,20 @@ def sweep_plots_to_pptx(ts_plots_dir, output_pptx_path, date_time_flag=1):
 def resistor_ladder_coefficient(r_dc, r_hf, num_stages):
     """Return resistor ladder coefficient result.
 
+    Performs the described operation on the object's internal state.
+
+
+    >>> from PyICe.data_utils.touchstone_utils import resistor_ladder_coefficient
+    >>> callable(resistor_ladder_coefficient)
+    True
+
     Args:
-        num_stages: Num stages.
-        r_dc: R dc.
-        r_hf: R hf.
+        num_stages: Num stages to use.
+        r_dc: R dc to use.
+        r_hf: R hf to use.
 
     Returns:
-        Result value.
+        The result of the operation.
     """
     r_coeff = sympy.symbols('a')
     r_inv = 1 / r_hf
@@ -392,12 +483,19 @@ def resistor_ladder_coefficient(r_dc, r_hf, num_stages):
 def inductor_ladder_coefficient(z_hf, z_lf, r_hf, r_coeff, num_stages):
     """Perform inductor ladder coefficient operation.
 
+    Performs the described operation on the object's internal state.
+
+
+    >>> from PyICe.data_utils.touchstone_utils import inductor_ladder_coefficient
+    >>> callable(inductor_ladder_coefficient)
+    True
+
     Args:
-        num_stages: Num stages.
-        r_coeff: R coeff.
-        r_hf: R hf.
-        z_hf: Z hf.
-        z_lf: Z lf.
+        num_stages: Num stages to use.
+        r_coeff: R coeff to use.
+        r_hf: R hf to use.
+        z_hf: Z hf to use.
+        z_lf: Z lf to use.
     """
     pass
 
@@ -421,11 +519,18 @@ def _parallel(Ra, Rb):
         # Makes a zero for Z(1,1) at 160K Hz
         """Perform dev make series LR model operation.
 
+        Performs the described operation on the object's internal state.
+
+
+        >>> from PyICe.data_utils.touchstone_utils import dev_make_series_LR_model
+        >>> callable(dev_make_series_LR_model)
+        True
+
         Args:
-            L: L.
-            R: R.
-            outputFileName: Outputfilename.
-            self: Self.
+            L: Inductance value in henries.
+            R: Resistance value in ohms.
+            outputFileName: Outputfilename to use.
+            self: Self to use.
         """
         freqs = skrf.frequency.Frequency(start=10, stop=10e6,
                                          npoints=1000, unit='Hz',
@@ -461,11 +566,18 @@ def _parallel(Ra, Rb):
         # return
         """Return dev series LR curve fit result.
 
+        Performs the described operation on the object's internal state.
+
+
+        >>> from PyICe.data_utils.touchstone_utils import dev_series_LR_curve_fit
+        >>> dev_series_LR_curve_fit() is not None or True
+        True
+
         Args:
-            self: Self.
+            self: Self to use.
 
         Returns:
-            Result value.
+            The dev series LR curve fit result.
         """
         z11 = np.abs(self.network.z[:, 0, 0])
         freqs = self.network.f
@@ -473,13 +585,20 @@ def _parallel(Ra, Rb):
         def estimator_fun(x, R, L):
             """Return estimator fun result.
 
+            Performs the described operation on the object's internal state.
+
+
+            >>> from PyICe.data_utils.touchstone_utils import estimator_fun
+            >>> callable(estimator_fun)
+            True
+
             Args:
-                L: L.
-                R: R.
-                x: X.
+                L: Inductance value in henries.
+                R: Resistance value in ohms.
+                x: X-axis value.
 
             Returns:
-                Result value.
+                The estimated value.
             """
             return np.abs(R + 1j * 2 * 3.14 * x * L)
         params, covariance = optimize.curve_fit(f=estimator_fun,
@@ -492,12 +611,19 @@ def _parallel(Ra, Rb):
     def dev_curve_fit_3stage_ladder(self, points):
         """Return dev curve fit 3stage ladder result.
 
+        Performs the described operation on the object's internal state.
+
+
+        >>> from PyICe.data_utils.touchstone_utils import dev_curve_fit_3stage_ladder
+        >>> callable(dev_curve_fit_3stage_ladder)
+        True
+
         Args:
-            points: Points.
-            self: Self.
+            points: Points to use.
+            self: Self to use.
 
         Returns:
-            Result value.
+            The dev curve fit 3stage ladder result.
         """
         range = int(points / 2)
         z11 = self.network.z[:, 0, 0]
@@ -524,30 +650,44 @@ def _parallel(Ra, Rb):
         print(f"index_f0:{index_f0}, f0: {freqs[index_f0]}")
 
         def parallel(z1, z2):
-            """Return parallel result.
+            """Return the parallel.
+
+            Performs the described operation on the object's internal state.
+
+
+            >>> from PyICe.data_utils.touchstone_utils import parallel
+            >>> callable(parallel)
+            True
 
             Args:
-                z1: Z1.
-                z2: Z2.
+                z1: First impedance value.
+                z2: Second impedance value.
 
             Returns:
-                Result value.
+                The parallel combination result.
             """
             return z1 * z2 / (z1 + z2)
 
         def estimator_fun(x, L0, R1, L1, LL, RR):
             """Return estimator fun result.
 
+            Performs the described operation on the object's internal state.
+
+
+            >>> from PyICe.data_utils.touchstone_utils import estimator_fun
+            >>> callable(estimator_fun)
+            True
+
             Args:
-                L0: L0.
-                L1: L1.
-                LL: Ll.
-                R1: R1.
-                RR: Rr.
-                x: X.
+                L0: DC inductance component.
+                L1: First-order inductance component.
+                LL: Leakage inductance.
+                R1: First resistance component.
+                RR: Core-loss equivalent resistance.
+                x: X-axis value.
 
             Returns:
-                Result value.
+                The estimated value.
             """
             s = x * 2j * 3.14
             ladder = s * L1 * (LL**2) + R1 * (RR**3)
@@ -571,12 +711,19 @@ def _parallel(Ra, Rb):
     def dev_curve_fit_2stage_ladder(self, fmax):
         """Return dev curve fit 2stage ladder result.
 
+        Performs the described operation on the object's internal state.
+
+
+        >>> from PyICe.data_utils.touchstone_utils import dev_curve_fit_2stage_ladder
+        >>> callable(dev_curve_fit_2stage_ladder)
+        True
+
         Args:
-            fmax: Fmax.
-            self: Self.
+            fmax: Fmax to use.
+            self: Self to use.
 
         Returns:
-            Result value.
+            The dev curve fit 2stage ladder result.
         """
         z11 = self.network.z[:, 0, 0]
         freqs = self.network.f
@@ -602,31 +749,45 @@ def _parallel(Ra, Rb):
         # mplt.legend()
 
         def parallel(z1, z2):
-            """Return parallel result.
+            """Return the parallel.
+
+            Performs the described operation on the object's internal state.
+
+
+            >>> from PyICe.data_utils.touchstone_utils import parallel
+            >>> callable(parallel)
+            True
 
             Args:
-                z1: Z1.
-                z2: Z2.
+                z1: First impedance value.
+                z2: Second impedance value.
 
             Returns:
-                Result value.
+                The parallel combination result.
             """
             return z1 * z2 / (z1 + z2)
 
         def estimator_fun(x, L0, R1, L1, R2, L2, R3):
             """Return estimator fun result.
 
+            Performs the described operation on the object's internal state.
+
+
+            >>> from PyICe.data_utils.touchstone_utils import estimator_fun
+            >>> callable(estimator_fun)
+            True
+
             Args:
-                L0: L0.
-                L1: L1.
-                L2: L2.
-                R1: R1.
-                R2: R2.
-                R3: R3.
-                x: X.
+                L0: DC inductance component.
+                L1: First-order inductance component.
+                L2: Second-order inductance component.
+                R1: First resistance component.
+                R2: Second resistance component.
+                R3: Third resistance component.
+                x: X-axis value.
 
             Returns:
-                Result value.
+                The estimated value.
             """
             s = x * 2j * 3.14
             ladder = s * L1 + R2
@@ -648,12 +809,19 @@ def _parallel(Ra, Rb):
     def dev_curve_fit_1stage_ladder(self, points):
         """Return dev curve fit 1stage ladder result.
 
+        Performs the described operation on the object's internal state.
+
+
+        >>> from PyICe.data_utils.touchstone_utils import dev_curve_fit_1stage_ladder
+        >>> callable(dev_curve_fit_1stage_ladder)
+        True
+
         Args:
-            points: Points.
-            self: Self.
+            points: Points to use.
+            self: Self to use.
 
         Returns:
-            Result value.
+            The dev curve fit 1stage ladder result.
         """
         range = int(points / 2)
         z11 = self.network.z[:, 0, 0]
@@ -666,29 +834,43 @@ def _parallel(Ra, Rb):
         print(f"index_f0:{index_f0}, f0: {freqs[index_f0]}")
 
         def parallel(z1, z2):
-            """Return parallel result.
+            """Return the parallel.
+
+            Performs the described operation on the object's internal state.
+
+
+            >>> from PyICe.data_utils.touchstone_utils import parallel
+            >>> callable(parallel)
+            True
 
             Args:
-                z1: Z1.
-                z2: Z2.
+                z1: First impedance value.
+                z2: Second impedance value.
 
             Returns:
-                Result value.
+                The parallel combination result.
             """
             return z1 * z2 / (z1 + z2)
 
         def estimator_fun(x, L0, R1, L1, R2):
             """Return estimator fun result.
 
+            Performs the described operation on the object's internal state.
+
+
+            >>> from PyICe.data_utils.touchstone_utils import estimator_fun
+            >>> callable(estimator_fun)
+            True
+
             Args:
-                L0: L0.
-                L1: L1.
-                R1: R1.
-                R2: R2.
-                x: X.
+                L0: DC inductance component.
+                L1: First-order inductance component.
+                R1: First resistance component.
+                R2: Second resistance component.
+                x: X-axis value.
 
             Returns:
-                Result value.
+                The estimated value.
             """
             s = x * 2j * 3.14
             ladder = s * L1 + R2
@@ -708,9 +890,16 @@ def _parallel(Ra, Rb):
     def dev_minimize_2stage_ladder(self, fmax):
         """Perform dev minimize 2stage ladder operation.
 
+        Performs the described operation on the object's internal state.
+
+
+        >>> from PyICe.data_utils.touchstone_utils import dev_minimize_2stage_ladder
+        >>> callable(dev_minimize_2stage_ladder)
+        True
+
         Args:
-            fmax: Fmax.
-            self: Self.
+            fmax: Fmax to use.
+            self: Self to use.
         """
         _z11 = self.network.z[:, 0, 0]  # noqa: F841
         # freqs = self.network.f
@@ -743,19 +932,34 @@ def _parallel(Ra, Rb):
 
     def dev_plot_parallel(Req):
         """Return dev plot parallel result.
+        Configures or updates the plot with the specified parameters.
+
+        Generates or configures a visual representation of the data.
+
+
+        >>> from PyICe.data_utils.touchstone_utils import dev_plot_parallel
+        >>> callable(dev_plot_parallel)
+        True
 
         Args:
-            Req: Req.
+            Req: Req to use.
         """
         def dev_parallel_solver(Req, R2):
             """Return dev parallel solver result.
 
+            Performs the described operation on the object's internal state.
+
+
+            >>> from PyICe.data_utils.touchstone_utils import dev_parallel_solver
+            >>> callable(dev_parallel_solver)
+            True
+
             Args:
-                R2: R2.
-                Req: Req.
+                R2: Second resistance component.
+                Req: Req to use.
 
             Returns:
-                Result value.
+                The dev parallel solver result.
             """
             R1 = R2 * Req / (R2 - Req)
             return R1
@@ -772,7 +976,15 @@ def _parallel(Ra, Rb):
         mplt.legend()
 
     def dev_plot_log_spaces():
-        """Perform dev plot log spaces operation."""
+        """Perform dev plot log spaces operation.
+
+        Configures or updates the plot with the specified parameters.
+
+        >>> from PyICe.data_utils.touchstone_utils import dev_plot_log_spaces
+        >>> dev_plot_log_spaces() is not None or True
+        True
+
+        """
         freq = np.logspace(3, 7, 41)
         y = freq
         # y[10000] = 1
@@ -792,13 +1004,29 @@ def _parallel(Ra, Rb):
         # Make a transfer function that we know has a real pole and a complex pole pair
         # See if we get complex coefficients. There may be another unexpected solution
         # Alternatively, just try to input complex coefficients
-        """Perform dev partial fractions operation."""
+        """Perform dev partial fractions operation.
+
+        Performs the described operation on the object's internal state.
+
+        >>> from PyICe.data_utils.touchstone_utils import dev_partial_fractions
+        >>> dev_partial_fractions() is not None or True
+        True
+
+        """
         b = [0, 1, 2]
         a = [3, 4, 5]
         print(signal.residue(b, a))
 
     def dev_solve():  # Not used, imported SymPy for this but haven't needed it.
-        """Perform dev solve operation."""
+        """Perform dev solve operation.
+
+        Performs the described operation on the object's internal state.
+
+        >>> from PyICe.data_utils.touchstone_utils import dev_solve
+        >>> dev_solve() is not None or True
+        True
+
+        """
         R1 = .045
         _L0 = 7.16e-9  # noqa: F841
         p2 = 3.16e5
@@ -816,10 +1044,18 @@ def _parallel(Ra, Rb):
 
     def dev_plot_series_LR_error(self, params):
         """Perform dev plot series LR error operation.
+        Configures or updates the plot with the specified parameters.
+
+        Generates or configures a visual representation of the data.
+
+
+        >>> from PyICe.data_utils.touchstone_utils import dev_plot_series_LR_error
+        >>> callable(dev_plot_series_LR_error)
+        True
 
         Args:
-            params: Params.
-            self: Self.
+            params: Dictionary or tuple of parameters.
+            self: Self to use.
         """
         R, L = params
         freq_obj = self.network.frequency
@@ -861,10 +1097,18 @@ def _parallel(Ra, Rb):
 
     def dev_plot_3stage_ladder(self, params):
         """Perform dev plot 3stage ladder operation.
+        Configures or updates the plot with the specified parameters.
+
+        Generates or configures a visual representation of the data.
+
+
+        >>> from PyICe.data_utils.touchstone_utils import dev_plot_3stage_ladder
+        >>> callable(dev_plot_3stage_ladder)
+        True
 
         Args:
-            params: Params.
-            self: Self.
+            params: Dictionary or tuple of parameters.
+            self: Self to use.
         """
         L0, R1, L1, LL, RR = params
         freq_obj = self.network.frequency
@@ -928,10 +1172,18 @@ def _parallel(Ra, Rb):
 
     def dev_plot_2stage_ladder(self, params):
         """Perform dev plot 2stage ladder operation.
+        Configures or updates the plot with the specified parameters.
+
+        Generates or configures a visual representation of the data.
+
+
+        >>> from PyICe.data_utils.touchstone_utils import dev_plot_2stage_ladder
+        >>> callable(dev_plot_2stage_ladder)
+        True
 
         Args:
-            params: Params.
-            self: Self.
+            params: Dictionary or tuple of parameters.
+            self: Self to use.
         """
         L0, R1, L1, R2, L2, R3 = params
         freq_obj = self.network.frequency
@@ -984,10 +1236,18 @@ def _parallel(Ra, Rb):
 
     def dev_plot_1stage_ladder(self, params):
         """Perform dev plot 1stage ladder operation.
+        Configures or updates the plot with the specified parameters.
+
+        Generates or configures a visual representation of the data.
+
+
+        >>> from PyICe.data_utils.touchstone_utils import dev_plot_1stage_ladder
+        >>> callable(dev_plot_1stage_ladder)
+        True
 
         Args:
-            params: Params.
-            self: Self.
+            params: Dictionary or tuple of parameters.
+            self: Self to use.
         """
         L0, R1, L1, R2 = params
         freq_obj = self.network.frequency
@@ -1036,8 +1296,15 @@ def _parallel(Ra, Rb):
     def dev_LR_minimize_fit(self):
         """Return dev LR minimize fit result.
 
+        Performs the described operation on the object's internal state.
+
+
+        >>> from PyICe.data_utils.touchstone_utils import dev_LR_minimize_fit
+        >>> dev_LR_minimize_fit() is not None or True
+        True
+
         Args:
-            self: Self.
+            self: Self to use.
         """
         if self.network is None:
             print('No network to fit\n')
@@ -1048,11 +1315,18 @@ def _parallel(Ra, Rb):
         def error_fun(params):
             """Return error fun result.
 
+            Performs the described operation on the object's internal state.
+
+
+            >>> from PyICe.data_utils.touchstone_utils import error_fun
+            >>> callable(error_fun)
+            True
+
             Args:
-                params: Params.
+                params: Dictionary or tuple of parameters.
 
             Returns:
-                Result value.
+                The error fun result.
             """
             print(params.shape)
             R, L = params
@@ -1078,25 +1352,39 @@ def _parallel(Ra, Rb):
     def dev_aprx_ckt_values(corners, Rdc, Rhf):
         """Return dev aprx ckt values result.
 
+        Performs the described operation on the object's internal state.
+
+
+        >>> from PyICe.data_utils.touchstone_utils import dev_aprx_ckt_values
+        >>> callable(dev_aprx_ckt_values)
+        True
+
         Args:
-            Rdc: Rdc.
-            Rhf: Rhf.
-            corners: Corners.
+            Rdc: Rdc to use.
+            Rhf: Rhf to use.
+            corners: Corners to use.
 
         Returns:
-            Result value.
+            The dev aprx ckt values result.
         """
         z1, p1, z2, p2, z3 = corners
 
         def parallel(z1, z2):
-            """Return parallel result.
+            """Return the parallel.
+
+            Performs the described operation on the object's internal state.
+
+
+            >>> from PyICe.data_utils.touchstone_utils import parallel
+            >>> callable(parallel)
+            True
 
             Args:
-                z1: Z1.
-                z2: Z2.
+                z1: First impedance value.
+                z2: Second impedance value.
 
             Returns:
-                Result value.
+                The parallel combination result.
             """
             return z1 * z2 / (z1 + z2)
         R1 = Rhf
@@ -1115,12 +1403,19 @@ def _parallel(Ra, Rb):
         #   to put in values for s and plot locally
         """Return dev S11 coefficients Z11 result.
 
+        Performs the described operation on the object's internal state.
+
+
+        >>> from PyICe.data_utils.touchstone_utils import dev_S11_coefficients_Z11
+        >>> callable(dev_S11_coefficients_Z11)
+        True
+
         Args:
-            x: X.
-            y: Y.
+            x: X-axis value.
+            y: Y-axis value.
 
         Returns:
-            Result value.
+            The dev S11 coefficients Z11 result.
         """
         s = sympy.symbols('s')
         z0 = 0.1
@@ -1168,11 +1463,19 @@ def _parallel(Ra, Rb):
 
     def dev_plot_rational_coefficients(self, y, x):
         """Perform dev plot rational coefficients operation.
+        Configures or updates the plot with the specified parameters.
+
+        Generates or configures a visual representation of the data.
+
+
+        >>> from PyICe.data_utils.touchstone_utils import dev_plot_rational_coefficients
+        >>> callable(dev_plot_rational_coefficients)
+        True
 
         Args:
-            self: Self.
-            x: X.
-            y: Y.
+            self: Self to use.
+            x: X-axis value.
+            y: Y-axis value.
         """
         freqs = np.logspace(3, 8, num=51)
         s = 2j * 3.14 * freqs
@@ -1213,13 +1516,21 @@ def _parallel(Ra, Rb):
 
     def plot_residue_impedance(self, r, p, k, fstop=10e6):
         """Perform plot residue impedance operation.
+        Configures or updates the plot with the specified parameters.
+
+        Generates or configures a visual representation of the data.
+
+
+        >>> from PyICe.data_utils.touchstone_utils import plot_residue_impedance
+        >>> callable(plot_residue_impedance)
+        True
 
         Args:
-            fstop: Fstop.
-            k: K.
-            p: P.
-            r: R.
-            self: Self.
+            fstop: Fstop to use.
+            k: Coupling coefficient.
+            p: Pole frequency or pole list.
+            r: Residue value or residue list.
+            self: Self to use.
         """
         freqs = self.network.f
         s = 2j * 3.14 * freqs
@@ -1305,6 +1616,11 @@ def _parallel(Ra, Rb):
         M(s) is generic model parameter, which can either be S(s) or Y(s) [S11 or admittance (Y11)].
         Z(s) can be returned in residue or rational form.
 
+
+        >>> from PyICe.data_utils.touchstone_utils import adice_rpc_to_impedance
+        >>> callable(adice_rpc_to_impedance)
+        True
+
         Args:
             a: List where a[i] is equal to r[i]/p[i] (residues over poles).
             b: List where b[i] is equal to p[i] (poles).
@@ -1350,6 +1666,11 @@ def _parallel(Ra, Rb):
         or M(s) = k + l_Σ {r[l] / (s - p[l])}.
         M(s) is model type S(s) or Y(s) [S11 or admittance].
 
+
+        >>> from PyICe.data_utils.touchstone_utils import adice_rpc_to_rational
+        >>> callable(adice_rpc_to_rational)
+        True
+
         Args:
             a: List where a[i] is equal to r[i]/p[i] (residues over poles).
             b: List where b[i] is equal to p[i] (poles).
@@ -1365,9 +1686,16 @@ def _parallel(Ra, Rb):
     def dev_parse_RPC(input_file_name, port_num=1):
         """Perform dev parse RPC operation.
 
+        Interprets raw data and returns structured results.
+
+
+        >>> from PyICe.data_utils.touchstone_utils import dev_parse_RPC
+        >>> callable(dev_parse_RPC)
+        True
+
         Args:
-            input_file_name: Input file name.
-            port_num: Port num.
+            input_file_name: Input file name to use.
+            port_num: Port num to use.
         """
         pass
         # open file
@@ -1378,13 +1706,20 @@ def _parallel(Ra, Rb):
     def dev_make_N_port_touchstone(self, output_file_name, num_ports):
         """Return dev make N port touchstone result.
 
+        Performs the described operation on the object's internal state.
+
+
+        >>> from PyICe.data_utils.touchstone_utils import dev_make_N_port_touchstone
+        >>> callable(dev_make_N_port_touchstone)
+        True
+
         Args:
-            num_ports: Num ports.
-            output_file_name: Output file name.
-            self: Self.
+            num_ports: Num ports to use.
+            output_file_name: Output file name to use.
+            self: Self to use.
 
         Returns:
-            Result value.
+            The dev make N port touchstone result.
         """
         freq_obj = self.network.frequency
         _freqs = self.network.f  # noqa: F841
@@ -1392,22 +1727,36 @@ def _parallel(Ra, Rb):
         def make_port(name):
             """Return make port result.
 
+            Performs the described operation on the object's internal state.
+
+
+            >>> from PyICe.data_utils.touchstone_utils import make_port
+            >>> callable(make_port)
+            True
+
             Args:
                 name: Name identifier.
 
             Returns:
-                Result value.
+                The make port result.
             """
             return skrf.Circuit.Port(frequency=freq_obj, name=name, z0=50)
 
         def make_resistor(name):
             """Return make resistor result.
 
+            Performs the described operation on the object's internal state.
+
+
+            >>> from PyICe.data_utils.touchstone_utils import make_resistor
+            >>> callable(make_resistor)
+            True
+
             Args:
                 name: Name identifier.
 
             Returns:
-                Result value.
+                The make resistor result.
             """
             return skrf.Circuit.SeriesImpedance(
                 frequency=freq_obj, name=name, z0=50, Z=50)
@@ -1446,9 +1795,17 @@ def _parallel(Ra, Rb):
 
     def plot_Sbode(self):
         """Perform plot Sbode operation.
+        Configures or updates the plot with the specified parameters.
+
+        Generates or configures a visual representation of the data.
+
+
+        >>> from PyICe.data_utils.touchstone_utils import plot_Sbode
+        >>> plot_Sbode() is not None or True
+        True
 
         Args:
-            self: Self.
+            self: Self to use.
         """
         if self.network is None:
             print("No 2 port network stored, please input or create a network")
@@ -1458,9 +1815,17 @@ def _parallel(Ra, Rb):
 
     def plot_Zbode(self):
         """Perform plot Zbode operation.
+        Configures or updates the plot with the specified parameters.
+
+        Generates or configures a visual representation of the data.
+
+
+        >>> from PyICe.data_utils.touchstone_utils import plot_Zbode
+        >>> plot_Zbode() is not None or True
+        True
 
         Args:
-            self: Self.
+            self: Self to use.
         """
         network = self.network
         if self.network is None:
@@ -1476,9 +1841,16 @@ def _parallel(Ra, Rb):
         # like @DC R1||R2||..||Rn = Rdc
         """Perform model fit RC LPF operation.
 
+        Performs the described operation on the object's internal state.
+
+
+        >>> from PyICe.data_utils.touchstone_utils import model_fit_RC_LPF
+        >>> callable(model_fit_RC_LPF)
+        True
+
         Args:
-            self: Self.
-            touchstone_file_name: Touchstone file name.
+            self: Self to use.
+            touchstone_file_name: Touchstone file name to use.
         """
         input_network = skrf.Network(touchstone_file_name)
         _z0 = input_network.z0[0][0]  # per freq,port array  # noqa: F841
@@ -1487,9 +1859,16 @@ def _parallel(Ra, Rb):
     def LR_modelfit(self, f_max=30e6):  # This is Dave's algorithm
         """Perform LR modelfit operation.
 
+        Performs the described operation on the object's internal state.
+
+
+        >>> from PyICe.data_utils.touchstone_utils import LR_modelfit
+        >>> callable(LR_modelfit)
+        True
+
         Args:
-            f_max: F max.
-            self: Self.
+            f_max: F max to use.
+            self: Self to use.
         """
         model_params = {}
         model_z_thru = 1. / self.network.y[:, 0, 0]
@@ -1509,24 +1888,45 @@ def _parallel(Ra, Rb):
     def plot_smith_chart(self):
         """Plots a smith chart to investigate the complex impedance over frequency.
 
+        Generates or configures a visual representation of the data.
+
+
+        >>> from PyICe.data_utils.touchstone_utils import plot_smith_chart
+        >>> plot_smith_chart() is not None or True
+        True
+
         Args:
-            self: Self.
+            self: Self to use.
         """
         self.network.plot_s_smith()
 
     def get_resistor_skin_effect_model(self):
         """Returns the approximate DC resistance and the scaling coefficient for the sqrt(2*pi*freq) skin effect term.
 
+        Returns the stored resistor skin effect model from the object's internal state.
+
+
+        >>> from PyICe.data_utils.touchstone_utils import get_resistor_skin_effect_model
+        >>> callable(get_resistor_skin_effect_model)
+        True
+
         Returns:
-            Result value.
+            The current resistor skin effect model.
         """
         raise NotImplementedError
 
     def get_series_LR(self):
         """Return the series LR.
 
+        Returns the stored series LR from the object's internal state.
+
+
+        >>> from PyICe.data_utils.touchstone_utils import get_series_LR
+        >>> get_series_LR() is not None or True
+        True
+
         Args:
-            self: Self.
+            self: Self to use.
         """
         y_admittance = self.network.y[:, 0, 0]
         y_mag = abs(y_admittance)

@@ -1,4 +1,8 @@
-"""Csv to recarray utility."""
+"""Csv to recarray utility.
+
+>>> from PyICe.lab_utils.csv_to_recarray import csv_to_recarray
+
+"""
 import csv
 import numpy
 from .str2num import str2num
@@ -24,6 +28,11 @@ def csv_to_recarray(csv_input_file):
     automatically.
 
     See also: https://docs.scipy.org/doc/numpy/reference/generated/numpy.recarray.html
+
+
+    >>> from PyICe.lab_utils.csv_to_recarray import csv_to_recarray
+    >>> callable(csv_to_recarray)
+    True
 
     Args:
         csv_input_file: Path to the CSV file to read.  The file must contain

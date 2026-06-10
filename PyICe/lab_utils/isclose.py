@@ -1,4 +1,8 @@
-"""Isclose utility."""
+"""Isclose utility.
+
+>>> from PyICe.lab_utils.isclose import isclose
+
+"""
 import math
 
 

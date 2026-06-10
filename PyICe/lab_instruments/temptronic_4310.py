@@ -1,4 +1,8 @@
-"""Temptronic 4310 instrument driver."""
+"""Temptronic 4310 instrument driver.
+
+>>> from PyICe.lab_instruments.temptronic_4310 import temptronic_4310
+
+"""
 from ..lab_core import *  # noqa: F403
 import time
 
@@ -19,9 +23,13 @@ class temptronic_4310(instrument):
     """
     def __init__(self, interface_visa, en_compressor=True):
         """Optionally disable compressor on startup.
+        Initializes 7 instance attributes that configure the object's
+        behavior.
+
+        Calls the parent constructor to inherit base behavior, and initializes 7 instance attributes that configure the object's behavior.
 
         Args:
-            en_compressor: En compressor.
+            en_compressor: En compressor to use.
             interface_visa: VISA interface instance.
         """
         # needs enable/compressor channel work
@@ -52,7 +60,7 @@ class temptronic_4310(instrument):
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         temp_channel = self.add_channel_temp(channel_name)
         if add_extended_channels:
@@ -66,12 +74,20 @@ class temptronic_4310(instrument):
 
     def add_channel_temp(self, channel_name):
         """Channel_name represents PID loop forcing temperature setpoint.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name,
                               write_function=self._write_temperature)
@@ -80,12 +96,20 @@ class temptronic_4310(instrument):
 
     def add_channel_sense_dut(self, channel_name):
         """Channel_name represents primary PID control loop thermocouple readback.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name, read_function=lambda: float(
@@ -94,12 +118,20 @@ class temptronic_4310(instrument):
 
     def add_channel_sense_air(self, channel_name):
         """Channel_name represents secondary air stream thermocouple readback.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name, read_function=lambda: float(
@@ -108,12 +140,20 @@ class temptronic_4310(instrument):
 
     def add_channel_soak(self, channel_name):
         """Channel_name represents soak time setpoint in seconds. Soak timer runs while temperature is continuously within 'window' and resets to zero otherwise.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, write_function=self._set_soak)
         new_channel.write(self.soak)
@@ -121,12 +161,20 @@ class temptronic_4310(instrument):
 
     def add_channel_window(self, channel_name):
         """Channel_name represents width setpoint of tolerance window to start soak timer. Setpoint is total window width in degrees (temp must be +/-window/2).
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, write_function=self._set_window)
         new_channel.write(self.window)
@@ -134,24 +182,40 @@ class temptronic_4310(instrument):
 
     def add_channel_soak_settling_time(self, channel_name):
         """Channel_name represents soak timer elapsed time readback.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, read_function=lambda: self.time)
         return self._add_channel(new_channel)
 
     def add_channel_max_air(self, channel_name):
         """Channel_name represents maximum airflow temperature setting.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, write_function=self._set_max_air)
         new_channel.write(self.maxair)
@@ -159,12 +223,20 @@ class temptronic_4310(instrument):
 
     def add_channel_max_air2dut(self, channel_name):
         """Channel_name represents maximum allowed temperature difference between airflow and dut setting.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name,
                               write_function=self._set_max_air2dut)
@@ -180,6 +252,8 @@ class temptronic_4310(instrument):
     def _set_window(self, value):
         """Set allowed window to start soak timer.
 
+        Internal implementation detail; see the public API for usage.
+
         Args:
             value: Value to set.
         """
@@ -190,6 +264,8 @@ class temptronic_4310(instrument):
     def _set_soak(self, value):
         """Set soak time in seconds.
 
+        Internal implementation detail; see the public API for usage.
+
         Args:
             value: Value to set.
         """
@@ -198,7 +274,10 @@ class temptronic_4310(instrument):
         self.get_interface().write((txt))
 
     def off(self):
-        """Turn off airflow and compressor, lift head, reset limits."""
+        """Turn off airflow and compressor, lift head, reset limits.
+
+        Restores the object or hardware to its default state.
+        """
         self.get_interface().write(("FLOW 0;"))
         self.get_interface().write(("HEAD 0;"))
         self.get_interface().write(("COOL 0;"))
@@ -206,6 +285,9 @@ class temptronic_4310(instrument):
 
     def _write_temperature(self, value):
         """Set temperature.
+        Internal implementation detail; see the public API for usage.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
             value: Value to set.
@@ -227,7 +309,10 @@ class temptronic_4310(instrument):
         self._wait_settle()
 
     def _wait_settle(self):
-        """Block until temperature has been within window for soak time."""
+        """Block until temperature has been within window for soak time.
+
+        Internal helper that sends the ```` SCPI command.
+        """
         settled = False
         while (settled is False):
             time.sleep(5)

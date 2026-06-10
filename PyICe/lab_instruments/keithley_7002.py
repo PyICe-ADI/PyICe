@@ -1,4 +1,8 @@
-"""Keithley 7002 instrument driver."""
+"""Keithley 7002 instrument driver.
+
+>>> from PyICe.lab_instruments.keithley_7002 import keithley_7002
+
+"""
 from ..lab_core import *  # noqa: F403
 
 
@@ -11,6 +15,9 @@ class keithley_7002(scpi_instrument):
     """
     def __init__(self, interface_visa):
         """Interface_visa.
+        Stores configuration in ``_base_name`` for use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
 
         Args:
             interface_visa: VISA interface instance.
@@ -34,7 +41,7 @@ class keithley_7002(scpi_instrument):
             number: Channel or port number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         relay_channel = channel(
             channel_name,
@@ -47,6 +54,8 @@ class keithley_7002(scpi_instrument):
     def _close_relay(self, bay, number):
         """Close named channel relay.
 
+        Internal implementation detail; see the public API for usage.
+
         Args:
             bay: Instrument bay number.
             number: Channel or port number.
@@ -55,6 +64,8 @@ class keithley_7002(scpi_instrument):
 
     def _open_relay(self, bay, number):
         """Open named channel relay.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
             bay: Instrument bay number.
@@ -71,8 +82,10 @@ class keithley_7002(scpi_instrument):
     def open_all(self, sync_channels=False):
         """Open all relays, set sync_channels to true to keep the channels synced (no need to do this if shutting down).
 
+        Establishes the connection or prepares the resource for use.
+
         Args:
-            sync_channels: Sync channels.
+            sync_channels: Sync channels to use.
         """
         if sync_channels:
             for relay_channel in self.get_all_channels_list():

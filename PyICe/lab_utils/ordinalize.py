@@ -1,4 +1,8 @@
-"""Ordinalize utility."""
+"""Ordinalize utility.
+
+>>> from PyICe.lab_utils.ordinalize import ordinalize
+
+"""
 def ordinalize(num):
     """Format a non-negative integer with its English ordinal suffix (st, nd, rd, th).
 

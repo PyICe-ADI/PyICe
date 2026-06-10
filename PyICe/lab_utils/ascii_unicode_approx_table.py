@@ -1,4 +1,8 @@
-"""Ascii unicode approx table utility."""
+"""Ascii unicode approx table utility.
+
+>>> import PyICe.lab_utils.ascii_unicode_approx_table
+
+"""
 #
 # ASCII approximate translations for use in str.translate().
 #

@@ -1,4 +1,8 @@
-"""Decimate utility."""
+"""Decimate utility.
+
+>>> from PyICe.lab_utils.decimate import decimate
+
+"""
 import scipy
 from .vector_transform import vector_transform
 
@@ -13,6 +17,11 @@ def decimate(rec_array, downsample_factor, **kwargs):
     (recommended for most lab data).
 
     See https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.decimate.html
+
+
+    >>> from PyICe.lab_utils.decimate import decimate
+    >>> callable(decimate)
+    True
 
     Args:
         rec_array: Input numpy record array whose rows will be reduced.

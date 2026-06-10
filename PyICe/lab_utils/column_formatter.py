@@ -1,4 +1,8 @@
-"""Column formatter utility."""
+"""Column formatter utility.
+
+>>> from PyICe.lab_utils.column_formatter import column_formatter
+
+"""
 def column_formatter(rows_of_columns, padding=3,
                      justification="left", fist_line_justification="center"):
     """Format tabular data into aligned fixed-width columns.

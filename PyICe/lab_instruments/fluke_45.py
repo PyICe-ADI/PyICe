@@ -1,4 +1,8 @@
-"""Fluke 45 instrument driver."""
+"""Fluke 45 instrument driver.
+
+>>> from PyICe.lab_instruments.fluke_45 import fluke_45
+
+"""
 from ..lab_core import *  # noqa: F403
 
 
@@ -9,6 +13,9 @@ class fluke_45(scpi_instrument):
     """
     def __init__(self, interface_visa):
         """Interface_visa.
+        Stores configuration in ``_base_name`` for use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
 
         Args:
             interface_visa: VISA interface instance.
@@ -25,7 +32,7 @@ class fluke_45(scpi_instrument):
 
         Args:
             range: Measurement or output range.
-            rate: Rate.
+            rate: Rate of change (units per second).
         """
         self._config("VDC ", range, rate)
 
@@ -36,7 +43,7 @@ class fluke_45(scpi_instrument):
 
         Args:
             range: Measurement or output range.
-            rate: Rate.
+            rate: Rate of change (units per second).
         """
         self._config("ADC ", range, rate)
 
@@ -47,7 +54,7 @@ class fluke_45(scpi_instrument):
 
         Args:
             range: Measurement or output range.
-            rate: Rate.
+            rate: Rate of change (units per second).
         """
         self._config("VAC ", range, rate)
 
@@ -58,27 +65,38 @@ class fluke_45(scpi_instrument):
 
         Args:
             range: Measurement or output range.
-            rate: Rate.
+            rate: Rate of change (units per second).
         """
         self._config("AAC ", range, rate)
 
     def add_channel(self, channel_name):
         """Add named channel to instrument without configuring measurement type.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         meter_channel = channel(channel_name, read_function=self.read_meter)
         return self._add_channel(meter_channel)
 
     def read_meter(self):
         """Return float representing meter measurement. Units are V,A,Ohm, etc depending on meter configuration.
+        Sends the appropriate query to the instrument and parses the response.
+
+        Reads data from the underlying source and returns it.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
         """
         return float(self.get_interface().ask("MEAS1?"))
 

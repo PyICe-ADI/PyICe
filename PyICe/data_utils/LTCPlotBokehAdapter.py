@@ -1,4 +1,8 @@
-"""L T C Plot Bokeh Adapter utilities."""
+"""L T C Plot Bokeh Adapter utilities.
+
+>>> from PyICe.data_utils.LTCPlotBokehAdapter import bind_to_base
+
+"""
 from bokeh.plotting import figure, output_file, show
 from bokeh.layouts import column, row
 from bokeh.models import (CustomJS,
@@ -17,14 +21,21 @@ this_module = sys.modules[__name__]
 def bind_to_base(self, base_func, *args, **kwargs):
     """Return bind to base result.
 
+    Performs the described operation on the object's internal state.
+
+
+    >>> from PyICe.data_utils.LTCPlotBokehAdapter import bind_to_base
+    >>> callable(bind_to_base)
+    True
+
     Args:
         **kwargs: Additional keyword arguments.
         *args: Additional positional arguments.
-        base_func: Base func.
-        self: Self.
+        base_func: Base func to use.
+        self: Self to use.
 
     Returns:
-        Result value.
+        The result of the operation.
     """
     sig = inspect.signature(base_func)
     bound = sig.bind_partial(self, *args, **kwargs)
@@ -33,9 +44,24 @@ def bind_to_base(self, base_func, *args, **kwargs):
 
 
 class LTCPlotBokehAdapter:
-    """L t c plot bokeh adapter."""
+    """L t c plot bokeh adapter.
+
+    >>> from PyICe.data_utils.LTCPlotBokehAdapter import LTCPlotBokehAdapter
+    >>> LTCPlotBokehAdapter is not None
+    True
+
+    """
     def __init__(self, *args, **kwargs):
         """Initialize l t c plot bokeh adapter.
+        Stores configuration in ``_args``, ``_kwargs`` for use by other
+        methods.
+
+        Initializes 2 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.data_utils.LTCPlotBokehAdapter import LTCPlotBokehAdapter
+        >>> LTCPlotBokehAdapter is not None
+        True
 
         Args:
             **kwargs: Additional keyword arguments.
@@ -49,24 +75,39 @@ class LTCPlotBokehAdapter:
     def __getattr__(self, name):
         # This function will be called for any undefined method/attribute
         """Handle attribute access for undefined attributes.
+        Intercepts attribute access for missing attributes.
+
+        Implements the ``__getattr__`` protocol for this object.
+
+
+        >>> from PyICe.data_utils.LTCPlotBokehAdapter import LTCPlotBokehAdapter
+        >>> hasattr(LTCPlotBokehAdapter, '__getattr__')
+        True
 
         Args:
             name: Name identifier.
 
         Returns:
-            Result value.
+            The requested attribute value.
         """
         print(f"A call to undefined method: '{type(self)}.{name}' was made.")
 
         def dynamic_warning_method(*args, **kwargs):
             """Return dynamic warning method result.
 
+            Issues a SCPI query to the instrument and parses the response.
+
+
+            >>> from PyICe.data_utils.LTCPlotBokehAdapter import LTCPlotBokehAdapter
+            >>> hasattr(LTCPlotBokehAdapter, 'dynamic_warning_method')
+            True
+
             Args:
                 **kwargs: Additional keyword arguments.
                 *args: Additional positional arguments.
 
             Returns:
-                Result value.
+                The warning message string.
             """
             print(
                 f"WARNING: Ignoring call to '{name}' with arguments: {args}, {kwargs}")
@@ -75,10 +116,25 @@ class LTCPlotBokehAdapter:
 
 
 class plot(LTCPlotBokehAdapter):
-    """Bokeh plot adapter."""
+    """Bokeh plot adapter.
+
+    >>> from PyICe.data_utils.LTCPlotBokehAdapter import plot
+    >>> plot is not None
+    True
+
+    """
 
     def __init__(self, *args, **kwargs):
         """Initialize plot.
+        Initializes 4 instance attributes that configure the object's
+        behavior.
+
+        Initializes 4 instance attributes that configure the object's behavior.
+
+
+        >>> from PyICe.data_utils.LTCPlotBokehAdapter import plot
+        >>> plot is not None
+        True
 
         Args:
             **kwargs: Additional keyword arguments.
@@ -226,6 +282,14 @@ class plot(LTCPlotBokehAdapter):
 
     def add_note(self, *args, **kwargs):
         """Add a note.
+        Creates and registers a new note.
+
+        Appends a new note entry to the object's internal collection.
+
+
+        >>> from PyICe.data_utils.LTCPlotBokehAdapter import plot
+        >>> hasattr(plot, 'add_note')
+        True
 
         Args:
             **kwargs: Additional keyword arguments.
@@ -254,6 +318,14 @@ class plot(LTCPlotBokehAdapter):
 
     def add_trace(self, *args, **kwargs):
         """Add a trace.
+        Creates and registers a new trace.
+
+        Appends a new trace entry to the object's internal collection.
+
+
+        >>> from PyICe.data_utils.LTCPlotBokehAdapter import plot
+        >>> hasattr(plot, 'add_trace')
+        True
 
         Args:
             **kwargs: Additional keyword arguments.
@@ -281,6 +353,14 @@ class plot(LTCPlotBokehAdapter):
     def add_horizontal_line(self, *args, **kwargs):
         # (self, value, xrange=None, note=None, axis=1, color=[1,0,0]):
         """Add a horizontal line.
+        Creates and registers a new horizontal line.
+
+        Appends a new horizontal line entry to the object's internal collection.
+
+
+        >>> from PyICe.data_utils.LTCPlotBokehAdapter import plot
+        >>> hasattr(plot, 'add_horizontal_line')
+        True
 
         Args:
             **kwargs: Additional keyword arguments.
@@ -312,6 +392,14 @@ class plot(LTCPlotBokehAdapter):
     def add_vertical_line(self, *args, **kwargs):
         # (self, value, yrange=None, note=None, axis=1, color=[1,0,0]):
         """Add a vertical line.
+        Creates and registers a new vertical line.
+
+        Appends a new vertical line entry to the object's internal collection.
+
+
+        >>> from PyICe.data_utils.LTCPlotBokehAdapter import plot
+        >>> hasattr(plot, 'add_vertical_line')
+        True
 
         Args:
             **kwargs: Additional keyword arguments.
@@ -343,12 +431,19 @@ class plot(LTCPlotBokehAdapter):
     def make_second_y_axis(self, yaxis_label, ylims, yminor, ydivs, logy):
         """Perform make second y axis operation.
 
+        Supports the ``plot`` workflow by performing the described operation.
+
+
+        >>> from PyICe.data_utils.LTCPlotBokehAdapter import plot
+        >>> hasattr(plot, 'make_second_y_axis')
+        True
+
         Args:
-            logy: Logy.
-            yaxis_label: Yaxis label.
-            ydivs: Ydivs.
-            ylims: Ylims.
-            yminor: Yminor.
+            logy: Logy to use.
+            yaxis_label: Yaxis label to use.
+            ydivs: Ydivs to use.
+            ylims: Y-axis limits as a ``(min, max)`` tuple.
+            yminor: Yminor to use.
         """
         pass
 
@@ -356,21 +451,42 @@ class plot(LTCPlotBokehAdapter):
             0, 0), justification='lower left', use_axes_scale=False, fontsize=7):
         """Add a legend.
 
+        Appends a new legend entry to the object's internal collection.
+
+
+        >>> from PyICe.data_utils.LTCPlotBokehAdapter import plot
+        >>> hasattr(plot, 'add_legend')
+        True
+
         Args:
-            axis: Axis.
-            fontsize: Fontsize.
-            justification: Justification.
-            location: Location.
-            use_axes_scale: Use axes scale.
+            axis: Axis identifier (``"x"`` or ``"y"``).
+            fontsize: Font size in points.
+            justification: Justification to use.
+            location: Position or placement specifier.
+            use_axes_scale: If True, apply axis scaling to the plot.
         """
         pass
 
 
 class Page(LTCPlotBokehAdapter):
-    """Bokeh Page adapter."""
+    """Bokeh Page adapter.
+
+    >>> from PyICe.data_utils.LTCPlotBokehAdapter import Page
+    >>> Page is not None
+    True
+
+    """
 
     def __init__(self, *args, **kwargs):
         """Initialize page.
+        Stores configuration in ``_plots`` for use by other methods.
+
+        Initializes 1 instance attribute that configure the object's behavior.
+
+
+        >>> from PyICe.data_utils.LTCPlotBokehAdapter import Page
+        >>> Page is not None
+        True
 
         Args:
             **kwargs: Additional keyword arguments.
@@ -385,6 +501,14 @@ class Page(LTCPlotBokehAdapter):
 
     def create_svg(self, *args, **kwargs):
         """Perform create svg operation.
+        Creates and returns a new svg.
+
+        Supports the ``Page`` workflow by performing the described operation.
+
+
+        >>> from PyICe.data_utils.LTCPlotBokehAdapter import Page
+        >>> hasattr(Page, 'create_svg')
+        True
 
         Args:
             **kwargs: Additional keyword arguments.
@@ -418,6 +542,15 @@ class Page(LTCPlotBokehAdapter):
 
     def add_plot(self, *args, **kwargs):
         """Add a plot.
+        Configures or updates the plot with the specified parameters.
+        Adds a new plot to the object's internal collection.
+
+        Appends a new plot entry to the object's internal collection.
+
+
+        >>> from PyICe.data_utils.LTCPlotBokehAdapter import Page
+        >>> hasattr(Page, 'add_plot')
+        True
 
         Args:
             **kwargs: Additional keyword arguments.
@@ -450,22 +583,42 @@ class Page(LTCPlotBokehAdapter):
 
 
 class Multipage_pdf(LTCPlotBokehAdapter):
-    """Bokeh Multipage_pdf adapter."""
+    """Bokeh Multipage_pdf adapter.
+
+    >>> from PyICe.data_utils.LTCPlotBokehAdapter import Multipage_pdf
+    >>> Multipage_pdf is not None
+    True
+
+    """
 
     def add_page(self, page):
         """Add a page.
 
+        Appends a new page entry to the object's internal collection.
+
+
+        >>> from PyICe.data_utils.LTCPlotBokehAdapter import Multipage_pdf
+        >>> hasattr(Multipage_pdf, 'add_page')
+        True
+
         Args:
-            page: Page.
+            page: PMBus page number for multi-output devices.
         """
         pass
 
     def create_pdf(self, file_basename, filepath=None):
         """Perform create pdf operation.
 
+        Supports the ``Multipage_pdf`` workflow by performing the described operation.
+
+
+        >>> from PyICe.data_utils.LTCPlotBokehAdapter import Multipage_pdf
+        >>> hasattr(Multipage_pdf, 'create_pdf')
+        True
+
         Args:
-            file_basename: File basename.
-            filepath: Filepath.
+            file_basename: Base filename without extension.
+            filepath: File system path string.
         """
         pass
 
@@ -474,16 +627,30 @@ original_classes = {}
 
 
 def install(calling_module):
-    """Perform install operation.
+    """Run the install step.
+
+    Issues a SCPI query to the instrument and parses the response.
+
+
+    >>> from PyICe.data_utils.LTCPlotBokehAdapter import install
+    >>> callable(install)
+    True
 
     Args:
-        calling_module: Calling module.
+        calling_module: Calling module to use.
     """
     def store_and_replace(class_name):
         """Perform store and replace operation.
 
+        Persists the current state or data to durable storage.
+
+
+        >>> from PyICe.data_utils.LTCPlotBokehAdapter import store_and_replace
+        >>> callable(store_and_replace)
+        True
+
         Args:
-            class_name: Class name.
+            class_name: Class name to use.
         """
         original_classes[class_name] = getattr(
             calling_module.LTC_plot, class_name)

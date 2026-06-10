@@ -1,4 +1,8 @@
-"""T D K module."""
+"""T D K module.
+
+>>> import PyICe.models.inductors.TDK
+
+"""
 #################################################################
 #                                                               #
 # TDK ALMA Series 0806 (2016) Case Size                         #

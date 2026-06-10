@@ -1,4 +1,8 @@
-"""A3497x instruments instrument driver."""
+"""A3497x instruments instrument driver.
+
+>>> from PyICe.lab_instruments.a3497x_instruments import a3497xa_instrument
+
+"""
 from PyICe.lab_utils.eng_string import eng_string
 from PyICe.lab_utils.banners import print_banner
 from ..lab_core import *  # noqa: F403
@@ -14,9 +18,13 @@ class a3497xa_instrument(scpi_instrument, delegator):
 
     def __init__(self, name, automatic_monitor):
         """Initialize a3497xa_instrument.
+        Initializes 6 instance attributes that configure the object's
+        behavior.
+
+        Calls the parent constructor to inherit base behavior, and initializes 6 instance attributes that configure the object's behavior.
 
         Args:
-            automatic_monitor: Automatic monitor.
+            automatic_monitor: Automatic monitor to use.
             name: Name identifier.
         """
         scpi_instrument.__init__(self, name)
@@ -48,15 +56,21 @@ class a3497xa_instrument(scpi_instrument, delegator):
         # channel_list is a list of channel objects
         # returns a dictionary of read data by channel name
         """Return read delegated channel list result.
+        Sends the appropriate command to the instrument and parses the
+        response.
+        Sends the ``ROUTe:SCAN`` SCPI command to the instrument.
+        Sends the appropriate query to the instrument and parses the response.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
-            channel_list: Channel list.
+            channel_list: List of channel objects.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         results = results_ord_dict()
         # special case for reading the moniotor
@@ -141,11 +155,13 @@ class a3497xa_instrument(scpi_instrument, delegator):
         # the scan list is in the delegator, not the creating instrument
         """Return read raw result.
 
+        Reads data from the underlying source and returns it.
+
         Args:
-            internal_address: Internal address.
+            internal_address: Internal address to use.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
         """
         assert internal_address in self.resolve_delegator().scan_results
         return self.resolve_delegator().scan_results[internal_address]
@@ -153,12 +169,14 @@ class a3497xa_instrument(scpi_instrument, delegator):
     def read_apply_function(self, internal_address, function):
         """Return read apply function result.
 
+        Reads data from the underlying source and returns it.
+
         Args:
-            function: Function.
-            internal_address: Internal address.
+            function: Callable to execute.
+            internal_address: Internal address to use.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
         """
         return function(self.read_raw(internal_address))
 
@@ -173,6 +191,11 @@ class a3497xa_instrument(scpi_instrument, delegator):
 
     def set_monitor(self, monitor_channel_name):
         """View named channel measurement on the front panel whenever scan is idle.
+        Sends the ``ROUTe:MONitor:STATe`` SCPI command to the instrument.
+        Sends the appropriate SCPI command to configure the instrument's
+        monitor.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
             monitor_channel_name: Name of the channel to display on the front panel.
@@ -188,6 +211,11 @@ class a3497xa_instrument(scpi_instrument, delegator):
 
     def get_monitor_data(self, channel_name=None):
         """Return data from last monitor reading.
+        Sends the ``ROUTe:MONitor:DATA`` SCPI command to the instrument.
+        Queries the instrument for its current monitor data and returns the
+        parsed response.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
             channel_name: Optional channel name to set as monitor before reading.
@@ -209,6 +237,9 @@ class agilent_3497xa_chassis(a3497xa_instrument):
     """
     def __init__(self, interface_visa, automatic_monitor=True):
         """Agilent 34970 collection object.
+        Stores configuration in ``_base_name`` for use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
 
         Args:
             interface_visa: VISA interface string for the instrument.
@@ -222,6 +253,8 @@ class agilent_3497xa_chassis(a3497xa_instrument):
 
     def add(self, new_instrument):
         """Only appropriate to add instantiated 34907 plugin instrument objects to this class (20ch, 40ch, dacs, dig-in, dig-out, etc).
+
+        Supports the ``agilent_3497xa_chassis`` workflow by performing the described operation.
 
         Args:
             new_instrument: A 34970 plugin instrument instance to add.
@@ -292,6 +325,10 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
 
     def warn_about_relays(self, bay):
         """Perform warn about relays operation.
+        Sends the ``Relay`` SCPI command to the instrument.
+        Sends the ``SYSTem:CTYPe`` SCPI command to the instrument.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
             bay: Instrument bay number.
@@ -308,9 +345,15 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
 
     def get_relay_cycle_counts(self):
         """Return the relay cycle counts.
+        Returns the stored relay cycle counts value from the object's internal
+        state.
+        Returns the stored relay cycle counts from the object's internal
+        state.
+
+        Returns the stored relay cycle counts from the object's internal state.
 
         Returns:
-            Result value.
+            The current relay cycle counts.
         """
         return self.relay_cycle_counts
 
@@ -343,6 +386,14 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
     def add_channel_dc_voltage(self, channel_name, channel_num, NPLC=1, range="AUTO",
                                high_z=True, delay=None, disable_autozero=True, Rsource=None, fmt=':3.6g'):
         """Shortcut method to add voltage channel and configure in one step.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new voltage channel.
@@ -393,6 +444,14 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
     def add_channel_thermocouple(
             self, channel_name, channel_num, tcouple_type, NPLC=1, disable_autozero=True):
         """Shortcut method to add thermistor measurement channel and configure in one step.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new thermocouple channel.
@@ -420,6 +479,14 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
     def add_channel_rtd(self, channel_name, channel_num, rtd_type=85,
                         ptype=4, nom_res=100, NPLC=1, disable_autozero=True):
         """Shortcut method to add rtd measurement channel and configure in one step.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new RTD channel.
@@ -513,6 +580,9 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
 
     def _config_channel_delay(self, channel, delay):
         """Delay specified number of seconds between closing relay and starting DMM measurement for channel.
+        Internal helper that sends the ``ROUT:CHAN:DELAY`` SCPI command.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
             channel: The channel object to configure.
@@ -547,6 +617,9 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
 
     def _config_channel_scaling(self, channel, gain=1, offset=0, unit=None):
         """Perform y=mx+b scaling to channel inside instrument and change displayed units.
+        Internal helper that sends the ``CALCulate:SCALe:UNIT`` SCPI command.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
             channel: The channel object to configure.
@@ -598,6 +671,13 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
 
     def add_channel_nplc(self, channel_name, base_channel):
         """Adds a secondary channel that can modify the nplc setting of an existing channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new NPLC control channel.
@@ -621,6 +701,13 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
 
     def add_channel_delay(self, channel_name, base_channel):
         """Adds a secondary channel that can modify the delay of an existing channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new delay control channel.
@@ -701,13 +788,20 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
 
     def add_channel_range_readback(self, channel_name, base_channel):
         """Add a channel range readback.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``SENSe:VOLTage:DC:RANGe`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             base_channel: Base channel object to extend.
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, read_function=lambda bc=base_channel: float(
             self.get_interface().ask(f"SENSe:VOLTage:DC:RANGe? (@{bc.get_attribute('internal_address')})")))
@@ -715,6 +809,13 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
 
     def add_channel_gain(self, channel_name, base_channel):
         """Adds a secondary channel that can modify the gain (span multiplier) of an existing channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new gain control channel.
@@ -743,6 +844,13 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
 
     def add_channel_offset(self, channel_name, base_channel):
         """Adds a secondary channel that can modify the offset of an existing channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new offset control channel.
@@ -771,6 +879,13 @@ class agilent_3497xa_20ch_40ch(a3497xa_instrument):
 
     def add_channel_unit(self, channel_name, base_channel):
         """Adds a secondary channel that can modify the displayed unit (V/A/etc) of an existing channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new unit control channel.
@@ -816,6 +931,9 @@ class agilent_3497xa_20ch(agilent_3497xa_20ch_40ch):
     """
     def __init__(self, *args, **kwargs):
         """Initialize agilent_3497xa_20ch.
+        Stores configuration in ``plugin_type`` for use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
 
         Args:
             **kwargs: Additional keyword arguments.
@@ -827,6 +945,14 @@ class agilent_3497xa_20ch(agilent_3497xa_20ch_40ch):
     def add_channel_dc_current(self, channel_name, channel_num,
                                NPLC=1, range='AUTO', delay=None, disable_autozero=True):
         """DC current measurement only allowed on 34901A channels 21 and 22.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new current channel.
@@ -861,6 +987,9 @@ class agilent_3497xa_20ch(agilent_3497xa_20ch_40ch):
 
     def _config_dc_current(self, channel, range="AUTO"):
         """DC current measurement only allowed on 34901A channels 21 and 22.
+        Internal helper that sends the ``CONFigure:CURRent:DC`` SCPI command.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
             channel: The channel object to configure.
@@ -873,6 +1002,13 @@ class agilent_3497xa_20ch(agilent_3497xa_20ch_40ch):
 
     def add_channel_ammeter_range(self, channel_name, base_channel):
         """Modify ammeter current range shunt.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new range control channel.
@@ -898,6 +1034,10 @@ class agilent_3497xa_20ch(agilent_3497xa_20ch_40ch):
 
     def config_freq(self, channel_name):
         """Configure a channel to measure frequency.
+        Sends the ``CONFigure:FREQuency`` SCPI command to the instrument.
+        Configures the instrument for freq measurement mode via SCPI commands.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
             channel_name: Name of the channel to configure for frequency measurement.
@@ -909,6 +1049,8 @@ class agilent_3497xa_20ch(agilent_3497xa_20ch_40ch):
 
     def config_res(self, channel_name):
         """Deprecated.
+
+        Applies the specified configuration to the object or hardware.
 
         Args:
             channel_name: Name of the channel (unused, method is deprecated).
@@ -922,6 +1064,13 @@ class agilent_3497xa_20ch(agilent_3497xa_20ch_40ch):
     def add_channel_res(self, channel_name, channel_num, NPLC=1, res_range='AUTO',
                         offset_compensated=True, delay=None, disable_autozero=True, add_extended_channels=True):
         """Two Wire DC resistance measurement.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new resistance channel.
@@ -1101,6 +1250,13 @@ class agilent_3497xa_20ch(agilent_3497xa_20ch_40ch):
     def add_channel_fres(self, channel_name, channel_num, NPLC=1, range='AUTO',
                          offset_compensated=True, delay=None, disable_autozero=True, add_extended_channels=True):
         """Four Wire DC resistance measurement.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new four-wire resistance channel.
@@ -1341,6 +1497,9 @@ class agilent_3497xa_40ch(agilent_3497xa_20ch_40ch):
 
     def __init__(self, *args, **kwargs):
         """Initialize agilent_3497xa_40ch.
+        Stores configuration in ``plugin_type`` for use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
 
         Args:
             **kwargs: Additional keyword arguments.
@@ -1381,6 +1540,10 @@ class agilent_3497xa_dacs(a3497xa_instrument):
 
     def __init__(self, interface_visa, bay):
         """Bay is numbered (1,2,3).  1 is the upper bay.  3 is the lower bay.
+        Stores configuration in ``_base_name``, ``bay``, ``plugin_type`` for
+        use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 3 instance attributes that configure the object's behavior.
 
         Args:
             interface_visa: VISA interface string for the instrument.
@@ -1395,6 +1558,14 @@ class agilent_3497xa_dacs(a3497xa_instrument):
 
     def add_channel(self, channel_name, channel_num):
         """Add named DAC channel to instrument.  num is 1-2, mapping to physical channel 4-5.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new DAC channel.
@@ -1421,6 +1592,11 @@ class agilent_3497xa_dacs(a3497xa_instrument):
 
     def write_voltage(self, internal_address, voltage):
         """Set named DAC to voltage.  Range is +/-12V with 16bit (366uV) resolution.
+        Formats and sends the command to the instrument.
+        Sends the ``SOURCE:VOLT`` SCPI command to the instrument.
+        Formats and sends the command to the instrument.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
             internal_address: Internal address of the DAC channel.
@@ -1467,6 +1643,14 @@ class agilent_3497xa_actuator(a3497xa_instrument):
 
     def add_channel(self, channel_name, channel_num):
         """Channel_num is 1-20.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new actuator channel.
@@ -1497,6 +1681,8 @@ class agilent_3497xa_actuator(a3497xa_instrument):
     def _write_relay(self, internal_address, state):
         """Boolean True closes relay channel_name, boolean False opens relay channel_name.
 
+        Internal implementation detail; see the public API for usage.
+
         Args:
             internal_address: Internal address of the relay channel.
             state: True to close the relay, False to open it.
@@ -1508,7 +1694,10 @@ class agilent_3497xa_actuator(a3497xa_instrument):
 
     # NB #CB fixed to use self.bay intead of hard coded base address = 200
     def open_all_relays(self):
-        """Perform open all relays operation."""
+        """Perform open all relays operation.
+
+        Establishes the connection or prepares the resource for use.
+        """
         base = self.bay * 100
         for internal_address in range(base + 1, base + 21):
             self._open(internal_address)
@@ -1669,19 +1858,23 @@ class agilent_3497xa_dig_in8(a3497xa_instrument):
         def conversion_function(data):
             """Return conversion function result.
 
+            Performs the described operation on the object's internal state.
+
             Args:
                 data: Data to write.
 
             Returns:
-                Result value.
+                A callable that performs the conversion.
             """
             return self._read_bits(start, size, data)
 
         def read_function():
             """Return read function result.
 
+            Reads data from the underlying source and returns it.
+
             Returns:
-                Result value.
+                The value read from the device or channel.
             """
             return self.read_apply_function(
                 self.internal_address, conversion_function)

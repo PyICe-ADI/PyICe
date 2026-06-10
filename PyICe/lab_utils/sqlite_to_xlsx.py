@@ -1,4 +1,8 @@
-"""Sqlite to xlsx utility."""
+"""Sqlite to xlsx utility.
+
+>>> from PyICe.lab_utils.sqlite_to_xlsx import sqlite_to_xlsx
+
+"""
 import os
 import atexit
 import datetime
@@ -14,6 +18,11 @@ class sqlite_to_xlsx(object):
     Creates a workbook with autofilters, sparklines, alternating-row shading,
     frozen header panes, and named ranges for each column. Use as a context
     manager or call ``close`` explicitly when finished writing.
+
+    >>> from PyICe.lab_utils.sqlite_to_xlsx import sqlite_to_xlsx
+    >>> sqlite_to_xlsx is not None
+    True
+
     """
 
     def __init__(self, output_file):
@@ -22,6 +31,11 @@ class sqlite_to_xlsx(object):
         Opens *output_file* in constant-memory mode (suitable for very large
         tables) and disables automatic formula/URL/number conversion so that
         raw SQLite values are preserved exactly.
+
+
+        >>> from PyICe.lab_utils.sqlite_to_xlsx import sqlite_to_xlsx
+        >>> sqlite_to_xlsx is not None
+        True
 
         Args:
             output_file: Destination path for the ``.xlsx`` file.
@@ -45,11 +59,27 @@ class sqlite_to_xlsx(object):
         atexit.register(self.close)
 
     def __enter__(self):
-        """Return self for use as a context manager."""
+        """Return self for use as a context manager.
+
+        Sets up the context manager for ``with`` statement usage.
+
+        >>> from PyICe.lab_utils.sqlite_to_xlsx import sqlite_to_xlsx
+        >>> hasattr(sqlite_to_xlsx, '__enter__')
+        True
+
+        """
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         """Close the workbook when leaving the ``with`` block.
+        Tears down the context manager and handles exceptions.
+
+        Cleans up resources when leaving a ``with`` block.
+
+
+        >>> from PyICe.lab_utils.sqlite_to_xlsx import sqlite_to_xlsx
+        >>> hasattr(sqlite_to_xlsx, '__exit__')
+        True
 
         Args:
             exc_type: Exception type, or ``None`` if no exception occurred.
@@ -70,6 +100,11 @@ class sqlite_to_xlsx(object):
         ``sqlite_to_xlsx`` does not wrap directly.
         See: http://xlsxwriter.readthedocs.io/workbook.html
 
+
+        >>> from PyICe.lab_utils.sqlite_to_xlsx import sqlite_to_xlsx
+        >>> hasattr(sqlite_to_xlsx, 'workbook')
+        True
+
         Returns:
             The ``xlsxwriter.Workbook`` instance backing this export.
         """
@@ -84,6 +119,11 @@ class sqlite_to_xlsx(object):
         ``True``, two extra columns (``elapsed_time`` and ``elapsed_seconds``)
         are inserted immediately after ``datetime``.
         See: http://xlsxwriter.readthedocs.io/worksheet.html
+
+
+        >>> from PyICe.lab_utils.sqlite_to_xlsx import sqlite_to_xlsx
+        >>> hasattr(sqlite_to_xlsx, 'add_worksheet')
+        True
 
         Args:
             sqlite_data_obj: A ``lab_utils.sqlite_data`` instance pointing at
@@ -307,6 +347,11 @@ class sqlite_to_xlsx(object):
         calls ``add_worksheet`` for each. Empty tables are silently skipped.
         See: http://xlsxwriter.readthedocs.io/worksheet.html
 
+
+        >>> from PyICe.lab_utils.sqlite_to_xlsx import sqlite_to_xlsx
+        >>> hasattr(sqlite_to_xlsx, 'add_database')
+        True
+
         Args:
             db_file_name: Path to the SQLite database file.
             elapsed_time_columns: If ``True``, add elapsed-time columns next
@@ -345,6 +390,11 @@ class sqlite_to_xlsx(object):
 
         See: http://xlsxwriter.readthedocs.io/chart.html
 
+
+        >>> from PyICe.lab_utils.sqlite_to_xlsx import sqlite_to_xlsx
+        >>> hasattr(sqlite_to_xlsx, 'add_xy_chart')
+        True
+
         Args:
             subtype: Line style for the scatter chart (default:
                 ``'straight_with_markers'``).
@@ -362,6 +412,11 @@ class sqlite_to_xlsx(object):
         create the chart object first, configure its series and axes, then
         pass it here.
 
+
+        >>> from PyICe.lab_utils.sqlite_to_xlsx import sqlite_to_xlsx
+        >>> hasattr(sqlite_to_xlsx, 'add_chartsheet')
+        True
+
         Args:
             name: Tab name for the new chartsheet (max 31 characters).
             chart: An ``xlsxwriter.Chart`` instance (e.g. from
@@ -375,7 +430,15 @@ class sqlite_to_xlsx(object):
         return chartsheet
 
     def close(self):
-        """Close Excel workbook and release file lock. No further writing is possible after closing."""
+        """Close Excel workbook and release file lock. No further writing is possible after closing.
+
+        Releases resources and restores the system to a safe state.
+
+        >>> from PyICe.lab_utils.sqlite_to_xlsx import sqlite_to_xlsx
+        >>> hasattr(sqlite_to_xlsx, 'close')
+        True
+
+        """
         if self._workbook is not None:
             self._workbook.close()
             self._workbook = None

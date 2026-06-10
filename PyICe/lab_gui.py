@@ -1,4 +1,8 @@
-"""Graphical Interface to Channel Objects."""
+"""Graphical Interface to Channel Objects.
+
+>>> from PyICe.lab_gui import data_store
+
+"""
 
 from . import lab_core
 from PyICe.lab_utils.column_formatter import column_formatter
@@ -67,10 +71,13 @@ class data_store():
     """
     def __init__(self, name=None, value=None, parent=None):
         """Initialize data_store.
+        Stores configuration in ``_children`` for use by other methods.
+
+        Initializes 1 instance attribute that configure the object's behavior.
 
         Args:
             name: Name identifier.
-            parent: Parent.
+            parent: Parent object in the hierarchy.
             value: Value to set.
         """
         self._children = []
@@ -100,6 +107,9 @@ class data_store():
 
     def set_name(self, name):
         """Set the name.
+        Updates the name in the object's internal state.
+
+        Updates the name in the object's internal state.
 
         Args:
             name: Name identifier.
@@ -109,12 +119,15 @@ class data_store():
 
     def __getitem__(self, key):
         """Get item by key or index.
+        Enables bracket-style indexing (``obj[key]``).
+
+        Supports bracket-style indexing (``obj[key]``) for this container.
 
         Args:
-            key: Key.
+            key: Lookup key or index.
 
         Returns:
-            Result value.
+            The item at the requested position or key.
         """
         for child in self._children:
             if child.get_name() == key:
@@ -123,12 +136,15 @@ class data_store():
 
     def __contains__(self, key):
         """Check if item is contained.
+        Enables ``in`` membership testing.
+
+        Supports the ``in`` operator for membership testing.
 
         Args:
-            key: Key.
+            key: Lookup key or index.
 
         Returns:
-            Result value.
+            True if the item is present, False otherwise.
         """
         for child in self._children:
             if child.get_name() == key:
@@ -137,6 +153,9 @@ class data_store():
 
     def __iter__(self):
         """Return iterator over items.
+        Enables iteration over the object's elements.
+
+        Supports iteration with ``for ... in`` loops.
 
         Yields:
             Next value.
@@ -146,9 +165,12 @@ class data_store():
 
     def __setitem__(self, key, value):
         """Set item by key or index.
+        Enables bracket-style assignment (``obj[key] = value``).
+
+        Supports bracket-style assignment (``obj[key] = value``) for this container.
 
         Args:
-            key: Key.
+            key: Lookup key or index.
             value: Value to set.
         """
         for child in self._children:
@@ -158,15 +180,22 @@ class data_store():
         data_store(key, value, self)
 
     def get_name(self):
-        """Return the name.
+        """Return the current name.
+        Returns the stored name value from the object's internal state.
+        Returns the stored name from the object's internal state.
+
+        Returns the stored name from the object's internal state.
 
         Returns:
-            Result value.
+            The current name.
         """
         return self._name
 
     def set_value(self, value):
         """Set the value.
+        Updates the value in the object's internal state.
+
+        Updates the value in the object's internal state.
 
         Args:
             value: Value to set.
@@ -175,34 +204,45 @@ class data_store():
         self._value = value
 
     def get_value(self):
-        """Return the value.
+        """Return the current value.
+        Returns the stored value value from the object's internal state.
+        Returns the stored value from the object's internal state.
+
+        Returns the stored value from the object's internal state.
 
         Returns:
-            Result value.
+            The current value.
         """
         return self._value
 
     def add_child(self, data_store_object):
         """Add a child.
+        Adds a new child to the object's internal collection.
+
+        Appends a new child entry to the object's internal collection.
 
         Args:
-            data_store_object: Data store object.
+            data_store_object: Data store object to use.
 
         Raises:
-            DataStoreException: On error condition.
+            DataStoreException: If the operation fails.
         """
         if not isinstance(data_store_object, data_store):
             raise DataStoreException('Addind a non-data_store as a child')
         self._children.append(data_store_object)
 
     def get_child(self, child_name):
-        """Return the child.
+        """Return the current child.
+        Returns the stored child value from the object's internal state.
+        Returns the stored child from the object's internal state.
+
+        Returns the stored child from the object's internal state.
 
         Args:
-            child_name: Child name.
+            child_name: Child name to use.
 
         Returns:
-            Result value.
+            The current child.
         """
         for child in self._children:
             if child.get_name() == child_name:
@@ -231,7 +271,9 @@ class data_store():
             self.add_child(child)
 
     def save(self, filename):
-        """Perform save operation.
+        """Run the save step.
+
+        Persists the current state or data to durable storage.
 
         Args:
             filename: File path.
@@ -241,7 +283,9 @@ class data_store():
         tree.write(filename)
 
     def load(self, filename):
-        """Perform load operation.
+        """Run the load step.
+
+        Reads previously saved state or data back into memory.
 
         Args:
             filename: File path.
@@ -261,6 +305,10 @@ class channel_wrapper(object):
     """Channel_wrapper (object subclass)."""
     def __init__(self, channel=None):
         """Initialize channel_wrapper.
+        Stores configuration in ``_channel``, ``_name``, ``_tag`` for use by
+        other methods.
+
+        Initializes 3 instance attributes that configure the object's behavior.
 
         Args:
             channel: Channel object.
@@ -279,9 +327,14 @@ class channel_wrapper(object):
 
     def get_default_format(self):
         """Return the default format.
+        Returns the stored default format value from the object's internal
+        state.
+        Returns the stored default format from the object's internal state.
+
+        Returns the stored default format from the object's internal state.
 
         Returns:
-            Result value.
+            The current default format.
         """
         if self.get_formats():
             if self._channel.get_format() is not None:
@@ -300,18 +353,26 @@ class channel_wrapper(object):
         return None
 
     def get_channel(self):
-        """Return the channel.
+        """Return the current channel.
+        Returns the stored channel value from the object's internal state.
+        Returns the stored channel from the object's internal state.
+
+        Returns the stored channel from the object's internal state.
 
         Returns:
-            Result value.
+            The current channel.
         """
         return self._channel
 
     def get_formats(self):
-        """Return the formats.
+        """Return the current formats.
+        Returns the stored formats value from the object's internal state.
+        Returns the stored formats from the object's internal state.
+
+        Returns the stored formats from the object's internal state.
 
         Returns:
-            Result value.
+            The current formats.
         """
         try:
             return self._channel.get_formats()
@@ -319,10 +380,14 @@ class channel_wrapper(object):
             return []
 
     def get_presets(self):
-        """Return the presets.
+        """Return the current presets.
+        Returns the stored presets value from the object's internal state.
+        Returns the stored presets from the object's internal state.
+
+        Returns the stored presets from the object's internal state.
 
         Returns:
-            Result value.
+            The current presets.
         """
         try:
             return self._channel.get_presets()
@@ -331,9 +396,14 @@ class channel_wrapper(object):
 
     def get_presets_dict(self):
         """Return the presets dict.
+        Returns the stored presets dict value from the object's internal
+        state.
+        Returns the stored presets dict from the object's internal state.
+
+        Returns the stored presets dict from the object's internal state.
 
         Returns:
-            Result value.
+            The current presets dict.
         """
         try:
             return self._channel.get_presets_dict()
@@ -342,12 +412,18 @@ class channel_wrapper(object):
 
     def get_preset_description(self, preset_name):
         """Return the preset description.
+        Returns the stored preset description value from the object's internal
+        state.
+        Returns the stored preset description from the object's internal
+        state.
+
+        Returns the stored preset description from the object's internal state.
 
         Args:
             preset_name: Name of the preset.
 
         Returns:
-            Result value.
+            The current preset description.
         """
         try:
             return self._channel.get_preset_description(preset_name)
@@ -356,9 +432,12 @@ class channel_wrapper(object):
 
     def has_preset_descriptions(self):
         """Return whether preset descriptions exists.
+        Returns a boolean reflecting the object's current state.
+
+        Returns a boolean reflecting the object's current state.
 
         Returns:
-            Result value.
+            True if the preset descriptions condition is met, False otherwise.
         """
         try:
             return self._channel.has_preset_descriptions()
@@ -367,71 +446,103 @@ class channel_wrapper(object):
 
     def get_write_history(self):
         """Return the write history.
+        Returns the stored write history value from the object's internal
+        state.
+        Returns the stored write history from the object's internal state.
+
+        Returns the stored write history from the object's internal state.
 
         Returns:
-            Result value.
+            The current write history.
         """
         return self._channel.get_write_history()
 
     def get_tag(self):
-        """Return the tag.
+        """Return the current tag.
+        Returns the stored tag value from the object's internal state.
+        Returns the stored tag from the object's internal state.
+
+        Returns the stored tag from the object's internal state.
 
         Returns:
-            Result value.
+            The current tag.
         """
         return self._tag
 
     def set_tag(self, tag):
         """Set the tag.
+        Updates the tag in the object's internal state.
+
+        Updates the tag in the object's internal state.
 
         Args:
-            tag: Tag.
+            tag: Tag to use.
         """
         self._tag = tag
 
     def get_name(self):
-        """Return the name.
+        """Return the current name.
+        Returns the stored name value from the object's internal state.
+        Returns the stored name from the object's internal state.
+
+        Returns the stored name from the object's internal state.
 
         Returns:
-            Result value.
+            The current name.
         """
         return self._name
 
     def get_description(self):
-        """Return the description.
+        """Return the current description.
+        Returns the stored description value from the object's internal state.
+        Returns the stored description from the object's internal state.
+
+        Returns the stored description from the object's internal state.
 
         Returns:
-            Result value.
+            The current description.
         """
         return self._channel.get_description()
 
     def get_attribute(self, attribute_name):
-        """Return the attribute.
+        """Return the current attribute.
+        Returns the stored attribute value from the object's internal state.
+        Returns the stored attribute from the object's internal state.
+
+        Returns the stored attribute from the object's internal state.
 
         Args:
-            attribute_name: Attribute name.
+            attribute_name: Attribute name to use.
 
         Returns:
-            Result value.
+            The current attribute.
         """
         return self._channel.get_attribute(attribute_name)
 
     def get_attributes(self):
-        """Return the attributes.
+        """Return the current attributes.
+        Returns the stored attributes value from the object's internal state.
+        Returns the stored attributes from the object's internal state.
+
+        Returns the stored attributes from the object's internal state.
 
         Returns:
-            Result value.
+            The current attributes.
         """
         return self._channel.get_attributes()
 
     def get_units(self, format):
-        """Return the units.
+        """Return the current units.
+        Returns the stored units value from the object's internal state.
+        Returns the stored units from the object's internal state.
+
+        Returns the stored units from the object's internal state.
 
         Args:
             format: Format name string.
 
         Returns:
-            Result value.
+            The current units.
         """
         if format is not None:
             return self._channel.get_units(format)
@@ -439,6 +550,8 @@ class channel_wrapper(object):
 
     def set_change_callback(self, enable):
         """Set the change callback.
+
+        Updates the change callback in the object's internal state.
 
         Args:
             enable: Enable or disable.
@@ -455,15 +568,17 @@ class channel_wrapper(object):
                 print(e)
 
     def format(self, data, format, use_presets):
-        """Return format result.
+        """Return the format.
+
+        Converts between raw numeric values and human-readable representations.
 
         Args:
             data: Data to write.
             format: Format name string.
-            use_presets: Use presets.
+            use_presets: If True, apply saved preset configurations.
 
         Returns:
-            Result value.
+            Formatted string representation.
         """
         if data is None:
             return 'None'
@@ -474,15 +589,17 @@ class channel_wrapper(object):
         return data
 
     def unformat(self, data, format, use_presets):
-        """Return unformat result.
+        """Return the unformat.
+
+        Converts between raw numeric values and human-readable representations.
 
         Args:
             data: Data to write.
             format: Format name string.
-            use_presets: Use presets.
+            use_presets: If True, apply saved preset configurations.
 
         Returns:
-            Result value.
+            Formatted string representation.
         """
         if data == "None":
             return None
@@ -517,9 +634,13 @@ class display_item(QtWidgets.QLabel, channel_wrapper):
 
     def __init__(self, channel_object):
         """Initialize display_item.
+        Initializes 20 instance attributes that configure the object's
+        behavior.
+
+        Calls the parent constructor to inherit base behavior, and initializes 20 instance attributes that configure the object's behavior.
 
         Args:
-            channel_object: Channel object.
+            channel_object: PyICe channel object to operate on.
         """
         channel_wrapper.__init__(self, channel_object)
         QtWidgets.QLabel.__init__(self)
@@ -626,12 +747,15 @@ class display_item(QtWidgets.QLabel, channel_wrapper):
 
     def get_formatted_data(self, raw_data=None):
         """Return the formatted data.
+        Returns the stored formatted data from the object's internal state.
+
+        Returns the stored formatted data from the object's internal state.
 
         Args:
-            raw_data: Raw data.
+            raw_data: Raw data to use.
 
         Returns:
-            Result value.
+            The current formatted data.
         """
         formatted_data = self.format(self._current_raw_data if raw_data is None else raw_data,
                                      format=self._format,
@@ -671,18 +795,24 @@ class display_item(QtWidgets.QLabel, channel_wrapper):
 
     def set_format(self, new_format):
         """Set the format.
+        Updates the format in the object's internal state.
+
+        Updates the format in the object's internal state.
 
         Args:
-            new_format: New format.
+            new_format: New format to use.
         """
         self._format = new_format
         self.update_display()
 
     def set_iir(self, iir):
         """Set the iir.
+        Updates the iir in the object's internal state.
+
+        Updates the iir in the object's internal state.
 
         Args:
-            iir: Iir.
+            iir: Iir to use.
         """
         self._iir_setting = iir
         # Flush data when changing from signed to unsigned format? TBD...
@@ -690,8 +820,10 @@ class display_item(QtWidgets.QLabel, channel_wrapper):
     def update_display(self, force=False):
         """Perform update display operation.
 
+        Brings the cached state into agreement with the authoritative source.
+
         Args:
-            force: Force.
+            force: Force to use.
         """
         if self.displayed() or force or True:
             txt = "{}: {}".format(self.get_name(), self.get_formatted_data())
@@ -706,11 +838,13 @@ class display_item(QtWidgets.QLabel, channel_wrapper):
     def update_from_dict(self, data_dict):
         """Perform update from dict operation.
 
+        Brings the cached state into agreement with the authoritative source.
+
         Args:
-            data_dict: Data dict.
+            data_dict: Dictionary mapping channel names to measured values.
 
         Raises:
-            ValueError: On error condition.
+            ValueError: If the provided value is out of range or invalid.
         """
         if self.get_name() in list(data_dict.keys()):
             data = data_dict[self.get_name()]
@@ -794,27 +928,33 @@ class display_item(QtWidgets.QLabel, channel_wrapper):
             self.update_display()
 
     def display(self, state):
-        """Perform display operation.
+        """Run the display step.
+
+        Supports the ``display_item`` workflow by performing the described operation.
 
         Args:
-            state: State.
+            state: Desired state (True/False or instrument-specific value).
         """
         self._displayed2 = state
 
     def displayed(self):
-        """Return displayed result.
+        """Return the displayed.
+
+        Supports the ``display_item`` workflow by performing the described operation.
 
         Returns:
-            Result value.
+            The currently displayed value.
         """
         return self._displayed2
 
     @QtCore.Slot(QtCore.QPoint)
     def contextMenuRequested(self, point):
-        """Perform contextMenuRequested operation.
+        """Run the contextMenuRequested step.
+
+        Supports the ``display_item`` workflow by performing the described operation.
 
         Args:
-            point: Point.
+            point: Data point (x, y) tuple or index.
         """
         menu = QtWidgets.QMenu()
         # presets sub menu
@@ -957,13 +1097,19 @@ class display_item(QtWidgets.QLabel, channel_wrapper):
         menu.exec_(self.mapToGlobal(point))
 
     def copy_clipboard(self):
-        """Perform copy clipboard operation."""
+        """Perform copy clipboard operation.
+
+        Supports the ``display_item`` workflow by performing the described operation.
+        """
         app = self.parentWidget().parentWidget().parentWidget().parentWidget(
         ).parentWidget().parentWidget().parentWidget().parentWidget().parentWidget()
         app.cb.setText(str(self.get_formatted_data()))
 
     def print_history(self):
-        """Return print history result."""
+        """Return print history result.
+
+        Outputs the history to the console or display.
+        """
         request_time = datetime.datetime.now(datetime.timezone.utc)
         if not len(self._history):
             debug_logging.info(("{} has no change history at "
@@ -975,13 +1121,15 @@ class display_item(QtWidgets.QLabel, channel_wrapper):
                          "DURATION", "FMT", "RAW", "COUNT"]]
 
         def hms(seconds):
-            """Return hms result.
+            """Return the hms.
+
+            Performs the described operation on the object's internal state.
 
             Args:
-                seconds: Seconds.
+                seconds: Duration in seconds.
 
             Returns:
-                Result value.
+                The hms result.
             """
             minutes = int(seconds / 60)
             seconds = seconds - 60 * minutes
@@ -1028,7 +1176,10 @@ class display_item(QtWidgets.QLabel, channel_wrapper):
                 justification="right"))
 
     def print_tooltip(self):
-        """Perform print tooltip operation."""
+        """Perform print tooltip operation.
+
+        Outputs the tooltip to the console or display.
+        """
         col_widths = []
         max_width = 80
         # max_width = 132
@@ -1085,7 +1236,10 @@ class display_item(QtWidgets.QLabel, channel_wrapper):
 
     @QtCore.Slot()
     def display_write_dialog(self):
-        """Perform display write dialog operation."""
+        """Perform display write dialog operation.
+
+        Outputs the write dialog to the console or display.
+        """
         if not self._wcd:  # not yet created
             self._create_write_dialog()
             self._wcd.move(300, 150)
@@ -1119,68 +1273,87 @@ class display_item(QtWidgets.QLabel, channel_wrapper):
         # self.connect(self._wcd,SIGNAL('request_write_channel_list(PyQt_PyObject)'),self.write)
 
     def mouseDoubleClickEvent(self, event):
-        """Perform mouseDoubleClickEvent operation.
+        """Run the mouseDoubleClickEvent step.
+
+        Supports the ``display_item`` workflow by performing the described operation.
 
         Args:
-            event: Event.
+            event: Event object or identifier.
         """
         self.read_now()
 
     @QtCore.Slot()
     def read_now(self):
-        """Perform read now operation."""
+        """Perform read now operation.
+
+        Reads data from the underlying source and returns it.
+        """
         self.SI_request_read_channel_list.emit([self.get_name()])
         # self.emit(SIGNAL("request_read_channel_list(PyQt_PyObject)"), [self.get_name()] )
 
     @QtCore.Slot(bool)
     def setUseReadPresets(self, state):
-        """Perform setUseReadPresets operation.
+        """Run the setUseReadPresets step.
+
+        Restores the object or hardware to its default state.
 
         Args:
-            state: State.
+            state: Desired state (True/False or instrument-specific value).
         """
         self._use_presets_read = state
         self.update_display()
 
     @QtCore.Slot(bool)
     def setUseWritePresets(self, state):
-        """Perform setUseWritePresets operation.
+        """Run the setUseWritePresets step.
+
+        Restores the object or hardware to its default state.
 
         Args:
-            state: State.
+            state: Desired state (True/False or instrument-specific value).
         """
         self._use_presets_write = state
 
     @QtCore.Slot(bool)
     def setFlash(self, state):
-        """Perform setFlash operation.
+        """Run the setFlash step.
+
+        Supports the ``display_item`` workflow by performing the described operation.
 
         Args:
-            state: State.
+            state: Desired state (True/False or instrument-specific value).
         """
         self._flash = state
 
     @QtCore.Slot(bool)
     def setPrint(self, state):
-        """Perform setPrint operation.
+        """Run the setPrint step.
+
+        Supports the ``display_item`` workflow by performing the described operation.
 
         Args:
-            state: State.
+            state: Desired state (True/False or instrument-specific value).
         """
         self._print = state
         self.set_change_callback(state)
 
     def write_preset(self, preset):
         """Perform write preset operation.
+        Formats and sends the command to the instrument.
+        Formats and sends the command to the instrument.
+
+        Writes data to the underlying target.
 
         Args:
-            preset: Preset.
+            preset: Preset to use.
         """
         data = self.unformat(preset, format=None, use_presets=True)
         self.write([(self.get_name(), data)])
 
     def write(self, data):
         """Write a value to the channel.
+
+        Writes data to the underlying target.
 
         Args:
             data: Data to write.
@@ -1193,10 +1366,12 @@ class display_item(QtWidgets.QLabel, channel_wrapper):
             # self.emit(SIGNAL("request_read_channel_list(PyQt_PyObject)"),[data_pair[0] for data_pair in data])
 
     def save(self, ds_parent):
-        """Perform save operation.
+        """Run the save step.
+
+        Persists the current state or data to durable storage.
 
         Args:
-            ds_parent: Ds parent.
+            ds_parent: Parent dataset or plot object to attach to.
         """
         di_ds = data_store('display_item', self.get_name(), ds_parent)
         di_ds['use_presets_read'] = str(self._use_presets_read)
@@ -1213,10 +1388,12 @@ class display_item(QtWidgets.QLabel, channel_wrapper):
         di_ds['iir_setting'] = str(self._iir_setting)
 
     def load(self, ds_parent):
-        """Perform load operation.
+        """Run the load step.
+
+        Reads previously saved state or data back into memory.
 
         Args:
-            ds_parent: Ds parent.
+            ds_parent: Parent dataset or plot object to attach to.
         """
         di_ds = ds_parent.get_child('display_item')
         if di_ds:
@@ -1246,9 +1423,13 @@ class display_tag(QtWidgets.QLabel):
 
     def __init__(self, tag_name):
         """Initialize display_tag.
+        Stores configuration in ``_displayed``, ``tag_name`` for use by other
+        methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 2 instance attributes that configure the object's behavior.
 
         Args:
-            tag_name: Tag name.
+            tag_name: Tag name to use.
         """
         self.tag_name = tag_name
         QtWidgets.QLabel.__init__(
@@ -1262,91 +1443,117 @@ class display_tag(QtWidgets.QLabel):
             SLOT("contextMenuRequested(QPoint)"))
 
     def get_name(self):
-        """Return the name.
+        """Return the current name.
+        Returns the stored name value from the object's internal state.
+        Returns the stored name from the object's internal state.
+
+        Returns the stored name from the object's internal state.
 
         Returns:
-            Result value.
+            The current name.
         """
         return ''
 
     def get_tag(self):
-        """Return the tag.
+        """Return the current tag.
+        Returns the stored tag value from the object's internal state.
+        Returns the stored tag from the object's internal state.
+
+        Returns the stored tag from the object's internal state.
 
         Returns:
-            Result value.
+            The current tag.
         """
         return self.tag_name
 
     def display(self, state):
-        """Perform display operation.
+        """Run the display step.
+
+        Supports the ``display_tag`` workflow by performing the described operation.
 
         Args:
-            state: State.
+            state: Desired state (True/False or instrument-specific value).
         """
         self._displayed = state
 
     def displayed(self):
-        """Return displayed result.
+        """Return the displayed.
+
+        Supports the ``display_tag`` workflow by performing the described operation.
 
         Returns:
-            Result value.
+            The currently displayed value.
         """
         return self._displayed
 
     def update_from_dict(self, data_dict):
         """Perform update from dict operation.
 
+        Brings the cached state into agreement with the authoritative source.
+
         Args:
-            data_dict: Data dict.
+            data_dict: Dictionary mapping channel names to measured values.
         """
         pass
 
     def save(self, ds_parent):
-        """Perform save operation.
+        """Run the save step.
+
+        Persists the current state or data to durable storage.
 
         Args:
-            ds_parent: Ds parent.
+            ds_parent: Parent dataset or plot object to attach to.
         """
         pass
 
     def load(self, ds_parent):
-        """Perform load operation.
+        """Run the load step.
+
+        Reads previously saved state or data back into memory.
 
         Args:
-            ds_parent: Ds parent.
+            ds_parent: Parent dataset or plot object to attach to.
         """
         pass
 
     def setFlash(self, bool):
-        """Perform setFlash operation.
+        """Run the setFlash step.
+
+        Supports the ``display_tag`` workflow by performing the described operation.
 
         Args:
-            bool: Bool.
+            bool: Boolean flag.
         """
         pass
 
     def setUseReadPresets(self, bool):
-        """Perform setUseReadPresets operation.
+        """Run the setUseReadPresets step.
+
+        Restores the object or hardware to its default state.
 
         Args:
-            bool: Bool.
+            bool: Boolean flag.
         """
         pass
 
     def setUseWritePresets(self, bool):
-        """Perform setUseWritePresets operation.
+        """Run the setUseWritePresets step.
+
+        Restores the object or hardware to its default state.
 
         Args:
-            bool: Bool.
+            bool: Boolean flag.
         """
         pass
 
     @QtCore.Slot(QtCore.QPoint)
     def contextMenuRequested(self, point):
-        """Perform contextMenuRequested operation.
+        """Run the contextMenuRequested step.
+
+        Supports the ``display_tag`` workflow by performing the described operation.
 
         Args:
-            point: Point.
+            point: Data point (x, y) tuple or index.
         """
         menu = QtWidgets.QMenu()
         # read menu item
@@ -1386,7 +1593,10 @@ class display_tag(QtWidgets.QLabel):
 
     @QtCore.Slot()
     def read_tag(self):
-        """Perform read tag operation."""
+        """Perform read tag operation.
+
+        Reads data from the underlying source and returns it.
+        """
         self.SI_request_read_tag.emit(self.get_tag())
 
 
@@ -1397,12 +1607,16 @@ class write_channel_dialog(QtWidgets.QDialog, channel_wrapper):
     def __init__(self, channel_object, current_raw_data,
                  format, use_presets_write):
         """Initialize write_channel_dialog.
+        Stores configuration in ``_current_raw_data``, ``_format``,
+        ``_use_presets_write`` for use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 3 instance attributes that configure the object's behavior.
 
         Args:
-            channel_object: Channel object.
-            current_raw_data: Current raw data.
+            channel_object: PyICe channel object to operate on.
+            current_raw_data: Current raw data to use.
             format: Format name string.
-            use_presets_write: Use presets write.
+            use_presets_write: Use presets write to use.
         """
         QtWidgets.QDialog.__init__(self)
         channel_wrapper.__init__(self, channel_object)
@@ -1413,7 +1627,10 @@ class write_channel_dialog(QtWidgets.QDialog, channel_wrapper):
         self.init_interface()
 
     def init_interface(self):
-        """Perform init interface operation."""
+        """Perform init interface operation.
+
+        Issues a SCPI query to the instrument and parses the response.
+        """
         layout = QtWidgets.QVBoxLayout()
         # value box
         self.value_text_box = QtWidgets.QLineEdit(
@@ -1485,31 +1702,43 @@ class write_channel_dialog(QtWidgets.QDialog, channel_wrapper):
         self.setLayout(layout)
 
     def get_value(self):
-        """Return the value.
+        """Return the current value.
+        Returns the stored value value from the object's internal state.
+        Returns the stored value from the object's internal state.
+
+        Returns the stored value from the object's internal state.
 
         Returns:
-            Result value.
+            The current value.
         """
         return str(self.value_text_box.displayText())
 
     def get_increment(self):
-        """Return the increment.
+        """Return the current increment.
+        Returns the stored increment value from the object's internal state.
+        Returns the stored increment from the object's internal state.
+
+        Returns the stored increment from the object's internal state.
 
         Returns:
-            Result value.
+            The current increment.
         """
         return str(self.increment_text_box.displayText())
 
     def set_increment(self, text):
         """Set the increment.
 
+        Updates the increment in the object's internal state.
+
         Args:
-            text: Text.
+            text: Text to use.
         """
         self.increment_text_box.setText(text)
 
     def set_value(self, value):
         """Set the value.
+
+        Updates the value in the object's internal state.
 
         Args:
             value: Value to set.
@@ -1517,10 +1746,12 @@ class write_channel_dialog(QtWidgets.QDialog, channel_wrapper):
         self.value_text_box.setText(str(value))
 
     def increment(self):
-        """Perform increment operation.
+        """Run the increment step.
+
+        Supports the ``write_channel_dialog`` workflow by performing the described operation.
 
         Raises:
-            ValueError: On error condition.
+            ValueError: If the provided value is out of range or invalid.
         """
         if self.get_value() == "None":
             value = 0
@@ -1556,10 +1787,12 @@ class write_channel_dialog(QtWidgets.QDialog, channel_wrapper):
         self.write()
 
     def decrement(self):
-        """Perform decrement operation.
+        """Run the decrement step.
+
+        Supports the ``write_channel_dialog`` workflow by performing the described operation.
 
         Raises:
-            ValueError: On error condition.
+            ValueError: If the provided value is out of range or invalid.
         """
         if self.get_value() == "None":
             value = 0
@@ -1595,12 +1828,18 @@ class write_channel_dialog(QtWidgets.QDialog, channel_wrapper):
         self.write()
 
     def write_close(self):
-        """Perform write close operation."""
+        """Perform write close operation.
+
+        Formats and sends the command to the instrument.
+        """
         self.write()
         self.close()
 
     def write(self):
-        """Write a value to the channel."""
+        """Write a value to the channel.
+
+        Writes data to the underlying target.
+        """
         data = self.unformat(
             self.get_value(),
             self._format,
@@ -1610,9 +1849,12 @@ class write_channel_dialog(QtWidgets.QDialog, channel_wrapper):
 
     def update_use_presets_write(self, state):
         """Perform update use presets write operation.
+        Refreshes the use presets write with current data.
+
+        Restores the object or hardware to its default state.
 
         Args:
-            state: State.
+            state: Desired state (True/False or instrument-specific value).
         """
         unformatted_data = self.unformat(
             self.get_value(), self._format, self._use_presets_write)
@@ -1622,6 +1864,9 @@ class write_channel_dialog(QtWidgets.QDialog, channel_wrapper):
 
     def update_format(self, format):
         """Perform update format operation.
+        Refreshes the format with current data.
+
+        Brings the cached state into agreement with the authoritative source.
 
         Args:
             format: Format name string.
@@ -1649,10 +1894,12 @@ class write_channel_dialog(QtWidgets.QDialog, channel_wrapper):
                     "None" if format is None else str(format)))
 
     def save(self, ds_parent):
-        """Perform save operation.
+        """Run the save step.
+
+        Persists the current state or data to durable storage.
 
         Args:
-            ds_parent: Ds parent.
+            ds_parent: Parent dataset or plot object to attach to.
         """
         dcwd_ds = data_store(
             'write_channel_dialog_data',
@@ -1670,10 +1917,12 @@ class write_channel_dialog(QtWidgets.QDialog, channel_wrapper):
         dcwd_ds['ypos'] = str(self.pos().y())
 
     def load(self, ds_parent):
-        """Perform load operation.
+        """Run the load step.
+
+        Reads previously saved state or data back into memory.
 
         Args:
-            ds_parent: Ds parent.
+            ds_parent: Parent dataset or plot object to attach to.
         """
         dcwd_ds = ds_parent.get_child('write_channel_dialog_data')
         if dcwd_ds:
@@ -1705,9 +1954,13 @@ class display_item_group(QtWidgets.QWidget):
 
     def __init__(self, channel_group_object):
         """Initialize display_item_group.
+        Initializes 11 instance attributes that configure the object's
+        behavior.
+
+        Calls the parent constructor to inherit base behavior, and initializes 11 instance attributes that configure the object's behavior.
 
         Args:
-            channel_group_object: Channel group object.
+            channel_group_object: Channel group instance containing the channels.
         """
         QtWidgets.QWidget.__init__(self)
         self.display_items = []
@@ -1746,8 +1999,10 @@ class display_item_group(QtWidgets.QWidget):
     def populate_from_channel_group(self, channel_group_object):
         """Perform populate from channel group operation.
 
+        Supports the ``display_item_group`` workflow by performing the described operation.
+
         Args:
-            channel_group_object: Channel group object.
+            channel_group_object: Channel group instance containing the channels.
         """
         tags = []
         for channel in channel_group_object:
@@ -1769,34 +2024,43 @@ class display_item_group(QtWidgets.QWidget):
     def add_display_item(self, item):
         """Add a display item.
 
+        Appends a new display item entry to the object's internal collection.
+
         Args:
-            item: Item.
+            item: Item to process or look up.
         """
         self.display_items.append(item)
 
     def sort(self):
-        """Return sort result."""
+        """Return the sort.
+
+        Arranges elements according to the specified ordering criterion.
+        """
         if self._tagged_sort:
             def key(di):
-                """Return key result.
+                """Return the key.
+
+                Performs the described operation on the object's internal state.
 
                 Args:
-                    di: Di.
+                    di: Dictionary index or data item.
 
                 Returns:
-                    Result value.
+                    The lookup key.
                 """
                 return '{}______{}'.format(
                     di.get_tag(), di.get_name()).upper()
         else:
             def key(item):
-                """Return key result.
+                """Return the key.
+
+                Performs the described operation on the object's internal state.
 
                 Args:
-                    item: Item.
+                    item: Item to process or look up.
 
                 Returns:
-                    Result value.
+                    The lookup key.
                 """
                 return item.get_name().upper()
         self.display_items.sort(key=key)
@@ -1805,8 +2069,10 @@ class display_item_group(QtWidgets.QWidget):
         # filter_list is a list of tag names to filter on
         """Perform inclusive filter operation.
 
+        Supports the ``display_item_group`` workflow by performing the described operation.
+
         Args:
-            filter_list: Filter list.
+            filter_list: Filter list to use.
         """
         if filter_list is None:
             # re-run filter when self._tagged_sort changes
@@ -1827,7 +2093,10 @@ class display_item_group(QtWidgets.QWidget):
         self.build_interface()
 
     def init_interface(self):
-        """Perform init interface operation."""
+        """Perform init interface operation.
+
+        Supports the ``display_item_group`` workflow by performing the described operation.
+        """
         layout = QtWidgets.QVBoxLayout()
         layout.setAlignment(QtCore.Qt.AlignTop)
         self.gc = QtWidgets.QWidget()
@@ -1846,11 +2115,17 @@ class display_item_group(QtWidgets.QWidget):
 
     @QtCore.Slot()
     def resize_main_window(self):
-        """Perform resize main window operation."""
+        """Perform resize main window operation.
+
+        Supports the ``display_item_group`` workflow by performing the described operation.
+        """
         self.build_interface()
 
     def build_interface(self):
-        """Perform build interface operation."""
+        """Perform build interface operation.
+
+        Supports the ``display_item_group`` workflow by performing the described operation.
+        """
         self._grid = QtWidgets.QGridLayout()
         self._grid.setAlignment(QtCore.Qt.AlignLeft)
         self._grid.setHorizontalSpacing(10)
@@ -1889,8 +2164,10 @@ class display_item_group(QtWidgets.QWidget):
     def read_channel_list(self, channel_list):
         """Perform read channel list operation.
 
+        Reads data from the underlying source and returns it.
+
         Args:
-            channel_list: Channel list.
+            channel_list: List of channel objects.
         """
         self._expecting_data = True
         self.SI_request_read_channel_list.emit(channel_list)
@@ -1900,8 +2177,10 @@ class display_item_group(QtWidgets.QWidget):
     def write_channel_list(self, channel_list):
         """Perform write channel list operation.
 
+        Writes data to the underlying target.
+
         Args:
-            channel_list: Channel list.
+            channel_list: List of channel objects.
         """
         self.SI_request_write_channel_list.emit(channel_list)
         # self.emit(SIGNAL('request_write_channel_list(PyQt_PyObject)'),channel_list)
@@ -1909,8 +2188,10 @@ class display_item_group(QtWidgets.QWidget):
     def update_column_width(self, di):
         """Perform update column width operation.
 
+        Brings the cached state into agreement with the authoritative source.
+
         Args:
-            di: Di.
+            di: Dictionary index or data item.
         """
         if di.displayed():
             if di.sizeHint().width() > self.columnWidths[di.column_placement]:
@@ -1920,9 +2201,12 @@ class display_item_group(QtWidgets.QWidget):
 
     def receive_channel_data(self, data_dict):
         """Perform receive channel data operation.
+        Receives the channel data from the instrument.
+
+        Retrieves data from the remote endpoint.
 
         Args:
-            data_dict: Data dict.
+            data_dict: Dictionary mapping channel names to measured values.
         """
         for di in self.display_items:
             di.update_from_dict(data_dict)
@@ -1938,18 +2222,22 @@ class display_item_group(QtWidgets.QWidget):
     def receive_passive_channel_data(self, data_dict):
         """Perform receive passive channel data operation.
 
+        Retrieves data from the remote endpoint.
+
         Args:
-            data_dict: Data dict.
+            data_dict: Dictionary mapping channel names to measured values.
         """
         for di in self.display_items:
             di.update_from_dict(data_dict)
             self.update_column_width(di)
 
     def contextMenuRequested(self, point):
-        """Perform contextMenuRequested operation.
+        """Run the contextMenuRequested step.
+
+        Supports the ``display_item_group`` workflow by performing the described operation.
 
         Args:
-            point: Point.
+            point: Data point (x, y) tuple or index.
         """
         menu = QtWidgets.QMenu()
         # write menu item
@@ -2035,10 +2323,12 @@ class display_item_group(QtWidgets.QWidget):
         # every right-click.
 
     def wheelEvent(self, QWheelEvent):
-        """Perform wheelEvent operation.
+        """Run the wheelEvent step.
+
+        Supports the ``display_item_group`` workflow by performing the described operation.
 
         Args:
-            QWheelEvent: Qwheelevent.
+            QWheelEvent: Qwheelevent to use.
         """
         modifiers = QtWidgets.QApplication.keyboardModifiers()
         if modifiers == QtCore.Qt.ControlModifier:
@@ -2061,8 +2351,10 @@ class display_item_group(QtWidgets.QWidget):
     def change_font_size(self, increment):
         """Perform change font size operation.
 
+        Supports the ``display_item_group`` workflow by performing the described operation.
+
         Args:
-            increment: Increment.
+            increment: Step size for each iteration.
         """
         self._font.setPointSize(max(self._font.pointSize() + increment, 1))
         for di in self.display_items:
@@ -2074,7 +2366,10 @@ class display_item_group(QtWidgets.QWidget):
                     self._font.pointSize()))
 
     def request_read_all(self):
-        """Perform request read all operation."""
+        """Perform request read all operation.
+
+        Supports the ``display_item_group`` workflow by performing the described operation.
+        """
         channel_list = []
         for di in self.display_items:
             if di.displayed() and isinstance(di, display_item):
@@ -2085,8 +2380,10 @@ class display_item_group(QtWidgets.QWidget):
     def read_tag(self, tag_name):
         """Perform read tag operation.
 
+        Reads data from the underlying source and returns it.
+
         Args:
-            tag_name: Tag name.
+            tag_name: Tag name to use.
         """
         channel_list = []
         for di in self.display_items:
@@ -2096,18 +2393,23 @@ class display_item_group(QtWidgets.QWidget):
         self.read_channel_list(channel_list)
 
     def mouseDoubleClickEvent(self, event):
-        """Perform mouseDoubleClickEvent operation.
+        """Run the mouseDoubleClickEvent step.
+
+        Supports the ``display_item_group`` workflow by performing the described operation.
 
         Args:
-            event: Event.
+            event: Event object or identifier.
         """
         self.request_read_all()
 
     def set_continuous_read(self, bool):
         """Set the continuous read.
+        Updates the continuous read in the object's internal state.
+
+        Updates the continuous read in the object's internal state.
 
         Args:
-            bool: Bool.
+            bool: Boolean flag.
         """
         self._continuous_read = bool
         if bool:
@@ -2115,32 +2417,45 @@ class display_item_group(QtWidgets.QWidget):
 
     def get_continuous_read(self):
         """Return the continuous read.
+        Returns the stored continuous read value from the object's internal
+        state.
+        Returns the stored continuous read from the object's internal state.
+
+        Returns the stored continuous read from the object's internal state.
 
         Returns:
-            Result value.
+            The current continuous read.
         """
         return self._continuous_read
 
     def set_tagged_sort(self, enabled):
         """Set the tagged sort.
+        Updates the tagged sort in the object's internal state.
+
+        Updates the tagged sort in the object's internal state.
 
         Args:
-            enabled: Enabled.
+            enabled: Enabled to use.
         """
         self._tagged_sort = enabled
         self.inclusive_filter()
         self.build_interface()
 
     def wake(self):
-        """Perform wake operation."""
+        """Run the wake step.
+
+        Supports the ``display_item_group`` workflow by performing the described operation.
+        """
         if self._continuous_read:
             self.request_read_all()
 
     def save(self, ds_parent):
-        """Perform save operation.
+        """Run the save step.
+
+        Persists the current state or data to durable storage.
 
         Args:
-            ds_parent: Ds parent.
+            ds_parent: Parent dataset or plot object to attach to.
         """
         dig_ds = data_store('display_group', None, ds_parent)
         dig_ds['continuous'] = str(self._continuous_read)
@@ -2151,10 +2466,12 @@ class display_item_group(QtWidgets.QWidget):
             di.save(di_ds)
 
     def load(self, ds_parent):
-        """Perform load operation.
+        """Run the load step.
+
+        Reads previously saved state or data back into memory.
 
         Args:
-            ds_parent: Ds parent.
+            ds_parent: Parent dataset or plot object to attach to.
         """
         dig_ds = ds_parent.get_child('display_group')
         self._continuous_read = dig_ds['continuous'] == 'True'
@@ -2172,8 +2489,10 @@ class display_item_group(QtWidgets.QWidget):
     def use_write_presets(self, bool):
         """Perform use write presets operation.
 
+        Restores the object or hardware to its default state.
+
         Args:
-            bool: Bool.
+            bool: Boolean flag.
         """
         for di in self.display_items:
             di.setUseWritePresets(bool)
@@ -2181,8 +2500,10 @@ class display_item_group(QtWidgets.QWidget):
     def use_read_presets(self, bool):
         """Perform use read presets operation.
 
+        Restores the object or hardware to its default state.
+
         Args:
-            bool: Bool.
+            bool: Boolean flag.
         """
         for di in self.display_items:
             di.setUseReadPresets(bool)
@@ -2190,14 +2511,19 @@ class display_item_group(QtWidgets.QWidget):
     def flash_on_change(self, bool):
         """Perform flash on change operation.
 
+        Supports the ``display_item_group`` workflow by performing the described operation.
+
         Args:
-            bool: Bool.
+            bool: Boolean flag.
         """
         for di in self.display_items:
             di.setFlash(bool)
 
     def cleanup_upon_disconnect(self):
-        """Perform cleanup upon disconnect operation."""
+        """Perform cleanup upon disconnect operation.
+
+        Releases resources and restores the system to a safe state.
+        """
         self._expecting_data = False
         # FIXME FL: self._continuous_read = False  # Would be nice to be able
         # to switch to a tab that had been continuously reading and have it
@@ -2210,9 +2536,13 @@ class display_tag_group(QtWidgets.QWidget):
 
     def __init__(self, channel_group_object):
         """Initialize display_tag_group.
+        Initializes 4 instance attributes that configure the object's
+        behavior.
+
+        Calls the parent constructor to inherit base behavior, and initializes 4 instance attributes that configure the object's behavior.
 
         Args:
-            channel_group_object: Channel group object.
+            channel_group_object: Channel group instance containing the channels.
         """
         QtWidgets.QWidget.__init__(self)
         self.channel_group_object = channel_group_object
@@ -2222,18 +2552,25 @@ class display_tag_group(QtWidgets.QWidget):
         self.init_interface()
 
     def get_tags(self):
-        """Return the tags.
+        """Return the current tags.
+        Returns the stored tags value from the object's internal state.
+        Returns the stored tags from the object's internal state.
+
+        Returns the stored tags from the object's internal state.
 
         Returns:
-            Result value.
+            The current tags.
         """
         return self._tags
 
     def get_selected_tags(self):
         """Return the selected tags.
+        Returns the stored selected tags from the object's internal state.
+
+        Returns the stored selected tags from the object's internal state.
 
         Returns:
-            Result value.
+            The current selected tags.
         """
         selected_tags = []
         for (tag_name, check_box) in list(self._check_boxes.items()):
@@ -2256,7 +2593,10 @@ class display_tag_group(QtWidgets.QWidget):
             return None
 
     def init_interface(self):
-        """Perform init interface operation."""
+        """Perform init interface operation.
+
+        Supports the ``display_tag_group`` workflow by performing the described operation.
+        """
         self.setSizePolicy(
             QtWidgets.QSizePolicy(
                 QtWidgets.QSizePolicy.Expanding,
@@ -2308,10 +2648,12 @@ class display_tag_group(QtWidgets.QWidget):
             # self.emit(QtCore.SIGNAL('stateChanged()'))
 
     def save(self, ds_parent):
-        """Perform save operation.
+        """Run the save step.
+
+        Persists the current state or data to durable storage.
 
         Args:
-            ds_parent: Ds parent.
+            ds_parent: Parent dataset or plot object to attach to.
         """
         tags_store = data_store('tags', None, ds_parent)
         selected_tags = self.get_selected_tags()
@@ -2321,10 +2663,12 @@ class display_tag_group(QtWidgets.QWidget):
             data_store(tag, None, tags_store)
 
     def load(self, ds_parent):
-        """Perform load operation.
+        """Run the load step.
+
+        Issues a SCPI query to the instrument and parses the response.
 
         Args:
-            ds_parent: Ds parent.
+            ds_parent: Parent dataset or plot object to attach to.
         """
         try:
             tag_ds = ds_parent.get_child('tags')
@@ -2341,10 +2685,12 @@ class display_tag_group(QtWidgets.QWidget):
 
     @QtCore.Slot(QtCore.QPoint)
     def contextMenuRequested(self, point):
-        """Perform contextMenuRequested operation.
+        """Run the contextMenuRequested step.
+
+        Supports the ``display_tag_group`` workflow by performing the described operation.
 
         Args:
-            point: Point.
+            point: Data point (x, y) tuple or index.
         """
         menu = QtWidgets.QMenu()
         # Select all menu item
@@ -2365,9 +2711,12 @@ class display_tag_group(QtWidgets.QWidget):
 
     def select_all(self, select):
         """Perform select all operation.
+        Selects the specified all.
+
+        Supports the ``display_tag_group`` workflow by performing the described operation.
 
         Args:
-            select: Select.
+            select: Selection index or identifier.
         """
         self.suppress_update = True
         for tag in list(self._check_boxes.values()):
@@ -2391,10 +2740,14 @@ class tab_view(QtWidgets.QWidget):
 
     def __init__(self, channel_group_object, parent):
         """Initialize tab_view.
+        Initializes 5 instance attributes that configure the object's
+        behavior.
+
+        Calls the parent constructor to inherit base behavior, and initializes 5 instance attributes that configure the object's behavior.
 
         Args:
-            channel_group_object: Channel group object.
-            parent: Parent.
+            channel_group_object: Channel group instance containing the channels.
+            parent: Parent object in the hierarchy.
         """
         QtWidgets.QWidget.__init__(self, parent)
         self._name = "Empty"
@@ -2418,12 +2771,18 @@ class tab_view(QtWidgets.QWidget):
 
     @QtCore.Slot()
     def resize_main_window(self):
-        """Perform resize main window operation."""
+        """Perform resize main window operation.
+
+        Supports the ``tab_view`` workflow by performing the described operation.
+        """
         self.SI_resize_main_window.emit()
         # self.emit(SIGNAL('resize_main_window()'))
 
     def init_interface(self):
-        """Perform init interface operation."""
+        """Perform init interface operation.
+
+        Supports the ``tab_view`` workflow by performing the described operation.
+        """
         layout = QtWidgets.QVBoxLayout()
         layout.setAlignment(QtCore.Qt.AlignLeft)
         self.scroll_area = QtWidgets.QScrollArea()
@@ -2437,10 +2796,12 @@ class tab_view(QtWidgets.QWidget):
         self.show()
 
     def wheelEvent(self, QWheelEvent):
-        """Perform wheelEvent operation.
+        """Run the wheelEvent step.
+
+        Supports the ``tab_view`` workflow by performing the described operation.
 
         Args:
-            QWheelEvent: Qwheelevent.
+            QWheelEvent: Qwheelevent to use.
         """
         modifiers = QtWidgets.QApplication.keyboardModifiers()
         if modifiers == QtCore.Qt.NoModifier:
@@ -2464,25 +2825,34 @@ class tab_view(QtWidgets.QWidget):
     def update_from_dict(self, data_dict):
         """Perform update from dict operation.
 
+        Brings the cached state into agreement with the authoritative source.
+
         Args:
-            data_dict: Data dict.
+            data_dict: Dictionary mapping channel names to measured values.
         """
         self.dig.update_from_dict(data_dict)
 
     def get_name(self):
-        """Return the name.
+        """Return the current name.
+        Returns the stored name value from the object's internal state.
+        Returns the stored name from the object's internal state.
+
+        Returns the stored name from the object's internal state.
 
         Returns:
-            Result value.
+            The current name.
         """
         return self._name
 
     def set_name(self, name, write_locked=False):
         """Set the name.
+        Updates the name in the object's internal state.
+
+        Updates the name in the object's internal state.
 
         Args:
             name: Name identifier.
-            write_locked: Write locked.
+            write_locked: Write locked to use.
         """
         if self._name_locked:
             if write_locked:
@@ -2508,8 +2878,10 @@ class tab_view(QtWidgets.QWidget):
     def read_channel_list(self, channel_list):
         """Perform read channel list operation.
 
+        Reads data from the underlying source and returns it.
+
         Args:
-            channel_list: Channel list.
+            channel_list: List of channel objects.
         """
         self.SI_request_read_channel_list.emit(channel_list)
         # self.emit(SIGNAL('request_read_channel_list(PyQt_PyObject)'),channel_list)
@@ -2517,8 +2889,10 @@ class tab_view(QtWidgets.QWidget):
     def write_channel_list(self, channel_list):
         """Perform write channel list operation.
 
+        Writes data to the underlying target.
+
         Args:
-            channel_list: Channel list.
+            channel_list: List of channel objects.
         """
         self.SI_request_write_channel_list.emit(channel_list)
         # self.emit(SIGNAL('request_write_channel_list(PyQt_PyObject)'),channel_list)
@@ -2526,8 +2900,10 @@ class tab_view(QtWidgets.QWidget):
     def receive_channel_data(self, data_dict):
         """Perform receive channel data operation.
 
+        Retrieves data from the remote endpoint.
+
         Args:
-            data_dict: Data dict.
+            data_dict: Dictionary mapping channel names to measured values.
         """
         self.SI_channel_data_ready.emit(data_dict)
         # self.emit(SIGNAL('channel_data_ready(PyQt_PyObject)'),data_dict)
@@ -2535,21 +2911,28 @@ class tab_view(QtWidgets.QWidget):
     def receive_passive_channel_data(self, data_dict):
         """Perform receive passive channel data operation.
 
+        Retrieves data from the remote endpoint.
+
         Args:
-            data_dict: Data dict.
+            data_dict: Dictionary mapping channel names to measured values.
         """
         self.SI_passive_observer_data.emit(data_dict)
         # self.emit(SIGNAL('passive_observer_data(PyQt_PyObject)'),data_dict)
 
     def wake(self):
-        """Perform wake operation."""
+        """Run the wake step.
+
+        Supports the ``tab_view`` workflow by performing the described operation.
+        """
         self.dig.wake()
 
     def save(self, ds_parent):
-        """Perform save operation.
+        """Run the save step.
+
+        Persists the current state or data to durable storage.
 
         Args:
-            ds_parent: Ds parent.
+            ds_parent: Parent dataset or plot object to attach to.
         """
         tv = data_store('tab_view', None, ds_parent)
         tag_ds = data_store('tag', None, tv)
@@ -2558,10 +2941,12 @@ class tab_view(QtWidgets.QWidget):
         self.dig.save(dig_ds)
 
     def load(self, ds_parent):
-        """Perform load operation.
+        """Run the load step.
+
+        Reads previously saved state or data back into memory.
 
         Args:
-            ds_parent: Ds parent.
+            ds_parent: Parent dataset or plot object to attach to.
         """
         tv = ds_parent.get_child('tab_view')
         tag_ds = tv.get_child('tag')
@@ -2572,37 +2957,48 @@ class tab_view(QtWidgets.QWidget):
     def tab_use_write_presets(self, bool):
         """Perform tab use write presets operation.
 
+        Restores the object or hardware to its default state.
+
         Args:
-            bool: Bool.
+            bool: Boolean flag.
         """
         self.dig.use_write_presets(bool)
 
     def tab_use_read_presets(self, bool):
         """Perform tab use read presets operation.
 
+        Restores the object or hardware to its default state.
+
         Args:
-            bool: Bool.
+            bool: Boolean flag.
         """
         self.dig.use_read_presets(bool)
 
     def tab_flash_on_change(self, bool):
         """Perform tab flash on change operation.
 
+        Supports the ``tab_view`` workflow by performing the described operation.
+
         Args:
-            bool: Bool.
+            bool: Boolean flag.
         """
         self.dig.flash_on_change(bool)
 
     def tab_change_font_size(self, increment):
         """Perform tab change font size operation.
 
+        Supports the ``tab_view`` workflow by performing the described operation.
+
         Args:
-            increment: Increment.
+            increment: Step size for each iteration.
         """
         self.dig.change_font_size(increment)
 
     def cleanup_upon_disconnect(self):
-        """Perform cleanup upon disconnect operation."""
+        """Perform cleanup upon disconnect operation.
+
+        Releases resources and restores the system to a safe state.
+        """
         self.dig.cleanup_upon_disconnect()
 
 
@@ -2626,8 +3022,8 @@ class tab_group(QtWidgets.QTabWidget):
         the background_worker thread.
 
         Args:
-            background_call: Background call.
-            channel_group: Channel group.
+            background_call: Background call to use.
+            channel_group: Channel group containing the target channels.
         """
         assert isinstance(channel_group, lab_core.channel_group)
         assert callable(background_call) or (background_call is None)
@@ -2640,7 +3036,10 @@ class tab_group(QtWidgets.QTabWidget):
 
     def init_interface(self):
         # add the 'add_tab' button on right
-        """Perform init interface operation."""
+        """Perform init interface operation.
+
+        Supports the ``tab_group`` workflow by performing the described operation.
+        """
         btnAdd = QtWidgets.QToolButton()
         btnAdd.setMinimumWidth(3)
         btnAdd.setText("  +  ")
@@ -2666,22 +3065,30 @@ class tab_group(QtWidgets.QTabWidget):
 
     @QtCore.Slot()
     def resize_main_window(self):
-        """Perform resize main window operation."""
+        """Perform resize main window operation.
+
+        Supports the ``tab_group`` workflow by performing the described operation.
+        """
         self.SI_resize_main_window.emit()
 
     def mouseDoubleClickEvent(self, event):
-        """Perform mouseDoubleClickEvent operation.
+        """Run the mouseDoubleClickEvent step.
+
+        Supports the ``tab_group`` workflow by performing the described operation.
 
         Args:
-            event: Event.
+            event: Event object or identifier.
         """
         self.add_tab_view()
 
     def add_tab_view(self):
         """Add a tab view.
+        Adds a new tab view to the object's internal collection.
+
+        Appends a new tab view entry to the object's internal collection.
 
         Returns:
-            Result value.
+            The add tab view result.
         """
         debug_logging.debug("add_tab_view")
         tv = tab_view(self.channel_group_object, self)
@@ -2699,8 +3106,10 @@ class tab_group(QtWidgets.QTabWidget):
     def connect_tv(self, tv_widget):
         """Perform connect tv operation.
 
+        Establishes the connection or prepares the resource for use.
+
         Args:
-            tv_widget: Tv widget.
+            tv_widget: Tv widget to use.
         """
         tv_widget.SI_nameChanged.connect(self.tab_view_name_change)
         tv_widget.SI_request_read_channel_list.connect(self.read_channel_list)
@@ -2712,8 +3121,10 @@ class tab_group(QtWidgets.QTabWidget):
     def tab_view_name_change(self, tab_view_object):
         """Perform tab view name change operation.
 
+        Supports the ``tab_group`` workflow by performing the described operation.
+
         Args:
-            tab_view_object: Tab view object.
+            tab_view_object: Tab view object to use.
         """
         index = self.find_widget_in_tabs(tab_view_object)
         name = self.widget(index).get_name()
@@ -2723,11 +3134,13 @@ class tab_group(QtWidgets.QTabWidget):
         # returns index
         """Return find widget in tabs result.
 
+        Searches the collection and returns the matching item or index.
+
         Args:
-            widget: Widget.
+            widget: Widget to use.
 
         Returns:
-            Result value.
+            The find widget in tabs result.
         """
         for i in range(self.count()):
             if self.widget(i) == widget:
@@ -2737,24 +3150,32 @@ class tab_group(QtWidgets.QTabWidget):
 
     def remove_tab(self, index):
         """Remove a tab.
+        Removes the specified tab.
+
+        Removes the specified item from the object's internal collection.
 
         Args:
-            index: Index.
+            index: Zero-based position index.
         """
         debug_logging.debug("tab_group.remove_tab")
         self.removeTab(index)
         self.update_tab_rules()
 
     def update_tab_rules(self):
-        """Perform update tab rules operation."""
+        """Perform update tab rules operation.
+
+        Refreshes the tab rules with current data.
+        """
         self.setTabsClosable(self.count() > 1)
         self.setMovable(self.count() > 1)
 
     def disconnect_tab(self, tab_view_widget):
         """Perform disconnect tab operation.
 
+        Releases resources and restores the system to a safe state.
+
         Args:
-            tab_view_widget: Tab view widget.
+            tab_view_widget: Tab view widget to use.
         """
         if tab_view_widget is not None:
             new_tab_index = self.find_widget_in_tabs(tab_view_widget)
@@ -2780,8 +3201,10 @@ class tab_group(QtWidgets.QTabWidget):
     def connect_tab(self, tab_view_widget):
         """Perform connect tab operation.
 
+        Establishes the connection or prepares the resource for use.
+
         Args:
-            tab_view_widget: Tab view widget.
+            tab_view_widget: Tab view widget to use.
         """
         if tab_view_widget is not None:
             new_tab_index = self.find_widget_in_tabs(tab_view_widget)
@@ -2808,8 +3231,10 @@ class tab_group(QtWidgets.QTabWidget):
     def active_changed(self, index):
         """Perform active changed operation.
 
+        Issues a SCPI query to the instrument and parses the response.
+
         Args:
-            index: Index.
+            index: Zero-based position index.
         """
         debug_logging.debug(
             "tab_group.active_changed({}) started".format(index))
@@ -2822,12 +3247,16 @@ class tab_group(QtWidgets.QTabWidget):
                 """Tab switching agent (object subclass)."""
                 def __init__(self, the_tab_group, old_tab, new_tab, retries=3):
                     """Initialize tab switching agent.
+                    Initializes 5 instance attributes that configure the
+                    object's behavior.
+
+                    Initializes 5 instance attributes that configure the object's behavior.
 
                     Args:
-                        new_tab: New tab.
-                        old_tab: Old tab.
-                        retries: Retries.
-                        the_tab_group: The tab group.
+                        new_tab: New tab to use.
+                        old_tab: Old tab to use.
+                        retries: Number of retry attempts.
+                        the_tab_group: The tab group to use.
                     """
                     self.tries_so_far = 0
                     self.the_tab_group = the_tab_group
@@ -2836,7 +3265,10 @@ class tab_group(QtWidgets.QTabWidget):
                     self.retries = retries
 
                 def try_to_disconnect_old_tab(self):
-                    """Perform try to disconnect old tab operation."""
+                    """Perform try to disconnect old tab operation.
+
+                    Issues a SCPI query to the instrument and parses the response.
+                    """
                     debug_logging.debug(
                         "TabSwitchingAgent: try_to_disconnect_old_tab()")
                     self.tries_so_far += 1
@@ -2864,7 +3296,10 @@ class tab_group(QtWidgets.QTabWidget):
                             self.connect_new_tab)
 
                 def connect_new_tab(self):
-                    """Perform connect new tab operation."""
+                    """Perform connect new tab operation.
+
+                    Issues a SCPI query to the instrument and parses the response.
+                    """
                     debug_logging.debug(
                         "TabSwitchingAgent: Connecting new tab")
                     self.the_tab_group.connect_tab(self.new_tab)
@@ -2883,42 +3318,53 @@ class tab_group(QtWidgets.QTabWidget):
     def read_channel_list(self, channel_list):
         """Perform read channel list operation.
 
+        Reads data from the underlying source and returns it.
+
         Args:
-            channel_list: Channel list.
+            channel_list: List of channel objects.
         """
         self.SI_request_read_channel_list.emit(channel_list)
 
     def write_channel_list(self, channel_list):
         """Perform write channel list operation.
 
+        Writes data to the underlying target.
+
         Args:
-            channel_list: Channel list.
+            channel_list: List of channel objects.
         """
         self.SI_request_write_channel_list.emit(channel_list)
 
     def receive_channel_data(self, data_dict):
         """Perform receive channel data operation.
 
+        Retrieves data from the remote endpoint.
+
         Args:
-            data_dict: Data dict.
+            data_dict: Dictionary mapping channel names to measured values.
         """
         self.SI_channel_data_ready.emit(data_dict)
 
     def receive_passive_channel_data(self, queue):
         # better to try and crash than test and not crash
         """Perform receive passive channel data operation.
+        Receives the passive channel data from the instrument.
+
+        Retrieves data from the remote endpoint.
 
         Args:
-            queue: Queue.
+            queue: Queue to use.
         """
         data_dict = queue.get_nowait()
         self.SI_passive_observer_data.emit(data_dict)
 
     def save(self, ds_parent):
-        """Perform save operation.
+        """Run the save step.
+
+        Persists the current state or data to durable storage.
 
         Args:
-            ds_parent: Ds parent.
+            ds_parent: Parent dataset or plot object to attach to.
         """
         tg = data_store('tab_group', None, ds_parent)
         for i in range(self.count()):
@@ -2927,10 +3373,12 @@ class tab_group(QtWidgets.QTabWidget):
             tab.save(tab_ds)
 
     def load(self, parent_ds):
-        """Perform load operation.
+        """Run the load step.
+
+        Reads previously saved state or data back into memory.
 
         Args:
-            parent_ds: Parent ds.
+            parent_ds: Parent ds to use.
         """
         self.disconnect_tab(self._active_tab)
         self.clear()
@@ -2947,32 +3395,40 @@ class tab_group(QtWidgets.QTabWidget):
     def tab_use_write_presets(self, bool):
         """Perform tab use write presets operation.
 
+        Restores the object or hardware to its default state.
+
         Args:
-            bool: Bool.
+            bool: Boolean flag.
         """
         self.SI_tab_use_write_presets.emit(bool)
 
     def tab_use_read_presets(self, bool):
         """Perform tab use read presets operation.
 
+        Restores the object or hardware to its default state.
+
         Args:
-            bool: Bool.
+            bool: Boolean flag.
         """
         self.SI_tab_use_read_presets.emit(bool)
 
     def tab_flash_on_change(self, bool):
         """Perform tab flash on change operation.
 
+        Supports the ``tab_group`` workflow by performing the described operation.
+
         Args:
-            bool: Bool.
+            bool: Boolean flag.
         """
         self.SI_tab_flash_on_change.emit(bool)
 
     def tab_change_font_size(self, increment):
         """Perform tab change font size operation.
 
+        Supports the ``tab_group`` workflow by performing the described operation.
+
         Args:
-            increment: Increment.
+            increment: Step size for each iteration.
         """
         self.SI_tab_change_font_size.emit(increment)
 
@@ -2984,9 +3440,13 @@ class gui_logger(QtCore.QObject):
 
     def __init__(self, channel_group):
         """Initialize gui_logger.
+        Initializes 4 instance attributes that configure the object's
+        behavior.
+
+        Calls the parent constructor to inherit base behavior, and initializes 4 instance attributes that configure the object's behavior.
 
         Args:
-            channel_group: Channel group.
+            channel_group: Channel group containing the target channels.
         """
         QtCore.QObject.__init__(self)
         self._logger = None
@@ -2997,14 +3457,19 @@ class gui_logger(QtCore.QObject):
         self.create_connect_dialog()
 
     def display_select_channels(self):
-        """Perform display select channels operation."""
+        """Perform display select channels operation.
+
+        Supports the ``gui_logger`` workflow by performing the described operation.
+        """
         self.logger_view.show()
 
     def log(self):
-        """Perform log operation.
+        """Run the log step.
+
+        Captures data for later analysis or replay.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if self._logger:
             self._logger.remove_all_channels_and_sub_groups()
@@ -3022,12 +3487,17 @@ class gui_logger(QtCore.QObject):
 
     def log_data(self, data_dict):
         """Perform log data operation.
+        Reads all registered channels, stores results in the database, and
+        invokes any registered callbacks.
+        Records the data to the log or database.
+
+        Hooks into the event system so that custom logic runs at the appropriate time.
 
         Args:
-            data_dict: Data dict.
+            data_dict: Dictionary mapping channel names to measured values.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         print("logging....")
         if self._logger:
@@ -3038,11 +3508,13 @@ class gui_logger(QtCore.QObject):
     def log_data_if_changed(self, data_dict):
         """Perform log data if changed operation.
 
+        Captures data for later analysis or replay.
+
         Args:
-            data_dict: Data dict.
+            data_dict: Dictionary mapping channel names to measured values.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if self._logger:
             self._logger.log_data(data_dict, only_if_changed=True)
@@ -3050,10 +3522,12 @@ class gui_logger(QtCore.QObject):
             raise Exception('Logger is not connected')
 
     def save(self, ds_parent):
-        """Perform save operation.
+        """Run the save step.
+
+        Persists the current state or data to durable storage.
 
         Args:
-            ds_parent: Ds parent.
+            ds_parent: Parent dataset or plot object to attach to.
         """
         lv_ds = data_store('logger_view', None, ds_parent)
         self.logger_view.save(lv_ds)
@@ -3061,10 +3535,12 @@ class gui_logger(QtCore.QObject):
         data_store('logger_table', self._get_table_name(), ds_parent)
 
     def load(self, ds_parent):
-        """Perform load operation.
+        """Run the load step.
+
+        Reads previously saved state or data back into memory.
 
         Args:
-            ds_parent: Ds parent.
+            ds_parent: Parent dataset or plot object to attach to.
         """
         lv_ds = ds_parent.get_child('logger_view')
         if lv_ds:
@@ -3073,11 +3549,17 @@ class gui_logger(QtCore.QObject):
         self._set_table_name(str(ds_parent['logger_table']))
 
     def display_connect(self):
-        """Perform display connect operation."""
+        """Perform display connect operation.
+
+        Establishes the connection or prepares the resource for use.
+        """
         self.connect_dialog.show()
 
     def logger_disconnect(self):
-        """Perform logger disconnect operation."""
+        """Perform logger disconnect operation.
+
+        Captures data for later analysis or replay.
+        """
         if self._logger:
             self._logger.stop()
             self._logger = None
@@ -3093,7 +3575,10 @@ class gui_logger(QtCore.QObject):
             self.filename_box.setText(fname)
 
     def create_connect_dialog(self):
-        """Perform create connect dialog operation."""
+        """Perform create connect dialog operation.
+
+        Creates and returns a new connect dialog.
+        """
         self.connect_dialog = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout()
         # database file name box
@@ -3174,9 +3659,12 @@ class logger_item(QtWidgets.QCheckBox, channel_wrapper):
     """Logger_item."""
     def __init__(self, channel_object):
         """Initialize logger_item.
+        Stores configuration in ``_displayed`` for use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
 
         Args:
-            channel_object: Channel object.
+            channel_object: PyICe channel object to operate on.
         """
         QtWidgets.QCheckBox.__init__(self)
         channel_wrapper.__init__(self, channel_object)
@@ -3187,47 +3675,60 @@ class logger_item(QtWidgets.QCheckBox, channel_wrapper):
         self.setCheckState(QtCore.Qt.Checked)
 
     def update_display(self):
-        """Perform update display operation."""
+        """Perform update display operation.
+
+        Brings the cached state into agreement with the authoritative source.
+        """
         self.setText(self.get_name())
 
     def display(self, state):
-        """Perform display operation.
+        """Run the display step.
+
+        Supports the ``logger_item`` workflow by performing the described operation.
 
         Args:
-            state: State.
+            state: Desired state (True/False or instrument-specific value).
         """
         self._displayed = state
 
     def displayed(self):
-        """Return displayed result.
+        """Return the displayed.
+
+        Supports the ``logger_item`` workflow by performing the described operation.
 
         Returns:
-            Result value.
+            The currently displayed value.
         """
         return self._displayed
 
     def selected(self):
-        """Return selected result.
+        """Return the selected.
+
+        Supports the ``logger_item`` workflow by performing the described operation.
 
         Returns:
-            Result value.
+            The selected result.
         """
         return self.checkState() == QtCore.Qt.Checked
 
     def save(self, ds_parent):
-        """Perform save operation.
+        """Run the save step.
+
+        Persists the current state or data to durable storage.
 
         Args:
-            ds_parent: Ds parent.
+            ds_parent: Parent dataset or plot object to attach to.
         """
         li_ds = data_store('logger_item', self.get_name(), ds_parent)
         li_ds['selected'] = str(self.selected())
 
     def load(self, ds_parent):
-        """Perform load operation.
+        """Run the load step.
+
+        Reads previously saved state or data back into memory.
 
         Args:
-            ds_parent: Ds parent.
+            ds_parent: Parent dataset or plot object to attach to.
         """
         li_ds = ds_parent.get_child('logger_item')
         if li_ds:
@@ -3242,9 +3743,13 @@ class logger_item_group(QtWidgets.QWidget):
     """Logger_item_group (q widget subclass)."""
     def __init__(self, channel_group_object):
         """Initialize logger_item_group.
+        Stores configuration in ``_channel_group``, ``_expecting_data``,
+        ``logger_items`` for use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 3 instance attributes that configure the object's behavior.
 
         Args:
-            channel_group_object: Channel group object.
+            channel_group_object: Channel group instance containing the channels.
         """
         QtWidgets.QWidget.__init__(self)
         self.logger_items = []
@@ -3257,8 +3762,10 @@ class logger_item_group(QtWidgets.QWidget):
     def populate_from_channel_group(self, channel_group_object):
         """Perform populate from channel group operation.
 
+        Supports the ``logger_item_group`` workflow by performing the described operation.
+
         Args:
-            channel_group_object: Channel group object.
+            channel_group_object: Channel group instance containing the channels.
         """
         for channel in channel_group_object:
             li = logger_item(channel)
@@ -3267,21 +3774,28 @@ class logger_item_group(QtWidgets.QWidget):
     def add_logger_item(self, item):
         """Add a logger item.
 
+        Appends a new logger item entry to the object's internal collection.
+
         Args:
-            item: Item.
+            item: Item to process or look up.
         """
         self.logger_items.append(item)
 
     def sort(self):
-        """Perform sort operation."""
+        """Run the sort step.
+
+        Arranges elements according to the specified ordering criterion.
+        """
         self.logger_items.sort(key=lambda item: item.get_name().upper())
 
     def inclusive_filter(self, filter_list):
         # filter_list is a list of tag names to filter on
         """Perform inclusive filter operation.
 
+        Supports the ``logger_item_group`` workflow by performing the described operation.
+
         Args:
-            filter_list: Filter list.
+            filter_list: Filter list to use.
         """
         for di in self.logger_items:
             if di.get_tag() in filter_list:
@@ -3291,7 +3805,10 @@ class logger_item_group(QtWidgets.QWidget):
         self.build_interface()
 
     def init_interface(self):
-        """Perform init interface operation."""
+        """Perform init interface operation.
+
+        Supports the ``logger_item_group`` workflow by performing the described operation.
+        """
         layout = QtWidgets.QVBoxLayout()
         layout.setAlignment(QtCore.Qt.AlignTop)
         self.grid_container = QtWidgets.QWidget()
@@ -3311,7 +3828,10 @@ class logger_item_group(QtWidgets.QWidget):
             self.contextMenuRequested)
 
     def build_interface(self):
-        """Perform build interface operation."""
+        """Perform build interface operation.
+
+        Supports the ``logger_item_group`` workflow by performing the described operation.
+        """
         self._grid = QtWidgets.QGridLayout()
         self._grid.setHorizontalSpacing(10)
         self._grid.setVerticalSpacing(5)
@@ -3342,9 +3862,13 @@ class logger_item_group(QtWidgets.QWidget):
 
     def get_selected_channel_name_list(self):
         """Return the selected channel name list.
+        Returns the stored selected channel name list from the object's
+        internal state.
+
+        Returns the stored selected channel name list from the object's internal state.
 
         Returns:
-            Result value.
+            The current selected channel name list.
         """
         channel_name_list = []
         for li in self.logger_items:
@@ -3353,10 +3877,12 @@ class logger_item_group(QtWidgets.QWidget):
         return channel_name_list
 
     def save(self, ds_parent):
-        """Perform save operation.
+        """Run the save step.
+
+        Persists the current state or data to durable storage.
 
         Args:
-            ds_parent: Ds parent.
+            ds_parent: Parent dataset or plot object to attach to.
         """
         lig_ds = data_store('logger_group', None, ds_parent)
         for li in self.logger_items:
@@ -3364,10 +3890,12 @@ class logger_item_group(QtWidgets.QWidget):
             li.save(li_ds)
 
     def load(self, ds_parent):
-        """Perform load operation.
+        """Run the load step.
+
+        Reads previously saved state or data back into memory.
 
         Args:
-            ds_parent: Ds parent.
+            ds_parent: Parent dataset or plot object to attach to.
         """
         lig_ds = ds_parent.get_child('logger_group')
         for li_ds in lig_ds:
@@ -3378,10 +3906,12 @@ class logger_item_group(QtWidgets.QWidget):
 
     @QtCore.Slot(QtCore.QPoint)
     def contextMenuRequested(self, point):
-        """Perform contextMenuRequested operation.
+        """Run the contextMenuRequested step.
+
+        Supports the ``logger_item_group`` workflow by performing the described operation.
 
         Args:
-            point: Point.
+            point: Data point (x, y) tuple or index.
         """
         menu = QtWidgets.QMenu()
         # Select all menu item
@@ -3403,8 +3933,10 @@ class logger_item_group(QtWidgets.QWidget):
     def select_all(self, select):
         """Perform select all operation.
 
+        Supports the ``logger_item_group`` workflow by performing the described operation.
+
         Args:
-            select: Select.
+            select: Selection index or identifier.
         """
         for li in self.logger_items:
             if li.displayed():
@@ -3417,10 +3949,14 @@ class logger_view(QtWidgets.QWidget):
 
     def __init__(self, channel_group_object, parent):
         """Initialize logger_view.
+        Stores configuration in ``channel_group_object``, ``dcg``, ``lig`` for
+        use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 3 instance attributes that configure the object's behavior.
 
         Args:
-            channel_group_object: Channel group object.
-            parent: Parent.
+            channel_group_object: Channel group instance containing the channels.
+            parent: Parent object in the hierarchy.
         """
         QtWidgets.QWidget.__init__(self, parent)
         self.channel_group_object = channel_group_object
@@ -3432,7 +3968,10 @@ class logger_view(QtWidgets.QWidget):
         self.init_interface()
 
     def init_interface(self):
-        """Perform init interface operation."""
+        """Perform init interface operation.
+
+        Supports the ``logger_view`` workflow by performing the described operation.
+        """
         layout = QtWidgets.QVBoxLayout()
         scroll_area = QtWidgets.QScrollArea()
         scroll_area.setWidget(self.lig)
@@ -3452,25 +3991,35 @@ class logger_view(QtWidgets.QWidget):
 
     def get_selected_channel_name_list(self):
         """Return the selected channel name list.
+        Returns the stored selected channel name list value from the object's
+        internal state.
+        Returns the stored selected channel name list from the object's
+        internal state.
+
+        Returns the stored selected channel name list from the object's internal state.
 
         Returns:
-            Result value.
+            The current selected channel name list.
         """
         return self.lig.get_selected_channel_name_list()
 
     def resizeEvent(self, event):
-        """Perform resizeEvent operation.
+        """Run the resizeEvent step.
+
+        Supports the ``logger_view`` workflow by performing the described operation.
 
         Args:
-            event: Event.
+            event: Event object or identifier.
         """
         self.lig.build_interface()
 
     def save(self, ds_parent):
-        """Perform save operation.
+        """Run the save step.
+
+        Persists the current state or data to durable storage.
 
         Args:
-            ds_parent: Ds parent.
+            ds_parent: Parent dataset or plot object to attach to.
         """
         tv = data_store('logger_view', None, ds_parent)
         tag_ds = data_store('tag', None, tv)
@@ -3479,10 +4028,12 @@ class logger_view(QtWidgets.QWidget):
         self.lig.save(lig_ds)
 
     def load(self, ds_parent):
-        """Perform load operation.
+        """Run the load step.
+
+        Reads previously saved state or data back into memory.
 
         Args:
-            ds_parent: Ds parent.
+            ds_parent: Parent dataset or plot object to attach to.
         """
         tv = ds_parent.get_child('logger_view')
         tag_ds = tv.get_child('tag')
@@ -3500,10 +4051,14 @@ class background_worker(QtCore.QThread):
 
     def __init__(self, channel_group, log_history=False):
         """Initialize background_worker.
+        Initializes 7 instance attributes that configure the object's
+        behavior.
+
+        Calls the parent constructor to inherit base behavior, and initializes 7 instance attributes that configure the object's behavior.
 
         Args:
-            channel_group: Channel group.
-            log_history: Log history.
+            channel_group: Channel group containing the target channels.
+            log_history: Log history to use.
         """
         QtCore.QThread.__init__(self)
         self._channel_group = channel_group
@@ -3529,9 +4084,14 @@ class background_worker(QtCore.QThread):
         # FIXME FL:
         # self.log.write("master.read_channel_list({})\n".format(read_list))
         """Perform read channel list operation.
+        Sends the appropriate command to the instrument and parses the
+        response.
+        Sends the appropriate query to the instrument and parses the response.
+
+        Reads data from the underlying source and returns it.
 
         Args:
-            read_list: Read list.
+            read_list: Read list to use.
         """
         if self._log_history:
             self.log.write("master.read_channels({})\n".format(read_list))
@@ -3539,9 +4099,13 @@ class background_worker(QtCore.QThread):
 
     def write_channel_list(self, write_list):
         """Perform write channel list operation.
+        Formats and sends the command to the instrument.
+        Formats and sends the command to the instrument.
+
+        Writes data to the underlying target.
 
         Args:
-            write_list: Write list.
+            write_list: Write list to use.
         """
         if self._log_history:
             for e in write_list:
@@ -3551,28 +4115,38 @@ class background_worker(QtCore.QThread):
     def dump_channel_list(self, dump_list):
         """Perform dump channel list operation.
 
+        Supports the ``background_worker`` workflow by performing the described operation.
+
         Args:
-            dump_list: Dump list.
+            dump_list: Dump list to use.
         """
         self.queue.put(('dump', dump_list))
 
     def background_call(self, call):
         """Perform background call operation.
 
+        Supports the ``background_worker`` workflow by performing the described operation.
+
         Args:
-            call: Call.
+            call: Call to use.
         """
         self.queue.put(('call', call))
 
     def stop(self):
-        """Perform stop operation."""
+        """Run the stop step.
+
+        Supports the ``background_worker`` workflow by performing the described operation.
+        """
         self.queue.put(('stop', None))
         if self._log_history:
             self.log.close()
         self.running = False
 
     def run(self):
-        """Perform run operation."""
+        """Run the run step.
+
+        Supports the ``background_worker`` workflow by performing the described operation.
+        """
         try:
             while self.running:
                 try:
@@ -3613,11 +4187,13 @@ class background_worker(QtCore.QThread):
                 channels.append(self._channel_group[name])
         try:
             results = self._channel_group.read_channel_list(channels)
+        except lab_core.PartialReadException as e:
+            print("Partial read failure: {}".format(e))
+            results = e.results
         except Exception as e:
             print("background error")
             print(e)
             print(traceback.format_exc())
-            # print "attempting to read individually"
             results = {}
             for channel in channels:
                 results[channel.get_name()] = lab_core.ChannelReadException(
@@ -3627,8 +4203,10 @@ class background_worker(QtCore.QThread):
     def _read_channel_list(self, read_list):
         """Called in background_worker thread to do the actual instrument/HW/DUT reading.
 
+        Internal implementation detail; see the public API for usage.
+
         Args:
-            read_list: Read list.
+            read_list: Read list to use.
         """
         results = self._read_channel_list_core(read_list)
         self.SI_channel_data_ready.emit(results)
@@ -3655,7 +4233,10 @@ class background_worker(QtCore.QThread):
                 raise
 
     def close(self, timeout=0.8):
-        """Perform close operation.
+        """Close the connection and release resources.
+        Releases resources and closes the connection to the instrument.
+
+        Releases resources and restores the system to a safe state.
 
         Args:
             timeout: Timeout in seconds.
@@ -3693,8 +4274,8 @@ class ltc_lab_gui_main_window(QtWidgets.QMainWindow):
         the background_worker thread.
 
         Args:
-            background_call: Background call.
-            channel_group: Channel group.
+            background_call: Background call to use.
+            channel_group: Channel group containing the target channels.
         """
         assert isinstance(channel_group, lab_core.channel_group)
         assert callable(background_call) or (background_call is None)
@@ -3731,7 +4312,10 @@ class ltc_lab_gui_main_window(QtWidgets.QMainWindow):
         self._data = {}  # dictionary of most recent data for dump
 
     def init_interface(self):
-        """Perform init interface operation."""
+        """Perform init interface operation.
+
+        Supports the ``ltc_lab_gui_main_window`` workflow by performing the described operation.
+        """
         self.setCentralWidget(self._tg)
         self.menu_bar = self.create_menu_bar()
         self.move(300, 150)
@@ -3764,34 +4348,43 @@ class ltc_lab_gui_main_window(QtWidgets.QMainWindow):
             QtCore.QPropertyAnimation.KeepWhenStopped)
 
     def showEvent(self, event):
-        """Perform showEvent operation.
+        """Run the showEvent step.
+
+        Supports the ``ltc_lab_gui_main_window`` workflow by performing the described operation.
 
         Args:
-            event: Event.
+            event: Event object or identifier.
         """
         self.SI_resize_main_window.emit()
 
     def resizeEvent(self, event):
-        """Perform resizeEvent operation.
+        """Run the resizeEvent step.
+
+        Supports the ``ltc_lab_gui_main_window`` workflow by performing the described operation.
 
         Args:
-            event: Event.
+            event: Event object or identifier.
         """
         self.SI_resize_main_window.emit()
 
     def mouseReleaseEvent(self, event):
-        """Perform mouseReleaseEvent operation.
+        """Run the mouseReleaseEvent step.
+
+        Supports the ``ltc_lab_gui_main_window`` workflow by performing the described operation.
 
         Args:
-            event: Event.
+            event: Event object or identifier.
         """
         pass
 
     def create_menu_bar(self):
         """Return create menu bar result.
+        Creates and returns a new menu bar.
+
+        Supports the ``ltc_lab_gui_main_window`` workflow by performing the described operation.
 
         Returns:
-            Result value.
+            The create menu bar result.
         """
         menu_bar = self.menuBar()
         # file
@@ -3931,12 +4524,15 @@ class ltc_lab_gui_main_window(QtWidgets.QMainWindow):
 
     def enable_background_logging(self, enable_log):
         """Enable background logging.
+        Enables the background logging function.
+
+        Activates background logging so that subsequent operations include it.
 
         Args:
-            enable_log: Enable log.
+            enable_log: Enable log to use.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if not self._gui_logger._logger:
             self.logger_background_log.setChecked(False)
@@ -3957,12 +4553,15 @@ class ltc_lab_gui_main_window(QtWidgets.QMainWindow):
 
     def enable_change_logging(self, enable_log):
         """Enable change logging.
+        Enables the change logging function.
+
+        Activates change logging so that subsequent operations include it.
 
         Args:
-            enable_log: Enable log.
+            enable_log: Enable log to use.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if not self._gui_logger._logger:
             self.logger_change.setChecked(False)
@@ -3983,7 +4582,10 @@ class ltc_lab_gui_main_window(QtWidgets.QMainWindow):
         self.logger_change.setChecked(enable_log)
 
     def logger_disconnect(self):
-        """Perform logger disconnect operation."""
+        """Perform logger disconnect operation.
+
+        Captures data for later analysis or replay.
+        """
         try:
             self.enable_background_logging(False)
             self.enable_change_logging(False)
@@ -3994,8 +4596,10 @@ class ltc_lab_gui_main_window(QtWidgets.QMainWindow):
     def read_channel_list(self, channel_list):
         """Perform read channel list operation.
 
+        Reads data from the underlying source and returns it.
+
         Args:
-            channel_list: Channel list.
+            channel_list: List of channel objects.
         """
         self.SI_request_read_channel_list.emit(channel_list)
         # self.busy_highlight.start(QtCore.QPropertyAnimation.KeepWhenStopped)
@@ -4003,16 +4607,21 @@ class ltc_lab_gui_main_window(QtWidgets.QMainWindow):
     def write_channel_list(self, channel_list):
         """Perform write channel list operation.
 
+        Writes data to the underlying target.
+
         Args:
-            channel_list: Channel list.
+            channel_list: List of channel objects.
         """
         self.SI_request_write_channel_list.emit(channel_list)
 
     def receive_dump_data(self, data_dict):
         """Perform receive dump data operation.
+        Receives the dump data from the instrument.
+
+        Retrieves data from the remote endpoint.
 
         Args:
-            data_dict: Data dict.
+            data_dict: Dictionary mapping channel names to measured values.
         """
         self._data = data_dict
         self.dump(self._dump_file_name)
@@ -4020,9 +4629,12 @@ class ltc_lab_gui_main_window(QtWidgets.QMainWindow):
     def receive_channel_data(self, data_dict):
         # debug_logging.debug("main_window got channel_data_ready:\n  {}".format(", ".join(data_dict.keys())))
         """Perform receive channel data operation.
+        Receives the channel data from the instrument.
+
+        Retrieves data from the remote endpoint.
 
         Args:
-            data_dict: Data dict.
+            data_dict: Dictionary mapping channel names to measured values.
         """
         self._data.update(data_dict)
         self.SI_channel_data_ready.emit(data_dict)
@@ -4032,16 +4644,20 @@ class ltc_lab_gui_main_window(QtWidgets.QMainWindow):
     def receive_background_call_request(self, call):
         """Perform receive background call request operation.
 
+        Retrieves data from the remote endpoint.
+
         Args:
-            call: Call.
+            call: Call to use.
         """
         self.SI_request_background_call.emit(call)
 
     def receive_passive_channel_data(self, queue):
         """Perform receive passive channel data operation.
 
+        Retrieves data from the remote endpoint.
+
         Args:
-            queue: Queue.
+            queue: Queue to use.
         """
         self.SI_passive_observer_data.emit(queue)
 
@@ -4079,10 +4695,12 @@ class ltc_lab_gui_main_window(QtWidgets.QMainWindow):
             # self.emit(SIGNAL('request_dump_channel_list(PyQt_PyObject)'),channel_name_list)
 
     def dump(self, file_name):
-        """Perform dump operation.
+        """Run the dump step.
+
+        Supports the ``ltc_lab_gui_main_window`` workflow by performing the described operation.
 
         Args:
-            file_name: File name.
+            file_name: File path string.
         """
         with open(file_name, 'w') as f:
             for name, value in sorted(
@@ -4092,9 +4710,12 @@ class ltc_lab_gui_main_window(QtWidgets.QMainWindow):
 
     def load_file(self, file_name):
         """Perform load file operation.
+        Loads the file from persistent storage.
+
+        Reads previously saved state or data back into memory.
 
         Args:
-            file_name: File name.
+            file_name: File path string.
         """
         ds = data_store()
         ds.load(file_name)
@@ -4102,19 +4723,24 @@ class ltc_lab_gui_main_window(QtWidgets.QMainWindow):
 
     def save_file(self, file_name):
         """Perform save file operation.
+        Saves the file to persistent storage.
+
+        Persists the current state or data to durable storage.
 
         Args:
-            file_name: File name.
+            file_name: File path string.
         """
         ds = data_store('lab_gui')
         self.save(ds)
         ds.save(file_name)
 
     def load(self, parent_ds):
-        """Perform load operation.
+        """Run the load step.
+
+        Reads previously saved state or data back into memory.
 
         Args:
-            parent_ds: Parent ds.
+            parent_ds: Parent ds to use.
         """
         for ds in parent_ds:
             if ds.get_name() == 'tab_group':
@@ -4130,19 +4756,23 @@ class ltc_lab_gui_main_window(QtWidgets.QMainWindow):
         # print 'Error: In passive mode, reading and writing not allowed'
         """Perform show passive error operation.
 
+        Supports the ``ltc_lab_gui_main_window`` workflow by performing the described operation.
+
         Args:
-            channel_list: Channel list.
+            channel_list: List of channel objects.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         raise Exception('In passive mode, reading and writing not allowed')
 
     def save(self, parent_ds):
-        """Perform save operation.
+        """Run the save step.
+
+        Persists the current state or data to durable storage.
 
         Args:
-            parent_ds: Parent ds.
+            parent_ds: Parent ds to use.
         """
         tgc_ds = data_store('tab_group', None, parent_ds)
         self._tg.save(tgc_ds)
@@ -4156,8 +4786,10 @@ class ltc_lab_gui_main_window(QtWidgets.QMainWindow):
     def set_passive_observer_mode(self, passive):
         """Set the passive observer mode.
 
+        Updates the passive observer mode in the object's internal state.
+
         Args:
-            passive: Passive.
+            passive: Passive to use.
         """
         if not passive:
             if self.file_passive.isChecked():
@@ -4210,14 +4842,19 @@ class ltc_lab_gui_main_window(QtWidgets.QMainWindow):
         self.SI_resize_main_window.connect(self._tg.resize_main_window)
 
     def close(self):
-        """Perform close operation."""
+        """Close the connection and release resources.
+
+        Releases resources and restores the system to a safe state.
+        """
         QtWidgets.QMainWindow.close(self)
 
     def closeEvent(self, event):
-        """Perform closeEvent operation.
+        """Run the closeEvent step.
+
+        Releases resources and restores the system to a safe state.
 
         Args:
-            event: Event.
+            event: Event object or identifier.
         """
         self.logger_disconnect()
         self.SI_close_main.emit()
@@ -4237,12 +4874,16 @@ class ltc_lab_gui_app(QObject):
     def __init__(self, channel_group, passive=False,
                  cfg_file='default.guicfg', log_history=False):
         """Initialize ltc_lab_gui_app.
+        Calls the parent class constructor and initializes instance-specific
+        attributes for ltc_lab_gui_app.
+
+        Calls the parent constructor to inherit base behavior, and initializes 4 instance attributes that configure the object's behavior.
 
         Args:
-            cfg_file: Cfg file.
-            channel_group: Channel group.
-            log_history: Log history.
-            passive: Passive.
+            cfg_file: Cfg file to use.
+            channel_group: Channel group containing the target channels.
+            log_history: Log history to use.
+            passive: Passive to use.
         """
         super().__init__()
         # Setup background_worker thread that does all channel I/O.
@@ -4296,8 +4937,10 @@ class ltc_lab_gui_app(QObject):
     def passive_data(self, data_dict):
         """Perform passive data operation.
 
+        Supports the ``ltc_lab_gui_app`` workflow by performing the described operation.
+
         Args:
-            data_dict: Data dict.
+            data_dict: Dictionary mapping channel names to measured values.
         """
         try:
             self.passive_queue.put_nowait(data_dict)
@@ -4315,8 +4958,10 @@ class ltc_lab_gui_app(QObject):
     def exec_(self):
         """Return exec  result.
 
+        Supports the ``ltc_lab_gui_app`` workflow by performing the described operation.
+
         Returns:
-            Result value.
+            The exec  result.
         """
         return QApp.exec_()
 

@@ -1,4 +1,8 @@
-"""Float next utility."""
+"""Float next utility.
+
+>>> from PyICe.lab_utils.float_next import float_next
+
+"""
 import math
 import sys
 

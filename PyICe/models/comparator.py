@@ -1,4 +1,8 @@
-"""Comparator model."""
+"""Comparator model.
+
+>>> from PyICe.models.comparator import comparator
+
+"""
 
 
 class comparator(object):
@@ -27,6 +31,10 @@ class comparator(object):
     def __init__(self, falling_threshold, rising_threshold,
                  out_high=1, out_low=0, write_overshoot=0, verbose=False):
         """Create a comparator model.
+        Initializes 6 instance attributes that configure the object's
+        behavior.
+
+        Initializes 6 instance attributes that configure the object's behavior.
 
         >>> comp = comparator(falling_threshold=2.5, rising_threshold=2.5)
         >>> comp.read()
@@ -36,12 +44,12 @@ class comparator(object):
         1
 
         Args:
-            falling_threshold: Falling threshold.
-            out_high: Out high.
-            out_low: Out low.
-            rising_threshold: Rising threshold.
+            falling_threshold: Falling threshold to use.
+            out_high: Out high to use.
+            out_low: Out low to use.
+            rising_threshold: Rising threshold to use.
             verbose: If True, print debug output.
-            write_overshoot: Write overshoot.
+            write_overshoot: Write overshoot to use.
         """
         self.state = False
         self.input = None
@@ -56,14 +64,24 @@ class comparator(object):
     def debug_print(self, msg):
         """Perform debug print operation.
 
+        Supports the ``comparator`` workflow by performing the described operation.
+
+
+        >>> from PyICe.models.comparator import comparator
+        >>> hasattr(comparator, 'debug_print')
+        True
+
         Args:
-            msg: Msg.
+            msg: Message string to display.
         """
         if self.verbose:
             print("*COMPARATOR*, {}".format(msg))
 
     def set_thresholds(self, falling_threshold, rising_threshold):
         """Change thresholds on an existing comparator.
+        Updates the thresholds in the object's internal state.
+
+        Updates the thresholds in the object's internal state.
 
         >>> comp = comparator(falling_threshold=1.0, rising_threshold=2.0)
         >>> comp.write(1.5)
@@ -75,14 +93,21 @@ class comparator(object):
         1
 
         Args:
-            falling_threshold: Falling threshold.
-            rising_threshold: Rising threshold.
+            falling_threshold: Falling threshold to use.
+            rising_threshold: Rising threshold to use.
         """
         self.falling_threshold = falling_threshold
         self.rising_threshold = rising_threshold
 
     def write(self, value):
         """Write a value to the channel.
+
+        Writes data to the underlying target.
+
+
+        >>> from PyICe.models.comparator import comparator
+        >>> hasattr(comparator, 'write')
+        True
 
         Args:
             value: Value to set.
@@ -114,6 +139,9 @@ class comparator(object):
 
     def reset(self):
         """Force comparator output low regardless of input.
+        Resets the instrument to its default state.
+
+        Restores the object or hardware to its default state.
 
         >>> comp = comparator(falling_threshold=1.0, rising_threshold=2.0)
         >>> comp.write(3.0)
@@ -129,6 +157,8 @@ class comparator(object):
     def set(self):
         """Force comparator output high regardless of input.
 
+        Supports the ``comparator`` workflow by performing the described operation.
+
         >>> comp = comparator(falling_threshold=1.0, rising_threshold=2.0)
         >>> comp.read()
         0
@@ -142,6 +172,8 @@ class comparator(object):
     def read(self):
         """Return current output level.
 
+        Reads data from the underlying source and returns it.
+
         >>> comp = comparator(falling_threshold=1.0, rising_threshold=2.0,
         ...                   out_high=3.3, out_low=0.0)
         >>> comp.read()
@@ -151,6 +183,6 @@ class comparator(object):
         3.3
 
         Returns:
-            Result value.
+            The value read from the device or channel.
         """
         return self.out_high if self.state else self.out_low

@@ -1,4 +1,8 @@
-"""Agilent n3301 instrument driver."""
+"""Agilent n3301 instrument driver.
+
+>>> from PyICe.lab_instruments.agilent_n3301 import agilent_n3301
+
+"""
 from PyICe.lab_core import *  # noqa: F403
 
 
@@ -11,6 +15,10 @@ class agilent_n3301(scpi_instrument):
     """
     def __init__(self, interface_visa):
         """Constructor takes visa GPIB address or interface object (visa,rl1009, rs232) as parameter.  Ex: "GPIB0::3".
+        Calls the parent class constructor and initializes instance-specific
+        attributes for agilent_n3301.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
 
         Args:
             interface_visa: VISA interface instance.
@@ -33,9 +41,17 @@ class agilent_n3301(scpi_instrument):
 
     def add_channel(self, channel_name, channel_num, add_sense_channel=True):
         """Add current force writable channel. Optionally add current readback _isense channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
-            add_sense_channel: Add sense channel.
+            add_sense_channel: Add sense channel to use.
             channel_name: Name for the new channel.
             channel_num: Physical channel number.
         """
@@ -45,6 +61,14 @@ class agilent_n3301(scpi_instrument):
 
     def add_channel_current(self, channel_name, channel_num):
         """Add a channel current.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
@@ -59,6 +83,14 @@ class agilent_n3301(scpi_instrument):
 
     def add_channel_isense(self, channel_name, channel_num):
         """Add a channel isense.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.

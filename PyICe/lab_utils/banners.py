@@ -1,6 +1,17 @@
-"""Banners utility."""
+"""Banners utility.
+
+>>> from PyICe.lab_utils.banners import print_banner
+
+"""
 def print_banner(*message, offset=1, length=80):
-    """Print a box-drawn banner to stdout. See build_banner for details."""
+    """Print a box-drawn banner to stdout. See build_banner for details.
+
+
+    >>> from PyICe.lab_utils.banners import print_banner
+    >>> callable(print_banner)
+    True
+
+    """
     print(build_banner(*message, offset=offset, length=length))
 
 

@@ -1,4 +1,8 @@
-"""Keithley 7002 meter instrument driver."""
+"""Keithley 7002 meter instrument driver.
+
+>>> from PyICe.lab_instruments.keithley_7002_meter import keithley_7002_meter
+
+"""
 from ..lab_core import *  # noqa: F403
 from .keithley_7002 import *  # noqa: F403
 import time
@@ -15,7 +19,7 @@ class keithley_7002_meter(keithley_7002):
 
         Args:
             interface_visa: VISA interface instance.
-            multimeter_channel: Multimeter channel.
+            multimeter_channel: Multimeter channel to use.
         """
         keithley_7002.__init__(self, interface_visa)
         self._base_name = 'keithley_7002_meter'
@@ -36,13 +40,13 @@ class keithley_7002_meter(keithley_7002):
             bay: Instrument bay number.
             channel_name: Name for the new channel.
             delay: Delay time in seconds.
-            multimeter_channel: Multimeter channel.
+            multimeter_channel: Multimeter channel to use.
             num: Count or number.
-            post_calls: Post calls.
-            pre_calls: Pre calls.
+            post_calls: Post calls to use.
+            pre_calls: Pre calls to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         if pre_calls is None:
             pre_calls = []
@@ -71,13 +75,13 @@ class keithley_7002_meter(keithley_7002):
         Args:
             bay: Instrument bay number.
             delay: Delay time in seconds.
-            multimeter_channel: Multimeter channel.
+            multimeter_channel: Multimeter channel to use.
             num: Count or number.
-            post_calls: Post calls.
-            pre_calls: Pre calls.
+            post_calls: Post calls to use.
+            pre_calls: Pre calls to use.
 
         Returns:
-            Result value.
+            The measured value.
         """
         self.open_all()  # just to be sure...
         self._close_relay(bay, num)

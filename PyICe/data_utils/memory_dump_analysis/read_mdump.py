@@ -1,4 +1,8 @@
-"""Read mdump module."""
+"""Read mdump module.
+
+>>> from PyICe.data_utils.memory_dump_analysis.read_mdump import memory_decoder
+
+"""
 from PyICe import lab_core
 import json
 import objutils
@@ -13,12 +17,26 @@ import os
 
 
 class memory_decoder():
-    """Memory_decoder."""
+    """Memory_decoder.
+
+    >>> from PyICe.data_utils.memory_dump_analysis.read_mdump import memory_decoder
+    >>> memory_decoder is not None
+    True
+
+    """
     def __init__(self, twii=None):
         """Initialize memory_decoder.
+        Stores configuration in ``twii`` for use by other methods.
+
+        Initializes 1 instance attribute that configure the object's behavior.
+
+
+        >>> from PyICe.data_utils.memory_dump_analysis.read_mdump import memory_decoder
+        >>> memory_decoder is not None
+        True
 
         Args:
-            twii: Twii.
+            twii: Twii to use.
         """
         self.twii = twii
 
@@ -37,36 +55,57 @@ class memory_decoder():
     def parse_srec(self, srec_str, offset=0):
         """Return parse srec result.
 
+        Interprets raw data and returns structured results.
+
+
+        >>> from PyICe.data_utils.memory_dump_analysis.read_mdump import memory_decoder
+        >>> hasattr(memory_decoder, 'parse_srec')
+        True
+
         Args:
             offset: Offset value.
-            srec_str: Srec str.
+            srec_str: Srec str to use.
 
         Returns:
-            Result value.
+            The parsed data structure.
         """
         return self._parse_mdump(srec_str, fmt='srec', offset=offset)
 
     def parse_ihex(self, ihex_str, offset=0):
         """Return parse ihex result.
 
+        Interprets raw data and returns structured results.
+
+
+        >>> from PyICe.data_utils.memory_dump_analysis.read_mdump import memory_decoder
+        >>> hasattr(memory_decoder, 'parse_ihex')
+        True
+
         Args:
-            ihex_str: Ihex str.
+            ihex_str: Ihex str to use.
             offset: Offset value.
 
         Returns:
-            Result value.
+            The parsed data structure.
         """
         return self._parse_mdump(ihex_str, fmt='ihex', offset=offset)
 
     def parse_hexdump(self, rfc4194_str, offset=0):
         """Return parse hexdump result.
 
+        Interprets raw data and returns structured results.
+
+
+        >>> from PyICe.data_utils.memory_dump_analysis.read_mdump import memory_decoder
+        >>> hasattr(memory_decoder, 'parse_hexdump')
+        True
+
         Args:
             offset: Offset value.
-            rfc4194_str: Rfc4194 str.
+            rfc4194_str: Rfc4194 str to use.
 
         Returns:
-            Result value.
+            The parsed data structure.
         """
         return self._parse_mdump(rfc4194_str, fmt='shf', offset=offset)
 
@@ -93,14 +132,21 @@ class memory_decoder():
         return bf_data
 
     def prettify(self, bf_name, bf_value):  # , twii=None
-        """Return prettify result.
+        """Return the prettify.
+
+        Supports the ``memory_decoder`` workflow by performing the described operation.
+
+
+        >>> from PyICe.data_utils.memory_dump_analysis.read_mdump import memory_decoder
+        >>> hasattr(memory_decoder, 'prettify')
+        True
 
         Args:
-            bf_name: Bf name.
-            bf_value: Bf value.
+            bf_name: Bf name to use.
+            bf_value: Bf value to use.
 
         Returns:
-            Result value.
+            The formatted string.
         """
         if self.twii is None:
             try:
@@ -127,10 +173,17 @@ class memory_decoder():
         return (pkey, pvalue)
 
     def prettyprint(self, dict):  # twii=None
-        """Perform prettyprint operation.
+        """Run the prettyprint step.
+
+        Supports the ``memory_decoder`` workflow by performing the described operation.
+
+
+        >>> from PyICe.data_utils.memory_dump_analysis.read_mdump import memory_decoder
+        >>> hasattr(memory_decoder, 'prettyprint')
+        True
 
         Args:
-            dict: Dict.
+            dict: Dict to use.
         """
         for k in sorted(dict):
             (pkey, pvalue) = self.prettify(
@@ -138,16 +191,23 @@ class memory_decoder():
             print(f'{pkey}: {pvalue}')
 
     def decode(self, memdump_file):
-        """Return decode result.
+        """Return the decode.
+
+        Interprets raw data and returns structured results.
+
+
+        >>> from PyICe.data_utils.memory_dump_analysis.read_mdump import memory_decoder
+        >>> hasattr(memory_decoder, 'decode')
+        True
 
         Args:
-            memdump_file: Memdump file.
+            memdump_file: Memdump file to use.
 
         Returns:
-            Result value.
+            The decoded value.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         file_ext = os.path.splitext(memdump_file)[1]
         with open(memdump_file, 'r') as f:
@@ -164,11 +224,18 @@ class memory_decoder():
     def slice(self, reg_data):
         """Expect dictionary of {addr_a: data_a, addr_b:, data_b, ...addr_n: data_n}.
 
+        Supports the ``memory_decoder`` workflow by performing the described operation.
+
+
+        >>> from PyICe.data_utils.memory_dump_analysis.read_mdump import memory_decoder
+        >>> hasattr(memory_decoder, 'slice')
+        True
+
         Args:
-            reg_data: Reg data.
+            reg_data: Reg data to use.
 
         Returns:
-            Result value.
+            The sliced subset of data.
         """
         self.twii.get_interface().set_data_source(reg_data)
         bf_data = self._parse_bitfields()
@@ -177,15 +244,23 @@ class memory_decoder():
 
     def read(self, ascii_dump_file):
         """Expects data already sliced to named bitfields. Applies enumerations and format transforms.
+        Sends the ``:`` SCPI command to the instrument.
+
+        Reads data from the underlying source and returns it.
+
+
+        >>> from PyICe.data_utils.memory_dump_analysis.read_mdump import memory_decoder
+        >>> hasattr(memory_decoder, 'read')
+        True
 
         Args:
-            ascii_dump_file: Ascii dump file.
+            ascii_dump_file: Ascii dump file to use.
 
         Returns:
-            Result value.
+            The value read from the device or channel.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         # Warning, this modifies the twii, making it incompatible with binary
         # decode()

@@ -1,4 +1,8 @@
-"""Remove non ascii utility."""
+"""Remove non ascii utility.
+
+>>> from PyICe.lab_utils.remove_non_ascii import remove_non_ascii
+
+"""
 def remove_non_ascii(text):
     """Replace characters above code point 127 with a placeholder marker.
 

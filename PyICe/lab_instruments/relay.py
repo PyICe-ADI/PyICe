@@ -1,4 +1,8 @@
-"""Relay instrument driver."""
+"""Relay instrument driver.
+
+>>> from PyICe.lab_instruments.relay import relay
+
+"""
 import platform
 import usb.util  # pylint: disable=E0401; pyusb is an optional dependency required only when using USB relay hardware
 import usb.core  # pylint: disable=E0401; pyusb is an optional dependency required only when using USB relay hardware
@@ -12,6 +16,8 @@ class relay(instrument):
     def add_channel(self, channel_name, channel_number):
         """Placeholder.
 
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -20,29 +26,40 @@ class relay(instrument):
     def _set_relay(self, channel_number, state):
         """Placeholder.
 
+        Internal implementation detail; see the public API for usage.
+
         Args:
             channel_number: Physical channel number.
-            state: State.
+            state: Desired state (True/False or instrument-specific value).
         """
     @abc.abstractmethod
     def _get_state(self, channel_number):
         """Placeholder.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
             channel_number: Physical channel number.
         """
     @abc.abstractmethod
     def _all_off(self):
-        """Placeholder."""
+        """Placeholder.
+
+        Internal implementation detail; see the public API for usage.
+        """
 
 
 class ftdi_relay(relay):
     """Ftdi_relay."""
     def __init__(self, serial_number=None):
         """Initialize ftdi_relay.
+        Calls the parent class constructor and initializes instance-specific
+        attributes for ftdi_relay.
+
+        Calls the parent constructor to inherit base behavior, and initializes 5 instance attributes that configure the object's behavior.
 
         Args:
-            serial_number: Serial number.
+            serial_number: Serial number to use.
         """
         self.VID = 0x0403                   # USB Vendor ID of FT245R and FT232
         self.PID = 0x6001                   # USB Product ID of FT245R and FT232
@@ -68,13 +85,21 @@ class ftdi_relay(relay):
 
     def add_channel(self, channel_name, channel_number):
         """Adds a channel for a relay on the board.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         assert self.rb.RELAY_MIN <= channel_number and channel_number <= self.rb.RELAY_MAX, f'Channel number must correspond to a relay between {self.rb.RELAY_MIN} and {self.rb.RELAY_MAX}.'
         new_channel = integer_channel(
@@ -398,7 +423,11 @@ PyRelayCtl is licensed under a modified BSD license.
 class FT245R:
     """F t245 r."""
     def __init__(self):
-        """Initialize f t245 r."""
+        """Initialize f t245 r.
+
+        Initializes 8 instance attributes that configure the object's
+        behavior.
+        """
         self.VID = 0x0403                   # USB Vendor ID of FT245R and FT232
         self.PID = 0x6001                   # USB Product ID of FT245R and FT232
         self.PROD_STR = u'FT245R USB FIFO'  # differentiate from FT232 USB UART
@@ -414,7 +443,7 @@ class FT245R:
         @return: device list
 
         Returns:
-            Result value.
+            List of matching items.
         """
         ret = []
         for dev in usb.core.find(find_all=True,
@@ -428,9 +457,12 @@ class FT245R:
 
     def disconnect(self):
         """Disables output to the device. Attaches the kernel driver if available.
+        Releases resources and closes the connection to the instrument.
+
+        Releases resources and restores the system to a safe state.
 
         Raises:
-            RuntimeError: On error condition.
+            RuntimeError: If the operation fails at runtime.
         """
         self.is_connected = False
         if platform.system() != 'Windows':
@@ -455,10 +487,10 @@ class FT245R:
         @param dev: device
 
         Args:
-            dev: Dev.
+            dev: Dev to use.
 
         Raises:
-            RuntimeError: On error condition.
+            RuntimeError: If the operation fails at runtime.
         """
         # Save the device handler so user does not have to keep passing it
         self.dev = dev
@@ -490,11 +522,11 @@ class FT245R:
         @return: status
 
         Returns:
-            Result value.
+            The requested attribute value.
 
         Raises:
-            IOError: On error condition.
-            RuntimeError: On error condition.
+            IOError: If the I/O operation fails.
+            RuntimeError: If the operation fails at runtime.
         """
         # Check for errors
         if not self.is_connected:
@@ -514,14 +546,14 @@ class FT245R:
         @return: status
 
         Args:
-            relay_num: Relay num.
+            relay_num: Relay num to use.
 
         Returns:
-            Result value.
+            The getstatus result.
 
         Raises:
-            IOError: On error condition.
-            ValueError: On error condition.
+            IOError: If the I/O operation fails.
+            ValueError: If the provided value is out of range or invalid.
         """
         # Check for errors
         if relay_num < self.RELAY_MIN or relay_num > self.RELAY_MAX:
@@ -536,10 +568,13 @@ class FT245R:
 
     def setstate(self):
         """Sets all relays to the state in FT245R.relay_state.
+        Sends the ``relayctl:`` SCPI command to the instrument.
+
+        Transmits data to the remote endpoint.
 
         Raises:
-            IOError: On error condition.
-            RuntimeError: On error condition.
+            IOError: If the I/O operation fails.
+            RuntimeError: If the operation fails at runtime.
         """
         # Check for errors
         if not self.is_connected:
@@ -562,12 +597,12 @@ class FT245R:
         @param relay_num: which relay
 
         Args:
-            relay_num: Relay num.
+            relay_num: Relay num to use.
 
         Raises:
-            IOError: On error condition.
-            RuntimeError: On error condition.
-            ValueError: On error condition.
+            IOError: If the I/O operation fails.
+            RuntimeError: If the operation fails at runtime.
+            ValueError: If the provided value is out of range or invalid.
         """
         # Check for errors
         if relay_num < self.RELAY_MIN or relay_num > self.RELAY_MAX:
@@ -595,12 +630,12 @@ class FT245R:
         @param relay_num: which relay
 
         Args:
-            relay_num: Relay num.
+            relay_num: Relay num to use.
 
         Raises:
-            IOError: On error condition.
-            RuntimeError: On error condition.
-            ValueError: On error condition.
+            IOError: If the I/O operation fails.
+            RuntimeError: If the operation fails at runtime.
+            ValueError: If the provided value is out of range or invalid.
         """
         # Check for errors
         if relay_num < self.RELAY_MIN or relay_num > self.RELAY_MAX:

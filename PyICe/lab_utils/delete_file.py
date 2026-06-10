@@ -1,4 +1,8 @@
-"""Delete file utility."""
+"""Delete file utility.
+
+>>> from PyICe.lab_utils.delete_file import delete_file
+
+"""
 import time
 import os
 
@@ -10,6 +14,11 @@ def delete_file(filename, max_tries=20, retry_delay=5):
     test runs.  If the file is held open by another program (e.g. Notepad++,
     SQLite Manager), the function retries up to *max_tries* times with a
     *retry_delay*-second pause between attempts.
+
+
+    >>> from PyICe.lab_utils.delete_file import delete_file
+    >>> callable(delete_file)
+    True
 
     Args:
         filename: Path to the file to delete.

@@ -1,4 +1,8 @@
-"""Select string menu utility."""
+"""Select string menu utility.
+
+>>> from PyICe.lab_utils.select_string_menu import select_string_menu
+
+"""
 from curses import panel
 import curses
 
@@ -13,6 +17,11 @@ def select_string_menu(header, items):
 
     Used by the ProjectCreatorWizard and other interactive CLI tools to let
     the user pick from a dynamic list without typing.
+
+
+    >>> from PyICe.lab_utils.select_string_menu import select_string_menu
+    >>> callable(select_string_menu)
+    True
 
     Args:
         header: Descriptive text displayed above the menu items.

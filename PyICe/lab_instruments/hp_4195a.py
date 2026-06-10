@@ -1,4 +1,8 @@
-"""Hp 4195a instrument driver."""
+"""Hp 4195a instrument driver.
+
+>>> from PyICe.lab_instruments.hp_4195a import hp_4195a
+
+"""
 from ..lab_core import *  # noqa: F403
 
 
@@ -9,6 +13,9 @@ class hp_4195a(scpi_instrument):
     """
     def __init__(self, interface_visa):
         """Interface_visa.
+        Stores configuration in ``_base_name`` for use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
 
         Args:
             interface_visa: VISA interface instance.
@@ -28,13 +35,13 @@ class hp_4195a(scpi_instrument):
 
         Args:
             channel_name: Name for the new channel.
-            register: Register.
+            register: Register object representing a device register.
 
         Returns:
-            Result value.
+            The newly created channel object.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         register = register.upper()
         if register.upper() not in ['X', 'A', 'B', 'C', 'D']:
@@ -46,12 +53,15 @@ class hp_4195a(scpi_instrument):
 
     def _read_4195a_register(self, register):
         """Read from one of the five hardware registers associated with this channel_name.  Return list of scalars representing points.
+        Internal helper that computes and returns a derived value.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
-            register: Register.
+            register: Register object representing a device register.
 
         Returns:
-            Result value.
+            The measured value.
         """
         data = self.get_interface().ask(('{register}?'))
         return list(map(float, data.split(',')))
@@ -59,11 +69,17 @@ class hp_4195a(scpi_instrument):
     def config_network(self, start=0.1, stop=500e6,
                        RBW='AUTO', NOP=401, OSCA=-50):
         """Configure the 4195 for network analysis  with start, stop, sweep type and resolution.
+        Configures the instrument for network measurement mode via SCPI
+        commands.
+        Configures the instrument for network measurement mode via SCPI
+        commands.
+
+        Applies the specified configuration to the object or hardware.
 
         Args:
-            NOP: Nop.
-            OSCA: Osca.
-            RBW: Rbw.
+            NOP: Nop to use.
+            OSCA: Osca to use.
+            RBW: Rbw to use.
             start: Start bit position.
             stop: If True, send stop condition.
         """
@@ -82,10 +98,16 @@ class hp_4195a(scpi_instrument):
 
     def config_spectrum(self, start=0.1, stop=500e6, RBW='AUTO', NOP=401):
         """Configure the 4195 for spectrum analysis (noise here) with start, stop, sweep type and resolution.
+        Configures the instrument for spectrum measurement mode via SCPI
+        commands.
+        Configures the instrument for spectrum measurement mode via SCPI
+        commands.
+
+        Applies the specified configuration to the object or hardware.
 
         Args:
-            NOP: Nop.
-            RBW: Rbw.
+            NOP: Nop to use.
+            RBW: Rbw to use.
             start: Start bit position.
             stop: If True, send stop condition.
         """
@@ -105,8 +127,10 @@ class hp_4195a(scpi_instrument):
     def trigger(self):
         """Return the sweep time and trigger once.
 
+        Sends the corresponding SCPI command string to the instrument over the bus.
+
         Returns:
-            Result value.
+            The trigger result.
         """
         ttime = self.get_interface().ask(('ST?'))
         self.get_interface().write(('SWTRG'))

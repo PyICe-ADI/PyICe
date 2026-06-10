@@ -1,4 +1,8 @@
-"""Float prior utility."""
+"""Float prior utility.
+
+>>> from PyICe.lab_utils.float_prior import float_prior
+
+"""
 import math
 import sys
 

@@ -1,4 +1,8 @@
-"""Smu instrument driver."""
+"""Smu instrument driver.
+
+>>> from PyICe.lab_instruments.smu import smu
+
+"""
 # pylint: disable=E1101; this module defines abstract base classes (smu, scpi_smu) whose members
 # (_configured_channels, _vforce, _iforce, _vsense, _isense, _vcompl, _vcomplq, _icompl, _icomplq,
 # _remote_sense, _remote_senseq, _high_capacitance, _high_capacitanceq, _terminal_select,
@@ -15,12 +19,14 @@ class smu(instrument):
     def _fix_exclusive(self, ch, value):
         """Fix write cache of exclusive channel pair sibling.
 
+        Internal implementation detail; see the public API for usage.
+
         Args:
-            ch: Ch.
+            ch: Channel number or channel object.
             value: Value to set.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         if ch.get_attribute('channel_type') == 'vforce':
             pair_ch = self._configured_channels[ch.get_attribute(
@@ -55,13 +61,17 @@ class smu(instrument):
 
     def add_channels(self, channel_name, channel_number=1):
         """Shortcut.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         # todo remote sense, high c?
         return (self.add_channel_voltage_force(f'{channel_name}_vforce', channel_number),
@@ -79,13 +89,21 @@ class smu(instrument):
 
     def add_channel_voltage_force(self, channel_name, channel_number=1):
         """Voltage force. Mutually exclusive at any moment with current force.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         self._init_channel(channel_number)
         new_channel = channel(
@@ -106,13 +124,21 @@ class smu(instrument):
 
     def add_channel_current_force(self, channel_name, channel_number=1):
         """Current force. Mutually exclusive at any moment with voltage force.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         self._init_channel(channel_number)
         new_channel = channel(
@@ -133,13 +159,21 @@ class smu(instrument):
 
     def add_channel_voltage_sense(self, channel_name, channel_number=1):
         """Voltage readback.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         # range, nplc?
         self._init_channel(channel_number)
@@ -158,13 +192,21 @@ class smu(instrument):
 
     def add_channel_current_sense(self, channel_name, channel_number=1):
         """Current readback.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         # range, nplc?
         self._init_channel(channel_number)
@@ -183,13 +225,21 @@ class smu(instrument):
 
     def add_channel_voltage_compliance(self, channel_name, channel_number=1):
         """Max voltage in current forcing modes.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         self._init_channel(channel_number)
         new_channel = channel(
@@ -211,13 +261,21 @@ class smu(instrument):
 
     def add_channel_current_compliance(self, channel_name, channel_number=1):
         """Max current in voltage forcing modes.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         self._init_channel(channel_number)
         new_channel = channel(
@@ -239,13 +297,21 @@ class smu(instrument):
 
     def add_channel_remote_sense(self, channel_name, channel_number=1):
         """Remote (4-wire) sense enable control.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         self._init_channel(channel_number)
         new_channel = channel(
@@ -269,13 +335,21 @@ class smu(instrument):
 
     def add_channel_high_capacitance(self, channel_name, channel_number):
         """Stabilize forcing source for higher DUT capacitance, typically tens of uF.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         self._init_channel(channel_number)
         new_channel = channel(
@@ -299,13 +373,21 @@ class smu(instrument):
 
     def add_channel_terminal_select(self, channel_name, channel_number):
         """Select between front and rear panel terminals.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         self._init_channel(channel_number)
         new_channel = channel(
@@ -329,11 +411,15 @@ class smu(instrument):
     def _add_channel_voltage_force(self, channel):
         """Voltage force. Mutually exclusive at any moment with current force.
 
+        Internal implementation detail; see the public API for usage.
+
         Args:
             channel: Channel object.
         """
     def _add_channel_current_force(self, channel):
         """Current force. Mutually exclusive at any moment with voltage force.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
             channel: Channel object.
@@ -341,11 +427,15 @@ class smu(instrument):
     def _add_channel_voltage_sense(self, channel):
         """Voltage readback.
 
+        Internal implementation detail; see the public API for usage.
+
         Args:
             channel: Channel object.
         """
     def _add_channel_current_sense(self, channel):
         """Current readback.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
             channel: Channel object.
@@ -353,11 +443,15 @@ class smu(instrument):
     def _add_channel_voltage_compliance(self, channel):
         """Max voltage in current forcing modes.
 
+        Internal implementation detail; see the public API for usage.
+
         Args:
             channel: Channel object.
         """
     def _add_channel_current_compliance(self, channel):
         """Max current in voltage forcing modes.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
             channel: Channel object.
@@ -365,17 +459,23 @@ class smu(instrument):
     def _add_channel_remote_sense(self, channel):
         """Remote (4-wire) sense enable control.
 
+        Internal implementation detail; see the public API for usage.
+
         Args:
             channel: Channel object.
         """
     def _add_channel_high_capacitance(self, channel):
         """Stabilize forcing source for higher DUT capacitance, typically tens of uF.
 
+        Internal implementation detail; see the public API for usage.
+
         Args:
             channel: Channel object.
         """
     def _add_channel_terminal_select(self, channel):
         """Select front vs rear panel connection mux.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
             channel: Channel object.
@@ -461,6 +561,9 @@ class scpi_smu(scpi_instrument, smu):
 
     def _remote_sense(self, channel_number, value):
         """Ignores channel number!!!!!!!!!!!!!!!!!!!
+        Internal helper that sends the ``:SYSTem:RSENse`` SCPI command.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
             channel_number: Physical channel number.
@@ -472,12 +575,15 @@ class scpi_smu(scpi_instrument, smu):
 
     def _remote_senseq(self, channel_number):
         """Ignores channel number!!!!!!!!!!!!!!!!!!!
+        Internal helper that sends the ``:SYSTem:RSENse`` SCPI command.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
             channel_number: Physical channel number.
 
         Returns:
-            Result value.
+            The remote senseq result.
         """
         # print(f'{value}, {type(value)}')
         return self.get_interface().ask(':SYSTem:RSENse?')
@@ -487,6 +593,9 @@ class scpi_smu(scpi_instrument, smu):
 
     def _terminal_select(self, channel_number, value):
         """Select between front and rear panel terminals.
+        Internal helper that sends the ``:ROUTe:TERMinals`` SCPI command.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
             channel_number: Physical channel number.
@@ -496,12 +605,15 @@ class scpi_smu(scpi_instrument, smu):
 
     def _terminal_selectq(self, channel_number):
         """Query front vs rear panel terminals.
+        Internal helper that sends the ``:ROUTe:TERMinals`` SCPI command.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
             channel_number: Physical channel number.
 
         Returns:
-            Result value.
+            The terminal selectq result.
         """
         resp_subst = {"FRON": "Front",
                       "REAR": "Rear",
@@ -518,6 +630,10 @@ class keithley_2400(scpi_smu, keithley_smu):
 
     def __init__(self, interface_visa):
         """Interface_visa.
+        Calls the parent class constructor and initializes instance-specific
+        attributes for keithley_2400.
+
+        Calls the parent constructor to inherit base behavior, and initializes 2 instance attributes that configure the object's behavior.
 
         Args:
             interface_visa: VISA interface instance.
@@ -532,6 +648,9 @@ class keithley_2400(scpi_smu, keithley_smu):
 
     def _add_channel_voltage_force(self, channel):
         """Voltage force. Mutually exclusive at any moment with current force.
+        Internal helper that sends the ``:SOURce`` SCPI command.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
             channel: Channel object.
@@ -549,6 +668,9 @@ class keithley_2400(scpi_smu, keithley_smu):
 
     def _add_channel_current_force(self, channel):
         """Current force. Mutually exclusive at any moment with voltage force.
+        Internal helper that sends the ``:SOURce`` SCPI command.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
             channel: Channel object.
@@ -567,6 +689,8 @@ class keithley_2400(scpi_smu, keithley_smu):
     def _add_channel_voltage_sense(self, channel):
         """Voltage readback.
 
+        Internal implementation detail; see the public API for usage.
+
         Args:
             channel: Channel object.
         """
@@ -574,6 +698,8 @@ class keithley_2400(scpi_smu, keithley_smu):
 
     def _add_channel_current_sense(self, channel):
         """Current readback.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
             channel: Channel object.
@@ -583,6 +709,8 @@ class keithley_2400(scpi_smu, keithley_smu):
 
     def _add_channel_voltage_compliance(self, channel):
         """Max voltage in current forcing modes.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
             channel: Channel object.
@@ -608,6 +736,8 @@ class keithley_2400(scpi_smu, keithley_smu):
     def _add_channel_current_compliance(self, channel):
         """Max current in voltage forcing modes.
 
+        Internal implementation detail; see the public API for usage.
+
         Args:
             channel: Channel object.
         """
@@ -621,6 +751,10 @@ class keithley_2600(keithley_smu):
 
     def __init__(self, interface_visa):
         """Initialize keithley_2600.
+        Calls the parent class constructor and initializes instance-specific
+        attributes for keithley_2600.
+
+        Calls the parent constructor to inherit base behavior, and initializes 2 instance attributes that configure the object's behavior.
 
         Args:
             interface_visa: VISA interface instance.
@@ -728,6 +862,8 @@ class keithley_2600(keithley_smu):
     def _add_channel_voltage_force(self, channel):
         """Voltage force. Mutually exclusive at any moment with current force.
 
+        Internal implementation detail; see the public API for usage.
+
         Args:
             channel: Channel object.
         """
@@ -738,6 +874,8 @@ class keithley_2600(keithley_smu):
 
     def _add_channel_current_force(self, channel):
         """Current force. Mutually exclusive at any moment with voltage force.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
             channel: Channel object.

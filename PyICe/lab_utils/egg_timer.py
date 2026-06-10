@@ -1,4 +1,8 @@
-"""Egg timer utility."""
+"""Egg timer utility.
+
+>>> from PyICe.lab_utils.egg_timer import egg_timer
+
+"""
 import time
 
 
@@ -9,6 +13,11 @@ def egg_timer(timeout, message=None, length=30, display_callback=None):
     console does not appear idle.  The progress bar updates at ~10 Hz and shows
     elapsed/remaining time plus a percentage.  An optional *display_callback*
     can append live telemetry (e.g. temperature readings) after the bar.
+
+
+    >>> from PyICe.lab_utils.egg_timer import egg_timer
+    >>> callable(egg_timer)
+    True
 
     Args:
         timeout: Duration to wait, in seconds.

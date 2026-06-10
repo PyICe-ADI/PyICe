@@ -1,4 +1,8 @@
-"""Time zones utility."""
+"""Time zones utility.
+
+>>> from PyICe.lab_utils.time_zones import US_Time_Zone
+
+"""
 import datetime
 
 
@@ -47,6 +51,8 @@ class US_Time_Zone(datetime.tzinfo):
 
     def utcoffset(self, dt):
         """Return the total UTC offset (standard + DST) for the given datetime.
+
+        Collects the requested items and returns them as a standard container.
 
         >>> import datetime
         >>> US_Eastern_Time().utcoffset(datetime.datetime(2024, 1, 15))
@@ -122,7 +128,16 @@ class UTC(US_Time_Zone):
     """
 
     def __init__(self):
-        """Set UTC parameters (zero offset, no DST)."""
+        """Set UTC parameters (zero offset, no DST).
+
+        Initializes 4 instance attributes that configure the object's
+        behavior.
+
+        >>> from PyICe.lab_utils.time_zones import UTC
+        >>> UTC is not None
+        True
+
+        """
         self.tz_name = "UTC"
         self.tz_name_dst = "UTC"
         self.gmt_offset = +0
@@ -138,7 +153,16 @@ class US_Eastern_Time(US_Time_Zone):
     """
 
     def __init__(self):
-        """Set Eastern-timezone parameters (GMT−5, +1 h DST)."""
+        """Set Eastern-timezone parameters (GMT−5, +1 h DST).
+
+        Initializes 4 instance attributes that configure the object's
+        behavior.
+
+        >>> from PyICe.lab_utils.time_zones import US_Eastern_Time
+        >>> US_Eastern_Time is not None
+        True
+
+        """
         self.tz_name = "EST"
         self.tz_name_dst = "EDT"
         self.gmt_offset = -5
@@ -154,7 +178,16 @@ class US_Pacific_Time(US_Time_Zone):
     """
 
     def __init__(self):
-        """Set Pacific-timezone parameters (GMT−8, +1 h DST)."""
+        """Set Pacific-timezone parameters (GMT−8, +1 h DST).
+
+        Initializes 4 instance attributes that configure the object's
+        behavior.
+
+        >>> from PyICe.lab_utils.time_zones import US_Pacific_Time
+        >>> US_Pacific_Time is not None
+        True
+
+        """
         self.tz_name = "PST"
         self.tz_name_dst = "PDT"
         self.gmt_offset = -8

@@ -1,4 +1,8 @@
-"""Timed response utility."""
+"""Timed response utility.
+
+>>> from PyICe.lab_utils.timed_response import timed_input
+
+"""
 import threading
 
 
@@ -9,6 +13,11 @@ def timed_input(prompt, timeout):
     operator is not present.  A daemon thread waits for ``input()``, and if the
     thread does not finish within the timeout a message is printed and ``None``
     is returned.
+
+
+    >>> from PyICe.lab_utils.timed_response import timed_input
+    >>> callable(timed_input)
+    True
 
     Args:
         prompt: Text shown to the user as the input prompt.

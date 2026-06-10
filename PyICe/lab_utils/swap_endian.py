@@ -1,4 +1,8 @@
-"""Swap endian utility."""
+"""Swap endian utility.
+
+>>> from PyICe.lab_utils.swap_endian import swap_endian
+
+"""
 def swap_endian(word, elementCount, elementSize=8):
     """Reverse the order of fixed-size elements within an integer word.
 

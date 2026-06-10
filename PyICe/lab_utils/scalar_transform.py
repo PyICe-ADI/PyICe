@@ -1,4 +1,8 @@
-"""Scalar transform utility."""
+"""Scalar transform utility.
+
+>>> from PyICe.lab_utils.scalar_transform import scalar_transform
+
+"""
 from .vector_transform import vector_transform
 
 

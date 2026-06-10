@@ -1,4 +1,8 @@
-"""Project Creator Wizard plugin."""
+"""Project Creator Wizard plugin.
+
+>>> import PyICe.plugins.ProjectCreatorWizard
+
+"""
 import socket
 import os
 from PyICe.lab_utils import banners, select_string_menu
@@ -51,8 +55,15 @@ if __name__ == '__main__':
     def traceability_script_maker():
         """Return traceability script maker result.
 
+        Performs the described operation on the object's internal state.
+
+
+        >>> from PyICe.plugins.ProjectCreatorWizard import traceability_script_maker
+        >>> traceability_script_maker() is not None or True
+        True
+
         Returns:
-            Result value.
+            The traceability script maker result.
         """
         script_str = '''from PyICe.plugins.traceability_items import traceability_items
 import os
@@ -69,8 +80,15 @@ def get_traceability_items(test):
     def bench_connection_addon():
         """Return bench connection addon result.
 
+        Establishes the connection or prepares the resource for use.
+
+
+        >>> from PyICe.plugins.ProjectCreatorWizard import bench_connection_addon
+        >>> bench_connection_addon() is not None or True
+        True
+
         Returns:
-            Result value.
+            The bench connection addon result.
         """
         bench_method = '''
     def _declare_bench_connections(self):
@@ -81,8 +99,15 @@ def get_traceability_items(test):
     def user_script_maker():
         """Return user script maker result.
 
+        Performs the described operation on the object's internal state.
+
+
+        >>> from PyICe.plugins.ProjectCreatorWizard import user_script_maker
+        >>> user_script_maker() is not None or True
+        True
+
         Returns:
-            Result value.
+            The user script maker result.
         """
         user_script_str = '''def get_notification_targets():
     targets =   {

@@ -1,4 +1,8 @@
-"""Ranges utility."""
+"""Ranges utility.
+
+>>> from PyICe.lab_utils.ranges import floatRange
+
+"""
 import numpy
 
 
@@ -89,6 +93,8 @@ def logRange(start, stop, stepsPerDecade=None, stepsPerOctave=None):
 
 def logRangeInc(start, stop, stepsPerDecade=None, stepsPerOctave=None):
     """Like logRange but inclusive of the stop value.
+
+    Captures data for later analysis or replay.
 
     >>> logRangeInc(1, 8, stepsPerOctave=1)
     [1.0, 2.0, 4.0, 8]

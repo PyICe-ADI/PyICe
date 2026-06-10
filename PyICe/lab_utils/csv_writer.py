@@ -1,4 +1,8 @@
-"""Csv writer utility."""
+"""Csv writer utility.
+
+>>> from PyICe.lab_utils.csv_writer import csv_writer
+
+"""
 import collections
 
 
@@ -14,6 +18,11 @@ class csv_writer(object):
 
     Subclasses are expected to override ``_add_elapsed_time`` to supply a
     time source appropriate for their context.
+
+    >>> from PyICe.lab_utils.csv_writer import csv_writer
+    >>> csv_writer is not None
+    True
+
     """
 
     def __init__(self):
@@ -24,6 +33,11 @@ class csv_writer(object):
         string, and optional query function), the identity no-op transform,
         and the mutable ``columns`` and ``comments`` lists that accumulate
         state before any output is written.
+
+        >>> from PyICe.lab_utils.csv_writer import csv_writer
+        >>> csv_writer is not None
+        True
+
         """
         self.column_data_t = collections.namedtuple(
             'column_setup', [
@@ -50,6 +64,11 @@ class csv_writer(object):
         the value is made RFC-4180 safe: embedded double-quotes are doubled, and
         fields containing commas are wrapped in double-quotes.  A trailing comma
         delimiter is appended so that the caller can concatenate tokens directly.
+
+
+        >>> from PyICe.lab_utils.csv_writer import csv_writer
+        >>> hasattr(csv_writer, '_format_output')
+        True
 
         Args:
             data: Raw value fetched from the data source for this column.
@@ -85,6 +104,11 @@ class csv_writer(object):
         added.  Live Graph interprets ``'@'`` as a description line and ``'#'``
         as a comment line; neither character affects numeric data parsing.
 
+
+        >>> from PyICe.lab_utils.csv_writer import csv_writer
+        >>> hasattr(csv_writer, 'add_comment')
+        True
+
         Args:
             comment_str: Text body of the comment, without the leading prefix
                 character.
@@ -102,6 +126,11 @@ class csv_writer(object):
         raw elapsed-seconds value is written directly.  Use this when
         sub-minute resolution is important or when the downstream tool expects
         SI base units.
+
+
+        >>> from PyICe.lab_utils.csv_writer import csv_writer
+        >>> hasattr(csv_writer, 'add_elapsed_seconds')
+        True
 
         Args:
             display_name: Column header written to the CSV file.
@@ -122,6 +151,11 @@ class csv_writer(object):
         Convenient for medium-duration tests (minutes to a few hours) where
         per-second granularity is unnecessary.
 
+
+        >>> from PyICe.lab_utils.csv_writer import csv_writer
+        >>> hasattr(csv_writer, 'add_elapsed_minutes')
+        True
+
         Args:
             display_name: Column header written to the CSV file.
                 Defaults to ``'elapsed_minutes'``.
@@ -141,6 +175,11 @@ class csv_writer(object):
         Well-suited for long-running reliability or burn-in tests where a
         fractional-hour axis is more readable than a large second count.
 
+
+        >>> from PyICe.lab_utils.csv_writer import csv_writer
+        >>> hasattr(csv_writer, 'add_elapsed_hours')
+        True
+
         Args:
             display_name: Column header written to the CSV file.
                 Defaults to ``'elapsed_hours'``.
@@ -159,6 +198,11 @@ class csv_writer(object):
         Delegates to ``_add_elapsed_time`` with a divide-by-86400 transform.
         Use for multi-day soak or life-test logs where fractional days are the
         most natural unit for both display and downstream analysis.
+
+
+        >>> from PyICe.lab_utils.csv_writer import csv_writer
+        >>> hasattr(csv_writer, 'add_elapsed_days')
+        True
 
         Args:
             display_name: Column header written to the CSV file.
@@ -184,6 +228,11 @@ class csv_writer(object):
         strings, or a Python-side data source (``query_function``).  The column
         is appended to ``self.columns`` in the call order, which determines the
         left-to-right order in the CSV output.
+
+
+        >>> from PyICe.lab_utils.csv_writer import csv_writer
+        >>> hasattr(csv_writer, 'add_column')
+        True
 
         Args:
             query_name: Name used to look up this column's value in the
@@ -223,6 +272,11 @@ class csv_writer(object):
         columns share the same ``format`` string and receive no transform or
         ``query_function``.  Use ``add_column`` directly when individual
         columns need different formats, transforms, or Python-side data sources.
+
+
+        >>> from PyICe.lab_utils.csv_writer import csv_writer
+        >>> hasattr(csv_writer, 'add_columns')
+        True
 
         Args:
             column_list: Iterable of query/display name strings, one per

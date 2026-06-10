@@ -1,4 +1,8 @@
-"""Eng string utility."""
+"""Eng string utility.
+
+>>> from PyICe.lab_utils.eng_string import eng_string
+
+"""
 import math
 import numbers
 

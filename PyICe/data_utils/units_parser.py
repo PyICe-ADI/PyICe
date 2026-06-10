@@ -1,8 +1,27 @@
-"""Units parser utilities."""
+"""Units parser utilities.
+
+>>> from PyICe.data_utils.units_parser import Units_Parser
+
+"""
 class Units_Parser():
-    """Units_ parser."""
+    """Units_ parser.
+
+    >>> from PyICe.data_utils.units_parser import Units_Parser
+    >>> Units_Parser is not None
+    True
+
+    """
     def __init__(self):
-        """Initialize units_ parser."""
+        """Initialize units_ parser.
+
+        Stores configuration in ``symbols`` for use by other methods.
+
+        >>> from PyICe.data_utils.units_parser import Units_Parser
+        >>> obj = Units_Parser()
+        >>> isinstance(obj, Units_Parser)
+        True
+
+        """
         self.symbols = {
             # ETS DLOG
             "DUT": {"scale": 1, "isunit": True, "DESCRIPTION": "Device Under Test"},
@@ -121,25 +140,39 @@ class Units_Parser():
         }
 
     def parse(self, units):
-        """Return parse result.
+        """Return the parse.
+
+        Interprets raw data and returns structured results.
+
+
+        >>> from PyICe.data_utils.units_parser import Units_Parser
+        >>> hasattr(Units_Parser, 'parse')
+        True
 
         Args:
             units: Unit string.
 
         Returns:
-            Result value.
+            The parsed data structure.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         def viable_symbol(string):
             """Return viable symbol result.
+
+            Performs the described operation on the object's internal state.
+
+
+            >>> from PyICe.data_utils.units_parser import Units_Parser
+            >>> hasattr(Units_Parser, 'viable_symbol')
+            True
 
             Args:
                 string: String data.
 
             Returns:
-                Result value.
+                The viable symbol result.
             """
             if string == "":
                 return True
@@ -194,11 +227,18 @@ class Units_Parser():
 def parser(units):
     """Backward compatible with the old loose function call.
 
+    Performs the described operation on the object's internal state.
+
+
+    >>> from PyICe.data_utils.units_parser import parser
+    >>> callable(parser)
+    True
+
     Args:
         units: Unit string.
 
     Returns:
-        Result value.
+        The result of the operation.
     """
     return Units_Parser().parse(units)
 

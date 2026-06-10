@@ -1,4 +1,8 @@
-"""Hypertronix powermux instrument driver."""
+"""Hypertronix powermux instrument driver.
+
+>>> from PyICe.lab_instruments.hypertronix_powermux import powermux
+
+"""
 from ..lab_core import scpi_instrument, channel
 
 
@@ -7,6 +11,10 @@ class powermux(scpi_instrument):
 
     def __init__(self, interface_visa):
         """Initialize powermux.
+        Initializes 4 instance attributes that configure the object's
+        behavior.
+
+        Calls the parent constructor to inherit base behavior, and initializes 4 instance attributes that configure the object's behavior.
 
         Args:
             interface_visa: VISA interface instance.
@@ -21,14 +29,22 @@ class powermux(scpi_instrument):
 
     def add_channel_relay_names(self, channel_name, column_name, row_name):
         """Add a channel relay names.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
-            column_name: Column name.
-            row_name: Row name.
+            column_name: Name of the database column.
+            row_name: Database row identifier or label.
 
         Returns:
-            Result value.
+            List of matching items.
         """
         relay_channel = channel(
             channel_name, write_function=lambda closed: self.set_relay(
@@ -37,14 +53,22 @@ class powermux(scpi_instrument):
 
     def add_channel_relay(self, channel_name, column_number, row_number):
         """Add a channel relay.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
-            column_number: Column number.
-            row_number: Row number.
+            column_number: Column number to use.
+            row_number: Row number to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         relay_channel = channel(
             channel_name, write_function=lambda closed: self._set_relay(
@@ -57,7 +81,7 @@ class powermux(scpi_instrument):
             column "aux" is predefined
 
         Args:
-            column_name: Column name.
+            column_name: Name of the database column.
             num: Count or number.
         """
         self.columns[column_name] = num
@@ -69,17 +93,19 @@ class powermux(scpi_instrument):
 
         Args:
             num: Count or number.
-            row_name: Row name.
+            row_name: Database row identifier or label.
         """
         self.rows[row_name] = num
 
     def set_relay(self, column_name, row_name, closed):
         """Open and close a relay by row/column names.
 
+        Updates the relay in the object's internal state.
+
         Args:
-            closed: Closed.
-            column_name: Column name.
-            row_name: Row name.
+            closed: Closed to use.
+            column_name: Name of the database column.
+            row_name: Database row identifier or label.
         """
         if closed:
             self.close_relay(column_name, row_name)
@@ -96,9 +122,11 @@ class powermux(scpi_instrument):
     def close_relay(self, column_name, row_name):
         """Close relay at named (column, row).
 
+        Releases resources and restores the system to a safe state.
+
         Args:
-            column_name: Column name.
-            row_name: Row name.
+            column_name: Name of the database column.
+            row_name: Database row identifier or label.
         """
         self._set_relay(
             self.columns[column_name],
@@ -108,9 +136,11 @@ class powermux(scpi_instrument):
     def open_relay(self, column_name, row_name):
         """Open relay at named (column, row).
 
+        Establishes the connection or prepares the resource for use.
+
         Args:
-            column_name: Column name.
-            row_name: Row name.
+            column_name: Name of the database column.
+            row_name: Database row identifier or label.
         """
         self._set_relay(
             self.columns[column_name],
@@ -119,11 +149,14 @@ class powermux(scpi_instrument):
 
     def _set_relay_wdelay(self, delay, relay_list, closed):
         """Close or open list of relays at named (column, row) with delay between each.
+        Internal helper that sends the ``:DELay`` SCPI command.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
-            closed: Closed.
+            closed: Closed to use.
             delay: Delay time in seconds.
-            relay_list: Relay list.
+            relay_list: Relay list to use.
         """
         if closed:
             command_string = "CLOSe"
@@ -140,26 +173,32 @@ class powermux(scpi_instrument):
     def close_relay_wdelay(self, delay, relay_list):
         """Close list of relays at named (column, row) with delay between each.
 
+        Releases resources and restores the system to a safe state.
+
         Args:
             delay: Delay time in seconds.
-            relay_list: Relay list.
+            relay_list: Relay list to use.
         """
         self._set_relay_wdelay(delay, relay_list, closed=True)
 
     def open_relay_wdelay(self, delay, relay_list):
         """Open list of relays at named (column, row) with delay between each.
 
+        Establishes the connection or prepares the resource for use.
+
         Args:
             delay: Delay time in seconds.
-            relay_list: Relay list.
+            relay_list: Relay list to use.
         """
         self._set_relay_wdelay(delay, relay_list, closed=False)
 
     def open_all(self, sync_channels=False):
         """Open all relays, set sync_channels to true to keep the channels synced (no need to do this if shutting down).
 
+        Establishes the connection or prepares the resource for use.
+
         Args:
-            sync_channels: Sync channels.
+            sync_channels: Sync channels to use.
         """
         if sync_channels:
             for relay_channel in self.get_all_channels_list():
@@ -168,5 +207,8 @@ class powermux(scpi_instrument):
             self.get_interface().write(("OPEN ALL"))
 
     def test(self):
-        """Run the built in test routine."""
+        """Run the built in test routine.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
+        """
         self.get_interface().write(("*TST?"))

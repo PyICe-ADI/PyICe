@@ -1,4 +1,8 @@
-"""Vector transform utility."""
+"""Vector transform utility.
+
+>>> from PyICe.lab_utils.vector_transform import vector_transform
+
+"""
 import numpy
 
 

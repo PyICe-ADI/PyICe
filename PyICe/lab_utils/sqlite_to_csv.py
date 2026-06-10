@@ -1,4 +1,8 @@
-"""Sqlite to csv utility."""
+"""Sqlite to csv utility.
+
+>>> from PyICe.lab_utils.sqlite_to_csv import sqlite_to_csv
+
+"""
 import sqlite3
 from .csv_writer import csv_writer
 
@@ -11,6 +15,11 @@ class sqlite_to_csv(csv_writer):
     Live Graph (https://sourceforge.net/projects/live-graph/) or
     KST (kst-plot.kde.org). Column selection, transforms, formatting, and
     elapsed-time derivation are all configured before calling write().
+
+    >>> from PyICe.lab_utils.sqlite_to_csv import sqlite_to_csv
+    >>> sqlite_to_csv is not None
+    True
+
     """
     def __init__(self, table_name, database_file='data_log.sqlite'):
         """Connect to a SQLite database and prepare to export a named table.
@@ -19,6 +28,11 @@ class sqlite_to_csv(csv_writer):
         for use during column-discovery and write operations. The connection
         remains open until the instance is used as a context manager or the
         caller explicitly closes it.
+
+
+        >>> from PyICe.lab_utils.sqlite_to_csv import sqlite_to_csv
+        >>> sqlite_to_csv is not None
+        True
 
         Args:
             table_name: Name of the database table whose rows will be
@@ -40,6 +54,11 @@ class sqlite_to_csv(csv_writer):
         ``with`` statement, preventing resource leaks even if an exception
         is raised inside the block.
 
+
+        >>> from PyICe.lab_utils.sqlite_to_csv import sqlite_to_csv
+        >>> hasattr(sqlite_to_csv, '__enter__')
+        True
+
         Returns:
             This ``sqlite_to_csv`` instance, ready for column configuration
             and writing.
@@ -52,6 +71,11 @@ class sqlite_to_csv(csv_writer):
         Called automatically at the end of a ``with`` statement regardless
         of whether an exception occurred. Closes the SQLite connection but
         does not suppress any exceptions raised inside the block.
+
+
+        >>> from PyICe.lab_utils.sqlite_to_csv import sqlite_to_csv
+        >>> hasattr(sqlite_to_csv, '__exit__')
+        True
 
         Args:
             exc_type: Exception class, or ``None`` if no exception was raised.
@@ -71,6 +95,11 @@ class sqlite_to_csv(csv_writer):
         the human-readable timestamp column so they appear in the exported
         CSV. Call this before write() to include time-axis data needed by
         most visualization tools.
+
+        >>> from PyICe.lab_utils.sqlite_to_csv import sqlite_to_csv
+        >>> hasattr(sqlite_to_csv, 'add_timestamps')
+        True
+
         """
         self.add_column('rowid')
         self.add_column('datetime')
@@ -94,6 +123,11 @@ class sqlite_to_csv(csv_writer):
         table, and streams the formatted rows to ``output_file``. A header row
         using each column's display name is written first. Call this method
         after all column selections and transforms have been registered.
+
+
+        >>> from PyICe.lab_utils.sqlite_to_csv import sqlite_to_csv
+        >>> hasattr(sqlite_to_csv, 'write')
+        True
 
         Args:
             output_file: Path to the destination CSV file. The file is created

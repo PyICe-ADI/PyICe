@@ -1,4 +1,8 @@
-"""P S A instrument driver."""
+"""P S A instrument driver.
+
+>>> from PyICe.lab_instruments.PSA import bit_is_set
+
+"""
 from ..lab_core import *  # noqa: F403
 from PyICe.lab_utils.banners import print_banner
 import math
@@ -10,12 +14,14 @@ import socket
 def bit_is_set(value, bit):
     """Return bit is set result.
 
+    Collects the requested items and returns them as a standard container.
+
     Args:
-        bit: Bit.
+        bit: Bit to use.
         value: Value to set.
 
     Returns:
-        Result value.
+        The result of the operation.
     """
     return value & 2**bit == 2**bit
 
@@ -31,12 +37,16 @@ class keysight_e4440a(scpi_SA):
     def __init__(self, interface_visa, minimum_frequency,
                  maximum_frequency, reset=True):
         """Interface_visa.
+        Calls the parent class constructor and initializes instance-specific
+        attributes for keysight_e4440a.
+
+        Calls the parent constructor to inherit base behavior, and initializes 5 instance attributes that configure the object's behavior.
 
         Args:
             interface_visa: VISA interface instance.
-            maximum_frequency: Maximum frequency.
-            minimum_frequency: Minimum frequency.
-            reset: Reset.
+            maximum_frequency: Maximum frequency to use.
+            minimum_frequency: Minimum frequency to use.
+            reset: If True, perform a reset.
         """
         self._base_name = 'Keysight E4440a PSA signal analyzer'
         super(scpi_SA, self).__init__(f"Keysight E4440a @ {interface_visa}")
@@ -103,7 +113,7 @@ class keysight_e4440a(scpi_SA):
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(name=channel_name, write_function=lambda: self.get_interface(
         ).write(':SYSTem:PRESet:TYPE FACTory;:SYSTem:PRESet'))
@@ -176,13 +186,21 @@ class keysight_e4440a(scpi_SA):
 
     def add_channel_ydata(self, channel_name, trace_number=1):
         """Trace data vector.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
-            trace_number: Trace number.
+            trace_number: Trace number to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             channel_name,
@@ -198,12 +216,20 @@ class keysight_e4440a(scpi_SA):
 
     def add_channel_xdata(self, channel_name):
         """Frequency sweep data vector.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, read_function=self._compute_x_axis)
         # self._configured_channels[trace_number]['v_sense'] = new_channel
@@ -216,12 +242,19 @@ class keysight_e4440a(scpi_SA):
 
     def add_channel_sweep_control(self, channel_name):
         """Add sweep control channels (start, stop, center, span frequency).
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         start_channel = channel(
             f'{channel_name}_start',
@@ -419,7 +452,7 @@ class keysight_e4440a(scpi_SA):
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The result of the operation.
         """
         type_channel = channel(
             f'{channel_name}',
@@ -478,7 +511,7 @@ class keysight_e4440a(scpi_SA):
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_RBW(bw):
             self.get_interface().write(':SENSe:BANDwidth:RESolution:AUTO OFF')
@@ -495,12 +528,20 @@ class keysight_e4440a(scpi_SA):
 
     def add_channel_RBW_auto(self, channel_name):
         """Tracks the state of the AUTO setting for the resolution bandwidth.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:SENSe:BANDwidth:RESolution:AUTO`` SCPI command to the
+        instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = integer_channel(
             name=channel_name,
@@ -551,7 +592,7 @@ class keysight_e4440a(scpi_SA):
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_vbw(bw):
             self.get_interface().write(':SENSe:BANDwidth:VIDeo:AUTO OFF')
@@ -575,12 +616,19 @@ class keysight_e4440a(scpi_SA):
 
     def add_channel_VBW_auto(self, channel_name):
         """Tracks the state of the AUTO setting for the video bandwidth and the RBW/VBW ratio channel.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         auto_channel = integer_channel(
             name=channel_name,
@@ -660,7 +708,7 @@ class keysight_e4440a(scpi_SA):
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The result of the operation.
         """
         def _write_avg(count):
             if count == 0:
@@ -709,14 +757,20 @@ class keysight_e4440a(scpi_SA):
         return (count_channel, type_channel)
 
     def all_markers_off(self):
-        """Perform all markers off operation."""
+        """Perform all markers off operation.
+
+        Sends the ``:CALCulate:MARKer1:STATe`` SCPI command to the instrument.
+        """
         self.get_interface().write(':CALCulate:MARKer1:STATe OFF')
         self.get_interface().write(':CALCulate:MARKer2:STATe OFF')
         self.get_interface().write(':CALCulate:MARKer3:STATe OFF')
         self.get_interface().write(':CALCulate:MARKer4:STATe OFF')
 
     def flush_errors(self):
-        """Perform flush errors operation."""
+        """Perform flush errors operation.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
+        """
         while self.get_interface().ask(':SYSTem:ERROr?') != '+0,"No error"':
             pass
 
@@ -775,7 +829,7 @@ class keysight_e4440a(scpi_SA):
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The result of the operation.
         """
         new_channel = channel(
             channel_name,
@@ -824,7 +878,7 @@ class keysight_e4440a(scpi_SA):
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_attenuator(value):
             if value in range(0, 72, 2):
@@ -847,12 +901,19 @@ class keysight_e4440a(scpi_SA):
 
     def add_channel_attenuator_auto(self, channel_name):
         """Tracks the state of the AUTO setting for the front end attenuators.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = integer_channel(
             name=channel_name,
@@ -885,7 +946,7 @@ class keysight_e4440a(scpi_SA):
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         limits = [
             {"MINFREQ": 6.6e12, "MAXFREQ": 50e12, "POWER_dBm": -2},
@@ -896,11 +957,13 @@ class keysight_e4440a(scpi_SA):
         def pmax_of_freqs():
             """Return pmax of freqs result.
 
+            Issues a SCPI query to the instrument and parses the response.
+
             Returns:
-                Result value.
+                The pmax of freqs result.
 
             Raises:
-                Exception: On error condition.
+                Exception: If an unexpected error occurs.
             """
             if self.maximum_frequency > 50e12:
                 raise Exception(
@@ -922,23 +985,27 @@ class keysight_e4440a(scpi_SA):
         def nearest_even_value(value):
             """Return nearest even value result.
 
+            Performs the described operation on the object's internal state.
+
             Args:
                 value: Value to set.
 
             Returns:
-                Result value.
+                The nearest even value result.
             """
             return math.ceil(value / 2) * 2
 
         def attenuation_level(pmax, power_in):
             """Return attenuation level result.
 
+            Performs the described operation on the object's internal state.
+
             Args:
-                pmax: Pmax.
-                power_in: Power in.
+                pmax: Pmax to use.
+                power_in: Power in to use.
 
             Returns:
-                Result value.
+                The attenuation level result.
             """
             print(
                 f"Returning attenuation level of {nearest_even_value(max(min(power_in - pmax, 70), 0))}")
@@ -970,7 +1037,7 @@ class keysight_e4440a(scpi_SA):
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         self.preamp_channel = integer_channel(
             channel_name,
@@ -987,9 +1054,11 @@ class keysight_e4440a(scpi_SA):
             # preamp setting change. Force attenuator recomputation.
             """Perform maxp atten cb operation.
 
+            Performs the described operation on the object's internal state.
+
             Args:
-                ch: Ch.
-                val: Val.
+                ch: Channel number or channel object.
+                val: Val to use.
             """
             if self.max_power_ch is not None and self.max_power_ch.read() is not None:
                 self.max_power_ch.write(self.max_power_ch.read())
@@ -1052,11 +1121,11 @@ class keysight_e4440a(scpi_SA):
 
         Args:
             channel_name: Name for the new channel.
-            marker_number: Marker number.
-            trace_number: Trace number.
+            marker_number: Marker number to use.
+            trace_number: Trace number to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         self.get_interface().write(
             f':CALCulate:MARKer{marker_number}:STATe ON')  # OFF|ON|0|1
@@ -1135,11 +1204,11 @@ class keysight_e4440a(scpi_SA):
 
         Args:
             channel_name: Name for the new channel.
-            marker_number: Marker number.
-            trace_number: Trace number.
+            marker_number: Marker number to use.
+            trace_number: Trace number to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         # handling of marker mode is a little crude. TODO - keep track of
         # already used marker and trace numbers better.
@@ -1189,7 +1258,7 @@ class keysight_e4440a(scpi_SA):
 
         Args:
             channel_name: Name for the new channel.
-            marker_number: Marker number.
+            marker_number: Marker number to use.
         """
         # TODO
         # :CALCulate:MARKer[1]|2|3|4:FUNCtion BPOWer|NOISe|OFF
@@ -1204,12 +1273,19 @@ class keysight_e4440a(scpi_SA):
 
     def add_channel_trigger(self, channel_name):
         """Add trigger control channels.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _single_abort_trigger_wait(run_mode):
             if run_mode == 'Single':
@@ -1380,12 +1456,19 @@ class keysight_e4440a(scpi_SA):
 
     def add_channel_sweep_time(self, channel_name):
         """Calculated time for single sweep, dependent on start/stop/points/rbw/etc.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _set_sweep_time(t):
             self.get_interface().write(':SENSe:SWEep:TIME:AUTO OFF')
@@ -1404,12 +1487,19 @@ class keysight_e4440a(scpi_SA):
 
     def add_channel_sweep_time_auto(self, channel_name):
         """Tracks the state of the AUTO setting for the sweep time.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = integer_channel(
             name=channel_name,
@@ -1425,12 +1515,19 @@ class keysight_e4440a(scpi_SA):
 
     def add_channel_message(self, channel_name):
         """Write message to lower left corner of screen display.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def _disp_msg(msg):
             if msg is None:
@@ -1466,7 +1563,7 @@ class keysight_e4440a(scpi_SA):
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         reference_level_channel = channel(
             f'{channel_name}_reference_level',
@@ -1607,7 +1704,7 @@ class keysight_e4440a(scpi_SA):
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         coupling_channel = channel(
             f'{channel_name}',
@@ -1632,17 +1729,23 @@ class keysight_e4440a(scpi_SA):
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         scpi = ':STATus:QUEStionable:POWer:CONDition?'
         decode_bit = 6
         message1, message2, message3 = '*** ERROR ***', 'PSA indicates an overload on the 1st IF stage.', 'Correct the attenuation level!'
 
         def get_status():
-            """Return the status.
+            """Return the current status.
+            Queries the instrument for its current status and returns the
+            parsed response.
+            Queries the instrument for its current status and returns the
+            parsed response.
+
+            Returns the stored status from the object's internal state.
 
             Returns:
-                Result value.
+                The current status.
             """
             error = bit_is_set(int(self.get_interface().ask(scpi)), decode_bit)
             if error:
@@ -1665,17 +1768,23 @@ class keysight_e4440a(scpi_SA):
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         scpi = ':STATus:QUEStionable:INTegrity:CONDition?'
         decode_bit = 4
         message1, message2, message3 = '*** ERROR ***', 'PSA indicates an overload on the final IF stage.', 'Correct the attenuation level!'
 
         def get_status():
-            """Return the status.
+            """Return the current status.
+            Queries the instrument for its current status and returns the
+            parsed response.
+            Queries the instrument for its current status and returns the
+            parsed response.
+
+            Returns the stored status from the object's internal state.
 
             Returns:
-                Result value.
+                The current status.
             """
             error = bit_is_set(int(self.get_interface().ask(scpi)), decode_bit)
             if error:
@@ -1698,17 +1807,23 @@ class keysight_e4440a(scpi_SA):
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         scpi = ':STATus:QUEStionable:INTegrity:CONDition?'
         decode_bit = 3
         message1, message2, message3 = '*** ERROR ***', 'PSA indicates measurement uncalibrated.', 'Correct the attenuation level!'
 
         def get_status():
-            """Return the status.
+            """Return the current status.
+            Queries the instrument for its current status and returns the
+            parsed response.
+            Queries the instrument for its current status and returns the
+            parsed response.
+
+            Returns the stored status from the object's internal state.
 
             Returns:
-                Result value.
+                The current status.
             """
             error = bit_is_set(int(self.get_interface().ask(scpi)), decode_bit)
             if error:
@@ -1731,17 +1846,23 @@ class keysight_e4440a(scpi_SA):
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         scpi = 'STATus:QUEStionable:INTegrity:UNCalibrated:CONDition?'
         decode_bit = 0
         message1, message2, message3 = '*** ERROR ***', 'PSA indicates measurement uncalibrated.', 'Correct the attenuation level!'
 
         def get_status():
-            """Return the status.
+            """Return the current status.
+            Queries the instrument for its current status and returns the
+            parsed response.
+            Queries the instrument for its current status and returns the
+            parsed response.
+
+            Returns the stored status from the object's internal state.
 
             Returns:
-                Result value.
+                The current status.
             """
             error = bit_is_set(int(self.get_interface().ask(scpi)), decode_bit)
             if error:
@@ -1765,16 +1886,22 @@ class keysight_e4440a(scpi_SA):
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         scpi = 'STATus:QUEStionable:CONDition?'
         message1, message2, message3 = '*** ERROR ***', 'PSA indicates generally questionable data.', 'Correct the attenuation level!'
 
         def get_status():
-            """Return the status.
+            """Return the current status.
+            Queries the instrument for its current status and returns the
+            parsed response.
+            Queries the instrument for its current status and returns the
+            parsed response.
+
+            Returns the stored status from the object's internal state.
 
             Returns:
-                Result value.
+                The current status.
             """
             error = int(self.get_interface().ask(scpi))
             if error:
@@ -1790,12 +1917,19 @@ class keysight_e4440a(scpi_SA):
 
     def add_channel_fullscreen(self, channel_name):
         """Turns off the screen buttons temporarily for more usful viewing. They will come back on if other user inputs require them.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = integer_channel(
             name=channel_name,
@@ -1811,12 +1945,19 @@ class keysight_e4440a(scpi_SA):
 
     def add_channel_syst_error(self, channel_name):
         """Returns the response to :SYSTem:ERROr? to see if there are any commands making the instrument angry. Perform repeated reads to get them all and clear the buffer.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Sends the ``:`` SCPI command to the instrument.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(
             name=channel_name,
@@ -1837,12 +1978,20 @@ class keysight_e4440a(scpi_SA):
 
     def add_channels(self, channel_name):
         """Add all instrument channels.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         channels = []
         channels.append(self.add_channel_xdata(f'{channel_name}_xpoints'))

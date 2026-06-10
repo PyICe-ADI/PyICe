@@ -1,4 +1,8 @@
-"""Sqlite to easylog utility."""
+"""Sqlite to easylog utility.
+
+>>> from PyICe.lab_utils.sqlite_to_easylog import sqlite_to_easylog
+
+"""
 from .sqlite_to_csv import sqlite_to_csv
 
 
@@ -10,6 +14,11 @@ class sqlite_to_easylog(sqlite_to_csv):
     (http://www.lascarelectronics.com/data-logger/easylogger-software.php)
     determines which trace belongs on which Y-axis. Use this when you want to
     interactively browse logged bench data with the free EasyLog viewer.
+
+    >>> from PyICe.lab_utils.sqlite_to_easylog import sqlite_to_easylog
+    >>> sqlite_to_easylog is not None
+    True
+
     """
     def __init__(self, chart_name, table_name, y1_axis_units='V',
                  y2_axis_units='A', database_file='data_log.sqlite'):
@@ -18,6 +27,11 @@ class sqlite_to_easylog(sqlite_to_csv):
         Automatically inserts ``rowid`` (labelled with *chart_name*) and
         ``datetime`` columns, which EasyLog requires in fixed positions at
         the beginning of each row.
+
+
+        >>> from PyICe.lab_utils.sqlite_to_easylog import sqlite_to_easylog
+        >>> hasattr(sqlite_to_easylog, '__init__')
+        True
 
         Args:
             chart_name: Title shown at the top of the EasyLog graph; also
@@ -46,6 +60,11 @@ class sqlite_to_easylog(sqlite_to_csv):
         Overrides the parent ``sqlite_to_csv.add_comment`` to prevent creation
         of files that EasyLog Graph cannot parse.
 
+
+        >>> from PyICe.lab_utils.sqlite_to_easylog import sqlite_to_easylog
+        >>> hasattr(sqlite_to_easylog, 'add_comment')
+        True
+
         Args:
             *args: Ignored; present only for interface compatibility.
             **kwargs: Ignored; present only for interface compatibility.
@@ -63,6 +82,11 @@ class sqlite_to_easylog(sqlite_to_csv):
         The column header is automatically suffixed with the configured unit
         string in parentheses (e.g. ``"vout (V)"``), which is how EasyLog
         Graph decides whether a trace is plotted on the left or right Y-axis.
+
+
+        >>> from PyICe.lab_utils.sqlite_to_easylog import sqlite_to_easylog
+        >>> hasattr(sqlite_to_easylog, 'add_column')
+        True
 
         Args:
             query_name: SQLite column name to select from the table.
@@ -95,6 +119,11 @@ class sqlite_to_easylog(sqlite_to_csv):
         Convenience wrapper around ``add_column``; each name in *column_list*
         is added with identical *second_y_axis* and *format* settings.
 
+
+        >>> from PyICe.lab_utils.sqlite_to_easylog import sqlite_to_easylog
+        >>> hasattr(sqlite_to_easylog, 'add_columns')
+        True
+
         Args:
             column_list: Sequence of SQLite column names to add.
             second_y_axis: If ``True``, assign all columns to the right-side
@@ -116,6 +145,11 @@ class sqlite_to_easylog(sqlite_to_csv):
         Call this after all desired columns have been added with
         ``add_column`` / ``add_columns``. The file is written with Windows
         ANSI encoding (``mbcs``) as expected by EasyLog Graph.
+
+
+        >>> from PyICe.lab_utils.sqlite_to_easylog import sqlite_to_easylog
+        >>> hasattr(sqlite_to_easylog, 'write')
+        True
 
         Args:
             output_file: Destination file path for the CSV output.

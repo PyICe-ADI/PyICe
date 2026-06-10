@@ -1,4 +1,8 @@
-"""Krohnhite 526 instrument driver."""
+"""Krohnhite 526 instrument driver.
+
+>>> from PyICe.lab_instruments.krohnhite_526 import krohnhite_526
+
+"""
 from ..lab_core import *  # noqa: F403
 
 
@@ -31,6 +35,10 @@ class krohnhite_526(instrument):
 
     def __init__(self, interface_visa):
         """Initialize krohnhite_526.
+        Initializes 8 instance attributes that configure the object's
+        behavior.
+
+        Calls the parent constructor to inherit base behavior, and initializes 8 instance attributes that configure the object's behavior.
 
         Args:
             interface_visa: VISA interface instance.
@@ -50,12 +58,20 @@ class krohnhite_526(instrument):
 
     def add_channel_current(self, channel_name):
         """Write channel to switch instrument to current mode and program current. Default current range is +/-10mA.  Create a irange channel to adjust range to (10, 100)mA.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         self.i_channel = channel(
             channel_name, write_function=self._write_current)
@@ -65,12 +81,20 @@ class krohnhite_526(instrument):
 
     def add_channel_irange(self, channel_name):
         """Write channel to set current mode full scale range to +/-(10,100)mA.  Won't take effect until the current is programmed.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, write_function=self._set_irange)
         return self._add_channel(new_channel)
@@ -114,12 +138,20 @@ class krohnhite_526(instrument):
 
     def add_channel_voltage(self, channel_name):
         """Add a channel voltage.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         self.v_channel = channel(
             channel_name, write_function=self._write_voltage)
@@ -129,12 +161,20 @@ class krohnhite_526(instrument):
 
     def add_channel_vrange(self, channel_name):
         """Write channel to set voltage mode full scale range to +/-(0.1,1,10,100)V or +/-(10,100)mA.  Won't take effect until the voltage is programmed.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, write_function=self._set_vrange)
         return self._add_channel(new_channel)

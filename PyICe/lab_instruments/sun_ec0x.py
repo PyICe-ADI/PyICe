@@ -1,4 +1,8 @@
-"""Sun ec0x instrument driver."""
+"""Sun ec0x instrument driver.
+
+>>> from PyICe.lab_instruments.sun_ec0x import sun_ec0x
+
+"""
 from ..lab_core import *  # noqa: F403
 from .sun_ecxx import sun_ecxx
 
@@ -16,6 +20,9 @@ class sun_ec0x(sun_ecxx):
     """
     def __init__(self, interface_visa):
         """Initialize sun_ec0x.
+        Stores configuration in ``_base_name`` for use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
 
         Args:
             interface_visa: VISA interface instance.
@@ -26,6 +33,9 @@ class sun_ec0x(sun_ecxx):
 
     def _write_temperature(self, value):
         """Set named channel to new temperature "value".
+        Internal implementation detail; see the public API for usage.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
             value: Value to set.
@@ -41,6 +51,8 @@ class sun_ec0x(sun_ecxx):
 
     def _enable(self, enable):
         """Enable/disable temperature chamber heating and cooling.
+
+        Internal implementation detail; see the public API for usage.
 
         Args:
             enable: Enable or disable.

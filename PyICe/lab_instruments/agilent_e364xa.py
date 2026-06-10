@@ -1,4 +1,8 @@
-"""Agilent e364xa instrument driver."""
+"""Agilent e364xa instrument driver.
+
+>>> from PyICe.lab_instruments.agilent_e364xa import agilent_e364xa
+
+"""
 from PyICe.lab_core import *  # noqa: F403
 from .agilent_e36xxa import agilent_e36xxa
 
@@ -8,10 +12,14 @@ class agilent_e364xa(agilent_e36xxa):
 
     def __init__(self, interface_visa, resetoutputs=True):
         """Initialize agilent_e364xa.
+        Calls the parent class constructor and initializes instance-specific
+        attributes for agilent_e364xa.
+
+        Calls the parent constructor to inherit base behavior, and initializes 3 instance attributes that configure the object's behavior.
 
         Args:
             interface_visa: VISA interface instance.
-            resetoutputs: Resetoutputs.
+            resetoutputs: Resetoutputs to use.
         """
         self._base_name = 'agilent_e3648a'
         self.name = f'{self._base_name} @ {interface_visa}'
@@ -45,7 +53,7 @@ class agilent_e364xa(agilent_e36xxa):
             num: Count or number.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         num = num.upper()
         if num not in ['OUT1', 'OUT2']:
@@ -61,6 +69,11 @@ class agilent_e364xa(agilent_e36xxa):
 
     def set_ovp_voltage(self, voltage, num):  # NB
         """Set the ovp voltage.
+        Sends the ``VOLT:PROT:STAT`` SCPI command to the instrument.
+        Sends the appropriate SCPI command to configure the instrument's ovp
+        voltage.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
             num: Count or number.
@@ -72,12 +85,16 @@ class agilent_e364xa(agilent_e36xxa):
 
     def select_output(self, num):  # NB
         """Perform select output operation.
+        Sends the ``INSTrument:SELect`` SCPI command to the instrument.
+        Selects the specified output.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Args:
             num: Count or number.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         num = num.upper()
         if num not in ['OUT1', 'OUT2']:

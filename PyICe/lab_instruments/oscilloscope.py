@@ -1,4 +1,8 @@
-"""Oscilloscope instrument driver."""
+"""Oscilloscope instrument driver.
+
+>>> from PyICe.lab_instruments.oscilloscope import oscilloscope
+
+"""
 from ..lab_core import *  # noqa: F403
 import struct
 import abc
@@ -20,12 +24,16 @@ class oscilloscope(scpi_instrument, delegator):
     def fetch_waveform_data(self):
         # assumes :WAVeform:SOURce set correctly before call!
         """Return fetch waveform data result.
+        Sends the ``:WAVeform:BYTeorder`` SCPI command to the instrument.
+        Sends the ``Unknown`` SCPI command to the instrument.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Returns:
-            Result value.
+            The fetched data.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         self.get_interface().write(':WAVeform:DATA?')
         raw_data = self.get_interface().read_raw()
@@ -117,11 +125,13 @@ class oscilloscope(scpi_instrument, delegator):
         # yreference = int(yreference)
         """Return scale waveform data result.
 
+        Supports the ``oscilloscope`` workflow by performing the described operation.
+
         Args:
             data: Data to write.
 
         Returns:
-            Result value.
+            The scale waveform data result.
         """
         waveform_scaling = self.get_waveform_scaling()
         data = map(
@@ -139,9 +149,14 @@ class oscilloscope(scpi_instrument, delegator):
     def get_waveform_scaling(self):
         # Requires Waveform Source to be previously set
         """Return the waveform scaling.
+        Sends the ``:WAVeform:PREamble`` SCPI command to the instrument.
+        Queries the instrument for its current waveform scaling and returns
+        the parsed response.
+
+        Sends the corresponding SCPI command string to the instrument over the bus.
 
         Returns:
-            Result value.
+            The current waveform scaling.
         """
         waveform_scaling = {}
         preamble = self.get_interface().ask(':WAVeform:PREamble?')
@@ -165,13 +180,17 @@ class oscilloscope(scpi_instrument, delegator):
     def setup_channels(self, scope_channels):
         """Helper method to set up each specific waveform channel in scope_channels list and call add_all_timebase_trigger_aquisition_channels.
 
+        Initiates the action and notifies any registered observers.
+
         Args:
-            scope_channels: Scope channels.
+            scope_channels: Scope channels to use.
         """
 
     @abc.abstractmethod
     def enable_channels(self, channels):
         """Turn on Y channels in the channels list.
+
+        Activates channels so that subsequent operations include it.
 
         Args:
             channels: List of channel objects.
@@ -179,15 +198,23 @@ class oscilloscope(scpi_instrument, delegator):
 
     @abc.abstractmethod
     def disable_all_Ychannels(self):
-        """Turn off all Y channels."""
+        """Turn off all Y channels.
+
+        Deactivates all Ychannels so that subsequent operations skip it.
+        """
 
     @abc.abstractmethod
     def resync_scope(self):
-        """Reset the scope and reconfigure physical instrument to desired used channels."""
+        """Reset the scope and reconfigure physical instrument to desired used channels.
+
+        Restores the object or hardware to its default state.
+        """
 
     @abc.abstractmethod
     def add_Ychannel_waveform(self, name, number):
         """Add named waveform channel and add Ycontrol and Yreadback channels for that waveform channel.
+
+        Appends a new Ychannel waveform entry to the object's internal collection.
 
         Args:
             name: Name identifier.
@@ -198,6 +225,8 @@ class oscilloscope(scpi_instrument, delegator):
     def add_Ycontrol_Yreadback_channels(self, name, number):
         """Add all control and readback channels for the specified Y waveform channel.
 
+        Appends a new Ycontrol Yreadback channels entry to the object's internal collection.
+
         Args:
             name: Name identifier.
             number: Channel or port number.
@@ -207,6 +236,8 @@ class oscilloscope(scpi_instrument, delegator):
     def add_Xcontrol_Xreadback_channels(self, prefix):
         """Add all X control and readback channels.
 
+        Appends a new Xcontrol Xreadback channels entry to the object's internal collection.
+
         Args:
             prefix: Name prefix string.
         """
@@ -214,6 +245,8 @@ class oscilloscope(scpi_instrument, delegator):
     @abc.abstractmethod
     def add_trigger_channels(self, prefix):
         """Add all trigger control channels.
+
+        Appends a new trigger channels entry to the object's internal collection.
 
         Args:
             prefix: Name prefix string.
@@ -223,6 +256,8 @@ class oscilloscope(scpi_instrument, delegator):
     def add_aquire_channels(self, prefix):
         """Add all channels the control the scope aquisition channel.
 
+        Appends a new aquire channels entry to the object's internal collection.
+
         Args:
             prefix: Name prefix string.
         """
@@ -231,6 +266,8 @@ class oscilloscope(scpi_instrument, delegator):
     def add_channel_timebase(self, name):
         """Add time channel that stores the x-axis data points in seconds.
 
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
         Args:
             name: Name identifier.
         """
@@ -238,6 +275,8 @@ class oscilloscope(scpi_instrument, delegator):
     @abc.abstractmethod
     def add_all_timebase_trigger_aquisition_channels(self, prefix):
         """Helper method to easily add time base, X control, X readback, trigger, and aquisition channels.
+
+        Appends a new all timebase trigger aquisition channels entry to the object's internal collection.
 
         Args:
             prefix: Name prefix string.

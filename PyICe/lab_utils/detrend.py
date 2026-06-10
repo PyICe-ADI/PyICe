@@ -1,4 +1,8 @@
-"""Detrend utility."""
+"""Detrend utility.
+
+>>> from PyICe.lab_utils.detrend import _detrend
+
+"""
 import scipy
 from .vector_transform import vector_transform
 
@@ -11,6 +15,11 @@ def _detrend(rec_array, **kwargs):
     according to ``**kwargs`` (e.g. ``type='constant'`` or ``type='linear'``).
 
     See https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.detrend.html
+
+
+    >>> from PyICe.lab_utils.detrend import _detrend
+    >>> callable(_detrend)
+    True
 
     Args:
         rec_array: Input numpy record array. The first column is treated
@@ -32,6 +41,11 @@ def detrend_constant(rec_array, **kwargs):
     analysis or when comparing waveform shapes across different bias
     conditions.
 
+
+    >>> from PyICe.lab_utils.detrend import detrend_constant
+    >>> callable(detrend_constant)
+    True
+
     Args:
         rec_array: Input numpy record array. The first column is treated
             as the x-axis and left unchanged; all others have their mean
@@ -50,6 +64,11 @@ def detrend_linear(rec_array, **kwargs):
     Useful for isolating residual nonlinearity or noise after removing a
     dominant first-order slope (e.g. computing INL from a DAC transfer
     function).
+
+
+    >>> from PyICe.lab_utils.detrend import detrend_linear
+    >>> callable(detrend_linear)
+    True
 
     Args:
         rec_array: Input numpy record array. The first column is treated

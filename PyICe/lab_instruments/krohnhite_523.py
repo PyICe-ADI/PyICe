@@ -1,4 +1,8 @@
-"""Krohnhite 523 instrument driver."""
+"""Krohnhite 523 instrument driver.
+
+>>> from PyICe.lab_instruments.krohnhite_523 import krohnhite_523
+
+"""
 from ..lab_core import *  # noqa: F403
 
 
@@ -7,6 +11,9 @@ class krohnhite_523(instrument):
 
     def __init__(self, interface_visa):
         """Initialize krohnhite_523.
+        Stores configuration in ``_base_name`` for use by other methods.
+
+        Calls the parent constructor to inherit base behavior, and initializes 1 instance attribute that configure the object's behavior.
 
         Args:
             interface_visa: VISA interface instance.
@@ -19,49 +26,82 @@ class krohnhite_523(instrument):
         self.disable_crowbar()  # turn off crowbar by default
 
     def ground_lo_terminal(self):
-        """Perform ground lo terminal operation."""
+        """Perform ground lo terminal operation.
+
+        Supports the ``krohnhite_523`` workflow by performing the described operation.
+        """
         self.get_interface().write(("g"))
 
     def float_lo_terminal(self):
-        """Perform float lo terminal operation."""
+        """Perform float lo terminal operation.
+
+        Supports the ``krohnhite_523`` workflow by performing the described operation.
+        """
         self.get_interface().write(("f"))
 
     def disable_crowbar(self):
-        """Disable crowbar."""
+        """Disable crowbar.
+
+        Deactivates crowbar so that subsequent operations skip it.
+        """
         self.get_interface().write(("v"))
 
     def add_channel_voltage(self, channel_name):
         """Add a channel voltage.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, write_function=self._write_voltage)
         return self._add_channel(new_channel)
 
     def add_channel_current(self, channel_name):
         """Add a channel current.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name, write_function=self._write_current)
         return self._add_channel(new_channel)
 
     def add_channel_voltage_compliance(self, channel_name):
         """Add a channel voltage compliance.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = channel(channel_name,
                               write_function=self._write_compliance_voltage)

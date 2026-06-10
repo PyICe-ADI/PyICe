@@ -1,4 +1,8 @@
-"""Firmata instrument driver."""
+"""Firmata instrument driver.
+
+>>> from PyICe.lab_instruments.firmata import firmata
+
+"""
 from ..lab_core import *  # noqa: F403
 import time
 
@@ -37,10 +41,10 @@ class firmata(instrument):
 
 
         Args:
-            serial_port_name: Serial port name.
+            serial_port_name: Serial port identifier (e.g. ``"COM3"`` or ``"/dev/ttyUSB0"``).
 
         Raises:
-            ImportError: On error condition.
+            ImportError: If a required package is not installed.
         """
         print("Consider switching from Firmata to Telemetrix")
         try:
@@ -58,7 +62,10 @@ class firmata(instrument):
             Its done this way so when PyMata is updated to a newer version we keep the added functionality.
             """
             def reset_serial_communications(self):
-                """Perform reset serial communications operation."""
+                """Perform reset serial communications operation.
+
+                Restores the object or hardware to its default state.
+                """
                 if self.verbose:
                     print('Resetting Serial Communications')
                 """
@@ -202,11 +209,11 @@ class firmata(instrument):
 
         Args:
             channel_name: Name for the new channel.
-            enable_pullup: Enable pullup.
+            enable_pullup: Enable pullup to use.
             pin: Pin number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = integer_channel(
             channel_name,
@@ -243,7 +250,7 @@ class firmata(instrument):
             pin: Pin number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = integer_channel(
             channel_name,
@@ -265,13 +272,21 @@ class firmata(instrument):
 
     def add_channel_analog_input(self, channel_name, pin):
         """Analog input pin.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in
+        read-all sweeps and logger output.
+
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
 
         Args:
             channel_name: Name for the new channel.
             pin: Pin number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = integer_channel(channel_name, size=10, read_function=lambda: self.firmata_board.analog_read(
             pin))  # don't really know size, but it doesn't matter. 10-bit answer on Arduino hardware
@@ -313,7 +328,7 @@ class firmata(instrument):
             pin: Pin number.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         new_channel = integer_channel(
             channel_name,
@@ -358,12 +373,14 @@ class firmata(instrument):
     def add_channel_servo(self, channel_name, pin):
         """RC servo control (544ms-2400ms PWM) output.
 
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+
         Args:
             channel_name: Name for the new channel.
             pin: Pin number.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         raise Exception('Not yet implemented')
         # self.firmata_board.servo_config(pin, min_pulse=544, max_pulse=2400)
@@ -379,20 +396,22 @@ class firmata(instrument):
 
         Args:
             channel_name: Name for the new channel.
-            digital_input_channel: Digital input channel.
-            threshold_high: Threshold high.
+            digital_input_channel: Digital input channel to use.
+            threshold_high: Threshold high to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
         """
         def read_latch_status(latch_channel):
             """Return read latch status result.
 
+            Reads data from the underlying source and returns it.
+
             Args:
-                latch_channel: Latch channel.
+                latch_channel: Latch channel to use.
 
             Returns:
-                Result value.
+                The value read from the device or channel.
             """
             latch_status = self.firmata_board.get_digital_latch_data(
                 latch_channel.get_attribute('pin'))
@@ -435,25 +454,33 @@ class firmata(instrument):
         latches high signal levels by default. Set threshold_type='>=', '<' or  to set latch sensitivity to logic low.
 
         Args:
-            analog_input_channel: Analog input channel.
+            analog_input_channel: Analog input channel to use.
             channel_name: Name for the new channel.
-            threshold: Threshold.
-            threshold_type: Threshold type.
+            threshold: Threshold value for detection or comparison.
+            threshold_type: Threshold type to use.
 
         Returns:
-            Result value.
+            The newly created channel object.
 
         Raises:
-            Exception: On error condition.
+            Exception: If an unexpected error occurs.
         """
         def read_latch_status(latch_channel):
             """Return read latch status result.
+            Sends the appropriate command to the instrument and parses the
+            response.
+            Sends the appropriate query to the instrument and parses the
+            response.
+            Sends the appropriate query to the instrument and parses the
+            response.
+
+            Reads data from the underlying source and returns it.
 
             Args:
-                latch_channel: Latch channel.
+                latch_channel: Latch channel to use.
 
             Returns:
-                Result value.
+                The value read from the device or channel.
             """
             latch_status = self.firmata_board.get_analog_latch_data(
                 latch_channel.get_attribute('pin'))
@@ -524,7 +551,9 @@ class firmata(instrument):
     def reset_serial_communications(self):
         """Return reset serial communications result.
 
+        Restores the object or hardware to its default state.
+
         Returns:
-            Result value.
+            The reset serial communications result.
         """
         return (self.firmata_board.reset_serial_communications())

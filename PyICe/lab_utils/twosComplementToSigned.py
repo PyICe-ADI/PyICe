@@ -1,4 +1,8 @@
-"""Twos Complement To Signed utility."""
+"""Twos Complement To Signed utility.
+
+>>> from PyICe.lab_utils.twosComplementToSigned import twosComplementToSigned
+
+"""
 def twosComplementToSigned(binary, bitCount):
     """Decode an unsigned two's complement register value into a signed Python int.
 

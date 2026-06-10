@@ -1,4 +1,8 @@
-"""Clean ascii code utility."""
+"""Clean ascii code utility.
+
+>>> from PyICe.lab_utils.clean_ascii_code import clean_ascii_code
+
+"""
 import re
 from .clean_unicode import clean_unicode
 

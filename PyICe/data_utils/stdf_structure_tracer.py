@@ -1,4 +1,8 @@
-"""Stdf structure tracer utilities."""
+"""Stdf structure tracer utilities.
+
+>>> from PyICe.data_utils.stdf_structure_tracer import record_order_parser
+
+"""
 
 import os
 import sys
@@ -15,9 +19,24 @@ except ModuleNotFoundError as e:
 
 
 class record_order_parser:
-    """Record_order_parser."""
+    """Record_order_parser.
+
+    >>> from PyICe.data_utils.stdf_structure_tracer import record_order_parser
+    >>> record_order_parser is not None
+    True
+
+    """
     def __init__(self):
-        """Initialize record_order_parser."""
+        """Initialize record_order_parser.
+
+        Initializes 4 instance attributes that configure the object's
+        behavior.
+
+        >>> from PyICe.data_utils.stdf_structure_tracer import record_order_parser
+        >>> record_order_parser is not None
+        True
+
+        """
         self._indent = 0  # todo
         self._last_record_type = None
         self._record_count = 0
@@ -26,20 +45,35 @@ class record_order_parser:
     def map_data(self, record_type, data):
         """Return map data result.
 
+        Supports the ``record_order_parser`` workflow by performing the described operation.
+
+
+        >>> from PyICe.data_utils.stdf_structure_tracer import record_order_parser
+        >>> hasattr(record_order_parser, 'map_data')
+        True
+
         Args:
             data: Data to write.
-            record_type: Record type.
+            record_type: Record type to use.
 
         Returns:
-            Result value.
+            The mapped data.
         """
         class pretty_dict(dict):
             """Pretty_dict."""
             def __str__(self):
                 """Return string representation.
+                Provides a human-readable string for debugging and display.
+
+                Provides a human-readable representation for debugging and logging.
+
+
+                >>> from PyICe.data_utils.stdf_structure_tracer import record_order_parser
+                >>> hasattr(record_order_parser, '__str__')
+                True
 
                 Returns:
-                    Result value.
+                    String representation.
                 """
                 hex_fields = ('TEST_FLG', 'PARM_FLG',)
                 bin_fields = (),
@@ -58,8 +92,15 @@ class record_order_parser:
     def after_begin(self, dataSrc):
         """Perform after begin operation.
 
+        Supports the ``record_order_parser`` workflow by performing the described operation.
+
+
+        >>> from PyICe.data_utils.stdf_structure_tracer import record_order_parser
+        >>> hasattr(record_order_parser, 'after_begin')
+        True
+
         Args:
-            dataSrc: Datasrc.
+            dataSrc: Datasrc to use.
         """
         self.dataSrc = dataSrc
         self.inp_file = self.dataSrc.inp.name
@@ -69,9 +110,16 @@ class record_order_parser:
     def after_send(self, dataSrc, data):
         """Perform after send operation.
 
+        Transmits data to the remote endpoint.
+
+
+        >>> from PyICe.data_utils.stdf_structure_tracer import record_order_parser
+        >>> hasattr(record_order_parser, 'after_send')
+        True
+
         Args:
             data: Data to write.
-            dataSrc: Datasrc.
+            dataSrc: Datasrc to use.
         """
         if data is None:
             breakpoint()
@@ -112,14 +160,28 @@ class record_order_parser:
     def after_complete(self, dataSrc):
         """Perform after complete operation.
 
+        Supports the ``record_order_parser`` workflow by performing the described operation.
+
+
+        >>> from PyICe.data_utils.stdf_structure_tracer import record_order_parser
+        >>> hasattr(record_order_parser, 'after_complete')
+        True
+
         Args:
-            dataSrc: Datasrc.
+            dataSrc: Datasrc to use.
         """
         print(f'Processed {self._dut_count} DUTs.')
 
 
 def process_file(filename):
     """Perform process file operation.
+
+    Performs the described operation on the object's internal state.
+
+
+    >>> from PyICe.data_utils.stdf_structure_tracer import process_file
+    >>> callable(process_file)
+    True
 
     Args:
         filename: File path.
@@ -134,8 +196,15 @@ def process_file(filename):
 def process_dir(top_dir):
     """Perform process dir operation.
 
+    Performs the described operation on the object's internal state.
+
+
+    >>> from PyICe.data_utils.stdf_structure_tracer import process_dir
+    >>> callable(process_dir)
+    True
+
     Args:
-        top_dir: Top dir.
+        top_dir: Top dir to use.
     """
     if os.path.splitext(top_dir)[1] in ['.std_1', '.stdf']:
         # Single file

@@ -1,4 +1,8 @@
-"""Bounded utility."""
+"""Bounded utility.
+
+>>> from PyICe.lab_utils.bounded import bounded
+
+"""
 def bounded(value, min_value=None, max_value=None, key=None):
     """Clamp a value to stay within [min_value, max_value].
 
