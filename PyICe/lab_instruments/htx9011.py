@@ -7,6 +7,7 @@ from ..lab_core import *  # noqa: F403
 from PyICe.lab_utils.banners import print_banner
 from PyICe.lab_utils.eng_string import eng_string
 import datetime
+import sys
 
 
 class htx9011(scpi_instrument):
@@ -110,7 +111,7 @@ class htx9011(scpi_instrument):
             print_banner(
                 "ERROR: ConfiguratorXT is not serialized!",
                 "Please serialize it to continue.")
-            exit(1)
+            sys.exit(1)
         # self.check_calibration_valid(calibrating)
         # self.add(self.gpiox)
 
