@@ -1533,6 +1533,7 @@ class Page():
         #######################################################################
         # Deal with second axis first (seems to keep first axis tick marks from coming back)        #
         #######################################################################
+        twin = None
         if plot.y2_axis_params["axis_is_used"]:
             twin = graph.twinx()
             if plot.plot_type == "scope_plot":
@@ -1783,6 +1784,7 @@ class Page():
         #################################################################
         # Place the legends                                             #
         #################################################################
+                coordinate_system = None
                 if y_axis_params["place_legend"]:
                     if y_axis_params == plot.y1_axis_params:
                         if plot.y1_axis_params["use_axes_scale"]:
@@ -1809,6 +1811,7 @@ class Page():
                 if plot.plot_type == "scope_plot":
                     marker_x_offset = 0.038
                     marker = "►"
+                    ref_marker = None
                     for ref_marker in plot.ref_markers:
                         if ref_marker["use_axes_scale"]:
                             coordinate_system = graph.transData
@@ -1855,8 +1858,6 @@ class Page():
         #################################################################
                 if plot.plot_type == "scope_plot" and plot.include_time_refmarker_open:
                     x = plot.time_refmarker_open_xlocation
-                    y = ref_marker["ylocation"] - 0.03 / 8 * (
-                        plot.y1_axis_params['ylims'][1] - plot.y1_axis_params['ylims'][0])
                     y = plot.y1_axis_params['ylims'][1] * 0.995
                     note_props = dict(
                         boxstyle='square, pad=0.125',

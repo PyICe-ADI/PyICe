@@ -665,6 +665,7 @@ class hameg_4040(scpi_instrument):
         Raises:
             this_error: If the channel value is out of the allowed range.
         """
+        this_error = None
         retry = 0
         while (retry <= self.retries):
             try:
@@ -700,6 +701,7 @@ class hameg_4040(scpi_instrument):
         Raises:
             this_error: If the channel value is out of the allowed range.
         """
+        this_error = None
         retry = 0
         while (retry <= self.retries):
             try:
@@ -735,6 +737,7 @@ class hameg_4040(scpi_instrument):
         Raises:
             this_error: If the channel value is out of the allowed range.
         """
+        this_error = None
         retry = 0
         while (retry <= self.retries):
             try:
@@ -770,6 +773,7 @@ class hameg_4040(scpi_instrument):
         Raises:
             this_error: If the channel value is out of the allowed range.
         """
+        this_error = None
         retry = 0
         while (retry <= self.retries):
             try:
@@ -806,6 +810,7 @@ class hameg_4040(scpi_instrument):
         Raises:
             this_error: If the channel value is out of the allowed range.
         """
+        this_error = None
         retry = 0
         while (retry <= self.retries):
             try:
@@ -843,6 +848,7 @@ class hameg_4040(scpi_instrument):
         Raises:
             this_error: If the channel value is out of the allowed range.
         """
+        this_error = None
         retry = 0
         while (retry <= self.retries):
             try:
@@ -897,6 +903,7 @@ class hameg_4040(scpi_instrument):
         Raises:
             this_error: If the channel value is out of the allowed range.
         """
+        this_error = None
         retry = 0
         while (retry <= self.retries):
             try:

@@ -22,6 +22,13 @@ except Exception:
     import traceback
     traceback.print_exc()
     print("Broken Bokeh")
+    Toggle = None  # type: ignore[assignment]
+    colors = None  # type: ignore[assignment]
+    show = None  # type: ignore[assignment]
+    output_file = None  # type: ignore[assignment]
+    figure = None  # type: ignore[assignment]
+    curdoc = None  # type: ignore[assignment]
+    layout = None  # type: ignore[assignment]
 
 
 class dict_print(dict):

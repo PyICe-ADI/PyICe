@@ -6,6 +6,7 @@
 try:
     import scipy
 except ImportError as e:
+    scipy = None  # type: ignore[assignment]
     print("Warning: NumPy,SciPy import failed.")
     print(e)
 

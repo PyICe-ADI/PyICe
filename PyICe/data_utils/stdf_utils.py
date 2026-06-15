@@ -182,6 +182,7 @@ class stdf_reader():
             self.parts = {}
             self.metadata = {}
             state = None
+            this_part: dict = {}
             for line in reader.data:
                 record_type = type(line[RECORDTYPE])
                 if record_type is pystdf.V4.Sbr:
