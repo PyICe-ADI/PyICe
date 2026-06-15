@@ -237,7 +237,7 @@ def default_connections(components, connections):
     ###
     new_test_template = 'from PyICe.plugins.master_test_template import Master_Test_Template'
     if 'bench_config_management' in plugins_to_add:
-        new_test_template+=f'from {project_name}.infrastructure.plugin_dependencies import default_bench_configuration'
+        new_test_template+=f'\nfrom {project_name}.infrastructure.plugin_dependencies import default_bench_configuration'
     new_test_template += f'''
 
 class Test_Template(Master_Test_Template):
