@@ -390,7 +390,6 @@ pm.run()'''
         try:
             with open(k, 'w') as f:  # overwrites existing
                 f.write(v)
-                f.close()
         except Exception as e:
             print(type(e))
             print(e)
