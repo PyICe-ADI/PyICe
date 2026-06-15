@@ -1858,8 +1858,6 @@ class Page():
         #################################################################
                 if plot.plot_type == "scope_plot" and plot.include_time_refmarker_open:
                     x = plot.time_refmarker_open_xlocation
-                    y = ref_marker["ylocation"] - 0.03 / 8 * (  # pyright: ignore[reportPossiblyUnboundVariable]
-                        plot.y1_axis_params['ylims'][1] - plot.y1_axis_params['ylims'][0])
                     y = plot.y1_axis_params['ylims'][1] * 0.995
                     note_props = dict(
                         boxstyle='square, pad=0.125',
