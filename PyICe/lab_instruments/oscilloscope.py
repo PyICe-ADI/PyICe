@@ -11,6 +11,8 @@ try:
     from numpy import fromiter, dtype
     numpy_missing = False
 except ImportError:
+    fromiter = None  # type: ignore[assignment]
+    dtype = None  # type: ignore[assignment]
     numpy_missing = True
 
 

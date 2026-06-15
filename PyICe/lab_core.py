@@ -44,6 +44,7 @@ try:
     from numpy import ndarray
     numpy_missing = False
 except ImportError:
+    ndarray = None  # type: ignore[assignment]
     numpy_missing = True
 
 debug_logging = logging.getLogger(__name__)
@@ -2703,6 +2704,7 @@ class integer_channel(channel):
                 intercept_str = '{:+3.6E}'.format(intercept)
             return '"{}"*{:3.6E}{}'.format(self.get_name(),
                                            slope, intercept_str)
+        fmt_str = ''
         if format is not None:
             xypoints = sorted(
                 self._formats[format]['xypoints'],
@@ -6639,6 +6641,7 @@ class logger(master):
         sql_txt = ''
         for channel in sorted(self.get_all_channels_list(),
                               key=lambda channel: channel.get_name()):
+            channel_formats = []
             try:
                 # alphabetize? name, units? sorted(channel.get_formats())
                 channel_formats = channel.get_formats()
@@ -7356,6 +7359,7 @@ class logger_backend(object):
                 self._commit()
                 self.lock_time = None
                 # print 'max lock timed out'
+            function = None
             try:
                 function = self.storage_queue.get(block=False)
             except queue.Empty:

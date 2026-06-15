@@ -956,6 +956,8 @@ class sqlite_data(
         if data_length is None:
             print("WARNING: No vector data found.")
             data_length = 1
+        i = 0
+        rowcount = 0
         for i, column in enumerate(columns):
             if len(column[0]) == 1:
                 dtypes.append((column_names[i], type(column[0][0])))

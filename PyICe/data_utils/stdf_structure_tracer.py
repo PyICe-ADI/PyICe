@@ -16,6 +16,8 @@ except ModuleNotFoundError as e:
     # and other Linux PyICe usage.
     print(
         f'WARNING: Import error with pystdf library. This is ok if not processing STDF dlogs directly, and temporarily expected in Linux because of Anaconda package issues.\n{type(e)}: {e.args}')
+    pystdf = None  # type: ignore[assignment]
+    Parser = None  # type: ignore[assignment]
 
 
 class record_order_parser:

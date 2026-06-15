@@ -27,6 +27,7 @@ try:
     import serial  # pylint: disable=import-error; optional dependency guarded by try/except
     serialMissing = False
 except BaseException:
+    serial = None  # type: ignore[assignment]
     serialMissing = True
 try:
     import vxi11  # noqa: F401 # pylint: disable=import-error; optional dependency guarded by try/except
@@ -46,7 +47,7 @@ except BaseException:
 try:
     from . import bobbytalk
 except ImportError:
-    pass
+    bobbytalk = None  # type: ignore[assignment]
 '''
 Default str to bytes encoding to use. latin-1 is the simplest encoding -- it requires all characters of a string to
 be amongst Unicode code points 0x000000 - 0x0000ff inclusive, and converts each code point value to a byte. Hence
@@ -120,6 +121,7 @@ try:
     import usb.core  # pylint: disable=import-error; optional dependency guarded by try/except
     ubsMissing = False
 except BaseException:
+    usb = None  # type: ignore[assignment]
     ubsMissing = True
 debug_logging = logging.getLogger(__name__)
 # logfile_handler = logging.FileHandler(filename="lab_interfaces.debug.log", mode="w")
@@ -916,7 +918,7 @@ class interface_ftdi_d2xx(interface_stream):
 
 # Serial port debugging hack that uses undocumented calls in PySerial 3.4.
 PYSERIAL_DEBUG = False
-if serial.VERSION == '3.4' and PYSERIAL_DEBUG:
+if not serialMissing and serial.VERSION == '3.4' and PYSERIAL_DEBUG:  # type: ignore[union-attr]
     s = serial.Serial()  # <--- This is needed for some reason, else SpySerial ports
     # cannot be opened. There must be some kind of library initialization
     # that happens when a regular serial.Serial object is first created.
@@ -936,7 +938,7 @@ if serial.VERSION == '3.4' and PYSERIAL_DEBUG:
             #     super().__init__(*args, **kwargs)
             #     self.port = self._PyICe_port'''
 else:
-    class serial_from_name_or_url(serial.Serial):
+    class serial_from_name_or_url(serial.Serial):  # type: ignore[union-attr]
         """Serial_from_name_or_url."""
         _has_PyICe_debug_capability = False
 
@@ -2009,6 +2011,9 @@ class interface_bobbytalk_raw_serial(interface_bobbytalk):
             self.ser.timeout = new_ser_timeout
             self.timeout_cached = new_ser_timeout
         result = None  # Default return value if we can't find a packet.
+        psbl_src = 0
+        psbl_dest = 0
+        rcvd_crc = 0
         for trynum in range(receive_tries):
             if time.time() >= tquit:
                 # We used up too much time trying to parse a packet at this
@@ -3378,7 +3383,7 @@ class interface_factory(communication_node):
         Returns:
             The current twi kernel interface.
         """
-        new_interface = interface_twi_kernel(bus_number)  # noqa: F821 # pylint: disable=undefined-variable; class was removed from this module but method retained for API compatibility
+        new_interface = interface_twi_kernel(bus_number)  # type: ignore[possibly-undefined]  # noqa: F821 # pylint: disable=undefined-variable; class was removed from this module but method retained for API compatibility
         new_interface.set_com_node_parent(self)
         return new_interface
 

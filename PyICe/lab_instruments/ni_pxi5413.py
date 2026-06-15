@@ -55,7 +55,7 @@ class ni_pxi5413(scpi_instrument, delegator):
         t = np.linspace(0, period, SampleN)
         amp = VOH - VOL
         offset = VOL
-        a = slope * width * signal.sawtooth(2 * math.pi * t / width, width=0.5) / 4.  # pylint: disable=E0602; signal (scipy.signal) is an optional dependency not imported at module level - this is incomplete/WIP code per the TODO above  # noqa: E501
+        a = slope * width * signal.sawtooth(2 * math.pi * t / width, width=0.5) / 4.  # pylint: disable=E0602; signal (scipy.signal) is an optional dependency not imported at module level - this is incomplete/WIP code per the TODO above  # noqa: E501  # pyright: ignore[reportUndefinedVariable]
         a += slope * width / 4.
         # clamp the top of the waveform
         a[a > amp] = amp
@@ -79,7 +79,7 @@ class ni_pxi5413(scpi_instrument, delegator):
             options: Options to use.
             samples: Number of samples to acquire.
         """
-        waveform_data = create_waveform_data(samples)  # noqa: F821  # pylint: disable=E0602; create_waveform_data is undefined - this is incomplete/WIP code per the TODO above
+        waveform_data = create_waveform_data(samples)  # noqa: F821  # pylint: disable=E0602; create_waveform_data is undefined - this is incomplete/WIP code per the TODO above  # pyright: ignore[reportUndefinedVariable]
         # gen_time = period
         with nifgen.Session(resource_name=resource_name, options=options) as session:
             session.output_mode = nifgen.OutputMode.ARB

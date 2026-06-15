@@ -134,7 +134,7 @@ def test_labcomm():
                         port.vid)))
         demoboard_port = input(
             "Which of these should I use? (e.g. {}) ".format(
-                port.device))
+                port.device))  # pyright: ignore[reportPossiblyUnboundVariable]
     if isinstance(demoboard_port, str):
         demoboard_port = demoboard_port.encode()
 

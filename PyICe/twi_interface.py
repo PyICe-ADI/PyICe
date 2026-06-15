@@ -454,6 +454,7 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             raise Exception(
                 'Unimplemented data size: {}. Not within set (-1, 0, 8, 16, 32, 64)'.format(data_size))
         byteList = []
+        dataByteList = []
         if not self.start():
             raise i2cStartStopError()
 
