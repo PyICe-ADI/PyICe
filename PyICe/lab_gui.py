@@ -51,6 +51,7 @@ import textwrap
 try:
     import numpy
 except ImportError:
+    numpy = None  # type: ignore[assignment]
     numpymissing = True
 else:
     numpymissing = False
@@ -4977,6 +4978,7 @@ if __name__ == '__main__':
     master.add(t)
     import cProfile
     PROFILING = True
+    profiler = None
     if PROFILING:
         profiler = cProfile.Profile()
         profiler.enable()

@@ -27,6 +27,7 @@ try:
     import serial  # pylint: disable=import-error; optional dependency guarded by try/except
     serialMissing = False
 except BaseException:
+    serial = None  # type: ignore[assignment]
     serialMissing = True
 try:
     import vxi11  # noqa: F401 # pylint: disable=import-error; optional dependency guarded by try/except
@@ -46,7 +47,7 @@ except BaseException:
 try:
     from . import bobbytalk
 except ImportError:
-    pass
+    bobbytalk = None  # type: ignore[assignment]
 '''
 Default str to bytes encoding to use. latin-1 is the simplest encoding -- it requires all characters of a string to
 be amongst Unicode code points 0x000000 - 0x0000ff inclusive, and converts each code point value to a byte. Hence
@@ -120,6 +121,7 @@ try:
     import usb.core  # pylint: disable=import-error; optional dependency guarded by try/except
     ubsMissing = False
 except BaseException:
+    usb = None  # type: ignore[assignment]
     ubsMissing = True
 debug_logging = logging.getLogger(__name__)
 # logfile_handler = logging.FileHandler(filename="lab_interfaces.debug.log", mode="w")
@@ -136,7 +138,11 @@ class communication_node(object):
     ancestor so they are accessed sequentially within a single thread during
 
     >>> from PyICe.lab_interfaces import communication_node
-    >>> communication_node is not None
+    >>> root = communication_node()
+    >>> root.set_com_node_thread_safe(True)
+    >>> child = communication_node()
+    >>> child.set_com_node_parent(root)
+    >>> root.com_node_get_children() == [child]
     True
 
     concurrent data collection."""
@@ -151,8 +157,11 @@ class communication_node(object):
 
 
         >>> from PyICe.lab_interfaces import communication_node
-        >>> communication_node is not None
+        >>> node = communication_node()
+        >>> node.get_com_parent() is None
         True
+        >>> node.com_node_get_children()
+        []
 
         Args:
             *args: Positional arguments forwarded to the super().__init__.
@@ -171,8 +180,19 @@ class communication_node(object):
         parent/child hierarchy and thread-safety flags.
 
 
+        >>> import io, sys
         >>> from PyICe.lab_interfaces import communication_node
-        >>> hasattr(communication_node, 'debug_com_nodes')
+        >>> root = communication_node()
+        >>> root.set_com_node_thread_safe(True)
+        >>> child = communication_node()
+        >>> child.set_com_node_parent(root)
+        >>> buf = io.StringIO()
+        >>> _old = sys.stdout; sys.stdout = buf
+        >>> root.debug_com_nodes()
+        >>> sys.stdout = _old
+        >>> 'Thread_safe: True' in buf.getvalue()
+        True
+        >>> 'Thread_safe: False' in buf.getvalue()
         True
 
         Args:
@@ -192,7 +212,10 @@ class communication_node(object):
 
 
         >>> from PyICe.lab_interfaces import communication_node
-        >>> hasattr(communication_node, 'get_com_parent')
+        >>> parent = communication_node()
+        >>> child = communication_node()
+        >>> child.set_com_node_parent(parent)
+        >>> child.get_com_parent() is parent
         True
 
         Returns:
@@ -208,7 +231,12 @@ class communication_node(object):
 
 
         >>> from PyICe.lab_interfaces import communication_node
-        >>> hasattr(communication_node, 'set_com_node_parent')
+        >>> root = communication_node()
+        >>> leaf = communication_node()
+        >>> leaf.set_com_node_parent(root)
+        >>> leaf.get_com_parent() is root
+        True
+        >>> leaf in root.com_node_get_children()
         True
 
         Args:
@@ -228,7 +256,11 @@ class communication_node(object):
 
 
         >>> from PyICe.lab_interfaces import communication_node
-        >>> hasattr(communication_node, 'set_com_node_thread_safe')
+        >>> node = communication_node()
+        >>> node._thread_safe
+        False
+        >>> node.set_com_node_thread_safe(True)
+        >>> node._thread_safe
         True
 
         Args:
@@ -244,7 +276,10 @@ class communication_node(object):
 
 
         >>> from PyICe.lab_interfaces import communication_node
-        >>> hasattr(communication_node, 'com_node_register_child')
+        >>> parent = communication_node()
+        >>> child = communication_node()
+        >>> parent.com_node_register_child(child)
+        >>> child in parent.com_node_get_children()
         True
 
         Args:
@@ -259,7 +294,12 @@ class communication_node(object):
 
 
         >>> from PyICe.lab_interfaces import communication_node
-        >>> hasattr(communication_node, 'com_node_get_root')
+        >>> root = communication_node()
+        >>> mid = communication_node()
+        >>> mid.set_com_node_parent(root)
+        >>> leaf = communication_node()
+        >>> leaf.set_com_node_parent(mid)
+        >>> leaf.com_node_get_root() is root
         True
 
         Returns:
@@ -278,7 +318,12 @@ class communication_node(object):
 
 
         >>> from PyICe.lab_interfaces import communication_node
-        >>> hasattr(communication_node, 'com_node_get_children')
+        >>> root = communication_node()
+        >>> a = communication_node()
+        >>> b = communication_node()
+        >>> a.set_com_node_parent(root)
+        >>> b.set_com_node_parent(root)
+        >>> root.com_node_get_children() == [a, b]
         True
 
         Returns:
@@ -294,7 +339,12 @@ class communication_node(object):
 
 
         >>> from PyICe.lab_interfaces import communication_node
-        >>> hasattr(communication_node, 'com_node_get_all_descendents')
+        >>> root = communication_node()
+        >>> child = communication_node()
+        >>> child.set_com_node_parent(root)
+        >>> grandchild = communication_node()
+        >>> grandchild.set_com_node_parent(child)
+        >>> root.com_node_get_all_descendents() == {child, grandchild}
         True
 
         Returns:
@@ -317,7 +367,15 @@ class communication_node(object):
 
 
         >>> from PyICe.lab_interfaces import communication_node
-        >>> hasattr(communication_node, 'group_com_nodes_for_threads')
+        >>> root = communication_node()
+        >>> root.set_com_node_thread_safe(True)
+        >>> bus = communication_node()
+        >>> bus.set_com_node_thread_safe(False)
+        >>> bus.set_com_node_parent(root)
+        >>> dev = communication_node()
+        >>> dev.set_com_node_parent(bus)
+        >>> groups = root.group_com_nodes_for_threads()
+        >>> any(bus in g and dev in g for g in groups)
         True
 
         Args:
@@ -351,7 +409,19 @@ class communication_node(object):
 
 
         >>> from PyICe.lab_interfaces import communication_node
-        >>> hasattr(communication_node, 'group_com_nodes_for_threads_filter')
+        >>> root = communication_node()
+        >>> root.set_com_node_thread_safe(True)
+        >>> bus = communication_node()
+        >>> bus.set_com_node_thread_safe(False)
+        >>> bus.set_com_node_parent(root)
+        >>> dev_a = communication_node()
+        >>> dev_a.set_com_node_parent(bus)
+        >>> dev_b = communication_node()
+        >>> dev_b.set_com_node_parent(bus)
+        >>> groups = root.group_com_nodes_for_threads_filter([dev_a, dev_b])
+        >>> len(groups)
+        1
+        >>> set(groups[0]) == {dev_a, dev_b}
         True
 
         Args:
@@ -398,8 +468,11 @@ class communication_node(object):
 
 
         >>> from PyICe.lab_interfaces import communication_node
-        >>> hasattr(communication_node, 'lock')
-        True
+        >>> node = communication_node()
+        >>> node.lock()
+        >>> node.lock()
+        >>> node.unlock()
+        >>> node.unlock()
 
         Raises:
             TypeError: If a parent node is neither a ``communication_node``
@@ -423,8 +496,9 @@ class communication_node(object):
 
 
         >>> from PyICe.lab_interfaces import communication_node
-        >>> hasattr(communication_node, 'unlock')
-        True
+        >>> node = communication_node()
+        >>> node.lock()
+        >>> node.unlock()
 
         Raises:
             TypeError: If a parent node is neither a ``communication_node``
@@ -916,7 +990,7 @@ class interface_ftdi_d2xx(interface_stream):
 
 # Serial port debugging hack that uses undocumented calls in PySerial 3.4.
 PYSERIAL_DEBUG = False
-if serial.VERSION == '3.4' and PYSERIAL_DEBUG:
+if not serialMissing and serial.VERSION == '3.4' and PYSERIAL_DEBUG:  # type: ignore[union-attr]
     s = serial.Serial()  # <--- This is needed for some reason, else SpySerial ports
     # cannot be opened. There must be some kind of library initialization
     # that happens when a regular serial.Serial object is first created.
@@ -936,7 +1010,7 @@ if serial.VERSION == '3.4' and PYSERIAL_DEBUG:
             #     super().__init__(*args, **kwargs)
             #     self.port = self._PyICe_port'''
 else:
-    class serial_from_name_or_url(serial.Serial):
+    class serial_from_name_or_url(serial.Serial):  # type: ignore[union-attr]
         """Serial_from_name_or_url."""
         _has_PyICe_debug_capability = False
 
@@ -2009,6 +2083,9 @@ class interface_bobbytalk_raw_serial(interface_bobbytalk):
             self.ser.timeout = new_ser_timeout
             self.timeout_cached = new_ser_timeout
         result = None  # Default return value if we can't find a packet.
+        psbl_src = 0
+        psbl_dest = 0
+        rcvd_crc = 0
         for trynum in range(receive_tries):
             if time.time() >= tquit:
                 # We used up too much time trying to parse a packet at this
@@ -3378,7 +3455,7 @@ class interface_factory(communication_node):
         Returns:
             The current twi kernel interface.
         """
-        new_interface = interface_twi_kernel(bus_number)  # noqa: F821 # pylint: disable=undefined-variable; class was removed from this module but method retained for API compatibility
+        new_interface = interface_twi_kernel(bus_number)  # type: ignore[possibly-undefined]  # noqa: F821 # pylint: disable=undefined-variable; class was removed from this module but method retained for API compatibility
         new_interface.set_com_node_parent(self)
         return new_interface
 

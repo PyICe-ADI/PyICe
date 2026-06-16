@@ -592,6 +592,8 @@ class bk8500(instrument):
         """
         assert isinstance(command, (bytes, bytearray))
         assert (len(command) == self.length_packet)
+        success = False
+        response: bytes = b''
         for attempt in range(self.retries):
             self.sp.write(command.decode("latin-1"))
             response = self.sp.read(self.length_packet)

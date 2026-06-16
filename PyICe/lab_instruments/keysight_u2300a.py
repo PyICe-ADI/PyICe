@@ -1091,6 +1091,7 @@ class u2300a_datalogger(u2300a_scope):
             warn=False)
         idx_primes = [ch.get_name() for ch in self.get_all_channels_list(
         ) if ch.get_attribute('u2300a_type') == 'ain_time']
+        idx_prime = ''
         for idx_prime in idx_primes:
             self.logger.execute(
                 f'CREATE INDEX IF NOT EXISTS {self.table_name}_{idx_prime}_idx ON {self.table_name} ({idx_prime})')
@@ -1106,6 +1107,7 @@ class u2300a_datalogger(u2300a_scope):
         while self.get_interface().ask('WAVeform:STATus?') != 'DATA':
             print(self.get_interface().ask('WAVeform:STATus?'))
         print("TRIG'D!")
+        start_time = datetime.datetime.now(datetime.timezone.utc)
         try:
             # This is one block away from where we triggered.
             start_time = datetime.datetime.now(datetime.timezone.utc)
@@ -1158,7 +1160,7 @@ class u2300a_datalogger(u2300a_scope):
                 f'Logger thread complete. It took {(datetime.datetime.now(datetime.timezone.utc) - start_time).total_seconds()} seconds from the start.')
             databank.clear()  # We expect the threads to be joined by now.
             if unhandled_exception_occurred:
-                raise e
+                raise e  # pyright: ignore[reportUnboundVariable]
 
     def _setup(self):
         scan_internal_addresses = [
