@@ -25,8 +25,8 @@ debug_logging = logging.getLogger(__name__)
 be amongst Unicode code points 0x000000 - 0x0000ff inclusive, and converts each code point value to a byte. Hence
 if s is a string, then: s.encode('latin-1') == bytes([ord(c) for c in s])'''
 STR_ENCODING = 'latin-1'
-
-
+PMBUS_COMMAND_EXTENSION = 0xFF
+MFR_SPECIFIC_COMMAND_EXT = 0xFE
 class twi_interface(object, metaclass=abc.ABCMeta):
     """This is the master i2c class, all other i2c adapters inherit from this.
 
@@ -403,7 +403,26 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             cls.check_size(byte, 8)
             word_value += byte << (8 * i)
         return word_value
-
+    @classmethod
+    def _command_code_bytes(cls, commandCode):
+        '''Return the wire byte sequence for commandCode (little-endian).
+        Standard 0x00-0xFF: returns [commandCode].
+        PMBus extended 0xFEXX or 0xFFXX: returns [low_byte, high_byte] where low_byte
+        is the extension prefix (0xFE or 0xFF) and high_byte is the extended command index.
+        Use with module constants: commandCode = (ext_cmd << 8) | PMBUS_COMMAND_EXTENSION
+        '''
+        if commandCode is None:
+            return []
+        if commandCode < 0:
+            raise ValueError(f'Invalid command code {commandCode}: must be non-negative')
+        if commandCode <= 0xFF:
+            return [commandCode]
+        if commandCode > 0xFFFF:
+            raise ValueError(f'Invalid command code 0x{commandCode:X}: exceeds 16 bits')
+        low = commandCode & 0xFF
+        if low not in (MFR_SPECIFIC_COMMAND_EXT, PMBUS_COMMAND_EXTENSION):
+            raise ValueError(f'Invalid extended command code 0x{commandCode:04X}: low byte must be 0xFE or 0xFF')
+        return [low, commandCode >> 8]
     def read_register(self, addr7, commandCode, data_size, use_pec):
         """Read data (8,16,32, or 64b) with optional additional PEC byte read from slave.
         Sends the appropriate command to the instrument and parses the
@@ -437,22 +456,15 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             i2cStartStopError: If the start or stop condition fails on the bus.
             i2cWriteAddressAcknowledgeError: If the slave does not acknowledge the write address.
         """
-        self.print_warning(
-            operation=f"read_register Data Size={data_size}, PEC={use_pec}")
-        debug_logging.debug(
-            "Performing deprecated twi_interface.read_register for commandCode=%s, data_size=%s, use_pec=%s",
-            commandCode,
-            data_size,
-            use_pec)
-        if data_size in (8, 16, 32, 64):
-            self.check_size(commandCode, 8)
-        elif data_size in (-1, 0):
+        '''read data (8,16,32, or 64b) with optional additional PEC byte read from slave.'''
+        self.print_warning(operation=f"read_register Data Size={data_size}, PEC={use_pec}")
+        debug_logging.debug("Performing deprecated twi_interface.read_register for commandCode=%s, data_size=%s, use_pec=%s",commandCode,data_size,use_pec)
+        if data_size in (-1, 0):
             # -1 for quick_command (unimplemented)
             # 0 for receive_byte
             assert commandCode is None
-        else:
-            raise Exception(
-                'Unimplemented data size: {}. Not within set (-1, 0, 8, 16, 32, 64)'.format(data_size))
+        elif data_size not in (8, 16, 32, 64):
+            raise Exception('Unimplemented data size: {}. Not within set (-1, 0, 8, 16, 32, 64)'.format(data_size))
         byteList = []
         dataByteList = []
         if not self.start():
@@ -463,9 +475,11 @@ class twi_interface(object, metaclass=abc.ABCMeta):
                 byteList.append(self.write_addr(addr7))
                 if not self.write(self.write_addr(addr7)):
                     raise i2cWriteAddressAcknowledgeError()
-                byteList.append(commandCode)
-                if not self.write(commandCode):
-                    raise i2cCommandCodeAcknowledgeError()
+                cc_bytes = self._command_code_bytes(commandCode)
+                byteList.extend(cc_bytes)
+                for b in cc_bytes:
+                    if not self.write(b):
+                        raise i2cCommandCodeAcknowledgeError()
                 if not self.restart():
                     raise i2cStartStopError()
                 byteList.append(self.read_addr(addr7))
@@ -538,7 +552,6 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             operation=f"write_register Data Size={data_size}, PEC={use_pec}")
         '''write_word with optional additional PEC byte written to slave.'''
         if data_size in (8, 16, 32, 64):
-            self.check_size(commandCode, 8)
             self.check_size(data, data_size)
         elif data_size == 0:
             # send_byte
@@ -563,9 +576,11 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             if not self.write(self.write_addr(addr7)):
                 raise i2cWriteAddressAcknowledgeError()
             if data_size > -1:
-                byteList.append(commandCode)
-                if not self.write(commandCode):
-                    raise i2cCommandCodeAcknowledgeError()
+                cc_bytes = self._command_code_bytes(commandCode)
+                byteList.extend(cc_bytes)
+                for b in cc_bytes:
+                    if not self.write(b):
+                        raise i2cCommandCodeAcknowledgeError()
             for dataByte in dataByteList:
                 if not self.write(dataByte):
                     raise i2cDataAcknowledgeError()
@@ -1042,15 +1057,16 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             i2cWriteAddressAcknowledgeError: If the slave does not acknowledge the write address.
         """
         self.print_warning(operation="process_call")
-        self.check_size(commandCode, 8)
-        dataLow = self.get_byte(data16, 0)
-        dataHigh = self.get_byte(data16, 1)
+        self.check_size(data16, 16)
+        dataLow = self.get_byte(data16,0)
+        dataHigh = self.get_byte(data16,1)
         if not self.start():
             raise i2cStartStopError()
         if not self.write(self.write_addr(addr7)):
             raise i2cWriteAddressAcknowledgeError()
-        if not self.write(commandCode):
-            raise i2cCommandCodeAcknowledgeError()
+        for b in self._command_code_bytes(commandCode):
+            if not self.write(b):
+                raise i2cCommandCodeAcknowledgeError()
         if not self.write(dataLow):
             raise i2cDataLowAcknowledgeError()
         if not self.write(dataHigh):
@@ -1102,18 +1118,20 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             i2cWriteAddressAcknowledgeError: If the slave does not acknowledge the write address.
         """
         self.print_warning(operation="process_call_pec")
-        self.check_size(commandCode, 8)
-        dataLow = self.get_byte(data16, 0)
-        dataHigh = self.get_byte(data16, 1)
+        self.check_size(data16, 16)
+        dataLow = self.get_byte(data16,0)
+        dataHigh = self.get_byte(data16,1)
         byteList = []
         if not self.start():
             raise i2cStartStopError()
         byteList.append(self.write_addr(addr7))
         if not self.write(self.write_addr(addr7)):
             raise i2cWriteAddressAcknowledgeError()
-        byteList.append(commandCode)
-        if not self.write(commandCode):
-            raise i2cCommandCodeAcknowledgeError()
+        cc_bytes = self._command_code_bytes(commandCode)
+        byteList.extend(cc_bytes)
+        for b in cc_bytes:
+            if not self.write(b):
+                raise i2cCommandCodeAcknowledgeError()
         byteList.append(dataLow)
         if not self.write(dataLow):
             raise i2cDataLowAcknowledgeError()
@@ -1171,13 +1189,12 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             raise i2cStartStopError()
         if not self.write(self.write_addr(addr7)):
             raise i2cWriteAddressAcknowledgeError()
-        self.check_size(commandCode, 8)
-        if not self.write(commandCode):
-            raise i2cCommandCodeAcknowledgeError()
+        for b in self._command_code_bytes(commandCode):
+            if not self.write(b):
+                raise i2cCommandCodeAcknowledgeError()
         byteCount = len(dataByteList)
-        if byteCount > 32:
-            raise i2cError(
-                "I2C Error: Block Write requires maximum 32 data bytes")
+        if byteCount < 1 or byteCount > 32:
+            raise i2cError("I2C Error: Block Write byte count must be between 1 and 32")
         if not self.write(byteCount):
             raise i2cDataAcknowledgeError()
         for byte in dataByteList:
@@ -1221,14 +1238,14 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         byteList.append(self.write_addr(addr7))
         if not self.write(self.write_addr(addr7)):
             raise i2cWriteAddressAcknowledgeError()
-        self.check_size(commandCode, 8)
-        byteList.append(commandCode)
-        if not self.write(commandCode):
-            raise i2cCommandCodeAcknowledgeError()
+        cc_bytes = self._command_code_bytes(commandCode)
+        byteList.extend(cc_bytes)
+        for b in cc_bytes:
+            if not self.write(b):
+                raise i2cCommandCodeAcknowledgeError()
         byteCount = len(dataByteList)
-        if byteCount > 32:
-            raise i2cError(
-                "I2C Error: Block Write requires maximum 32 data bytes")
+        if byteCount < 1 or byteCount > 32:
+            raise i2cError("I2C Error: Block Write byte count must be between 1 and 32")
         byteList.append(byteCount)
         if not self.write(byteCount):
             raise i2cDataAcknowledgeError()
@@ -1278,17 +1295,16 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             raise i2cStartStopError()
         if not self.write(self.write_addr(addr7)):
             raise i2cWriteAddressAcknowledgeError()
-        self.check_size(commandCode, 8)
-        if not self.write(commandCode):
-            raise i2cCommandCodeAcknowledgeError()
+        for b in self._command_code_bytes(commandCode):
+            if not self.write(b):
+                raise i2cCommandCodeAcknowledgeError()
         if not self.restart():
             raise i2cStartStopError()
         if not self.write(self.read_addr(addr7)):
             raise i2cReadAddressAcknowledgeError()
         byteCount = self.read_ack()
-        if byteCount > 32:
-            raise i2cError(
-                "I2C Error: Block Write requires maximum 32 data bytes")
+        if byteCount < 1 or byteCount > 32:
+            raise i2cError("I2C Error: Block Read byte count must be between 1 and 32")
         dataByteList = []
         for i in range(0, byteCount - 1):
             byte = self.read_ack()
@@ -1340,10 +1356,11 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         byteList.append(self.write_addr(addr7))
         if not self.write(self.write_addr(addr7)):
             raise i2cWriteAddressAcknowledgeError()
-        self.check_size(commandCode, 8)
-        byteList.append(commandCode)
-        if not self.write(commandCode):
-            raise i2cCommandCodeAcknowledgeError()
+        cc_bytes = self._command_code_bytes(commandCode)
+        byteList.extend(cc_bytes)
+        for b in cc_bytes:
+            if not self.write(b):
+                raise i2cCommandCodeAcknowledgeError()
         if not self.restart():
             raise i2cStartStopError()
         byteList.append(self.read_addr(addr7))
@@ -1351,9 +1368,8 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             raise i2cReadAddressAcknowledgeError()
         byteCount = self.read_ack()
         byteList.append(byteCount)
-        if byteCount > 32:
-            raise i2cError(
-                "I2C Error: Block Write requires maximum 32 data bytes")
+        if byteCount < 1 or byteCount > 32:
+            raise i2cError("I2C Error: Block Read byte count must be between 1 and 32")
         dataByteList = []
         for i in range(0, byteCount):
             byte = self.read_ack()
@@ -1421,9 +1437,9 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             raise i2cStartStopError()
         if not self.write(self.write_addr(addr7)):
             raise i2cWriteAddressAcknowledgeError()
-        self.check_size(commandCode, 8)
-        if not self.write(commandCode):
-            raise i2cCommandCodeAcknowledgeError()
+        for b in self._command_code_bytes(commandCode):
+            if not self.write(b):
+                raise i2cCommandCodeAcknowledgeError()
         byteCountWrite = len(dataByteListWrite)
         # slave must return at least 1 byte and total limitation is 32
         if byteCountWrite > 31 or byteCountWrite < 1:
@@ -1494,10 +1510,11 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         byteList.append(self.write_addr(addr7))
         if not self.write(self.write_addr(addr7)):
             raise i2cWriteAddressAcknowledgeError()
-        self.check_size(commandCode, 8)
-        byteList.append(commandCode)
-        if not self.write(commandCode):
-            raise i2cCommandCodeAcknowledgeError()
+        cc_bytes = self._command_code_bytes(commandCode)
+        byteList.extend(cc_bytes)
+        for b in cc_bytes:
+            if not self.write(b):
+                raise i2cCommandCodeAcknowledgeError()
         byteCountWrite = len(dataByteListWrite)
         # slave must return at least 1 byte and total limitation is 32
         if byteCountWrite > 31 or byteCountWrite < 1:
@@ -1913,11 +1930,11 @@ class i2c_dummy(twi_interface):
             Exception: If an unsupported data size is requested.
         """
         if data_size in (8, 16, 32, 64):
-            self.check_size(commandCode, self._cc_size)
+            self._command_code_bytes(commandCode)  # validates standard or extended command code
             self.check_size(data, data_size)
         elif data_size == 0:
-            # send_byte
-            self.check_size(commandCode, self._cc_size)
+            # send_byte: extended command codes not meaningful here
+            self.check_size(commandCode,  self._cc_size)
             assert data is None
         elif data_size == -1:
             # quick_command (unimplemented)
@@ -1963,7 +1980,7 @@ class i2c_dummy(twi_interface):
             Exception: If an unsupported data size is requested.
         """
         if data_size in (8, 16, 32, 64):
-            self.check_size(commandCode, self._cc_size)
+            self._command_code_bytes(commandCode)  # validates standard or extended command code
         elif data_size in (-1, 0):
             # -1 for quick_command (unimplemented)
             # 0 for receive_byte
@@ -2782,12 +2799,11 @@ class i2c_pic(twi_interface):
         self.ser.write("RN")
         ret_str = self.ser.read(3)
         if ret_str[2] != " " or len(ret_str) != 3:
-            raise i2cMasterError(
-                "I2C Error: Bad communication during read_nack: {}".format(ret_str))
-        return int(ret_str[:2], 16)
+            raise i2cMasterError("I2C Error: Bad communication during read_nack: {}".format(ret_str))
+        return int(ret_str[:2],16)
 
-    # overload for faster access
-    def read_word(self, addr7, commandCode):
+    #overload for faster access
+    def read_word(self,addr7,commandCode):
         """Faster way to do an smbus read word.
         Sends the appropriate command to the instrument and parses the
         response.
@@ -2814,9 +2830,12 @@ class i2c_pic(twi_interface):
             i2cReadAddressAcknowledgeError: If the slave does not acknowledge the read address.
             i2cWriteAddressAcknowledgeError: If the slave does not acknowledge the write address.
         """
-        addr_w = hex(self.write_addr(addr7))[2:].rjust(2, "0")
-        addr_r = hex(self.read_addr(addr7))[2:].rjust(2, "0")
-        commandCode = hex(commandCode)[2:].rjust(2, "0")
+        cc_bytes = self._command_code_bytes(commandCode)
+        if len(cc_bytes) > 1:
+            raise ValueError(f'Extended command codes not supported by {type(self).__name__}')
+        addr_w = hex(self.write_addr(addr7))[2:].rjust(2,"0")
+        addr_r = hex(self.read_addr(addr7))[2:].rjust(2,"0")
+        commandCode = hex(commandCode)[2:].rjust(2,"0")
         cmd = "s" + addr_w + commandCode + "s" + addr_r + "RKRNP"
         cmd = cmd
         self.ser.write(cmd)
@@ -3149,12 +3168,10 @@ class i2c_scpi(twi_interface):
             raise i2cMasterError(
                 "I2C Error: Long Response to read_nack: {}".format(ret_str))
         if ret_str[3] != "\n":
-            raise i2cMasterError(
-                "I2C Error: Bad Response to read_nack: {}".format(ret_str))
-        return int(ret_str[:2], 16)
-    # SMBus Overloads###
-
-    def read_word(self, addr7, commandCode):
+            raise i2cMasterError("I2C Error: Bad Response to read_nack: {}".format(ret_str))
+        return int(ret_str[:2],16)
+    ###SMBus Overloads###
+    def read_word(self,addr7,commandCode):
         """Faster way to do an smbus read word.
         Sends the appropriate command to the instrument and parses the
         response.
@@ -3179,10 +3196,12 @@ class i2c_scpi(twi_interface):
             i2cAcknowledgeError: If any acknowledge fails during the transaction.
             i2cMasterError: If the I2C master encounters a communication error.
         """
-        addr_w = hex(self.write_addr(addr7))[2:].rjust(2, "0")
-        _addr_r = hex(self.read_addr(addr7))[2:].rjust(2, "0")  # noqa: F841
-        commandCode = hex(commandCode)[2:].rjust(2, "0")
-        write_str = 'SMB:RW?(@{},{});'.format(addr_w, commandCode)
+        cc_bytes = self._command_code_bytes(commandCode)
+        if len(cc_bytes) > 1:
+            raise ValueError(f'Extended command codes not supported by {type(self).__name__}')
+        addr_w = hex(self.write_addr(addr7))[2:].rjust(2,"0")
+        commandCode = hex(commandCode)[2:].rjust(2,"0")
+        write_str = 'SMB:RW?(@{},{});'.format(addr_w,commandCode)
         self.interface.write(write_str)
         ret_str = self.interface.readline()
         if len(ret_str) < 11:
@@ -3192,11 +3211,9 @@ class i2c_scpi(twi_interface):
             raise i2cMasterError(
                 "I2C Error: Long Response to read_word: {}".format(ret_str))
         if ret_str[2] != "1":
-            raise i2cAcknowledgeError(
-                f"I2C Acknowledge Error reading command code:{commandCode} at addr7: {hex(addr7)}. Got: {ret_str}")
-        return int(ret_str[4:8], 16)
-
-    def read_word_pec(self, addr7, commandCode):
+            raise i2cAcknowledgeError(f"I2C Acknowledge Error reading command code:{commandCode} at addr7: {hex(addr7)}. Got: {ret_str}")
+        return int(ret_str[4:8],16)
+    def read_word_pec(self,addr7,commandCode):
         """Faster way to do an smbus read word.
         Sends the appropriate command to the instrument and parses the
         response.
@@ -3222,10 +3239,12 @@ class i2c_scpi(twi_interface):
             i2cMasterError: If the I2C master encounters a communication error.
             i2cPECError: If the PEC check fails (computed CRC does not match received).
         """
-        addr_w = hex(self.write_addr(addr7))[2:].rjust(2, "0")
-        _addr_r = hex(self.read_addr(addr7))[2:].rjust(2, "0")  # noqa: F841
-        commandCodeStr = hex(commandCode)[2:].rjust(2, "0")
-        write_str = 'SMB:RW:PEC?(@{},{});'.format(addr_w, commandCodeStr)
+        cc_bytes = self._command_code_bytes(commandCode)
+        if len(cc_bytes) > 1:
+            raise ValueError(f'Extended command codes not supported by {type(self).__name__}')
+        addr_w = hex(self.write_addr(addr7))[2:].rjust(2,"0")
+        commandCodeStr = hex(commandCode)[2:].rjust(2,"0")
+        write_str = 'SMB:RW:PEC?(@{},{});'.format(addr_w,commandCodeStr)
         self.interface.write(write_str)
         ret_str = self.interface.readline()
         if len(ret_str) < 14:
@@ -3235,18 +3254,14 @@ class i2c_scpi(twi_interface):
             raise i2cMasterError(
                 "I2C Error: Long Response to read_word: {}".format(ret_str))
         if ret_str[2] != "1":
-            raise i2cAcknowledgeError(
-                f"I2C Acknowledge Error reading command code:{commandCode} at addr7: {hex(addr7)}. Got: {ret_str}")
-        pec = int(ret_str[9:11], 16)
-        lsb = int(ret_str[6:8], 16)
-        msb = int(ret_str[4:6], 16)
-        if self.pec([self.write_addr(addr7), commandCode,
-                    self.read_addr(addr7), lsb, msb, pec]):
-            raise i2cPECError("I2C Error: read_word Failed PEC check. Received:{} Expected:{}".format(
-                pec, self.pec([self.write_addr(addr7), commandCode, self.read_addr(addr7), lsb, msb])))
-        return int(ret_str[4:8], 16)
-
-    def read_byte(self, addr7, commandCode):
+            raise i2cAcknowledgeError(f"I2C Acknowledge Error reading command code:{commandCode} at addr7: {hex(addr7)}. Got: {ret_str}")
+        pec = int(ret_str[9:11],16)
+        lsb = int(ret_str[6:8],16)
+        msb = int(ret_str[4:6],16)
+        if self.pec([self.write_addr(addr7),commandCode,self.read_addr(addr7),lsb,msb,pec]):
+            raise i2cPECError("I2C Error: read_word Failed PEC check. Received:{} Expected:{}".format(pec,self.pec([self.write_addr(addr7),commandCode,self.read_addr(addr7),lsb,msb])))
+        return int(ret_str[4:8],16)
+    def read_byte(self,addr7,commandCode):
         """Faster way to do an smbus read byte.
         Sends the appropriate command to the instrument and parses the
         response.
@@ -3271,10 +3286,12 @@ class i2c_scpi(twi_interface):
             i2cAcknowledgeError: If any acknowledge fails during the transaction.
             i2cMasterError: If the I2C master encounters a communication error.
         """
-        addr_w = hex(self.write_addr(addr7))[2:].rjust(2, "0")
-        _addr_r = hex(self.read_addr(addr7))[2:].rjust(2, "0")  # noqa: F841
-        commandCode = hex(commandCode)[2:].rjust(2, "0")
-        write_str = ':SMB:RB?(@{},{});'.format(addr_w, commandCode)
+        cc_bytes = self._command_code_bytes(commandCode)
+        if len(cc_bytes) > 1:
+            raise ValueError(f'Extended command codes not supported by {type(self).__name__}')
+        addr_w = hex(self.write_addr(addr7))[2:].rjust(2,"0")
+        commandCode = hex(commandCode)[2:].rjust(2,"0")
+        write_str = ':SMB:RB?(@{},{});'.format(addr_w,commandCode)
         self.interface.write(write_str)
         ret_str = self.interface.readline()
         if len(ret_str) < 9:
@@ -3284,11 +3301,9 @@ class i2c_scpi(twi_interface):
             raise i2cMasterError(
                 "I2C Error: Long Response to read_byte: {}".format(ret_str))
         if ret_str[2] != "1":
-            raise i2cAcknowledgeError(
-                f"I2C Acknowledge Error reading command code:{commandCode} at addr7: {hex(addr7)}. Got: {ret_str}")
-        return int(ret_str[4:6], 16)
-
-    def read_byte_pec(self, addr7, commandCode):
+            raise i2cAcknowledgeError(f"I2C Acknowledge Error reading command code:{commandCode} at addr7: {hex(addr7)}. Got: {ret_str}")
+        return int(ret_str[4:6],16)
+    def read_byte_pec(self,addr7,commandCode):
         """Faster way to do an smbus read byte.
         Sends the appropriate command to the instrument and parses the
         response.
@@ -3314,10 +3329,12 @@ class i2c_scpi(twi_interface):
             i2cMasterError: If the I2C master encounters a communication error.
             i2cPECError: If the PEC check fails (computed CRC does not match received).
         """
-        addr_w = hex(self.write_addr(addr7))[2:].rjust(2, "0")
-        _addr_r = hex(self.read_addr(addr7))[2:].rjust(2, "0")  # noqa: F841
-        commandCodeStr = hex(commandCode)[2:].rjust(2, "0")
-        write_str = ':SMB:RB:PEC?(@{},{});'.format(addr_w, commandCodeStr)
+        cc_bytes = self._command_code_bytes(commandCode)
+        if len(cc_bytes) > 1:
+            raise ValueError(f'Extended command codes not supported by {type(self).__name__}')
+        addr_w = hex(self.write_addr(addr7))[2:].rjust(2,"0")
+        commandCodeStr = hex(commandCode)[2:].rjust(2,"0")
+        write_str = ':SMB:RB:PEC?(@{},{});'.format(addr_w,commandCodeStr)
         self.interface.write(write_str)
         ret_str = self.interface.readline()
         if len(ret_str) < 12:
@@ -3336,8 +3353,7 @@ class i2c_scpi(twi_interface):
             raise i2cPECError("I2C Error: read_byte Failed PEC check. Received:{} Expected:{}".format(
                 pec, self.pec([self.write_addr(addr7), commandCode, self.read_addr(addr7), data8])))
         return data8
-
-    def write_byte(self, addr7, commandCode, data8):
+    def write_byte(self,addr7,commandCode,data8):
         """Faster way to do an smbus write byte.
         Formats and sends the command to the instrument.
         Sends the ``I2C`` SCPI command to the instrument.
@@ -3362,6 +3378,9 @@ class i2c_scpi(twi_interface):
             i2cAcknowledgeError: If any acknowledge fails during the transaction.
             i2cMasterError: If the I2C master encounters a communication error.
         """
+        cc_bytes = self._command_code_bytes(commandCode)
+        if len(cc_bytes) > 1:
+            raise ValueError(f'Extended command codes not supported by {type(self).__name__}')
         data8 = int(data8) & 0xFF
         addr_w = hex(self.write_addr(addr7))[2:].rjust(2, "0")
         commandCode = hex(commandCode)[2:].rjust(2, "0")
@@ -3379,8 +3398,7 @@ class i2c_scpi(twi_interface):
             raise i2cAcknowledgeError(
                 f"I2C Acknowledge Error writing command code: {commandCode} at addr7: {hex(addr7)}. Got: {ret_str}")
         return True
-
-    def write_byte_pec(self, addr7, commandCode, data8):
+    def write_byte_pec(self,addr7,commandCode,data8):
         """Faster way to do an smbus write byte.
         Formats and sends the command to the instrument.
         Sends the ``,`` SCPI command to the instrument.
@@ -3405,6 +3423,9 @@ class i2c_scpi(twi_interface):
             i2cAcknowledgeError: If any acknowledge fails during the transaction.
             i2cMasterError: If the I2C master encounters a communication error.
         """
+        cc_bytes = self._command_code_bytes(commandCode)
+        if len(cc_bytes) > 1:
+            raise ValueError(f'Extended command codes not supported by {type(self).__name__}')
         data8 = int(data8) & 0xFF
         addr_w = hex(self.write_addr(addr7))[2:].rjust(2, "0")
         commandCodeStr = hex(commandCode)[2:].rjust(2, "0")
@@ -3425,8 +3446,7 @@ class i2c_scpi(twi_interface):
             raise i2cAcknowledgeError(
                 f"I2C Error in write_byte_pec (Possible PEC failure). Got:{ret_str} (at addr7:{hex(addr7)}, Commandcode:{commandCode}, data:{data8})")
         return True
-
-    def write_word(self, addr7, commandCode, data16):
+    def write_word(self,addr7,commandCode,data16):
         """Faster way to do an smbus write word.
         Formats and sends the command to the instrument.
         Sends the ``I2C`` SCPI command to the instrument.
@@ -3451,6 +3471,9 @@ class i2c_scpi(twi_interface):
             i2cAcknowledgeError: If any acknowledge fails during the transaction.
             i2cMasterError: If the I2C master encounters a communication error.
         """
+        cc_bytes = self._command_code_bytes(commandCode)
+        if len(cc_bytes) > 1:
+            raise ValueError(f'Extended command codes not supported by {type(self).__name__}')
         data16 = int(data16) & 0xFFFF
         addr_w = hex(self.write_addr(addr7))[2:].rjust(2, "0")
         commandCode = hex(commandCode)[2:].rjust(2, "0")
@@ -3468,8 +3491,7 @@ class i2c_scpi(twi_interface):
             raise i2cAcknowledgeError(
                 f"I2C Acknowledge Error writing command code: {commandCode} at addr7: {hex(addr7)}. Got: {ret_str}")
         return True
-
-    def write_word_pec(self, addr7, commandCode, data16):
+    def write_word_pec(self,addr7,commandCode,data16):
         """Faster way to do an smbus write word.
         Formats and sends the command to the instrument.
         Sends the ``,`` SCPI command to the instrument.
@@ -3494,6 +3516,9 @@ class i2c_scpi(twi_interface):
             i2cAcknowledgeError: If any acknowledge fails during the transaction.
             i2cMasterError: If the I2C master encounters a communication error.
         """
+        cc_bytes = self._command_code_bytes(commandCode)
+        if len(cc_bytes) > 1:
+            raise ValueError(f'Extended command codes not supported by {type(self).__name__}')
         data16 = int(data16) & 0xFFFF
         addr_w = hex(self.write_addr(addr7))[2:].rjust(2, "0")
         commandCodeStr = hex(commandCode)[2:].rjust(2, "0")
@@ -4242,8 +4267,7 @@ class i2c_scpi_sp(twi_interface):
             raise i2cAcknowledgeError(
                 f"I2C Acknowledge Error sending byte: {data8} at addr7: {hex(addr7)}. Got: {ret_str}")
         return True
-
-    def read_word(self, addr7, commandCode):
+    def read_word(self,addr7,commandCode):
         """Faster way to do an smbus read word.
         Sends the appropriate command to the instrument and parses the
         response.
@@ -4268,9 +4292,12 @@ class i2c_scpi_sp(twi_interface):
             i2cAcknowledgeError: If any acknowledge fails during the transaction.
             i2cMasterError: If the I2C master encounters a communication error.
         """
-        addr_w = hex(self.write_addr(addr7))[2:].rjust(2, "0")
-        commandCode = hex(commandCode)[2:].rjust(2, "0")
-        write_str = ':SMB:RW?(@{},{});'.format(addr_w, commandCode)
+        cc_bytes = self._command_code_bytes(commandCode)
+        if len(cc_bytes) > 1:
+            raise ValueError(f'Extended command codes not supported by {type(self).__name__}')
+        addr_w = hex(self.write_addr(addr7))[2:].rjust(2,"0")
+        commandCode = hex(commandCode)[2:].rjust(2,"0")
+        write_str = ':SMB:RW?(@{},{});'.format(addr_w,commandCode)
         self.interface.write('{}{}'.format(self.cmd, write_str))
         ret_str = self.interface.readline()
         if len(ret_str) < 11:
@@ -4285,8 +4312,7 @@ class i2c_scpi_sp(twi_interface):
         word = ret_str[4:8]
         data16 = int(word, 16)
         return data16
-
-    def read_byte(self, addr7, commandCode):
+    def read_byte(self,addr7,commandCode):
         """Faster way to do an smbus read byte.
         Sends the appropriate command to the instrument and parses the
         response.
@@ -4311,9 +4337,12 @@ class i2c_scpi_sp(twi_interface):
             i2cAcknowledgeError: If any acknowledge fails during the transaction.
             i2cMasterError: If the I2C master encounters a communication error.
         """
-        addr_w = hex(self.write_addr(addr7))[2:].rjust(2, "0")
-        commandCode = hex(commandCode)[2:].rjust(2, "0")
-        write_str = ':SMB:RB?(@{},{});'.format(addr_w, commandCode)
+        cc_bytes = self._command_code_bytes(commandCode)
+        if len(cc_bytes) > 1:
+            raise ValueError(f'Extended command codes not supported by {type(self).__name__}')
+        addr_w = hex(self.write_addr(addr7))[2:].rjust(2,"0")
+        commandCode = hex(commandCode)[2:].rjust(2,"0")
+        write_str = ':SMB:RB?(@{},{});'.format(addr_w,commandCode)
         self.interface.write('{}{}'.format(self.cmd, write_str))
         ret_str = self.interface.readline()
         if len(ret_str) < 9:
@@ -4328,8 +4357,7 @@ class i2c_scpi_sp(twi_interface):
         word = ret_str[4:6]
         data8 = int(word, 16)
         return data8
-
-    def write_byte(self, addr7, commandCode, data8):
+    def write_byte(self,addr7,commandCode,data8):
         """Faster way to do an smbus write byte.
         Formats and sends the command to the instrument.
         Sends the ``I2C`` SCPI command to the instrument.
@@ -4354,6 +4382,9 @@ class i2c_scpi_sp(twi_interface):
             i2cAcknowledgeError: If any acknowledge fails during the transaction.
             i2cMasterError: If the I2C master encounters a communication error.
         """
+        cc_bytes = self._command_code_bytes(commandCode)
+        if len(cc_bytes) > 1:
+            raise ValueError(f'Extended command codes not supported by {type(self).__name__}')
         data8 = int(data8) & 0xFF
         addr_w = hex(self.write_addr(addr7))[2:].rjust(2, "0")
         commandCode = hex(commandCode)[2:].rjust(2, "0")
@@ -4371,8 +4402,7 @@ class i2c_scpi_sp(twi_interface):
             raise i2cAcknowledgeError(
                 f"I2C Acknowledge Error writing command code: {commandCode} at addr7: {hex(addr7)}. Got: {ret_str}")
         return True
-
-    def write_word(self, addr7, commandCode, data16):
+    def write_word(self,addr7,commandCode,data16):
         """Faster way to do an smbus write word.
         Formats and sends the command to the instrument.
         Sends the ``I2C`` SCPI command to the instrument.
@@ -4397,6 +4427,9 @@ class i2c_scpi_sp(twi_interface):
             i2cAcknowledgeError: If any acknowledge fails during the transaction.
             i2cMasterError: If the I2C master encounters a communication error.
         """
+        cc_bytes = self._command_code_bytes(commandCode)
+        if len(cc_bytes) > 1:
+            raise ValueError(f'Extended command codes not supported by {type(self).__name__}')
         data16 = int(data16) & 0xFFFF
         addr_w = hex(self.write_addr(addr7))[2:].rjust(2, "0")
         commandCode = hex(commandCode)[2:].rjust(2, "0")
@@ -5262,11 +5295,9 @@ class i2c_dc590(twi_interface):
         elif data_size == 0 and not use_pec:
             self.send_byte(addr7, commandCode)
         else:
-            twi_interface.write_register(
-                self, addr7, commandCode, data, data_size, use_pec)
-    # SMBus Overloads
-
-    def read_byte(self, addr7, commandCode):
+            twi_interface.write_register(self, addr7, commandCode, data, data_size, use_pec)
+    ###SMBus Overloads
+    def read_byte(self,addr7,commandCode):
         """Return read byte result.
         Sends the appropriate command to the instrument and parses the
         response.
@@ -5290,9 +5321,9 @@ class i2c_dc590(twi_interface):
         Raises:
             i2cMasterError: If the I2C master encounters a communication error.
         """
-        self.check_size(commandCode, 8)
-        byteList = [self.write_addr(addr7), commandCode, self.read_addr(addr7)]
-        write_str = 'sS{}S{}sS{}Rp'.format(*list(map(self._hex_str, byteList)))
+        cc_bytes = self._command_code_bytes(commandCode)
+        byteList = [self.write_addr(addr7)] + cc_bytes + [self.read_addr(addr7)]
+        write_str = ('s' + 'S{}' * (1 + len(cc_bytes)) + 'sS{}Rp').format(*list(map(self._hex_str, byteList)))
         self.iface.write(write_str)
         resp = self.iface.read(2)
         ret_str = resp[0]
@@ -5330,10 +5361,9 @@ class i2c_dc590(twi_interface):
             i2cMasterError: If the I2C master encounters a communication error.
             i2cPECError: If the PEC check fails (computed CRC does not match received).
         """
-        self.check_size(commandCode, 8)
-        byteList = [self.write_addr(addr7), commandCode, self.read_addr(addr7)]
-        write_str = 'sS{}S{}sS{}QRp'.format(
-            *list(map(self._hex_str, byteList)))
+        cc_bytes = self._command_code_bytes(commandCode)
+        byteList = [self.write_addr(addr7)] + cc_bytes + [self.read_addr(addr7)]
+        write_str = ('s' + 'S{}' * (1 + len(cc_bytes)) + 'sS{}QRp').format(*list(map(self._hex_str, byteList)))
         self.iface.write(write_str)
         resp = self.iface.read(4)
         ret_str = resp[0]
@@ -5364,8 +5394,7 @@ class i2c_dc590(twi_interface):
                 'Long response to DC590 read_byte_pec command: {} then {}'.format(
                     ret_str, ret_extra))
         return byteList[-2]
-
-    def read_word(self, addr7, commandCode):
+    def read_word(self,addr7,commandCode):
         """Return read word result.
         Sends the appropriate command to the instrument and parses the
         response.
@@ -5390,10 +5419,9 @@ class i2c_dc590(twi_interface):
             i2cError: If a general I2C protocol violation occurs.
             i2cMasterError: If the I2C master encounters a communication error.
         """
-        self.check_size(commandCode, 8)
-        byteList = [self.write_addr(addr7), commandCode, self.read_addr(addr7)]
-        write_str = 'sS{}S{}sS{}QRp'.format(
-            *list(map(self._hex_str, byteList)))
+        cc_bytes = self._command_code_bytes(commandCode)
+        byteList = [self.write_addr(addr7)] + cc_bytes + [self.read_addr(addr7)]
+        write_str = ('s' + 'S{}' * (1 + len(cc_bytes)) + 'sS{}QRp').format(*list(map(self._hex_str, byteList)))
         self.iface.write(write_str)
         resp = self.iface.read(4)
         ret_str = resp[0]
@@ -5443,10 +5471,9 @@ class i2c_dc590(twi_interface):
             i2cMasterError: If the I2C master encounters a communication error.
             i2cPECError: If the PEC check fails (computed CRC does not match received).
         """
-        self.check_size(commandCode, 8)
-        byteList = [self.write_addr(addr7), commandCode, self.read_addr(addr7)]
-        write_str = 'sS{}S{}sS{}QQRp'.format(
-            *list(map(self._hex_str, byteList)))
+        cc_bytes = self._command_code_bytes(commandCode)
+        byteList = [self.write_addr(addr7)] + cc_bytes + [self.read_addr(addr7)]
+        write_str = ('s' + 'S{}' * (1 + len(cc_bytes)) + 'sS{}QQRp').format(*list(map(self._hex_str, byteList)))
         self.iface.write(write_str)
         resp = self.iface.read(6)
         ret_str = resp[0]
@@ -5500,10 +5527,9 @@ class i2c_dc590(twi_interface):
             i2cAcknowledgeError: If any acknowledge fails during the transaction.
             i2cMasterError: If the I2C master encounters a communication error.
         """
-        self.check_size(commandCode, 8)
-        byteList = [self.write_addr(addr7), commandCode, self.read_addr(addr7)]
-        write_str = 'sS{}S{}sS{}QQQRp'.format(
-            *list(map(self._hex_str, byteList)))
+        cc_bytes = self._command_code_bytes(commandCode)
+        byteList = [self.write_addr(addr7)] + cc_bytes + [self.read_addr(addr7)]
+        write_str = ('s' + 'S{}' * (1 + len(cc_bytes)) + 'sS{}QQQRp').format(*list(map(self._hex_str, byteList)))
         self.iface.write(write_str)
         resp = self.iface.read(8)
         ret_str = resp[0]
@@ -5555,10 +5581,9 @@ class i2c_dc590(twi_interface):
             i2cMasterError: If the I2C master encounters a communication error.
             i2cPECError: If the PEC check fails (computed CRC does not match received).
         """
-        self.check_size(commandCode, 8)
-        byteList = [self.write_addr(addr7), commandCode, self.read_addr(addr7)]
-        write_str = 'sS{}S{}sS{}QQQQRp'.format(
-            *list(map(self._hex_str, byteList)))
+        cc_bytes = self._command_code_bytes(commandCode)
+        byteList = [self.write_addr(addr7)] + cc_bytes + [self.read_addr(addr7)]
+        write_str = ('s' + 'S{}' * (1 + len(cc_bytes)) + 'sS{}QQQQRp').format(*list(map(self._hex_str, byteList)))
         self.iface.write(write_str)
         resp = self.iface.read(10)
         ret_str = resp[0]
@@ -5587,13 +5612,9 @@ class i2c_dc590(twi_interface):
         if resp[1]:
             time.sleep(.1)
             ret_extra = self.iface.read(None)
-            raise i2cMasterError(
-                'Long response to DC590 read_31_pec command: {} then {}'.format(
-                    ret_str, ret_extra))
-        return self.word([int(ret_str[0:2], 16), int(ret_str[2:4], 16), int(
-            ret_str[4:6], 16), int(ret_str[6:8], 16)])
-
-    def write_byte(self, addr7, commandCode, data8):
+            raise i2cMasterError('Long response to DC590 read_31_pec command: {} then {}'.format(ret_str, ret_extra))
+        return self.word([int(ret_str[0:2],16), int(ret_str[2:4],16), int(ret_str[4:6],16), int(ret_str[6:8],16)])
+    def write_byte(self,addr7,commandCode,data8):
         """Perform write byte operation.
         Formats and sends the command to the instrument.
         Sends the ``Response:`` SCPI command to the instrument.
@@ -5614,18 +5635,16 @@ class i2c_dc590(twi_interface):
         Raises:
             i2cError: If a general I2C protocol violation occurs.
         """
-        self.check_size(commandCode, 8)
-        self.check_size(data8, 8)
-        byteList = [self.write_addr(addr7), commandCode, data8]
-        write_str = 'sS{}S{}S{}p'.format(*list(map(self._hex_str, byteList)))
+        self.check_size(data8,8)
+        cc_bytes = self._command_code_bytes(commandCode)
+        byteList = [self.write_addr(addr7)] + cc_bytes + [data8]
+        write_str = ('s' + 'S{}' * len(byteList) + 'p').format(*list(map(self._hex_str, byteList)))
         self.iface.write(write_str)
         resp = self.iface.read(None)
         ret_str = resp[0]
         if len(ret_str) != 0:
-            raise i2cError(
-                'Response: {} from DC590 write_byte command'.format(ret_str))
-
-    def write_byte_pec(self, addr7, commandCode, data8):
+            raise i2cError('Response: {} from DC590 write_byte command'.format(ret_str))
+    def write_byte_pec(self,addr7,commandCode,data8):
         """Perform write byte pec operation.
         Formats and sends the command to the instrument.
         Sends the ``Bad`` SCPI command to the instrument.
@@ -5646,20 +5665,17 @@ class i2c_dc590(twi_interface):
         Raises:
             i2cError: If a general I2C protocol violation occurs.
         """
-        self.check_size(commandCode, 8)
-        self.check_size(data8, 8)
-        byteList = [self.write_addr(addr7), commandCode, data8]
+        self.check_size(data8,8)
+        cc_bytes = self._command_code_bytes(commandCode)
+        byteList = [self.write_addr(addr7)] + cc_bytes + [data8]
         byteList.append(self.pec(byteList))
-        write_str = 'sS{}S{}S{}S{}p'.format(
-            *list(map(self._hex_str, byteList)))
+        write_str = ('s' + 'S{}' * len(byteList) + 'p').format(*list(map(self._hex_str, byteList)))
         self.iface.write(write_str)
         resp = self.iface.read(None)
         ret_str = resp[0]
         if len(ret_str) != 0:
-            raise i2cError(
-                'Bad response: {} from DC590 write_byte_pec command'.format(ret_str))
-
-    def write_word(self, addr7, commandCode, data16):
+            raise i2cError('Bad response: {} from DC590 write_byte_pec command'.format(ret_str))
+    def write_word(self,addr7,commandCode,data16):
         """Perform write word operation.
         Formats and sends the command to the instrument.
         Sends the ``Response:`` SCPI command to the instrument.
@@ -5680,22 +5696,16 @@ class i2c_dc590(twi_interface):
         Raises:
             i2cError: If a general I2C protocol violation occurs.
         """
-        self.check_size(commandCode, 8)
-        self.check_size(data16, 16)
-        byteList = [
-            self.write_addr(addr7), commandCode, self.get_byte(
-                data16, 0), self.get_byte(
-                data16, 1)]
-        write_str = 'sS{}S{}S{}S{}p'.format(
-            *list(map(self._hex_str, byteList)))
+        self.check_size(data16,16)
+        cc_bytes = self._command_code_bytes(commandCode)
+        byteList = [self.write_addr(addr7)] + cc_bytes + [self.get_byte(data16,0), self.get_byte(data16,1)]
+        write_str = ('s' + 'S{}' * len(byteList) + 'p').format(*list(map(self._hex_str, byteList)))
         self.iface.write(write_str)
         resp = self.iface.read(None)
         ret_str = resp[0]
         if len(ret_str) != 0:
-            raise i2cError(
-                'Response: {} from DC590 write_word command'.format(ret_str))
-
-    def write_word_pec(self, addr7, commandCode, data16):
+            raise i2cError('Response: {} from DC590 write_word command'.format(ret_str))
+    def write_word_pec(self,addr7,commandCode,data16):
         """Perform write word pec operation.
         Formats and sends the command to the instrument.
         Sends the ``Bad`` SCPI command to the instrument.
@@ -5716,23 +5726,17 @@ class i2c_dc590(twi_interface):
         Raises:
             i2cError: If a general I2C protocol violation occurs.
         """
-        self.check_size(commandCode, 8)
-        self.check_size(data16, 16)
-        byteList = [
-            self.write_addr(addr7), commandCode, self.get_byte(
-                data16, 0), self.get_byte(
-                data16, 1)]
+        self.check_size(data16,16)
+        cc_bytes = self._command_code_bytes(commandCode)
+        byteList = [self.write_addr(addr7)] + cc_bytes + [self.get_byte(data16,0), self.get_byte(data16,1)]
         byteList.append(self.pec(byteList))
-        write_str = 'sS{}S{}S{}S{}S{}p'.format(
-            *list(map(self._hex_str, byteList)))
+        write_str = ('s' + 'S{}' * len(byteList) + 'p').format(*list(map(self._hex_str, byteList)))
         self.iface.write(write_str)
         resp = self.iface.read(None)
         ret_str = resp[0]
         if len(ret_str) != 0:
-            raise i2cError(
-                'Bad response: {} from DC590 write_word_pec command'.format(ret_str))
-
-    def write_32(self, addr7, commandCode, data32):
+            raise i2cError('Bad response: {} from DC590 write_word_pec command'.format(ret_str))
+    def write_32(self,addr7,commandCode,data32):
         """Perform write 32 operation.
         Formats and sends the command to the instrument.
         Sends the ``Bad`` SCPI command to the instrument.
@@ -5753,24 +5757,16 @@ class i2c_dc590(twi_interface):
         Raises:
             i2cError: If a general I2C protocol violation occurs.
         """
-        self.check_size(commandCode, 8)
-        self.check_size(data32, 32)
-        byteList = [
-            self.write_addr(addr7), commandCode, self.get_byte(
-                data32, 0), self.get_byte(
-                data32, 1), self.get_byte(
-                data32, 2), self.get_byte(
-                    data32, 3)]
-        write_str = 'sS{}S{}S{}S{}S{}S{}p'.format(
-            *list(map(self._hex_str, byteList)))
+        self.check_size(data32,32)
+        cc_bytes = self._command_code_bytes(commandCode)
+        byteList = [self.write_addr(addr7)] + cc_bytes + [self.get_byte(data32,0), self.get_byte(data32,1), self.get_byte(data32,2), self.get_byte(data32,3)]
+        write_str = ('s' + 'S{}' * len(byteList) + 'p').format(*list(map(self._hex_str, byteList)))
         self.iface.write(write_str)
         resp = self.iface.read(None)
         ret_str = resp[0]
         if len(ret_str) != 0:
-            raise i2cError(
-                'Bad response: {} from DC590 write_32 command'.format(ret_str))
-
-    def write_32_pec(self, addr7, commandCode, data32):
+            raise i2cError('Bad response: {} from DC590 write_32 command'.format(ret_str))
+    def write_32_pec(self,addr7,commandCode,data32):
         """Perform write 32 pec operation.
         Formats and sends the command to the instrument.
         Sends the ``Bad`` SCPI command to the instrument.
@@ -5791,17 +5787,11 @@ class i2c_dc590(twi_interface):
         Raises:
             i2cError: If a general I2C protocol violation occurs.
         """
-        self.check_size(commandCode, 8)
-        self.check_size(data32, 32)
-        byteList = [
-            self.write_addr(addr7), commandCode, self.get_byte(
-                data32, 0), self.get_byte(
-                data32, 1), self.get_byte(
-                data32, 2), self.get_byte(
-                    data32, 3)]
+        self.check_size(data32,32)
+        cc_bytes = self._command_code_bytes(commandCode)
+        byteList = [self.write_addr(addr7)] + cc_bytes + [self.get_byte(data32,0), self.get_byte(data32,1), self.get_byte(data32,2), self.get_byte(data32,3)]
         byteList.append(self.pec(byteList))
-        write_str = 'sS{}S{}S{}S{}S{}S{}S{}p'.format(
-            *list(map(self._hex_str, byteList)))
+        write_str = ('s' + 'S{}' * len(byteList) + 'p').format(*list(map(self._hex_str, byteList)))
         self.iface.write(write_str)
         resp = self.iface.read(None)
         ret_str = resp[0]
@@ -6410,14 +6400,26 @@ class x0020_SMBUS:
 
 
 class i2c_bobbytalk(twi_interface):
-    """An i2c_bobbytalk object sends and receives bobbytalk protocol packets to tell a Linduino running.
+    """An i2c_bobbytalk object sends and receives bobbytalk protocol packets to tell a Linduino running
+       bobbytalk F/W to perform i2c reads and writes.
 
-    bobbytalk F/W to perform i2c reads and writes.
+    PMBus Extended Command Limitation
+    ----------------------------------
+    This class does not support PMBus extended command codes (commandCode > 0xFF).
+    Extended command codes are validated by _command_code_bytes() and will pass Python-side
+    validation, but the bobbytalk firmware packet format encodes the command code as a single
+    unsigned byte (struct 'B' field). Passing an extended commandCode (e.g. 0x05FF) will
+    therefore raise a struct.error at the point of packet construction.
 
-    >>> from PyICe.twi_interface import i2c_bobbytalk
+    Full extended command support would require a new packet noun (analogous to WORD_PEC,
+    BYTE_PEC_V2, etc.) that encodes a 2-byte command field, corresponding firmware support
+    in the Linduino bobbytalk SMBUS module, and updated struct format strings in each affected
+    method here.
+    
+     >>> from PyICe.twi_interface import i2c_bobbytalk
     >>> i2c_bobbytalk is not None
     True
-
+    
     """
     def __init__(self, bobbytalk_interface, src_id, dest_id=None,
                  recv_timeout=1.0, cmd_tries=2, per_cmd_recv_tries=4, debug=False):
@@ -6882,7 +6884,7 @@ class i2c_bobbytalk(twi_interface):
         Raises:
             i2cPECError: If the PEC check fails (computed CRC does not match received).
         """
-        self.check_size(commandCode, bits=8)
+        self._command_code_bytes(commandCode)
         self.check_size(addr7, bits=8)
         import struct
         SMnoun = x0020_SMBUS.noun  # Abbreviation.
@@ -7006,7 +7008,7 @@ class i2c_bobbytalk(twi_interface):
             i2cError: If a general I2C protocol violation occurs.
             i2cPECError: If the PEC check fails (computed CRC does not match received).
         """
-        self.check_size(commandCode, bits=8)
+        self._command_code_bytes(commandCode)
         self.check_size(addr7, bits=8)
         import struct
         SMnoun = x0020_SMBUS.noun  # Abbreviation.
@@ -7062,6 +7064,9 @@ class i2c_bobbytalk(twi_interface):
                 # if time and retries permit.
             calcd_pec = self.pec([self.write_addr(addr7), commandCode, self.read_addr(addr7),
                                   self.get_byte(data16, 0), self.get_byte(data16, 1)])
+            #              # if time and retries permit.
+            #calcd_pec = self.pec([self.write_addr(addr7), commandCode,
+            #                      self.get_byte(data16,0), self.get_byte(data16,1)])
             if rcvd_pec != calcd_pec:
                 raise i2cPECError(("Expected PEC 0x{:02x} didn't match received PEC 0x{:02x}\n"
                                    ).format(calcd_pec, rcvd_pec))
@@ -7086,7 +7091,7 @@ class i2c_bobbytalk(twi_interface):
         Returns:
             The value read from the device or channel.
         """
-        self.check_size(commandCode, bits=8)
+        self._command_code_bytes(commandCode)
         self.check_size(addr7, bits=8)
         import struct
         SMnoun = x0020_SMBUS.noun  # Abbreviation.
@@ -7174,7 +7179,7 @@ class i2c_bobbytalk(twi_interface):
         Raises:
             i2cError: If a general I2C protocol violation occurs.
         """
-        self.check_size(commandCode, bits=8)
+        self._command_code_bytes(commandCode)
         self.check_size(addr7, bits=8)
         import struct
         SMnoun = x0020_SMBUS.noun  # Abbreviation.
