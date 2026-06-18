@@ -287,23 +287,28 @@ def default_connections(components, connections):
         else:
             break
     if not len(plugin_check) or plugin_check.upper() not in ['NO', 'N']:
+        plugin_descriptions = {
+            "evaluate_tests":          "Auto pass/fail checking against defined limits",
+            "traceability":            "Log who ran the test, on which machine, and when",
+            "notifications":           "Email/text alerts when tests complete",
+            "bench_config_management": "Track and validate hardware wiring between components",
+            "bench_image_creation":    "Generate visual diagrams of bench connections",
+        }
+        plugin_list = list(plugin_descriptions.keys())
         while True:
-            plugin_list = [
-                "evaluate_tests",
-                "traceability",
-                "archive",
-                "notifications",
-                "bench_config_management",
-                "bench_image_creation"]
+            menu_items = []
+            for z in plugin_list:
+                bullet = '•' if z in plugins_to_add else ' '
+                menu_items.append(f'{bullet}{z:<27} - {plugin_descriptions[z]}')
             to_add = select_string_menu.select_string_menu(
-                'Select plugins to add, then select exit.', [
-                    (' ' if z not in plugins_to_add else '•') + z for z in plugin_list])
-            if to_add is None:  # The menu returns a None when default menu item 'exit' is selected.
+                'Select plugins to add, then select exit.', menu_items)
+            if to_add is None:
                 break
-            elif to_add[1:] in plugins_to_add:
-                plugins_to_add.remove(to_add[1:])
+            plugin_key = to_add[1:].split(' - ')[0].strip()
+            if plugin_key in plugins_to_add:
+                plugins_to_add.remove(plugin_key)
             else:
-                plugins_to_add.append(to_add[1:])
+                plugins_to_add.append(plugin_key)
     if 'notifications' in plugins_to_add:
         os.mkdir(os.path.join(plugin_folder, 'user_notifications'))
         script_creator_dict[os.path.join(
