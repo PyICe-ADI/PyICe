@@ -205,18 +205,20 @@ class htx9001(scpi_instrument):
         return self._add_channel(new_channel)
 
     def _set_dvcc(self, voltage):
+        last_exc: Exception = Exception("HTX9001: _set_dvcc failed")
         for i in range(3):
             value = int(max(min(voltage, 5), 0.8) / 5.0 * 63.0) & 0x3F
             try:
                 self._twi.send_byte(0x74, value)
                 return
             except Exception as e:
+                last_exc = e
                 print(
                     "HTX9001 Configurator Communication error setting DVCC, retrying....")
                 print(e)
                 self._twi.resync_communication()
         print("Sorry, couldn't fix it with resync_communication()")
-        raise e
+        raise last_exc
 
     def read_channel_pin(self, channel_name):
         """Return read channel pin result.

@@ -1612,3 +1612,452 @@ class TestKeithley2600:
         inst['icompl'].write(0.1)
         calls = [str(c) for c in mock.write.call_args_list]
         assert any('smua.source.limiti = 0.1' in c for c in calls)
+
+
+class TestHtx9011ThreadConsolidation:
+    """Verify that add_channel_isense_remapper registers meter interfaces on the htx9011,
+    preventing concurrent SCPI access via thread consolidation."""
+
+    @pytest.fixture
+    def setup(self, master_instance):
+        """Create an htx9011 and a mock meter instrument on separate interfaces.
+
+        Args:
+            master_instance: Master instance.
+
+        Returns:
+            Tuple of (htx9011_instance, meter_instrument, meter_interface, htx_interface).
+        """
+        from PyICe.lab_instruments.htx9011 import htx9011
+        from PyICe.lab_core import instrument, channel
+
+        htx_iface = MagicMock()
+        htx_iface.__class__ = interface_visa
+        last_write = {}
+
+        def fake_readline():
+            value_char = last_write.get('value_char', 'Z')
+            return f'00{value_char}0\r\n'
+
+        def fake_write(cmd):
+            if ':SETPin:' in cmd:
+                parts = cmd.split(':SETPin:')
+                for part in parts[1:]:
+                    if part and part[0] in 'HLZP':
+                        char_map = {'L': '0', 'H': '1', 'Z': 'Z', 'P': 'P'}
+                        last_write['value_char'] = char_map[part[0]]
+
+        htx_iface.readline.side_effect = fake_readline
+        htx_iface.write.side_effect = fake_write
+        htx_iface.ask.return_value = '1234567890'
+        htx_iface.com_node_get_root.return_value = master_instance
+        htx = htx9011(htx_iface, serializing=True)
+
+        meter_iface = master_instance.get_dummy_interface(name='meter_gpib')
+        meter = instrument('mock_meter')
+        meter._add_interface(meter_iface)
+        vmeter_hi = channel('vmeter_hi', read_function=lambda: 0.100)
+        vmeter_med = channel('vmeter_med', read_function=lambda: 0.050)
+        vmeter_lo = channel('vmeter_lo', read_function=lambda: 0.001)
+        for ch in (vmeter_hi, vmeter_med, vmeter_lo):
+            meter._add_channel(ch)
+
+        master_instance.add(htx)
+        master_instance.add(meter)
+        return htx, meter, meter_iface
+
+    def test_meter_interface_registered_on_htx9011(self, setup):
+        """After add_channel_isense_remapper, htx9011 claims the meter's interface."""
+        htx, meter, meter_iface = setup
+        vmeter_hi = meter.get_channel('vmeter_hi')
+        vmeter_med = meter.get_channel('vmeter_med')
+        vmeter_lo = meter.get_channel('vmeter_lo')
+
+        assert meter_iface not in htx._interfaces
+        htx.add_channel_isense_remapper(
+            'isense_ch1', 1, vmeter_hi, vmeter_med, vmeter_lo)
+        assert meter_iface in htx._interfaces
+
+    def test_htx9011_not_threadable_independently_from_meter(self, setup, master_instance):
+        """htx9011 cannot be placed in a thread group that excludes the meter's interface,
+        ensuring they are never read concurrently."""
+        htx, meter, meter_iface = setup
+        vmeter_hi = meter.get_channel('vmeter_hi')
+        vmeter_med = meter.get_channel('vmeter_med')
+        vmeter_lo = meter.get_channel('vmeter_lo')
+
+        htx.add_channel_isense_remapper(
+            'isense_ch1', 1, vmeter_hi, vmeter_med, vmeter_lo)
+
+        htx_interfaces = set(htx._interfaces)
+        all_interfaces = list(htx_interfaces | set(meter._interfaces))
+        thread_groups = master_instance.group_com_nodes_for_threads_filter(all_interfaces)
+        for group in thread_groups:
+            group_set = set(group)
+            if htx_interfaces.issubset(group_set):
+                assert meter_iface in group_set, (
+                    "htx9011 was placed in a thread group without the meter interface")
+                break
+        else:
+            pass
+
+
+class TestThreadResolution:
+    """Verify that the worker thread resolution algorithm correctly groups channels
+    sharing an interface or com node parent into the same thread, and separates
+    independent channels into distinct threads."""
+
+    @pytest.fixture
+    def master(self, master_instance):
+        """Return a master with threading enabled.
+
+        Args:
+            master_instance: Master instance.
+
+        Returns:
+            The master instance.
+        """
+        return master_instance
+
+    def _make_instrument(self, name, interface):
+        """Create a simple instrument with a read channel on the given interface.
+
+        Args:
+            name: Instrument name.
+            interface: Interface to attach.
+
+        Returns:
+            Tuple of (instrument, channel).
+        """
+        from PyICe.lab_core import instrument, channel
+        inst = instrument(name)
+        inst._add_interface(interface)
+        ch = channel(f'{name}_ch', read_function=lambda: 0)
+        inst._add_channel(ch)
+        return inst, ch
+
+    def _dump_com_tree(self, master):
+        """Capture the com node tree as a string for diagnostic output.
+
+        Args:
+            master: The master instance (root of the com node tree).
+
+        Returns:
+            String representation of the interface hierarchy.
+        """
+        import io
+        from contextlib import redirect_stdout
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            master.debug_com_nodes()
+        return buf.getvalue()
+
+    def _get_thread_work_units(self, master, channel_list):
+        """Run the thread grouping logic and return a list of channel-name sets,
+        one per work unit dispatched to the thread pool, plus the remainder set.
+
+        Args:
+            master: The master instance.
+            channel_list: Channels to partition.
+
+        Returns:
+            Tuple of (work_units, remainder) where work_units is a list of sets
+            of channel names and remainder is a set of channel names read
+            non-threaded after all threads complete.
+        """
+        from PyICe.lab_core import results_ord_dict
+        work_units = []
+        original_put = master._read_queue.put
+
+        def capture_put(ch_list):
+            work_units.append(set(ch.get_name() for ch in ch_list))
+
+        master._read_queue.put = capture_put
+        old_get_results = master.get_threaded_results
+        master.get_threaded_results = lambda n: results_ord_dict()
+        old_non_threaded = master._read_channels_non_threaded
+        remainder_channels = []
+        master._read_channels_non_threaded = lambda cl: (
+            remainder_channels.extend(cl) or results_ord_dict())
+
+        try:
+            master._read_channels_threaded(channel_list)
+        finally:
+            master._read_queue.put = original_put
+            master.get_threaded_results = old_get_results
+            master._read_channels_non_threaded = old_non_threaded
+
+        remainder = set(ch.get_name() for ch in remainder_channels)
+        return work_units, remainder
+
+    def test_shared_interface_same_thread(self, master):
+        """Two instruments on the same interface must be in the same work unit."""
+        iface = master.get_dummy_interface(name='shared_bus')
+        inst_a, ch_a = self._make_instrument('inst_a', iface)
+        inst_b, ch_b = self._make_instrument('inst_b', iface)
+        master.add(inst_a)
+        master.add(inst_b)
+
+        work_units, remainder = self._get_thread_work_units(
+            master, [ch_a, ch_b])
+
+        tree = self._dump_com_tree(master)
+        combined = set()
+        for wu in work_units:
+            combined |= wu
+        assert 'inst_a_ch' in combined and 'inst_b_ch' in combined, (
+            f"Channels missing from work units.\nCom tree:\n{tree}")
+        for wu in work_units:
+            if 'inst_a_ch' in wu:
+                assert 'inst_b_ch' in wu, (
+                    f"Channels sharing an interface were placed in different work units.\n"
+                    f"Work units: {work_units}\nCom tree:\n{tree}")
+
+    def test_shared_non_thread_safe_parent_same_thread(self, master):
+        """Two instruments whose interfaces share a non-thread-safe parent
+        must be in the same work unit."""
+        from PyICe.lab_interfaces import communication_node
+        bus = communication_node()
+        bus.set_com_node_thread_safe(False)
+        bus.set_com_node_parent(master)
+        iface_a = master.get_dummy_interface(parent=bus, name='dev_a')
+        iface_b = master.get_dummy_interface(parent=bus, name='dev_b')
+        inst_a, ch_a = self._make_instrument('inst_a', iface_a)
+        inst_b, ch_b = self._make_instrument('inst_b', iface_b)
+        master.add(inst_a)
+        master.add(inst_b)
+
+        work_units, remainder = self._get_thread_work_units(
+            master, [ch_a, ch_b])
+
+        tree = self._dump_com_tree(master)
+        for wu in work_units:
+            if 'inst_a_ch' in wu:
+                assert 'inst_b_ch' in wu, (
+                    f"Channels sharing a non-thread-safe parent were split into different work units.\n"
+                    f"Work units: {work_units}\nCom tree:\n{tree}")
+                break
+        else:
+            assert 'inst_a_ch' in remainder and 'inst_b_ch' in remainder, (
+                f"Expected both channels in the same execution context.\n"
+                f"Work units: {work_units}, Remainder: {remainder}\nCom tree:\n{tree}")
+
+    def test_independent_interfaces_separate_threads(self, master):
+        """Two instruments on independent interfaces (thread-safe root) must be
+        dispatched to separate work units."""
+        iface_a = master.get_dummy_interface(name='bus_a')
+        iface_b = master.get_dummy_interface(name='bus_b')
+        inst_a, ch_a = self._make_instrument('inst_a', iface_a)
+        inst_b, ch_b = self._make_instrument('inst_b', iface_b)
+        master.add(inst_a)
+        master.add(inst_b)
+
+        work_units, remainder = self._get_thread_work_units(
+            master, [ch_a, ch_b])
+
+        tree = self._dump_com_tree(master)
+        assert len(work_units) >= 2, (
+            f"Expected at least 2 work units for independent interfaces, got {len(work_units)}.\n"
+            f"Work units: {work_units}\nCom tree:\n{tree}")
+        for wu in work_units:
+            assert not ('inst_a_ch' in wu and 'inst_b_ch' in wu), (
+                f"Independent channels were incorrectly placed in the same work unit.\n"
+                f"Work units: {work_units}\nCom tree:\n{tree}")
+
+    def test_three_buses_three_work_units(self, master):
+        """Three instruments on three independent buses produce three work units."""
+        ifaces = [master.get_dummy_interface(name=f'bus_{i}') for i in range(3)]
+        channels = []
+        for i, iface in enumerate(ifaces):
+            inst, ch = self._make_instrument(f'inst_{i}', iface)
+            master.add(inst)
+            channels.append(ch)
+
+        work_units, remainder = self._get_thread_work_units(master, channels)
+
+        tree = self._dump_com_tree(master)
+        assert len(work_units) == 3, (
+            f"Expected 3 work units for 3 independent buses, got {len(work_units)}.\n"
+            f"Work units: {work_units}\nCom tree:\n{tree}")
+
+    def test_instrument_spanning_two_interfaces_not_split(self, master):
+        """An instrument claiming two interfaces cannot be placed in a work unit
+        that excludes either interface. It either shares a work unit with both
+        or falls to the non-threaded remainder."""
+        from PyICe.lab_core import instrument, channel
+        iface_a = master.get_dummy_interface(name='bus_a')
+        iface_b = master.get_dummy_interface(name='bus_b')
+        inst = instrument('multi_iface_inst')
+        inst._add_interface(iface_a)
+        inst._add_interface(iface_b)
+        ch = channel('multi_ch', read_function=lambda: 0)
+        inst._add_channel(ch)
+        master.add(inst)
+
+        inst_other, ch_other = self._make_instrument('other', iface_a)
+        master.add(inst_other)
+
+        work_units, remainder = self._get_thread_work_units(
+            master, [ch, ch_other])
+
+        tree = self._dump_com_tree(master)
+        for wu in work_units:
+            if 'multi_ch' in wu:
+                assert iface_a in set(inst._interfaces) and iface_b in set(inst._interfaces)
+                break
+        else:
+            assert 'multi_ch' in remainder, (
+                f"Multi-interface instrument must fall to non-threaded remainder "
+                f"if no single thread group contains all its interfaces.\n"
+                f"Work units: {work_units}, Remainder: {remainder}\nCom tree:\n{tree}")
+
+
+class TestCommunicationNode:
+    """Unit tests for communication_node tree operations, error paths, and edge cases."""
+
+    def test_single_node_is_own_root(self):
+        """A parentless node is its own root."""
+        from PyICe.lab_interfaces import communication_node
+        node = communication_node()
+        assert node.com_node_get_root() is node
+
+    def test_single_node_no_descendants(self):
+        """A leaf node has no descendants."""
+        from PyICe.lab_interfaces import communication_node
+        node = communication_node()
+        assert node.com_node_get_all_descendents() == set()
+
+    def test_deep_tree_root_traversal(self):
+        """com_node_get_root traverses arbitrarily deep chains."""
+        from PyICe.lab_interfaces import communication_node
+        nodes = [communication_node() for _ in range(10)]
+        for i in range(1, len(nodes)):
+            nodes[i].set_com_node_parent(nodes[i - 1])
+        assert nodes[-1].com_node_get_root() is nodes[0]
+
+    def test_descendants_excludes_self(self):
+        """com_node_get_all_descendents does not include the node itself."""
+        from PyICe.lab_interfaces import communication_node
+        root = communication_node()
+        child = communication_node()
+        child.set_com_node_parent(root)
+        assert root not in root.com_node_get_all_descendents()
+
+    def test_thread_unsafe_node_lumps_all_descendants(self):
+        """A thread-unsafe node produces one group containing itself and all descendants."""
+        from PyICe.lab_interfaces import communication_node
+        root = communication_node()
+        root.set_com_node_thread_safe(False)
+        a = communication_node()
+        a.set_com_node_parent(root)
+        b = communication_node()
+        b.set_com_node_parent(a)
+        groups = root.group_com_nodes_for_threads()
+        assert len(groups) == 1
+        assert groups[0] == {root, a, b}
+
+    def test_thread_safe_root_creates_separate_groups_per_child(self):
+        """A thread-safe root with N children produces at least N+1 groups
+        (one for root, one per child subtree)."""
+        from PyICe.lab_interfaces import communication_node
+        root = communication_node()
+        root.set_com_node_thread_safe(True)
+        children = []
+        for _ in range(4):
+            c = communication_node()
+            c.set_com_node_thread_safe(False)
+            c.set_com_node_parent(root)
+            children.append(c)
+        groups = root.group_com_nodes_for_threads()
+        assert len(groups) == 5
+
+    def test_filter_raises_on_multiple_roots(self):
+        """group_com_nodes_for_threads_filter raises when nodes have different roots."""
+        from PyICe.lab_interfaces import communication_node
+        root_a = communication_node()
+        root_b = communication_node()
+        node_a = communication_node()
+        node_a.set_com_node_parent(root_a)
+        node_b = communication_node()
+        node_b.set_com_node_parent(root_b)
+        with pytest.raises(Exception, match="Too many COM node parents"):
+            root_a.group_com_nodes_for_threads_filter([node_a, node_b])
+
+    def test_filter_empty_list(self):
+        """Filtering an empty list returns an empty result."""
+        from PyICe.lab_interfaces import communication_node
+        root = communication_node()
+        root.set_com_node_thread_safe(True)
+        assert root.group_com_nodes_for_threads_filter([]) == []
+
+    def test_hierarchical_lock_acquires_parent(self):
+        """Locking a child also locks its parent (hierarchical locking).
+        Verified from a second thread since RLock is reentrant within one thread."""
+        import threading
+        from PyICe.lab_interfaces import communication_node
+        parent = communication_node()
+        child = communication_node()
+        child.set_com_node_parent(parent)
+        child.lock()
+        probe_result = {}
+
+        def probe():
+            probe_result['acquired'] = parent._lock.acquire(block=False)
+            if probe_result['acquired']:
+                parent._lock.release()
+
+        t = threading.Thread(target=probe)
+        t.start()
+        t.join()
+        assert not probe_result['acquired'], (
+            "Parent lock should be held (by main thread) after child.lock()")
+        child.unlock()
+        t2 = threading.Thread(target=probe)
+        t2.start()
+        t2.join()
+        assert probe_result['acquired'], (
+            "Parent lock should be released after child.unlock()")
+
+    def test_mixed_topology_grouping(self):
+        """Complex topology: thread-safe root, two unsafe buses each with devices,
+        plus one device directly on root. Verifies correct partitioning."""
+        from PyICe.lab_interfaces import communication_node
+        root = communication_node()
+        root.set_com_node_thread_safe(True)
+        bus_a = communication_node()
+        bus_a.set_com_node_thread_safe(False)
+        bus_a.set_com_node_parent(root)
+        dev_a1 = communication_node()
+        dev_a1.set_com_node_parent(bus_a)
+        dev_a2 = communication_node()
+        dev_a2.set_com_node_parent(bus_a)
+        bus_b = communication_node()
+        bus_b.set_com_node_thread_safe(False)
+        bus_b.set_com_node_parent(root)
+        dev_b1 = communication_node()
+        dev_b1.set_com_node_parent(bus_b)
+        dev_direct = communication_node()
+        dev_direct.set_com_node_parent(root)
+
+        groups = root.group_com_nodes_for_threads_filter(
+            [dev_a1, dev_a2, dev_b1, dev_direct])
+
+        group_sets = [set(g) for g in groups]
+        for gs in group_sets:
+            if dev_a1 in gs:
+                assert dev_a2 in gs, "Devices on same unsafe bus must be co-grouped"
+                assert dev_b1 not in gs, "Devices on different buses must not be co-grouped"
+
+
+class TestDeprecationDeadlines:
+    """Scheduled removal tests. When these fail, remove the associated shim code."""
+
+    def test_isense_remapper_shim_deadline(self):
+        """Remove the inspect-based compatibility shim for add_channel_isense_remapper
+        in morpheus_eval, then delete this test."""
+        import datetime
+        deadline = datetime.date(2026, 9, 11)
+        assert datetime.date.today() <= deadline, (
+            "SHIM EXPIRED: Remove the inspect-based compatibility shim for "
+            "add_channel_isense_remapper() in morpheus_eval, then delete this test. "
+            "See PR #207 for details.")

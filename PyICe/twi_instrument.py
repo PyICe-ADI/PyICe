@@ -19,6 +19,7 @@ import traceback
 try:
     from scipy.interpolate import UnivariateSpline
 except ImportError:
+    UnivariateSpline = None  # type: ignore[assignment]
     SCIPY_MISSING = True
     print("SciPy not found. Reverting to Python piecewise linear interpolator/extrapolator for formats.")
 SCIPY_MISSING = True  # Force Python interpolator instead of spline
@@ -1160,6 +1161,7 @@ class pmbus_instrument(twi_instrument):
         """
         results = lab_core.results_ord_dict()
         pages = set([ch.get_attribute('page') for ch in register_list])
+        merge_none = False
         if len(pages) > 1 and None in pages:
             pages -= set([None])
             merge_none = True

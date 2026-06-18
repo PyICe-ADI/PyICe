@@ -48,6 +48,7 @@ m.add_channel_virtual_caching('rand6_cp_cp', read_function=lambda: m.read(
     'rand6_cp')).set_category('double_caching')
 
 m.background_gui()
+data = None
 for i in range(1000):
     data = m.read_all_channels()
     assert data['rand4'] == data['rand4_cp']

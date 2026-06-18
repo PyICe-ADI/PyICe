@@ -433,6 +433,7 @@ class waveform(object):
         xreverse.reverse()
         yreverse.reverse()
         from bokeh.models import Span
+        start_index: int | None = None
         for idx, value in enumerate(self.ydata):
             if value - \
                     self._average_in >= abs(limit) or value - self._average_in <= -1 * abs(limit):
@@ -635,6 +636,7 @@ class waveform(object):
         """
         from bokeh.models import Span
         amplitude = self._average_out - self._average_in
+        value = None
         for idx, value in enumerate(self.ydata):
             if value > self._average_in + low_percentage * amplitude:
                 self.index_10 = idx
@@ -690,6 +692,7 @@ class waveform(object):
         """
         from bokeh.models import Span
         amplitude = self._average_in - self._average_out
+        value = None
         for idx, value in enumerate(self.ydata):
             if value < self._average_out + low_percentage * amplitude:
                 self.index_10 = idx

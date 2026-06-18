@@ -42,6 +42,7 @@ class pds_reader():
             lines = file.readlines()
             self.data = {}
         # skip first blank line (will always be that way?)
+        section = ""
         for line in lines[:-1]:
             if line.startswith("["):
                 section = line.strip("[]\n")

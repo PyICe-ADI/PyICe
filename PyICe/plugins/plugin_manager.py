@@ -316,6 +316,8 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
         self.temperature_channel = None
         self._temperature_is_dummy = False
         self.special_channel_actions = {}
+        module = None
+        temp_instrument = None
         for (dirpath1, dirnames, filenames) in os.walk(self.project_path):
             if 'benches' not in dirpath1 or self.project_path not in dirpath1:
                 continue
@@ -357,7 +359,7 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                         if self.temperature_channel is None:
                             self.temperature_channel = instrument_dict['temp_control_channel']
                             temp_instrument = instrument_dict['instruments']
-                        else:
+                        else:  # temp_instrument was set in the previous iteration that set temperature_channel
                             raise Exception(
                                 f'BENCH MAKER: Multiple channels have been declared the temperature control! One from {temp_instrument} and one from {instrument_dict["instruments"]}.')
                     if 'shutdown_list' in instrument_dict:
@@ -767,6 +769,7 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
 
         if test._crash_logs is None:
             test._crash_logs = {}
+        crash_log: dict = {}
         try:
             typ, value, tb = sys.exc_info()
             crash_log = {}
@@ -931,6 +934,7 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
 
         """
         print_banner('Archiving. . .')
+        archive_folder = datetime.datetime.now(datetime.timezone.utc).strftime("%Y_%m_%d_%H_%M")
         for test in self.tests:
             try:
                 archive_folder = test.get_archive_folder_name()
@@ -940,7 +944,6 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                 break
             except Exception:
                 continue
-            archive_folder = datetime.datetime.now(datetime.timezone.utc).strftime("%Y_%m_%d_%H_%M")
         archived_tables = []
         for test in self.tests:
             if not hasattr(test, "_logger"):
@@ -992,6 +995,7 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
         if len(archived_tables):
             arch_plot_scripts = []
             for (test, db_table, db_file) in archived_tables:
+                dest_file = ""
                 if hasattr(test, 'plot'):
                     dest_file = os.path.join(
                         os.path.dirname(db_file), "replot_data.py")
@@ -1296,6 +1300,7 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                 self.temperature_run_startup()
             idx=0
             for temp in temperatures or ["ambient"]:
+                summary_msg = ''
                 if temp != "ambient":
                     idx+=1
                     print_banner(f'Setting temperature to {temp}°C')
