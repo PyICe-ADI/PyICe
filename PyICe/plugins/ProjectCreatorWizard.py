@@ -65,15 +65,36 @@ if __name__ == '__main__':
         Returns:
             The traceability script maker result.
         """
-        script_str = '''import os
+        script_str = '''"""Metadata gathering functions for test traceability.
+
+This module defines functions that collect information about the test environment
+(e.g., who ran the test, on which machine, etc.). The Plugin Manager calls these
+functions automatically before and after each test run so that every result can
+be traced back to its origin.
+
+To add more traceability fields, create a new function that accepts a test object
+and returns the desired value, then add it to the dictionary in
+get_traceability_items().
+"""
+
+import os
+
 
 def _get_bench_operator(test):
+    """Return the operating-system username of whoever is running the test."""
     return os.getlogin()
 
+
 def get_traceability_items():
-    traceability_items ={  
-                        "bench_operator"                : _get_bench_operator,
-                        }
+    """Return a dictionary mapping traceability field names to collector functions.
+
+    Each key becomes a metadata column stored alongside the test results.
+    Each value is a callable that receives the test object and returns the
+    metadata value for that field.
+    """
+    traceability_items = {
+        "bench_operator": _get_bench_operator,
+    }
     return traceability_items'''
         return script_str
 
@@ -92,7 +113,14 @@ def get_traceability_items():
         """
         bench_method = '''
     def _declare_bench_connections(self):
-        #Here user has the option to add project specific components to self.pm.test_components and default connections to self.pm.test_connections before adding the test's changes.
+        """Set up the default hardware connections, then apply test-specific ones.
+
+        This method is called by the Plugin Manager before a test runs. It first
+        wires up the standard bench connections defined in
+        default_bench_configuration (shared by all tests in the project), then
+        calls the individual test's declare_bench_connections() so each test can
+        add or override connections as needed.
+        """
         default_bench_configuration.default_connections(self.pm.test_components.get_components(), self.pm.test_connections)
         self.declare_bench_connections()'''
         return bench_method
@@ -110,11 +138,29 @@ def get_traceability_items():
         Returns:
             The user script maker result.
         """
-        user_script_str = '''def get_notification_targets():
-    targets =   {
-                # 'emails':['your.email@analog.com'],
-                # 'texts' :[('yourphonenumber', 'yourservicecarrier')]
-                }
+        user_script_str = '''"""Notification targets for a specific user.
+
+This module tells the notifications plugin where to send alerts (e.g., test
+pass/fail emails or text messages) for ONE user. Each person on the team should
+have their own copy of this file with their personal contact information filled
+in. The filename typically matches the user's login name.
+
+Uncomment and fill in the 'emails' and/or 'texts' entries below to receive
+notifications when tests complete.
+"""
+
+
+def get_notification_targets():
+    """Return a dictionary of contact methods for this user.
+
+    Supported keys:
+        'emails' - list of email address strings
+        'texts'  - list of (phone_number, carrier) tuples
+    """
+    targets = {
+        # 'emails': ['your.email@analog.com'],
+        # 'texts' : [('yourphonenumber', 'yourservicecarrier')]
+    }
     return targets'''
         return user_script_str
     
@@ -129,12 +175,12 @@ def get_traceability_items():
         Returns:
             The user script maker result.
         """
-        project_settings_str=''
+        project_settings_str='"""Project-wide settings and plugin configuration.\n\nThis is the central configuration file for the entire project. The Plugin\nManager reads Project_Settings to determine:\n  - Where the project lives on disk\n  - Which plugins are enabled (e.g., traceability, archiving, bench management)\n  - Plugin-specific parameters (component lists, notification servers, etc.)\n\nEdit the Project_Settings dictionary below to enable/disable plugins or change\nproject-level behavior. Each test in the project inherits these settings\nautomatically through the Plugin Manager.\n"""\n\n'
         if 'traceability' in plugins_to_add:
             project_settings_str+=f'from {project_name}.infrastructure.plugin_dependencies.metadata_gathering_fns import get_traceability_items\n'
         if 'bench_config_management' in plugins_to_add:
             project_settings_str+=f'from {project_name}.infrastructure.plugin_dependencies import default_bench_configuration'
-        
+
         project_settings_str+= '''
 Project_Settings={
 "verbose"                   : True,'''
@@ -156,14 +202,38 @@ Project_Settings={
 
     def bench_config_comp_maker():
         ''''''
-        script_str='''from PyICe.plugins.bench_configuration_management.bench_configuration_management import bench_config_component
-# Add components not available in PyICe (see https://github.com/PyICe-ADI/PyICe/blob/main/PyICe/plugins/bench_configuration_management/lab_components.py)
+        script_str='''"""Custom bench configuration components for this project.
+
+This module defines hardware components that are unique to your project and not
+already provided by PyICe's built-in lab_components library. Each component
+class represents a physical board, fixture, or adapter on your test bench.
+
+A component has named "terminals" — the physical connectors or pins that can be
+wired to other components. The bench configuration management plugin uses these
+terminal definitions to track and validate how hardware is connected.
+
+To add a new component:
+  1. Create a class inheriting from bench_config_component.
+  2. Override add_terminals() to define the component's connectable points.
+
+For components already in PyICe, see:
+https://github.com/PyICe-ADI/PyICe/blob/main/PyICe/plugins/bench_configuration_management/lab_components.py
+"""
+
+from PyICe.plugins.bench_configuration_management.bench_configuration_management import bench_config_component
+
+
 class dummy_board(bench_config_component):
+    """Example: a board with two tab connectors (TAB_A and TAB_B)."""
+
     def add_terminals(self):
         self.add_terminal("TAB_A", instrument=self)
         self.add_terminal("TAB_B", instrument=self)
 
+
 class dummy_helper_board(bench_config_component):
+    """Example: a helper board with two slot connectors (SLOT_A and SLOT_B)."""
+
     def add_terminals(self):
         self.add_terminal("SLOT_A", instrument=self)
         self.add_terminal("SLOT_B", instrument=self)'''
@@ -171,20 +241,37 @@ class dummy_helper_board(bench_config_component):
 
     def bench_conn_maker(project_name='DEFAULT'):
         ''''''
-        script_str =f'from {project_name}.infrastructure.plugin_dependencies import bench_configuration_components\n'
+        script_str =f'"""Default bench configuration: component inventory and wiring.\n\nThis module defines TWO things shared across all tests in the project:\n\n1. component_collection() — the full list of hardware components available on\n   the test bench (power supplies, boards, fixtures, etc.).\n\n2. default_connections() — the baseline wiring between those components that\n   every test starts with. Individual tests can add extra connections on top\n   of these defaults via their own declare_bench_connections() method.\n\nWhen you add new hardware to your bench, register it in component_collection().\nIf that hardware should always be wired the same way, add the connection in\ndefault_connections().\n"""\n\n'
+        script_str+=f'from {project_name}.infrastructure.plugin_dependencies import bench_configuration_components\n'
         script_str+='''from PyICe.plugins.bench_configuration_management import lab_components
 
+
 def component_collection():
+    """Return a list of all hardware components available on the test bench.
+
+    Each entry is an instance of a bench_config_component (or built-in
+    lab_component) with a unique name. These names are used as dictionary keys
+    when wiring connections.
+    """
     comp_coll = []
-    # Add the components used for test benches here
     comp_coll.append(lab_components.four_channel_power_supply("HAMEG"))
     comp_coll.append(bench_configuration_components.dummy_board("DUMMY_BOARD"))
     comp_coll.append(bench_configuration_components.dummy_helper_board("HELPER_BOARD"))
     return comp_coll
 
+
 def default_connections(components, connections):
-    # Each test script will have by default the connections listed here.
-    connections.add_connection(components["DUMMY_BOARD"]["TAB_A"],            components["HELPER_BOARD"]["SLOT_B"])
+    """Wire up the baseline connections that every test inherits.
+
+    Args:
+        components: dictionary of component objects keyed by name, each
+                    containing terminal sub-keys (e.g., components["BOARD"]["PIN"]).
+        connections: a connections object to which wiring pairs are added.
+
+    Returns:
+        The updated connections object.
+    """
+    connections.add_connection(components["DUMMY_BOARD"]["TAB_A"], components["HELPER_BOARD"]["SLOT_B"])
     return connections
 '''
         return script_str
@@ -235,16 +322,38 @@ def default_connections(components, connections):
     ###
     # TEST TEMPLATE
     ###
-    new_test_template = 'from PyICe.plugins.master_test_template import Master_Test_Template'
+    new_test_template = '"""Project-level test template.\n\nThis module defines the Test_Template class that ALL tests in this project\ninherit from. It sits between PyICe\'s Master_Test_Template (which provides\nthe core test lifecycle) and your individual test scripts.\n\nUse this class to add project-wide behavior that every test should share,\nsuch as default bench connections, common setup steps, or shared helper\nmethods. Individual tests override only what they need to customize.\n\nInheritance chain:\n    Master_Test_Template (PyICe built-in)\n        └── Test_Template (this file — project-wide customization)\n            └── Your individual Test classes (per-test behavior)\n"""\n\n'
+    new_test_template += 'from PyICe.plugins.master_test_template import Master_Test_Template'
     if 'bench_config_management' in plugins_to_add:
         new_test_template+=f'\nfrom {project_name}.infrastructure.plugin_dependencies import default_bench_configuration'
     new_test_template += f'''
 
+
 class Test_Template(Master_Test_Template):
+    """Base class for all tests in this project.
+
+    Subclass this in each test script. Override methods like customize(),
+    collect(), plot(), etc. to define test-specific behavior.
+    """
+
     def __init__(self):
         pass'''
     if 'evaluate_tests' in plugins_to_add:
-        new_test_template += "\n    def get_test_limits(self, test_name):\n        #User code to determine limits of given test. e.g.:\n        test_limits = {'DUMDUM_TEST': {'lower_limit':0, 'upper_limit':4, 'comment':'This is just an example'}}\n        return test_limits[test_name]"
+        new_test_template += '''\n    def get_test_limits(self, test_name):
+        """Return the pass/fail limits for a given test by name.
+
+        Each entry in the dictionary defines a lower_limit, upper_limit, and an
+        optional comment. The evaluate_tests plugin uses these limits to
+        automatically determine whether measured values pass or fail.
+
+        Args:
+            test_name: string identifier for the test whose limits are needed.
+
+        Returns:
+            A dictionary with 'lower_limit', 'upper_limit', and 'comment' keys.
+        """
+        test_limits = {'DUMDUM_TEST': {'lower_limit':0, 'upper_limit':4, 'comment':'This is just an example'}}
+        return test_limits[test_name]'''
     if 'bench_config_management' in plugins_to_add:
         new_test_template += bench_connection_addon()
     script_creator_dict[os.path.join(
@@ -254,13 +363,37 @@ class Test_Template(Master_Test_Template):
     # BENCH FILE
     ###
     new_bench = \
-        '''from PyICe.lab_interfaces import interface_factory
+        '''"""Bench interface definitions for this specific computer.
+
+Each computer (test bench) that runs tests needs its own bench file. This file
+tells PyICe HOW to talk to the instruments physically connected to THIS machine
+— which COM ports, GPIB addresses, or IP addresses to use.
+
+The filename should match the computer's hostname (e.g., MY_LAPTOP.py). When
+the Plugin Manager starts, it automatically loads the bench file matching the
+current machine, so tests are portable across benches without code changes.
+
+To set up a new bench:
+  1. Copy this file and rename it to your computer's hostname.
+  2. Uncomment and fill in the interface lines for each instrument connected
+     to your machine.
+  3. The dictionary keys (e.g., 'HAMEG') must match the names used in your
+     hardware driver files.
+"""
+
+from PyICe.lab_interfaces import interface_factory
+
 
 def get_interfaces():
-    # Add the instruments used by this computer and their information as shown
+    """Return a dictionary mapping instrument names to their communication interfaces.
+
+    Each key is a short name for an instrument (must match the driver file's
+    expectation). Each value is a PyICe interface object configured for the
+    physical connection on this bench.
+    """
     my_if = interface_factory()
     return {
-            # 'HAMEG'                 : my_if.get_visa_serial_interface('COM18', baudrate= 57600), # For example
+            # 'HAMEG': my_if.get_visa_serial_interface('COM18', baudrate=57600),
             }'''
     script_creator_dict[os.path.join(
         bench_folder, f"{this_machine}.py")] = new_bench
@@ -268,9 +401,42 @@ def get_interfaces():
     ###
     # SAMPLE DRIVER
     ###
-    new_sample_driver = '''from PyICe.lab_instruments.hameg_4040 import hameg_4040
+    new_sample_driver = '''"""Hardware driver for the HAMEG 4040 four-channel power supply.
+
+A "driver" in PyICe tells the framework how to configure and use a specific
+instrument. This file is an EXAMPLE showing how to:
+  - Import the appropriate PyICe instrument class.
+  - Create named channels (readable/writable measurement points).
+  - Set up safety features (current limits, fuses, linked channels).
+  - Provide a cleanup list so channels are turned off when the test ends.
+
+To create your own driver:
+  1. Copy this file and rename it for your instrument.
+  2. Replace the instrument class import with the one for your device.
+  3. Define channels that map to the physical inputs/outputs you need.
+  4. Return the instrument(s) and any cleanup actions.
+"""
+
+from PyICe.lab_instruments.hameg_4040 import hameg_4040
+
 
 def populate(self):
+    """Set up the HAMEG power supply channels and return them to the framework.
+
+    This function is called by the Plugin Manager during test initialization.
+    It checks whether the HAMEG interface is available on this bench, and if
+    so, creates named voltage channels with current limits, fuse protection,
+    and cleanup actions.
+
+    Args:
+        self: the test object (provides self.interfaces from the bench file).
+
+    Returns:
+        A dictionary with:
+            'instruments'  - list of configured instrument objects (or None)
+            'cleanup_list' - list of lambdas to call when the test finishes
+                             (e.g., setting voltages to 0 and disabling outputs)
+    """
     if 'HAMEG' not in self.interfaces:
         return {'instruments':None}
     names = {1: "vmaina_force", 2: "vmainb_force"}
@@ -293,11 +459,16 @@ def populate(self):
     ###
     # EXAMPLE SCRIPT
     ###
-    new_example_script = f'from {project_name}.infrastructure.plugin_dependencies.test_template import Test_Template\n'
+    new_example_script = f'"""Example test script demonstrating the PyICe test lifecycle.\n\nThis file shows how to write a complete test using the project\'s Test_Template.\nA test is a class that defines some or all of these lifecycle methods (called in\norder by the Plugin Manager):\n\n  1. customize()  — Register the measurement channels (variables) this test uses.\n  2. collect()    — Sweep conditions and log data to the database.\n  3. plot()       — Read back the collected data and produce plots (SVG/PDF).\n  4. evaluate_results() — (optional) Compare results against pass/fail limits.\n  5. declare_bench_connections() — (optional) Specify extra hardware wiring.\n\nTo create your own test, copy this file into a new test folder and modify the\nmethods to match your measurement needs.\n"""\n\n'
+    new_example_script += f'from {project_name}.infrastructure.plugin_dependencies.test_template import Test_Template\n'
     new_example_script += '''from PyICe import LTC_plot
 
+
 class Test(Test_Template):
+    """Example test that sweeps dummy channels and plots the results."""
+
     def retrieve_database(self):
+        """Helper to load the test's database and table name for queries."""
         self.database = self.get_database()
         self.table_name = self.get_table_name()
 
@@ -305,6 +476,11 @@ class Test(Test_Template):
     if 'evaluate_tests' in plugins_to_add:
         new_example_script+='''
     def evaluate_results(self):
+        """Compare collected data against pass/fail limits defined in the template.
+
+        Queries the database for each unique condition and checks whether the
+        measured values fall within the bounds specified by get_test_limits().
+        """
         self.retrieve_database()
         for dummya in self.database.get_distinct("dumduma"):
             self.database.query(f'SELECT dumdumy, dumduma FROM {self.table_name} WHERE dumduma is {dummya}')
@@ -313,20 +489,36 @@ class Test(Test_Template):
     if 'bench_config_management' in plugins_to_add:
         new_example_script+='''
     def declare_bench_connections(self):
+        """Declare additional hardware connections specific to THIS test.
+
+        These connections are added ON TOP of the project-wide defaults defined
+        in default_bench_configuration.py. Use this to wire up any boards or
+        fixtures that only this particular test needs.
+        """
         connections = self.pm.test_connections.get_connections()
         components = self.pm.test_components.get_components()
-        
-        ####################################### Add TARGET BOARD #############################################
         connections.add_connection(components["DUMMY_BOARD"]["TAB_B"], components["HELPER_BOARD"]["SLOT_A"])
 '''
     new_example_script+='''
     def customize(self):
+        """Register the measurement channels (variables) used by this test.
+
+        Channels are named data columns that get logged to the database during
+        collect(). Use add_channel_dummy() for software-only variables, or
+        reference real instrument channels set up by your hardware drivers.
+        """
         channels = self.get_channels()
         channels.add_channel_dummy("dumduma")
         channels.add_channel_dummy("dumdumx")
         channels.add_channel_dummy("dumdumy")
 
     def collect(self):
+        """Sweep test conditions and log data points to the database.
+
+        Each call to channels.log() captures the current value of ALL registered
+        channels as one row in the database. Nested loops create a full
+        combinatorial sweep of the test conditions.
+        """
         channels = self.get_channels()
         for a in [-1,0,1]:
             for x in [0,1,2,3,4]:
@@ -336,6 +528,15 @@ class Test(Test_Template):
                 channels.log()
 
     def plot(self):
+        """Read collected data from the database and generate plots.
+
+        Creates SVG and PDF plot files showing the test results. Each unique
+        value of 'dumduma' becomes a separate trace on the graph. The plots
+        are saved to the test's designated plot folder.
+
+        Returns:
+            A list of plot objects (useful for programmatic inspection).
+        """
         self.retrieve_database()
         table_name = self.table_name
         plotlist=[]
@@ -374,7 +575,7 @@ class Test(Test_Template):
     ###
     # RUN SCRIPT
     ###
-    new_run_script = ''
+    new_run_script = f'"""Run script — the entry point that executes a test.\n\nThis is the file you actually run (e.g., `python run.py`) to kick off a test.\nIt does three things:\n  1. Loads the project-wide settings (plugins, paths, configuration).\n  2. Creates a Plugin Manager with those settings.\n  3. Adds one or more Test classes and runs them through the full lifecycle\n     (customize → collect → plot → evaluate).\n\nTo run a different test, change the import and pm.add_test() call to point at\nyour new Test class. You can add multiple tests to the same Plugin Manager if\nyou want them to share a session.\n"""\n\n'
     new_run_script+=f'from {project_name}.infrastructure.plugin_dependencies.project_settings import Project_Settings\n'
     new_run_script+='''from PyICe.plugins.plugin_manager import Plugin_Manager
 from test import Test
