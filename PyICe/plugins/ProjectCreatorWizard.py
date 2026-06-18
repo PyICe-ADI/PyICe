@@ -179,7 +179,9 @@ def get_notification_targets():
         if 'traceability' in plugins_to_add:
             project_settings_str+=f'from {project_name}.infrastructure.plugin_dependencies.metadata_gathering_fns import get_traceability_items\n'
         if 'bench_config_management' in plugins_to_add:
-            project_settings_str+=f'from {project_name}.infrastructure.plugin_dependencies import default_bench_configuration'
+            project_settings_str+=f'from {project_name}.infrastructure.plugin_dependencies import default_bench_configuration\n'
+        if 'bench_image_creation' in plugins_to_add:
+            project_settings_str+=f'from {project_name}.infrastructure.plugin_dependencies import visualizer_locations\n'
 
         project_settings_str+= '''
 Project_Settings={
@@ -199,6 +201,40 @@ Project_Settings={
             project_settings_str+= f'"sender"        : "EMAIL OF WHO SENDS THE EMAILS HERE",\n'
         project_settings_str+='}'
         return project_settings_str
+
+    def visualizer_locations_maker():
+        ''''''
+        script_str = '''"""Bench image visualizer component locations.
+
+This module defines the position and image file for each component on the
+bench visualization diagram. The bench_image_creation plugin uses this data
+to generate a graphical layout of the test bench.
+
+Each entry in the `locations` dictionary maps a component name (must match
+a name from your component_collection) to:
+  - "position": {"xpos": int, "ypos": int} — placement on the diagram canvas
+  - "image": path to a PNG image representing the component
+  - "use_label": whether to overlay the component name on the diagram
+
+To add a component to the diagram, add an entry here and place its image
+in the visualizer_images/ folder next to this file.
+"""
+
+import pathlib
+
+
+class component_locations:
+    """Container for bench component image locations."""
+
+    def __init__(self):
+        path = pathlib.Path(__file__).parent.resolve().as_posix() + "/visualizer_images/"
+        self.locations = {
+            "HAMEG": {"position": {"xpos": 0, "ypos": 0}, "image": f"{path}Missing.png", "use_label": True},
+            "DUMMY_BOARD": {"position": {"xpos": 400, "ypos": 0}, "image": f"{path}Missing.png", "use_label": True},
+            "HELPER_BOARD": {"position": {"xpos": 800, "ypos": 0}, "image": f"{path}Missing.png", "use_label": True},
+        }
+'''
+        return script_str
 
     def bench_config_comp_maker():
         ''''''
@@ -321,6 +357,10 @@ def default_connections(components, connections):
             plugin_folder, "bench_configuration_components.py")] = bench_config_comp_maker()
         script_creator_dict[os.path.join(
             plugin_folder, "default_bench_configuration.py")] = bench_conn_maker(project_name)
+    if 'bench_image_creation' in plugins_to_add:
+        os.mkdir(os.path.join(plugin_folder, 'visualizer_images'))
+        script_creator_dict[os.path.join(
+            plugin_folder, "visualizer_locations.py")] = visualizer_locations_maker()
     script_creator_dict[os.path.join(
         plugin_folder, "project_settings.py")] = project_settings_maker(project_name, plugins_to_add)
 
