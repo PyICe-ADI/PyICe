@@ -538,7 +538,6 @@ class Test(Test_Template):
             A list of plot objects (useful for programmatic inspection).
         """
         self.retrieve_database()
-        table_name = self.table_name
         plotlist=[]
         G0 = LTC_plot.plot( plot_title  = f"Sample Plot",
                             plot_name   = f"Plot Name",
@@ -589,7 +588,7 @@ pm.run()'''
 
     for (k, v) in script_creator_dict.items():
         try:
-            with open(k, 'w') as f:  # overwrites existing
+            with open(k, 'w', encoding='utf-8') as f:  # overwrites existing
                 f.write(v)
         except Exception as e:
             print(type(e))
