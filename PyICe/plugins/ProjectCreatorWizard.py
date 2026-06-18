@@ -20,7 +20,7 @@ if __name__ == '__main__':
     project_folder = ''
     while not len(project_folder):
         project_folder = input(
-            f'Enter project folder location (e.g. D:{os.sep}users{os.sep}{os.getlogin().lower()}{os.sep}projects{os.sep}{project_name}): ')
+            f'Enter project folder location (e.g. {os.path.splitdrive(os.getcwd())[0]}{os.sep}users{os.sep}{os.getlogin().lower()}{os.sep}projects{os.sep}{project_name}): ')
         if not len(project_folder):
             print("Please enter a filepath to your project folder.")
             continue
@@ -328,7 +328,7 @@ def default_connections(components, connections):
             "traceability":            "Log who ran the test, on which machine, and when",
             "notifications":           "Email/text alerts when tests complete",
             "bench_config_management": "Track and validate hardware wiring between components",
-            "bench_image_creation":    "Generate visual diagrams of bench connections",
+            "bench_image_creation":    "Generate visual diagrams of bench connections. MUST PROVIDE IMAGES",
         }
         plugin_list = list(plugin_descriptions.keys())
         while True:
@@ -343,8 +343,14 @@ def default_connections(components, connections):
             plugin_key = to_add[1:].split(' - ')[0].strip()
             if plugin_key in plugins_to_add:
                 plugins_to_add.remove(plugin_key)
+                if plugin_key == 'bench_config_management' and 'bench_image_creation' in plugins_to_add:
+                    plugins_to_add.remove('bench_image_creation')
+                    print('  (bench_image_creation also deselected — it requires bench_config_management)')
             else:
                 plugins_to_add.append(plugin_key)
+                if plugin_key == 'bench_image_creation' and 'bench_config_management' not in plugins_to_add:
+                    plugins_to_add.append('bench_config_management')
+                    print('  (bench_config_management also selected — required by bench_image_creation)')
     if 'notifications' in plugins_to_add:
         os.mkdir(os.path.join(plugin_folder, 'user_notifications'))
         script_creator_dict[os.path.join(
