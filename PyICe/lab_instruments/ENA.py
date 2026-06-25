@@ -119,7 +119,7 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
     # class keysight_e5061b_base(abc.ABC):
     """TODO: Add docstring."""
 
-    def __init__(self, interface_visa):
+    def __init__(self, interface_visa, halt_sweep=True):
         """Initialize Keysight E5061B ENA network analyzer.
         Calls the parent class constructor and initializes instance-specific
         attributes for keysight_e5061b_base.
@@ -128,6 +128,9 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
 
         Args:
             interface_visa: VISA interface address string.
+            halt_sweep: If True (default), stops continuous sweep on all
+                channels. Set to False to leave the instrument sweeping
+                (useful when reading existing front-panel data).
         """
         self._base_name = 'Keysight E5061B ENA network analyzer'
         super(keysight_e5061b_base, self).__init__(
@@ -137,8 +140,91 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
         self._configured_traces = {ch: [] for ch in range(1, 5)}
         # turn off unpoulated channels to avoid confusing status condition
         # register monitoring sweep/trigger status?
-        for i in range(1, 5):
-            self.get_interface().write(f':INITiate{i}:CONTinuous OFF')
+        if halt_sweep:
+            for i in range(1, 5):
+                self.get_interface().write(f':INITiate{i}:CONTinuous OFF')
+
+    def discover_and_configure(self, base_name='ena'):
+        """Query the instrument for its current front-panel configuration and register channels.
+
+        Discovers which channels/traces are active on the instrument and calls
+        the appropriate add_channel_* methods so that this instrument object has
+        registered PyICe channels matching the live hardware state. Includes
+        trace data, sweep settings, display layout, trigger, source power,
+        bias, and per-trace display scaling channels.
+
+        Args:
+            base_name: Prefix for auto-created channel names.
+
+        Returns:
+            A summary dict of what was discovered and configured.
+        """
+        iface = self.get_interface()
+        discovered = {}
+
+        for channel_number in range(1, 5):
+            trace_count = int(iface.ask(f':CALCulate{channel_number}:PARameter:COUNt?'))
+            if trace_count == 0:
+                continue
+
+            ch_key = f'ch{channel_number}'
+            discovered[ch_key] = {'traces': []}
+
+            if not self._configured_traces[channel_number]:
+                self.add_xchannels(f'{base_name}_{ch_key}', channel_number=channel_number)
+
+            self.add_channel_display_split(f'{base_name}_{ch_key}_display_split', channel_number=channel_number)
+
+            for trace_number in range(1, trace_count + 1):
+                if trace_number in self._configured_traces[channel_number]:
+                    continue
+
+                iface.write(f':CALCulate{channel_number}:PARameter{trace_number}:SELect')
+                measurement = iface.ask(f':CALCulate{channel_number}:PARameter{trace_number}:DEFine?')
+                data_format = iface.ask(f':CALCulate{channel_number}:SELected:FORMat?')
+
+                trace_name = f'{base_name}_{ch_key}_tr{trace_number}_{measurement}'
+                self.add_channel_ydata(trace_name, trace_number=trace_number, channel_number=channel_number)
+                self._configured_traces[channel_number].append(trace_number)
+
+                if hasattr(self, 'add_channel_rlevel'):
+                    self.add_channel_rlevel(f'{base_name}_{ch_key}_tr{trace_number}_rlevel',
+                                            channel_number=channel_number, trace_number=trace_number)
+                if hasattr(self, 'add_channel_pdiv'):
+                    self.add_channel_pdiv(f'{base_name}_{ch_key}_tr{trace_number}_pdiv',
+                                          channel_number=channel_number, trace_number=trace_number)
+
+                discovered[ch_key]['traces'].append({
+                    'trace_number': trace_number,
+                    'measurement': measurement,
+                    'format': data_format,
+                    'channel_name': trace_name,
+                })
+
+            if hasattr(self, 'add_channel_divisions'):
+                self.add_channel_divisions(f'{base_name}_{ch_key}_divisions', channel_number=channel_number)
+
+        # Trigger
+        trigger_names = [ch.get_name() for ch in self.get_all_channels_list()
+                         if ch.get_attribute('channel_type') == 'trig_control']
+        if not trigger_names:
+            self.add_channel_trigger(f'{base_name}')
+
+        # Source power
+        self.add_channels_source_power(f'{base_name}_source_power')
+
+        # Bias control
+        self.add_channels_bias_control(f'{base_name}_bias')
+
+        # GP port control
+        self.add_channels_gp_control(f'{base_name}_gp')
+
+        print(f"Discovered {sum(len(v['traces']) for v in discovered.values())} trace(s) "
+              f"across {len(discovered)} channel(s).")
+        for ch_key, info in discovered.items():
+            for t in info['traces']:
+                print(f"  {ch_key} trace {t['trace_number']}: {t['measurement']} ({t['format']})")
+        return discovered
 
     def _check_trace_unconfigured(self, trace_number, channel_number):
         # what about more than 4 measurements from the same sweep (logged but
