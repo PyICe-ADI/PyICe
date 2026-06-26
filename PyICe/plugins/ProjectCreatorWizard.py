@@ -69,8 +69,8 @@ if __name__ == '__main__':
 
 This module defines functions that collect information about the test environment
 (e.g., who ran the test, on which machine, etc.). The Plugin Manager calls these
-functions automatically before and after each test run so that every result can
-be traced back to its origin.
+functions automatically before the test sweep is run so that every result can be 
+traced back to its origin.
 
 To add more traceability fields, create a new function that accepts a test object
 and returns the desired value, then add it to the dictionary in
@@ -197,8 +197,8 @@ Project_Settings={
         if 'traceability' in plugins_to_add:
             project_settings_str+= f'"traceability_items"        : get_traceability_items(),\n'
         if 'notifications' in plugins_to_add:
-            project_settings_str+= f'"smtp_server"        : "YOUR SERVER HERE",\n'
-            project_settings_str+= f'"sender"        : "EMAIL OF WHO SENDS THE EMAILS HERE",\n'
+            project_settings_str+= f'"smtp_server"               : "YOUR SERVER HERE",\n'
+            project_settings_str+= f'"sender"                    : "EMAIL OF WHO SENDS THE EMAILS HERE",\n'
         project_settings_str+='}'
         return project_settings_str
 
@@ -393,9 +393,9 @@ class Test_Template(Master_Test_Template):
         new_test_template += '''\n    def get_test_limits(self, test_name):
         """Return the pass/fail limits for a given test by name.
 
-        Each entry in the dictionary defines a lower_limit, upper_limit, and an
-        optional comment. The evaluate_tests plugin uses these limits to
-        automatically determine whether measured values pass or fail.
+        Each entry in the dictionary defines qualities of a test. The evaluate_tests 
+        plugin uses lower_limit and/or upper_limit to automatically determine whether 
+        measured values pass or fail. Additional values appear in the test_results.json.
 
         Args:
             test_name: string identifier for the test whose limits are needed.
@@ -583,7 +583,8 @@ class Test(Test_Template):
 
         Creates SVG and PDF plot files showing the test results. Each unique
         value of 'dumduma' becomes a separate trace on the graph. The plots
-        are saved to the test's designated plot folder.
+        are saved to the test's designated plot folder. If notifications
+        are active, the returned plots are emailed out as well.
 
         Returns:
             A list of plot objects (useful for programmatic inspection).
