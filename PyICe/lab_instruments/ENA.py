@@ -153,8 +153,10 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
         trace data, sweep settings, display layout, trigger, source power,
         bias, and per-trace display scaling channels.
 
+        Prompts the user to name each discovered trace.
+
         Args:
-            base_name: Prefix for auto-created channel names.
+            base_name: Prefix for auto-created setting channel names.
 
         Returns:
             A summary dict of what was discovered and configured.
@@ -183,15 +185,20 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
                 measurement = iface.ask(f':CALCulate{channel_number}:PARameter{trace_number}:DEFine?')
                 data_format = iface.ask(f':CALCulate{channel_number}:SELected:FORMat?')
 
-                trace_name = f'{base_name}_{ch_key}_tr{trace_number}_{measurement}'
+                print(f"  Channel {channel_number}, Trace {trace_number}: {measurement} ({data_format})")
+                user_name = ''
+                while not len(user_name):
+                    user_name = input(f"    Name for this trace: ")
+                trace_name = f'{base_name}_{user_name}'
+
                 self.add_channel_ydata(trace_name, trace_number=trace_number, channel_number=channel_number)
                 self._configured_traces[channel_number].append(trace_number)
 
                 if hasattr(self, 'add_channel_rlevel'):
-                    self.add_channel_rlevel(f'{base_name}_{ch_key}_tr{trace_number}_rlevel',
+                    self.add_channel_rlevel(f'{trace_name}_rlevel',
                                             channel_number=channel_number, trace_number=trace_number)
                 if hasattr(self, 'add_channel_pdiv'):
-                    self.add_channel_pdiv(f'{base_name}_{ch_key}_tr{trace_number}_pdiv',
+                    self.add_channel_pdiv(f'{trace_name}_pdiv',
                                           channel_number=channel_number, trace_number=trace_number)
 
                 discovered[ch_key]['traces'].append({
