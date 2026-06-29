@@ -165,6 +165,46 @@ class agilent_3034a(oscilloscope):
                 name=channel, number=scope_channels[channel])
         self.add_all_timebase_trigger_aquisition_channels(prefix=prefix)
 
+    def discover_and_configure(self, base_name='scope'):
+        """Query the oscilloscope for active channels and register them.
+
+        Discovers which channels (1-4) are currently displayed on the
+        instrument and registers waveform + timebase channels so that this
+        instrument object is ready for use with instrument_data_dump.
+
+        Prompts the user to name each active channel.
+
+        Args:
+            base_name: Prefix for auto-created channel names.
+
+        Returns:
+            A summary dict of what was discovered and configured.
+        """
+        iface = self.get_interface()
+        discovered = {'channels': []}
+
+        for num in range(1, 5):
+            displayed = int(iface.ask(f':CHANnel{num}:DISPlay?'))
+            if not displayed:
+                continue
+            print(f"  Channel {num}: active")
+            user_name = ''
+            while not len(user_name):
+                user_name = input(f"    Name for channel {num}: ")
+            trace_name = f'{base_name}_{user_name}'
+            self.add_Ychannel_waveform(name=trace_name, number=num)
+            discovered['channels'].append({
+                'channel_number': num,
+                'channel_name': trace_name,
+            })
+
+        self.add_all_timebase_trigger_aquisition_channels(prefix=base_name)
+
+        print(f"Discovered {len(discovered['channels'])} active channel(s).")
+        for ch in discovered['channels']:
+            print(f"  Channel {ch['channel_number']}: {ch['channel_name']}")
+        return discovered
+
     def add_Ychannel_waveform(self, name, number):
         """Add named waveform channels to instrument. num is 1-4.  Add all control and readback channels by calling add_Ycontrol_Yreadback_channels().
         Creates and registers a new ychannel waveform.
@@ -185,6 +225,7 @@ class agilent_3034a(oscilloscope):
         self._add_channel(new_channel)
         new_channel._set_type_affinity('PyICeBLOB')
         new_channel.set_attribute('dependent_physical_channels', (number,))
+        new_channel.set_attribute('channel_type', 'y_data')
         self.add_Ycontrol_Yreadback_channels(name, number)
         return new_channel
 
@@ -333,6 +374,7 @@ class agilent_3034a(oscilloscope):
         self._add_channel(new_channel)
         new_channel._set_type_affinity('PyICeBLOB')
         new_channel.set_attribute('dependent_physical_channels', (None,))
+        new_channel.set_attribute('channel_type', 'x_data')
         return new_channel
 
     def _read_scope_time_info(self):
