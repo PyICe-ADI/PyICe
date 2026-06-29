@@ -19,6 +19,7 @@ Usage:
     # Or run standalone:
     python -m PyICe.data_utils.ena_data_dump
 """
+import sqlite3
 from PyICe import lab_core
 
 
@@ -52,6 +53,23 @@ class instrument_data_dump:
         self._table_name = table_name
         self._db_filename = db_filename
         self._logger.new_table(table_name)
+        self._write_channel_metadata(table_name)
+
+    def _write_channel_metadata(self, table_name):
+        """Write a companion table storing channel attributes for later identification."""
+        meta_table = f'{table_name}_channel_meta'
+        conn = sqlite3.connect(self._db_filename)
+        conn.execute(f'DROP TABLE IF EXISTS [{meta_table}]')
+        conn.execute(f'CREATE TABLE [{meta_table}] '
+                     '(channel_name TEXT, channel_type TEXT, measurement TEXT)')
+        for ch in self._logger:
+            attrs = ch.get_attributes()
+            ch_type = attrs.get('channel_type')
+            measurement = attrs.get('measurement')
+            conn.execute(f'INSERT INTO [{meta_table}] VALUES (?, ?, ?)',
+                         (ch.get_name(), ch_type, measurement))
+        conn.commit()
+        conn.close()
 
     def log(self):
         """Read all instrument channels and log one row to the database."""
