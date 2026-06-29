@@ -445,7 +445,7 @@ class oscilloscope(scpi_instrument, delegator):
 
         if output_svg:
             base = os.path.splitext(db_filename)[0]
-            svg_name = f'{base}_{table_name}'
+            svg_name = f'{base}_{table_name}_scope'
             page.create_svg(svg_name)
             print(f'Plot saved to {svg_name}.svg')
 

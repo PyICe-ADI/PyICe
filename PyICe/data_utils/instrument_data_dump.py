@@ -4,7 +4,7 @@ Dumps channel data from one or more PyICe instruments to an SQLite database,
 using their registered channel read methods and a PyICe logger.
 
 Usage:
-    from PyICe.data_utils.ena_data_dump import instrument_data_dump
+    from PyICe.data_utils.instrument_data_dump import instrument_data_dump
 
     # With any configured instrument(s):
     dump = instrument_data_dump(my_ena, db_filename='my_data.sqlite', table_name='bode')
@@ -17,7 +17,7 @@ Usage:
     dump = instrument_data_dump(ena, scope, psu, db_filename='bench.sqlite', table_name='run1')
 
     # Or run standalone:
-    python -m PyICe.data_utils.ena_data_dump
+    python -m PyICe.data_utils.instrument_data_dump
 """
 import sqlite3
 from PyICe import lab_core
@@ -107,44 +107,98 @@ if __name__ == '__main__':
         print("No instruments found in local/my_instruments.instruments.")
         sys.exit(1)
 
-    if len(instruments) == 1:
-        name, instrument = next(iter(instruments.items()))
-        selected = {name: instrument}
-        print(f"Using instrument: {name}")
-    else:
-        selected_names = []
-        while True:
-            menu_items = []
-            for k in instruments:
-                bullet = '•' if k in selected_names else ' '
-                menu_items.append(f'{bullet}{k}')
-            choice = select_string_menu.select_string_menu(
-                'Select instrument(s) to log, then select exit.', menu_items)
-            if choice is None:
-                break
-            key = choice[1:]
-            if key in selected_names:
-                selected_names.remove(key)
-            else:
-                selected_names.append(key)
-        if not selected_names:
-            print("No instruments selected.")
-            sys.exit(0)
-        selected = {k: instruments[k] for k in selected_names}
+    answer = input("(P)lot existing data or (C)ollect new data: ").strip().lower()
 
-    for name, inst in selected.items():
-        channel_names = inst.get_all_channel_names()
-        if not channel_names:
-            print(f"Warning: '{name}' has no registered channels.")
+    if answer == 'c':
+        if len(instruments) == 1:
+            name, instrument = next(iter(instruments.items()))
+            selected = {name: instrument}
+            print(f"Using instrument: {name}")
         else:
-            print(f"  {name}: {len(channel_names)} channel(s)")
+            selected_names = []
+            while True:
+                menu_items = []
+                for k in instruments:
+                    bullet = '•' if k in selected_names else ' '
+                    menu_items.append(f'{bullet}{k}')
+                choice = select_string_menu.select_string_menu(
+                    'Select instrument(s) to log, then select exit.', menu_items)
+                if choice is None:
+                    break
+                key = choice[1:]
+                if key in selected_names:
+                    selected_names.remove(key)
+                else:
+                    selected_names.append(key)
+            if not selected_names:
+                print("No instruments selected.")
+                sys.exit(0)
+            selected = {k: instruments[k] for k in selected_names}
 
-    dump = instrument_data_dump(*selected.values())
-    while True:
-        resp = input("Press Enter to log a measurement, or 'q' to quit: ").strip().lower()
-        if resp == 'q':
-            break
-        dump.log()
-        print("  Logged.")
-    dump.stop()
-    print("Done.")
+        for name, inst in selected.items():
+            channel_names = inst.get_all_channel_names()
+            if not channel_names:
+                print(f"Warning: '{name}' has no registered channels.")
+            else:
+                print(f"  {name}: {len(channel_names)} channel(s)")
+
+        dump = instrument_data_dump(*selected.values())
+        while True:
+            resp = input("Press Enter to log a measurement, or 'q' to quit: ").strip().lower()
+            if resp == 'q':
+                break
+            dump.log()
+            print("  Logged.")
+        dump.stop()
+        print("Done.")
+
+        # Plot the just-collected data
+        instrument_classes = set(type(inst) for inst in selected.values())
+        for cls in instrument_classes:
+            if hasattr(cls, 'plot_from_database'):
+                try:
+                    cls.plot_from_database(dump._db_filename, dump._table_name)
+                except (ValueError, KeyError):
+                    continue
+
+    elif answer == 'p':
+        from PyICe.lab_utils.sqlite_data import sqlite_data
+
+        db_filename = input("Database filename [data_dump.sqlite]: ").strip()
+        if not db_filename:
+            db_filename = 'data_dump.sqlite'
+
+        db = sqlite_data(database_file=db_filename)
+        all_tables = db.get_table_names()
+        tables = [t for t in all_tables if not t.endswith('_channel_meta')]
+        if not tables:
+            print("No data tables found in database.")
+            sys.exit(1)
+
+        if len(tables) == 1:
+            table_name = tables[0]
+            print(f"Using table: {table_name}")
+        else:
+            print("Available tables:")
+            for i, t in enumerate(tables):
+                print(f"  {i + 1}. {t}")
+            choice = input("Select table number: ").strip()
+            table_name = tables[int(choice) - 1]
+
+        # Try each instrument class's plot_from_database; multiple may succeed
+        # if the table contains data from more than one instrument type.
+        instrument_classes = set(type(inst) for inst in instruments.values())
+        plotted = False
+        for cls in instrument_classes:
+            if hasattr(cls, 'plot_from_database'):
+                try:
+                    cls.plot_from_database(db_filename, table_name)
+                    plotted = True
+                except (ValueError, KeyError):
+                    continue
+        if not plotted:
+            print(f"No instrument recognized the data in table '{table_name}'.")
+
+    else:
+        print(f"Unknown option: '{answer}'")
+        sys.exit(1)
