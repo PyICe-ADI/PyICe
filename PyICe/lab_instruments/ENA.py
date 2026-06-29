@@ -1107,6 +1107,166 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
         return (mode_channel, source_channel, slope_channel)
         # todo read_delegated blocking / autotrigger??
 
+    @classmethod
+    def plot_from_database(cls, db_filename, table_name, rows=None, output_svg=True):
+        """Read logged ENA data from SQLite and produce a frequency-response plot.
+
+        Does not require an instrument connection. Identifies x_data (frequency)
+        and y_data (trace) columns using the companion metadata table written by
+        instrument_data_dump, or falls back to naming conventions for older files.
+
+        Args:
+            db_filename: Path to the SQLite database file.
+            table_name: Name of the data table to plot.
+            rows: Which measurement rows to plot. Accepts:
+                - None: plot all rows (overlaid)
+                - int: plot a single row by index
+                - slice: plot a range of rows
+                - list of int: plot specific rows
+            output_svg: If True (default), render to SVG file alongside the
+                database. The file is named '{db_basename}_{table_name}.svg'.
+
+        Returns:
+            The LTC_plot.Page object for further customization or rendering.
+        """
+        from ..lab_utils.sqlite_data import sqlite_data
+        from .. import LTC_plot
+        import sqlite3
+        import numpy
+        import os
+
+        colors = [LTC_plot.LT_RED_1, LTC_plot.LT_BLUE_1, LTC_plot.LT_GREEN_1,
+                  LTC_plot.LT_COPPER_1, LTC_plot.LT_RED_2, LTC_plot.LT_BLUE_2,
+                  LTC_plot.LT_GREEN_2, LTC_plot.LT_COPPER_2]
+
+        # --- Discover column roles from metadata table or naming convention ---
+        meta_table = f'{table_name}_channel_meta'
+        conn = sqlite3.connect(db_filename)
+        cursor = conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+            (meta_table,))
+        has_meta = cursor.fetchone() is not None
+
+        x_columns = []  # (column_name,)
+        y_columns = []  # (column_name, measurement_label)
+
+        if has_meta:
+            rows_meta = conn.execute(
+                f'SELECT channel_name, channel_type, measurement FROM [{meta_table}]'
+            ).fetchall()
+            for ch_name, ch_type, measurement in rows_meta:
+                if ch_type == 'x_data':
+                    x_columns.append(ch_name)
+                elif ch_type == 'y_data':
+                    label = measurement if measurement else ch_name
+                    y_columns.append((ch_name, label))
+        else:
+            # Fallback: columns ending in '_fpoints' are frequency axes,
+            # other numpy array columns are traces
+            db_temp = sqlite_data(table_name=table_name, database_file=db_filename)
+            col_names = db_temp.get_column_names()
+            col_types = db_temp.get_column_types()
+            for name in col_names:
+                if name.endswith('_fpoints'):
+                    x_columns.append(name)
+                elif col_types.get(name) == numpy.ndarray:
+                    y_columns.append((name, name))
+
+        conn.close()
+
+        if not x_columns or not y_columns:
+            raise ValueError(
+                f"Could not identify trace data in table '{table_name}'. "
+                f"Found {len(x_columns)} x_data and {len(y_columns)} y_data columns.")
+
+        # --- Load data rows ---
+        db = sqlite_data(table_name=table_name, database_file=db_filename)
+        total_rows = len(db)
+
+        if rows is None:
+            row_indices = list(range(total_rows))
+        elif isinstance(rows, int):
+            row_indices = [rows]
+        elif isinstance(rows, slice):
+            row_indices = list(range(*rows.indices(total_rows)))
+        else:
+            row_indices = list(rows)
+
+        # --- Match y columns to their x column (shared prefix before _fpoints) ---
+        def find_x_for_y(y_name):
+            for x_name in x_columns:
+                prefix = x_name.rsplit('_fpoints', 1)[0]
+                if y_name.startswith(prefix):
+                    return x_name
+            return x_columns[0]
+
+        # --- Build the plot ---
+        freq_min = float('inf')
+        freq_max = 0
+        y_min = float('inf')
+        y_max = float('-inf')
+
+        trace_data_pairs = []
+        for row_idx in row_indices:
+            row = db[row_idx]
+            for y_col, label in y_columns:
+                x_col = find_x_for_y(y_col)
+                x_arr = row[x_col]
+                y_arr = row[y_col]
+                if x_arr is None or y_arr is None:
+                    continue
+                freq_min = min(freq_min, x_arr.min())
+                freq_max = max(freq_max, x_arr.max())
+                y_min = min(y_min, y_arr.min())
+                y_max = max(y_max, y_arr.max())
+                row_label = f'{label} [row {row_idx}]' if len(row_indices) > 1 else label
+                trace_data_pairs.append((x_arr, y_arr, row_label))
+
+        if not trace_data_pairs:
+            raise ValueError(f"No valid trace data found in selected rows of '{table_name}'.")
+
+        # Round axis limits to nice values
+        y_margin = (y_max - y_min) * 0.1 if y_max > y_min else 5
+        y_plot_min = y_min - y_margin
+        y_plot_max = y_max + y_margin
+        ydivs = 10
+        yminor = 2
+
+        bode_plot = LTC_plot.plot(
+            plot_title=f'{table_name}',
+            plot_name=table_name,
+            xaxis_label='FREQUENCY (Hz)',
+            yaxis_label='MAGNITUDE (dB)',
+            xlims=(freq_min, freq_max),
+            ylims=(y_plot_min, y_plot_max),
+            xminor=1,
+            xdivs=10,
+            yminor=yminor,
+            ydivs=ydivs,
+            logx=True,
+            logy=False,
+        )
+
+        for i, (x_arr, y_arr, label) in enumerate(trace_data_pairs):
+            color = colors[i % len(colors)]
+            data = list(zip(x_arr.tolist(), y_arr.tolist()))
+            bode_plot.add_trace(axis=1, data=data, color=color, legend=label)
+
+        bode_plot.add_legend(axis=1, location=(0.01, 0.01),
+                             justification='lower left', use_axes_scale=False)
+
+        # --- Render ---
+        page = LTC_plot.Page(rows_x_cols=None, page_size=None, plot_count=1)
+        page.add_plot(plot=bode_plot)
+
+        if output_svg:
+            base = os.path.splitext(db_filename)[0]
+            svg_name = f'{base}_{table_name}'
+            page.create_svg(svg_name)
+            print(f'Plot saved to {svg_name}.svg')
+
+        return page
+
 
 class keysight_e5061b(keysight_e5061b_base):
     """Keysight_e5061b (keysight_e5061b_base subclass)."""
