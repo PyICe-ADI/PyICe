@@ -284,6 +284,173 @@ class oscilloscope(scpi_instrument, delegator):
             prefix: Name prefix string.
         """
 
+    @classmethod
+    def plot_from_database(cls, db_filename, table_name, rows=None, output_svg=True):
+        """Read logged oscilloscope data from SQLite and produce a scope-style plot.
+
+        Does not require an instrument connection. Identifies x_data (time)
+        and y_data (waveform) columns using the companion metadata table written
+        by instrument_data_dump, or falls back to naming conventions for older
+        files (columns named 'x_values' or ending in '_timedata' are time axes;
+        columns named 'channel_N' or with PyICeBLOB type are waveforms).
+
+        The output uses LTC_plot.scope_plot to match the oscilloscope display
+        style (10 horizontal x 8 vertical divisions).
+
+        Args:
+            db_filename: Path to the SQLite database file.
+            table_name: Name of the data table to plot.
+            rows: Which measurement rows to plot. Accepts:
+                - None: plot all rows (overlaid)
+                - int: plot a single row by index
+                - slice: plot a range of rows
+                - list of int: plot specific rows
+            output_svg: If True (default), render to SVG file alongside the
+                database. The file is named '{db_basename}_{table_name}.svg'.
+
+        Returns:
+            The LTC_plot.Page object for further customization or rendering.
+        """
+        from ..lab_utils.sqlite_data import sqlite_data
+        from .. import LTC_plot
+        import sqlite3
+        import numpy
+        import os
+        import re
+
+        scope_colors = [LTC_plot.LT_COPPER_1, LTC_plot.LT_GREEN_1,
+                        LTC_plot.LT_BLUE_1, LTC_plot.LT_RED_1,
+                        LTC_plot.LT_COPPER_2, LTC_plot.LT_GREEN_2,
+                        LTC_plot.LT_BLUE_2, LTC_plot.LT_RED_2]
+
+        # --- Discover column roles from metadata table or naming convention ---
+        meta_table = f'{table_name}_channel_meta'
+        conn = sqlite3.connect(db_filename)
+        cursor = conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+            (meta_table,))
+        has_meta = cursor.fetchone() is not None
+
+        x_columns = []
+        y_columns = []  # (column_name, label)
+
+        if has_meta:
+            rows_meta = conn.execute(
+                f'SELECT channel_name, channel_type, measurement FROM [{meta_table}]'
+            ).fetchall()
+            for ch_name, ch_type, measurement in rows_meta:
+                if ch_type == 'x_data':
+                    x_columns.append(ch_name)
+                elif ch_type == 'y_data':
+                    label = measurement if measurement else ch_name
+                    y_columns.append((ch_name, label))
+        else:
+            # Fallback: 'x_values' or '*_timedata' columns are time axes,
+            # 'channel_N' columns are waveforms
+            db_temp = sqlite_data(table_name=table_name, database_file=db_filename)
+            col_names = db_temp.get_column_names()
+            col_types = db_temp.get_column_types()
+            for name in col_names:
+                if name == 'x_values' or name.endswith('_timedata'):
+                    x_columns.append(name)
+                elif re.match(r'^channel_[1-4]$', name) and col_types.get(name) == numpy.ndarray:
+                    y_columns.append((name, name))
+                elif col_types.get(name) == numpy.ndarray and name not in x_columns:
+                    y_columns.append((name, name))
+
+        conn.close()
+
+        if not x_columns or not y_columns:
+            raise ValueError(
+                f"Could not identify waveform data in table '{table_name}'. "
+                f"Found {len(x_columns)} x_data and {len(y_columns)} y_data columns.")
+
+        # --- Load data rows ---
+        db = sqlite_data(table_name=table_name, database_file=db_filename)
+        total_rows = len(db)
+
+        if rows is None:
+            row_indices = list(range(total_rows))
+        elif isinstance(rows, int):
+            row_indices = [rows]
+        elif isinstance(rows, slice):
+            row_indices = list(range(*rows.indices(total_rows)))
+        else:
+            row_indices = list(rows)
+
+        # --- Collect trace data and compute axis limits ---
+        x_min = float('inf')
+        x_max = float('-inf')
+        y_min = float('inf')
+        y_max = float('-inf')
+
+        trace_data_pairs = []
+        for row_idx in row_indices:
+            row = db[row_idx]
+            x_arr = row[x_columns[0]]
+            if x_arr is None:
+                continue
+            x_min = min(x_min, float(x_arr.min()))
+            x_max = max(x_max, float(x_arr.max()))
+            for y_col, label in y_columns:
+                y_arr = row[y_col]
+                if y_arr is None:
+                    continue
+                y_min = min(y_min, float(y_arr.min()))
+                y_max = max(y_max, float(y_arr.max()))
+                row_label = f'{label} [row {row_idx}]' if len(row_indices) > 1 else label
+                trace_data_pairs.append((x_arr, y_arr, row_label))
+
+        if not trace_data_pairs:
+            raise ValueError(f"No valid waveform data found in selected rows of '{table_name}'.")
+
+        # --- Compute scope-style axis limits (round to 8 vertical divisions) ---
+        y_range = y_max - y_min if y_max > y_min else 1.0
+        y_margin = y_range * 0.1
+        y_plot_min = y_min - y_margin
+        y_plot_max = y_max + y_margin
+
+        # Compute time/div label
+        x_range = x_max - x_min
+        time_per_div = x_range / 10
+        if time_per_div >= 1:
+            xaxis_label = f'{time_per_div:.3g} S/DIV'
+        elif time_per_div >= 1e-3:
+            xaxis_label = f'{time_per_div * 1e3:.3g} mS/DIV'
+        elif time_per_div >= 1e-6:
+            xaxis_label = f'{time_per_div * 1e6:.3g} µS/DIV'
+        else:
+            xaxis_label = f'{time_per_div * 1e9:.3g} nS/DIV'
+
+        # --- Build scope_plot ---
+        scope = LTC_plot.scope_plot(
+            plot_title=f'{table_name}',
+            plot_name=table_name,
+            xaxis_label=xaxis_label,
+            xlims=(x_min, x_max),
+            ylims=(y_plot_min, y_plot_max),
+        )
+
+        for i, (x_arr, y_arr, label) in enumerate(trace_data_pairs):
+            color = scope_colors[i % len(scope_colors)]
+            data = list(zip(x_arr.tolist(), y_arr.tolist()))
+            scope.add_trace(data=data, color=color, legend=label)
+
+        scope.add_legend(axis=1, location=(0.01, 0.01),
+                         justification='lower left', use_axes_scale=False)
+
+        # --- Render ---
+        page = LTC_plot.Page(rows_x_cols=None, page_size=None, plot_count=1)
+        page.add_plot(plot=scope)
+
+        if output_svg:
+            base = os.path.splitext(db_filename)[0]
+            svg_name = f'{base}_{table_name}'
+            page.create_svg(svg_name)
+            print(f'Plot saved to {svg_name}.svg')
+
+        return page
+
     # SCPI syntax taken from DSOX3034T programmer manual. May differ from
     # other MSO/DSO Keysight scopes and different manufacturer scopes.
 
