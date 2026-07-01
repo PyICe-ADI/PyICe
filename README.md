@@ -13,7 +13,9 @@ and outside electrical conditions can be monitored, controlled, and logged
 synchronously. This part of the project also includes numerous utilites to
 generate both publicly distributable libraries and documentation, and private
 IC synthesis and test files, all from a single common XML-based register map
-description.
+description. Register maps can be imported from proprietary XML, Yoda JSON, or
+industry-standard IP-XACT (IEEE 1685-2014 / SPIRIT 1685-2009) files via
+`twi_instrument.populate_from_ipxact()` and `spiInstrument.from_ipxact()`.
 
 For more detailed documentation, please go [here](https://pyice-adi.github.io/PyICe/)
 
