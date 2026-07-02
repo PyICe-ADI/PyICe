@@ -4,6 +4,61 @@ Parses IP-XACT component XML into lightweight dataclasses suitable for
 consumption by twi_instrument.populate_from_ipxact() and
 spiInstrument.from_ipxact().
 
+Getting Started
+===============
+
+**Option A: Direct import (skip JSON entirely)**
+
+The simplest path — go straight from IP-XACT XML to live PyICe channels::
+
+    from PyICe.twi_instrument import twi_instrument
+
+    # 'interface' is your TWI/I2C master from lab_interfaces
+    inst = twi_instrument(interface)
+    inst.populate_from_ipxact("path/to/my_device.xml", addr7=0x50)
+
+    # All register fields are now available as channels:
+    inst.write("ENABLE", 1)
+    print(inst.read("STATUS"))
+
+**Option B: Convert IP-XACT to PyICe JSON first, then import**
+
+Useful when you want a checked-in JSON artifact that multiple scripts share::
+
+    from PyICe.ipxact_parser import ipxact_to_pyice_json
+
+    # One-time conversion — creates a JSON file compatible with
+    # twi_instrument.populate_from_yoda_json_bridge()
+    ipxact_to_pyice_json(
+        "path/to/my_device.xml",
+        output_file="path/to/my_device_regmap.json",
+    )
+
+Then in your bench script::
+
+    from PyICe.twi_instrument import twi_instrument
+
+    inst = twi_instrument(interface)
+    inst.populate_from_yoda_json_bridge("path/to/my_device_regmap.json",
+                                        i2c_addr7=0x50)
+
+**Option C: Command-line conversion (no Python code required)**
+
+Run from a terminal::
+
+    python -m PyICe.ipxact_parser my_device.xml -o my_device_regmap.json
+
+This writes the PyICe JSON file directly. Run with ``--help`` for all options::
+
+    python -m PyICe.ipxact_parser --help
+
+Typical project layout::
+
+    infrastructure/
+    └── regmap/
+        ├── my_device.xml              # IP-XACT source (from EDA tools)
+        └── my_device_regmap.json      # Generated PyICe JSON (checked in)
+
 >>> from PyICe.ipxact_parser import IpxactParser, IpxactField
 >>> IpxactParser is not None
 True
@@ -460,3 +515,78 @@ def ipxact_to_pyice_json(ipxact_file, output_file=None,
             json.dump(registers_out, fp, indent=indent)
         logger.info("Wrote PyICe JSON register map to '%s'.", output_file)
     return registers_out
+
+
+def _cli_main():
+    """Entry point for ``python -m PyICe.ipxact_parser``."""
+    import argparse
+    import sys
+
+    parser = argparse.ArgumentParser(
+        prog="python -m PyICe.ipxact_parser",
+        description=(
+            "Convert an IP-XACT XML register map to PyICe JSON format.\n\n"
+            "The output JSON is directly consumable by\n"
+            "twi_instrument.populate_from_yoda_json_bridge()."
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=(
+            "Examples:\n"
+            "  python -m PyICe.ipxact_parser my_device.xml -o my_device_regmap.json\n"
+            "  python -m PyICe.ipxact_parser my_device.xml --base-address 0x100\n"
+            "  python -m PyICe.ipxact_parser my_device.xml --memory-map default_map\n"
+        ),
+    )
+    parser.add_argument(
+        "ipxact_file",
+        help="Path to IP-XACT XML component file.")
+    parser.add_argument(
+        "-o", "--output",
+        default=None,
+        help="Output JSON file path. If omitted, prints to stdout.")
+    parser.add_argument(
+        "--base-address",
+        type=lambda x: int(x, 0),
+        default=0,
+        help="Base address offset added to all registers (default: 0). "
+             "Accepts hex (0x...) or decimal.")
+    parser.add_argument(
+        "--memory-map",
+        default=None,
+        help="Only convert registers from this named memory map.")
+    parser.add_argument(
+        "--address-block",
+        default=None,
+        help="Only convert registers from this named address block.")
+    parser.add_argument(
+        "--indent",
+        type=int,
+        default=2,
+        help="JSON indentation (default: 2). Use 0 for compact output.")
+
+    args = parser.parse_args()
+
+    indent = args.indent if args.indent > 0 else None
+
+    try:
+        result = ipxact_to_pyice_json(
+            ipxact_file=args.ipxact_file,
+            output_file=args.output,
+            memory_map_name=args.memory_map,
+            address_block_name=args.address_block,
+            base_address=args.base_address,
+            indent=indent,
+        )
+    except (ValueError, NotImplementedError, FileNotFoundError) as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    if args.output is None:
+        json.dump(result, sys.stdout, indent=indent)
+        print()
+    else:
+        print(f"Wrote {len(result)} registers to {args.output}")
+
+
+if __name__ == "__main__":
+    _cli_main()

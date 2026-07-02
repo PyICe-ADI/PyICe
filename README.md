@@ -17,6 +17,33 @@ description. Register maps can be imported from proprietary XML, Yoda JSON, or
 industry-standard IP-XACT (IEEE 1685-2014 / SPIRIT 1685-2009) files via
 `twi_instrument.populate_from_ipxact()` and `spiInstrument.from_ipxact()`.
 
+## IP-XACT Register Map Import
+
+PyICe can import register maps directly from IP-XACT XML files (IEEE 1685-2014 / SPIRIT 1685-2009).
+
+**Command-line conversion (no Python required):**
+```console
+python -m PyICe.ipxact_parser my_device.xml -o my_device_regmap.json
+```
+
+**Python — direct import (skip JSON):**
+```python
+from PyICe.twi_instrument import twi_instrument
+
+inst = twi_instrument(interface)
+inst.populate_from_ipxact("my_device.xml", addr7=0x50)
+```
+
+**Python — convert to JSON first, then import:**
+```python
+from PyICe.ipxact_parser import ipxact_to_pyice_json
+
+ipxact_to_pyice_json("my_device.xml", output_file="my_device_regmap.json")
+```
+
+See `python -m PyICe.ipxact_parser --help` for all CLI options, or
+`help(PyICe.ipxact_parser)` for the full module walkthrough.
+
 For more detailed documentation, please go [here](https://pyice-adi.github.io/PyICe/)
 
 # [PyICe contributors, please go here for install instructions](https://github.com/PyICe-ADI/PyICe/blob/main/CONTRIBUTING.md)
