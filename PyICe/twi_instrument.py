@@ -15,6 +15,8 @@ from PyICe.lab_utils.str2num import str2num
 from PyICe.lab_utils.interpolator import interpolator
 import json
 import traceback
+from PyICe.ipxact_parser import (IpxactParser, ipxact_access_to_rw,
+                                 ipxact_modified_write_to_pyice)
 
 try:
     from scipy.interpolate import UnivariateSpline
@@ -684,6 +686,92 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
                 description = bit_field.find('./description')
                 if (description is not None):
                     register.set_description(description.text)
+
+    def populate_from_ipxact(self, ipxact_file, addr7, base_address=0,
+                            address_block_name=None, memory_map_name=None,
+                            channel_prefix="", channel_suffix="",
+                            access_list=None):
+        """Populate registers from an IP-XACT (IEEE 1685-2014 or SPIRIT 1685-2009) XML file.
+
+        Parses the IP-XACT component, walks memoryMap → addressBlock → register → field,
+        and creates a twi_register channel for each bitfield.
+
+
+        >>> from PyICe.twi_instrument import twi_instrument
+        >>> hasattr(twi_instrument, 'populate_from_ipxact')
+        True
+
+        Args:
+            ipxact_file: Path to IP-XACT XML component file.
+            addr7: 7-bit I2C slave address.
+            base_address: Additional offset added to all register addresses.
+            address_block_name: If specified, only import this address block.
+            memory_map_name: If specified, only import from this memory map.
+            channel_prefix: Prefix string for channel names.
+            channel_suffix: Suffix string for channel names.
+            access_list: List of IP-XACT access types to include
+                (e.g. ["read-write", "read-only"]). None imports all.
+
+        Raises:
+            ValueError: If specified memory_map_name or address_block_name not found.
+            NotImplementedError: If register arrays (dim > 1) are encountered.
+        """
+        parser = IpxactParser(ipxact_file)
+        memory_maps = parser.parse()
+        if memory_map_name is not None:
+            memory_maps = [mm for mm in memory_maps if mm.name == memory_map_name]
+            if not memory_maps:
+                raise ValueError(
+                    f"Memory map '{memory_map_name}' not found in {ipxact_file}")
+        for mm in memory_maps:
+            address_blocks = mm.address_blocks
+            if address_block_name is not None:
+                address_blocks = [ab for ab in address_blocks
+                                  if ab.name == address_block_name]
+                if not address_blocks:
+                    raise ValueError(
+                        f"Address block '{address_block_name}' not found in "
+                        f"memory map '{mm.name}'")
+            for ab in address_blocks:
+                word_size = ab.width // 8
+                for reg in ab.registers:
+                    command_code = base_address + ab.base_address + reg.address_offset
+                    reg_word_size = reg.size // 8 if reg.size // 8 > 0 else word_size
+                    if not reg.fields:
+                        is_readable, is_writable = ipxact_access_to_rw(reg.access)
+                        if access_list and reg.access not in access_list:
+                            continue
+                        name = channel_prefix + reg.name + channel_suffix
+                        register = self.add_register(
+                            name, addr7, command_code, reg.size, 0,
+                            reg_word_size, is_readable, is_writable)
+                        register.set_category(ab.name)
+                        if reg.description:
+                            register.set_description(reg.description)
+                        if reg.reset_value is not None:
+                            register.set_attribute("default", reg.reset_value)
+                        continue
+                    for fld in reg.fields:
+                        if access_list and fld.access not in access_list:
+                            continue
+                        is_readable, is_writable = ipxact_access_to_rw(fld.access)
+                        name = channel_prefix + fld.name + channel_suffix
+                        register = self.add_register(
+                            name, addr7, command_code, fld.bit_width,
+                            fld.bit_offset, reg_word_size,
+                            is_readable, is_writable)
+                        register.set_category(ab.name)
+                        if fld.description:
+                            register.set_description(fld.description)
+                        if fld.reset_value is not None:
+                            register.set_attribute("default", fld.reset_value)
+                        if fld.modified_write_value:
+                            pyice_access = ipxact_modified_write_to_pyice(
+                                fld.modified_write_value)
+                            if pyice_access is not None:
+                                register.set_special_access(pyice_access)
+                        for ev_name, ev_value, ev_desc in fld.enumerated_values:
+                            register.add_preset(ev_name, ev_value, ev_desc or None)
 
     def populate_from_yoda_json_bridge(
             self, filename, i2c_addr7, extended_addressing=False):
