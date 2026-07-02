@@ -2,8 +2,7 @@
 import os
 import pytest
 from PyICe.ipxact_parser import (
-    IpxactParser, IpxactField, IpxactRegister, IpxactAddressBlock,
-    IpxactMemoryMap, ipxact_access_to_rw, ipxact_modified_write_to_pyice,
+    IpxactParser, ipxact_access_to_rw, ipxact_modified_write_to_pyice,
     ipxact_to_pyice_json,
 )
 from PyICe.twi_instrument import twi_instrument

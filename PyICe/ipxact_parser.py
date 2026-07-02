@@ -15,6 +15,7 @@ import json
 import logging
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field as dataclass_field
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -50,8 +51,8 @@ class IpxactField:
     bit_offset: int
     bit_width: int
     access: str
-    reset_value: int | None
-    modified_write_value: str | None
+    reset_value: Optional[int]
+    modified_write_value: Optional[str]
     description: str
     enumerated_values: list = dataclass_field(default_factory=list)
 
@@ -69,7 +70,7 @@ class IpxactRegister:
     address_offset: int
     size: int
     access: str
-    reset_value: int | None
+    reset_value: Optional[int]
     description: str
     fields: list = dataclass_field(default_factory=list)
 
