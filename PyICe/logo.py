@@ -8,6 +8,7 @@ logo = '''
         &&&&&&&&&      &&&&&&&&&&      &&&&&&&&&&      &&&&&&&&&&
         MF     JM      JM      JM      JF      JF      JF      JF
         MF     JM      JM      JM      JF      JF      JF      JF
+        MF     JM      JM      JM      JF      JF      JF      JF
 ........Mh.....JM......JM......JM......Jh......Jh......Jh......Jh.......
 M                                                   ...................J
 M  `  `  `    ..&&NNMMNNa&.   `       `         ..M".````WMMMMMMMMMMMD J
@@ -32,10 +33,12 @@ M ` `   `  `   `   `     `             `      `         `    `  `  `   J
 """"""""M""""""WM""""""WM""""""WM""""""WM""""""W#""""""W#""""""W#"""""""
         M      JM      JM      JM      JF      JF      JF      JF
         M      JM      JM      JM      JF      JF      JF      JF
+        M      JM      JM      JM      JF      JF      JF      JF
         MMMMMMMMM      JMMMMMMMM#      JMMMMMMMMF      JMMMMMMMMF'''
 
 logo_old = '''
         &&&&&&&&&      &&&&&&&&&&      &&&&&&&&&&      &&&&&&&&&&
+        MF     JM      JM      JM      JF      JF      JF      JF
         MF     JM      JM      JM      JF      JF      JF      JF
         MF     JM      JM      JM      JF      JF      JF      JF
 ........Mh.....JM......JM......JM......Jh......Jh......Jh......Jh.......
@@ -60,6 +63,7 @@ M   `  `  `  ` `     `       ?6QdfadFJMM#7!      `   `    `   `        J
 M           `   ` `   ` `  `       ^""^      `   `                     J
 M ` `   `  `   `   `     `                    `         `    `  `  `   J
 """"""""M""""""WM""""""WM""""""WM""""""WM""""""W#""""""W#""""""W#"""""""
+        M      JM      JM      JM      JF      JF      JF      JF
         M      JM      JM      JM      JF      JF      JF      JF
         M      JM      JM      JM      JF      JF      JF      JF
         MMMMMMMMM      JMMMMMMMM#      JMMMMMMMMF      JMMMMMMMMF'''
