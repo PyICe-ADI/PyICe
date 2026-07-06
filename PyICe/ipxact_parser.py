@@ -365,13 +365,42 @@ class IpxactParser:
                 reset_value = self.resolve_expression(self._text(reset_elem, "value"))
         vendor_ext = self._find(field_elem, "vendorExtensions")
         if vendor_ext is not None:
-            logger.info("vendorExtensions on field '%s' ignored.", name)
+            if self._has_known_vendor_extensions(vendor_ext):
+                logger.debug("vendorExtensions on field '%s' ignored.", name)
+            else:
+                logger.info(
+                    "Unrecognized vendorExtensions on field '%s' ignored.", name)
         enumerated_values = self._parse_enumerated_values(field_elem)
         return IpxactField(name=name, bit_offset=bit_offset, bit_width=bit_width,
                            access=access, reset_value=reset_value,
                            modified_write_value=modified_write_value,
                            description=description,
                            enumerated_values=enumerated_values)
+
+    _KNOWN_VENDOR_NAMESPACES = frozenset({
+        "http://www.contourdesign.com",
+        "http://www.cadence.com",
+        "http://www.synopsys.com",
+        "http://www.mentor.com",
+        "http://www.siemens.com/eda",
+        "http://www.analog.com",
+        "http://www.yoda.analog.com",
+        "http://www.maxim-ic.com",
+    })
+
+    def _has_known_vendor_extensions(self, vendor_ext_elem):
+        """Return True if all children belong to a recognized EDA vendor namespace."""
+        children = list(vendor_ext_elem)
+        if not children:
+            return True
+        for child in children:
+            tag = child.tag
+            if tag.startswith("{"):
+                ns = tag[1:tag.index("}")]
+                if any(ns.startswith(known) for known in self._KNOWN_VENDOR_NAMESPACES):
+                    continue
+            return False
+        return True
 
     def _parse_enumerated_values(self, field_elem):
         result = []
