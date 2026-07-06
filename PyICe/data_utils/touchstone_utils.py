@@ -221,16 +221,6 @@ class touchstone_utils():
         """
         # TODO: Add functionality for load_port_num to be multiple load ports
         # that get shorted.
-        def short_terminator(name):  # implicit freqs, z0
-            """Return a 1-port short-circuit network for terminating ports.
-
-            Args:
-                name: Name identifier.
-
-            Returns:
-                A 1-port short-circuit Network.
-            """
-            return Circuit.Ground(frequency=freqs, name=name, z0=z0)
         z0 = self.network.z0[0][0]
         freqs = self.network.frequency
         # TODO: Have to do the trick with the Network constructor and getting
@@ -1851,7 +1841,7 @@ def sweep_plots_to_pptx(ts_plots_dir, output_pptx_path, date_time_flag=1):
         position_left = pptx.util.Inches(0)
         plot_width = pptx.util.Inches(11.16)
         plot_height = pptx.util.Inches(6.2)
-        _pic = slide.shapes.add_picture(  # noqa: F841
+        slide.shapes.add_picture(
             plot_file_name,
             position_left,
             position_top,
