@@ -72,6 +72,8 @@ import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field as dataclass_field
 from typing import Optional
 
+from PyICe.lab_utils.clean_ascii_code import clean_ascii_code
+
 logger = logging.getLogger(__name__)
 
 KNOWN_NAMESPACES = {
@@ -505,7 +507,7 @@ def ipxact_to_pyice_json(ipxact_file, output_file=None,
                 functional_groups = [ab.name]
                 bitfields = {}
                 if not reg.fields:
-                    bitfields[reg.name] = {
+                    bitfields[clean_ascii_code(reg.name)] = {
                         "slicewidth": reg.size,
                         "regoffset": 0,
                         "access": _ipxact_access_to_pyice_str(reg.access),
@@ -524,7 +526,7 @@ def ipxact_to_pyice_json(ipxact_file, output_file=None,
                         enums = {}
                         for ev_name, ev_value, _ev_desc in fld.enumerated_values:
                             enums[ev_name] = ev_value
-                        bitfields[fld.name] = {
+                        bitfields[clean_ascii_code(fld.name)] = {
                             "slicewidth": fld.bit_width,
                             "regoffset": fld.bit_offset,
                             "access": _ipxact_access_to_pyice_str(fld.access),
