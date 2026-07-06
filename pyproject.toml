@@ -55,6 +55,7 @@ dependencies=[
     "pywin32 ; platform_system == \"Windows\"",
     "reportlab",
     "requests",
+    "networkx",
     "scikit_rf",
     "scipy>=1.7 ",
     "statsmodels",
