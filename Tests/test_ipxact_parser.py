@@ -150,7 +150,7 @@ class TestTwiInstrumentIpxact:
         channels = {ch.get_name(): ch for ch in twi_inst}
         data = channels["DATA"]
         assert data.get_attribute("command_code") == 0x10
-        assert data.get_attribute("word_size") == 2
+        assert data.get_attribute("word_size") == 16
 
     def test_populate_presets(self, twi_inst):
         twi_inst.populate_from_ipxact(IPXACT_2014, addr7=0x50)
@@ -201,7 +201,7 @@ class TestIpxactToPyiceJson:
         result = ipxact_to_pyice_json(IPXACT_2014)
         status = result[0]
         assert status["address"] == 0
-        assert status["width"] == 1
+        assert status["width"] == 8
         assert "BUSY" in status["bitfields"]
         assert "ERROR" in status["bitfields"]
         assert "MODE" in status["bitfields"]
@@ -244,7 +244,7 @@ class TestIpxactToPyiceJson:
         result = ipxact_to_pyice_json(IPXACT_2014)
         data = result[2]
         assert data["address"] == 0x10
-        assert data["width"] == 2
+        assert data["width"] == 16
         assert "DATA" in data["bitfields"]
         assert data["bitfields"]["DATA"]["slicewidth"] == 16
 

@@ -17,6 +17,7 @@ import json
 import traceback
 from PyICe.ipxact_parser import (IpxactParser, ipxact_access_to_rw,
                                  ipxact_modified_write_to_pyice)
+from PyICe.lab_utils.clean_ascii_code import clean_ascii_code
 
 try:
     from scipy.interpolate import UnivariateSpline
@@ -733,15 +734,15 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
                         f"Address block '{address_block_name}' not found in "
                         f"memory map '{mm.name}'")
             for ab in address_blocks:
-                word_size = ab.width // 8
+                word_size = ab.width
                 for reg in ab.registers:
                     command_code = base_address + ab.base_address + reg.address_offset
-                    reg_word_size = reg.size // 8 if reg.size // 8 > 0 else word_size
+                    reg_word_size = reg.size if reg.size > 0 else word_size
                     if not reg.fields:
                         is_readable, is_writable = ipxact_access_to_rw(reg.access)
                         if access_list and reg.access not in access_list:
                             continue
-                        name = channel_prefix + reg.name + channel_suffix
+                        name = clean_ascii_code(channel_prefix + reg.name + channel_suffix)
                         register = self.add_register(
                             name, addr7, command_code, reg.size, 0,
                             reg_word_size, is_readable, is_writable)
@@ -755,7 +756,7 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
                         if access_list and fld.access not in access_list:
                             continue
                         is_readable, is_writable = ipxact_access_to_rw(fld.access)
-                        name = channel_prefix + fld.name + channel_suffix
+                        name = clean_ascii_code(channel_prefix + fld.name + channel_suffix)
                         register = self.add_register(
                             name, addr7, command_code, fld.bit_width,
                             fld.bit_offset, reg_word_size,

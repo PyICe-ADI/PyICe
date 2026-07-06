@@ -472,7 +472,7 @@ def ipxact_to_pyice_json(ipxact_file, output_file=None,
         for ab in address_blocks:
             for reg in ab.registers:
                 address = base_address + ab.base_address + reg.address_offset
-                width = reg.size // 8 if reg.size >= 8 else 1
+                width = reg.size
                 functional_groups = [ab.name]
                 bitfields = {}
                 if not reg.fields:
