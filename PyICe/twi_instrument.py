@@ -742,7 +742,7 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
                         is_readable, is_writable = ipxact_access_to_rw(reg.access)
                         if access_list and reg.access not in access_list:
                             continue
-                        name = clean_ascii_code(channel_prefix + reg.name + channel_suffix)
+                        name = clean_ascii_code((channel_prefix + reg.name + channel_suffix).replace(":", "_"))
                         register = self.add_register(
                             name, addr7, command_code, reg.size, 0,
                             reg_word_size, is_readable, is_writable)
@@ -756,7 +756,7 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
                         if access_list and fld.access not in access_list:
                             continue
                         is_readable, is_writable = ipxact_access_to_rw(fld.access)
-                        name = clean_ascii_code(channel_prefix + fld.name + channel_suffix)
+                        name = clean_ascii_code((channel_prefix + fld.name + channel_suffix).replace(":", "_"))
                         register = self.add_register(
                             name, addr7, command_code, fld.bit_width,
                             fld.bit_offset, reg_word_size,

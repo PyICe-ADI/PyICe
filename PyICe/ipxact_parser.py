@@ -507,7 +507,7 @@ def ipxact_to_pyice_json(ipxact_file, output_file=None,
                 functional_groups = [ab.name]
                 bitfields = {}
                 if not reg.fields:
-                    bitfields[clean_ascii_code(reg.name)] = {
+                    bitfields[clean_ascii_code(reg.name.replace(":", "_"))] = {
                         "slicewidth": reg.size,
                         "regoffset": 0,
                         "access": _ipxact_access_to_pyice_str(reg.access),
@@ -526,7 +526,7 @@ def ipxact_to_pyice_json(ipxact_file, output_file=None,
                         enums = {}
                         for ev_name, ev_value, _ev_desc in fld.enumerated_values:
                             enums[ev_name] = ev_value
-                        bitfields[clean_ascii_code(fld.name)] = {
+                        bitfields[clean_ascii_code(fld.name.replace(":", "_"))] = {
                             "slicewidth": fld.bit_width,
                             "regoffset": fld.bit_offset,
                             "access": _ipxact_access_to_pyice_str(fld.access),
