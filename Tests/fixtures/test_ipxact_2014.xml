@@ -22,6 +22,16 @@
             <ipxact:access>read-only</ipxact:access>
             <ipxact:description>Device busy flag</ipxact:description>
             <ipxact:resets><ipxact:reset><ipxact:value>0</ipxact:value></ipxact:reset></ipxact:resets>
+            <ipxact:vendorExtensions>
+              <contour>
+                <contourItemParent>
+                  <contourIpPaths>
+                    <contourIpPath>Test Device</contourIpPath>
+                  </contourIpPaths>
+                  <contourId>12345</contourId>
+                </contourItemParent>
+              </contour>
+            </ipxact:vendorExtensions>
           </ipxact:field>
           <ipxact:field>
             <ipxact:name>ERROR</ipxact:name>

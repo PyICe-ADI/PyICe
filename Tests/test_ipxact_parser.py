@@ -191,6 +191,18 @@ class TestTwiInstrumentIpxact:
         assert "BUSY" not in channel_names
 
 
+    def test_contour_vendor_extensions_suppressed(self, twi_inst, caplog):
+        import logging
+        with caplog.at_level(logging.DEBUG, logger="PyICe.ipxact_parser"):
+            twi_inst.populate_from_ipxact(IPXACT_2014, addr7=0x50)
+        info_msgs = [r for r in caplog.records
+                     if r.levelno == logging.INFO and "vendorExtensions" in r.message]
+        debug_msgs = [r for r in caplog.records
+                      if r.levelno == logging.DEBUG and "vendorExtensions" in r.message]
+        assert len(info_msgs) == 0, f"Contour extensions should not produce INFO: {info_msgs}"
+        assert len(debug_msgs) >= 1
+
+
 class TestIpxactToPyiceJson:
     def test_basic_conversion(self):
         result = ipxact_to_pyice_json(IPXACT_2014)

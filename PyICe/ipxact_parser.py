@@ -380,7 +380,6 @@ class IpxactParser:
                            enumerated_values=enumerated_values)
 
     _KNOWN_VENDOR_NAMESPACES = frozenset({
-        "http://www.contourdesign.com",
         "http://www.cadence.com",
         "http://www.synopsys.com",
         "http://www.mentor.com",
@@ -390,17 +389,28 @@ class IpxactParser:
         "http://www.maxim-ic.com",
     })
 
+    _KNOWN_VENDOR_TAGS = frozenset({
+        "contour",
+    })
+
     def _has_known_vendor_extensions(self, vendor_ext_elem):
-        """Return True if all children belong to a recognized EDA vendor namespace."""
+        """Return True if all children belong to a recognized EDA vendor extension.
+
+        Contour exports use an unnamespaced <contour> element, so we
+        match on both namespace URIs and bare tag names.
+        """
         children = list(vendor_ext_elem)
         if not children:
             return True
         for child in children:
             tag = child.tag
-            if tag.startswith("{"):
-                ns = tag[1:tag.index("}")]
-                if any(ns.startswith(known) for known in self._KNOWN_VENDOR_NAMESPACES):
+            if not tag.startswith("{"):
+                if tag in self._KNOWN_VENDOR_TAGS:
                     continue
+                return False
+            ns = tag[1:tag.index("}")]
+            if any(ns.startswith(known) for known in self._KNOWN_VENDOR_NAMESPACES):
+                continue
             return False
         return True
 
