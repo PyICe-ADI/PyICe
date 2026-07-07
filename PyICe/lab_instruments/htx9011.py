@@ -685,11 +685,31 @@ class htx9011(scpi_instrument):
                 out += str(value)
         return out
 
+    def _supports_atomic_gpio(self):
+        if not hasattr(self, '_atomic_gpio_supported'):
+            try:
+                year, month, day = [int(v) for v in self.get_firmware_version().split(".")]
+                self._atomic_gpio_supported = (year, month, day) >= (2026, 6, 30)
+            except (ValueError, IndexError, AttributeError):
+                self._atomic_gpio_supported = False
+            if not self._atomic_gpio_supported:
+                print("WARNING: HTX9011 firmware does not support "
+                      "atomic GPIO writes. Falling back to single-pin mode. "
+                      "Update firmware to 2026.06.30 or later for atomic operation.")
+        return self._atomic_gpio_supported
+
+    def _write_pins(self, pins, values):
+        if not self._supports_atomic_gpio():
+            for pin, val in zip(pins, values):
+                self._write_pin(pin, val)
+            return
+        pinvals = ','.join([f'{pins[i]}={values[i]}' for i in range(len(pins))])
+        write_str = f':SETPin (@{pinvals});'
+        self.get_interface().write(write_str)
+
     def _write_gpio(self, gpio_list, value):
         bit_list = self._to_bit_list(value, len(gpio_list))
-        pin_values = list(zip(gpio_list, bit_list))
-        for pin_name, pin_value in pin_values:
-            self._write_pin(self.gpio_pins[pin_name], pin_value)
+        self._write_pins([self.gpio_pins[p] for p in gpio_list], bit_list)
 
     def _write_relay_bypass(self, relay_number, value):
         value = self._clean_value(value)
