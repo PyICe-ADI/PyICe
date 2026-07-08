@@ -143,7 +143,7 @@ def get_traceability_items():
 This module tells the notifications plugin where to send alerts (e.g., test
 pass/fail emails or text messages) for ONE user. Each person on the team should
 have their own copy of this file with their personal contact information filled
-in. The filename typically matches the user's login name.
+in. The filename must match the user's login name.
 
 Uncomment and fill in the 'emails' and/or 'texts' entries below to receive
 notifications when tests complete.
@@ -452,46 +452,68 @@ def get_interfaces():
     ###
     # SAMPLE DRIVER
     ###
-    new_sample_driver = '''"""Hardware driver for the HAMEG 4040 four-channel power supply.
+    new_sample_driver = '''"""Channel configuration minidriver for the HAMEG 4040 power supply.
 
-A "driver" in PyICe tells the framework how to configure and use a specific
-instrument. This file is an EXAMPLE showing how to:
-  - Import the appropriate PyICe instrument class.
-  - Create named channels (readable/writable measurement points).
-  - Set up safety features (current limits, fuses, linked channels).
-  - Provide a cleanup list so channels are turned off when the test ends.
+This is NOT a PyICe instrument driver — the actual driver lives at
+PyICe.lab_instruments.hameg_4040 and handles all SCPI communication,
+channel I/O primitives, and hardware abstraction.
 
-To create your own driver:
-  1. Copy this file and rename it for your instrument.
-  2. Replace the instrument class import with the one for your device.
-  3. Define channels that map to the physical inputs/outputs you need.
-  4. Return the instrument(s) and any cleanup actions.
+This file is a "minidriver": a project-level configuration script that the
+Plugin_Manager discovers by walking the hardware_drivers/ directory. Its job
+is to bridge the bench-specific interface (provided by the bench file) to the
+PyICe instrument class, assigning project-specific channel names, safety
+limits, and cleanup actions.
+
+Separation of concerns in this architecture:
+  - Bench file (infrastructure/benches/) — WHERE: physical VISA addresses,
+    one per machine/workstation.
+  - Minidriver (this file) — WHAT: which channels exist, their names, current
+    limits, fuse configuration, and shutdown behavior.
+  - Test script — HOW: sweeps, measurements, and pass/fail evaluation using
+    channels by name.
+
+To create a minidriver for a different instrument:
+  1. Copy this file and rename it.
+  2. Import the appropriate PyICe instrument class.
+  3. Define channels with project-meaningful names and safety settings.
+  4. Return the instrument(s) and cleanup actions in the expected dict format.
 """
 
 from PyICe.lab_instruments.hameg_4040 import hameg_4040
 
 
-def populate(self):
-    """Set up the HAMEG power supply channels and return them to the framework.
+def populate(plugin_manager):
+    """Configure HAMEG channels and register them with the Plugin_Manager.
 
-    This function is called by the Plugin Manager during test initialization.
-    It checks whether the HAMEG interface is available on this bench, and if
-    so, creates named voltage channels with current limits, fuse protection,
-    and cleanup actions.
+    Called by Plugin_Manager.add_instrument_channels() during test startup.
+    The Plugin_Manager passes itself in, providing access to
+    plugin_manager.interfaces — the dict returned by the active bench file's
+    get_interfaces() function (e.g., {'HAMEG': visa_serial_interface(...)}).
+
+    If the 'HAMEG' interface is not present (bench doesn't have this supply),
+    returns None for instruments and the Plugin_Manager skips this minidriver.
 
     Args:
-        self: the test object (provides self.interfaces from the bench file).
+        plugin_manager: Plugin_Manager instance (provides .interfaces from the bench).
 
     Returns:
-        A dictionary with:
-            'instruments'  - list of configured instrument objects (or None)
-            'cleanup_list' - list of lambdas to call when the test finishes
-                             (e.g., setting voltages to 0 and disabling outputs)
+        Dict with keys recognized by Plugin_Manager:
+            'instruments'  - list of instrument instances to add to the master
+                             channel_group (or None if interface unavailable)
+            'cleanup_list' - lambdas executed at test teardown (e.g., set
+                             voltages to 0V, disable outputs)
+            'startup_list' - functions called once at test startup
+            'shutdown_list' - functions called once at test shutdown
+            'temp_control_channel' - channel used for temperature forcing
+            'temperature_run_startup_list' - functions called at the start of
+                             each temperature setpoint
+            'special_channel_action' - per-channel callbacks invoked on every
+                             log cycle
     """
-    if 'HAMEG' not in self.interfaces:
+    if 'HAMEG' not in plugin_manager.interfaces:
         return {'instruments':None}
     names = {1: "vmaina_force", 2: "vmainb_force"}
-    hameg = hameg_4040(self.interfaces['HAMEG'])
+    hameg = hameg_4040(plugin_manager.interfaces['HAMEG'])
     hameg.set_retries(5)
     hameg_cleanup_list=[]
     for channel in names:
@@ -641,17 +663,14 @@ pm.run()'''
     ###
     # README
     ###
-    readme = f'''================================================================================
-  {project_name} - Project Structure Overview
-================================================================================
+    readme = f'''# {project_name} - Project Structure Overview
 
-This project was generated by the PyICe Project Creator Wizard.
+This project was generated by the **PyICe Project Creator Wizard**.
 Below is a description of each file and how they interact.
 
+## Folder Structure
 
-FOLDER STRUCTURE
-----------------
-
+```
 {project_name}/
 ├── tests/
 │   └── example/
@@ -691,49 +710,50 @@ FOLDER STRUCTURE
         │                       Image positions for bench diagram generation.
         ├── visualizer_images/  PNG images of each bench component.
 '''
-    readme += f'''
+    readme += f'''```
 
-HOW THE FILES INTERACT
-----------------------
+## How the Files Interact
 
-1. You run:  python run.py  (from a test folder like tests/example/)
+1. You run: `python run.py` (from a test folder like `tests/example/`)
 
-2. run.py loads project_settings.py, which defines the project path, enabled
+2. `run.py` loads `project_settings.py`, which defines the project path, enabled
    plugins, and any plugin parameters (component lists, traceability items, etc.)
 
-3. run.py creates a Plugin_Manager with those settings and adds your Test class.
+3. `run.py` creates a `Plugin_Manager` with those settings and adds your Test class.
 
-4. Plugin_Manager loads the bench file matching this computer's hostname
-   (infrastructure/benches/{this_machine}.py) to get instrument interfaces.
+4. `Plugin_Manager` loads the bench file matching this computer's hostname
+   (`infrastructure/benches/{this_machine}.py`) to get instrument interfaces.
 
-5. Plugin_Manager loads hardware drivers (infrastructure/hardware_drivers/)
+5. `Plugin_Manager` loads hardware drivers (`infrastructure/hardware_drivers/`)
    which use those interfaces to create instrument objects with named channels.
 
-6. Plugin_Manager calls your test's lifecycle methods in order:
-     customize()                 - Register channels this test uses
-     collect()                   - Sweep conditions, log data to SQLite
-     plot()                      - Query database, generate SVG/PDF plots
-     evaluate_results()          - Check measurements against pass/fail limits
+6. `Plugin_Manager` calls your test's lifecycle methods in order:
+   - `customize()` - Register channels this test uses
+   - `collect()` - Sweep conditions, log data to SQLite
+   - `plot()` - Query database, generate SVG/PDF plots
+   - `evaluate_results()` - Check measurements against pass/fail limits
 '''
     if 'bench_config_management' in plugins_to_add:
         readme += '''
-7. If bench_config_management is enabled, the Plugin_Manager also calls:
-     _declare_bench_connections() - Wire up default + test-specific connections
+7. If bench_config_management is enabled, the `Plugin_Manager` also calls:
+   - `_declare_bench_connections()` - Wire up default + test-specific connections
+
    This validates that your hardware is connected as expected before collecting.
 '''
-    readme += '''┌─────────────────────────────────────────────────────────────────────────────────┐
-│                         EXECUTION FLOW (top to bottom)                           │
-└─────────────────────────────────────────────────────────────────────────────────┘
-* = optional plugin feature
+    readme += '''## Execution Flow
+
+`*` = optional plugin feature
+
+```
     ┌──────────────────────┐
-    │  tests/example/run.py│   ◄── YOU RUN THIS (python run.py)
+    │  tests/example/run.py│   <-- YOU RUN THIS (python run.py)
     └──────────┬───────────┘
                │
                │ 1. loads settings    2. creates Plugin_Manager    3. adds Test
                │
        ┌───────▼────────────────────────────────────────────────────────────┐
        │                      PyICe Plugin_Manager                          │
-       │  (orchestrates the lifecycle: customize→collect→plot→*evaluate)    │
+       │  (orchestrates the lifecycle: customize > collect > plot > *eval)  │
        └───┬──────────────────────────────────┬─────────────────────────────┘
            │                                  │
            │ reads                            │ runs
@@ -741,11 +761,11 @@ HOW THE FILES INTERACT
 ┌──────────▼──────────────┐       ┌───────────▼────────────────────┐
 │   project_settings.py   │       │    tests/example/test.py       │
 │                         │       │                                │
-│ • project paths         │       │  class Test(Test_Template):    │
-│ • enabled plugins       │       │    customize()                 │
-│ • component list ───────┼──┐    │    collect()                   │
-│ • *traceability items ──┼┐ │    │    plot()                      │
-│ • *SMTP config          │| │    │    *evaluate_results()         │
+│ - project paths         │       │  class Test(Test_Template):    │
+│ - enabled plugins       │       │    customize()                 │
+│ - *component list ──────┼──┐    │    collect()                   │
+│ - *traceability items ──┼┐ │    │    plot()                      │
+│ - *SMTP config          │| │    │    *evaluate_results()         │
 └─────────────────────────┘| │    │    *declare_bench_connections()│
                            | │    └──────────────┬─────────────────┘
          ┌─────────────────┘ │                   │ inherits from
@@ -755,16 +775,16 @@ HOW THE FILES INTERACT
          │     │                     │                           │
          │     │                     │ class Test_Template       │
          │     │                     │   (Master_Test_Template): │
-         │     │                     │  • *get_test_limits()     │
-         │     │                     │  • *_declare_bench_conns()│
+         │     │                     │  - *get_test_limits()     │
+         │     │                     │  - *_declare_bench_conns()│
          │     │                     └───────────┬───────────────┘
          │     │                                 │ calls into
          │     │                                 │
          │     │    ┌────────────────────────────▼────────────────────────┐
          │     │    │       *default_bench_configuration.py               │
          │     │    │                                                     │
-         │     │    │  • component_collection() → list of HW components   │
-         │     │    │  • default_connections()  → baseline wiring         │
+         │     │    │  - component_collection() -> list of HW components  │
+         │     │    │  - default_connections()  -> baseline wiring        │
          │     │    └──────────┬──────────────────────────┬───────────────┘
          │     │               │ defines                  │ references
          │     │               │                          │
@@ -772,10 +792,10 @@ HOW THE FILES INTERACT
          │     │  │*bench_configuration_     │  │  example_HAMEG.py         │
          │     │  │     components.py        │  │                           │
          │     │  │                          │  │  Hardware driver for      │
-         │     │  │ • dummy_board            │  │  HAMEG 4040 power supply  │
-         │     │  │ • dummy_helper_board     │  │  • voltage channels       │
-         │     │  │ • connectable terminals  │  │  • current limits         │
-         │     │  └──────────────────────────┘  │  • fuse protection        │
+         │     │  │ - dummy_board            │  │  HAMEG 4040 power supply  │
+         │     │  │ - dummy_helper_board     │  │  - voltage channels       │
+         │     │  │ - connectable terminals  │  │  - current limits         │
+         │     │  └──────────────────────────┘  │  - fuse protection        │
          │     │                                └───────────┬───────────────┘
          │     │                                            │ needs interface from
          │     │                                            │
@@ -785,53 +805,47 @@ HOW THE FILES INTERACT
          │     │                                │                           │
          │     │                                │  Maps instruments to      │
          │     │                                │  physical interfaces:     │
-         │     │                                │  • COM ports              │
-         │     │                                │  • GPIB addresses         │
-         │     │                                │  • IP addresses           │
+         │     │                                │  - COM ports              │
+         │     │                                │  - GPIB addresses         │
+         │     │                                │  - IP addresses           │
          │     │                                └───────────────────────────┘
          │     │
-         ▼     ▼
+         v     v
 ┌────────────────────────────┐    ┌─────────────────────────────┐
 │ *metadata_gathering_fns.py │    │ *user_notifications/        │
 │                            │    │   example_user.py           │
 │ get_traceability_items()   │    │                             │
-│ • collects OS username     │    │ • email addresses           │
-│ • environment metadata     │    │ • phone numbers for alerts  │
+│ - collects OS username     │    │ - email addresses           │
+│ - environment metadata     │    │ - phone numbers for alerts  │
 └────────────────────────────┘    └─────────────────────────────┘
+```
 
+## Layer Summary
 
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                              LAYER SUMMARY                                      │
-├─────────────────────────────────────────────────────────────────────────────────┤
-│                                                                                 │
-│  TESTS          run.py ──► test.py          (what you write per-test)           │
-│                              │                                                  │
-│  FRAMEWORK      test_template.py + project_settings.py   (shared by all tests)  │
-│                              │                                                  │
-│  HARDWARE       *default_bench_config ──► HAMEG driver ──► *bench interface file│
-│                              │                                                  │
-│  SUPPORT        *metadata_gathering + *user_notifications  (plugins consume)    │
-│                                                                                 │
-└─────────────────────────────────────────────────────────────────────────────────┘
+| Layer | Files | Purpose |
+|-------|-------|---------|
+| **Tests** | `run.py` > `test.py` | What you write per-test |
+| **Framework** | `test_template.py` + `project_settings.py` | Shared by all tests |
+| **Hardware** | `*default_bench_config` > HAMEG driver > `*bench file` | Instrument control |
+| **Support** | `*metadata_gathering` + `*user_notifications` | Plugins consume |
 
-GETTING STARTED
----------------
+## Getting Started
 
-1. Add this project folder to your PYTHONPATH environment variable.
+1. Add this project folder to your `PYTHONPATH` environment variable.
 
-2. Edit the bench file (infrastructure/benches/{}.py) with your
+2. Edit the bench file (`infrastructure/benches/{}.py`) with your
    instrument addresses.
 
-3. Create or modify hardware drivers in infrastructure/hardware_drivers/
+3. Create or modify hardware drivers in `infrastructure/hardware_drivers/`
    for each instrument on your bench.
 
-4. Copy tests/example/ to create new tests. Each test folder needs:
-     - test.py  (your Test class)
-     - run.py   (entry point that loads settings and runs the test)
+4. Copy `tests/example/` to create new tests. Each test folder needs:
+   - `test.py` (your Test class)
+   - `run.py` (entry point that loads settings and runs the test)
 
-5. Run:  python run.py  from your test folder.
+5. Run: `python run.py` from your test folder.
 '''.format(this_machine)
-    script_creator_dict[os.path.join(project_folder, "README.txt")] = readme
+    script_creator_dict[os.path.join(project_folder, "README.md")] = readme
 
     for (k, v) in script_creator_dict.items():
         try:
