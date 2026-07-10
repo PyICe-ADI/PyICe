@@ -506,8 +506,8 @@ class plot(object):
             vxline=vxline,
             hxline=hxline)
 
-    def add_horizontal_line(self, value, xrange=None, note=None, notesize=3,
-                            axis=1, color=None, linestyle=None, linewidth=None):
+    def add_horizontal_line(self, value, xrange=None, note=None,
+                            axis=1, color=None, linestyle=None, linewidth=None, notesize=3):
         """This can be useful for annotating limit lines. It can make dotted red lines for example.
         Creates and registers a new horizontal line.
 
@@ -608,8 +608,8 @@ class plot(object):
                 fontsize=notesize,
                 axis=axis)
 
-    def add_vertical_line(self, value, yrange=None, note=None, notesize=3,
-                          axis=1, color=None, linestyle=None, linewidth=None):
+    def add_vertical_line(self, value, yrange=None, note=None,
+                          axis=1, color=None, linestyle=None, linewidth=None, notesize=3):
         """This can be useful for annotating limit lines. It can make dotted red lines for example.
         Creates and registers a new vertical line.
 
@@ -1165,7 +1165,7 @@ class scope_plot(plot):
         self.add_time_refmarker_open(xlocation_open)
         self.add_time_refmarker_closed(xlocation_closed)
 
-    def add_horizontal_line(self, value, xrange=None, note=None, notesize=3, color=None):
+    def add_horizontal_line(self, value, xrange=None, note=None, color=None, notesize=3):
         """Add a horizontal line.
         Creates and registers a new horizontal line.
 
@@ -1207,7 +1207,7 @@ class scope_plot(plot):
                           fontsize=notesize,
                           axis=1)
 
-    def add_vertical_line(self, value, yrange=None, note=None, notesize=3, color=None):
+    def add_vertical_line(self, value, yrange=None, note=None, color=None, notesize=3):
         """Add a vertical line.
         Creates and registers a new vertical line.
 
