@@ -16,7 +16,6 @@ from PyICe.LTC_plot import (
     RGB_to_webRGB,
     fracRGB_to_RGB,
     RGB_to_fracRGB,
-    fracRGB_to_webRGB,
     data_from_file,
     MARCOM_COLORS,
     MARCOM_COLORSfracRGB,
