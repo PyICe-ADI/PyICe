@@ -506,7 +506,7 @@ class plot(object):
             vxline=vxline,
             hxline=hxline)
 
-    def add_horizontal_line(self, value, xrange=None, note=None,
+    def add_horizontal_line(self, value, xrange=None, note=None, notesize=3,
                             axis=1, color=None, linestyle=None, linewidth=None):
         """This can be useful for annotating limit lines. It can make dotted red lines for example.
         Creates and registers a new horizontal line.
@@ -605,10 +605,10 @@ class plot(object):
                 note=note,
                 location=text_location,
                 use_axes_scale=True,
-                fontsize=3,
+                fontsize=notesize,
                 axis=axis)
 
-    def add_vertical_line(self, value, yrange=None, note=None,
+    def add_vertical_line(self, value, yrange=None, note=None, notesize=3,
                           axis=1, color=None, linestyle=None, linewidth=None):
         """This can be useful for annotating limit lines. It can make dotted red lines for example.
         Creates and registers a new vertical line.
@@ -710,7 +710,7 @@ class plot(object):
                 note=note,
                 location=text_location,
                 use_axes_scale=True,
-                fontsize=3,
+                fontsize=notesize,
                 axis=axis)
 
     def add_histogram(self, axis, xdata, num_bins, color,
@@ -1165,7 +1165,7 @@ class scope_plot(plot):
         self.add_time_refmarker_open(xlocation_open)
         self.add_time_refmarker_closed(xlocation_closed)
 
-    def add_horizontal_line(self, value, xrange=None, note=None, color=None):
+    def add_horizontal_line(self, value, xrange=None, note=None, notesize=3, color=None):
         """Add a horizontal line.
         Creates and registers a new horizontal line.
 
@@ -1204,10 +1204,10 @@ class scope_plot(plot):
                           location=[xrange0 + 0.015 * (xrange1 - xrange0),
                                     value + 0.015 * (yrange1 - yrange0)],
                           use_axes_scale=True,
-                          fontsize=3,
+                          fontsize=notesize,
                           axis=1)
 
-    def add_vertical_line(self, value, yrange=None, note=None, color=None):
+    def add_vertical_line(self, value, yrange=None, note=None, notesize=3, color=None):
         """Add a vertical line.
         Creates and registers a new vertical line.
 
@@ -1244,7 +1244,7 @@ class scope_plot(plot):
                           location=[value,
                                     yrange0 + 0.015 * (yrange1 - yrange0)],
                           use_axes_scale=True,
-                          fontsize=3,
+                          fontsize=notesize,
                           axis=1)
 
 
