@@ -1,5 +1,4 @@
 """Comprehensive tests for PyICe.LTC_plot module."""
-import os
 import csv
 import numpy as np
 import pytest
