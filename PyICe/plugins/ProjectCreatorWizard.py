@@ -73,8 +73,7 @@ functions automatically before the test sweep is run so that every result can be
 traced back to its origin.
 
 To add more traceability fields, create a new function that accepts a test object
-and returns the desired value, then add it to the dictionary in
-get_traceability_items().
+and returns the desired value, then add it to the traceability_items dictionary.
 """
 
 import os
@@ -85,17 +84,10 @@ def _get_bench_operator(test):
     return os.getlogin()
 
 
-def get_traceability_items():
-    """Return a dictionary mapping traceability field names to collector functions.
-
-    Each key becomes a metadata column stored alongside the test results.
-    Each value is a callable that receives the test object and returns the
-    metadata value for that field.
-    """
-    traceability_items = {
+traceability_items = {
         "bench_operator": _get_bench_operator,
     }
-    return traceability_items'''
+'''
         return script_str
 
     def bench_connection_addon():
@@ -175,13 +167,11 @@ def get_notification_targets():
         Returns:
             The user script maker result.
         """
-        project_settings_str='"""Project-wide settings and plugin configuration.\n\nThis is the central configuration file for the entire project. The Plugin\nManager reads Project_Settings to determine:\n  - Where the project lives on disk\n  - Which plugins are enabled (e.g., traceability, archiving, bench management)\n  - Plugin-specific parameters (component lists, notification servers, etc.)\n\nEdit the Project_Settings dictionary below to enable/disable plugins or change\nproject-level behavior. Each test in the project inherits these settings\nautomatically through the Plugin Manager.\n"""\n\n'
+        project_settings_str='"""Project-wide settings and plugin configuration.\n\nThis is the central configuration file for the entire project. The Plugin\nManager reads Project_Settings to determine:\n  - Where the project lives on disk\n  - Which plugins are enabled (e.g., traceability, archiving, bench management)\n  - Plugin-specific parameters (component lists, notification servers, etc.)\n\nEdit the Project_Settings dictionary below to enable/disable plugins or change\nproject-level behavior. The Plugin Manager makes attributes out of each entry, and\neach test in the project inherits these settings automatically through the Plugin Manager.\n"""\n\n'
         if 'traceability' in plugins_to_add:
-            project_settings_str+=f'from {project_name}.infrastructure.plugin_dependencies.metadata_gathering_fns import get_traceability_items\n'
+            project_settings_str+=f'from {project_name}.infrastructure.plugin_dependencies.metadata_gathering_fns import traceability_items\n'
         if 'bench_config_management' in plugins_to_add:
             project_settings_str+=f'from {project_name}.infrastructure.plugin_dependencies import default_bench_configuration\n'
-        if 'bench_image_creation' in plugins_to_add:
-            project_settings_str+=f'from {project_name}.infrastructure.plugin_dependencies import visualizer_locations\n'
 
         project_settings_str+= '''
 Project_Settings={
@@ -192,49 +182,13 @@ Project_Settings={
         project_settings_str+= f'"plugins"                   : {plugins_to_add},\n'
         if 'bench_config_management' in plugins_to_add:
             project_settings_str+= f'"component_list"            : default_bench_configuration.component_collection(),\n'
-        if 'bench_image_creation' in plugins_to_add:
-            project_settings_str+= f'"bench_image_locations"     : visualizer_locations.component_locations().locations,\n'
         if 'traceability' in plugins_to_add:
-            project_settings_str+= f'"traceability_items"        : get_traceability_items(),\n'
+            project_settings_str+= f'"traceability_items"        : traceability_items,\n'
         if 'notifications' in plugins_to_add:
             project_settings_str+= f'"smtp_server"               : "YOUR SERVER HERE",\n'
             project_settings_str+= f'"sender"                    : "EMAIL OF WHO SENDS THE EMAILS HERE",\n'
         project_settings_str+='}'
         return project_settings_str
-
-    def visualizer_locations_maker():
-        ''''''
-        script_str = '''"""Bench image visualizer component locations.
-
-This module defines the position and image file for each component on the
-bench visualization diagram. The bench_image_creation plugin uses this data
-to generate a graphical layout of the test bench.
-
-Each entry in the `locations` dictionary maps a component name (must match
-a name from your component_collection) to:
-  - "position": {"xpos": int, "ypos": int} — placement on the diagram canvas
-  - "image": path to a PNG image representing the component
-  - "use_label": whether to overlay the component name on the diagram
-
-To add a component to the diagram, add an entry here and place its image
-in the visualizer_images/ folder next to this file.
-"""
-
-import pathlib
-
-
-class component_locations:
-    """Container for bench component image locations."""
-
-    def __init__(self):
-        path = pathlib.Path(__file__).parent.resolve().as_posix() + "/visualizer_images/"
-        self.locations = {
-            "HAMEG": {"position": {"xpos": 0, "ypos": 0}, "image": f"{path}Missing.png", "use_label": True},
-            "DUMMY_BOARD": {"position": {"xpos": 400, "ypos": 0}, "image": f"{path}Missing.png", "use_label": True},
-            "HELPER_BOARD": {"position": {"xpos": 800, "ypos": 0}, "image": f"{path}Missing.png", "use_label": True},
-        }
-'''
-        return script_str
 
     def bench_config_comp_maker():
         ''''''
@@ -328,7 +282,6 @@ def default_connections(components, connections):
             "traceability":            "Log who ran the test, on which machine, and when",
             "notifications":           "Email/text alerts when tests complete",
             "bench_config_management": "Track and validate hardware wiring between components",
-            "bench_image_creation":    "Generate visual diagrams of bench connections. MUST PROVIDE IMAGES",
         }
         plugin_list = list(plugin_descriptions.keys())
         while True:
@@ -343,14 +296,8 @@ def default_connections(components, connections):
             plugin_key = to_add[1:].split(' - ')[0].strip()
             if plugin_key in plugins_to_add:
                 plugins_to_add.remove(plugin_key)
-                if plugin_key == 'bench_config_management' and 'bench_image_creation' in plugins_to_add:
-                    plugins_to_add.remove('bench_image_creation')
-                    print('  (bench_image_creation also deselected — it requires bench_config_management)')
             else:
                 plugins_to_add.append(plugin_key)
-                if plugin_key == 'bench_image_creation' and 'bench_config_management' not in plugins_to_add:
-                    plugins_to_add.append('bench_config_management')
-                    print('  (bench_config_management also selected — required by bench_image_creation)')
     if 'notifications' in plugins_to_add:
         os.mkdir(os.path.join(plugin_folder, 'user_notifications'))
         script_creator_dict[os.path.join(
@@ -363,10 +310,6 @@ def default_connections(components, connections):
             plugin_folder, "bench_configuration_components.py")] = bench_config_comp_maker()
         script_creator_dict[os.path.join(
             plugin_folder, "default_bench_configuration.py")] = bench_conn_maker(project_name)
-    if 'bench_image_creation' in plugins_to_add:
-        os.mkdir(os.path.join(plugin_folder, 'visualizer_images'))
-        script_creator_dict[os.path.join(
-            plugin_folder, "visualizer_locations.py")] = visualizer_locations_maker()
     script_creator_dict[os.path.join(
         plugin_folder, "project_settings.py")] = project_settings_maker(project_name, plugins_to_add)
 
@@ -649,10 +592,10 @@ class Test(Test_Template):
     # RUN SCRIPT
     ###
     new_run_script = f'"""Run script — the entry point that executes a test.\n\nThis is the file you actually run (e.g., `python run.py`) to kick off a test.\nIt does three things:\n  1. Loads the project-wide settings (plugins, paths, configuration).\n  2. Creates a Plugin Manager with those settings.\n  3. Adds one or more Test classes and runs them through the full lifecycle\n     (customize → collect → plot → evaluate).\n\nTo run a different test, change the import and pm.add_test() call to point at\nyour new Test class. You can add multiple tests to the same Plugin Manager if\nyou want them to share a session.\n"""\n\n'
+    new_run_script+=f'from test import Test\n'
+    new_run_script+=f'from PyICe.plugins.plugin_manager import Plugin_Manager\n'
     new_run_script+=f'from {project_name}.infrastructure.plugin_dependencies.project_settings import Project_Settings\n'
-    new_run_script+='''from PyICe.plugins.plugin_manager import Plugin_Manager
-from test import Test
-
+    new_run_script+='''
 pm = Plugin_Manager(settings=Project_Settings)
 pm.add_test(Test)
 pm.run()'''
@@ -704,11 +647,6 @@ Below is a description of each file and how they interact.
         ├── default_bench_configuration.py
         │                       Component inventory and default wiring shared
         │                       by all tests.
-'''
-    if 'bench_image_creation' in plugins_to_add:
-        readme += '''        ├── visualizer_locations.py
-        │                       Image positions for bench diagram generation.
-        ├── visualizer_images/  PNG images of each bench component.
 '''
     readme += f'''```
 
