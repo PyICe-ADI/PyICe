@@ -828,8 +828,23 @@ def _find_text_element(svg, text_content):
 
 
 def _has_style_prop(attrs, prop, value_pattern):
-    """Check if an attribute string contains a CSS property matching a value pattern."""
-    return bool(re.search(prop + r":\s*" + value_pattern, attrs))
+    """Check if an attribute string contains a CSS property matching a value pattern.
+
+    Handles both individual properties (font-size: 7px) and the CSS font
+    shorthand (font: 700 7px 'Arial') used by different matplotlib versions.
+    """
+    if re.search(prop + r":\s*" + value_pattern, attrs):
+        return True
+    font_match = re.search(r"font:\s*([^;\"]+)", attrs)
+    if font_match:
+        font_val = font_match.group(1)
+        if prop == "font-size":
+            return bool(re.search(r"(?<!\w)" + value_pattern, font_val))
+        if prop == "font-weight":
+            return bool(re.search(value_pattern, font_val))
+        if prop == "font-family":
+            return bool(re.search(r"['\"]?\w+['\"]?\s*$", font_val))
+    return False
 
 
 class TestSvgContent:
@@ -914,7 +929,9 @@ class TestSvgContent:
 
     def test_tick_label_fontsize_7(self, svg_basic):
         """Verify tick labels use font-size 7px (multiple text elements)."""
-        matches = re.findall(r"<text[^>]*font-size:\s*7px[^>]*>", svg_basic)
+        matches = re.findall(
+            r"<text[^>]*(?:font-size:\s*7px|font:\s*7px|font:\s*\S+\s+7px)[^>]*>",
+            svg_basic)
         assert len(matches) >= 2
 
     def test_linear_helv_cond_replacement(self, svg_basic):
