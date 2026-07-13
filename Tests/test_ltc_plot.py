@@ -1,5 +1,6 @@
 """Comprehensive tests for PyICe.LTC_plot module."""
 import csv
+import re
 import numpy as np
 import pytest
 from PyICe.LTC_plot import (
@@ -813,6 +814,114 @@ class TestPageRendering:
         page.add_plot(p2)
         result = page.create_svg(file_basename=None)
         assert isinstance(result, bytes)
+
+
+class TestSvgContent:
+    """End-to-end SVG content assertions verifying matplotlib interface surface."""
+
+    @pytest.fixture
+    def svg_with_note(self, basic_plot):
+        """Render a plot with a custom-fontsize note to SVG."""
+        basic_plot.add_trace(
+            axis=1, data=[(x, x * 10) for x in range(-10, 11)],
+            color=LT_RED_1, legend="Trace A",
+        )
+        basic_plot.add_note(note="ANNOTATION_XYZ", location=[0.5, 0.5],
+                           use_axes_scale=False, fontsize=12)
+        page = Page(plot_count=1)
+        page.add_plot(basic_plot)
+        return page.create_svg(file_basename=None).decode("utf-8")
+
+    @pytest.fixture
+    def svg_basic(self, basic_plot):
+        """Render a basic plot with a trace and legend to SVG."""
+        basic_plot.add_trace(
+            axis=1, data=[(x, x * 10) for x in range(-10, 11)],
+            color=LT_RED_1, legend="Trace A",
+        )
+        basic_plot.add_legend(axis=1, location=(0.1, 0.9))
+        page = Page(plot_count=1)
+        page.add_plot(basic_plot)
+        return page.create_svg(file_basename=None).decode("utf-8")
+
+    def test_title_bold_9pt5(self, svg_basic):
+        """Verify title appears with bold weight and 9.5px font size."""
+        assert re.search(
+            r"font-weight:\s*(700|bold)[^>]*font-size:\s*9\.5px[^>]*>Test Plot"
+            r"|font-size:\s*9\.5px[^>]*font-weight:\s*(700|bold)[^>]*>Test Plot",
+            svg_basic)
+
+    def test_axis_label_fontsize_7(self, svg_basic):
+        """Verify axis labels are rendered with font-size 7px."""
+        assert re.search(
+            r"font-size:\s*7px[^>]*>VOLTAGE \(V\)", svg_basic)
+        assert re.search(
+            r"font-size:\s*7px[^>]*>CURRENT \(mA\)", svg_basic)
+
+    def test_plot_name_fontsize_4(self, svg_basic):
+        """Verify plot name appears with font-size 4px."""
+        assert re.search(r"font-size:\s*4px[^>]*>TP01", svg_basic)
+
+    def test_font_family_arial(self, svg_basic):
+        """Verify font-family includes Arial."""
+        assert re.search(r"font-family:.*Arial", svg_basic)
+
+    def test_note_text_present(self, svg_with_note):
+        """Verify note text appears in SVG output."""
+        assert "ANNOTATION_XYZ" in svg_with_note
+
+    def test_note_fontsize_rendered(self, svg_with_note):
+        """Verify the custom note fontsize appears in SVG."""
+        assert re.search(
+            r"font-size:\s*12px[^>]*>ANNOTATION_XYZ", svg_with_note)
+
+    def test_default_note_fontsize_7(self, basic_plot):
+        """Verify default note fontsize 7 appears in SVG."""
+        basic_plot.add_note(note="DEFAULT_NOTE_ABC")
+        page = Page(plot_count=1)
+        page.add_plot(basic_plot)
+        svg = page.create_svg(file_basename=None).decode("utf-8")
+        assert re.search(
+            r"font-size:\s*7px[^>]*>DEFAULT_NOTE_ABC", svg)
+
+    def test_trace_color_in_svg(self, svg_basic):
+        """Verify trace color appears in SVG as rgb or hex."""
+        assert re.search(r"rgb\(153,0,51\)|#990033", svg_basic)
+
+    def test_tick_label_fontsize_7(self, svg_basic):
+        """Verify tick labels use font-size 7px (multiple text elements)."""
+        matches = re.findall(r"font-size:\s*7px[^>]*>[^<]+</text>", svg_basic)
+        assert len(matches) >= 2
+
+    def test_linear_helv_cond_replacement(self, svg_basic):
+        """Verify 'Linear Helv Cond' is collapsed to 'LinearHelvCond' if present."""
+        assert "Linear Helv Cond" not in svg_basic
+
+    def test_scope_plot_xaxis_label(self, scope):
+        """Verify scope plot renders x-axis label at 7px."""
+        scope.add_trace(
+            data=[(t * 5e-7, 2.5) for t in range(11)],
+            color=LT_RED_1,
+        )
+        page = Page(plot_count=1)
+        page.add_plot(scope)
+        svg = page.create_svg(file_basename=None).decode("utf-8")
+        assert re.search(r"font-size:\s*7px[^>]*>500ns/DIV", svg)
+
+    def test_arrow_text_in_svg(self, basic_plot):
+        """Verify arrow annotation text appears in SVG output."""
+        basic_plot.add_arrow(
+            text="ARROW_MARKER_42", text_location=[0.3, 0.7],
+            arrow_tip=[0.5, 0.5], use_axes_scale=False,
+        )
+        page = Page(plot_count=1)
+        page.add_plot(basic_plot)
+        svg = page.create_svg(file_basename=None).decode("utf-8")
+        assert "ARROW_MARKER_42" in svg
+
+    def test_legend_text_in_svg(self, svg_basic):
+        """Verify legend text appears in SVG output."""
+        assert "Trace A" in svg_basic
 
 
 class TestPlotCreateSvgShortcut:
