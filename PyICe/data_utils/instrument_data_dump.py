@@ -53,9 +53,6 @@ class instrument_data_dump:
         self._logger = lab_core.logger(database=db_filename, use_threads=False)
         for inst in self._instruments:
             self._logger.add(inst)
-        for ch in self._logger:
-            if ch.get_attribute('channel_type') in ('x_data', 'y_data'):
-                ch._set_type_affinity('PyICeBLOB')
         if table_name is None:
             table_name = ''
             while not len(table_name):
@@ -72,8 +69,7 @@ class instrument_data_dump:
         conn.execute(f'DROP TABLE IF EXISTS [{meta_table}]')
         conn.execute(f'CREATE TABLE [{meta_table}] '
                      '(channel_name TEXT, channel_type TEXT, measurement TEXT,'
-                     ' instrument_class TEXT)')
-        # Build a map from channel name to instrument class path
+                     ' channel_number INTEGER, instrument_class TEXT)')
         ch_to_class = {}
         for inst in self._instruments:
             cls = type(inst)
@@ -84,15 +80,26 @@ class instrument_data_dump:
             attrs = ch.get_attributes()
             ch_type = attrs.get('channel_type')
             measurement = attrs.get('measurement')
+            channel_number = attrs.get('channel_number')
             class_path = ch_to_class.get(ch.get_name())
-            conn.execute(f'INSERT INTO [{meta_table}] VALUES (?, ?, ?, ?)',
-                         (ch.get_name(), ch_type, measurement, class_path))
+            conn.execute(f'INSERT INTO [{meta_table}] VALUES (?, ?, ?, ?, ?)',
+                         (ch.get_name(), ch_type, measurement,
+                          channel_number, class_path))
         conn.commit()
         conn.close()
 
     def log(self):
-        """Read all instrument channels and log one row to the database."""
-        self._logger.log()
+        """Read all instrument channels and log one row to the database.
+
+        Channels that raise exceptions during read (e.g. VISA timeouts)
+        are stored as error markers in that row and a warning is printed.
+        """
+        from PyICe.lab_core import PartialReadException
+        try:
+            self._logger.log()
+        except PartialReadException as e:
+            for name, failure in e.failures.items():
+                print(f"Warning: channel '{name}' read failed: {failure}")
 
     def stop(self):
         """Close the database connection and disconnect from all instruments."""

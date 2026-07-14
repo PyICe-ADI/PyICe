@@ -192,6 +192,7 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
                 trace_name = f'{base_name}_{user_name}'
 
                 self.add_channel_ydata(trace_name, trace_number=trace_number, channel_number=channel_number)
+                self.get_channel(trace_name).set_attribute('measurement', measurement)
                 self._configured_traces[channel_number].append(trace_number)
 
                 if hasattr(self, 'add_channel_rlevel'):
@@ -322,7 +323,7 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
             channel_name, write_function=lambda layout: self.get_interface().write(
                 f':DISPlay:WINDow{channel_number}:SPLit {layout}'))
         new_channel._read = lambda: self.get_interface().ask(
-            ':DISPlay:WINDow{channel_number}:SPLit?')
+            f':DISPlay:WINDow{channel_number}:SPLit?')
         new_channel.add_preset("D1")
         new_channel.add_preset("D12")
         new_channel.add_preset("D1_2")
@@ -465,7 +466,9 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
                 trace_number,
                 channel_number))
         new_channel.set_attribute('trace_number', trace_number)
+        new_channel.set_attribute('channel_number', channel_number)
         new_channel.set_attribute('channel_type', 'y_data')
+        new_channel._set_type_affinity('PyICeBLOB')
         # new_channel.set_delegator(self)
         new_channel.set_description(
             self.get_name() + ': ' + self.add_channel_ydata.__doc__)
@@ -493,6 +496,8 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
             channel_name,
             read_function=lambda channel_number=channel_number: self._read_x_data(channel_number))
         new_channel.set_attribute('channel_type', 'x_data')
+        new_channel.set_attribute('channel_number', channel_number)
+        new_channel._set_type_affinity('PyICeBLOB')
         # new_channel.set_delegator(self)
         new_channel.set_description(
             self.get_name() + ': ' + self.add_channel_xdata.__doc__)
@@ -1147,19 +1152,20 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
             (meta_table,))
         has_meta = cursor.fetchone() is not None
 
-        x_columns = []  # (column_name,)
-        y_columns = []  # (column_name, measurement_label)
+        x_columns = []  # (column_name, channel_number)
+        y_columns = []  # (column_name, measurement_label, channel_number)
 
         if has_meta:
             rows_meta = conn.execute(
-                f'SELECT channel_name, channel_type, measurement FROM [{meta_table}]'
+                f'SELECT channel_name, channel_type, measurement, channel_number '
+                f'FROM [{meta_table}]'
             ).fetchall()
-            for ch_name, ch_type, measurement in rows_meta:
+            for ch_name, ch_type, measurement, ch_num in rows_meta:
                 if ch_type == 'x_data':
-                    x_columns.append(ch_name)
+                    x_columns.append((ch_name, ch_num))
                 elif ch_type == 'y_data':
                     label = measurement if measurement else ch_name
-                    y_columns.append((ch_name, label))
+                    y_columns.append((ch_name, label, ch_num))
         else:
             # Fallback: columns ending in '_fpoints' are frequency axes,
             # other numpy array columns are traces
@@ -1168,9 +1174,9 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
             col_types = db_temp.get_column_types()
             for name in col_names:
                 if name.endswith('_fpoints'):
-                    x_columns.append(name)
+                    x_columns.append((name, None))
                 elif col_types.get(name) == numpy.ndarray:
-                    y_columns.append((name, name))
+                    y_columns.append((name, name, None))
 
         conn.close()
 
@@ -1192,13 +1198,12 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
         else:
             row_indices = list(rows)
 
-        # --- Match y columns to their x column (shared prefix before _fpoints) ---
-        def find_x_for_y(y_name):
-            for x_name in x_columns:
-                prefix = x_name.rsplit('_fpoints', 1)[0]
-                if y_name.startswith(prefix):
+        # --- Match y columns to their x column by channel_number ---
+        def find_x_for_y(y_ch_num):
+            for x_name, x_ch_num in x_columns:
+                if x_ch_num is not None and x_ch_num == y_ch_num:
                     return x_name
-            return x_columns[0]
+            return x_columns[0][0]
 
         # --- Build the plot ---
         freq_min = float('inf')
@@ -1209,8 +1214,8 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
         trace_data_pairs = []
         for row_idx in row_indices:
             row = db[row_idx]
-            for y_col, label in y_columns:
-                x_col = find_x_for_y(y_col)
+            for y_col, label, y_ch_num in y_columns:
+                x_col = find_x_for_y(y_ch_num)
                 x_arr = row[x_col]
                 y_arr = row[y_col]
                 if x_arr is None or y_arr is None:
@@ -1252,8 +1257,8 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
             data = list(zip(x_arr.tolist(), y_arr.tolist()))
             bode_plot.add_trace(axis=1, data=data, color=color, legend=label)
 
-        bode_plot.add_legend(axis=1, location=(0.01, 0.01),
-                             justification='lower left', use_axes_scale=False)
+        bode_plot.add_legend(axis=1, location=(1.02, 0.5),
+                             justification='center left', use_axes_scale=False)
 
         # --- Render ---
         page = LTC_plot.Page(rows_x_cols=None, page_size=None, plot_count=1)
