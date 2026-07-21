@@ -243,6 +243,38 @@ class TestPartialAccelerationFallback:
         with pytest.warns(DeprecationWarning, match="read_word_list is deprecated"):
             d.read_word_list(0x48, [0x10])
 
+    def test_quick_command_wr_routes_through_write_register(self):
+        """Verify quick_command_wr reaches _do_write_register with data_size=-1."""
+        d = i2c_dummy(delay=0, p_change=0, seed=42)
+        from unittest.mock import patch
+        with patch.object(d, '_do_write_register') as mock:
+            d.quick_command_wr(0x48)
+            mock.assert_called_once_with(0x48, None, None, -1, False)
+
+    def test_quick_command_rd_routes_through_read_register(self):
+        """Verify quick_command_rd reaches _do_read_register with data_size=-1."""
+        d = i2c_dummy(delay=0, p_change=0, seed=42)
+        from unittest.mock import patch
+        with patch.object(d, '_do_read_register', return_value=None) as mock:
+            d.quick_command_rd(0x48)
+            mock.assert_called_once_with(0x48, None, -1, False)
+
+    def test_alert_response_routes_through_do_alert_response(self):
+        d = i2c_dummy(delay=0, p_change=0, seed=42)
+        from unittest.mock import patch
+        with patch.object(d, '_do_alert_response', return_value=0x48) as mock:
+            result = d.alert_response()
+            mock.assert_called_once_with(use_pec=False)
+        assert result == 0x48
+
+    def test_alert_response_pec_routes_through_do_alert_response(self):
+        d = i2c_dummy(delay=0, p_change=0, seed=42)
+        from unittest.mock import patch
+        with patch.object(d, '_do_alert_response', return_value=0x48) as mock:
+            result = d.alert_response_pec()
+            mock.assert_called_once_with(use_pec=True)
+        assert result == 0x48
+
     def test_protocol_methods_all_work_without_override(self):
         """A primitives-only backend handles all protocols via bit-bang."""
         class PrimitivesOnly(twi_interface):
