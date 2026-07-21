@@ -5,8 +5,13 @@
 >>> from PyICe.spi_instrument import spiInstrument
 
 """
+import logging
+
 from PyICe.lab_core import instrument, delegator, integer_channel
 from PyICe import spi_interface
+from PyICe.ipxact_parser import IpxactParser, ipxact_access_to_rw
+
+_logger = logging.getLogger(__name__)
 
 
 class spiInstrument(instrument, delegator):
@@ -173,6 +178,94 @@ class spiInstrument(instrument, delegator):
         merged_data.update(write_data)
         merged_data.update(read_data)
         return merged_data
+
+    @classmethod
+    def from_ipxact(cls, name, spi_interface_obj, ipxact_file,
+                    address_block_name=None, register_name=None,
+                    bit_order="msb_first", preamble_clk_cnt=0,
+                    preamble_data=0):
+        """Construct an spiInstrument from IP-XACT field definitions.
+
+        Maps IP-XACT fields of a single register (or concatenated registers)
+        into a shift_register, using field bit_offset/bit_width for ordering.
+
+        >>> from PyICe.spi_instrument import spiInstrument
+        >>> hasattr(spiInstrument, 'from_ipxact')
+        True
+
+        Args:
+            name: Instrument name.
+            spi_interface_obj: Physical SPI interface object.
+            ipxact_file: Path to IP-XACT XML.
+            address_block_name: Restrict to a specific address block.
+            register_name: If given, use only fields from this register.
+                If None, concatenate all registers in address order.
+            bit_order: "msb_first" (default) or "lsb_first".
+            preamble_clk_cnt: Preamble clock count.
+            preamble_data: Preamble data value.
+
+        Returns:
+            spiInstrument instance.
+
+        Raises:
+            ValueError: If register_name not found.
+            NotImplementedError: If register array (dim) encountered.
+        """
+        parser = IpxactParser(ipxact_file)
+        memory_maps = parser.parse()
+        all_registers = []
+        for mm in memory_maps:
+            blocks = mm.address_blocks
+            if address_block_name is not None:
+                blocks = [ab for ab in blocks if ab.name == address_block_name]
+            for ab in blocks:
+                all_registers.extend(ab.registers)
+        if register_name is not None:
+            matches = [r for r in all_registers if r.name == register_name]
+            if not matches:
+                raise ValueError(
+                    f"Register '{register_name}' not found in {ipxact_file}")
+            all_registers = matches
+        elif len(all_registers) > 1:
+            _logger.warning(
+                "Concatenating %d registers in address order for SPI shift register '%s'.",
+                len(all_registers), name)
+            all_registers.sort(key=lambda r: r.address_offset)
+        write_sr = spi_interface.shift_register(name)
+        read_sr = spi_interface.shift_register(f"{name}_read")
+        for reg in all_registers:
+            if not reg.fields:
+                is_readable, is_writable = ipxact_access_to_rw(reg.access)
+                if is_writable:
+                    write_sr.add_bit_field(reg.name, reg.size, reg.description)
+                if is_readable:
+                    read_sr.add_bit_field(reg.name, reg.size, reg.description)
+                continue
+            fields_sorted = sorted(reg.fields, key=lambda f: f.bit_offset,
+                                   reverse=(bit_order == "msb_first"))
+            for fld in fields_sorted:
+                is_readable, is_writable = ipxact_access_to_rw(fld.access)
+                if is_writable:
+                    write_sr.add_bit_field(fld.name, fld.bit_width, fld.description)
+                if is_readable:
+                    read_sr.add_bit_field(fld.name, fld.bit_width, fld.description)
+        write_arg = write_sr if len(write_sr) > 0 else None
+        read_arg = read_sr if len(read_sr) > 0 else None
+        if write_arg is not None and read_arg is not None:
+            if len(write_arg) != len(read_arg):
+                _logger.warning(
+                    "Write (%d bits) and read (%d bits) shift registers differ in length. "
+                    "Providing only the longer one as read/write.",
+                    len(write_arg), len(read_arg))
+                if len(write_arg) > len(read_arg):
+                    read_arg = None
+                else:
+                    write_arg = None
+        return cls(name, spi_interface_obj,
+                   write_shift_register=write_arg,
+                   read_shift_register=read_arg,
+                   preamble_clk_cnt=preamble_clk_cnt,
+                   preamble_data=preamble_data)
 
     def _dummy_read(self):
         raise Exception("Shouldn't ever get here...")

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ipxact:component xmlns:ipxact="http://www.accellera.org/XMLSchema/IPXACT/1685-2014">
+  <ipxact:name>test_device</ipxact:name>
+  <ipxact:memoryMaps>
+    <ipxact:memoryMap>
+      <ipxact:name>default_map</ipxact:name>
+      <ipxact:addressBlock>
+        <ipxact:name>ctrl_regs</ipxact:name>
+        <ipxact:baseAddress>0x00</ipxact:baseAddress>
+        <ipxact:range>256</ipxact:range>
+        <ipxact:width>8</ipxact:width>
+        <ipxact:register>
+          <ipxact:name>STATUS</ipxact:name>
+          <ipxact:addressOffset>0x00</ipxact:addressOffset>
+          <ipxact:size>8</ipxact:size>
+          <ipxact:access>read-only</ipxact:access>
+          <ipxact:description>Status register</ipxact:description>
+          <ipxact:field>
+            <ipxact:name>BUSY</ipxact:name>
+            <ipxact:bitOffset>0</ipxact:bitOffset>
+            <ipxact:bitWidth>1</ipxact:bitWidth>
+            <ipxact:access>read-only</ipxact:access>
+            <ipxact:description>Device busy flag</ipxact:description>
+            <ipxact:resets><ipxact:reset><ipxact:value>0</ipxact:value></ipxact:reset></ipxact:resets>
+            <ipxact:vendorExtensions>
+              <contour>
+                <contourItemParent>
+                  <contourIpPaths>
+                    <contourIpPath>Test Device</contourIpPath>
+                  </contourIpPaths>
+                  <contourId>12345</contourId>
+                </contourItemParent>
+              </contour>
+            </ipxact:vendorExtensions>
+          </ipxact:field>
+          <ipxact:field>
+            <ipxact:name>ERROR</ipxact:name>
+            <ipxact:bitOffset>1</ipxact:bitOffset>
+            <ipxact:bitWidth>1</ipxact:bitWidth>
+            <ipxact:access>read-only</ipxact:access>
+            <ipxact:modifiedWriteValue>oneToClear</ipxact:modifiedWriteValue>
+            <ipxact:description>Error flag</ipxact:description>
+          </ipxact:field>
+          <ipxact:field>
+            <ipxact:name>MODE</ipxact:name>
+            <ipxact:bitOffset>4</ipxact:bitOffset>
+            <ipxact:bitWidth>2</ipxact:bitWidth>
+            <ipxact:access>read-only</ipxact:access>
+            <ipxact:description>Operating mode</ipxact:description>
+            <ipxact:enumeratedValues>
+              <ipxact:enumeratedValue><ipxact:name>IDLE</ipxact:name><ipxact:value>0</ipxact:value><ipxact:description>Idle mode</ipxact:description></ipxact:enumeratedValue>
+              <ipxact:enumeratedValue><ipxact:name>RUN</ipxact:name><ipxact:value>1</ipxact:value><ipxact:description>Running</ipxact:description></ipxact:enumeratedValue>
+              <ipxact:enumeratedValue><ipxact:name>SLEEP</ipxact:name><ipxact:value>2</ipxact:value><ipxact:description>Sleep mode</ipxact:description></ipxact:enumeratedValue>
+            </ipxact:enumeratedValues>
+          </ipxact:field>
+        </ipxact:register>
+        <ipxact:register>
+          <ipxact:name>CTRL</ipxact:name>
+          <ipxact:addressOffset>0x01</ipxact:addressOffset>
+          <ipxact:size>8</ipxact:size>
+          <ipxact:access>read-write</ipxact:access>
+          <ipxact:description>Control register</ipxact:description>
+          <ipxact:field>
+            <ipxact:name>ENABLE</ipxact:name>
+            <ipxact:bitOffset>0</ipxact:bitOffset>
+            <ipxact:bitWidth>1</ipxact:bitWidth>
+            <ipxact:access>read-write</ipxact:access>
+            <ipxact:description>Enable device</ipxact:description>
+            <ipxact:resets><ipxact:reset><ipxact:value>0</ipxact:value></ipxact:reset></ipxact:resets>
+          </ipxact:field>
+          <ipxact:field>
+            <ipxact:name>GAIN</ipxact:name>
+            <ipxact:bitOffset>1</ipxact:bitOffset>
+            <ipxact:bitWidth>3</ipxact:bitWidth>
+            <ipxact:access>read-write</ipxact:access>
+            <ipxact:description>Gain setting</ipxact:description>
+            <ipxact:resets><ipxact:reset><ipxact:value>4</ipxact:value></ipxact:reset></ipxact:resets>
+          </ipxact:field>
+        </ipxact:register>
+        <ipxact:register>
+          <ipxact:name>DATA</ipxact:name>
+          <ipxact:addressOffset>0x10</ipxact:addressOffset>
+          <ipxact:size>16</ipxact:size>
+          <ipxact:access>read-only</ipxact:access>
+          <ipxact:description>Data output register (no fields)</ipxact:description>
+        </ipxact:register>
+      </ipxact:addressBlock>
+    </ipxact:memoryMap>
+  </ipxact:memoryMaps>
+</ipxact:component>
