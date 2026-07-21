@@ -538,21 +538,30 @@ class Master_Test_Template():  # pylint: disable=no-member; this is a mixin/temp
 
     def correlate_data(self, name, reference_values=None,
                        test_values=None, spec=None, conditions=None):
-        """Compare test values to reference values and evaluate against named test limits.
+        """Compare measured test values against reference values and evaluate against test limits.
 
-        Supports the ``Master_Test_Template`` workflow by performing the described operation.
-
+        Computes the deviation between each pair of (reference, test) values
+        using the mode specified by ``spec``, then checks whether the deviation
+        falls within the named test's limits (as returned by ``get_test_limits(name)``).
 
         >>> from PyICe.plugins.master_test_template import Master_Test_Template
         >>> hasattr(Master_Test_Template, 'correlate_data')
         True
 
         Args:
-            name: The name of the test whose limits will be used.
-            reference_values: Base values to compare against.
-            test_values: Values whose distance to reference will be calculated.
-            spec: Either '%' for percentage or '-' for difference comparison.
-            conditions: Dictionary of channel names to values for reporting context, or None.
+            name: Key into the test limits table (from ``get_test_limits``).
+                Identifies which min/max limits to evaluate against.
+            reference_values: Golden/expected values, typically from
+                characterization data or a datasheet. List of numeric values.
+            test_values: Measured values from the current test run. Must be
+                the same length as reference_values.
+            spec: Comparison mode. ``'%'`` computes percentage deviation
+                ``(test - ref) / ref * 100``; ``'-'`` computes absolute
+                difference ``test - ref``.
+            conditions: Optional dict of {channel_name: value} pairs
+                describing the operating conditions (e.g. temperature, supply
+                voltage) under which the measurement was taken. Used for
+                reporting context only.
         """
         if reference_values is None:
             reference_values = []
