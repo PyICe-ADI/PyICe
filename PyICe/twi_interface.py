@@ -1420,6 +1420,7 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         dataLow = self.get_byte(data16, 0)
         dataHigh = self.get_byte(data16, 1)
         byteList = []
+        pec = 0
         if not self.start():
             raise i2cStartStopError()
         if use_pec:
@@ -1659,6 +1660,7 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             List of bytes read from the device.
         """
         byteList = []
+        pec = 0
         if not self.start():
             raise i2cStartStopError()
         if use_pec:
@@ -1821,6 +1823,7 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             List of response bytes from the device.
         """
         byteList = []
+        pec = 0
         if not self.start():
             raise i2cStartStopError()
         if use_pec:
