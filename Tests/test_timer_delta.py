@@ -1,6 +1,5 @@
 """Tests for timer delta behavior — verifies read-before-pause prevents accumulation."""
 import time
-import pytest
 from PyICe.virtual_instruments import timer
 
 
