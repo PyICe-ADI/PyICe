@@ -1896,8 +1896,14 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         ...     result = d.read_byte_list(0x48, [0x10, 0x20])
         >>> result[0x10]
         171
-        >>> hasattr(i2c_dummy, 'read_byte_list')
-        True
+        >>> result[0x20]
+        205
+        >>> import warnings as _w
+        >>> with _w.catch_warnings(record=True) as w:
+        ...     _w.simplefilter("always")
+        ...     _ = d.read_byte_list(0x48, [0x10])
+        >>> w[0].category.__name__
+        'DeprecationWarning'
 
         Args:
             addr7: 7-bit I2C device address.
@@ -1924,8 +1930,12 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         ...     result = d.read_byte_list_pec(0x48, [0x10])
         >>> result[0x10]
         171
-        >>> hasattr(i2c_dummy, 'read_byte_list_pec')
-        True
+        >>> import warnings as _w
+        >>> with _w.catch_warnings(record=True) as w:
+        ...     _w.simplefilter("always")
+        ...     _ = d.read_byte_list_pec(0x48, [0x10])
+        >>> w[0].category.__name__
+        'DeprecationWarning'
 
         Args:
             addr7: 7-bit I2C device address.
@@ -1952,8 +1962,12 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         ...     result = d.read_word_list(0x48, [0x30])
         >>> hex(result[0x30])
         '0x1234'
-        >>> hasattr(i2c_dummy, 'read_word_list')
-        True
+        >>> import warnings as _w
+        >>> with _w.catch_warnings(record=True) as w:
+        ...     _w.simplefilter("always")
+        ...     _ = d.read_word_list(0x48, [0x30])
+        >>> w[0].category.__name__
+        'DeprecationWarning'
 
         Args:
             addr7: 7-bit I2C device address.
@@ -1980,8 +1994,12 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         ...     result = d.read_word_list_pec(0x48, [0x30])
         >>> hex(result[0x30])
         '0x1234'
-        >>> hasattr(i2c_dummy, 'read_word_list_pec')
-        True
+        >>> import warnings as _w
+        >>> with _w.catch_warnings(record=True) as w:
+        ...     _w.simplefilter("always")
+        ...     _ = d.read_word_list_pec(0x48, [0x30])
+        >>> w[0].category.__name__
+        'DeprecationWarning'
 
         Args:
             addr7: 7-bit I2C device address.
@@ -2006,8 +2024,10 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         >>> result = d.read_register_list(0x48, [0x10], data_size=8, use_pec=False)
         >>> result[0x10]
         171
-        >>> hasattr(twi_interface, 'read_register_list')
-        True
+        >>> d.read_register_list(0x48, [0x10], data_size=7, use_pec=False)
+        Traceback (most recent call last):
+            ...
+        Exception: Unimplemented data size: 7. Not within set (-1, 0, 8, 16, 32, 64)
 
         Args:
             addr7: 7-bit I2C device address.
@@ -2030,8 +2050,10 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         >>> result = d._do_read_register_list(0x48, [0x10], data_size=8, use_pec=False)
         >>> result[0x10]
         171
-        >>> hasattr(twi_interface, '_do_read_register_list')
-        True
+        >>> d.write_register(0x48, 0x20, 0xCD, 8, False)
+        >>> result = d._do_read_register_list(0x48, [0x10, 0x20], data_size=8, use_pec=False)
+        >>> result[0x20]
+        205
         """
         return {cc: self._do_read_register(addr7, cc, data_size, use_pec) for cc in cc_list}
 
@@ -2332,8 +2354,10 @@ class i2c_dummy(twi_interface):
         >>> result = d.read_register_list(0x48, [0x10], data_size=8, use_pec=False)
         >>> result[0x10]
         171
-        >>> hasattr(i2c_dummy, '_do_read_register_list')
-        True
+        >>> d.write_register(0x48, 0x20, 0xCD, 8, False)
+        >>> result = d.read_register_list(0x48, [0x10, 0x20], data_size=8, use_pec=False)
+        >>> result[0x20]
+        205
 
         Args:
             addr7: 7-bit I2C device address.
@@ -4038,7 +4062,7 @@ class i2c_scpi(twi_interface):
 
 
         >>> from PyICe.twi_interface import i2c_scpi
-        >>> hasattr(i2c_scpi, '_do_read_register_list')
+        >>> callable(getattr(i2c_scpi, '_do_read_register_list', None))
         True
 
         Args:
@@ -7025,7 +7049,7 @@ class i2c_bobbytalk(twi_interface):
 
 
         >>> from PyICe.twi_interface import i2c_bobbytalk
-        >>> hasattr(i2c_bobbytalk, '_do_read_register_list')
+        >>> callable(getattr(i2c_bobbytalk, '_do_read_register_list', None))
         True
 
         Args:
@@ -7832,7 +7856,7 @@ class i2c_labcomm(twi_interface):
 
 
         >>> from PyICe.twi_interface import i2c_labcomm
-        >>> hasattr(i2c_labcomm, '_do_read_register_list')
+        >>> callable(getattr(i2c_labcomm, '_do_read_register_list', None))
         True
 
         Args:
