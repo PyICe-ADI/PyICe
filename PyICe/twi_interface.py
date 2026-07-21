@@ -20,6 +20,7 @@ try:
 except ImportError:
     pass
 import logging
+import warnings
 debug_logging = logging.getLogger(__name__)
 '''Default str to bytes encoding to use. latin-1 is the simplest encoding -- it requires all characters of a string to
 be amongst Unicode code points 0x000000 - 0x0000ff inclusive, and converts each code point value to a byte. Hence
@@ -1879,38 +1880,6 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         return dataByteListRead
 
     # List reading aggregation commands###
-    def _read_x_list(self, addr7, cc_list, rd_function):
-        """Return dictionary of read results.
-
-        Reads each commandCode of cc_list in turn at chip address addr7 using rd_function protocol.
-
-
-        >>> import io, contextlib
-        >>> d = i2c_dummy(delay=0, p_change=0, seed=42)
-        >>> d.write_register(0x48, 0x10, 0xAB, 8, False)
-        >>> d.write_register(0x48, 0x20, 0xCD, 8, False)
-        >>> with contextlib.redirect_stdout(io.StringIO()):
-        ...     result = d._read_x_list(0x48, [0x10, 0x20], d.read_byte)
-        >>> result[0x10]
-        171
-        >>> result[0x20]
-        205
-        >>> hasattr(i2c_dummy, '_read_x_list')
-        True
-
-        Args:
-            addr7: 7-bit I2C device address.
-            cc_list: List of SMBus command codes (register addresses) to read.
-            rd_function: Callable that performs the read (e.g., self.read_byte).
-
-        Returns:
-            List of matching items.
-        """
-        self.print_warning(operation="_read_x_list")
-        cc_data = {}
-        for cc in cc_list:
-            cc_data[cc] = rd_function(addr7, cc)
-        return cc_data
 
     def read_byte_list(self, addr7, cc_list):
         """Return dictionary of read_byte results.
@@ -1937,8 +1906,9 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         Returns:
             The value read from the device or channel.
         """
-        self.print_warning(operation="read_byte_list")
-        return self._read_x_list(addr7, cc_list, self.read_byte)
+        warnings.warn("read_byte_list is deprecated; use read_register_list(addr7, cc_list, 8, False)",
+                      DeprecationWarning, stacklevel=2)
+        return self.read_register_list(addr7, cc_list, 8, False)
 
     def read_byte_list_pec(self, addr7, cc_list):
         """Return dictionary of read_byte_pec results.
@@ -1964,8 +1934,9 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         Returns:
             The value read from the device or channel.
         """
-        self.print_warning(operation="read_byte_list_pec")
-        return self._read_x_list(addr7, cc_list, self.read_byte_pec)
+        warnings.warn("read_byte_list_pec is deprecated; use read_register_list(addr7, cc_list, 8, True)",
+                      DeprecationWarning, stacklevel=2)
+        return self.read_register_list(addr7, cc_list, 8, True)
 
     def read_word_list(self, addr7, cc_list):
         """Return dictionary of read_word results.
@@ -1991,8 +1962,9 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         Returns:
             The value read from the device or channel.
         """
-        self.print_warning(operation="read_word_list")
-        return self._read_x_list(addr7, cc_list, self.read_word)
+        warnings.warn("read_word_list is deprecated; use read_register_list(addr7, cc_list, 16, False)",
+                      DeprecationWarning, stacklevel=2)
+        return self.read_register_list(addr7, cc_list, 16, False)
 
     def read_word_list_pec(self, addr7, cc_list):
         """Return dictionary of read_word_pec results.
@@ -2018,8 +1990,9 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         Returns:
             The value read from the device or channel.
         """
-        self.print_warning(operation="read_word_list_pec")
-        return self._read_x_list(addr7, cc_list, self.read_word_pec)
+        warnings.warn("read_word_list_pec is deprecated; use read_register_list(addr7, cc_list, 16, True)",
+                      DeprecationWarning, stacklevel=2)
+        return self.read_register_list(addr7, cc_list, 16, True)
 
     def read_register_list(self, addr7, cc_list, data_size, use_pec):
         """Return read register list result.
@@ -2045,8 +2018,22 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         Returns:
             The value read from the device or channel.
         """
-        return self._read_x_list(addr7, cc_list, lambda addr7, cc: self.read_register(
-            addr7, cc, data_size, use_pec))
+        if data_size not in (-1, 0, 8, 16, 32, 64):
+            raise Exception(f'Unimplemented data size: {data_size}. Not within set (-1, 0, 8, 16, 32, 64)')
+        return self._do_read_register_list(addr7, cc_list, data_size, use_pec)
+
+    def _do_read_register_list(self, addr7, cc_list, data_size, use_pec):
+        """Default sequential implementation. Override for HW-accelerated batch reads.
+
+        >>> d = i2c_dummy(delay=0, p_change=0, seed=42)
+        >>> d.write_register(0x48, 0x10, 0xAB, 8, False)
+        >>> result = d._do_read_register_list(0x48, [0x10], data_size=8, use_pec=False)
+        >>> result[0x10]
+        171
+        >>> hasattr(twi_interface, '_do_read_register_list')
+        True
+        """
+        return {cc: self._do_read_register(addr7, cc, data_size, use_pec) for cc in cc_list}
 
     def print_warning(self, operation):
         """Perform print warning operation.
@@ -2333,7 +2320,7 @@ class i2c_dummy(twi_interface):
         """
         return self._read_impl(addr7, commandCode, data_size, use_pec, no_delay=False)
 
-    def read_register_list(self, addr7, cc_list, data_size, use_pec):
+    def _do_read_register_list(self, addr7, cc_list, data_size, use_pec):
         """Return read register list result.
         Reads the corresponding register from the device via TWI/I2C.
 
@@ -2345,7 +2332,7 @@ class i2c_dummy(twi_interface):
         >>> result = d.read_register_list(0x48, [0x10], data_size=8, use_pec=False)
         >>> result[0x10]
         171
-        >>> hasattr(i2c_dummy, 'read_register_list')
+        >>> hasattr(i2c_dummy, '_do_read_register_list')
         True
 
         Args:
@@ -4044,14 +4031,14 @@ class i2c_scpi(twi_interface):
                 results[cc] = value
         return results
 
-    def read_register_list(self, addr7, cc_list, data_size, use_pec):
+    def _do_read_register_list(self, addr7, cc_list, data_size, use_pec):
         """Return read register list result.
 
         Reads data from the underlying source and returns it.
 
 
         >>> from PyICe.twi_interface import i2c_scpi
-        >>> hasattr(i2c_scpi, 'read_register_list')
+        >>> hasattr(i2c_scpi, '_do_read_register_list')
         True
 
         Args:
@@ -4064,23 +4051,19 @@ class i2c_scpi(twi_interface):
             The value read from the device or channel.
         """
         if data_size == 16 and use_pec:
-            # binary trigger skips SCPI parser
             return self._read_list(
                 cmd_bytes=b'\xE8', fmt_str='H', pec=True, addr7=addr7, cc_list=cc_list)
         elif data_size == 16 and not use_pec:
-            # binary trigger skips SCPI parser
             return self._read_list(
                 cmd_bytes=b'\xE7', fmt_str='H', pec=False, addr7=addr7, cc_list=cc_list)
         elif data_size == 8 and use_pec:
-            # binary trigger skips SCPI parser
             return self._read_list(
                 cmd_bytes=b'\xE6', fmt_str='B', pec=True, addr7=addr7, cc_list=cc_list)
         elif data_size == 8 and not use_pec:
-            # binary trigger skips SCPI parser
             return self._read_list(
                 cmd_bytes=b'\xE5', fmt_str='B', pec=False, addr7=addr7, cc_list=cc_list)
         else:
-            return super().read_register_list(
+            return super()._do_read_register_list(
                 addr7, cc_list, data_size, use_pec)
 
     def _do_read_register(self, addr7, commandCode, data_size, use_pec):
@@ -7025,7 +7008,7 @@ class i2c_bobbytalk(twi_interface):
         """
         return self.intf
 
-    def read_register_list(self, addr7, command_codes, data_size, use_pec):
+    def _do_read_register_list(self, addr7, command_codes, data_size, use_pec):
         """SMBUS list read, all protocols {read|write} {word|byte} {PEC|no-PEC}.
 
         Expects the following data payload in bobbytalk packets from the demoboard:
@@ -7042,7 +7025,7 @@ class i2c_bobbytalk(twi_interface):
 
 
         >>> from PyICe.twi_interface import i2c_bobbytalk
-        >>> hasattr(i2c_bobbytalk, 'read_register_list')
+        >>> hasattr(i2c_bobbytalk, '_do_read_register_list')
         True
 
         Args:
@@ -7055,7 +7038,7 @@ class i2c_bobbytalk(twi_interface):
             The value read from the device or channel.
         """
         if not (data_size == 16 and use_pec is True):
-            return super(i2c_bobbytalk, self).read_register_list(
+            return super()._do_read_register_list(
                 addr7, command_codes, data_size, use_pec)
         # TODO: Implement all protocols. Only read word list with PEC is implemented right now.
         # We get here if we're reading word list with PEC.
@@ -7840,7 +7823,7 @@ class i2c_labcomm(twi_interface):
         args = [iter(iterable)] * size
         return list(itertools.zip_longest(fillvalue=None, *args))
 
-    def read_register_list(self, addr7, command_codes, data_size, use_pec):
+    def _do_read_register_list(self, addr7, command_codes, data_size, use_pec):
         """Return read register list result.
         Sends the appropriate command to the instrument and parses the
         response.
@@ -7849,7 +7832,7 @@ class i2c_labcomm(twi_interface):
 
 
         >>> from PyICe.twi_interface import i2c_labcomm
-        >>> hasattr(i2c_labcomm, 'read_register_list')
+        >>> hasattr(i2c_labcomm, '_do_read_register_list')
         True
 
         Args:
