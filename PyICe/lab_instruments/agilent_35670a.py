@@ -112,6 +112,8 @@ class agilent_35670a(scpi_instrument):
         Returns:
             The value read from the device or channel.
         """
+        xlist_final: list = []
+        ylist_final: list = []
         for ii in range(0, len(self.count)):
             print((f'Start : {self.freqs[ii]}, Stop : {self.freqs[ii + 1]}'))
             self.get_interface().write(

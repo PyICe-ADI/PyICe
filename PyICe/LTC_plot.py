@@ -507,7 +507,7 @@ class plot(object):
             hxline=hxline)
 
     def add_horizontal_line(self, value, xrange=None, note=None,
-                            axis=1, color=None, linestyle=None, linewidth=None):
+                            axis=1, color=None, linestyle=None, linewidth=None, notesize=3):
         """This can be useful for annotating limit lines. It can make dotted red lines for example.
         Creates and registers a new horizontal line.
 
@@ -605,11 +605,11 @@ class plot(object):
                 note=note,
                 location=text_location,
                 use_axes_scale=True,
-                fontsize=3,
+                fontsize=notesize,
                 axis=axis)
 
     def add_vertical_line(self, value, yrange=None, note=None,
-                          axis=1, color=None, linestyle=None, linewidth=None):
+                          axis=1, color=None, linestyle=None, linewidth=None, notesize=3):
         """This can be useful for annotating limit lines. It can make dotted red lines for example.
         Creates and registers a new vertical line.
 
@@ -710,7 +710,7 @@ class plot(object):
                 note=note,
                 location=text_location,
                 use_axes_scale=True,
-                fontsize=3,
+                fontsize=notesize,
                 axis=axis)
 
     def add_histogram(self, axis, xdata, num_bins, color,
@@ -1165,7 +1165,7 @@ class scope_plot(plot):
         self.add_time_refmarker_open(xlocation_open)
         self.add_time_refmarker_closed(xlocation_closed)
 
-    def add_horizontal_line(self, value, xrange=None, note=None, color=None):
+    def add_horizontal_line(self, value, xrange=None, note=None, color=None, notesize=3):
         """Add a horizontal line.
         Creates and registers a new horizontal line.
 
@@ -1204,10 +1204,10 @@ class scope_plot(plot):
                           location=[xrange0 + 0.015 * (xrange1 - xrange0),
                                     value + 0.015 * (yrange1 - yrange0)],
                           use_axes_scale=True,
-                          fontsize=3,
+                          fontsize=notesize,
                           axis=1)
 
-    def add_vertical_line(self, value, yrange=None, note=None, color=None):
+    def add_vertical_line(self, value, yrange=None, note=None, color=None, notesize=3):
         """Add a vertical line.
         Creates and registers a new vertical line.
 
@@ -1244,7 +1244,7 @@ class scope_plot(plot):
                           location=[value,
                                     yrange0 + 0.015 * (yrange1 - yrange0)],
                           use_axes_scale=True,
-                          fontsize=3,
+                          fontsize=notesize,
                           axis=1)
 
 
@@ -1533,6 +1533,7 @@ class Page():
         #######################################################################
         # Deal with second axis first (seems to keep first axis tick marks from coming back)        #
         #######################################################################
+        twin = None
         if plot.y2_axis_params["axis_is_used"]:
             twin = graph.twinx()
             if plot.plot_type == "scope_plot":
@@ -1783,6 +1784,7 @@ class Page():
         #################################################################
         # Place the legends                                             #
         #################################################################
+                coordinate_system = None
                 if y_axis_params["place_legend"]:
                     if y_axis_params == plot.y1_axis_params:
                         if plot.y1_axis_params["use_axes_scale"]:
@@ -1809,6 +1811,7 @@ class Page():
                 if plot.plot_type == "scope_plot":
                     marker_x_offset = 0.038
                     marker = "►"
+                    ref_marker = None
                     for ref_marker in plot.ref_markers:
                         if ref_marker["use_axes_scale"]:
                             coordinate_system = graph.transData
@@ -1855,8 +1858,6 @@ class Page():
         #################################################################
                 if plot.plot_type == "scope_plot" and plot.include_time_refmarker_open:
                     x = plot.time_refmarker_open_xlocation
-                    y = ref_marker["ylocation"] - 0.03 / 8 * (
-                        plot.y1_axis_params['ylims'][1] - plot.y1_axis_params['ylims'][0])
                     y = plot.y1_axis_params['ylims'][1] * 0.995
                     note_props = dict(
                         boxstyle='square, pad=0.125',

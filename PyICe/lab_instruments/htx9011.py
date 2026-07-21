@@ -7,6 +7,7 @@ from ..lab_core import *  # noqa: F403
 from PyICe.lab_utils.banners import print_banner
 from PyICe.lab_utils.eng_string import eng_string
 import datetime
+import sys
 
 
 class htx9011(scpi_instrument):
@@ -107,15 +108,10 @@ class htx9011(scpi_instrument):
                 self.gpio_pins.keys()), len(
                 self.gpio_pins) * 'Z')  # HiZ all GPIO Pins
         if not self.valid_serialnum() and not serializing:
-            if datetime.datetime.now() > datetime.datetime(2021, 1, 31):
-                print_banner(
-                    "ERROR: ConfiguratorXT is not serialized!",
-                    "Please serialize it to continue.")
-                exit()
-            else:
-                print_banner(
-                    "WARNING: ConfiguratorXT is not serialized!",
-                    "Please serialize it before January 31, 2021.")
+            print_banner(
+                "ERROR: ConfiguratorXT is not serialized!",
+                "Please serialize it to continue.")
+            sys.exit(1)
         # self.check_calibration_valid(calibrating)
         # self.add(self.gpiox)
 
@@ -352,30 +348,31 @@ class htx9011(scpi_instrument):
         return new_channel
 
     def add_channel_isense_remapper(self, channel_name, channel_number, vmeter_high_range_channel,
-                                    vmeter_med_range_channel, vmeter_low_range_channel, meter_ch_group):
+                                    vmeter_med_range_channel, vmeter_low_range_channel):
         """Facilitates remapping current sense channels based on range selected on ConfiguratorXT.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Sends the ``:`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
 
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
+        Registers a readback channel on this instrument that reads the appropriate vmeter channel
+        based on the current range setting. The interfaces of the vmeter channels are registered
+        on this instrument so that the threading system assigns them to the same thread,
+        preventing concurrent SCPI access to the meter instrument.
 
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
-            meter_ch_group: Meter ch group to use.
-            vmeter_high_range_channel: Vmeter high range channel to use.
-            vmeter_low_range_channel: Vmeter low range channel to use.
-            vmeter_med_range_channel: Vmeter med range channel to use.
+            vmeter_high_range_channel: Channel measuring voltage across the high-current sense resistor.
+            vmeter_med_range_channel: Channel measuring voltage across the medium-current sense resistor.
+            vmeter_low_range_channel: Channel measuring voltage across the low-current sense resistor.
 
         Returns:
             The newly created channel object.
         """
+        for vmeter_ch in (vmeter_high_range_channel, vmeter_med_range_channel, vmeter_low_range_channel):
+            for interface in vmeter_ch.get_interfaces():
+                if interface not in self._interfaces:
+                    self._add_interface(interface)
         readback_channel = channel(
             channel_name,
-            read_function=None)  # get reference to this channel into read function to get attributes
+            read_function=None)
         readback_channel.set_write_access(False)
         range_channel = self.add_channel_range(
             f'{channel_name}_range', channel_number)
@@ -398,8 +395,7 @@ class htx9011(scpi_instrument):
         readback_channel.set_category(vmeter_high_range_channel.get_category())
         readback_channel.set_display_format_function(
             function=lambda float_data: f"{eng_string(float_data, fmt=':3.6g', si=True)}A")
-        return meter_ch_group._add_channel(
-            readback_channel)  # Move channel to 3497x thread
+        return self._add_channel(readback_channel)
 
     def _read_range_v(self, readback_channel):
         if readback_channel.get_attribute(
@@ -689,11 +685,31 @@ class htx9011(scpi_instrument):
                 out += str(value)
         return out
 
+    def _supports_atomic_gpio(self):
+        if not hasattr(self, '_atomic_gpio_supported'):
+            try:
+                year, month, day = [int(v) for v in self.get_firmware_version().split(".")]
+                self._atomic_gpio_supported = (year, month, day) >= (2026, 6, 30)
+            except (ValueError, IndexError, AttributeError):
+                self._atomic_gpio_supported = False
+            if not self._atomic_gpio_supported:
+                print("WARNING: HTX9011 firmware does not support "
+                      "atomic GPIO writes. Falling back to single-pin mode. "
+                      "Update firmware to 2026.06.30 or later for atomic operation.")
+        return self._atomic_gpio_supported
+
+    def _write_pins(self, pins, values):
+        if not self._supports_atomic_gpio():
+            for pin, val in zip(pins, values):
+                self._write_pin(pin, val)
+            return
+        pinvals = ','.join([f'{pins[i]}={values[i]}' for i in range(len(pins))])
+        write_str = f':SETPin (@{pinvals});'
+        self.get_interface().write(write_str)
+
     def _write_gpio(self, gpio_list, value):
         bit_list = self._to_bit_list(value, len(gpio_list))
-        pin_values = list(zip(gpio_list, bit_list))
-        for pin_name, pin_value in pin_values:
-            self._write_pin(self.gpio_pins[pin_name], pin_value)
+        self._write_pins([self.gpio_pins[p] for p in gpio_list], bit_list)
 
     def _write_relay_bypass(self, relay_number, value):
         value = self._clean_value(value)

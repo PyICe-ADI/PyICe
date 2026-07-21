@@ -106,7 +106,7 @@ class vcd_reader():
                 else:
                     if add_staircase_points:
                         try:
-                            real_ydata.append(last_y)  # noqa: F821
+                            real_ydata.append(last_y)  # noqa: F821  # pyright: ignore[reportPossiblyUnboundVariable]
                             real_xdata.append(
                                 xdata[i] * self.vcd.get_timescale()['timescale'])
                         except UnboundLocalError:
@@ -119,7 +119,7 @@ class vcd_reader():
             for i, value in enumerate(ydata):
                 if add_staircase_points:
                     try:
-                        real_ydata.append(last_y)
+                        real_ydata.append(last_y)  # pyright: ignore[reportUnboundVariable]
                         real_xdata.append(
                             xdata[i] * self.vcd.get_timescale()['timescale'])
                     except UnboundLocalError:

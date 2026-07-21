@@ -12,6 +12,7 @@ import base64
 try:
     import graphviz
 except ImportError:
+    graphviz = None  # type: ignore[assignment]
     graphviz_missing = True
 else:
     graphviz_missing = False

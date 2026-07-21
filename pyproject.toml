@@ -55,6 +55,7 @@ dependencies=[
     "pywin32 ; platform_system == \"Windows\"",
     "reportlab",
     "requests",
+    "networkx",
     "scikit_rf",
     "scipy>=1.7 ",
     "statsmodels",
@@ -78,7 +79,7 @@ include = [
 ]
 
 [project.optional-dependencies]
-dev = ["flake8", "flake8-docstrings", "interrogate; sys_platform != 'win32'", "xdoctest", "pip-tools", "pytest", "pytest-mock", "pytest-cov", "sphinx", "sphinx_rtd_theme", "html5lib", "beautifulsoup4"]
+dev = ["flake8", "flake8-docstrings", "interrogate; sys_platform != 'win32'", "xdoctest", "pip-tools", "pyright", "pytest", "pytest-mock", "pytest-cov", "sphinx", "sphinx_rtd_theme", "html5lib", "beautifulsoup4"]
 #[tool.hatch.envs.default]
 #dependencies = ["pytest", "pytest-mock"]
 [tool.hatch.build.targets.sdist]
@@ -114,3 +115,45 @@ norecursedirs = [
 filterwarnings = [
     "ignore::DeprecationWarning:PyICe.*",
 ]
+
+# ============================================================================
+# Pyright Configuration
+# ============================================================================
+# Pyright is configured with typeCheckingMode = "off" as a baseline because this
+# codebase was not written with static type checking in mind. Running pyright in
+# its default "basic" mode produces ~1,939 errors, the vast majority of which are
+# false positives caused by:
+#
+#   1. Missing type annotations — pyright infers None/Unknown for attributes that
+#      are set dynamically in __init__, via __getattr__, or through mixin patterns.
+#   2. Missing/incomplete type stubs for third-party libraries (PySide6, pptx,
+#      win32clipboard, numpy edge cases, pyvisa, etc.).
+#   3. Intentional design patterns (e.g., base classes that raise NotImplementedError
+#      without @abstractmethod, conditional Qt imports with fallbacks).
+#
+# The rules enabled below catch REAL bugs — variables that may not be defined at
+# runtime depending on the code path taken. These are the only categories where
+# pyright's findings reliably indicate potential crashes rather than annotation gaps.
+#
+# TO MAKE THIS STRICTER IN A FUTURE PR:
+#   1. Add type annotations incrementally, starting with core modules (lab_core.py,
+#      lab_interfaces.py) and working outward.
+#   2. Once a module is annotated, enable additional rules scoped to that module
+#      using pyright's per-file overrides (extraPaths or "include" with separate
+#      config sections).
+#   3. Recommended next rules to enable (in order of signal-to-noise ratio):
+#        - reportOptionalSubscript (21 errors) — None[x] access
+#        - reportOptionalIterable (8 errors) — iterating over None
+#        - reportOptionalMemberAccess (378 errors, ~90% false positives from
+#          conditional imports and lazy init — needs annotations first)
+#        - reportOperatorIssue (341 errors, mostly "str + None" from untyped attrs)
+#        - reportAttributeAccessIssue (494 errors, almost all dynamic/mixin noise)
+#        - reportIncompatibleMethodOverride (115 errors, design smell not crashes)
+#   4. Eventually set typeCheckingMode = "basic" once annotations cover the codebase.
+# ============================================================================
+[tool.pyright]
+typeCheckingMode = "off"
+reportUndefinedVariable = "error"
+reportUnboundVariable = "error"
+reportPossiblyUnboundVariable = "error"
+reportMissingImports = "warning"

@@ -13,6 +13,7 @@ try:
     import pyvisa as visa  # pylint: disable=import-error; optional dependency guarded by try/except
     visaMissing = False
 except BaseException:
+    visa = None  # type: ignore[assignment]
     visaMissing = True
 try:
     ctypesMissing = False
@@ -22,21 +23,25 @@ try:
     import serial  # pylint: disable=import-error; optional dependency guarded by try/except
     serialMissing = False
 except BaseException:
+    serial = None  # type: ignore[assignment]
     serialMissing = True
 try:
     import vxi11  # pylint: disable=import-error; optional dependency guarded by try/except
     vxi11Missing = False
 except BaseException:
+    vxi11 = None  # type: ignore[assignment]
     vxi11Missing = True
 try:
     import usbtmc  # pylint: disable=import-error; optional dependency guarded by try/except
     usbtmcMissing = False
 except BaseException:
+    usbtmc = None  # type: ignore[assignment]
     usbtmcMissing = True
 try:
     import telnetlib  # pylint: disable=import-error; optional dependency guarded by try/except
     telnetlibMissing = False
 except BaseException:
+    telnetlib = None  # type: ignore[assignment]
     telnetlibMissing = True
 
 # Default str to bytes encoding to use. latin-1 is the simplest encoding -- it requires all characters of a string to

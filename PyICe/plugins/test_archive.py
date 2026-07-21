@@ -292,7 +292,7 @@ class database_archive():
                         import_file = os.path.realpath(os.path.relpath(
                             os.getcwd(), start=os.environ['PYTHONPATH']))
                         import_file = import_file[import_file.find(
-                            project_folder_name):]  # noqa: F821 # pylint: disable=undefined-variable; known bug - should likely be self.project_folder_name but left as-is for backward compatibility
+                            project_folder_name):]  # noqa: F821 # pylint: disable=undefined-variable; known bug - should likely be self.project_folder_name but left as-is for backward compatibility  # pyright: ignore[reportUndefinedVariable]
                         import_file += os.sep
                         import_file = import_file.replace(os.sep, ".")
                         import_file += os.path.basename(os.getcwd())
