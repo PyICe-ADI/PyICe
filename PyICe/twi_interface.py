@@ -73,17 +73,22 @@ class twi_interface(object, metaclass=abc.ABCMeta):
     only the 5 primitives gets full protocol support automatically.
     Override these only when hardware acceleration is available.
 
-    I2C Byte Primitives (MUST implement)
-    -------------------------------------
+    I2C Byte Primitives (implement for bit-bang support)
+    ----------------------------------------------------
     - start() → bool
     - stop() → bool
     - write(data8) → bool (ACK status)
     - read_ack() → int (byte value)
     - read_nack() → int (byte value)
 
-    These serve two purposes:
+    These are NOT abstract. The base class raises i2cUnimplementedError by
+    default. Override them if your hardware supports byte-level bus access.
+    They serve two purposes:
     1. User-facing raw bus API for non-standard transactions
-    2. The mechanism by which the base class bit-bang _do_*_register works
+    2. The mechanism by which the default bit-bang _do_* implementations work
+
+    If you don't implement primitives, you MUST override all _do_* methods
+    for the protocols you support, and raise i2cUnimplementedError for the rest.
 
     Creating a New Backend
     ======================
@@ -208,8 +213,7 @@ class twi_interface(object, metaclass=abc.ABCMeta):
 
         """
         pass
-    '''I2C Generic Protocol Methods - Must be implemented in hardware/firmware specific classes'''
-    @abc.abstractmethod
+    '''I2C Generic Protocol Methods'''
     def start(self):
         """I2C Start  - Falling SDA with SCL high.  Returns True or False to indicate successful arbitration.
 
@@ -225,7 +229,7 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         Raises:
             i2cUnimplementedError: If not implemented by subclass.
         """
-        raise i2cUnimplementedError()
+        raise i2cUnimplementedError('start() not implemented by this backend')
 
     def restart(self):
         """I2C Re-Start  - Falling SDA with SCL high between start and stop condition.
@@ -245,7 +249,6 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         """
         return self.start()
 
-    @abc.abstractmethod
     def stop(self):
         """I2C Stop  - Rising SDA with SCL high.  Returns True or False to indicate successful arbitration.
 
@@ -261,9 +264,8 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         Raises:
             i2cUnimplementedError: If not implemented by subclass.
         """
-        raise i2cUnimplementedError()
+        raise i2cUnimplementedError('stop() not implemented by this backend')
 
-    @abc.abstractmethod
     def write(self, data8):
         """Transmit 8 bits plus 9th acknowledge clock.  Returns True or False to indicate slave acknowledge.
 
@@ -282,9 +284,8 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         Raises:
             i2cUnimplementedError: If not implemented by subclass.
         """
-        raise i2cUnimplementedError()
+        raise i2cUnimplementedError('write() not implemented by this backend')
 
-    @abc.abstractmethod
     def read_ack(self):
         """Read 8 bits from slave transmitter  and assert SDA during 9th acknowledge clock.  Returns 8 bit data.
 
@@ -298,9 +299,8 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         Raises:
             i2cUnimplementedError: If not implemented by subclass.
         """
-        raise i2cUnimplementedError()
+        raise i2cUnimplementedError('read_ack() not implemented by this backend')
 
-    @abc.abstractmethod
     def read_nack(self):
         """Read 8 bits from slave transmitter  and release SDA during 9th acknowledge clock to request end of transmission.  Returns 8 bit data.
 
@@ -314,7 +314,7 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         Raises:
             i2cUnimplementedError: If not implemented by subclass.
         """
-        raise i2cUnimplementedError()
+        raise i2cUnimplementedError('read_nack() not implemented by this backend')
 
     def resync_communication(self):
         """Attempt to correct problems caused by dropped/duplicate characters in serial buffer, etc.

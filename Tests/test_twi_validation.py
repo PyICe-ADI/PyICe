@@ -99,11 +99,28 @@ class TestBackendContract:
         with pytest.raises(ValueError, match="exceeds 8-bit"):
             d.write_byte(0x48, 0x05, 0x1FF)
 
-    def test_abstract_enforcement_primitives_required(self):
-        with pytest.raises(TypeError, match="abstract method"):
-            class NoPrimitives(twi_interface):
-                pass
-            NoPrimitives()  # pylint: disable=abstract-class-instantiated
+    def test_smbus_only_backend_no_primitives_needed(self):
+        """Type B backend: no primitives, only _do_* overrides."""
+        from PyICe.twi_interface import i2cUnimplementedError
+
+        class SmBusOnly(twi_interface):
+            def _do_write_register(self, addr7, commandCode, data, data_size, use_pec):
+                if data_size == 8 and not use_pec:
+                    return None
+                raise i2cUnimplementedError("unsupported")
+
+            def _do_read_register(self, addr7, commandCode, data_size, use_pec):
+                if data_size == 8 and not use_pec:
+                    return 0x42
+                raise i2cUnimplementedError("unsupported")
+
+        b = SmBusOnly()
+        b.write_byte(0x48, 0x05, 0xAB)
+        assert b.read_byte(0x48, 0x05) == 0x42
+        with pytest.raises(i2cUnimplementedError):
+            b.write_word(0x48, 0x05, 0x1234)
+        with pytest.raises(i2cUnimplementedError):
+            b.block_read(0x48, 0x10)
 
     def test_primitives_only_backend_works(self):
         class MinimalBackend(twi_interface):
