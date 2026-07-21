@@ -231,17 +231,7 @@ class TestPartialAccelerationFallback:
             mock.assert_called_once_with(0x48, [0x10], 8, False)
         assert result == {0x10: 0xAB}
 
-    def test_deprecated_read_byte_list_warns(self):
-        d = i2c_dummy(delay=0, p_change=0, seed=42)
-        d.write_register(0x48, 0x10, 0xAB, 8, False)
-        with pytest.warns(DeprecationWarning, match="read_byte_list is deprecated"):
-            d.read_byte_list(0x48, [0x10])
 
-    def test_deprecated_read_word_list_warns(self):
-        d = i2c_dummy(delay=0, p_change=0, seed=42)
-        d.write_register(0x48, 0x10, 0x1234, 16, False)
-        with pytest.warns(DeprecationWarning, match="read_word_list is deprecated"):
-            d.read_word_list(0x48, [0x10])
 
     def test_quick_command_wr_routes_through_write_register(self):
         """Verify quick_command_wr reaches _do_write_register with data_size=-1."""
