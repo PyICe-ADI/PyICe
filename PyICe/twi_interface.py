@@ -837,12 +837,8 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         SMBus specification. It also limits data on the bus for simple devices.
 
 
-        >>> import io, contextlib
         >>> d = i2c_dummy(delay=0, p_change=0, seed=42)
-        >>> with contextlib.redirect_stdout(io.StringIO()):
-        ...     d.quick_command_rd(0x48)
-        >>> hasattr(i2c_dummy, 'quick_command_rd')
-        True
+        >>> d.quick_command_rd(0x48)
 
         Args:
             addr7: 7-bit I2C device address.
@@ -851,16 +847,7 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             i2cReadAddressAcknowledgeError: If the slave does not acknowledge the read address.
             i2cStartStopError: If the start or stop condition fails on the bus.
         """
-        self.print_warning(operation="quick_command_rd")
-        if not self.start():
-            raise i2cStartStopError(
-                'I2C Error: Failed to Assert Start Signal during quick_command_rd')
-        if not self.write(self.read_addr(addr7)):
-            raise i2cReadAddressAcknowledgeError(
-                'I2C Error: Slave read address failed to acknowledge during quick_command_rd')
-        if not self.stop():
-            raise i2cStartStopError(
-                'I2C Error: Failed to Assert Stop Signal during quick_command_rd')
+        self.read_register(addr7, commandCode=None, data_size=-1, use_pec=False)
 
     def quick_command_wr(self, addr7):
         """Here, part of the slave address denotes the command – the R/W# bit. The R/W# bit may be used to simply.
@@ -873,8 +860,6 @@ class twi_interface(object, metaclass=abc.ABCMeta):
 
         >>> d = i2c_dummy(delay=0, p_change=0, seed=42)
         >>> d.quick_command_wr(0x48)
-        >>> hasattr(i2c_dummy, 'quick_command_wr')
-        True
 
         Args:
             addr7: 7-bit I2C device address.
@@ -883,16 +868,7 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             i2cStartStopError: If the start or stop condition fails on the bus.
             i2cWriteAddressAcknowledgeError: If the slave does not acknowledge the write address.
         """
-        # self.print_warning(operation="quick_command_wr")
-        if not self.start():
-            raise i2cStartStopError(
-                'I2C Error: Failed to Assert Start Signal during quick_command_wr')
-        if not self.write(self.write_addr(addr7)):
-            raise i2cWriteAddressAcknowledgeError(
-                'I2C Error: Slave write address failed to acknowledge during quick_command_wr')
-        if not self.stop():
-            raise i2cStartStopError(
-                'I2C Error: Failed to Assert Stop Signal during quick_command_wr')
+        self.write_register(addr7, commandCode=None, data=None, data_size=-1, use_pec=False)
 
     def send_byte(self, addr7, data8):
         """A simple device may recognize its own slave address and accept up to 256 possible encoded commands in.
@@ -1001,32 +977,18 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         Returns None if no response to ARA.
 
 
-        >>> import io, contextlib
         >>> d = i2c_dummy(delay=0, p_change=0, seed=42)
         >>> d._read_queue = [0x90]
-        >>> with contextlib.redirect_stdout(io.StringIO()):
-        ...     result = d.alert_response()
-        >>> result
+        >>> d.alert_response()
         72
-        >>> hasattr(i2c_dummy, 'alert_response')
-        True
 
         Returns:
-            The 7-bit address of the alerting device.
+            The 7-bit address of the alerting device, or None if no response.
 
         Raises:
             i2cStartStopError: If the start or stop condition fails on the bus.
         """
-        self.print_warning(operation="alert_response")
-        if not self.start():
-            raise i2cStartStopError()
-        if not self.write(self.read_addr(0xC)):
-            self.stop()
-            return None  # no response to Alert Response Address
-        data8 = self.read_nack()
-        if not self.stop():
-            raise i2cStartStopError()
-        return data8 >> 1
+        return self._do_alert_response(use_pec=False)
 
     def alert_response_pec(self):
         """Alert Response Query to SMBALERT# interrupt with Packet Error Check.
@@ -1035,40 +997,53 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         Returns None if no response to ARA.
 
 
-        >>> import io, contextlib
         >>> d = i2c_dummy(delay=0, p_change=0, seed=42)
         >>> pec_val = d.pec([d.read_addr(0xC), 0x90])
         >>> d._read_queue = [0x90, pec_val]
-        >>> with contextlib.redirect_stdout(io.StringIO()):
-        ...     result = d.alert_response_pec()
-        >>> result
+        >>> d.alert_response_pec()
         72
-        >>> hasattr(i2c_dummy, 'alert_response_pec')
-        True
 
         Returns:
-            The 7-bit address of the alerting device.
+            The 7-bit address of the alerting device, or None if no response.
 
         Raises:
             i2cPECError: If the PEC check fails (computed CRC does not match received).
             i2cStartStopError: If the start or stop condition fails on the bus.
         """
-        self.print_warning(operation="alert_response_pec")
-        byteList = []
+        return self._do_alert_response(use_pec=True)
+
+    def _do_alert_response(self, use_pec):
+        """Default ARA implementation using primitives. Override for HW-accelerated alert polling.
+
+        >>> d = i2c_dummy(delay=0, p_change=0, seed=42)
+        >>> d._read_queue = [0x90]
+        >>> d._do_alert_response(use_pec=False)
+        72
+
+        Returns:
+            7-bit address of alerting device, or None if no response.
+        """
         if not self.start():
             raise i2cStartStopError()
-        byteList.append(self.read_addr(0xC))
-        if not self.write(self.read_addr(0xC)):
+        if not self.write(self.read_addr(0x0C)):
             self.stop()
-            return None  # no response to Alert Response Address
-        data8 = self.read_ack()
-        byteList.append(data8)
-        pec = self.read_nack()
-        byteList.append(pec)
-        if not self.stop():
-            raise i2cStartStopError()
-        if self.pec(byteList):
-            raise i2cPECError("I2C Error: Failed PEC check")
+            return None
+        if use_pec:
+            byteList = [self.read_addr(0x0C)]
+            data8 = self.read_ack()
+            byteList.append(data8)
+            pec = self.read_nack()
+            byteList.append(pec)
+            if not self.stop():
+                raise i2cStartStopError()
+            if self.pec(byteList):
+                raise i2cPECError(
+                    'PEC Failure: expected 0x{:X} but got 0x{:X}'.format(
+                        self.pec(byteList[:-1]), pec))
+        else:
+            data8 = self.read_nack()
+            if not self.stop():
+                raise i2cStartStopError()
         return data8 >> 1
 
     def write_byte(self, addr7, commandCode, data8):
@@ -2295,6 +2270,8 @@ class i2c_dummy(twi_interface):
         """
         if not no_delay:
             time.sleep(self._delay)
+        if data_size == -1:
+            return None
         if self._rng.random() >= self._p_change:
             try:
                 rd = self._cc_data[commandCode]
