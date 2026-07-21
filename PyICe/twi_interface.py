@@ -59,14 +59,19 @@ class twi_interface(object, metaclass=abc.ABCMeta):
       read_byte, read_word, read_32, read_64, send_byte, receive_byte,
       and their _pec variants.
 
-    Backend Override Points (MUST implement)
-    ----------------------------------------
+    Optional Backend Override Points
+    --------------------------------
     - _do_write_register(addr7, commandCode, data, data_size, use_pec)
     - _do_read_register(addr7, commandCode, data_size, use_pec)
+    - _do_process_call(addr7, commandCode, data16, use_pec)
+    - _do_block_write(addr7, commandCode, dataByteList, use_pec)
+    - _do_block_read(addr7, commandCode, use_pec)
+    - _do_block_process_call(addr7, commandCode, dataByteListWrite, use_pec)
 
-    These are @abc.abstractmethod with a default bit-bang body that composes
-    transactions from I2C primitives (start/stop/write/read_ack/read_nack).
-    The default body is accessible via super()._do_write_register(...).
+    These are NOT abstract. They have default bit-bang implementations that
+    compose transactions from the I2C primitives. A backend that implements
+    only the 5 primitives gets full protocol support automatically.
+    Override these only when hardware acceleration is available.
 
     I2C Byte Primitives (MUST implement)
     -------------------------------------
@@ -97,52 +102,56 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         _do_*_register methods must handle ALL supported sizes explicitly and
         raise i2cUnimplementedError for unsupported ones.
 
-    Step 2: Implement required methods
-    -----------------------------------
+    Step 2: Implement the 5 primitives (minimum viable backend)
+    -----------------------------------------------------------
     ::
 
         class my_backend(twi_interface):
-            # ── I2C Primitives ──
             def start(self):
-                ...  # or raise i2cUnimplementedError for Type B
+                ...  # Assert start condition; return True on success
             def stop(self):
-                ...
+                ...  # Assert stop condition; return True on success
             def write(self, data8):
-                ...
+                ...  # Write byte, clock ACK; return True if slave ACKed
             def read_ack(self):
-                ...
+                ...  # Read byte, send ACK; return byte value
             def read_nack(self):
-                ...
+                ...  # Read byte, send NACK; return byte value
 
-            # ── Backend register operations ──
+        # That's it. All protocols (write_register, read_register, write_byte,
+        # read_word, process_call, block_read, etc.) work automatically via
+        # the base class bit-bang implementations.
+
+    Step 2b (optional): Override _do_* for hardware acceleration
+    ------------------------------------------------------------
+    If your hardware has native commands for certain operations, override
+    the corresponding _do_* method to bypass the bit-bang path::
+
+        class my_fast_backend(twi_interface):
+            def start(self): ...
+            def stop(self): ...
+            def write(self, data8): ...
+            def read_ack(self): ...
+            def read_nack(self): ...
+
+            # Override only what your hardware accelerates:
             def _do_write_register(self, addr7, commandCode, data, data_size, use_pec):
-                # addr7, commandCode, data, data_size are ALREADY VALIDATED.
-                # Do NOT re-validate. Do NOT call write_register() or read_register().
-                if data_size == 8 and not use_pec:
-                    self._hw_write_byte(addr7, commandCode, data)
-                elif data_size == 16 and not use_pec:
-                    self._hw_write_word(addr7, commandCode, data)
+                # Args are ALREADY VALIDATED. Do NOT re-validate.
+                if data_size in (8, 16) and not use_pec:
+                    self._hw_write(addr7, commandCode, data, data_size)
                 else:
-                    # Type A: fall back to bit-bang via primitives
+                    # Fall back to bit-bang for everything else
                     super()._do_write_register(addr7, commandCode, data, data_size, use_pec)
-                    # Type B: raise instead
-                    # raise i2cUnimplementedError(
-                    #     f"{type(self).__name__} does not support "
-                    #     f"data_size={data_size}, use_pec={use_pec}")
 
             def _do_read_register(self, addr7, commandCode, data_size, use_pec):
-                if data_size == 8 and not use_pec:
-                    return self._hw_read_byte(addr7, commandCode)
-                elif data_size == 16 and not use_pec:
-                    return self._hw_read_word(addr7, commandCode)
+                if data_size in (8, 16) and not use_pec:
+                    return self._hw_read(addr7, commandCode, data_size)
                 else:
                     return super()._do_read_register(addr7, commandCode, data_size, use_pec)
 
-            # ── Private hardware methods (naming convention: _hw_*) ──
-            def _hw_write_byte(self, addr7, commandCode, data):
-                ...  # Hardware-specific implementation
-            def _hw_read_byte(self, addr7, commandCode):
-                ...  # Hardware-specific implementation
+            # Private hardware methods (naming convention: _hw_*)
+            def _hw_write(self, addr7, commandCode, data, data_size): ...
+            def _hw_read(self, addr7, commandCode, data_size): ...
 
     Step 3: Optional — hardware-accelerated batch reads
     ----------------------------------------------------
@@ -156,15 +165,17 @@ class twi_interface(object, metaclass=abc.ABCMeta):
 
     Rules for Backend Authors
     -------------------------
-    1. NEVER override write_register, read_register, or protocol-named methods.
-    2. NEVER re-validate arguments in _do_*_register — the parent already did.
-    3. NEVER call self.write_register() or self.read_register() from within
-       _do_*_register — this causes double-validation. Call self._do_*_register()
-       or super()._do_*_register() instead.
-    4. Name hardware-specific methods with _hw_* prefix (private convention).
-    5. For unsupported operations: Type A backends call super()._do_*();
+    1. NEVER override write_register, read_register, or protocol-named methods
+       (write_byte, read_word, process_call, block_read, etc.).
+    2. The ONLY required implementations are the 5 I2C primitives.
+    3. Override _do_* methods ONLY for hardware acceleration — not required.
+    4. NEVER re-validate arguments in _do_* methods — the parent already did.
+    5. NEVER call self.write_register() from within _do_* — causes
+       double-validation. Call super()._do_*() instead for fallback.
+    6. Name hardware-specific methods with _hw_* prefix (private convention).
+    7. For unsupported operations: Type A backends call super()._do_*();
        Type B backends raise i2cUnimplementedError with a descriptive message.
-    6. Do NOT silently return None for unsupported operations.
+    8. Do NOT silently return None for unsupported operations.
 
     Migrating an Existing Backend (e.g. Ivy)
     -----------------------------------------
@@ -701,13 +712,12 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         self._validate_write_args(addr7, commandCode, data, data_size)
         return self._do_write_register(addr7, commandCode, data, data_size, use_pec)
 
-    @abc.abstractmethod
     def _do_read_register(self, addr7, commandCode, data_size, use_pec):
-        """Backend-specific read register implementation.
+        """Read register using I2C primitives (bit-bang default).
 
-        Subclasses MUST override this method. For unsupported protocol/size
-        combinations, call super()._do_read_register() to use the bit-bang
-        fallback (requires I2C primitives), or raise i2cUnimplementedError.
+        Backends may optionally override this for hardware-accelerated reads.
+        If not overridden, transactions are composed from start/stop/write/
+        read_ack/read_nack primitives automatically.
 
         Args:
             addr7: 7-bit I2C device address (already validated).
@@ -772,13 +782,12 @@ class twi_interface(object, metaclass=abc.ABCMeta):
                 raise i2cStartStopError()
         return self.word(dataByteList)
 
-    @abc.abstractmethod
     def _do_write_register(self, addr7, commandCode, data, data_size, use_pec):
-        """Backend-specific write register implementation.
+        """Write register using I2C primitives (bit-bang default).
 
-        Subclasses MUST override this method. For unsupported protocol/size
-        combinations, call super()._do_write_register() to use the bit-bang
-        fallback (requires I2C primitives), or raise i2cUnimplementedError.
+        Backends may optionally override this for hardware-accelerated writes.
+        If not overridden, transactions are composed from start/stop/write/
+        read_ack/read_nack primitives automatically.
 
         Args:
             addr7: 7-bit I2C device address (already validated).

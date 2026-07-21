@@ -99,15 +99,24 @@ class TestBackendContract:
         with pytest.raises(ValueError, match="exceeds 8-bit"):
             d.write_byte(0x48, 0x05, 0x1FF)
 
-    def test_abstract_enforcement(self):
+    def test_abstract_enforcement_primitives_required(self):
         with pytest.raises(TypeError, match="abstract method"):
-            class BadBackend(twi_interface):
-                def start(self): pass
-                def stop(self): pass
-                def write(self, d): pass
-                def read_ack(self): pass
-                def read_nack(self): pass
-            BadBackend()  # pylint: disable=abstract-class-instantiated
+            class NoPrimitives(twi_interface):
+                pass
+            NoPrimitives()  # pylint: disable=abstract-class-instantiated
+
+    def test_primitives_only_backend_works(self):
+        class MinimalBackend(twi_interface):
+            def start(self): return True
+            def stop(self): return True
+            def write(self, d): return True
+            def read_ack(self): return 0
+            def read_nack(self): return 0
+        b = MinimalBackend()
+        assert hasattr(b, 'write_register')
+        assert hasattr(b, 'read_register')
+        assert hasattr(b, 'write_byte')
+        assert hasattr(b, 'block_read')
 
     def test_validation_cannot_be_bypassed_via_protocol_methods(self):
         d = i2c_dummy(delay=0, p_change=0)
