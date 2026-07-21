@@ -127,3 +127,91 @@ class TestBackendContract:
         d = i2c_dummy(delay=0, p_change=0)
         with pytest.raises(ValueError, match="exceeds 7-bit"):
             d.read_32(0x80, 0x05)
+
+
+class TestPartialAccelerationFallback:
+    """Verify that a backend can accelerate some protocols and fall back
+    to bit-bang (via super()) for others."""
+
+    def _make_partial_backend(self):
+        """Create a backend that accelerates 8-bit writes but falls back
+        for everything else."""
+        class PartialBackend(twi_interface):
+            def __init__(self):
+                self.hw_calls = []
+                self.bitbang_calls = []
+                self._memory = {}
+
+            def start(self): return True
+            def stop(self): return True
+            def write(self, data8):
+                self.bitbang_calls.append(('write', data8))
+                return True
+            def read_ack(self): return 0x42
+            def read_nack(self): return 0x42
+
+            def _do_write_register(self, addr7, commandCode, data, data_size, use_pec):
+                if data_size == 8 and not use_pec:
+                    self.hw_calls.append(('hw_write_byte', addr7, commandCode, data))
+                    self._memory[commandCode] = data
+                else:
+                    super()._do_write_register(addr7, commandCode, data, data_size, use_pec)
+
+            def _do_read_register(self, addr7, commandCode, data_size, use_pec):
+                if data_size == 8 and not use_pec:
+                    self.hw_calls.append(('hw_read_byte', addr7, commandCode))
+                    return self._memory.get(commandCode, 0)
+                else:
+                    return super()._do_read_register(addr7, commandCode, data_size, use_pec)
+
+        return PartialBackend()
+
+    def test_accelerated_path_used_for_8bit(self):
+        b = self._make_partial_backend()
+        b.write_byte(0x48, 0x05, 0xAB)
+        assert b.hw_calls == [('hw_write_byte', 0x48, 0x05, 0xAB)]
+        assert b.bitbang_calls == []
+
+    def test_fallback_used_for_16bit(self):
+        b = self._make_partial_backend()
+        b.write_word(0x48, 0x05, 0x1234)
+        assert b.hw_calls == []
+        assert len(b.bitbang_calls) > 0
+
+    def test_read_accelerated_path(self):
+        b = self._make_partial_backend()
+        b.write_byte(0x48, 0x10, 0xDE)
+        result = b.read_byte(0x48, 0x10)
+        assert result == 0xDE
+        assert ('hw_read_byte', 0x48, 0x10) in b.hw_calls
+
+    def test_read_fallback_uses_primitives(self):
+        b = self._make_partial_backend()
+        result = b.read_word(0x48, 0x10)
+        assert b.hw_calls == []
+        assert len(b.bitbang_calls) > 0
+        assert result == 0x4242
+
+    def test_validation_still_applied(self):
+        b = self._make_partial_backend()
+        with pytest.raises(ValueError, match="exceeds 7-bit"):
+            b.write_byte(0x80, 0x05, 0xAB)
+        assert b.hw_calls == []
+
+    def test_protocol_methods_all_work_without_override(self):
+        """A primitives-only backend handles all protocols via bit-bang."""
+        class PrimitivesOnly(twi_interface):
+            def start(self): return True
+            def stop(self): return True
+            def write(self, data8): return True
+            def read_ack(self): return 0x55
+            def read_nack(self): return 0xAA
+
+        b = PrimitivesOnly()
+        b.write_register(0x48, 0x05, 0xAB, 8, False)
+        b.write_word(0x48, 0x05, 0x1234)
+        b.write_32(0x48, 0x05, 0xDEADBEEF)
+        assert b.read_byte(0x48, 0x05) == 0xAA
+        assert b.read_word(0x48, 0x05) == 0xAA55
+        b.process_call(0x48, 0x10, 0x5678)
+        b.block_write(0x48, 0x10, [0x01, 0x02, 0x03])
