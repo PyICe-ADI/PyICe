@@ -1350,30 +1350,9 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             i2cStartStopError: If the start or stop condition fails on the bus.
             i2cWriteAddressAcknowledgeError: If the slave does not acknowledge the write address.
         """
-        self.print_warning(operation="process_call")
+        self.check_size(addr7, 7)
         self.check_size(data16, 16)
-        dataLow = self.get_byte(data16,0)
-        dataHigh = self.get_byte(data16,1)
-        if not self.start():
-            raise i2cStartStopError()
-        if not self.write(self.write_addr(addr7)):
-            raise i2cWriteAddressAcknowledgeError()
-        for b in self._command_code_bytes(commandCode):
-            if not self.write(b):
-                raise i2cCommandCodeAcknowledgeError()
-        if not self.write(dataLow):
-            raise i2cDataLowAcknowledgeError()
-        if not self.write(dataHigh):
-            raise i2cDataHighAcknowledgeError()
-        if not self.restart():
-            raise i2cStartStopError()
-        if not self.write(self.read_addr(addr7)):
-            raise i2cReadAddressAcknowledgeError()
-        dataLow = self.read_ack()
-        dataHigh = self.read_nack()
-        if not self.stop():
-            raise i2cStartStopError()
-        return self.word([dataLow, dataHigh])
+        return self._do_process_call(addr7, commandCode, data16, use_pec=False)
 
     def process_call_pec(self, addr7, commandCode, data16):
         """Process_call with additional PEC byte read from slave.
@@ -1411,43 +1390,69 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             i2cStartStopError: If the start or stop condition fails on the bus.
             i2cWriteAddressAcknowledgeError: If the slave does not acknowledge the write address.
         """
-        self.print_warning(operation="process_call_pec")
+        self.check_size(addr7, 7)
         self.check_size(data16, 16)
-        dataLow = self.get_byte(data16,0)
-        dataHigh = self.get_byte(data16,1)
-        byteList = []
+        return self._do_process_call(addr7, commandCode, data16, use_pec=True)
+
+    def _do_process_call(self, addr7, commandCode, data16, use_pec):
+        """Bit-bang implementation of SMBus process call.
+
+        Backends may override this method to use hardware-accelerated transfers.
+
+        Args:
+            addr7: 7-bit I2C device address (already validated).
+            commandCode: SMBus command code (register address).
+            data16: 16-bit data value (already validated).
+            use_pec: If True, read and verify a PEC byte from the slave.
+
+        Returns:
+            The 16-bit response word from the device.
+        """
+        dataLow = self.get_byte(data16, 0)
+        dataHigh = self.get_byte(data16, 1)
+        if use_pec:
+            byteList = []
         if not self.start():
             raise i2cStartStopError()
-        byteList.append(self.write_addr(addr7))
+        if use_pec:
+            byteList.append(self.write_addr(addr7))
         if not self.write(self.write_addr(addr7)):
             raise i2cWriteAddressAcknowledgeError()
         cc_bytes = self._command_code_bytes(commandCode)
-        byteList.extend(cc_bytes)
+        if use_pec:
+            byteList.extend(cc_bytes)
         for b in cc_bytes:
             if not self.write(b):
                 raise i2cCommandCodeAcknowledgeError()
-        byteList.append(dataLow)
+        if use_pec:
+            byteList.append(dataLow)
         if not self.write(dataLow):
             raise i2cDataLowAcknowledgeError()
-        byteList.append(dataHigh)
+        if use_pec:
+            byteList.append(dataHigh)
         if not self.write(dataHigh):
             raise i2cDataHighAcknowledgeError()
         if not self.restart():
             raise i2cStartStopError()
-        byteList.append(self.read_addr(addr7))
+        if use_pec:
+            byteList.append(self.read_addr(addr7))
         if not self.write(self.read_addr(addr7)):
             raise i2cReadAddressAcknowledgeError()
         dataLow = self.read_ack()
-        byteList.append(dataLow)
-        dataHigh = self.read_ack()
-        byteList.append(dataHigh)
-        pec = self.read_nack()
+        if use_pec:
+            byteList.append(dataLow)
+            dataHigh = self.read_ack()
+            byteList.append(dataHigh)
+            pec = self.read_nack()
+        else:
+            dataHigh = self.read_nack()
         if not self.stop():
             raise i2cStartStopError()
-        if pec != self.pec(byteList):
-            raise i2cPECError(
-                'PEC Failure: expected 0x{:X} but got 0x{:X}'.format(
-                    self.pec(byteList), pec))
+        if use_pec:
+            if pec != self.pec(byteList):
+                raise i2cPECError(
+                    'PEC Failure: expected 0x{:X} but got 0x{:X}'.format(
+                        self.pec(byteList), pec))
         return self.word([dataLow, dataHigh])
 
     def block_write(self, addr7, commandCode, dataByteList):
@@ -1478,25 +1483,13 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             i2cStartStopError: If the start or stop condition fails on the bus.
             i2cWriteAddressAcknowledgeError: If the slave does not acknowledge the write address.
         """
-        self.print_warning(operation="block_write")
-        if not self.start():
-            raise i2cStartStopError()
-        if not self.write(self.write_addr(addr7)):
-            raise i2cWriteAddressAcknowledgeError()
-        for b in self._command_code_bytes(commandCode):
-            if not self.write(b):
-                raise i2cCommandCodeAcknowledgeError()
+        self.check_size(addr7, 7)
         byteCount = len(dataByteList)
         if byteCount < 1 or byteCount > 32:
             raise i2cError("I2C Error: Block Write byte count must be between 1 and 32")
-        if not self.write(byteCount):
-            raise i2cDataAcknowledgeError()
         for byte in dataByteList:
             self.check_size(byte, 8)
-            if not self.write(byte):
-                raise i2cDataAcknowledgeError()
-        if not self.stop():
-            raise i2cStartStopError()
+        return self._do_block_write(addr7, commandCode, dataByteList, use_pec=False)
 
     def block_write_pec(self, addr7, commandCode, dataByteList):
         """Block_write with additional PEC byte written to slave.
@@ -1525,31 +1518,52 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             i2cStartStopError: If the start or stop condition fails on the bus.
             i2cWriteAddressAcknowledgeError: If the slave does not acknowledge the write address.
         """
-        self.print_warning(operation="block_write_pec")
-        byteList = []
+        self.check_size(addr7, 7)
+        byteCount = len(dataByteList)
+        if byteCount < 1 or byteCount > 32:
+            raise i2cError("I2C Error: Block Write byte count must be between 1 and 32")
+        for byte in dataByteList:
+            self.check_size(byte, 8)
+        return self._do_block_write(addr7, commandCode, dataByteList, use_pec=True)
+
+    def _do_block_write(self, addr7, commandCode, dataByteList, use_pec):
+        """Bit-bang implementation of SMBus block write.
+
+        Backends may override this method to use hardware-accelerated transfers.
+
+        Args:
+            addr7: 7-bit I2C device address (already validated).
+            commandCode: SMBus command code (register address).
+            dataByteList: List of 8-bit data bytes (already validated).
+            use_pec: If True, append a PEC byte to the transaction.
+        """
+        if use_pec:
+            byteList = []
         if not self.start():
             raise i2cStartStopError()
-        byteList.append(self.write_addr(addr7))
+        if use_pec:
+            byteList.append(self.write_addr(addr7))
         if not self.write(self.write_addr(addr7)):
             raise i2cWriteAddressAcknowledgeError()
         cc_bytes = self._command_code_bytes(commandCode)
-        byteList.extend(cc_bytes)
+        if use_pec:
+            byteList.extend(cc_bytes)
         for b in cc_bytes:
             if not self.write(b):
                 raise i2cCommandCodeAcknowledgeError()
         byteCount = len(dataByteList)
-        if byteCount < 1 or byteCount > 32:
-            raise i2cError("I2C Error: Block Write byte count must be between 1 and 32")
-        byteList.append(byteCount)
+        if use_pec:
+            byteList.append(byteCount)
         if not self.write(byteCount):
             raise i2cDataAcknowledgeError()
         for byte in dataByteList:
-            self.check_size(byte, 8)
-            byteList.append(byte)
+            if use_pec:
+                byteList.append(byte)
             if not self.write(byte):
                 raise i2cDataAcknowledgeError()
-        if not self.write(self.pec(byteList)):
-            raise i2cDataPECAcknowledgeError()
+        if use_pec:
+            if not self.write(self.pec(byteList)):
+                raise i2cDataPECAcknowledgeError()
         if not self.stop():
             raise i2cStartStopError()
 
@@ -1584,30 +1598,8 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             i2cStartStopError: If the start or stop condition fails on the bus.
             i2cWriteAddressAcknowledgeError: If the slave does not acknowledge the write address.
         """
-        self.print_warning(operation="block_read")
-        if not self.start():
-            raise i2cStartStopError()
-        if not self.write(self.write_addr(addr7)):
-            raise i2cWriteAddressAcknowledgeError()
-        for b in self._command_code_bytes(commandCode):
-            if not self.write(b):
-                raise i2cCommandCodeAcknowledgeError()
-        if not self.restart():
-            raise i2cStartStopError()
-        if not self.write(self.read_addr(addr7)):
-            raise i2cReadAddressAcknowledgeError()
-        byteCount = self.read_ack()
-        if byteCount < 1 or byteCount > 32:
-            raise i2cError("I2C Error: Block Read byte count must be between 1 and 32")
-        dataByteList = []
-        for i in range(0, byteCount - 1):
-            byte = self.read_ack()
-            dataByteList.append(byte)
-        byte = self.read_nack()
-        dataByteList.append(byte)
-        if not self.stop():
-            raise i2cStartStopError()
-        return dataByteList
+        self.check_size(addr7, 7)
+        return self._do_block_read(addr7, commandCode, use_pec=False)
 
     def block_read_pec(self, addr7, commandCode):
         """Block_read with additional PEC byte read from slave.
@@ -1643,39 +1635,67 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             i2cStartStopError: If the start or stop condition fails on the bus.
             i2cWriteAddressAcknowledgeError: If the slave does not acknowledge the write address.
         """
-        self.print_warning(operation="block_read_pec")
-        byteList = []
+        self.check_size(addr7, 7)
+        return self._do_block_read(addr7, commandCode, use_pec=True)
+
+    def _do_block_read(self, addr7, commandCode, use_pec):
+        """Bit-bang implementation of SMBus block read.
+
+        Backends may override this method to use hardware-accelerated transfers.
+
+        Args:
+            addr7: 7-bit I2C device address (already validated).
+            commandCode: SMBus command code (register address).
+            use_pec: If True, read and verify a PEC byte from the slave.
+
+        Returns:
+            List of bytes read from the device.
+        """
+        if use_pec:
+            byteList = []
         if not self.start():
             raise i2cStartStopError()
-        byteList.append(self.write_addr(addr7))
+        if use_pec:
+            byteList.append(self.write_addr(addr7))
         if not self.write(self.write_addr(addr7)):
             raise i2cWriteAddressAcknowledgeError()
         cc_bytes = self._command_code_bytes(commandCode)
-        byteList.extend(cc_bytes)
+        if use_pec:
+            byteList.extend(cc_bytes)
         for b in cc_bytes:
             if not self.write(b):
                 raise i2cCommandCodeAcknowledgeError()
         if not self.restart():
             raise i2cStartStopError()
-        byteList.append(self.read_addr(addr7))
+        if use_pec:
+            byteList.append(self.read_addr(addr7))
         if not self.write(self.read_addr(addr7)):
             raise i2cReadAddressAcknowledgeError()
         byteCount = self.read_ack()
-        byteList.append(byteCount)
+        if use_pec:
+            byteList.append(byteCount)
         if byteCount < 1 or byteCount > 32:
             raise i2cError("I2C Error: Block Read byte count must be between 1 and 32")
         dataByteList = []
-        for i in range(0, byteCount):
-            byte = self.read_ack()
-            byteList.append(byte)
+        if use_pec:
+            for i in range(0, byteCount):
+                byte = self.read_ack()
+                byteList.append(byte)
+                dataByteList.append(byte)
+            pec = self.read_nack()
+        else:
+            for i in range(0, byteCount - 1):
+                byte = self.read_ack()
+                dataByteList.append(byte)
+            byte = self.read_nack()
             dataByteList.append(byte)
-        pec = self.read_nack()
         if not self.stop():
             raise i2cStartStopError()
-        if pec != self.pec(byteList):
-            raise i2cPECError(
-                'PEC Failure: expected 0x{:X} but got 0x{:X}'.format(
-                    self.pec(byteList), pec))
+        if use_pec:
+            if pec != self.pec(byteList):
+                raise i2cPECError(
+                    'PEC Failure: expected 0x{:X} but got 0x{:X}'.format(
+                        self.pec(byteList), pec))
         return dataByteList
 
     def block_process_call(self, addr7, commandCode, dataByteListWrite):
@@ -1726,40 +1746,14 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             i2cStartStopError: If the start or stop condition fails on the bus.
             i2cWriteAddressAcknowledgeError: If the slave does not acknowledge the write address.
         """
-        self.print_warning(operation="block_process_call")
-        if not self.start():
-            raise i2cStartStopError()
-        if not self.write(self.write_addr(addr7)):
-            raise i2cWriteAddressAcknowledgeError()
-        for b in self._command_code_bytes(commandCode):
-            if not self.write(b):
-                raise i2cCommandCodeAcknowledgeError()
+        self.check_size(addr7, 7)
         byteCountWrite = len(dataByteListWrite)
-        # slave must return at least 1 byte and total limitation is 32
         if byteCountWrite > 31 or byteCountWrite < 1:
             raise i2cError(
                 "I2C Error: Block Process Call requires maximum 32 data bytes")
-        if not self.write(byteCountWrite):
-            raise i2cDataAcknowledgeError()
         for byte in dataByteListWrite:
             self.check_size(byte, 8)
-            if not self.write(byte):
-                raise i2cDataAcknowledgeError()
-        if not self.restart():
-            raise i2cStartStopError()
-        if not self.write(self.read_addr(addr7)):
-            raise i2cReadAddressAcknowledgeError()
-        byteCountRead = self.read_ack()
-        if byteCountRead < 1 or (byteCountWrite + byteCountRead) > 32:
-            raise i2cError(
-                "I2C Error: Block Process Call requires maximum 32 data bytes")
-        dataByteListRead = []
-        for i in range(0, byteCountRead - 1):
-            dataByteListRead.append(self.read_ack())
-        dataByteListRead.append(self.read_nack())
-        if not self.stop():
-            raise i2cStartStopError()
-        return dataByteListRead
+        return self._do_block_process_call(addr7, commandCode, dataByteListWrite, use_pec=False)
 
     def block_process_call_pec(self, addr7, commandCode, dataByteListWrite):
         """Block write-block read process call with additional PEC byte read from slave.
@@ -1797,53 +1791,83 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             i2cStartStopError: If the start or stop condition fails on the bus.
             i2cWriteAddressAcknowledgeError: If the slave does not acknowledge the write address.
         """
-        self.print_warning(operation="block_process_call_pec")
-        byteList = []
+        self.check_size(addr7, 7)
+        byteCountWrite = len(dataByteListWrite)
+        if byteCountWrite > 31 or byteCountWrite < 1:
+            raise i2cError(
+                "I2C Error: Block Process Call requires maximum 32 data bytes")
+        for byte in dataByteListWrite:
+            self.check_size(byte, 8)
+        return self._do_block_process_call(addr7, commandCode, dataByteListWrite, use_pec=True)
+
+    def _do_block_process_call(self, addr7, commandCode, dataByteListWrite, use_pec):
+        """Bit-bang implementation of SMBus block write-block read process call.
+
+        Backends may override this method to use hardware-accelerated transfers.
+
+        Args:
+            addr7: 7-bit I2C device address (already validated).
+            commandCode: SMBus command code (register address).
+            dataByteListWrite: List of 8-bit data bytes (already validated).
+            use_pec: If True, read and verify a PEC byte from the slave.
+
+        Returns:
+            List of response bytes from the device.
+        """
+        if use_pec:
+            byteList = []
         if not self.start():
             raise i2cStartStopError()
-        byteList.append(self.write_addr(addr7))
+        if use_pec:
+            byteList.append(self.write_addr(addr7))
         if not self.write(self.write_addr(addr7)):
             raise i2cWriteAddressAcknowledgeError()
         cc_bytes = self._command_code_bytes(commandCode)
-        byteList.extend(cc_bytes)
+        if use_pec:
+            byteList.extend(cc_bytes)
         for b in cc_bytes:
             if not self.write(b):
                 raise i2cCommandCodeAcknowledgeError()
         byteCountWrite = len(dataByteListWrite)
-        # slave must return at least 1 byte and total limitation is 32
-        if byteCountWrite > 31 or byteCountWrite < 1:
-            raise i2cError(
-                "I2C Error: Block Process Call requires maximum 32 data bytes")
-        byteList.append(byteCountWrite)
+        if use_pec:
+            byteList.append(byteCountWrite)
         if not self.write(byteCountWrite):
             raise i2cDataAcknowledgeError()
         for byte in dataByteListWrite:
-            self.check_size(byte, 8)
-            byteList.append(byte)
+            if use_pec:
+                byteList.append(byte)
             if not self.write(byte):
                 raise i2cDataAcknowledgeError()
         if not self.restart():
             raise i2cStartStopError()
-        byteList.append(self.read_addr(addr7))
+        if use_pec:
+            byteList.append(self.read_addr(addr7))
         if not self.write(self.read_addr(addr7)):
             raise i2cReadAddressAcknowledgeError()
         byteCountRead = self.read_ack()
-        byteList.append(byteCountRead)
+        if use_pec:
+            byteList.append(byteCountRead)
         if byteCountRead < 1 or (byteCountWrite + byteCountRead) > 32:
             raise i2cError(
                 "I2C Error: Block Process Call requires maximum 32 data bytes")
         dataByteListRead = []
-        for i in range(0, byteCountRead):
-            byte = self.read_ack()
-            byteList.append(byte)
-            dataByteListRead.append(byte)
-        pec = self.read_nack()
+        if use_pec:
+            for i in range(0, byteCountRead):
+                byte = self.read_ack()
+                byteList.append(byte)
+                dataByteListRead.append(byte)
+            pec = self.read_nack()
+        else:
+            for i in range(0, byteCountRead - 1):
+                dataByteListRead.append(self.read_ack())
+            dataByteListRead.append(self.read_nack())
         if not self.stop():
             raise i2cStartStopError()
-        if pec != self.pec(byteList):
-            raise i2cPECError(
-                'PEC Failure: expected 0x{:X} but got 0x{:X}'.format(
-                    self.pec(byteList), pec))
+        if use_pec:
+            if pec != self.pec(byteList):
+                raise i2cPECError(
+                    'PEC Failure: expected 0x{:X} but got 0x{:X}'.format(
+                        self.pec(byteList), pec))
         return dataByteListRead
 
     # List reading aggregation commands###
