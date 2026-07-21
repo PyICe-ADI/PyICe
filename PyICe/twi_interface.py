@@ -28,13 +28,158 @@ STR_ENCODING = 'latin-1'
 PMBUS_COMMAND_EXTENSION = 0xFF
 MFR_SPECIFIC_COMMAND_EXT = 0xFE
 class twi_interface(object, metaclass=abc.ABCMeta):
-    """This is the master i2c class, all other i2c adapters inherit from this.
+    """Base class for all I2C/SMBus hardware backends.
 
-    All SMBus Protocols are implemented generically with I2C Primitives
-    Board specific subclasses should overload as necessary for increased performance
-    addr7 is the 7-bit chip address  The 8-bit read/write addresses are computed locally
+    Architecture
+    ============
+    This class uses the Template Method pattern. The public API methods
+    (write_register, read_register, and protocol-named convenience methods
+    like write_byte, read_word, etc.) are defined here and must NOT be
+    overridden by subclasses. They handle argument validation centrally,
+    then delegate to backend-specific abstract methods.
 
-    The twi_instrument will preferentially call read_register_list, then read_register. The named protocols can be used internally by the various hardware devices, but should generally not be called by other PyICe libraries. twi_instrument writes will call write_register.
+    Method Hierarchy
+    ----------------
+    User code calls::
+
+        write_byte(addr7, cc, data8)
+            → write_register(addr7, cc, data8, 8, False)   [validates args]
+                → _do_write_register(addr7, cc, data8, 8, False)  [backend override]
+
+        read_word(addr7, cc)
+            → read_register(addr7, cc, 16, False)          [validates args]
+                → _do_read_register(addr7, cc, 16, False)         [backend override]
+
+    Public API (do NOT override in subclasses)
+    ------------------------------------------
+    - write_register(addr7, commandCode, data, data_size, use_pec)
+    - read_register(addr7, commandCode, data_size, use_pec)
+    - read_register_list(addr7, cc_list, data_size, use_pec)
+    - Protocol convenience: write_byte, write_word, write_32, write_64,
+      read_byte, read_word, read_32, read_64, send_byte, receive_byte,
+      and their _pec variants.
+
+    Backend Override Points (MUST implement)
+    ----------------------------------------
+    - _do_write_register(addr7, commandCode, data, data_size, use_pec)
+    - _do_read_register(addr7, commandCode, data_size, use_pec)
+
+    These are @abc.abstractmethod with a default bit-bang body that composes
+    transactions from I2C primitives (start/stop/write/read_ack/read_nack).
+    The default body is accessible via super()._do_write_register(...).
+
+    I2C Byte Primitives (MUST implement)
+    -------------------------------------
+    - start() → bool
+    - stop() → bool
+    - write(data8) → bool (ACK status)
+    - read_ack() → int (byte value)
+    - read_nack() → int (byte value)
+
+    These serve two purposes:
+    1. User-facing raw bus API for non-standard transactions
+    2. The mechanism by which the base class bit-bang _do_*_register works
+
+    Creating a New Backend
+    ======================
+
+    Step 1: Choose your backend type
+    ---------------------------------
+    **Type A — Primitives-capable** (e.g. bit-bang, Bus Pirate, DC590):
+        Your hardware can execute individual start/stop/write/read operations.
+        Implement all five primitives. Your _do_*_register methods can call
+        super()._do_*_register() as a fallback for unsupported sizes.
+
+    **Type B — Atomic-command-only** (e.g. Firmata, LabComm, BobbyTalk):
+        Your hardware only accepts complete transactions (e.g. "write byte to
+        address X, register Y"). You cannot do individual start/stop/write.
+        Implement primitive stubs that raise i2cUnimplementedError. Your
+        _do_*_register methods must handle ALL supported sizes explicitly and
+        raise i2cUnimplementedError for unsupported ones.
+
+    Step 2: Implement required methods
+    -----------------------------------
+    ::
+
+        class my_backend(twi_interface):
+            # ── I2C Primitives ──
+            def start(self):
+                ...  # or raise i2cUnimplementedError for Type B
+            def stop(self):
+                ...
+            def write(self, data8):
+                ...
+            def read_ack(self):
+                ...
+            def read_nack(self):
+                ...
+
+            # ── Backend register operations ──
+            def _do_write_register(self, addr7, commandCode, data, data_size, use_pec):
+                # addr7, commandCode, data, data_size are ALREADY VALIDATED.
+                # Do NOT re-validate. Do NOT call write_register() or read_register().
+                if data_size == 8 and not use_pec:
+                    self._hw_write_byte(addr7, commandCode, data)
+                elif data_size == 16 and not use_pec:
+                    self._hw_write_word(addr7, commandCode, data)
+                else:
+                    # Type A: fall back to bit-bang via primitives
+                    super()._do_write_register(addr7, commandCode, data, data_size, use_pec)
+                    # Type B: raise instead
+                    # raise i2cUnimplementedError(
+                    #     f"{type(self).__name__} does not support "
+                    #     f"data_size={data_size}, use_pec={use_pec}")
+
+            def _do_read_register(self, addr7, commandCode, data_size, use_pec):
+                if data_size == 8 and not use_pec:
+                    return self._hw_read_byte(addr7, commandCode)
+                elif data_size == 16 and not use_pec:
+                    return self._hw_read_word(addr7, commandCode)
+                else:
+                    return super()._do_read_register(addr7, commandCode, data_size, use_pec)
+
+            # ── Private hardware methods (naming convention: _hw_*) ──
+            def _hw_write_byte(self, addr7, commandCode, data):
+                ...  # Hardware-specific implementation
+            def _hw_read_byte(self, addr7, commandCode):
+                ...  # Hardware-specific implementation
+
+    Step 3: Optional — hardware-accelerated batch reads
+    ----------------------------------------------------
+    Override _do_read_register_list if your hardware supports reading multiple
+    registers in a single transaction::
+
+        def _do_read_register_list(self, addr7, cc_list, data_size, use_pec):
+            if data_size == 16 and not use_pec:
+                return self._hw_batch_read(addr7, cc_list)
+            return super()._do_read_register_list(addr7, cc_list, data_size, use_pec)
+
+    Rules for Backend Authors
+    -------------------------
+    1. NEVER override write_register, read_register, or protocol-named methods.
+    2. NEVER re-validate arguments in _do_*_register — the parent already did.
+    3. NEVER call self.write_register() or self.read_register() from within
+       _do_*_register — this causes double-validation. Call self._do_*_register()
+       or super()._do_*_register() instead.
+    4. Name hardware-specific methods with _hw_* prefix (private convention).
+    5. For unsupported operations: Type A backends call super()._do_*();
+       Type B backends raise i2cUnimplementedError with a descriptive message.
+    6. Do NOT silently return None for unsupported operations.
+
+    Migrating an Existing Backend (e.g. Ivy)
+    -----------------------------------------
+    If your backend currently overrides write_register/read_register:
+
+    1. Rename write_register → _do_write_register
+    2. Rename read_register → _do_read_register
+    3. Remove all argument validation (check_size, assert, ValueError checks
+       on addr7/commandCode/data/data_size) — the parent handles this.
+    4. Change any fallback calls from
+       ``twi_interface.write_register(self, ...)`` to
+       ``super()._do_write_register(...)``
+    5. If you override protocol-named methods (write_byte, read_word, etc.),
+       rename them to _hw_write_byte, _hw_read_word, etc. and dispatch from
+       within _do_write_register/_do_read_register.
 
     >>> from PyICe.twi_interface import twi_interface
     >>> twi_interface is not None
