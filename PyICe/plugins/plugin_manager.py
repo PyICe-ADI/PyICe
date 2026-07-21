@@ -1317,8 +1317,8 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                     self.notify(f'Setting temperature to {temp}°C', subject='Next Temperature')
                     self._temp_timer.resume_timer()
                     self.temperature_channel.write(temp)
-                    self._temp_timer.pause_timer()
                     temp_timer_data = self._temp_timer.read_all_channels()
+                    self._temp_timer.pause_timer()
                     self._settle_times.append(temp_timer_data["temp_delta_min"])
                     summary_msg=f'{temp}°C Summary\n'
                     summary_msg+=f'\tTemperature slew/settle took {temp_timer_data["temp_delta_min"]:.1f} minutes.\n'
