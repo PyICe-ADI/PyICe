@@ -107,7 +107,7 @@ class TestBackendContract:
                 def write(self, d): pass
                 def read_ack(self): pass
                 def read_nack(self): pass
-            BadBackend()
+            BadBackend()  # pylint: disable=abstract-class-instantiated
 
     def test_validation_cannot_be_bypassed_via_protocol_methods(self):
         d = i2c_dummy(delay=0, p_change=0)
