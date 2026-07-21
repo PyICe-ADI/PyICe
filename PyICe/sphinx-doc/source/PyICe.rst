@@ -46,10 +46,10 @@ and a brief overview of the basic capabilities and usage here:
 
 The PyICe library is relatively stable but is under ongoing development.
 
-A working copy can be checked out from the Boston SVN server (linux credentials required) here:
+The source code is hosted on GitHub:
 ::
 
-  http://bos-svn.engineering.linear.com/svn/PyICe/trunk/
+  https://github.com/PyICe-ADI/PyICe
 
 
 .. autosummary::
@@ -71,12 +71,10 @@ A working copy can be checked out from the Boston SVN server (linux credentials 
 Documentation is a work in progress.
 
 Please contact us with any questions, requests for documentation, or to volunteer help developing additional instrument drivers:
-  - Steve Martin
-    smartin@linear.com
-  - Dave Simmons
-    dsimmons@linear.com
-  - Zach Lewko
-    zlewko@linear.com
+  - Mailing list: pyice-developers@analog.com
+  - Steve Martin: xenomorphxx131@gmail.com
+  - Dave Simmons: david.simmons@analog.com
+  - Zach Lewko: zachary.lewko@analog.com
 
 
 
