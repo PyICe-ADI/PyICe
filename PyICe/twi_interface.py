@@ -847,7 +847,7 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             i2cReadAddressAcknowledgeError: If the slave does not acknowledge the read address.
             i2cStartStopError: If the start or stop condition fails on the bus.
         """
-        self.read_register(addr7, commandCode=None, data_size=-1, use_pec=False)
+        return self.read_register(addr7, commandCode=None, data_size=-1, use_pec=False)
 
     def quick_command_wr(self, addr7):
         """Here, part of the slave address denotes the command – the R/W# bit. The R/W# bit may be used to simply.
@@ -868,7 +868,7 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             i2cStartStopError: If the start or stop condition fails on the bus.
             i2cWriteAddressAcknowledgeError: If the slave does not acknowledge the write address.
         """
-        self.write_register(addr7, commandCode=None, data=None, data_size=-1, use_pec=False)
+        return self.write_register(addr7, commandCode=None, data=None, data_size=-1, use_pec=False)
 
     def send_byte(self, addr7, data8):
         """A simple device may recognize its own slave address and accept up to 256 possible encoded commands in.
@@ -887,7 +887,7 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             addr7: 7-bit I2C device address.
             data8: 8-bit data value.
         """
-        self.write_register(
+        return self.write_register(
             addr7,
             commandCode=data8,
             data=None,
@@ -909,7 +909,7 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             addr7: 7-bit I2C device address.
             data8: 8-bit data value.
         """
-        self.write_register(
+        return self.write_register(
             addr7,
             commandCode=data8,
             data=None,
@@ -1064,7 +1064,7 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             commandCode: SMBus command code (register address).
             data8: 8-bit data value.
         """
-        self.write_register(
+        return self.write_register(
             addr7,
             commandCode,
             data8,
@@ -1085,7 +1085,7 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             commandCode: SMBus command code (register address).
             data8: 8-bit data value.
         """
-        self.write_register(
+        return self.write_register(
             addr7,
             commandCode,
             data8,
@@ -1110,7 +1110,7 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             commandCode: SMBus command code (register address).
             data16: 16-bit data value.
         """
-        self.write_register(
+        return self.write_register(
             addr7,
             commandCode,
             data16,
@@ -1131,7 +1131,7 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             commandCode: SMBus command code (register address).
             data16: 16-bit data value.
         """
-        self.write_register(
+        return self.write_register(
             addr7,
             commandCode,
             data16,
