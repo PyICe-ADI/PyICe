@@ -4885,19 +4885,15 @@ class i2c_scpi_sp(twi_interface):
             True if the write was acknowledged, False otherwise.
         """
         if data_size == 8 and not use_pec:
-            self._hw_write_byte(addr7, commandCode, data)
+            return self._hw_write_byte(addr7, commandCode, data)
         elif data_size == 16 and not use_pec:
-            self._hw_write_word(addr7, commandCode, data)
+            return self._hw_write_word(addr7, commandCode, data)
         elif data_size == 0 and use_pec:
-            assert data is None
-            # This is miserable. Why move the data to the CC.
             return self._hw_send_byte_pec(addr7, commandCode)
         elif data_size == 0 and not use_pec:
-            assert data is None
-            # This is miserable. Why move the data to the CC.
             return self._hw_send_byte(addr7, commandCode)
         else:
-            super()._do_write_register(
+            return super()._do_write_register(
                 addr7, commandCode, data, data_size, use_pec)
 # needs to be moved to lab, not twi
 
@@ -7187,19 +7183,13 @@ class i2c_bobbytalk(twi_interface):
         Returns:
             The value read from the device or channel.
         """
-        if data_size == 16:
-            if use_pec:
-                return self._hw_read_word_pec(addr7=addr7, commandCode=commandCode)
-            else:
-                print(
-                    "UNIMPLEMENTED: twi_interface.i2c_bobbytalk.read_word() without PEC")
-                return None
-        elif data_size == 8:
-            if use_pec:
-                return self._hw_read_byte_pec(addr7=addr7, commandCode=commandCode)
-            else:
-
-                raise i2cUnimplementedError('i2c_bobbytalk: operation not supported without PEC')
+        if data_size == 16 and use_pec:
+            return self._hw_read_word_pec(addr7=addr7, commandCode=commandCode)
+        elif data_size == 8 and use_pec:
+            return self._hw_read_byte_pec(addr7=addr7, commandCode=commandCode)
+        else:
+            raise i2cUnimplementedError(
+                f"i2c_bobbytalk does not support data_size={data_size}, use_pec={use_pec}")
 
     def _hw_read_word_pec(self, addr7, commandCode):
         """SMBUS read word with PEC.
@@ -7307,22 +7297,15 @@ class i2c_bobbytalk(twi_interface):
         Returns:
             True if the write was acknowledged, False otherwise.
         """
-        if data_size == 16:
-            if use_pec:
-                return self._hw_write_word_pec(
-                    addr7=addr7, commandCode=commandCode, data16=data)
-            else:
-                print(
-                    "UNIMPLEMENTED: twi_interface.i2c_bobbytalk.write_word() without PEC")
-                return None
-        elif data_size == 8:
-            if use_pec:
-                return self._hw_write_byte_pec(
-                    addr7=addr7, commandCode=commandCode, data8=data)
-            else:
-                print(
-                    "UNIMPLEMENTED: twi_interface.i2c_bobbytalk.{{write_byte}}()")
-                return None
+        if data_size == 16 and use_pec:
+            return self._hw_write_word_pec(
+                addr7=addr7, commandCode=commandCode, data16=data)
+        elif data_size == 8 and use_pec:
+            return self._hw_write_byte_pec(
+                addr7=addr7, commandCode=commandCode, data8=data)
+        else:
+            raise i2cUnimplementedError(
+                f"i2c_bobbytalk does not support data_size={data_size}, use_pec={use_pec}")
 
     def _hw_write_word_pec(self, addr7, commandCode, data16):
         """SMBUS write word with PEC.
