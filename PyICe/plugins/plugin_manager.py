@@ -1307,40 +1307,45 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
             if len(temperatures):
                 self.temperature_run_startup()
             idx=0
+            self._settle_times = []
+            self._test_times = {test.get_name(): [] for test in self.tests}
             for temp in temperatures or ["ambient"]:
                 summary_msg = ''
                 if temp != "ambient":
                     idx+=1
-                    self._temp_timer.resume_timer()
                     print_banner(f'Setting temperature to {temp}°C')
                     self.notify(f'Setting temperature to {temp}°C', subject='Next Temperature')
+                    self._temp_timer.resume_timer()
                     self.temperature_channel.write(temp)
+                    self._temp_timer.pause_timer()
                     temp_timer_data = self._temp_timer.read_all_channels()
+                    self._settle_times.append(temp_timer_data["temp_delta_min"])
                     summary_msg=f'{temp}°C Summary\n'
                     summary_msg+=f'\tTemperature slew/settle took {temp_timer_data["temp_delta_min"]:.1f} minutes.\n'
-
                 for test in self.tests:
                     if not test._is_crashed:
                         try:
                             print_banner(f'{test.get_name()} Collecting. . .')
-                            self.startup()
-                            test._reconfigure()
-                            test._capture_crash = lambda crash_source='test_collect', _ct=(temp if temp != "ambient" else None), _test=test: self._build_crash_log(_test, temp=_ct, crash_source=crash_source, file_name=f'crash_log_{datetime.datetime.now(datetime.timezone.utc).strftime("%Y_%m_%d_%H_%M")}')
                             test._test_timer = virtual_instruments.timer()
                             test._test_timer.add_channel_delta_minutes('test_delta_min')
                             test._test_timer.resume_timer()
+                            self.startup()
+                            test._reconfigure()
+                            test._capture_crash = lambda crash_source='test_collect', _ct=(temp if temp != "ambient" else None), _test=test: self._build_crash_log(_test, temp=_ct, crash_source=crash_source, file_name=f'crash_log_{datetime.datetime.now(datetime.timezone.utc).strftime("%Y_%m_%d_%H_%M")}')
                             test.collect()
                             test._restore()
                             test_time = test._test_timer.read_all_channels()
+                            self._test_times[test.get_name()].append(test_time['test_delta_min'])
                             if temp != "ambient":
                                 summary_msg+=f"\t{test.get_name()} ran successfully. {test_time['test_delta_min']:.1f} minutes.\n"
                             else:
                                 print(f'{test.get_name()} completed in {test_time["test_delta_min"]:.1f} minutes.')
                         except (Exception, BaseException) as e:
                             traceback.print_exc()
+                            test_time = test._test_timer.read_all_channels()
                             test._is_crashed = True
                             if temp != "ambient":
-                                summary_msg+=f"\t{test.get_name()} crashed this temperature.\n"
+                                summary_msg+=f"\t{test.get_name()} crashed this temperature after {test_time['test_delta_min']:.1f} minutes. \n"
                             test._crash_info = sys.exc_info()
                             self.notify(
                                 self._crash_str(test), subject='CRASHED!!!')
@@ -1361,13 +1366,19 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                         if temp != "ambient":
                             summary_msg+=f'\t{test.get_name()} crashed/skipped.\n'
                 if temp != "ambient":
-                    self._temp_timer.pause_timer()
-                    temp_timer_data = self._temp_timer.read_all_channels()
+                    # self._temp_timer.pause_timer()
+                    temp_timer_data = self._run_timer.read_all_channels()
                     summary_msg+=f'{idx} of {len(temperatures)} temperatures complete.\n'
-                    summary_msg+=f'\tTotal temperature time: {temp_timer_data["temp_total_min"]:.1f} minutes.\n'
+                    summary_msg+=f'\tTotal temperature time: {temp_timer_data["run_delta_min"]:.1f} minutes.\n'
                     temps_remaining = len(temperatures) - idx
                     if temps_remaining > 0:
-                        avg_per_temp = temp_timer_data["temp_total_min"] / idx
+                        avg_settle = sum(self._settle_times) / len(self._settle_times)
+                        avg_test_total = sum(
+                            sum(self._test_times[test.get_name()]) / len(self._test_times[test.get_name()])
+                            for test in self.tests
+                            if not test._is_crashed
+                        )
+                        avg_per_temp = avg_settle + avg_test_total
                         etr = datetime.timedelta(minutes=avg_per_temp * temps_remaining)
                         summary_msg+=f'\tETR: {etr.total_seconds()/60:.0f} minutes. ETC: {(datetime.datetime.now()+etr).strftime("%a %b %d %H:%M")}.\n'
                     if all([x._is_crashed for x in self.tests]):
