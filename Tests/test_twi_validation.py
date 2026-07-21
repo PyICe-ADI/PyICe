@@ -215,6 +215,34 @@ class TestPartialAccelerationFallback:
             b.write_byte(0x80, 0x05, 0xAB)
         assert b.hw_calls == []
 
+    def test_read_register_list_rejects_bad_data_size(self):
+        """data_size=7 should raise."""
+        d = i2c_dummy(delay=0, p_change=0, seed=42)
+        with pytest.raises(Exception, match="Unimplemented data size"):
+            d.read_register_list(0x48, [0x00], 7, False)
+
+    def test_read_register_list_delegates_to_do_impl(self):
+        """Verify _do_read_register_list is called by read_register_list."""
+        d = i2c_dummy(delay=0, p_change=0, seed=42)
+        d.write_register(0x48, 0x10, 0xAB, 8, False)
+        from unittest.mock import patch
+        with patch.object(d, '_do_read_register_list', return_value={0x10: 0xAB}) as mock:
+            result = d.read_register_list(0x48, [0x10], 8, False)
+            mock.assert_called_once_with(0x48, [0x10], 8, False)
+        assert result == {0x10: 0xAB}
+
+    def test_deprecated_read_byte_list_warns(self):
+        d = i2c_dummy(delay=0, p_change=0, seed=42)
+        d.write_register(0x48, 0x10, 0xAB, 8, False)
+        with pytest.warns(DeprecationWarning, match="read_byte_list is deprecated"):
+            d.read_byte_list(0x48, [0x10])
+
+    def test_deprecated_read_word_list_warns(self):
+        d = i2c_dummy(delay=0, p_change=0, seed=42)
+        d.write_register(0x48, 0x10, 0x1234, 16, False)
+        with pytest.warns(DeprecationWarning, match="read_word_list is deprecated"):
+            d.read_word_list(0x48, [0x10])
+
     def test_protocol_methods_all_work_without_override(self):
         """A primitives-only backend handles all protocols via bit-bang."""
         class PrimitivesOnly(twi_interface):
