@@ -375,11 +375,6 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                         self.special_channel_actions.update(
                             instrument_dict['special_channel_action'])
             break
-        if self.temperature_channel is None:
-            self.temperature_channel = self.master.add_channel_dummy("tdegc")
-            self._temperature_is_dummy = True
-        if not self._temperatures:
-            self.temperature_channel.write(25)
 
     def _add_components(self):
         for component in self.component_list:
@@ -1246,7 +1241,27 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
             self._temp_timer.add_channel_total_minutes('temp_total_min')
             self._temp_timer.add_channel_delta_minutes('temp_delta_min')
             self.master = master()
-            self.add_instrument_channels()
+            self.cleanup_fns = []
+            self.temp_run_fns = []
+            self.startup_fns = []
+            self.shutdown_fns = []
+            self.temperature_channel = None
+            self._temperature_is_dummy = False
+            self.special_channel_actions = {}
+            # Check if the primary test script has a build_a_bench method
+            if not self.tests[0].build_a_bench.__qualname__.startswith('Master_Test_Template'):
+                self.tests[0].build_a_bench()
+                if len(self.tests) > 1:
+                    print(f"WARNING: Only the first test's ({self.tests[0].get_name()}) build_a_bench() is used. "
+                        f"The remaining {len(self.tests) - 1} test(s) will share this bench configuration.")
+            # Otherwise use the traditional bench script procedure
+            else:
+                self.add_instrument_channels()
+            if self.temperature_channel is None:
+                self.temperature_channel = self.master.add_channel_dummy("tdegc")
+                self._temperature_is_dummy = True
+            if not self._temperatures:
+                self.temperature_channel.write(25)
             if 'bench_config_management' in self.plugins:
                 self.test_components = component_collection()
                 self._add_components()
