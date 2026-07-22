@@ -203,7 +203,7 @@ class generic_results():
             "This class isn't supposed to be instantiated directly.")
         # TODO https://docs.python.org/3/library/abc.html ?
 
-    def _init(self, name, module):
+    def _init(self, name, module=None):
         self._name = name
         self._module = module
         self._traceability_info = collections.OrderedDict()
@@ -298,7 +298,7 @@ class generic_results():
         res_dict['report_date'] = datetime.datetime.now(
             datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
 
-        if self._module.get_name() + '_metadata' in self._module.get_database().get_table_names():
+        if self._module and (self._module.get_name() + '_metadata' in self._module.get_database().get_table_names()):
             trace_database = self._module.get_database()
             trace_data = trace_database.query(
                 f'SELECT * FROM {self._module.get_name()}_metadata WHERE rowid is 1').fetchone()
@@ -681,7 +681,7 @@ class Test_Results(generic_results):
                 ret.append(data_group)
             return ret
 
-    def __init__(self, name, module):
+    def __init__(self, name, module=None):
         """TODO.
         Initializes 5 instance attributes that configure the object's
         behavior.
@@ -715,12 +715,6 @@ class Test_Results(generic_results):
         Examples:
             >>> import json
             >>> from PyICe.plugins.test_results import Test_Results
-            >>> class FakeDB:
-            ...     def get_table_names(self): return []
-            >>> class FakeModule:
-            ...     def get_name(self): return 'test_module'
-            ...     def get_database(self): return FakeDB()
-            >>> tr = Test_Results(name='my_results', module=FakeModule())
             >>> tr.test_limits['voltage'] = {'test_name': 'voltage', 'upper_limit': 5.0, 'lower_limit': 1.0}
             >>> _ = tr._evaluate_list(name='voltage', iter_data=[3.0], conditions=None)
             >>> report = tr.json_report()
