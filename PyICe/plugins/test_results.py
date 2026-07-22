@@ -218,7 +218,7 @@ class generic_results():
 
         Examples:
             >>> from PyICe.plugins.test_results import Test_Results
-            >>> tr = Test_Results(name='my_suite', module=None)
+            >>> tr = Test_Results(name='my_suite')
             >>> tr.get_name()
             'my_suite'
 
@@ -238,7 +238,7 @@ class generic_results():
         Examples:
             >>> from PyICe.plugins.test_results import Test_Results
             >>> import collections
-            >>> tr = Test_Results(name='my_suite', module=None)
+            >>> tr = Test_Results(name='my_suite')
             >>> tr.get_traceability_info()
             OrderedDict()
 
@@ -527,7 +527,7 @@ class Test_Results(generic_results):
 
 
             >>> from PyICe.plugins.test_results import Test_Results
-            >>> obj = Test_Results('t', module=None)
+            >>> obj = Test_Results('t')
             >>> isinstance(obj, Test_Results)
             True
 
@@ -690,7 +690,7 @@ class Test_Results(generic_results):
 
         Examples:
             >>> from PyICe.plugins.test_results import Test_Results
-            >>> tr = Test_Results(name='power_tests', module=None)
+            >>> tr = Test_Results(name='power_tests')
             >>> tr.get_name()
             'power_tests'
             >>> len(tr)
@@ -715,6 +715,7 @@ class Test_Results(generic_results):
         Examples:
             >>> import json
             >>> from PyICe.plugins.test_results import Test_Results
+            >>> tr = Test_Results(name='suite')
             >>> tr.test_limits['voltage'] = {'test_name': 'voltage', 'upper_limit': 5.0, 'lower_limit': 1.0}
             >>> _ = tr._evaluate_list(name='voltage', iter_data=[3.0], conditions=None)
             >>> report = tr.json_report()
@@ -742,7 +743,7 @@ class Test_Results(generic_results):
 
         Examples:
             >>> from PyICe.plugins.test_results import Test_Results
-            >>> tr = Test_Results(name='suite', module=None)
+            >>> tr = Test_Results(name='suite')
             >>> tr.get_test_declarations()
             []
             >>> tr.test_limits['v'] = {'test_name': 'v', 'upper_limit': 5.0, 'lower_limit': 1.0}
@@ -786,7 +787,7 @@ class Test_Results(generic_results):
 
         Examples:
             >>> from PyICe.plugins.test_results import Test_Results
-            >>> tr = Test_Results(name='suite', module=None)
+            >>> tr = Test_Results(name='suite')
             >>> bool(tr)
             True
             >>> tr.test_limits['v'] = {'test_name': 'v', 'upper_limit': 5.0, 'lower_limit': 1.0}
@@ -815,7 +816,7 @@ class Test_Results(generic_results):
 
         Examples:
             >>> from PyICe.plugins.test_results import Test_Results
-            >>> tr = Test_Results(name='suite', module=None)
+            >>> tr = Test_Results(name='suite')
             >>> tr.test_limits['v'] = {'test_name': 'v', 'upper_limit': 5.0, 'lower_limit': 1.0}
             >>> tr.test_limits['i'] = {'test_name': 'i', 'upper_limit': 2.0, 'lower_limit': 0.0}
             >>> _ = tr._evaluate_list(name='v', iter_data=[3.0], conditions=None)
@@ -836,7 +837,7 @@ class Test_Results(generic_results):
 
         Examples:
             >>> from PyICe.plugins.test_results import Test_Results
-            >>> tr = Test_Results(name='suite', module=None)
+            >>> tr = Test_Results(name='suite')
             >>> len(tr)
             0
             >>> tr.test_limits['voltage'] = {'test_name': 'voltage', 'upper_limit': 5.0, 'lower_limit': 1.0}
@@ -857,7 +858,7 @@ class Test_Results(generic_results):
 
         Examples:
             >>> from PyICe.plugins.test_results import Test_Results
-            >>> tr = Test_Results(name='suite', module=None)
+            >>> tr = Test_Results(name='suite')
             >>> tr.test_limits['voltage'] = {'test_name': 'voltage', 'upper_limit': 5.0, 'lower_limit': 1.0}
             >>> _ = tr._evaluate_list(name='voltage', iter_data=[3.0], conditions=None)
             >>> bool(tr['voltage'])
@@ -1007,7 +1008,7 @@ class Test_Results(generic_results):
 
         Examples:
             >>> from PyICe.plugins.test_results import Test_Results
-            >>> tr = Test_Results(name='suite', module=None)
+            >>> tr = Test_Results(name='suite')
             >>> tr.test_limits['v'] = {'test_name': 'v', 'upper_limit': 5.0, 'lower_limit': 1.0}
             >>> _ = tr._evaluate_list(name='v', iter_data=[3.0], conditions=None)
             >>> len(tr)
@@ -1158,7 +1159,7 @@ class Failed_Eval(Test_Results):
 
         Examples:
             >>> from PyICe.plugins.test_results import Failed_Eval, Test_Results
-            >>> tr = Test_Results(name='my_suite', module=None)
+            >>> tr = Test_Results(name='my_suite')
             >>> fe = Failed_Eval(test=tr)
             >>> bool(fe)
             False
@@ -1192,7 +1193,7 @@ class Failed_Eval(Test_Results):
 
         Examples:
             >>> from PyICe.plugins.test_results import Failed_Eval, Test_Results
-            >>> tr = Test_Results(name='my_suite', module=None)
+            >>> tr = Test_Results(name='my_suite')
             >>> fe = Failed_Eval(test=tr)
             >>> bool(fe)
             False
