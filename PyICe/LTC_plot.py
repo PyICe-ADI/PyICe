@@ -2280,7 +2280,31 @@ class color_gen(object):
 
 
 def quick_plot(*args, plot_title="plot_title", plot_name="plot_name", xaxis_label="xaxis_label", yaxis_label="yaxis_label",
-                 xlims=None, ylims=None, xminor=1, xdivs=5, yminor=1, ydivs=5, logx=False, logy=False):
+                 xlims=None, ylims=None, xminor=1, xdivs=5, yminor=1, ydivs=5, logx=False, logy=False, file_basename="quick_plot"):
+    """Create a plot from one or more data sets and save it as an SVG in one call.
+
+    Each positional argument is a list of (x, y) tuples representing a trace.
+    Traces are automatically colored using the MARCOM color palette.
+
+    Args:
+        *args: One or more data sets, each a list of (x, y) tuples.
+        plot_title (str, optional): Title displayed above the plot. Defaults to "plot_title".
+        plot_name (str, optional): Identifier shown in the lower-right corner. Defaults to "plot_name".
+        xaxis_label (str, optional): Label for the X axis. Defaults to "xaxis_label".
+        yaxis_label (str, optional): Label for the Y axis. Defaults to "yaxis_label".
+        xlims (tuple, optional): X-axis limits as (min, max), or None for autoscale. Defaults to None.
+        ylims (tuple, optional): Y-axis limits as (min, max), or None for autoscale. Defaults to None.
+        xminor (int, optional): Number of minor X divisions per major division. Defaults to 1.
+        xdivs (int, optional): Number of major X divisions. Defaults to 5.
+        yminor (int, optional): Number of minor Y divisions per major division. Defaults to 1.
+        ydivs (int, optional): Number of major Y divisions. Defaults to 5.
+        logx (bool, optional): Use logarithmic X axis. Defaults to False.
+        logy (bool, optional): Use logarithmic Y axis. Defaults to False.
+        file_basename (str, optional): Name for produced svg file. Defaults to "quick_plot".
+
+    Returns:
+        plot: The plot object, for further customization before re-rendering if desired.
+    """
     quik = plot( 
         plot_title  = plot_title,
         plot_name   = plot_name,
@@ -2306,7 +2330,7 @@ def quick_plot(*args, plot_title="plot_title", plot_name="plot_name", xaxis_labe
             legend      = '')
     booklet = Page(plot_count=1)
     booklet.add_plot(quik)
-    booklet.create_svg(file_basename="quick_plot")
+    booklet.create_svg(file_basename=file_basename)
     return quik
 
 
