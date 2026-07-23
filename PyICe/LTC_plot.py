@@ -2279,6 +2279,33 @@ class color_gen(object):
         self.index = 0
 
 
+def quick_plot(data, plot_title="plot_title", plot_name="plot_name", xaxis_label="xaxis_label", yaxis_label="yaxis_label",
+                 xlims=None, ylims=None, xminor=1, xdivs=5, yminor=1, ydivs=5, logx=False, logy=False):
+    quik = plot( 
+        plot_title  = plot_title,
+        plot_name   = plot_name,
+        xaxis_label = xaxis_label,
+        yaxis_label = yaxis_label,
+        xlims       = xlims,                                           
+        ylims       = ylims,
+        xminor      = xminor,
+        xdivs       = xdivs,
+        yminor      = yminor,
+        ydivs       = ydivs,
+        logx        = logx,
+        logy        = logy
+        )
+    color = color_gen()
+    quik.add_trace(   
+        axis        = 1,
+        data        = data,
+        color       = color(),
+        marker      = '.',
+        markersize  = 2,
+        legend      = '')
+    return quik
+
+
 def list_markers():
     """Valid linestyles are ['-' '--' '-.' ':' 'None' ' ' ''].
 
