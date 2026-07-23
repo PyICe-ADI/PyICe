@@ -193,11 +193,11 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
         Args:
             temperatures: Temperatures to use.
         """
-        self.ident_header = f"Operator: {self.operator}\n Machine: {self.thismachine}\nTests: {', '.join([test.get_name() for test in self.tests])}\n"
+        self.ident_header = f"Operator: {self.operator}\n Machine: {self.thismachine}\n   Tests: {', '.join([test.get_name() for test in self.tests])}\n"
         if temperatures is None:
             temperatures = []
         else:
-            self.ident_header+=f"Temperatures: {temperatures}\n"
+            self.ident_header+=f"   Temps: {temperatures}\n"
         self.ident_header+="\n"
         self._temperatures = temperatures
         self.far_enough = False
