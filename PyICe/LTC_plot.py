@@ -2279,7 +2279,7 @@ class color_gen(object):
         self.index = 0
 
 
-def quick_plot(data, plot_title="plot_title", plot_name="plot_name", xaxis_label="xaxis_label", yaxis_label="yaxis_label",
+def quick_plot(*args, plot_title="plot_title", plot_name="plot_name", xaxis_label="xaxis_label", yaxis_label="yaxis_label",
                  xlims=None, ylims=None, xminor=1, xdivs=5, yminor=1, ydivs=5, logx=False, logy=False):
     quik = plot( 
         plot_title  = plot_title,
@@ -2296,13 +2296,17 @@ def quick_plot(data, plot_title="plot_title", plot_name="plot_name", xaxis_label
         logy        = logy
         )
     color = color_gen()
-    quik.add_trace(   
-        axis        = 1,
-        data        = data,
-        color       = color(),
-        marker      = '.',
-        markersize  = 2,
-        legend      = '')
+    for arg in args:
+        quik.add_trace(   
+            axis        = 1,
+            data        = arg,
+            color       = color(),
+            marker      = '.',
+            markersize  = 2,
+            legend      = '')
+    booklet = Page(plot_count=1)
+    booklet.add_plot(quik)
+    booklet.create_svg(file_basename="quick_plot")
     return quik
 
 
