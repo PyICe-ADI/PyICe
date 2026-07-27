@@ -93,6 +93,28 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
     """
     _CRASH_LOG_MAX_CHAIN_DEPTH = 10
 
+    class _CrashLogJSONEncoder(json.JSONEncoder):
+        """JSON encoder for crash logs, matching the serialization used by test_results."""
+
+        def default(self, obj):
+            """Serialize numpy arrays, datetimes, and numpy bools; fall back to repr."""
+            import numpy as np
+            if isinstance(obj, np.ndarray):
+                return obj.tolist()
+            if isinstance(obj, np.bool_):
+                return bool(obj)
+            if isinstance(obj, np.integer):
+                return int(obj)
+            if isinstance(obj, np.floating):
+                return float(obj)
+            if isinstance(obj, datetime.datetime):
+                return obj.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+            if isinstance(obj, datetime.timedelta):
+                return obj.total_seconds()
+            if isinstance(obj, bytes):
+                return repr(obj)
+            return repr(obj)
+
     def __init__(self, scratch_folder='scratch', settings={}):
         """Initialize plugin_ manager.
         Initializes 8 instance attributes that configure the object's
@@ -864,14 +886,14 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
             try:
                 scratch_path = os.path.join(test._module_path, self.scratch_folder, f'{file_name}.json')
                 with open(scratch_path, 'w') as f:
-                    json.dump(crash_log, f, indent=2, default=repr)
+                    json.dump(crash_log, f, indent=2, cls=self._CrashLogJSONEncoder)
             except Exception as write_exc:
                 print_banner(f'WARNING: Failed to write crash_log.json: {write_exc}')
         except Exception as build_exc:
             print_banner(f'WARNING: Exception while building crash log: {build_exc}')
             traceback.print_exc()
             test._crash_logs[file_name] =  'crash log construction failed before completion'
-        self.notify(json.dumps(crash_log, indent=2), subject=f'{test.get_name()} CRASH LOG')
+        self.notify(json.dumps(crash_log, indent=2, cls=self._CrashLogJSONEncoder), subject=f'{test.get_name()} CRASH LOG')
         return crash_log
 
     ###
@@ -1341,6 +1363,9 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                             else:
                                 print(f'{test.get_name()} completed in {test_time["test_delta_min"]:.1f} minutes.')
                         except (Exception, BaseException) as e:
+                            from bdb import BdbQuit
+                            if isinstance(e, BdbQuit):
+                                continue
                             traceback.print_exc()
                             test_time = test._test_timer.read_all_channels()
                             test._is_crashed = True
