@@ -1364,7 +1364,7 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                                 print(f'{test.get_name()} completed in {test_time["test_delta_min"]:.1f} minutes.')
                         except (Exception, BaseException) as e:
                             from bdb import BdbQuit
-                            if isinstance(e, BdbQuit):
+                            if isinstance(e, BdbQuit) or (isinstance(e, SystemExit) and 'pdb.py' in traceback.format_exc()):
                                 raise
                             traceback.print_exc()
                             test_time = test._test_timer.read_all_channels()
@@ -1418,9 +1418,9 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
             finish_msg = f'All tests completed. Total run time: {run_time_data["run_total_min"]:.1f} minutes.\n'
             self.notify(finish_msg, subject='Collection Complete')
             self.shutdown()
-        except Exception as e:
+        except (Exception, SystemExit) as e:
             from bdb import BdbQuit
-            if isinstance(e, BdbQuit):
+            if isinstance(e, BdbQuit) or (isinstance(e, SystemExit) and 'pdb.py' in traceback.format_exc()):
                 print_banner('Debugger quit. Ending run.')
                 self.shutdown()
                 self.close_ports()
