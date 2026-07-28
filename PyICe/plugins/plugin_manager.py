@@ -1365,7 +1365,7 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                         except (Exception, BaseException) as e:
                             from bdb import BdbQuit
                             if isinstance(e, BdbQuit):
-                                continue
+                                raise
                             traceback.print_exc()
                             test_time = test._test_timer.read_all_channels()
                             test._is_crashed = True
@@ -1418,7 +1418,13 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
             finish_msg = f'All tests completed. Total run time: {run_time_data["run_total_min"]:.1f} minutes.\n'
             self.notify(finish_msg, subject='Collection Complete')
             self.shutdown()
-        except Exception:
+        except Exception as e:
+            from bdb import BdbQuit
+            if isinstance(e, BdbQuit):
+                print_banner('Debugger quit. Ending run.')
+                self.shutdown()
+                self.close_ports()
+                return
             traceback.print_exc()
             for test in self.tests:
                 test._is_crashed = True
