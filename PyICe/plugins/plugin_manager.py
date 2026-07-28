@@ -1364,6 +1364,7 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                                 print(f'{test.get_name()} completed in {test_time["test_delta_min"]:.1f} minutes.')
                         except (Exception, BaseException) as e:
                             from bdb import BdbQuit
+                            # Python 3.14: pdb's do_quit calls sys.exit(1) instead of raising BdbQuit
                             if isinstance(e, BdbQuit) or (isinstance(e, SystemExit) and 'pdb.py' in traceback.format_exc()):
                                 raise
                             traceback.print_exc()
@@ -1420,6 +1421,7 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
             self.shutdown()
         except (Exception, SystemExit) as e:
             from bdb import BdbQuit
+            # Python 3.14: pdb's do_quit calls sys.exit(1) instead of raising BdbQuit
             if isinstance(e, BdbQuit) or (isinstance(e, SystemExit) and 'pdb.py' in traceback.format_exc()):
                 print_banner('Debugger quit. Ending run.')
                 self.shutdown()
