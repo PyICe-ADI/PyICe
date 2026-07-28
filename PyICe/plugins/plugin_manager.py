@@ -1423,7 +1423,6 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
             if isinstance(e, BdbQuit) or (isinstance(e, SystemExit) and 'pdb.py' in traceback.format_exc()):
                 print_banner('Debugger quit. Ending run.')
                 self.shutdown()
-                self.close_ports()
                 return
             traceback.print_exc()
             for test in self.tests:
