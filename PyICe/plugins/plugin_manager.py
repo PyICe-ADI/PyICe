@@ -113,7 +113,6 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
         self.tests = []
         self.operator = getpass.getuser().lower()
         self.thismachine = socket.gethostname().replace("-", "_").split(".")[0]
-        self.ident_header = f'Operator: {self.operator}\n Machine: {self.thismachine}\n\n'
         self.scratch_folder = scratch_folder
         self.debug = False
         for attr in settings:
@@ -195,8 +194,12 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
         Args:
             temperatures: Temperatures to use.
         """
+        self.ident_header = f"Operator: {self.operator}\n Machine: {self.thismachine}\n   Tests: {', '.join([test.get_name() for test in self.tests])}\n"
         if temperatures is None:
             temperatures = []
+        else:
+            self.ident_header+=f"   Temps: {temperatures}\n"
+        self.ident_header+="\n"
         self._temperatures = temperatures
         self.far_enough = False
         self.collect(temperatures)
