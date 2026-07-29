@@ -26,6 +26,7 @@ from PyICe.lab_utils.communications import email, sms
 from PyICe.lab_utils.sqlite_data import sqlite_data
 from PyICe.lab_utils.banners import print_banner
 from PyICe.lab_core import logger, master, PartialReadException, ChannelReadException
+from PyICe.lab_utils.json_encoder import PyICeJSONEncoder
 from PyICe.plugins import test_archive
 from email.mime.image import MIMEImage
 from PyICe import LTC_plot
@@ -867,14 +868,14 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
             try:
                 scratch_path = os.path.join(test._module_path, self.scratch_folder, f'{file_name}.json')
                 with open(scratch_path, 'w') as f:
-                    json.dump(crash_log, f, indent=2, default=repr)
+                    json.dump(crash_log, f, indent=2, cls=PyICeJSONEncoder)
             except Exception as write_exc:
                 print_banner(f'WARNING: Failed to write crash_log.json: {write_exc}')
         except Exception as build_exc:
             print_banner(f'WARNING: Exception while building crash log: {build_exc}')
             traceback.print_exc()
             test._crash_logs[file_name] =  'crash log construction failed before completion'
-        self.notify(json.dumps(crash_log, indent=2), subject=f'{test.get_name()} CRASH LOG')
+        self.notify(json.dumps(crash_log, indent=2, cls=PyICeJSONEncoder), subject=f'{test.get_name()} CRASH LOG')
         return crash_log
 
     ###
@@ -1343,7 +1344,11 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                                 summary_msg+=f"\t{test.get_name()} ran successfully. {test_time['test_delta_min']:.1f} minutes.\n"
                             else:
                                 print(f'{test.get_name()} completed in {test_time["test_delta_min"]:.1f} minutes.')
-                        except (Exception, BaseException) as e:
+                        except BaseException as e:  # noqa: BLE001 - intentional; handles KeyboardInterrupt and BdbQuit/SystemExit from debugger
+                            from bdb import BdbQuit
+                            # Python 3.14: pdb's do_quit calls sys.exit(1) instead of raising BdbQuit
+                            if isinstance(e, BdbQuit) or (isinstance(e, SystemExit) and 'pdb.py' in traceback.format_exc()):
+                                raise
                             traceback.print_exc()
                             test_time = test._test_timer.read_all_channels()
                             test._is_crashed = True
@@ -1396,7 +1401,13 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
             finish_msg = f'All tests completed. Total run time: {run_time_data["run_total_min"]:.1f} minutes.\n'
             self.notify(finish_msg, subject='Collection Complete')
             self.shutdown()
-        except Exception:
+        except (Exception, SystemExit) as e:
+            from bdb import BdbQuit
+            # Python 3.14: pdb's do_quit calls sys.exit(1) instead of raising BdbQuit
+            if isinstance(e, BdbQuit) or (isinstance(e, SystemExit) and 'pdb.py' in traceback.format_exc()):
+                print_banner('Debugger quit. Ending run.')
+                self.shutdown()
+                return
             traceback.print_exc()
             for test in self.tests:
                 test._is_crashed = True
