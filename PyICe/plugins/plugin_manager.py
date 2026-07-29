@@ -1362,7 +1362,7 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                                 summary_msg+=f"\t{test.get_name()} ran successfully. {test_time['test_delta_min']:.1f} minutes.\n"
                             else:
                                 print(f'{test.get_name()} completed in {test_time["test_delta_min"]:.1f} minutes.')
-                        except (Exception, BaseException) as e:
+                        except BaseException as e:
                             from bdb import BdbQuit
                             # Python 3.14: pdb's do_quit calls sys.exit(1) instead of raising BdbQuit
                             if isinstance(e, BdbQuit) or (isinstance(e, SystemExit) and 'pdb.py' in traceback.format_exc()):
