@@ -1,8 +1,35 @@
-"""Channel Wraper for SMBus Compliant Devices.
+"""Channel Wrapper for SMBus/I2C Compliant Devices.
 
 ==========================================
 
-Can automatically populate channels/reisters from XML description
+Wraps SMBus/I2C slave devices as PyICe channel collections, mapping every
+register bitfield to a readable/writable :class:`~PyICe.lab_core.channel`.
+Automatic read-modify-write handles sub-register bitfield access, and
+configurable retry logic tolerates transient bus errors.
+
+Register maps can be loaded programmatically or imported from several
+description formats:
+
+- ``populate_from_xml()`` — legacy PyICe XML register-map files
+- ``populate_from_yoda_json_bridge()`` — Yoda JSON bridge export
+- ``populate_from_ipxact()`` — IEEE 1685-2014 / SPIRIT 1685-2009 IP-XACT
+
+:class:`twi_instrument` — primary instrument class; inherits from
+    :class:`~PyICe.lab_core.instrument` and
+    :class:`~PyICe.lab_core.delegator`.
+
+:class:`twi_register` — :class:`~PyICe.lab_core.register` subclass that
+    carries the SMBus command code and access width for a single register.
+
+:class:`pmbus_instrument` — :class:`twi_instrument` subclass with PMBus
+    extended-command support (0xFF / 0xFE command extensions).
+
+:class:`twi_instrument_dummy` — no-hardware stub useful for unit tests and
+    offline register-map inspection.
+
+.. note::
+    Changes to this file should be coordinated with ``lab_core`` and
+    ``twi_interface`` maintainers.
 
 >>> from PyICe.twi_instrument import twi_instrument
 

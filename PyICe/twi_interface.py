@@ -2,6 +2,43 @@
 
 ================================
 
+Provides hardware-backend drivers for I2C/SMBus communication.  Uses the
+**Template Method** pattern: :class:`twi_interface` defines the full public
+API and default bit-bang implementations; subclasses override only the
+hardware-specific primitives.
+
+**Architecture**
+
+User code calls protocol-named convenience methods (``write_byte``,
+``read_word``, …) which delegate to ``write_register`` / ``read_register``
+for argument validation, then to ``_do_write_register`` /
+``_do_read_register`` for backend dispatch.  A backend that implements the
+five I2C byte primitives (``start``, ``stop``, ``write_byte_raw``,
+``read_byte_raw``, ``nack``) automatically inherits full protocol support.
+
+**Hardware backends**
+
+- :class:`i2c_dummy` — memory-backed stub (``mem_dict``) for unit tests and
+  offline development; supports PEC simulation.
+- :class:`i2c_buspirate` — Bus Pirate USB adapter.
+- :class:`i2c_pic` — PIC-based USB I2C adapter.
+- :class:`i2c_scpi` — SCPI / VISA instrument acting as an I2C master.
+- :class:`i2c_dc590` — Linear Technology DC590 USB demo board.
+- :class:`i2c_firmata` — Firmata-compatible microcontroller (e.g. Arduino).
+- :class:`i2c_bobbytalk` — proprietary BobbyTalk serial bridge.
+- :class:`i2c_labcomm` — LabComm serial bridge.
+
+**PMBus extensions**
+
+``PMBUS_COMMAND_EXTENSION = 0xFF`` and ``MFR_SPECIFIC_COMMAND_EXT = 0xFE``
+constants, plus extended write/read helpers used by
+:class:`~PyICe.twi_instrument.pmbus_instrument`.
+
+**Exception hierarchy**
+
+Raised on bus errors: ``TwiError``, ``TwiNackError``, ``TwiTimeoutError``,
+``TwiArbitrationLostError``.
+
 Examples:
     >>> from PyICe.twi_interface import i2c_dummy
     >>> bus = i2c_dummy(delay=0, p_change=0)
