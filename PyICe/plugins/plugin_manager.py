@@ -26,6 +26,7 @@ from PyICe.lab_utils.communications import email, sms
 from PyICe.lab_utils.sqlite_data import sqlite_data
 from PyICe.lab_utils.banners import print_banner
 from PyICe.lab_core import logger, master, PartialReadException, ChannelReadException
+from PyICe.lab_utils.json_encoder import PyICeJSONEncoder
 from PyICe.plugins import test_archive
 from email.mime.image import MIMEImage
 from PyICe import LTC_plot
@@ -92,28 +93,6 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
 
     """
     _CRASH_LOG_MAX_CHAIN_DEPTH = 10
-
-    class _CrashLogJSONEncoder(json.JSONEncoder):
-        """JSON encoder for crash logs, matching the serialization used by test_results."""
-
-        def default(self, obj):
-            """Serialize numpy arrays, datetimes, and numpy bools; fall back to repr."""
-            import numpy as np
-            if isinstance(obj, np.ndarray):
-                return obj.tolist()
-            if isinstance(obj, np.bool_):
-                return bool(obj)
-            if isinstance(obj, np.integer):
-                return int(obj)
-            if isinstance(obj, np.floating):
-                return float(obj)
-            if isinstance(obj, datetime.datetime):
-                return obj.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-            if isinstance(obj, datetime.timedelta):
-                return obj.total_seconds()
-            if isinstance(obj, bytes):
-                return repr(obj)
-            return repr(obj)
 
     def __init__(self, scratch_folder='scratch', settings={}):
         """Initialize plugin_ manager.
@@ -886,14 +865,14 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
             try:
                 scratch_path = os.path.join(test._module_path, self.scratch_folder, f'{file_name}.json')
                 with open(scratch_path, 'w') as f:
-                    json.dump(crash_log, f, indent=2, cls=self._CrashLogJSONEncoder)
+                    json.dump(crash_log, f, indent=2, cls=PyICeJSONEncoder)
             except Exception as write_exc:
                 print_banner(f'WARNING: Failed to write crash_log.json: {write_exc}')
         except Exception as build_exc:
             print_banner(f'WARNING: Exception while building crash log: {build_exc}')
             traceback.print_exc()
             test._crash_logs[file_name] =  'crash log construction failed before completion'
-        self.notify(json.dumps(crash_log, indent=2, cls=self._CrashLogJSONEncoder), subject=f'{test.get_name()} CRASH LOG')
+        self.notify(json.dumps(crash_log, indent=2, cls=PyICeJSONEncoder), subject=f'{test.get_name()} CRASH LOG')
         return crash_log
 
     ###
