@@ -37,8 +37,9 @@ class instrument_data_dump:
     to log()) before being closed with stop(). Accepts any PyICe instrument
     (or multiple instruments) that has registered channels. Also writes a
     companion ``{table}_channel_meta`` table that records each channel's
-    ``channel_type`` and ``measurement`` attributes, enabling instrument
-    drivers to later identify and plot their data without a live connection.
+    ``channel_type``, ``measurement``, and ``channel_number`` attributes,
+    enabling instrument drivers to later identify and plot their data
+    without a live connection.
 
     Args:
         *instruments: One or more instantiated PyICe instrument objects
@@ -53,6 +54,8 @@ class instrument_data_dump:
         self._logger = lab_core.logger(database=db_filename, use_threads=False)
         for inst in self._instruments:
             self._logger.add(inst)
+        self._comment_channel = self._logger.master.add_channel_dummy('comment')
+        self._comment_channel.write('')
         if table_name is None:
             table_name = ''
             while not len(table_name):
@@ -88,12 +91,16 @@ class instrument_data_dump:
         conn.commit()
         conn.close()
 
-    def log(self):
+    def log(self, comment=''):
         """Read all instrument channels and log one row to the database.
+
+        Args:
+            comment: Optional text to store in the 'comment' column for this row.
 
         Channels that raise exceptions during read (e.g. VISA timeouts)
         are stored as error markers in that row and a warning is printed.
         """
+        self._comment_channel.write(comment)
         from PyICe.lab_core import PartialReadException
         try:
             self._logger.log()
@@ -136,6 +143,9 @@ if __name__ == '__main__':
     answer = input("(P)lot existing data or (C)ollect new data: ").strip().lower()
 
     if answer == 'c':
+        db_filename = input("Database filename [data_dump.sqlite]: ").strip()
+        if not db_filename:
+            db_filename = 'data_dump.sqlite'
         if len(instruments) == 1:
             name, instrument = next(iter(instruments.items()))
             selected = {name: instrument}
@@ -168,12 +178,13 @@ if __name__ == '__main__':
             else:
                 print(f"  {name}: {len(channel_names)} channel(s)")
 
-        dump = instrument_data_dump(*selected.values())
+        dump = instrument_data_dump(*selected.values(), db_filename=db_filename)
+        print("Typing anything but 'q' will be logged as a string under the 'comment' column.")
         while True:
-            resp = input("Press Enter to log a measurement, or 'q' to quit: ").strip().lower()
-            if resp == 'q':
+            resp = input("Enter to log, or 'q' to quit: ").strip()
+            if resp.lower() == 'q':
                 break
-            dump.log()
+            dump.log(comment=resp)
             print("  Logged.")
         dump.stop()
         print("Done.")
