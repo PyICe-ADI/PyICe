@@ -2,6 +2,43 @@
 
 ================================
 
+Provides hardware-backend drivers for I2C/SMBus communication.  Uses the
+**Template Method** pattern: :class:`twi_interface` defines the full public
+API and default bit-bang implementations; subclasses override only the
+hardware-specific primitives.
+
+**Architecture**
+
+User code calls protocol-named convenience methods (``write_byte``,
+``read_word``, …) which delegate to ``write_register`` / ``read_register``
+for argument validation, then to ``_do_write_register`` /
+``_do_read_register`` for backend dispatch.  A backend that implements the
+five I2C byte primitives (``start``, ``stop``, ``write_byte_raw``,
+``read_byte_raw``, ``nack``) automatically inherits full protocol support.
+
+**Hardware backends**
+
+- :class:`i2c_dummy` — memory-backed stub (``mem_dict``) for unit tests and
+  offline development; supports PEC simulation.
+- :class:`i2c_buspirate` — Bus Pirate USB adapter.
+- :class:`i2c_pic` — PIC-based USB I2C adapter.
+- :class:`i2c_scpi` — SCPI / VISA instrument acting as an I2C master.
+- :class:`i2c_dc590` — Linear Technology DC590 USB demo board.
+- :class:`i2c_firmata` — Firmata-compatible microcontroller (e.g. Arduino).
+- :class:`i2c_bobbytalk` — proprietary BobbyTalk serial bridge.
+- :class:`i2c_labcomm` — LabComm serial bridge.
+
+**PMBus extensions**
+
+``PMBUS_COMMAND_EXTENSION = 0xFF`` and ``MFR_SPECIFIC_COMMAND_EXT = 0xFE``
+constants, plus extended write/read helpers used by
+:class:`~PyICe.twi_instrument.pmbus_instrument`.
+
+**Exception hierarchy**
+
+Raised on bus errors: ``TwiError``, ``TwiNackError``, ``TwiTimeoutError``,
+``TwiArbitrationLostError``.
+
 Examples:
     >>> from PyICe.twi_interface import i2c_dummy
     >>> bus = i2c_dummy(delay=0, p_change=0)
@@ -20,6 +57,7 @@ try:
 except ImportError:
     pass
 import logging
+import warnings
 debug_logging = logging.getLogger(__name__)
 '''Default str to bytes encoding to use. latin-1 is the simplest encoding -- it requires all characters of a string to
 be amongst Unicode code points 0x000000 - 0x0000ff inclusive, and converts each code point value to a byte. Hence
@@ -836,12 +874,8 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         SMBus specification. It also limits data on the bus for simple devices.
 
 
-        >>> import io, contextlib
         >>> d = i2c_dummy(delay=0, p_change=0, seed=42)
-        >>> with contextlib.redirect_stdout(io.StringIO()):
-        ...     d.quick_command_rd(0x48)
-        >>> hasattr(i2c_dummy, 'quick_command_rd')
-        True
+        >>> d.quick_command_rd(0x48)
 
         Args:
             addr7: 7-bit I2C device address.
@@ -850,16 +884,7 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             i2cReadAddressAcknowledgeError: If the slave does not acknowledge the read address.
             i2cStartStopError: If the start or stop condition fails on the bus.
         """
-        self.print_warning(operation="quick_command_rd")
-        if not self.start():
-            raise i2cStartStopError(
-                'I2C Error: Failed to Assert Start Signal during quick_command_rd')
-        if not self.write(self.read_addr(addr7)):
-            raise i2cReadAddressAcknowledgeError(
-                'I2C Error: Slave read address failed to acknowledge during quick_command_rd')
-        if not self.stop():
-            raise i2cStartStopError(
-                'I2C Error: Failed to Assert Stop Signal during quick_command_rd')
+        return self.read_register(addr7, commandCode=None, data_size=-1, use_pec=False)
 
     def quick_command_wr(self, addr7):
         """Here, part of the slave address denotes the command – the R/W# bit. The R/W# bit may be used to simply.
@@ -872,8 +897,6 @@ class twi_interface(object, metaclass=abc.ABCMeta):
 
         >>> d = i2c_dummy(delay=0, p_change=0, seed=42)
         >>> d.quick_command_wr(0x48)
-        >>> hasattr(i2c_dummy, 'quick_command_wr')
-        True
 
         Args:
             addr7: 7-bit I2C device address.
@@ -882,16 +905,7 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             i2cStartStopError: If the start or stop condition fails on the bus.
             i2cWriteAddressAcknowledgeError: If the slave does not acknowledge the write address.
         """
-        # self.print_warning(operation="quick_command_wr")
-        if not self.start():
-            raise i2cStartStopError(
-                'I2C Error: Failed to Assert Start Signal during quick_command_wr')
-        if not self.write(self.write_addr(addr7)):
-            raise i2cWriteAddressAcknowledgeError(
-                'I2C Error: Slave write address failed to acknowledge during quick_command_wr')
-        if not self.stop():
-            raise i2cStartStopError(
-                'I2C Error: Failed to Assert Stop Signal during quick_command_wr')
+        return self.write_register(addr7, commandCode=None, data=None, data_size=-1, use_pec=False)
 
     def send_byte(self, addr7, data8):
         """A simple device may recognize its own slave address and accept up to 256 possible encoded commands in.
@@ -910,7 +924,7 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             addr7: 7-bit I2C device address.
             data8: 8-bit data value.
         """
-        self.write_register(
+        return self.write_register(
             addr7,
             commandCode=data8,
             data=None,
@@ -932,7 +946,7 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             addr7: 7-bit I2C device address.
             data8: 8-bit data value.
         """
-        self.write_register(
+        return self.write_register(
             addr7,
             commandCode=data8,
             data=None,
@@ -1000,32 +1014,18 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         Returns None if no response to ARA.
 
 
-        >>> import io, contextlib
         >>> d = i2c_dummy(delay=0, p_change=0, seed=42)
         >>> d._read_queue = [0x90]
-        >>> with contextlib.redirect_stdout(io.StringIO()):
-        ...     result = d.alert_response()
-        >>> result
+        >>> d.alert_response()
         72
-        >>> hasattr(i2c_dummy, 'alert_response')
-        True
 
         Returns:
-            The 7-bit address of the alerting device.
+            The 7-bit address of the alerting device, or None if no response.
 
         Raises:
             i2cStartStopError: If the start or stop condition fails on the bus.
         """
-        self.print_warning(operation="alert_response")
-        if not self.start():
-            raise i2cStartStopError()
-        if not self.write(self.read_addr(0xC)):
-            self.stop()
-            return None  # no response to Alert Response Address
-        data8 = self.read_nack()
-        if not self.stop():
-            raise i2cStartStopError()
-        return data8 >> 1
+        return self._do_alert_response(use_pec=False)
 
     def alert_response_pec(self):
         """Alert Response Query to SMBALERT# interrupt with Packet Error Check.
@@ -1034,40 +1034,53 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         Returns None if no response to ARA.
 
 
-        >>> import io, contextlib
         >>> d = i2c_dummy(delay=0, p_change=0, seed=42)
         >>> pec_val = d.pec([d.read_addr(0xC), 0x90])
         >>> d._read_queue = [0x90, pec_val]
-        >>> with contextlib.redirect_stdout(io.StringIO()):
-        ...     result = d.alert_response_pec()
-        >>> result
+        >>> d.alert_response_pec()
         72
-        >>> hasattr(i2c_dummy, 'alert_response_pec')
-        True
 
         Returns:
-            The 7-bit address of the alerting device.
+            The 7-bit address of the alerting device, or None if no response.
 
         Raises:
             i2cPECError: If the PEC check fails (computed CRC does not match received).
             i2cStartStopError: If the start or stop condition fails on the bus.
         """
-        self.print_warning(operation="alert_response_pec")
-        byteList = []
+        return self._do_alert_response(use_pec=True)
+
+    def _do_alert_response(self, use_pec):
+        """Default ARA implementation using primitives. Override for HW-accelerated alert polling.
+
+        >>> d = i2c_dummy(delay=0, p_change=0, seed=42)
+        >>> d._read_queue = [0x90]
+        >>> d._do_alert_response(use_pec=False)
+        72
+
+        Returns:
+            7-bit address of alerting device, or None if no response.
+        """
         if not self.start():
             raise i2cStartStopError()
-        byteList.append(self.read_addr(0xC))
-        if not self.write(self.read_addr(0xC)):
+        if not self.write(self.read_addr(0x0C)):
             self.stop()
-            return None  # no response to Alert Response Address
-        data8 = self.read_ack()
-        byteList.append(data8)
-        pec = self.read_nack()
-        byteList.append(pec)
-        if not self.stop():
-            raise i2cStartStopError()
-        if self.pec(byteList):
-            raise i2cPECError("I2C Error: Failed PEC check")
+            return None
+        if use_pec:
+            byteList = [self.read_addr(0x0C)]
+            data8 = self.read_ack()
+            byteList.append(data8)
+            pec = self.read_nack()
+            byteList.append(pec)
+            if not self.stop():
+                raise i2cStartStopError()
+            if self.pec(byteList):
+                raise i2cPECError(
+                    'PEC Failure: expected 0x{:X} but got 0x{:X}'.format(
+                        self.pec(byteList[:-1]), pec))
+        else:
+            data8 = self.read_nack()
+            if not self.stop():
+                raise i2cStartStopError()
         return data8 >> 1
 
     def write_byte(self, addr7, commandCode, data8):
@@ -1088,7 +1101,7 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             commandCode: SMBus command code (register address).
             data8: 8-bit data value.
         """
-        self.write_register(
+        return self.write_register(
             addr7,
             commandCode,
             data8,
@@ -1109,7 +1122,7 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             commandCode: SMBus command code (register address).
             data8: 8-bit data value.
         """
-        self.write_register(
+        return self.write_register(
             addr7,
             commandCode,
             data8,
@@ -1134,7 +1147,7 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             commandCode: SMBus command code (register address).
             data16: 16-bit data value.
         """
-        self.write_register(
+        return self.write_register(
             addr7,
             commandCode,
             data16,
@@ -1155,7 +1168,7 @@ class twi_interface(object, metaclass=abc.ABCMeta):
             commandCode: SMBus command code (register address).
             data16: 16-bit data value.
         """
-        self.write_register(
+        return self.write_register(
             addr7,
             commandCode,
             data16,
@@ -1879,147 +1892,6 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         return dataByteListRead
 
     # List reading aggregation commands###
-    def _read_x_list(self, addr7, cc_list, rd_function):
-        """Return dictionary of read results.
-
-        Reads each commandCode of cc_list in turn at chip address addr7 using rd_function protocol.
-
-
-        >>> import io, contextlib
-        >>> d = i2c_dummy(delay=0, p_change=0, seed=42)
-        >>> d.write_register(0x48, 0x10, 0xAB, 8, False)
-        >>> d.write_register(0x48, 0x20, 0xCD, 8, False)
-        >>> with contextlib.redirect_stdout(io.StringIO()):
-        ...     result = d._read_x_list(0x48, [0x10, 0x20], d.read_byte)
-        >>> result[0x10]
-        171
-        >>> result[0x20]
-        205
-        >>> hasattr(i2c_dummy, '_read_x_list')
-        True
-
-        Args:
-            addr7: 7-bit I2C device address.
-            cc_list: List of SMBus command codes (register addresses) to read.
-            rd_function: Callable that performs the read (e.g., self.read_byte).
-
-        Returns:
-            List of matching items.
-        """
-        self.print_warning(operation="_read_x_list")
-        cc_data = {}
-        for cc in cc_list:
-            cc_data[cc] = rd_function(addr7, cc)
-        return cc_data
-
-    def read_byte_list(self, addr7, cc_list):
-        """Return dictionary of read_byte results.
-
-        Reads each commandCode of cc_list in turn at chip address addr7
-        Overload this method to improve communication speed when the instrument supports it.
-
-
-        >>> import io, contextlib
-        >>> d = i2c_dummy(delay=0, p_change=0, seed=42)
-        >>> d.write_register(0x48, 0x10, 0xAB, 8, False)
-        >>> d.write_register(0x48, 0x20, 0xCD, 8, False)
-        >>> with contextlib.redirect_stdout(io.StringIO()):
-        ...     result = d.read_byte_list(0x48, [0x10, 0x20])
-        >>> result[0x10]
-        171
-        >>> hasattr(i2c_dummy, 'read_byte_list')
-        True
-
-        Args:
-            addr7: 7-bit I2C device address.
-            cc_list: List of SMBus command codes (register addresses) to read.
-
-        Returns:
-            The value read from the device or channel.
-        """
-        self.print_warning(operation="read_byte_list")
-        return self._read_x_list(addr7, cc_list, self.read_byte)
-
-    def read_byte_list_pec(self, addr7, cc_list):
-        """Return dictionary of read_byte_pec results.
-
-        Reads each commandCode of cc_list in turn at chip address addr7
-        Overload this method to improve communication speed when the instrument supports it.
-
-
-        >>> import io, contextlib
-        >>> d = i2c_dummy(delay=0, p_change=0, seed=42)
-        >>> d.write_register(0x48, 0x10, 0xAB, 8, True)
-        >>> with contextlib.redirect_stdout(io.StringIO()):
-        ...     result = d.read_byte_list_pec(0x48, [0x10])
-        >>> result[0x10]
-        171
-        >>> hasattr(i2c_dummy, 'read_byte_list_pec')
-        True
-
-        Args:
-            addr7: 7-bit I2C device address.
-            cc_list: List of SMBus command codes (register addresses) to read.
-
-        Returns:
-            The value read from the device or channel.
-        """
-        self.print_warning(operation="read_byte_list_pec")
-        return self._read_x_list(addr7, cc_list, self.read_byte_pec)
-
-    def read_word_list(self, addr7, cc_list):
-        """Return dictionary of read_word results.
-
-        Reads each commandCode of cc_list in turn at chip address addr7
-        Overload this method to improve communication speed when the instrument supports it.
-
-
-        >>> import io, contextlib
-        >>> d = i2c_dummy(delay=0, p_change=0, seed=42)
-        >>> d.write_register(0x48, 0x30, 0x1234, 16, False)
-        >>> with contextlib.redirect_stdout(io.StringIO()):
-        ...     result = d.read_word_list(0x48, [0x30])
-        >>> hex(result[0x30])
-        '0x1234'
-        >>> hasattr(i2c_dummy, 'read_word_list')
-        True
-
-        Args:
-            addr7: 7-bit I2C device address.
-            cc_list: List of SMBus command codes (register addresses) to read.
-
-        Returns:
-            The value read from the device or channel.
-        """
-        self.print_warning(operation="read_word_list")
-        return self._read_x_list(addr7, cc_list, self.read_word)
-
-    def read_word_list_pec(self, addr7, cc_list):
-        """Return dictionary of read_word_pec results.
-
-        Reads each commandCode of cc_list in turn at chip address addr7
-        Overload this method to improve communication speed when the instrument supports it.
-
-
-        >>> import io, contextlib
-        >>> d = i2c_dummy(delay=0, p_change=0, seed=42)
-        >>> d.write_register(0x48, 0x30, 0x1234, 16, True)
-        >>> with contextlib.redirect_stdout(io.StringIO()):
-        ...     result = d.read_word_list_pec(0x48, [0x30])
-        >>> hex(result[0x30])
-        '0x1234'
-        >>> hasattr(i2c_dummy, 'read_word_list_pec')
-        True
-
-        Args:
-            addr7: 7-bit I2C device address.
-            cc_list: List of SMBus command codes (register addresses) to read.
-
-        Returns:
-            The value read from the device or channel.
-        """
-        self.print_warning(operation="read_word_list_pec")
-        return self._read_x_list(addr7, cc_list, self.read_word_pec)
 
     def read_register_list(self, addr7, cc_list, data_size, use_pec):
         """Return read register list result.
@@ -2033,8 +1905,10 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         >>> result = d.read_register_list(0x48, [0x10], data_size=8, use_pec=False)
         >>> result[0x10]
         171
-        >>> hasattr(twi_interface, 'read_register_list')
-        True
+        >>> d.read_register_list(0x48, [0x10], data_size=7, use_pec=False)
+        Traceback (most recent call last):
+            ...
+        Exception: Unimplemented data size: 7. Not within set (-1, 0, 8, 16, 32, 64)
 
         Args:
             addr7: 7-bit I2C device address.
@@ -2045,8 +1919,24 @@ class twi_interface(object, metaclass=abc.ABCMeta):
         Returns:
             The value read from the device or channel.
         """
-        return self._read_x_list(addr7, cc_list, lambda addr7, cc: self.read_register(
-            addr7, cc, data_size, use_pec))
+        if data_size not in (-1, 0, 8, 16, 32, 64):
+            raise Exception(f'Unimplemented data size: {data_size}. Not within set (-1, 0, 8, 16, 32, 64)')
+        return self._do_read_register_list(addr7, cc_list, data_size, use_pec)
+
+    def _do_read_register_list(self, addr7, cc_list, data_size, use_pec):
+        """Default sequential implementation. Override for HW-accelerated batch reads.
+
+        >>> d = i2c_dummy(delay=0, p_change=0, seed=42)
+        >>> d.write_register(0x48, 0x10, 0xAB, 8, False)
+        >>> result = d._do_read_register_list(0x48, [0x10], data_size=8, use_pec=False)
+        >>> result[0x10]
+        171
+        >>> d.write_register(0x48, 0x20, 0xCD, 8, False)
+        >>> result = d._do_read_register_list(0x48, [0x10, 0x20], data_size=8, use_pec=False)
+        >>> result[0x20]
+        205
+        """
+        return {cc: self._do_read_register(addr7, cc, data_size, use_pec) for cc in cc_list}
 
     def print_warning(self, operation):
         """Perform print warning operation.
@@ -2286,6 +2176,8 @@ class i2c_dummy(twi_interface):
         """
         if not no_delay:
             time.sleep(self._delay)
+        if data_size == -1:
+            return None
         if self._rng.random() >= self._p_change:
             try:
                 rd = self._cc_data[commandCode]
@@ -2333,7 +2225,7 @@ class i2c_dummy(twi_interface):
         """
         return self._read_impl(addr7, commandCode, data_size, use_pec, no_delay=False)
 
-    def read_register_list(self, addr7, cc_list, data_size, use_pec):
+    def _do_read_register_list(self, addr7, cc_list, data_size, use_pec):
         """Return read register list result.
         Reads the corresponding register from the device via TWI/I2C.
 
@@ -2345,8 +2237,10 @@ class i2c_dummy(twi_interface):
         >>> result = d.read_register_list(0x48, [0x10], data_size=8, use_pec=False)
         >>> result[0x10]
         171
-        >>> hasattr(i2c_dummy, 'read_register_list')
-        True
+        >>> d.write_register(0x48, 0x20, 0xCD, 8, False)
+        >>> result = d.read_register_list(0x48, [0x10, 0x20], data_size=8, use_pec=False)
+        >>> result[0x20]
+        205
 
         Args:
             addr7: 7-bit I2C device address.
@@ -4044,14 +3938,14 @@ class i2c_scpi(twi_interface):
                 results[cc] = value
         return results
 
-    def read_register_list(self, addr7, cc_list, data_size, use_pec):
+    def _do_read_register_list(self, addr7, cc_list, data_size, use_pec):
         """Return read register list result.
 
         Reads data from the underlying source and returns it.
 
 
         >>> from PyICe.twi_interface import i2c_scpi
-        >>> hasattr(i2c_scpi, 'read_register_list')
+        >>> callable(getattr(i2c_scpi, '_do_read_register_list', None))
         True
 
         Args:
@@ -4064,23 +3958,19 @@ class i2c_scpi(twi_interface):
             The value read from the device or channel.
         """
         if data_size == 16 and use_pec:
-            # binary trigger skips SCPI parser
             return self._read_list(
                 cmd_bytes=b'\xE8', fmt_str='H', pec=True, addr7=addr7, cc_list=cc_list)
         elif data_size == 16 and not use_pec:
-            # binary trigger skips SCPI parser
             return self._read_list(
                 cmd_bytes=b'\xE7', fmt_str='H', pec=False, addr7=addr7, cc_list=cc_list)
         elif data_size == 8 and use_pec:
-            # binary trigger skips SCPI parser
             return self._read_list(
                 cmd_bytes=b'\xE6', fmt_str='B', pec=True, addr7=addr7, cc_list=cc_list)
         elif data_size == 8 and not use_pec:
-            # binary trigger skips SCPI parser
             return self._read_list(
                 cmd_bytes=b'\xE5', fmt_str='B', pec=False, addr7=addr7, cc_list=cc_list)
         else:
-            return super().read_register_list(
+            return super()._do_read_register_list(
                 addr7, cc_list, data_size, use_pec)
 
     def _do_read_register(self, addr7, commandCode, data_size, use_pec):
@@ -7025,7 +6915,7 @@ class i2c_bobbytalk(twi_interface):
         """
         return self.intf
 
-    def read_register_list(self, addr7, command_codes, data_size, use_pec):
+    def _do_read_register_list(self, addr7, command_codes, data_size, use_pec):
         """SMBUS list read, all protocols {read|write} {word|byte} {PEC|no-PEC}.
 
         Expects the following data payload in bobbytalk packets from the demoboard:
@@ -7042,7 +6932,7 @@ class i2c_bobbytalk(twi_interface):
 
 
         >>> from PyICe.twi_interface import i2c_bobbytalk
-        >>> hasattr(i2c_bobbytalk, 'read_register_list')
+        >>> callable(getattr(i2c_bobbytalk, '_do_read_register_list', None))
         True
 
         Args:
@@ -7055,7 +6945,7 @@ class i2c_bobbytalk(twi_interface):
             The value read from the device or channel.
         """
         if not (data_size == 16 and use_pec is True):
-            return super(i2c_bobbytalk, self).read_register_list(
+            return super()._do_read_register_list(
                 addr7, command_codes, data_size, use_pec)
         # TODO: Implement all protocols. Only read word list with PEC is implemented right now.
         # We get here if we're reading word list with PEC.
@@ -7840,7 +7730,7 @@ class i2c_labcomm(twi_interface):
         args = [iter(iterable)] * size
         return list(itertools.zip_longest(fillvalue=None, *args))
 
-    def read_register_list(self, addr7, command_codes, data_size, use_pec):
+    def _do_read_register_list(self, addr7, command_codes, data_size, use_pec):
         """Return read register list result.
         Sends the appropriate command to the instrument and parses the
         response.
@@ -7849,7 +7739,7 @@ class i2c_labcomm(twi_interface):
 
 
         >>> from PyICe.twi_interface import i2c_labcomm
-        >>> hasattr(i2c_labcomm, 'read_register_list')
+        >>> callable(getattr(i2c_labcomm, '_do_read_register_list', None))
         True
 
         Args:
