@@ -23,6 +23,7 @@ from PyICe.lab_utils import expand_tabs as expand_tabs_mod
 from PyICe import lab_core as lab_core_mod
 from PyICe.models import comparator as comparator_mod
 from PyICe import twi_interface as twi_mod
+from PyICe import ipxact_parser as ipxact_mod
 from PyICe import virtual_instruments as vi_mod
 from PyICe.lab_utils import interpolator as interpolator_mod
 from PyICe.data_utils import units_conversions as units_mod
@@ -52,6 +53,7 @@ MODULES_WITH_DOCTESTS = [
     vi_mod,
     interpolator_mod,
     units_mod,
+    ipxact_mod,
 ]
 
 
