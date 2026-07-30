@@ -6,6 +6,28 @@ SVG format. The standards used herein were compliant with a now defunct
 analog semiconductor company called Linear Technology:
 https://en.wikipedia.org/wiki/Linear_Technology
 
+**Main classes**
+
+- :class:`plot` — single axes object; add traces, histograms, scatter plots,
+  notes, legends, and arrows.
+- :class:`scope_plot` — specialised plot subclass for oscilloscope-style data.
+- :class:`Page` — arranges one or more plots in a grid and renders to PDF or SVG.
+- :class:`Multipage_pdf` — combines multiple :class:`Page` objects into one PDF.
+- :class:`PyICe_data_base` — SQLite reader that supplies data to plot methods.
+- :class:`color_gen` — automatic color cycling through the LT palette.
+
+**Utility functions**
+
+- :func:`smooth` / :func:`smooth_y_vector` — sliding-window smoothing.
+- :func:`data_from_file` — load tab- or comma-delimited data from a file.
+- :func:`list_markers` — print all valid matplotlib marker specifiers.
+
+**Color conversion utilities**
+
+- :func:`CMYK_to_fracRGB`, :func:`fracRGB_to_CMYK`
+- :func:`webRGB_to_fracRGB`, :func:`webRGB_to_RGB`
+- :func:`RGB_to_webRGB`, :func:`fracRGB_to_RGB`
+- :func:`RGB_to_fracRGB`, :func:`fracRGB_to_webRGB`
 
 The objects that can be created with this program are:
   1) plot

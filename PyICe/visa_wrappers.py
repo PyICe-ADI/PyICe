@@ -1,7 +1,38 @@
-"""VISA emulation wrappers for physical instrument interfaces.
+"""Transport-agnostic VISA-like interface for instrument communication.
+
+Provides a unified read/write/query API modelled on VISA, implemented over
+multiple physical transport backends.  All optional dependencies are guarded
+by ``try/except`` so the module imports successfully even when a given backend
+library is not installed.
+
+**Base class**
+
+- :class:`visa_wrapper` — abstract base defining ``write``, ``read``,
+  ``query``, ``close``, and timeout management.
+
+**Transport backends**
+
+- :class:`visa_wrapper_serial` — RS-232/RS-485 via *pyserial* (optional).
+- :class:`visa_wrapper_tcp` — raw TCP socket (extends ``visa_wrapper_serial``).
+- :class:`visa_wrapper_telnet` — Telnet via *telnetlib* (optional).
+- :class:`visa_wrapper_vxi11` — VXI-11 LAN instrument via *python-vxi11* (optional).
+- :class:`visa_wrapper_usbtmc` — USB TMC via *python-usbtmc* (optional).
+
+**PyVISA integration**
+
+- :class:`visa_interface` — thin wrapper around *pyvisa* (optional); exposes the
+  same API as the other backends so callers are transport-agnostic.
+
+**Utility functions**
+
+- :func:`strify` — decode a ``bytes`` object to ``str`` using latin-1 encoding.
+- :func:`byteify` — encode a ``str`` to ``bytes`` using latin-1 encoding.
+
+**Exception**
+
+- :class:`visaWrapperException` — raised for transport-level errors.
 
 >>> from PyICe.visa_wrappers import strify
-
 """
 import traceback
 import struct
