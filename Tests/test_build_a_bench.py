@@ -2,6 +2,7 @@
 
 import warnings
 import functools
+import pytest
 from unittest.mock import MagicMock, patch
 from PyICe.plugins.master_test_template import Master_Test_Template
 
@@ -117,8 +118,8 @@ class TestBuildABenchDispatch:
 
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
-            if type(tests[0]).build_a_bench is not \
-                    Master_Test_Template.build_a_bench:
+            if (type(tests[0]).build_a_bench is not
+                    Master_Test_Template.build_a_bench):
                 tests[0].build_a_bench()
                 if len(tests) > 1:
                     warnings.warn(
@@ -152,7 +153,7 @@ class TestBuildABenchDispatch:
 
     def test_build_a_bench_exception_is_raised(self):
         """An exception in build_a_bench is wrapped in RuntimeError."""
-        import pytest
+
 
         class FailingTest(Master_Test_Template):
             """Subclass whose build_a_bench raises."""
