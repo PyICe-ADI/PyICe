@@ -1,7 +1,6 @@
 """Unit tests for Master_Test_Template.build_a_bench and its dispatch in Plugin_Manager."""
 
-import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 from PyICe.plugins.master_test_template import Master_Test_Template
 
 
