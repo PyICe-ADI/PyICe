@@ -274,6 +274,16 @@ class generic_results():
                     continue
                 res_dict['traceability'][channel_name] = trace_data[trace_data.keys().index(
                     channel_name)]
+        elif self._traceability_info:
+            try:
+                res_dict['collection_date'] = self._traceability_info['datetime']
+            except KeyError:
+                pass
+            res_dict['traceability'] = {}
+            for channel_name, value in self._traceability_info.items():
+                if channel_name == 'datetime' or channel_name == 'rowid':
+                    continue
+                res_dict['traceability'][channel_name] = value
 
         res_dict['tests'] = {}
         for t_d in declarations:
@@ -1060,16 +1070,19 @@ class Test_Results_Reload(Test_Results):
         self.max_con_len = 0
         with open(results_json, mode='r', encoding='utf-8') as f:
             self._results = json.load(f)
-            f.close()
         self._init(name=self._results['test_module'], module=None)
         try:
             if self._results['test_crashed']:
                 self._failure_override = True
         except KeyError:
             print("JSON came to be before we started tracking test crashes. Regenerating this json will remove this notice.")
-        self._set_traceability_info(
-            datetime=self._results["collection_date"],
-            **self._results["traceability"])
+        try:
+            self._set_traceability_info(
+                datetime=self._results["collection_date"],
+                **self._results["traceability"])
+        except KeyError:
+            # no traceability added to this test.
+            pass
         for test in self._results['tests']:
             self._test_declarations.append(test)
             self.test_limits[test] = self._results['tests'][test]['declaration']
@@ -1078,6 +1091,11 @@ class Test_Results_Reload(Test_Results):
                 upper_limit=self.test_limits[test]['upper_limit'],
                 lower_limit=self.test_limits[test]['lower_limit'],
                 override=self._failure_override)
+            if 'results' not in self._results['tests'][test]:
+                self._register_test_failure(
+                    name=test,
+                    reason="No results were collected for this test.")
+                continue
             for case in self._results['tests'][test]['results']['cases']:
                 for trial in case['case_results']:
                     self._test_results[test].append(self._test_result(
