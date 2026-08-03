@@ -4,6 +4,7 @@
 
 """
 from PyICe.plugins.bench_configuration_management.bench_configuration_management import component_collection, connection_collection
+from PyICe.plugins.master_test_template import Master_Test_Template
 import os
 import inspect
 import importlib
@@ -18,6 +19,7 @@ import pdb
 import json
 import linecache
 import shutil
+import warnings
 from PyICe.plugins.bench_configuration_management import bench_visualizer
 from PyICe.plugins.test_results import Test_Results, Failed_Eval
 from PyICe.plugins.traceability_items import Traceability_items
@@ -115,6 +117,13 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
         self.thismachine = socket.gethostname().replace("-", "_").split(".")[0]
         self.scratch_folder = scratch_folder
         self.debug = False
+        self.cleanup_fns = []
+        self.temp_run_fns = []
+        self.startup_fns = []
+        self.shutdown_fns = []
+        self.temperature_channel = None
+        self._temperature_is_dummy = False
+        self.special_channel_actions = {}
         for attr in settings:
             setattr(self, attr, settings[attr])
         self._send_notifications = "notifications" in self.plugins
@@ -1252,13 +1261,18 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
             self.temperature_channel = None
             self._temperature_is_dummy = False
             self.special_channel_actions = {}
-            # Check if the primary test script has a build_a_bench method
-            if not self.tests[0].build_a_bench.__qualname__.startswith('Master_Test_Template'):
-                self.tests[0].build_a_bench()
+            if type(self.tests[0]).build_a_bench is not Master_Test_Template.build_a_bench:
+                try:
+                    self.tests[0].build_a_bench()
+                except Exception as e:
+                    raise RuntimeError(
+                        f"BENCH MAKER: build_a_bench() failed in test '{self.tests[0].get_name()}': {e}"
+                    ) from e
                 if len(self.tests) > 1:
-                    print(f"WARNING: Only the first test's ({self.tests[0].get_name()}) build_a_bench() is used. "
-                        f"The remaining {len(self.tests) - 1} test(s) will share this bench configuration.")
-            # Otherwise use the traditional bench script procedure
+                    warnings.warn(
+                        f"Only the first test's ({self.tests[0].get_name()}) build_a_bench() is used. "
+                        f"The remaining {len(self.tests) - 1} test(s) will share this bench configuration.",
+                        stacklevel=2)
             else:
                 self.add_instrument_channels()
             if self.temperature_channel is None:
