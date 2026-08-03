@@ -1254,13 +1254,6 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
             self._temp_timer.add_channel_total_minutes('temp_total_min')
             self._temp_timer.add_channel_delta_minutes('temp_delta_min')
             self.master = master()
-            self.cleanup_fns = []
-            self.temp_run_fns = []
-            self.startup_fns = []
-            self.shutdown_fns = []
-            self.temperature_channel = None
-            self._temperature_is_dummy = False
-            self.special_channel_actions = {}
             if type(self.tests[0]).build_a_bench is not Master_Test_Template.build_a_bench:
                 try:
                     self.tests[0].build_a_bench()
