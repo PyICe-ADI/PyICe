@@ -124,7 +124,7 @@ class TestBuildABenchDispatch:
         captured = capsys.readouterr()
         assert "WARNING" in captured.out
         assert "test_one" in captured.out
-        assert "1 test(s) will share" in captured.out
+        assert "1 test(s) will use" in captured.out
 
     def test_subclass_can_access_pm_master(self):
         """Verifies that build_a_bench can access self.pm.master as documented."""
