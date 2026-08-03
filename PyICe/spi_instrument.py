@@ -2,6 +2,23 @@
 
 ===============================
 
+Wraps linear shift-register SPI devices as PyICe channel collections.
+Each bitfield in the shift register becomes a readable/writable
+:class:`~PyICe.lab_core.integer_channel` managed by the
+:class:`~PyICe.lab_core.delegator` framework.
+
+Not suitable for context-sensitive (sub-addressed) memory directly; use
+multiple :class:`spiInstrument` instances with distinct ``preamble_clk_cnt``
+and ``preamble_data`` settings for that case.
+
+:class:`spiInstrument` — primary class; inherits from
+    :class:`~PyICe.lab_core.instrument` and
+    :class:`~PyICe.lab_core.delegator`.  Accepts separate write and read
+    :class:`~PyICe.spi_interface.shift_register` objects so that the outgoing
+    and incoming bit layouts can differ.  The class method
+    ``from_ipxact()`` constructs and fully populates an instance from an
+    IEEE 1685-2014 / SPIRIT 1685-2009 IP-XACT component file.
+
 >>> from PyICe.spi_instrument import spiInstrument
 
 """

@@ -24,34 +24,10 @@ PyICe.LTC\_plot module
    :undoc-members:
    :show-inheritance:
 
-PyICe.TypicalCurveEditor\_input module
---------------------------------------
-
-.. automodule:: PyICe.TypicalCurveEditor_input
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-PyICe.generate\_docs module
+PyICe.ipxact\_parser module
 ---------------------------
 
-.. automodule:: PyICe.generate_docs
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-PyICe.interpolator module
--------------------------
-
-.. automodule:: PyICe.interpolator
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-PyICe.ivy\_instruments module
------------------------------
-
-.. automodule:: PyICe.ivy_instruments
+.. automodule:: PyICe.ipxact_parser
    :members:
    :undoc-members:
    :show-inheritance:
@@ -64,6 +40,13 @@ PyICe.lab\_core module
    :undoc-members:
    :show-inheritance:
 
+PyICe.lab\_gui module
+---------------------
+
+.. automodule:: PyICe.lab_gui
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 PyICe.lab\_instruments module
 -----------------------------
@@ -97,14 +80,6 @@ PyICe.logo module
    :undoc-members:
    :show-inheritance:
 
-PyICe.plot\_tools module
-------------------------
-
-.. automodule:: PyICe.plot_tools
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 PyICe.spi\_instrument module
 ----------------------------
 
@@ -129,10 +104,10 @@ PyICe.twi\_instrument module
    :undoc-members:
    :show-inheritance:
 
-PyICe.twoWireInterface module
------------------------------
+PyICe.twi\_interface module
+---------------------------
 
-.. automodule:: PyICe.twoWireInterface
+.. automodule:: PyICe.twi_interface
    :members:
    :undoc-members:
    :show-inheritance:
