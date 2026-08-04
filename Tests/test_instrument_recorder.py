@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from PyICe.data_utils.instrument_recorder import instrument_recorder
-from PyICe.lab_core import ChannelReadException, PartialReadException
+from PyICe.lab_core import ChannelReadException, PartialReadException, master
 from PyICe.visa_wrappers import visaWrapperException
 
 
@@ -418,3 +418,173 @@ class TestInstrumentRecorder:
                 raise RuntimeError("user error")
 
         mock_logger.stop.assert_called_once()
+
+
+@pytest.fixture
+def dummy_instrument():
+    """Create a master with dummy channels simulating an instrument."""
+    m = master()
+    m.add_channel_dummy('voltage')
+    m.add_channel_dummy('current')
+    m['voltage'].write(3.3)
+    m['current'].write(0.1)
+    yield m
+    m.stop_threads()
+
+
+@pytest.mark.database
+class TestIntegration:
+    """Integration tests using real master/logger/SQLite (no mocks)."""
+
+    def test_creates_database_table(self, tmp_path, dummy_instrument):
+        db = str(tmp_path / 'test.sqlite')
+        rec = instrument_recorder(dummy_instrument, db_filename=db, table_name='run1')
+        conn = sqlite3.connect(db)
+        tables = [r[0] for r in conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table'").fetchall()]
+        conn.close()
+        rec.stop()
+        assert 'run1' in tables
+        assert 'run1_channel_meta' in tables
+
+    def test_logs_channel_values(self, tmp_path, dummy_instrument):
+        db = str(tmp_path / 'test.sqlite')
+        rec = instrument_recorder(dummy_instrument, db_filename=db, table_name='data')
+        rec.log()
+        conn = sqlite3.connect(db)
+        row = conn.execute("SELECT voltage, current FROM [data]").fetchone()
+        conn.close()
+        rec.stop()
+        assert float(row[0]) == pytest.approx(3.3)
+        assert float(row[1]) == pytest.approx(0.1)
+
+    def test_values_change_between_logs(self, tmp_path):
+        m = master()
+        m.add_channel_dummy('voltage')
+        m['voltage'].write(1.0)
+        db = str(tmp_path / 'change.sqlite')
+        rec = instrument_recorder(m, db_filename=db, table_name='data')
+        rec.log(comment='1V')
+        m['voltage'].write(2.0)
+        rec.log(comment='2V')
+        m['voltage'].write(3.3)
+        rec.log(comment='3.3V')
+        conn = sqlite3.connect(db)
+        rows = conn.execute("SELECT voltage, comment FROM [data] ORDER BY rowid").fetchall()
+        conn.close()
+        rec.stop()
+        m.stop_threads()
+        assert float(rows[0][0]) == pytest.approx(1.0)
+        assert rows[0][1] == '1V'
+        assert float(rows[1][0]) == pytest.approx(2.0)
+        assert rows[1][1] == '2V'
+        assert float(rows[2][0]) == pytest.approx(3.3)
+        assert rows[2][1] == '3.3V'
+
+    def test_comment_per_row(self, tmp_path, dummy_instrument):
+        db = str(tmp_path / 'test.sqlite')
+        rec = instrument_recorder(dummy_instrument, db_filename=db, table_name='data')
+        rec.log(comment='first')
+        rec.log(comment='second')
+        rec.log()
+        conn = sqlite3.connect(db)
+        rows = conn.execute("SELECT comment FROM [data] ORDER BY rowid").fetchall()
+        conn.close()
+        rec.stop()
+        assert rows[0][0] == 'first'
+        assert rows[1][0] == 'second'
+        assert rows[2][0] == ''
+
+    def test_multiple_instruments(self, tmp_path):
+        m1 = master()
+        m1.add_channel_dummy('voltage')
+        m1['voltage'].write(5.0)
+        m2 = master()
+        m2.add_channel_dummy('temperature')
+        m2['temperature'].write(25.0)
+        db = str(tmp_path / 'multi.sqlite')
+        rec = instrument_recorder(m1, m2, db_filename=db, table_name='data')
+        rec.log()
+        conn = sqlite3.connect(db)
+        row = conn.execute("SELECT voltage, temperature FROM [data]").fetchone()
+        conn.close()
+        rec.stop()
+        m1.stop_threads()
+        m2.stop_threads()
+        assert float(row[0]) == pytest.approx(5.0)
+        assert float(row[1]) == pytest.approx(25.0)
+
+    def test_multiple_instruments_metadata(self, tmp_path):
+        m1 = master()
+        m1.add_channel_dummy('v_in')
+        m2 = master()
+        m2.add_channel_dummy('i_out')
+        db = str(tmp_path / 'multi.sqlite')
+        rec = instrument_recorder(m1, m2, db_filename=db, table_name='data')
+        conn = sqlite3.connect(db)
+        rows = conn.execute("SELECT channel_name FROM [data_channel_meta]").fetchall()
+        names = [r[0] for r in rows]
+        conn.close()
+        rec.stop()
+        m1.stop_threads()
+        m2.stop_threads()
+        assert 'v_in' in names
+        assert 'i_out' in names
+
+    def test_metadata_channel_attributes(self, tmp_path):
+        m = master()
+        ch = m.add_channel_dummy('trace_y')
+        ch.set_attribute('channel_type', 'y_data')
+        ch.set_attribute('measurement', 'S21 Log Magnitude')
+        ch.set_attribute('channel_number', 2)
+        db = str(tmp_path / 'attrs.sqlite')
+        rec = instrument_recorder(m, db_filename=db, table_name='data')
+        conn = sqlite3.connect(db)
+        row = conn.execute(
+            "SELECT channel_type, measurement, channel_number "
+            "FROM [data_channel_meta] WHERE channel_name='trace_y'"
+        ).fetchone()
+        conn.close()
+        rec.stop()
+        m.stop_threads()
+        assert row == ('y_data', 'S21 Log Magnitude', 2)
+
+    def test_metadata_instrument_class_path(self, tmp_path):
+        m = master()
+        m.add_channel_dummy('ch1')
+        db = str(tmp_path / 'cls.sqlite')
+        rec = instrument_recorder(m, db_filename=db, table_name='data')
+        conn = sqlite3.connect(db)
+        row = conn.execute(
+            "SELECT instrument_class FROM [data_channel_meta] WHERE channel_name='ch1'"
+        ).fetchone()
+        conn.close()
+        rec.stop()
+        m.stop_threads()
+        assert row[0] is not None
+        assert 'master' in row[0]
+
+    def test_partial_read_does_not_crash(self, tmp_path):
+        m = master()
+        m.add_channel_dummy('good_ch')
+        m['good_ch'].write(42)
+        m.add_channel_virtual('bad_ch', read_function=lambda: 1/0)
+        db = str(tmp_path / 'partial.sqlite')
+        rec = instrument_recorder(m, db_filename=db, table_name='test')
+        rec.log()
+        conn = sqlite3.connect(db)
+        count = conn.execute("SELECT COUNT(*) FROM [test]").fetchone()[0]
+        conn.close()
+        rec.stop()
+        m.stop_threads()
+        assert count == 1
+
+    def test_database_readable_after_stop(self, tmp_path, dummy_instrument):
+        db = str(tmp_path / 'test.sqlite')
+        rec = instrument_recorder(dummy_instrument, db_filename=db, table_name='run1')
+        rec.log()
+        rec.stop()
+        conn = sqlite3.connect(db)
+        count = conn.execute("SELECT COUNT(*) FROM [run1]").fetchone()[0]
+        conn.close()
+        assert count == 1
