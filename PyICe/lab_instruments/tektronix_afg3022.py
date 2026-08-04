@@ -25,14 +25,8 @@ class tektronix_afg3022(scpi_instrument):
 
     def add_channel_burst(self, channel_name, channel_number):
         """Add a channel burst.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:BURSt:MODE`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -70,15 +64,7 @@ class tektronix_afg3022(scpi_instrument):
 
     def add_channel_continuous(self, channel_name, channel_number):
         """Add a channel continuous.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -132,14 +118,8 @@ class tektronix_afg3022(scpi_instrument):
 
     def add_channel_enable(self, channel_name, channel_number):
         """Add a channel enable.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Sends the ``:STATE`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
+        Sends the ``:STATE`` SCPI command to the instrument.
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -168,15 +148,9 @@ class tektronix_afg3022(scpi_instrument):
 
     def add_channel_outputz(self, channel_name, channel_number):
         """Add a channel outputz.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:VOLTage:LEVel:IMMediate:LOW`` SCPI command to the
         instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -241,15 +215,9 @@ class tektronix_afg3022(scpi_instrument):
 
     def add_channel_burstwave_low_voltage(self, channel_name, channel_number):
         """Add a channel burstwave low voltage.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:VOLTage:LEVel:IMMediate:LOW`` SCPI command to the
         instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -270,15 +238,9 @@ class tektronix_afg3022(scpi_instrument):
 
     def add_channel_burstwave_high_voltage(self, channel_name, channel_number):
         """Add a channel burstwave high voltage.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:VOLTage:LEVel:IMMediate:HIGH`` SCPI command to the
         instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -299,14 +261,8 @@ class tektronix_afg3022(scpi_instrument):
 
     def add_channel_burstwave_pulse_width(self, channel_name, channel_number):
         """Add a channel burstwave pulse width.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:PULSe:WIDTh`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -329,14 +285,8 @@ class tektronix_afg3022(scpi_instrument):
 
     def add_channel_burstwave_period(self, channel_name, channel_number):
         """Add a channel burstwave period.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:PULSe:PERiod`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -357,14 +307,8 @@ class tektronix_afg3022(scpi_instrument):
 
     def add_channel_burstwave_pulse_hold(self, channel_name, channel_number):
         """Add a channel burstwave pulse hold.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:PULSe:HOLD`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -387,15 +331,9 @@ class tektronix_afg3022(scpi_instrument):
 
     def add_channel_burstwave_rise_time(self, channel_name, channel_number):
         """Add a channel burstwave rise time.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:PULSe:TRANsition:LEADing`` SCPI command to the
         instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -418,15 +356,9 @@ class tektronix_afg3022(scpi_instrument):
 
     def add_channel_burstwave_fall_time(self, channel_name, channel_number):
         """Add a channel burstwave fall time.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:PULSe:TRANsition:TRAiling`` SCPI command to the
         instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -449,14 +381,8 @@ class tektronix_afg3022(scpi_instrument):
 
     def add_channel_burstwave_cycles(self, channel_name, channel_number):
         """Add a channel burstwave cycles.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:BURSt:NCYCles`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -477,15 +403,7 @@ class tektronix_afg3022(scpi_instrument):
 
     def add_channel_burstwave_trigger(self, channel_name, channel_number):
         """Sends trigger for all active channels regardless of channel_name or channel_number.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -541,15 +459,9 @@ class tektronix_afg3022(scpi_instrument):
     def add_channel_continuouswave_low_voltage(
             self, channel_name, channel_number):
         """Add a channel continuouswave low voltage.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:VOLTage:LEVel:IMMediate:LOW`` SCPI command to the
         instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -571,15 +483,9 @@ class tektronix_afg3022(scpi_instrument):
     def add_channel_continuouswave_high_voltage(
             self, channel_name, channel_number):
         """Add a channel continuouswave high voltage.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:VOLTage:LEVel:IMMediate:HIGH`` SCPI command to the
         instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -600,14 +506,8 @@ class tektronix_afg3022(scpi_instrument):
 
     def add_channel_continuouswave_width(self, channel_name, channel_number):
         """Add a channel continuouswave width.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:PULSe:WIDTh`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -630,14 +530,8 @@ class tektronix_afg3022(scpi_instrument):
 
     def add_channel_continuouswave_period(self, channel_name, channel_number):
         """Add a channel continuouswave period.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:PULSe:PERiod`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -659,14 +553,8 @@ class tektronix_afg3022(scpi_instrument):
     def add_channel_continuouswave_pulse_hold(
             self, channel_name, channel_number):
         """Add a channel continuouswave pulse hold.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:PULSe:HOLD`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -690,15 +578,9 @@ class tektronix_afg3022(scpi_instrument):
     def add_channel_continuouswave_rise_time(
             self, channel_name, channel_number):
         """Add a channel continuouswave rise time.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:PULSe:TRANsition:LEADing`` SCPI command to the
         instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -722,15 +604,9 @@ class tektronix_afg3022(scpi_instrument):
     def add_channel_continuouswave_fall_time(
             self, channel_name, channel_number):
         """Add a channel continuouswave fall time.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:PULSe:TRANsition:TRAiling`` SCPI command to the
         instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
