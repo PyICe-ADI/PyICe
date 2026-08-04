@@ -127,6 +127,49 @@ class TestInstrumentRecorder:
         assert "timeout" in captured.out
 
     @patch('PyICe.data_utils.instrument_recorder.lab_core.logger')
+    def test_init_creates_comment_channel(self, mock_logger_cls, tmp_path):
+        mock_logger = MagicMock()
+        mock_logger.__iter__ = MagicMock(return_value=iter([]))
+        mock_logger_cls.return_value = mock_logger
+
+        inst = _make_mock_instrument()
+        db = str(tmp_path / 'test.sqlite')
+        instrument_recorder(inst, db_filename=db, table_name='t')
+
+        mock_logger.master.add_channel_dummy.assert_called_once_with('comment')
+
+    @patch('PyICe.data_utils.instrument_recorder.lab_core.logger')
+    def test_log_writes_comment(self, mock_logger_cls, tmp_path):
+        mock_logger = MagicMock()
+        mock_logger.__iter__ = MagicMock(return_value=iter([]))
+        mock_logger_cls.return_value = mock_logger
+        comment_ch = mock_logger.master.add_channel_dummy.return_value
+
+        inst = _make_mock_instrument()
+        db = str(tmp_path / 'test.sqlite')
+        rec = instrument_recorder(inst, db_filename=db, table_name='t')
+
+        rec.log(comment='sweep 1 done')
+
+        comment_ch.write.assert_called_with('sweep 1 done')
+
+    @patch('PyICe.data_utils.instrument_recorder.lab_core.logger')
+    def test_log_default_comment_is_empty(self, mock_logger_cls, tmp_path):
+        mock_logger = MagicMock()
+        mock_logger.__iter__ = MagicMock(return_value=iter([]))
+        mock_logger_cls.return_value = mock_logger
+        comment_ch = mock_logger.master.add_channel_dummy.return_value
+
+        inst = _make_mock_instrument()
+        db = str(tmp_path / 'test.sqlite')
+        rec = instrument_recorder(inst, db_filename=db, table_name='t')
+
+        comment_ch.write.reset_mock()
+        rec.log()
+
+        comment_ch.write.assert_called_once_with('')
+
+    @patch('PyICe.data_utils.instrument_recorder.lab_core.logger')
     def test_stop_closes_interfaces(self, mock_logger_cls, tmp_path):
         mock_logger = MagicMock()
         mock_logger.__iter__ = MagicMock(return_value=iter([]))

@@ -164,7 +164,12 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
         iface = self.get_interface()
         discovered = {}
 
+        display_split = iface.ask(':DISPlay:SPLit?').strip()
+        active_channels = set(int(ch) for ch in display_split if ch.isdigit())
+
         for channel_number in range(1, 5):
+            if channel_number not in active_channels:
+                continue
             trace_count = int(iface.ask(f':CALCulate{channel_number}:PARameter:COUNt?'))
             if trace_count == 0:
                 continue
