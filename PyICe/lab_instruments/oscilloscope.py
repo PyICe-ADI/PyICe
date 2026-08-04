@@ -290,7 +290,7 @@ class oscilloscope(scpi_instrument, delegator):
 
         Does not require an instrument connection. Identifies x_data (time)
         and y_data (waveform) columns using the companion metadata table written
-        by instrument_data_dump, or falls back to naming conventions for older
+        by instrument_recorder, or falls back to naming conventions for older
         files (columns named 'x_values' or ending in '_timedata' are time axes;
         columns named 'channel_N' or with PyICeBLOB type are waveforms).
 

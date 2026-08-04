@@ -1118,7 +1118,7 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
 
         Does not require an instrument connection. Identifies x_data (frequency)
         and y_data (trace) columns using the companion metadata table written by
-        instrument_data_dump, or falls back to naming conventions for older files.
+        instrument_recorder, or falls back to naming conventions for older files.
 
         Args:
             db_filename: Path to the SQLite database file.

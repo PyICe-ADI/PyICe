@@ -1,37 +1,40 @@
-"""Instrument data dump utility.
+"""Instrument recorder utility.
 
-Dumps channel data from one or more PyICe instruments to an SQLite database,
+Records channel data from one or more PyICe instruments to an SQLite database,
 using their registered channel read methods and a PyICe logger. A companion
 metadata table (``{table}_channel_meta``) is written alongside the data so
 that instrument drivers can later identify their columns and plot them via
 their ``plot_from_database`` classmethods.
 
 Usage:
-    from PyICe.data_utils.instrument_data_dump import instrument_data_dump
+    from PyICe.data_utils.instrument_recorder import instrument_recorder
 
     # With any configured instrument(s):
-    dump = instrument_data_dump(my_ena, db_filename='my_data.sqlite', table_name='bode')
-    dump.log()   # first measurement
+    rec = instrument_recorder(my_ena, db_filename='my_data.sqlite', table_name='bode')
+    rec.log()   # first measurement
     # ... change conditions ...
-    dump.log()   # second measurement
-    dump.stop()  # close database
+    rec.log()   # second measurement
+    rec.stop()  # close database
 
-    # Multiple instruments in one dump:
-    dump = instrument_data_dump(ena, scope, psu, db_filename='bench.sqlite', table_name='run1')
+    # Or use as a context manager:
+    with instrument_recorder(ena, scope, psu, db_filename='bench.sqlite', table_name='run1') as rec:
+        rec.log()
 
     # Plot back from database (no instrument connection needed):
     from PyICe.lab_instruments.ENA import keysight_e5061b_base
     keysight_e5061b_base.plot_from_database('my_data.sqlite', 'bode')
 
     # Or run standalone (interactive collect/plot menu):
-    python -m PyICe.data_utils.instrument_data_dump
+    python -m PyICe.data_utils.instrument_recorder
 """
 import sqlite3
 from PyICe import lab_core
+from PyICe.lab_core import PartialReadException
+from PyICe.visa_wrappers import visaWrapperException
 
 
-class instrument_data_dump:
-    """Dump instrument channel data to SQLite via a logger.
+class instrument_recorder:
+    """Record instrument channel data to SQLite via a logger.
 
     Creates a persistent logger that can log multiple rows (one per call
     to log()) before being closed with stop(). Accepts any PyICe instrument
@@ -47,8 +50,9 @@ class instrument_data_dump:
         table_name: Table name in the database. If None, prompts the user.
     """
 
-    def __init__(self, *instruments, db_filename='data_dump.sqlite', table_name=None):
-        assert len(instruments) > 0, "Provide at least one instrument."
+    def __init__(self, *instruments, db_filename='data_record.sqlite', table_name=None):
+        if not instruments:
+            raise ValueError("Provide at least one instrument.")
         self._instruments = instruments
         self._logger = lab_core.logger(database=db_filename, use_threads=False)
         for inst in self._instruments:
@@ -65,28 +69,26 @@ class instrument_data_dump:
     def _write_channel_metadata(self, table_name):
         """Write a companion table storing channel attributes and instrument class paths."""
         meta_table = f'{table_name}_channel_meta'
-        conn = sqlite3.connect(self._db_filename)
-        conn.execute(f'DROP TABLE IF EXISTS [{meta_table}]')
-        conn.execute(f'CREATE TABLE [{meta_table}] '
-                     '(channel_name TEXT, channel_type TEXT, measurement TEXT,'
-                     ' channel_number INTEGER, instrument_class TEXT)')
-        ch_to_class = {}
-        for inst in self._instruments:
-            cls = type(inst)
-            class_path = f'{cls.__module__}.{cls.__qualname__}'
-            for ch_name in inst.get_all_channel_names():
-                ch_to_class[ch_name] = class_path
-        for ch in self._logger:
-            attrs = ch.get_attributes()
-            ch_type = attrs.get('channel_type')
-            measurement = attrs.get('measurement')
-            channel_number = attrs.get('channel_number')
-            class_path = ch_to_class.get(ch.get_name())
-            conn.execute(f'INSERT INTO [{meta_table}] VALUES (?, ?, ?, ?, ?)',
-                         (ch.get_name(), ch_type, measurement,
-                          channel_number, class_path))
-        conn.commit()
-        conn.close()
+        with sqlite3.connect(self._db_filename) as conn:
+            conn.execute(f'DROP TABLE IF EXISTS [{meta_table}]')
+            conn.execute(f'CREATE TABLE [{meta_table}] '
+                         '(channel_name TEXT, channel_type TEXT, measurement TEXT,'
+                         ' channel_number INTEGER, instrument_class TEXT)')
+            ch_to_class = {}
+            for inst in self._instruments:
+                cls = type(inst)
+                class_path = f'{cls.__module__}.{cls.__qualname__}'
+                for ch_name in inst.get_all_channel_names():
+                    ch_to_class[ch_name] = class_path
+            for ch in self._logger:
+                attrs = ch.get_attributes()
+                ch_type = attrs.get('channel_type')
+                measurement = attrs.get('measurement')
+                channel_number = attrs.get('channel_number')
+                class_path = ch_to_class.get(ch.get_name())
+                conn.execute(f'INSERT INTO [{meta_table}] VALUES (?, ?, ?, ?, ?)',
+                             (ch.get_name(), ch_type, measurement,
+                              channel_number, class_path))
 
     def log(self):
         """Read all instrument channels and log one row to the database.
@@ -94,16 +96,22 @@ class instrument_data_dump:
         Channels that raise exceptions during read (e.g. VISA timeouts)
         are stored as error markers in that row and a warning is printed.
         """
-        from PyICe.lab_core import PartialReadException
         try:
             self._logger.log()
         except PartialReadException as e:
             for name, failure in e.failures.items():
                 print(f"Warning: channel '{name}' read failed: {failure}")
 
+    @property
+    def db_filename(self):
+        return self._db_filename
+
+    @property
+    def table_name(self):
+        return self._table_name
+
     def stop(self):
         """Close the database connection and disconnect from all instruments."""
-        from PyICe.visa_wrappers import visaWrapperException
         self._logger.stop()
         for inst in self._instruments:
             try:
@@ -112,9 +120,12 @@ class instrument_data_dump:
                 print(f"Warning: could not close {inst.get_name()}: {type(e).__name__}: {e}")
         print(f'Data logged to {self._db_filename}, table: {self._table_name}')
 
+    def __enter__(self):
+        return self
 
-# Keep old name as an alias for backwards compatibility
-ena_data_dump = instrument_data_dump
+    def __exit__(self, *_):
+        self.stop()
+        return False
 
 
 if __name__ == '__main__':
@@ -168,14 +179,14 @@ if __name__ == '__main__':
             else:
                 print(f"  {name}: {len(channel_names)} channel(s)")
 
-        dump = instrument_data_dump(*selected.values())
+        record = instrument_recorder(*selected.values())
         while True:
             resp = input("Press Enter to log a measurement, or 'q' to quit: ").strip().lower()
             if resp == 'q':
                 break
-            dump.log()
+            record.log()
             print("  Logged.")
-        dump.stop()
+        record.stop()
         print("Done.")
 
         # Plot the just-collected data
@@ -183,16 +194,16 @@ if __name__ == '__main__':
         for cls in instrument_classes:
             if hasattr(cls, 'plot_from_database'):
                 try:
-                    cls.plot_from_database(dump._db_filename, dump._table_name)
+                    cls.plot_from_database(record.db_filename, record.table_name)
                 except (ValueError, KeyError):
                     continue
 
     elif answer == 'p':
         from PyICe.lab_utils.sqlite_data import sqlite_data
 
-        db_filename = input("Database filename [data_dump.sqlite]: ").strip()
+        db_filename = input("Database filename [data_record.sqlite]: ").strip()
         if not db_filename:
-            db_filename = 'data_dump.sqlite'
+            db_filename = 'data_record.sqlite'
 
         db = sqlite_data(database_file=db_filename)
         all_tables = db.get_table_names()

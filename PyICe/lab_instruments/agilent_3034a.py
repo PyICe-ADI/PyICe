@@ -170,7 +170,7 @@ class agilent_3034a(oscilloscope):
 
         Discovers which channels (1-4) are currently displayed on the
         instrument and registers waveform + timebase channels so that this
-        instrument object is ready for use with instrument_data_dump.
+        instrument object is ready for use with instrument_recorder.
 
         Prompts the user to name each active channel.
 
