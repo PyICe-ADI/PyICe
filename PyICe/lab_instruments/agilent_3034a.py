@@ -331,15 +331,7 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_timebase(self, name):
         """Add a channel timebase.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             name: Name identifier.
 
@@ -581,14 +573,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_probe_gain(self, name, number):
         """Add a channel probe gain.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:PROBe`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
             number: Channel or port number.
@@ -610,14 +596,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_BWLimit(self, name, number):
         """Add a channel BWLimit.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:BWLimit`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
             number: Channel or port number.
@@ -639,14 +619,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_HFReject(self, name):
         """Add a channel trigger HFReject.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:TRIGger:HFReject`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
 
@@ -664,14 +638,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_invert(self, name, number):
         """Add a channel invert.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:INVert`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
             number: Channel or port number.
@@ -693,14 +661,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_Yrange(self, name, number):
         """Add a channel Yrange.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Sends the ``:CHANnel`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
+        Sends the ``:CHANnel`` SCPI command to the instrument.
         Args:
             name: Name identifier.
             number: Channel or port number.
@@ -719,14 +681,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_Yoffset(self, name, number):
         """Add a channel Yoffset.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Sends the ``:CHANnel`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
+        Sends the ``:CHANnel`` SCPI command to the instrument.
         Args:
             name: Name identifier.
             number: Channel or port number.
@@ -745,14 +701,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_Yrange_readback(self, name, number):
         """Add a channel Yrange readback.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:RANGe`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
             number: Channel or port number.
@@ -770,14 +720,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_Yoffset_readback(self, name, number):
         """Add a channel Yoffset readback.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:CHANnel`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
             number: Channel or port number.
@@ -797,14 +741,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_impedance(self, name, number):
         """Add a channel impedance.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:IMPedance`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
             number: Channel or port number.
@@ -833,14 +771,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_units(self, name, number):
         """Add a channel units.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:UNITs`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
             number: Channel or port number.
@@ -869,14 +801,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_coupling(self, name, number):
         """Add a channel coupling.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:COUPling`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
             number: Channel or port number.
@@ -903,14 +829,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_Xrange(self, name):
         """Add a channel Xrange.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:TIMebase:RANGe`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
 
@@ -926,14 +846,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_Xposition(self, name):
         """Add a channel Xposition.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:TIMebase:POSition`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
 
@@ -949,14 +863,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_Xreference(self, name):
         """Add a channel Xreference.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:TIMebase:REFerence`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
 
@@ -988,14 +896,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_Xrange_readback(self, name):
         """Add a channel Xrange readback.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:TIMebase:RANGe`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
 
@@ -1012,14 +914,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_Xposition_readback(self, name):
         """Add a channel Xposition readback.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:TIMebase:POSition`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
 
@@ -1038,14 +934,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_Xreference_readback(self, name):
         """Add a channel Xreference readback.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:TIMebase:REFerence`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
 
@@ -1061,15 +951,7 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_runmode(self, name):
         """Add a channel runmode.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             name: Name identifier.
 
@@ -1086,14 +968,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_triggerlevel(self, name):
         """Add a channel triggerlevel.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:TRIGger:LEVel`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
 
@@ -1111,14 +987,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_triggermode(self, name):
         """Add a channel triggermode.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:TRIGger:SWEep`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
 
@@ -1141,14 +1011,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_triggerslope(self, name):
         """Add a channel triggerslope.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:TRIGger:SLOPe`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
 
@@ -1174,14 +1038,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_triggersource(self, name):
         """Add a channel triggersource.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:TRIGger:SOURce`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
 
@@ -1217,14 +1075,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_acquire_type(self, name):
         """Add a channel acquire type.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:ACQuire:TYPE`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
 
@@ -1253,14 +1105,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_acquire_count(self, name):
         """Add a channel acquire count.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:ACQuire:COUNt`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
 
@@ -1284,15 +1130,7 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_pointcount(self, name):
         """Add a channel pointcount.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             name: Name identifier.
 
@@ -1306,15 +1144,7 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_pointcount_readback(self, name):
         """Add a channel pointcount readback.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             name: Name identifier.
 
@@ -1329,14 +1159,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_triggertype(self, name):
         """Add a channel triggertype.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the `` Agilent`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
 
@@ -1371,14 +1195,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_pattern(self, name):
         """Add a channel trigger pattern.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:TRIGger:PATTern`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
 
@@ -1396,15 +1214,9 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_pattern_qualifier(self, name):
         """Add a channel trigger pattern qualifier.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:TRIGger:PATTern:QUALifier`` SCPI command to the
         instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
 
@@ -1434,14 +1246,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_pattern_format(self, name):
         """Add a channel trigger pattern format.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:TRIGger:PATTern:FORMat`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
 
@@ -1463,15 +1269,9 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_pattern_greaterthan(self, name):
         """Add a channel trigger pattern greaterthan.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:TRIGger:PATTern:GREaterthan`` SCPI command to the
         instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
 
@@ -1491,15 +1291,9 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_pattern_lessthan(self, name):
         """Add a channel trigger pattern lessthan.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:TRIGger:PATTern:LESSthan`` SCPI command to the
         instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
 
@@ -1519,14 +1313,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_pattern_range(self, name):
         """Add a channel trigger pattern range.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:TRIGger:PATTern:RANGe`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
 
@@ -1551,15 +1339,9 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_glitch_greaterthan(self, name):
         """Add a channel trigger glitch greaterthan.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:TRIGger:GLITch:GREaterthan`` SCPI command to the
         instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
 
@@ -1579,14 +1361,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_glitch_lessthan(self, name):
         """Add a channel trigger glitch lessthan.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:TRIGger:GLITch:LESSthan`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
 
@@ -1606,14 +1382,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_glitch_level(self, name):
         """Add a channel trigger glitch level.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:TRIGger:GLITch:LEVel`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
 
@@ -1632,14 +1402,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_glitch_source(self, name):
         """Add a channel trigger glitch source.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:TRIGger:GLITch:SOURce`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
 
@@ -1658,14 +1422,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_glitch_polarity(self, name):
         """Add a channel trigger glitch polarity.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:TRIGger:GLITch:POLarity`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
 
@@ -1690,15 +1448,9 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_glitch_qualifier(self, name):
         """Add a channel trigger glitch qualifier.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:TRIGger:GLITch:QUALifier`` SCPI command to the
         instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
 
@@ -1724,14 +1476,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_glitch_range(self, name):
         """Add a channel trigger glitch range.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:TRIGger:GLITch:RANGe`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
 
@@ -1756,14 +1502,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_runt_polarity(self, name):
         """Add a channel trigger runt polarity.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:TRIGger:RUNT:POLarity`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
 
@@ -1788,14 +1528,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_runt_qualifier(self, name):
         """Add a channel trigger runt qualifier.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:TRIGger:RUNT:QUALifier`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
 
@@ -1820,14 +1554,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_runt_source(self, name):
         """Add a channel trigger runt source.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:TRIGger:RUNT:SOURce`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
 
@@ -1846,14 +1574,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_runt_time(self, name):
         """Add a channel trigger runt time.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:TRIGger:RUNT:TIME`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
 
@@ -1871,14 +1593,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_runt_level_high(self, name):
         """Add a channel trigger runt level high.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:TRIGger:LEVel:HIGH`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
 
@@ -1897,14 +1613,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_trigger_runt_level_low(self, name):
         """Add a channel trigger runt level low.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:TRIGger:RUNT:SOURce`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
 
@@ -1922,14 +1632,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_frequency(self, name, number):
         """Add a channel meas frequency.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:MEASure:FREQuency`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
             number: Channel or port number.
@@ -1957,14 +1661,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_period(self, name, number):
         """Add a channel meas period.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:MEASure:PERiod`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
             number: Channel or port number.
@@ -1998,14 +1696,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_stats_current(self, name, number):
         """Add a channel meas stats current.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:MEASure:RESults`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
             number: Channel or port number.
@@ -2023,14 +1715,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_stats_minimum(self, name, number):
         """Add a channel meas stats minimum.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:MEASure:STATistics`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
             number: Channel or port number.
@@ -2048,14 +1734,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_stats_maximum(self, name, number):
         """Add a channel meas stats maximum.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:MEASure:RESults`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
             number: Channel or port number.
@@ -2073,14 +1753,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_stats_mean(self, name, number):
         """Add a channel meas stats mean.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:MEASure:STATistics`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
             number: Channel or port number.
@@ -2098,14 +1772,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_stats_stdev(self, name, number):
         """Add a channel meas stats stdev.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:MEASure:RESults`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
             number: Channel or port number.
@@ -2123,14 +1791,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_stats_count(self, name, number):
         """Add a channel meas stats count.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:MEASure:STATistics`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
             number: Channel or port number.
@@ -2148,15 +1810,9 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_stats_reset(self, name, number):
         """Add a channel meas stats reset.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:MEASure:STATistics:RESet`` SCPI command to the
         instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
             number: Channel or port number.
@@ -2173,14 +1829,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_dutycycle(self, name, number):
         """Add a channel meas dutycycle.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:MEASure:SOURce`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
             number: Channel or port number.
@@ -2205,14 +1855,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_risetime(self, name, number):
         """Add a channel meas risetime.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:MEASure:SOURce`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
             number: Channel or port number.
@@ -2237,14 +1881,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_falltime(self, name, number):
         """Add a channel meas falltime.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:MEASure:SOURce`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
             number: Channel or port number.
@@ -2283,15 +1921,7 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_display(self, name, number):
         """Add a channel display.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             name: Name identifier.
             number: Channel or port number.
@@ -2308,14 +1938,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_delay(self, name, first_channel, second_channel):
         """Add a channel meas delay.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:MEASure:DELay`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             first_channel: First channel to use.
             name: Name identifier.
@@ -2345,14 +1969,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_delay_spec1(self, name):
         """Add a channel meas delay spec1.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:MEASure:DEFine`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
 
@@ -2371,14 +1989,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_delay_spec2(self, name):
         """Add a channel meas delay spec2.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:MEASure:DEFine`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
 
@@ -2397,14 +2009,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_define_abs_thresh(self, name, number):
         """Add a channel meas define abs thresh.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:MEASure:DEFine`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
             number: Channel or port number.
@@ -2425,14 +2031,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_pwidth(self, name, number):
         """Add a channel meas pwidth.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:MEASure:PWIDth`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
             number: Channel or port number.
@@ -2457,14 +2057,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_nwidth(self, name, number):
         """Add a channel meas nwidth.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:MEASure:SOURce`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
             number: Channel or port number.
@@ -2489,14 +2083,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_vmax(self, name, number):
         """Add a channel meas vmax.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:MEASure:SOURce`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
             number: Channel or port number.
@@ -2521,14 +2109,8 @@ class agilent_3034a(oscilloscope):
 
     def add_channel_meas_vaverage(self, name, number):
         """Add a channel meas vaverage.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:MEASure:VAVerage`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             name: Name identifier.
             number: Channel or port number.
@@ -2772,15 +2354,7 @@ class agilent_3034a(oscilloscope):
     @deprecated(version='47', reason="You are using old scope driver methods. Consider updating to new scope binding. See https://confluence.analog.com/display/stowe/Preferred+Practices")
     def add_channel_time(self, name):
         """Add a channel time.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             name: Name identifier.
 

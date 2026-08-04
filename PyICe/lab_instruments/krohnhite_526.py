@@ -58,15 +58,7 @@ class krohnhite_526(instrument):
 
     def add_channel_current(self, channel_name):
         """Write channel to switch instrument to current mode and program current. Default current range is +/-10mA.  Create a irange channel to adjust range to (10, 100)mA.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -81,15 +73,7 @@ class krohnhite_526(instrument):
 
     def add_channel_irange(self, channel_name):
         """Write channel to set current mode full scale range to +/-(10,100)mA.  Won't take effect until the current is programmed.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -138,15 +122,7 @@ class krohnhite_526(instrument):
 
     def add_channel_voltage(self, channel_name):
         """Add a channel voltage.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -161,15 +137,7 @@ class krohnhite_526(instrument):
 
     def add_channel_vrange(self, channel_name):
         """Write channel to set voltage mode full scale range to +/-(0.1,1,10,100)V or +/-(10,100)mA.  Won't take effect until the voltage is programmed.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 

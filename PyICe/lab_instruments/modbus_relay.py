@@ -37,15 +37,7 @@ class modbus_relay(instrument):
 
     def add_channel_relay1(self, channel_name='relay1'):
         """Add a channel relay1.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument and maps it to the underlying device register for read/write access.
-
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Args:
             channel_name: Name for the new channel.
 
@@ -68,15 +60,7 @@ class modbus_relay(instrument):
 
     def add_channel_relay2(self, channel_name='relay2'):
         """Add a channel relay2.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument and maps it to the underlying device register for read/write access.
-
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Args:
             channel_name: Name for the new channel.
 

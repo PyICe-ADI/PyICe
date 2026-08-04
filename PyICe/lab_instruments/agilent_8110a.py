@@ -41,14 +41,8 @@ class Agilent_8110a(scpi_instrument):
 
     def add_channel_trigger_source(self, channel_name):
         """Sets the trigger source of the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:ARM:SOUR`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -82,14 +76,8 @@ class Agilent_8110a(scpi_instrument):
 
     def add_channel_trigger_sense(self, channel_name):
         """Sets the trigger sense of the instrument to EDGE or LEVEL.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:ARM:SENS`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -109,14 +97,8 @@ class Agilent_8110a(scpi_instrument):
 
     def add_channel_trigger_impedance(self, channel_name):
         """Sets the impedance of the EXT INPUT connector.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:ARM:IMP`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -138,14 +120,8 @@ class Agilent_8110a(scpi_instrument):
 
     def add_channel_arm_level(self, channel_name):
         """Sets the trigger level of the front panel EXT INPUT trigger input.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:ARM:LEV`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -162,14 +138,8 @@ class Agilent_8110a(scpi_instrument):
 
     def add_channel_trigger_slope(self, channel_name):
         """Sets the trigger slope of the EXT INPUT connector.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``'.`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -220,14 +190,8 @@ class Agilent_8110a(scpi_instrument):
 
     def add_channel_ouput_state(self, channel_name, number):
         """Sets the output state of each channel to on or off.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Sends the ``:OUTP`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
+        Sends the ``:OUTP`` SCPI command to the instrument.
         Args:
             channel_name: Name for the new channel.
             number: Channel or port number.
@@ -252,14 +216,8 @@ class Agilent_8110a(scpi_instrument):
 
     def add_channel_ouput_polarity(self, channel_name, number):
         """Sets the output polarity of each channel to NORMAL or INVERTED.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Sends the ``:OUTP`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
+        Sends the ``:OUTP`` SCPI command to the instrument.
         Args:
             channel_name: Name for the new channel.
             number: Channel or port number.
@@ -380,14 +338,8 @@ class Agilent_8110a(scpi_instrument):
 
     def add_channel_high_current_level(self, channel_name, number):
         """Sets the high level of the current waveform while being aware of ratio of the downstream impedance and its own source imepdance.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:SOUR:CURR`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the new channel.
             number: Channel or port number.
@@ -407,14 +359,8 @@ class Agilent_8110a(scpi_instrument):
 
     def add_channel_low_current_level(self, channel_name, number):
         """Sets the Low level of the current waveform while being aware of ratio of the downstream impedance and its own source imepdance.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:SOUR:CURR`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the new channel.
             number: Channel or port number.
@@ -434,14 +380,8 @@ class Agilent_8110a(scpi_instrument):
 
     def add_channel_transition_leading(self, channel_name, number):
         """Sets the leading edge speed of the waveform.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:SOUR:PULS:TRAN`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the new channel.
             number: Channel or port number.
@@ -460,14 +400,8 @@ class Agilent_8110a(scpi_instrument):
 
     def add_channel_transition_trailing(self, channel_name, number):
         """Sets the trailing edge speed of the waveform.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:TRA`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the new channel.
             number: Channel or port number.
@@ -551,15 +485,7 @@ class Agilent_8110a(scpi_instrument):
 
     def add_channel_trigger(self, channel_name):
         """Triggers the instrument (with SCPI *TRG) assuming it's in manual mode.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -653,14 +579,8 @@ class Agilent_8110a(scpi_instrument):
 
     def add_channel_pattern_state(self, channel_name):
         """Enables the outputs to follow the pattern generator vs just free running pulses.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``DIG:STIM:PATT:STATE`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -682,14 +602,8 @@ class Agilent_8110a(scpi_instrument):
 
     def add_channel_pattern_format(self, channel_name, number):
         """Sets the per-channel output patterns to be RZ or NRZ (Return to Zero or Non Return to Zero).
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:FORM`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the new channel.
             number: Channel or port number.

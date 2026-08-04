@@ -34,15 +34,7 @@ class tektronix_3054(scpi_instrument, delegator):
 
     def add_channel_time(self, channel_name):
         """Add a channel time.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -57,15 +49,7 @@ class tektronix_3054(scpi_instrument, delegator):
 
     def add_channel(self, channel_name, scope_channel_number):
         """Add named channel to instrument.  num is 1-4.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             scope_channel_number: Oscilloscope channel number (1-based).
@@ -83,15 +67,7 @@ class tektronix_3054(scpi_instrument, delegator):
     def add_channel_dvm(self, channel_name,
                         scope_channel_number, measurement_time=2, mode='DC'):
         """Add a channel dvm.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             measurement_time: Measurement time to use.
