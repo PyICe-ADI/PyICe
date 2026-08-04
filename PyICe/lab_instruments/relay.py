@@ -17,7 +17,6 @@ class relay(instrument):
         """Placeholder.
 
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -85,15 +84,7 @@ class ftdi_relay(relay):
 
     def add_channel(self, channel_name, channel_number):
         """Adds a channel for a relay on the board.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.

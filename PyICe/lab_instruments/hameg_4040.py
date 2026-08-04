@@ -102,15 +102,7 @@ class hameg_4040(scpi_instrument):
 
     def add_channel_voltage(self, channel_name, num):
         """Add a channel voltage.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             num: Count or number.
@@ -131,15 +123,7 @@ class hameg_4040(scpi_instrument):
 
     def add_channel_current(self, channel_name, num):
         """Add a channel current.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             num: Count or number.
@@ -160,15 +144,7 @@ class hameg_4040(scpi_instrument):
 
     def add_channel_vsense(self, channel_name, num):
         """Add a channel vsense.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             num: Count or number.
@@ -183,15 +159,7 @@ class hameg_4040(scpi_instrument):
 
     def add_channel_isense(self, channel_name, num):
         """Add a channel isense.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             num: Count or number.
@@ -206,15 +174,7 @@ class hameg_4040(scpi_instrument):
 
     def add_channel_voltage_readback(self, channel_name, num):
         """Add a channel voltage readback.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             num: Count or number.
@@ -230,15 +190,7 @@ class hameg_4040(scpi_instrument):
 
     def add_channel_current_readback(self, channel_name, num):
         """Add a channel current readback.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             num: Count or number.
@@ -254,15 +206,7 @@ class hameg_4040(scpi_instrument):
 
     def add_channel_measured_voltage(self, channel_name, num):
         """Add a channel measured voltage.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             num: Count or number.
@@ -278,15 +222,7 @@ class hameg_4040(scpi_instrument):
 
     def add_channel_measured_current(self, channel_name, num):
         """Add a channel measured current.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             num: Count or number.
@@ -302,15 +238,7 @@ class hameg_4040(scpi_instrument):
 
     def add_channel_ovp(self, channel_name, num):
         """Add a channel ovp.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             num: Count or number.
@@ -328,15 +256,7 @@ class hameg_4040(scpi_instrument):
 
     def add_channel_ovp_status(self, channel_name, num):
         """Add a channel ovp status.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             num: Count or number.
@@ -353,15 +273,7 @@ class hameg_4040(scpi_instrument):
 
     def add_channel_fuse_status(self, channel_name, num):
         """Add a channel fuse status.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             num: Count or number.
@@ -378,15 +290,7 @@ class hameg_4040(scpi_instrument):
 
     def add_channel_enable(self, channel_name, num):
         """Add a channel enable.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             num: Count or number.
@@ -405,15 +309,7 @@ class hameg_4040(scpi_instrument):
 
     def add_channel_fuse_enable(self, channel_name, num, fuse_delay=0):
         """Add a channel fuse enable.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             fuse_delay: Fuse delay to use.
@@ -435,15 +331,7 @@ class hameg_4040(scpi_instrument):
 
     def add_channel_fuse_link(self, channel_name, num):
         """Add a channel fuse link.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             num: Count or number.
@@ -462,15 +350,7 @@ class hameg_4040(scpi_instrument):
 
     def add_channel_master_enable(self, channel_name):
         """Add a channel master enable.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -484,15 +364,7 @@ class hameg_4040(scpi_instrument):
 
     def add_channel_AWG(self, channel_name, num):
         """Add a channel AWG.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             num: Count or number.

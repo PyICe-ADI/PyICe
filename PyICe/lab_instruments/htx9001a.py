@@ -176,15 +176,7 @@ class htx9001a(htx9001):
 
     def add_channel_pwm(self, channel_name, pin):
         """Add a channel pwm.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             pin: Pin number.
@@ -318,15 +310,7 @@ class htx9001a(htx9001):
 
     def add_channel_servo(self, channel_name, servo_number):
         """Add a channel servo.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             servo_number: Servo number to use.
@@ -356,15 +340,7 @@ class htx9001a(htx9001):
 
     def add_channel_servo_enable(self, channel_name, servo_number):
         """Add a channel servo enable.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             servo_number: Servo number to use.

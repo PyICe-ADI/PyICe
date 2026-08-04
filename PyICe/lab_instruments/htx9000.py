@@ -57,15 +57,7 @@ class htx9000(scpi_instrument):
 
     def add_channel_current(self, channel_name):
         """Add a channel current.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -92,15 +84,7 @@ class htx9000(scpi_instrument):
 
     def add_channel_current_readback(self, channel_name):
         """Add a channel current readback.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -113,15 +97,7 @@ class htx9000(scpi_instrument):
 
     def add_channel_dropout(self, channel_name):
         """Add a channel dropout.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -136,15 +112,7 @@ class htx9000(scpi_instrument):
 
     def add_channel_temp_heatsink(self, channel_name):
         """Add a channel temp heatsink.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -157,15 +125,7 @@ class htx9000(scpi_instrument):
 
     def add_channel_temp_board(self, channel_name):
         """Add a channel temp board.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -179,15 +139,7 @@ class htx9000(scpi_instrument):
 
     def add_channel_swipepad_lock(self, channel_name):
         """Add a channel swipepad lock.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -203,15 +155,7 @@ class htx9000(scpi_instrument):
 
     def add_channel_manual_range(self, channel_name):
         """Add a channel manual range.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -228,14 +172,8 @@ class htx9000(scpi_instrument):
 
     def add_channel_range_readback(self, channel_name):
         """Add a channel range readback.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:SOURce:CURRent:RANGe`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -408,15 +346,7 @@ class htx9000SE_5A(htx9000):
 
     def add_channel_current(self, channel_name):
         """Add a channel current.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
