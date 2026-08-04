@@ -4,6 +4,7 @@
 
 """
 from PyICe.plugins.bench_configuration_management.bench_configuration_management import component_collection, connection_collection
+from PyICe.plugins.master_test_template import Master_Test_Template
 import os
 import inspect
 import importlib
@@ -18,6 +19,7 @@ import pdb
 import json
 import linecache
 import shutil
+import warnings
 from PyICe.plugins.bench_configuration_management import bench_visualizer
 from PyICe.plugins.test_results import Test_Results, Failed_Eval
 from PyICe.plugins.traceability_items import Traceability_items
@@ -115,6 +117,13 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
         self.thismachine = socket.gethostname().replace("-", "_").split(".")[0]
         self.scratch_folder = scratch_folder
         self.debug = False
+        self.cleanup_fns = []
+        self.temp_run_fns = []
+        self.startup_fns = []
+        self.shutdown_fns = []
+        self.temperature_channel = None
+        self._temperature_is_dummy = False
+        self.special_channel_actions = {}
         for attr in settings:
             setattr(self, attr, settings[attr])
         self._send_notifications = "notifications" in self.plugins
@@ -379,11 +388,6 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                         self.special_channel_actions.update(
                             instrument_dict['special_channel_action'])
             break
-        if self.temperature_channel is None:
-            self.temperature_channel = self.master.add_channel_dummy("tdegc")
-            self._temperature_is_dummy = True
-        if not self._temperatures:
-            self.temperature_channel.write(25)
 
     def _add_components(self):
         for component in self.component_list:
@@ -1250,7 +1254,25 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
             self._temp_timer.add_channel_total_minutes('temp_total_min')
             self._temp_timer.add_channel_delta_minutes('temp_delta_min')
             self.master = master()
-            self.add_instrument_channels()
+            if type(self.tests[0]).build_a_bench is not Master_Test_Template.build_a_bench:
+                try:
+                    self.tests[0].build_a_bench()
+                except Exception as e:
+                    raise RuntimeError(
+                        f"BENCH MAKER: build_a_bench() failed in test '{self.tests[0].get_name()}': {e}"
+                    ) from e
+                if len(self.tests) > 1:
+                    warnings.warn(
+                        f"Only the first test's ({self.tests[0].get_name()}) build_a_bench() is used. "
+                        f"The remaining {len(self.tests) - 1} test(s) will share this bench configuration.",
+                        stacklevel=2)
+            else:
+                self.add_instrument_channels()
+            if self.temperature_channel is None:
+                self.temperature_channel = self.master.add_channel_dummy("tdegc")
+                self._temperature_is_dummy = True
+            if not self._temperatures:
+                self.temperature_channel.write(25)
             if 'bench_config_management' in self.plugins:
                 self.test_components = component_collection()
                 self._add_components()
