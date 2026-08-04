@@ -18,13 +18,12 @@ def _make_mock_instrument(name='inst1', channel_names=None):
     iface = MagicMock()
     cls = type('MockInstrument', (), {
         '__module__': 'test_module',
+        '_iface': iface,
         'get_name': lambda self: name,
         'get_all_channel_names': lambda self: channel_names or ['ch1'],
         'get_interface': lambda self: iface,
     })
-    inst = cls()
-    inst._iface = iface
-    return inst
+    return cls()
 
 
 def _make_mock_channel(name, attrs=None):
