@@ -1,5 +1,13 @@
-from PyICe.lab_core import *
-import nidcpower
+""" NI-DCPower for Programmable Power Supply instrument driver.
+
+>>> from PyICe.lab_instruments.ni_pps import ni_dcsupply
+
+"""
+from PyICe.lab_core import *  # noqa: F403
+try:
+    import nidcpower
+except ImportError:
+    nidcpower = None
 
 
 class ni_dcsupply(instrument):
@@ -22,7 +30,7 @@ class ni_dcsupply(instrument):
         self.session.channels[channel_number].abort()
 
     def output_enabled(self, channel_number, state="ON"):
-        if state=="ON":
+        if state == "ON":
             self.session.channels[channel_number].output_enabled = True
         else:
             self.session.channels[channel_number].output_enabled = False
@@ -55,7 +63,10 @@ class ni_dcsupply(instrument):
                 self.output_enabled(channel_number)
             self.session.channels[channel_number].voltage_level = value
         else:
-            raise ValueError(f"The voltage_level {value}V on CH{channel_number} is outside the allowed range of {vlim_ranges[vlim]['min']}V to {vlim_ranges[vlim]['max']}V.")
+            raise ValueError(
+                f"The voltage_level {value}V on CH{channel_number} is outside the allowed "
+                f"range of {vlim_ranges[vlim]['min']}V to {vlim_ranges[vlim]['max']}V."
+            )
 
     def get_voltage_sense(self, channel_number):
         if not getattr(self, f'is_CH{channel_number}_initiated'):
@@ -75,7 +86,7 @@ class ni_dcsupply(instrument):
         if not self.get_current_limit_auto_range(channel_number):
             if getattr(self, f'is_CH{channel_number}_initiated'):
                 self.abort_channel(channel_number)
-            self.session.channels[channel_number].current_limit_autorange = True # AUTO
+            self.session.channels[channel_number].current_limit_autorange = True  # AUTO
             self.initiate_channel(channel_number)
 
     def get_current_limit_auto_range(self, channel_number):
@@ -93,7 +104,7 @@ class ni_dcsupply(instrument):
 
             if getattr(self, f'is_CH{channel_number}_initiated'):
                 self.abort_channel(channel_number)
-                self.session.channels[channel_number].current_limit_autorange = False # MANUAL
+                self.session.channels[channel_number].current_limit_autorange = False  # MANUAL
                 if not (ilim_ranges[value]['min'] <= ilim <= ilim_ranges[value]['max']):
                     self.set_current_limit(channel_number, ilim_ranges[value]['max'])
                 self.session.channels[channel_number].current_limit_range = value
@@ -109,7 +120,10 @@ class ni_dcsupply(instrument):
         if ilim_ranges['min'] <= value <= ilim_ranges['max']:
             self.session.channels[channel_number].current_limit = value
         else:
-            raise ValueError(f"The current_limit {value}A on CH{channel_number} is outside the allowed range of {ilim_ranges['min']}A to {ilim_ranges['max']}A.")
+            raise ValueError(
+                f"The current_limit {value}A on CH{channel_number} is outside "
+                f"the allowed range of {ilim_ranges['min']}A to {ilim_ranges['max']}A."
+            )
 
     def get_current_limit(self, channel_number):
         return self.session.channels[channel_number].current_limit
@@ -133,20 +147,26 @@ class ni_dcsupply(instrument):
         self._add_channel(new_channel)
         return new_channel
 
-    def add_channel_current(self,channel_name, channel_number):
-        new_channel = channel(channel_name + "_ilim", write_function=lambda value: self.set_current_limit(channel_number, value))
+    def add_channel_current(self, channel_name, channel_number):
+        new_channel = channel(
+            channel_name + "_ilim", write_function=lambda value: self.set_current_limit(channel_number, value)
+        )
         new_channel._set_value(self.get_current_limit(channel_number))
         self._add_channel(new_channel)
         return new_channel
 
-    def add_channel_current_readback(self,channel_name, channel_number):
-        new_channel = channel(channel_name + "_ilim_readback", read_function=lambda: self.get_current_limit(channel_number))
+    def add_channel_current_readback(self, channel_name, channel_number):
+        new_channel = channel(
+            channel_name + "_ilim_readback", read_function=lambda: self.get_current_limit(channel_number)
+        )
         self._add_channel(new_channel)
         new_channel._set_value(self.get_current_limit_range(channel_number))
         return new_channel
 
-    def add_channel_current_range(self,channel_name, channel_number):
-        new_channel = channel(channel_name + "_ilim_range", write_function=lambda value: self.set_current_limit_range(channel_number, value))
+    def add_channel_current_range(self, channel_name, channel_number):
+        new_channel = channel(
+            channel_name + "_ilim_range", write_function=lambda value: self.set_current_limit_range(channel_number, value)
+        )
         new_channel.add_preset("AUTO", "")
         for ilim_range in getattr(self, f'CH{channel_number}_current_ranges'):
             new_channel.add_preset(ilim_range, "")
@@ -154,18 +174,22 @@ class ni_dcsupply(instrument):
         self._add_channel(new_channel)
         return new_channel
 
-    def add_channel_vsense(self,channel_name, channel_number):
-        new_channel = channel(channel_name + "_vsense", read_function=lambda: self.get_voltage_sense(channel_number))
+    def add_channel_vsense(self, channel_name, channel_number):
+        new_channel = channel(
+            channel_name + "_vsense", read_function=lambda: self.get_voltage_sense(channel_number)
+        )
         self._add_channel(new_channel)
         return new_channel
 
-    def add_channel_isense(self,channel_name, channel_number):
+    def add_channel_isense(self, channel_name, channel_number):
         new_channel = channel(channel_name + "_isense", read_function=lambda: self.get_current_sense(channel_number))
         self._add_channel(new_channel)
         return new_channel
 
-    def add_channel_enable(self,channel_name, channel_number):
-        new_channel = channel(channel_name + "_enable", write_function=lambda state: self.output_enabled(channel_number, state))
+    def add_channel_enable(self, channel_name, channel_number):
+        new_channel = channel(
+            channel_name + "_enable", write_function=lambda state: self.output_enabled(channel_number, state)
+        )
         new_channel.add_preset("ON", "")
         new_channel.add_preset("OFF", "")
         new_channel._set_value(self.get_output_status(channel_number))

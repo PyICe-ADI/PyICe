@@ -1,4 +1,9 @@
-from PyICe.lab_core import *
+""" NI PXIe-4124 24-Channel, 24V SMU instrument driver.
+
+>>> from PyICe.lab_instruments.ni_4163_smu import pxie_4163
+
+"""
+from PyICe.lab_core import *  # noqa: F403
 from PyICe.lab_instruments.ni_dcpower import ni_dcpower
 import nidcpower
 
@@ -6,12 +11,12 @@ import nidcpower
 class pxie_4163(ni_dcpower):
     def __init__(self, resource_name):
         self._base_name = "PXIe-4163"
-        instrument.__init__(self, f"{self._base_name} @ {resource_name}")
+        instrument.__init__(self, f"{self._base_name} @ {resource_name}")  # noqa: F405
         self.session = nidcpower.Session(resource_name=resource_name)
         self.session.output_enabled = False
         self.set_current_limit = False
         self.set_current_limit_range = False
-        self.current_limits: dict = {'min':10e-9, 'max':50e-3}
+        self.current_limits: dict = {'min': 10e-9, 'max': 50e-3}
         self.current_ranges: dict = {
             10e-6: {'min': 1e-6, 'max': 10e-6},     # resolution = 100pA
             100e-6: {'min': 10e-6, 'max': 100e-6},  # resolution = 1nA
@@ -77,21 +82,16 @@ class pxie_4163(ni_dcpower):
     def setup_channels(self, smu_channels):
         for smu_channel in smu_channels:
             if smu_channel['config'] == "isource":
-                self.config_dc_current_source(channel_name=smu_channel['channel_name'], channel_number=smu_channel['channel_num'])
+                self.config_dc_current_source(
+                    channel_name=smu_channel['channel_name'], channel_number=smu_channel['channel_num']
+                )
             elif smu_channel['config'] == "vsource":
-                self.config_dc_voltage_source(channel_name=smu_channel['channel_name'], channel_number=smu_channel['channel_num'])
+                self.config_dc_voltage_source(
+                    channel_name=smu_channel['channel_name'], channel_number=smu_channel['channel_num']
+                )
             elif smu_channel['config'] == "vsense":
-                self.config_dc_voltmeter(channel_name=smu_channel['channel_name'], channel_number=smu_channel['channel_num'])
+                self.config_dc_voltmeter(
+                    channel_name=smu_channel['channel_name'], channel_number=smu_channel['channel_num']
+                )
             else:
-                raise ValueError(f"Channel mode must be one of: isource, isense, vsource, vsense.")
-
-if __name__ == "__main__":
-    channels = master()
-    smu = pxie_4163("PXI1Slot13")
-    channels.add(smu)
-    smu.config_dc_voltage_source(channel_name="svin", channel_number=0)
-
-    breakpoint()
-    smu.session.abort()
-    smu.__del__()
-
+                raise ValueError("Channel mode must be one of: isource, isense, vsource, vsense.")

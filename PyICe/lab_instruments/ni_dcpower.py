@@ -1,5 +1,13 @@
-from PyICe.lab_core import *
-import nidcpower
+""" NI-DCPower instrument driver.
+
+>>> from PyICe.lab_instruments.ni_dcpower import ni_dcpower
+
+"""
+from PyICe.lab_core import *  # noqa: F403
+try:
+    import nidcpower
+except ImportError:
+    nidcpower = None
 
 
 class ni_dcpower(instrument):
@@ -26,7 +34,7 @@ class ni_dcpower(instrument):
         self.session.channels[channel_number].abort()
 
     def output_enabled(self, channel_number, state):
-        if state=='ON':
+        if state == 'ON':
             self.session.channels[channel_number].output_enabled = True
         else:
             self.session.channels[channel_number].output_enabled = False
@@ -51,14 +59,18 @@ class ni_dcpower(instrument):
 
     '''Single Point DC_VOLTAGE Source Channels # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # '''
     def add_channel_output(self, channel_name, channel_number):
-        new_channel = channel(f"{channel_name}_enable_output", write_function=lambda state: self.output_enabled(channel_number, state))
+        new_channel = channel(
+            f"{channel_name}_enable_output", write_function=lambda state: self.output_enabled(channel_number, state)
+        )
         new_channel.add_preset("ON", "")
         new_channel.add_preset("OFF", "")
         return self._add_channel(new_channel)
 
     '''Single Point DC_VOLTAGE Source Channels # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # '''
     def add_channel_voltage_force(self, channel_name, channel_number):
-        new_channel = channel(f"{channel_name}_vforce", write_function=lambda value: self.set_voltage_level(channel_number, value))
+        new_channel = channel(
+            f"{channel_name}_vforce", write_function=lambda value: self.set_voltage_level(channel_number, value)
+        )
         new_channel._write_min = self.voltage_limits['min']
         new_channel._write_max = self.voltage_limits['max']
         new_channel._set_value(self.get_voltage_level(channel_number))
@@ -68,11 +80,15 @@ class ni_dcpower(instrument):
         def read_voltage_force_readback(channel_num):
             return float(self.session.channels[channel_num].voltage_level)
 
-        new_channel = channel(channel_name + "_vforce_readback", read_function=lambda: read_voltage_force_readback(channel_number))
+        new_channel = channel(
+            channel_name + "_vforce_readback", read_function=lambda: read_voltage_force_readback(channel_number)
+        )
         return self._add_channel(new_channel)
 
     def add_channel_voltage_range(self, channel_name, channel_number):
-        new_channel = channel(f"{channel_name}_vrange", write_function=lambda value: self.set_voltage_level_range(channel_number, value))
+        new_channel = channel(
+            f"{channel_name}_vrange", write_function=lambda value: self.set_voltage_level_range(channel_number, value)
+        )
         new_channel.add_preset("AUTO", "")
         for voltage_range in self.voltage_ranges:
             new_channel.add_preset(voltage_range, "")
@@ -80,7 +96,9 @@ class ni_dcpower(instrument):
         return self._add_channel(new_channel)
 
     def add_channel_voltage_range_readback(self, channel_name, channel_number):
-        new_channel = channel(channel_name + "_vrange_readback", read_function=lambda: self.get_voltage_level_range(channel_number))
+        new_channel = channel(
+            channel_name + "_vrange_readback", read_function=lambda: self.get_voltage_level_range(channel_number)
+        )
         return self._add_channel(new_channel)
 
     def add_channel_current_limit(self, channel_name, channel_number):
@@ -98,9 +116,13 @@ class ni_dcpower(instrument):
                     self.session.channels[channel_num].current_limit = value
                     self.set_current_limit_range = False
             else:
-                raise ValueError(f"\n\nCurrent limit must be between {self.current_limits['min']} and {self.current_limits['max']}.")
+                raise ValueError(
+                    f"Current limit must be between {self.current_limits['min']} and {self.current_limits['max']}."
+                )
 
-        new_channel = channel(f"{channel_name}_icompl", write_function=lambda value: write_current_limit(channel_number, value))
+        new_channel = channel(
+            f"{channel_name}_icompl", write_function=lambda value: write_current_limit(channel_number, value)
+        )
         new_channel._set_value(self.session.channels[channel_number].current_limit)
         return self._add_channel(new_channel)
 
@@ -108,7 +130,9 @@ class ni_dcpower(instrument):
         def read_current_limit(channel_num):
             return float(self.session.channels[channel_num].current_limit)
 
-        new_channel = channel(channel_name + "_ilim_readback", read_function=lambda: read_current_limit(channel_number))
+        new_channel = channel(
+            channel_name + "_ilim_readback", read_function=lambda: read_current_limit(channel_number)
+        )
         return self._add_channel(new_channel)
 
     def add_channel_current_limit_range(self, channel_name, channel_number):
@@ -131,7 +155,9 @@ class ni_dcpower(instrument):
                         self.session.channels[channel_num].initiate()
                         break
 
-        new_channel = channel(f"{channel_name}_ilim_range", write_function=lambda value: write_current_limit_range(channel_number, value))
+        new_channel = channel(
+            f"{channel_name}_ilim_range", write_function=lambda value: write_current_limit_range(channel_number, value)
+        )
         for current_range in self.current_ranges:
             new_channel.add_preset(current_range, "")
         new_channel._set_value(self.session.channels[channel_number].current_limit_range)
@@ -141,7 +167,9 @@ class ni_dcpower(instrument):
         def read_current_limit_range(channel_num):
             return float(self.session.channels[channel_num].current_limit_range)
 
-        new_channel = channel(channel_name + "_ilim_range_readback", read_function=lambda: read_current_limit_range(channel_number))
+        new_channel = channel(
+            channel_name + "_ilim_range_readback", read_function=lambda: read_current_limit_range(channel_number)
+        )
         return self._add_channel(new_channel)
 
     '''Single Point DC_CURRENT Channels # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # '''
@@ -157,7 +185,9 @@ class ni_dcpower(instrument):
             self.session.channels[channel_num].current_level = value
             self.write_channel(channel_name + "_enable_output", "ON")
 
-        new_channel = channel(f"{channel_name}_iforce", write_function=lambda value: write_current_force(channel_number, value))
+        new_channel = channel(
+            f"{channel_name}_iforce", write_function=lambda value: write_current_force(channel_number, value)
+        )
         return self._add_channel(new_channel)
 
     def add_channel_current_range(self, channel_name, channel_number):
@@ -168,7 +198,9 @@ class ni_dcpower(instrument):
 
             self.session.channels[channel_num].current_level_range = value
 
-        new_channel = channel(f"{channel_name}_irange", write_function=lambda value: write_current_range(channel_number, value))
+        new_channel = channel(
+            f"{channel_name}_irange", write_function=lambda value: write_current_range(channel_number, value)
+        )
         for current_range in self.current_ranges:
             new_channel.add_preset(current_range, "")
         new_channel._set_value(self.session.channels[channel_number].current_limit_range)
@@ -178,16 +210,20 @@ class ni_dcpower(instrument):
         def write_voltage_limit(channel_num, value):
             self.session.channels[channel_num].voltage_limit = value
 
-        new_channel = channel(f"{channel_name}_vcompl", write_function=lambda value: write_voltage_limit(channel_number, value))
+        new_channel = channel(
+            f"{channel_name}_vcompl", write_function=lambda value: write_voltage_limit(channel_number, value)
+        )
         new_channel._set_value(self.session.channels[channel_number].voltage_limit)
         return self._add_channel(new_channel)
 
     def add_channel_voltage_limit_range(self, channel_name, channel_number):
-        """ Set voltage_limit_autorange = False is when using this channel. """
+        # Set voltage_limit_autorange = False is when using this channel.
         def write_voltage_limit_range(channel_num, value):
             self.session.channels[channel_num].voltage_limit_range = value
 
-        new_channel = channel(f"{channel_name}_vcompl_range", write_function=lambda value: write_voltage_limit_range(channel_number, value))
+        new_channel = channel(
+            f"{channel_name}_vcompl_range", write_function=lambda value: write_voltage_limit_range(channel_number, value)
+        )
         for voltage_range in self.voltage_ranges:
             new_channel.add_preset(voltage_range, "")
         new_channel._set_value(self.session.channels[channel_number].voltage_limit_range)
@@ -202,7 +238,9 @@ class ni_dcpower(instrument):
             self.session.channels[channel_num].aperture_time = value
             self.session.channels[channel_num].initiate()
 
-        new_channel = channel(f"{channel_name}_nplc", write_function=lambda value: write_nplc(channel_number, value))
+        new_channel = channel(
+            f"{channel_name}_nplc", write_function=lambda value: write_nplc(channel_number, value)
+        )
         return self._add_channel(new_channel)
 
     def add_channel_sensing(self, channel_name, channel_number):
@@ -215,7 +253,9 @@ class ni_dcpower(instrument):
                 self.session.channels[channel_num].sense = nidcpower.Sense.LOCAL
             self.session.channels[channel_num].initiate()
 
-        new_channel = channel(f"{channel_name}_sensing", write_function=lambda value: write_sensing(channel_number, value))
+        new_channel = channel(
+            f"{channel_name}_sensing", write_function=lambda value: write_sensing(channel_number, value)
+        )
         new_channel.add_preset("LOCAL", "")
         new_channel.add_preset("REMOTE", "")
         return self._add_channel(new_channel)
@@ -224,18 +264,24 @@ class ni_dcpower(instrument):
         def read_current_sense(channel_num):
             return float(self.session.channels[channel_num].measure(nidcpower.MeasurementTypes.CURRENT))
 
-        new_channel = channel(channel_name + "_isense", read_function= lambda: read_current_sense(channel_number))
+        new_channel = channel(
+            channel_name + "_isense", read_function=lambda: read_current_sense(channel_number)
+        )
         return self._add_channel(new_channel)
 
     def add_channel_voltage_sense(self, channel_name, channel_number):
         def read_voltage_sense(channel_num):
             return float(self.session.channels[channel_num].measure(nidcpower.MeasurementTypes.VOLTAGE))
 
-        new_channel = channel(channel_name + "_vsense", read_function= lambda: read_voltage_sense(channel_number))
+        new_channel = channel(
+            channel_name + "_vsense", read_function=lambda: read_voltage_sense(channel_number)
+        )
         return self._add_channel(new_channel)
 
     def add_channel_compliance_sense(self, channel_name, channel_number):
-        new_channel = channel(channel_name + "_compliance", read_function= lambda: self.get_compliance(channel_number))
+        new_channel = channel(
+            channel_name + "_compliance", read_function=lambda: self.get_compliance(channel_number)
+        )
         return self._add_channel(new_channel)
 
     def __del__(self):
