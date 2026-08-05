@@ -36,7 +36,10 @@ dependencies=[
     "matplotlib>=3.6.0",
     "minimalmodbus",
     "numpy",
+	"nidmm",
+	"nidcpower",
     "nifgen",
+	"niscope",
     "objutils==0.6.4", #later versions through 0.8.7 won't run build script without crash
     "openpyxl",
     "pandas",
