@@ -1094,7 +1094,8 @@ class Test_Results_Reload(Test_Results):
             if 'results' not in self._results['tests'][test]:
                 self._register_test_failure(
                     name=test,
-                    reason="No results were collected for this test.")
+                    reason="No results were collected for this test.",
+                    conditions=None)
                 continue
             for case in self._results['tests'][test]['results']['cases']:
                 for trial in case['case_results']:
