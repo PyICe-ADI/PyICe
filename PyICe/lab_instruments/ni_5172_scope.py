@@ -1,22 +1,27 @@
-""" NI PXIe-5172 100MHz Oscilloscope instrument driver.
+# pylint: disable=too-many-lines
+"""NI PXIe-5172 100MHz Oscilloscope instrument driver.
 
 >>> from PyICe.lab_instruments.ni_5172_scope import pxie_5172
 
 """
-from PyICe.lab_core import *  # noqa: F403
+import time
 import numpy as np
 import niscope
 from niscope.errors import DriverError
+from PyICe.lab_core import (
+    instrument,
+    channel,
+    ChannelAttributeException
+)
 
 
-class pxie_5172(instrument):
-
+class pxie_5172(instrument):  # pylint: disable=too-many-public-methods
     def __init__(self, resource_name):
         self._base_name: str = "PXIe-5172_SCOPE"
-        instrument.__init__(self, f"{self._base_name} @ {resource_name}")  # noqa: F403
+        instrument.__init__(self, f"{self._base_name} @ {resource_name}")
         self.session = niscope.Session(resource_name=resource_name, reset_device=True)
 
-    """ Setup Methods  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # """
+    # Setup Methods  #
     def set_channel(self, channel_num, enabled):
         self.session.channels[channel_num].channel_enabled = enabled
 
@@ -43,7 +48,7 @@ class pxie_5172(instrument):
                         continue
                     enabled_channels.append(physical_channel)
             except ChannelAttributeException as e:
-                raise Exception(
+                raise RuntimeError(
                     'Oscilloscopes requires "dependent_physical_channels" attribute of all scope channels.'
                 ) from e
         enabled_unique = set(enabled_channels)
@@ -114,10 +119,10 @@ class pxie_5172(instrument):
         self.add_channel_timebase(prefix)
         self.add_clear_measurements_channel(prefix)
 
-    """ Waveform Data Channels # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # """
+    # Waveform Data Channels #
     def read_scope_channel(self, channel_num):
         record_length = self.get_points_count()
-        waveform = self.session.channels[channel_num].fetch(num_samples=record_length, timeout=0.0)
+        waveform = self.session.channels[channel_num].fetch(num_samples=record_length)
         wf = waveform[0]
         y_data = np.frombuffer(wf.samples, dtype=np.float64)  # Convert to NumPy array (voltage samples) for easier processing
         return y_data
@@ -132,14 +137,15 @@ class pxie_5172(instrument):
                 try:
                     return self.read_scope_channel(channel_num)
                 except DriverError as e2:
-                    raise Exception(
+                    raise RuntimeError(
                         "Acquisition has not been initiated. Call channels.write('scope_run_mode', 'RUN') before fetch."
                     ) from e2
+            raise
 
     def read_scope_time(self):
         en_channels = self.get_enabled_channels()
         record_length = self.get_points_count()
-        waveform = self.session.channels[en_channels[0]].fetch(num_samples=record_length, timeout=0.0)
+        waveform = self.session.channels[en_channels[0]].fetch(num_samples=record_length)
         wf = waveform[0]
         # x_start = wf.absolute_initial_x  # Real-world timestamp
         x_start = wf.relative_initial_x  # Oscilloscope time range.
@@ -157,27 +163,34 @@ class pxie_5172(instrument):
                 try:
                     return self.read_scope_time()
                 except DriverError as e2:
-                    raise Exception(
+                    raise RuntimeError(
                         "Acquisition has not been initiated. Call channels.write('scope_run_mode', 'RUN') before fetch."
                     ) from e2
+            raise
 
     def add_Ychannel_waveform(self, channel_name, channel_number):
         # Add named waveform channel, Ycontrol and Yreadback channels of the waveform.
-        new_channel = channel(channel_name, read_function=lambda: self.get_waveform_data(channel_number))
+        new_channel = channel(
+            channel_name,
+            read_function=lambda: self.get_waveform_data(channel_number)  # pylint: disable=unnecessary-lambda
+        )
         self._add_channel(new_channel)
-        new_channel._set_type_affinity('PyICeBLOB')
+        new_channel._set_type_affinity('PyICeBLOB')  # pylint: disable=W0212
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
         return new_channel
 
     def add_channel_timebase(self, channel_name):
         # Add time channel that stores the x-axis data points in seconds
-        new_channel = channel(channel_name + "_timedata", read_function=lambda: self.get_scope_time_data())
+        new_channel = channel(
+            channel_name + "_timedata",
+            read_function=lambda: self.get_scope_time_data()  # pylint: disable=unnecessary-lambda
+        )
         self._add_channel(new_channel)
-        new_channel._set_type_affinity('PyICeBLOB')
+        new_channel._set_type_affinity('PyICeBLOB')  # pylint: disable=W0212
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
 
-    """ Vertical(Y) Control Channels # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # """
+    # Vertical(Y) Control Channels #
     def set_yscale(self, channel_num, value):
         self.session.channels[channel_num].vertical_range = value * 8.0  # scale is in volts/div, range is in volts
 
@@ -185,15 +198,21 @@ class pxie_5172(instrument):
         return self.session.channels[channel_num].vertical_range / 8.0  # scale is in volts/div, range is in volts
 
     def add_channel_Yscale(self, channel_name, channel_number):
-        new_channel = channel(channel_name + '_Yscale', write_function=lambda value: self.set_yscale(channel_number, value))
-        new_channel._set_value(self.get_yscale(channel_number))
+        new_channel = channel(
+            channel_name + '_Yscale',
+            write_function=lambda value: self.set_yscale(channel_number, value)  # pylint: disable=W0108
+        )
+        new_channel._set_value(self.get_yscale(channel_number))  # pylint: disable=W0212
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
         return new_channel
 
     def add_channel_Yscale_readback(self, channel_name, channel_number):
         # Return the vertical scale (volt/division) of a channel.
-        new_channel = channel(channel_name + '_Yscale_readback', read_function=lambda: self.get_yscale(channel_number))
+        new_channel = channel(
+            channel_name + '_Yscale_readback',
+            read_function=lambda: self.get_yscale(channel_number)  # pylint: disable=unnecessary-lambda
+        )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
         return new_channel
@@ -205,14 +224,20 @@ class pxie_5172(instrument):
         return float(self.session.channels[channel_num].vertical_range)
 
     def add_channel_Yrange(self, channel_name, channel_number):
-        new_channel = channel(channel_name + '_Yrange', write_function=lambda value: self.set_yrange(channel_number, value))
-        new_channel._set_value(self.get_yrange(channel_number))
+        new_channel = channel(
+            channel_name + '_Yrange',
+            write_function=lambda value: self.set_yrange(channel_number, value)  # pylint: disable=unnecessary-lambda
+        )
+        new_channel._set_value(self.get_yrange(channel_number))  # pylint: disable=W0212
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
         return new_channel
 
     def add_channel_Yrange_readback(self, channel_name, channel_number):
-        new_channel = channel(channel_name + '_Yrange_readback', read_function=lambda: self.get_yrange(channel_number))
+        new_channel = channel(  # pylint: disable=unnecessary-lambda
+            channel_name + '_Yrange_readback',
+            read_function=lambda: self.get_yrange(channel_number)  # pylint: disable=unnecessary-lambda
+        )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
         return new_channel
@@ -224,14 +249,20 @@ class pxie_5172(instrument):
         return -float(self.session.channels[channel_num].vertical_offset)
 
     def add_channel_Yoffset(self, channel_name, channel_number):
-        new_channel = channel(channel_name + '_Yoffset', write_function=lambda value: self.set_yoffset(channel_number, value))
-        new_channel._set_value(self.get_yoffset(channel_number))
+        new_channel = channel(
+            channel_name + '_Yoffset',
+            write_function=lambda value: self.set_yoffset(channel_number, value)  # pylint: disable=W0108
+        )
+        new_channel._set_value(self.get_yoffset(channel_number))  # pylint: disable=W0212
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
         return new_channel
 
     def add_channel_Yoffset_readback(self, channel_name, channel_number):
-        new_channel = channel(channel_name + '_Yoffset_readback', read_function=lambda: self.get_yoffset(channel_number))
+        new_channel = channel(  # pylint: disable=unnecessary-lambda
+            channel_name + '_Yoffset_readback',
+            read_function=lambda: self.get_yoffset(channel_number)  # pylint: disable=unnecessary-lambda
+        )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
         return new_channel
@@ -250,11 +281,12 @@ class pxie_5172(instrument):
 
     def add_channel_coupling(self, channel_name, channel_number):
         new_channel = channel(
-            channel_name + '_coupling', write_function=lambda value: self.set_coupling(channel_number, value)
+            channel_name + '_coupling',
+            write_function=lambda value: self.set_coupling(channel_number, value)  # pylint: disable=W0108
         )
         new_channel.add_preset("AC", "AC")
         new_channel.add_preset("DC", "DC")
-        new_channel._set_value(self.get_coupling(channel_number))
+        new_channel._set_value(self.get_coupling(channel_number))  # pylint: disable=W0212
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
         return new_channel
@@ -267,16 +299,18 @@ class pxie_5172(instrument):
 
     def add_channel_probe_gain(self, channel_name, channel_number):
         new_channel = channel(
-            channel_name + '_probe_gain', write_function=lambda value: self.set_probe_attenuation(channel_number, value)
+            channel_name + '_probe_gain',
+            write_function=lambda value: self.set_probe_attenuation(channel_number, value)  # pylint: disable=W0108
         )
-        new_channel._set_value(self.get_probe_attenuation(channel_number))
+        new_channel._set_value(self.get_probe_attenuation(channel_number))  # pylint: disable=W0212
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
         return new_channel
 
     def add_channel_probe_gain_readback(self, channel_name, channel_number):
         new_channel = channel(
-            channel_name + '_probe_gain_readback', read_function=lambda: self.get_probe_attenuation(channel_number)
+            channel_name + '_probe_gain_readback',
+            read_function=lambda: self.get_probe_attenuation(channel_number)  # pylint: disable=W0108
         )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
@@ -295,11 +329,12 @@ class pxie_5172(instrument):
 
     def add_channel_bandwidth_limit(self, channel_name, channel_number):
         new_channel = channel(
-            channel_name + '_BWlimit', write_function=lambda value: self.set_bandwidth_limit(channel_number, value)
+            channel_name + '_BWlimit',
+            write_function=lambda value: self.set_bandwidth_limit(channel_number, value)  # pylint: disable=W0108
         )
         new_channel.add_preset("ON", "20MHz bandwidth")
         new_channel.add_preset("OFF", "Full bandwidth")  # 100MHz actual bandwidth
-        new_channel._set_value(self.get_bandwidth_limit(channel_number))
+        new_channel._set_value(self.get_bandwidth_limit(channel_number))  # pylint: disable=W0212
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
         return new_channel
@@ -325,22 +360,26 @@ class pxie_5172(instrument):
 
     def add_channel_impedance(self, channel_name, channel_number):
         new_channel = channel(
-            channel_name + '_impedance', write_function=lambda value: self.set_impedance(channel_number, value)
+            channel_name + '_impedance',
+            write_function=lambda value: self.set_impedance(channel_number, value)  # pylint: disable=W0108
         )
         new_channel.add_preset("50", "50Ω")
         new_channel.add_preset("1M", "1MΩ")
-        new_channel._set_value(self.get_impedance(channel_number))
+        new_channel._set_value(self.get_impedance(channel_number))  # pylint: disable=W0212
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
         return new_channel
 
     def add_channel_impedance_readback(self, channel_name, channel_number):
-        new_channel = channel(channel_name + '_impedance_readback', read_function=lambda: self.get_impedance(channel_number))
+        new_channel = channel(
+            channel_name + '_impedance_readback',
+            read_function=lambda: self.get_impedance(channel_number)  # pylint: disable=W0108
+        )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
         return new_channel
 
-    """ Horizontal(X) Control Channels # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # """
+    # Horizontal(X) Control Channels #
     def set_xscale(self, time_per_div):
         x_divisions = 10 * 2  # No of division (t/div).
         # When multiplied by 2 the InstrumentStudio display shows the correct time range.
@@ -377,14 +416,19 @@ class pxie_5172(instrument):
         return float(time_per_div)
 
     def add_channel_Xscale(self, channel_name):
-        new_channel = channel(channel_name + '_Xscale', write_function=lambda value: self.set_xscale(value))
-        new_channel._set_value(self.get_xscale())
+        new_channel = channel(
+            channel_name + '_Xscale', write_function=lambda value: self.set_xscale(value)  # pylint: disable=W0108
+        )
+        new_channel._set_value(self.get_xscale())  # pylint: disable=W0212
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
 
     def add_channel_Xscale_readback(self, channel_name):
-        new_channel = channel(channel_name + '_Xscale_readback', read_function=lambda: self.get_xscale())
+        new_channel = channel(
+            channel_name + '_Xscale_readback',
+            read_function=lambda: self.get_xscale()  # pylint: disable=W0108
+        )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
@@ -393,14 +437,20 @@ class pxie_5172(instrument):
         self.set_xscale(time_per_div=value / 10.0)
 
     def add_channel_Xrange(self, channel_name):
-        new_channel = channel(channel_name + '_Xrange', write_function=lambda value: self.set_xrange(value))
-        new_channel._set_value(self.get_xscale() * 10)
+        new_channel = channel(
+            channel_name + '_Xrange',
+            write_function=lambda value: self.set_xrange(value)  # pylint: disable=W0108
+        )
+        new_channel._set_value(self.get_xscale() * 10)  # pylint: disable=W0212
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
 
     def add_channel_Xrange_readback(self, channel_name):
-        new_channel = channel(channel_name + '_Xrange_readback', read_function=lambda: self.get_xscale() * 10)
+        new_channel = channel(
+            channel_name + '_Xrange_readback',
+            read_function=lambda: self.get_xscale() * 10  # pylint: disable=W0108
+        )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
@@ -412,19 +462,25 @@ class pxie_5172(instrument):
         return self.session.horz_record_ref_position
 
     def add_channel_Xposition(self, channel_name):
-        new_channel = channel(channel_name + '_Xposition', write_function=lambda value: self.set_xposition(value))
-        new_channel._set_value(self.get_xposition())
+        new_channel = channel(
+            channel_name + '_Xposition',
+            write_function=lambda value: self.set_xposition(value)  # pylint: disable=W0108
+        )
+        new_channel._set_value(self.get_xposition())  # pylint: disable=W0212
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
 
     def add_channel_Xposition_readback(self, channel_name):
-        new_channel = channel(channel_name + '_Xposition_readback', read_function=lambda: self.get_xposition())
+        new_channel = channel(
+            channel_name + '_Xposition_readback',
+            read_function=lambda: self.get_xposition()  # pylint: disable=W0108
+        )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
 
-    """ Trigger Control Channels # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # """
+    # Trigger Control Channels #
     def set_trigger_type(self, value):
         trigger_types = {
             'IMMEDIATE': 6,
@@ -445,14 +501,17 @@ class pxie_5172(instrument):
         return self.session.trigger_type.name
 
     def add_channel_trigger_type(self, channel_name):
-        new_channel = channel(channel_name + "_trigger_type", write_function=lambda value: self.set_trigger_type(value))
+        new_channel = channel(
+            channel_name + "_trigger_type",
+            write_function=lambda value: self.set_trigger_type(value)  # pylint: disable=W0108
+        )
         new_channel.add_preset("EDGE", "")
         new_channel.add_preset("DIGITAL", "")
         new_channel.add_preset("HYSTERESIS", "")
         new_channel.add_preset("SOFTWARE", "")
         new_channel.add_preset("WINDOW", "")
         new_channel.add_preset("IMMEDIATE", "")
-        new_channel._set_value(self.get_trigger_type())
+        new_channel._set_value(self.get_trigger_type())  # pylint: disable=W0212
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
@@ -469,14 +528,16 @@ class pxie_5172(instrument):
     def get_trigger_mode(self):
         if self.session.trigger_modifier.value == 1:
             return 'NORMAL'
-        else:
-            return 'AUTO'
+        return 'AUTO'
 
     def add_channel_trigger_mode(self, channel_name):
-        new_channel = channel(channel_name + '_trigger_mode', write_function=lambda value: self.set_trigger_mode(value))
+        new_channel = channel(
+            channel_name + '_trigger_mode',
+            write_function=lambda value: self.set_trigger_mode(value)  # pylint: disable=W0108
+        )
         new_channel.add_preset("AUTO", "Find a trigger level")
         new_channel.add_preset("NORMAL", "User defined trigger level")
-        new_channel._set_value(self.get_trigger_mode())
+        new_channel._set_value(self.get_trigger_mode())  # pylint: disable=W0212
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
@@ -516,7 +577,10 @@ class pxie_5172(instrument):
         return f"CHANNEL{self.session.trigger_source}"
 
     def add_channel_trigger_source(self, channel_name):
-        new_channel = channel(channel_name + '_trigger_source', write_function=lambda value: self.set_trigger_source(value))
+        new_channel = channel(
+            channel_name + '_trigger_source',
+            write_function=lambda value: self.set_trigger_source(value)  # pylint: disable=W0108
+        )
         new_channel.add_preset("CHANNEL0", "Channel 0")
         new_channel.add_preset("CHANNEL1", "Channel 1")
         new_channel.add_preset("CHANNEL2", "Channel 2")
@@ -525,13 +589,16 @@ class pxie_5172(instrument):
         new_channel.add_preset("CHANNEL5", "Channel 5")
         new_channel.add_preset("CHANNEL6", "Channel 6")
         new_channel.add_preset("CHANNEL7", "Channel 7")
-        new_channel._set_value(self.get_trigger_source())
+        new_channel._set_value(self.get_trigger_source())  # pylint: disable=W0212
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
 
     def add_channel_trigger_source_readback(self, channel_name):
-        new_channel = channel(channel_name + "_trigger_source_readback", read_function=lambda: self.get_trigger_source())
+        new_channel = channel(
+            channel_name + "_trigger_source_readback",
+            read_function=lambda: self.get_trigger_source()  # pylint: disable=W0108
+        )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
@@ -543,14 +610,20 @@ class pxie_5172(instrument):
         return self.session.trigger_level
 
     def add_channel_trigger_level(self, channel_name):
-        new_channel = channel(channel_name + '_trigger_level', write_function=lambda value: self.set_trigger_level(value))
-        new_channel._set_value(self.get_trigger_level())
+        new_channel = channel(
+            channel_name + '_trigger_level',
+            write_function=lambda value: self.set_trigger_level(value)  # pylint: disable=W0108
+        )
+        new_channel._set_value(self.get_trigger_level())  # pylint: disable=W0212
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
 
     def add_channel_trigger_level_readback(self, channel_name):
-        new_channel = channel(channel_name + '_trigger_level_readback', read_function=lambda: self.get_trigger_level())
+        new_channel = channel(
+            channel_name + '_trigger_level_readback',
+            read_function=lambda: self.get_trigger_level()  # pylint: disable=W0108
+        )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
@@ -570,10 +643,13 @@ class pxie_5172(instrument):
         return self.session.trigger_slope.name
 
     def add_channel_trigger_slope(self, channel_name):
-        new_channel = channel(channel_name + '_trigger_slope', write_function=lambda value: self.set_trigger_slope(value))
+        new_channel = channel(
+            channel_name + '_trigger_slope',
+            write_function=lambda value: self.set_trigger_slope(value)  # pylint: disable=W0108
+        )
         new_channel.add_preset("POSITIVE", "Positive edges")
         new_channel.add_preset("NEGATIVE", "Negative edges")
-        new_channel._set_value(self.get_trigger_slope())
+        new_channel._set_value(self.get_trigger_slope())  # pylint: disable=W0212
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
@@ -591,10 +667,11 @@ class pxie_5172(instrument):
 
     def add_channel_trigger_coupling(self, channel_name):
         new_channel = channel(
-            channel_name + '_trigger_coupling', write_function=lambda value: self.set_trigger_coupling(value)
+            channel_name + '_trigger_coupling',
+            write_function=lambda value: self.set_trigger_coupling(value)  # pylint: disable=W0108
         )
         new_channel.add_preset("DC", "DC trigger coupling")
-        new_channel._set_value(self.get_trigger_coupling())
+        new_channel._set_value(self.get_trigger_coupling())  # pylint: disable=W0212
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
@@ -608,37 +685,44 @@ class pxie_5172(instrument):
         return float(time_delta.total_seconds())
 
     def add_channel_trigger_delay(self, channel_name):
-        new_channel = channel(channel_name + '_trigger_delay', write_function=lambda value: self.set_trigger_delay(value))
-        new_channel._set_value(self.get_trigger_delay())
+        new_channel = channel(
+            channel_name + '_trigger_delay',
+            write_function=lambda value: self.set_trigger_delay(value)  # pylint: disable=W0108
+        )
+        new_channel._set_value(self.get_trigger_delay())  # pylint: disable=W0212
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
 
     def add_channel_trigger_delay_readback(self, channel_name):
-        new_channel = channel(channel_name + '_trigger_delay_readback', read_function=lambda: self.get_trigger_delay())
+        new_channel = channel(
+            channel_name + '_trigger_delay_readback',
+            read_function=lambda: self.get_trigger_delay()  # pylint: disable=W0108
+        )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
 
-    """ Acquisition Control Channels # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # """
+    # Acquisition Control Channels #
     def set_acquisition_type(self, value):
         acq_types = {
             "SAMPLE": "NORMAL",
             "NORMAL": "NORMAL",
         }
         if value.upper() not in acq_types:
-            raise ValueError(f"Valid values for vertical co upling are: {list(acq_types.keys())}.")
-        self.session.channels.acquisition_type = niscope.AcquisitionType.NORMAL
+            raise ValueError(f"Valid values for acquisition type are: {list(acq_types.keys())}.")
+        self.session.acquisition_type = niscope.AcquisitionType.NORMAL
 
     def get_acquisition_type(self):
         return self.session.acquisition_type.name
 
     def add_channel_acquisition_type(self, channel_name):
         new_channel = channel(
-            channel_name + '_acquisition_type', write_function=lambda value: self.set_acquisition_type(value)
+            channel_name + '_acquisition_type',
+            write_function=lambda value: self.set_acquisition_type(value)  # pylint: disable=W0108
         )
         new_channel.add_preset("NORMAL", "")
-        new_channel._set_value(self.get_acquisition_type())
+        new_channel._set_value(self.get_acquisition_type())  # pylint: disable=W0212
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
@@ -650,14 +734,20 @@ class pxie_5172(instrument):
         return int(self.session.horz_record_length)
 
     def add_channel_points_count(self, channel_name):
-        new_channel = channel(channel_name + '_points_count', write_function=lambda value: self.set_points_count(value))
-        new_channel._set_value(self.get_points_count())
+        new_channel = channel(
+            channel_name + '_points_count',
+            write_function=lambda value: self.set_points_count(value)  # pylint: disable=W0108
+        )
+        new_channel._set_value(self.get_points_count())  # pylint: disable=W0212
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
 
     def add_channel_points_count_readback(self, channel_name):
-        new_channel = channel(channel_name + '_points_count_readback', read_function=lambda: self.get_points_count())
+        new_channel = channel(
+            channel_name + '_points_count_readback',
+            read_function=lambda: self.get_points_count()  # pylint: disable=W0108
+        )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
@@ -669,14 +759,20 @@ class pxie_5172(instrument):
         return float(self.session.horz_sample_rate)
 
     def add_channel_sample_rate(self, channel_name):
-        new_channel = channel(channel_name + '_sample_rate', write_function=lambda value: self.set_sample_rate(value))
-        new_channel._set_value(self.get_sample_rate())
+        new_channel = channel(
+            channel_name + '_sample_rate',
+            write_function=lambda value: self.set_sample_rate(value)  # pylint: disable=W0108
+        )
+        new_channel._set_value(self.get_sample_rate())  # pylint: disable=W0212
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
 
     def add_channel_sample_rate_readback(self, channel_name):
-        new_channel = channel(channel_name + '_sample_rate_readback', read_function=lambda: self.get_sample_rate())
+        new_channel = channel(
+            channel_name + '_sample_rate_readback',
+            read_function=lambda: self.get_sample_rate()  # pylint: disable=W0108
+        )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
@@ -685,7 +781,10 @@ class pxie_5172(instrument):
         return f'{self.session.instrument_model} {self.session.serial_number}'
 
     def add_channel_identity(self, channel_name):
-        new_channel = channel(channel_name + '_identity', read_function=lambda: self.get_identity())
+        new_channel = channel(
+            channel_name + '_identity',
+            read_function=lambda: self.get_identity()  # pylint: disable=W0108
+        )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
@@ -694,7 +793,7 @@ class pxie_5172(instrument):
         new_channel = channel(channel_name + '_units')
         new_channel.add_preset('A', '')
         new_channel.add_preset('V', '')
-        new_channel._set_value('V')
+        new_channel._set_value('V')  # pylint: disable=W0212
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
         return new_channel
@@ -711,7 +810,10 @@ class pxie_5172(instrument):
             self.session.initiate()
 
     def add_channel_run_mode(self, channel_name):
-        new_channel = channel(channel_name + '_run_mode', write_function=lambda value: self.set_run_mode(value))
+        new_channel = channel(
+            channel_name + '_run_mode',
+            write_function=lambda value: self.set_run_mode(value)  # pylint: disable=W0108
+        )
         new_channel.add_preset("RUN", "")
         new_channel.add_preset("STOP", "")
         new_channel.add_preset("SINGLE", "")
@@ -719,7 +821,7 @@ class pxie_5172(instrument):
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
 
-    """ Measurement Channels # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # """
+    # Measurement Channels #
     def get_measurement(self, channel_num, meas_param):
         meas_types: dict = {
             'RISE_TIME': 0,
@@ -771,19 +873,21 @@ class pxie_5172(instrument):
 
     def add_clear_measurements_channel(self, channel_name):
         new_channel = channel(
-            channel_name + '_clear_measurements', write_function=lambda value: self.clear_measurement(value)
+            channel_name + '_clear_measurements',
+            write_function=lambda value: self.clear_measurement(value)  # pylint: disable=W0108
         )
-        new_channel._read = lambda: False
+        new_channel._read = lambda: False  # pylint: disable=W0212
         new_channel.add_preset(True, '')
         new_channel.add_preset(False, '')
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (None,))
         return new_channel
 
-    """ Amplitude Measurement Channels # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # """
+    # Amplitude Measurement Channels #
     def add_channel_meas_amplitude(self, channel_name, channel_number):
         new_channel = channel(
-            channel_name + '_meas_amplitude', read_function=lambda: self.get_measurement(
+            channel_name + '_meas_amplitude',
+            read_function=lambda: self.get_measurement(
                 channel_num=channel_number, meas_param='AMPLITUDE'
             )
         )
@@ -793,7 +897,10 @@ class pxie_5172(instrument):
 
     def add_channel_meas_max(self, channel_name, channel_number):
         new_channel = channel(
-            channel_name + "_meas_max", read_function=lambda: self.get_measurement(channel_number, 'VOLTAGE_MAX')
+            channel_name + "_meas_max",
+            read_function=lambda: self.get_measurement(
+                channel_num=channel_number, meas_param='VOLTAGE_MAX'
+            )
         )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
@@ -801,7 +908,10 @@ class pxie_5172(instrument):
 
     def add_channel_meas_min(self, channel_name, channel_number):
         new_channel = channel(
-            channel_name + "_meas_min", read_function=lambda: self.get_measurement(channel_number, 'VOLTAGE_MIN')
+            channel_name + "_meas_min",
+            read_function=lambda: self.get_measurement(
+                channel_num=channel_number, meas_param='VOLTAGE_MIN'
+            )
         )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
@@ -809,7 +919,10 @@ class pxie_5172(instrument):
 
     def add_channel_meas_peak_to_peak(self, channel_name, channel_number):
         new_channel = channel(
-            channel_name + "_meas_pk2pk", read_function=lambda: self.get_measurement(channel_number, 'VOLTAGE_PEAK_TO_PEAK')
+            channel_name + "_meas_pk2pk",
+            read_function=lambda: self.get_measurement(
+                channel_num=channel_number, meas_param='VOLTAGE_PEAK_TO_PEAK'
+            )
         )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
@@ -817,7 +930,10 @@ class pxie_5172(instrument):
 
     def add_channel_meas_pos_overshoot(self, channel_name, channel_number):
         new_channel = channel(
-            channel_name + "_meas_povershoot", read_function=lambda: self.get_measurement(channel_number, 'OVERSHOOT')
+            channel_name + "_meas_povershoot",
+            read_function=lambda: self.get_measurement(
+                channel_num=channel_number, meas_param='OVERSHOOT'
+            )
         )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
@@ -825,7 +941,10 @@ class pxie_5172(instrument):
 
     def add_channel_meas_neg_overshoot(self, channel_name, channel_number):
         new_channel = channel(
-            channel_name + "_meas_novershoot", read_function=lambda: self.get_measurement(channel_number, 'PRESHOOT')
+            channel_name + "_meas_novershoot",
+            read_function=lambda: self.get_measurement(
+                channel_num=channel_number, meas_param='PRESHOOT'
+            )
         )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
@@ -833,7 +952,10 @@ class pxie_5172(instrument):
 
     def add_channel_meas_mean(self, channel_name, channel_number):
         new_channel = channel(
-            channel_name + "_meas_mean", read_function=lambda: self.get_measurement(channel_number, 'VOLTAGE_AVERAGE')
+            channel_name + "_meas_mean",
+            read_function=lambda: self.get_measurement(
+                channel_num=channel_number, meas_param='VOLTAGE_AVERAGE'
+            )
         )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
@@ -841,7 +963,10 @@ class pxie_5172(instrument):
 
     def add_channel_meas_rms(self, channel_name, channel_number):
         new_channel = channel(
-            channel_name + "_meas_rms", read_function=lambda: self.get_measurement(channel_number, 'VOLTAGE_RMS')
+            channel_name + "_meas_rms",
+            read_function=lambda: self.get_measurement(
+                channel_num=channel_number, meas_param='VOLTAGE_RMS'
+            )
         )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
@@ -849,7 +974,10 @@ class pxie_5172(instrument):
 
     def add_channel_meas_acrms(self, channel_name, channel_number):
         new_channel = channel(
-            channel_name + "_meas_acrms", read_function=lambda: self.get_measurement(channel_number, 'VOLTAGE_CYCLE_RMS')
+            channel_name + "_meas_acrms",
+            read_function=lambda: self.get_measurement(
+                channel_num=channel_number, meas_param='VOLTAGE_CYCLE_RMS'
+            )
         )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
@@ -857,7 +985,10 @@ class pxie_5172(instrument):
 
     def add_channel_meas_top(self, channel_name, channel_number):
         new_channel = channel(
-            channel_name + "_meas_top", read_function=lambda: self.get_measurement(channel_number, 'VOLTAGE_TOP')
+            channel_name + "_meas_top",
+            read_function=lambda: self.get_measurement(
+                channel_num=channel_number, meas_param='VOLTAGE_TOP'
+            )
         )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
@@ -865,7 +996,10 @@ class pxie_5172(instrument):
 
     def add_channel_meas_base(self, channel_name, channel_number):
         new_channel = channel(
-            channel_name + "_meas_base", read_function=lambda: self.get_measurement(channel_number, 'VOLTAGE_BASE')
+            channel_name + "_meas_base",
+            read_function=lambda: self.get_measurement(
+                channel_num=channel_number, meas_param='VOLTAGE_BASE'
+            )
         )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
@@ -873,16 +1007,22 @@ class pxie_5172(instrument):
 
     def add_channel_meas_area(self, channel_name, channel_number):
         new_channel = channel(
-            channel_name + "_meas_area", read_function=lambda: self.get_measurement(channel_number, 'AREA')
+            channel_name + "_meas_area",
+            read_function=lambda: self.get_measurement(
+                channel_num=channel_number, meas_param='AREA'
+            )
         )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
         return new_channel
 
-    """ Time Measurement Channels # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # """
+    # Time Measurement Channels #
     def add_channel_meas_period(self, channel_name, channel_number):
         new_channel = channel(
-            channel_name + "_meas_period", read_function=lambda: self.get_measurement(channel_number, 'PERIOD')
+            channel_name + "_meas_period",
+            read_function=lambda: self.get_measurement(
+                channel_num=channel_number, meas_param='PERIOD'
+            )
         )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
@@ -890,7 +1030,10 @@ class pxie_5172(instrument):
 
     def add_channel_meas_frequency(self, channel_name, channel_number):
         new_channel = channel(
-            channel_name + "_meas_frequency", read_function=lambda: self.get_measurement(channel_number, 'FREQUENCY')
+            channel_name + "_meas_frequency",
+            read_function=lambda: self.get_measurement(
+                channel_num=channel_number, meas_param='FREQUENCY'
+            )
         )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
@@ -898,7 +1041,10 @@ class pxie_5172(instrument):
 
     def add_channel_meas_pos_width(self, channel_name, channel_number):
         new_channel = channel(
-            channel_name + "_meas_pwidth", read_function=lambda: self.get_measurement(channel_number, 'WIDTH_POS')
+            channel_name + "_meas_pwidth",
+            read_function=lambda: self.get_measurement(
+                channel_num=channel_number, meas_param='WIDTH_POS'
+            )
         )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
@@ -906,7 +1052,10 @@ class pxie_5172(instrument):
 
     def add_channel_meas_neg_width(self, channel_name, channel_number):
         new_channel = channel(
-            channel_name + "_meas_nwidth", read_function=lambda: self.get_measurement(channel_number, 'WIDTH_NEG')
+            channel_name + "_meas_nwidth",
+            read_function=lambda: self.get_measurement(
+                channel_num=channel_number, meas_param='WIDTH_NEG'
+            )
         )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
@@ -914,7 +1063,10 @@ class pxie_5172(instrument):
 
     def add_channel_meas_rise_time(self, channel_name, channel_number):
         new_channel = channel(
-            channel_name + "_meas_rise_time", read_function=lambda: self.get_measurement(channel_number, 'RISE_TIME')
+            channel_name + "_meas_rise_time",
+            read_function=lambda: self.get_measurement(
+                channel_num=channel_number, meas_param='RISE_TIME'
+            )
         )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
@@ -922,7 +1074,10 @@ class pxie_5172(instrument):
 
     def add_channel_meas_fall_time(self, channel_name, channel_number):
         new_channel = channel(
-            channel_name + "_meas_fall_time", read_function=lambda: self.get_measurement(channel_number, 'FALL_TIME')
+            channel_name + "_meas_fall_time",
+            read_function=lambda: self.get_measurement(
+                channel_num=channel_number, meas_param='FALL_TIME'
+            )
         )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
@@ -930,7 +1085,10 @@ class pxie_5172(instrument):
 
     def add_channel_meas_rise_slew_rate(self, channel_name, channel_number):
         new_channel = channel(
-            channel_name + "_meas_rise_slew_rate", read_function=lambda: self.get_measurement(channel_number, 'RISE_SLEW_RATE')
+            channel_name + "_meas_rise_slew_rate",
+            read_function=lambda: self.get_measurement(
+                channel_num=channel_number, meas_param='RISE_SLEW_RATE'
+            )
         )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
@@ -938,7 +1096,10 @@ class pxie_5172(instrument):
 
     def add_channel_meas_fall_slew_rate(self, channel_name, channel_number):
         new_channel = channel(
-            channel_name + "_meas_fall_slew_rate", read_function=lambda: self.get_measurement(channel_number, 'FALL_SLEW_RATE')
+            channel_name + "_meas_fall_slew_rate",
+            read_function=lambda: self.get_measurement(
+                channel_num=channel_number, meas_param='FALL_SLEW_RATE'
+            )
         )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
@@ -946,7 +1107,10 @@ class pxie_5172(instrument):
 
     def add_channel_meas_pos_duty(self, channel_name, channel_number):
         new_channel = channel(
-            channel_name + "_meas_pduty", read_function=lambda: self.get_measurement(channel_number, 'DUTY_CYCLE_POS')
+            channel_name + "_meas_pduty",
+            read_function=lambda: self.get_measurement(
+                channel_num=channel_number, meas_param='DUTY_CYCLE_POS'
+            )
         )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
@@ -954,7 +1118,10 @@ class pxie_5172(instrument):
 
     def add_channel_meas_neg_duty(self, channel_name, channel_number):
         new_channel = channel(
-            channel_name + "_meas_nduty", read_function=lambda: self.get_measurement(channel_number, 'DUTY_CYCLE_NEG')
+            channel_name + "_meas_nduty",
+            read_function=lambda: self.get_measurement(
+                channel_num=channel_number, meas_param='DUTY_CYCLE_NEG'
+            )
         )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
@@ -962,15 +1129,19 @@ class pxie_5172(instrument):
 
     def add_channel_meas_delay(self, channel_name, channel_number):
         new_channel = channel(
-            channel_name + "_meas_delay", read_function=lambda: self.get_measurement(channel_number, 'TIME_DELAY')
+            channel_name + "_meas_delay",
+            read_function=lambda: self.get_measurement(
+                channel_num=channel_number, meas_param='TIME_DELAY'
+            )
         )
         self._add_channel(new_channel)
         new_channel.set_attribute('dependent_physical_channels', (channel_number,))
         return new_channel
 
     def __del__(self):
-        """ This ensures the class cleans up explicitly. Prevents the driver’s background cleanup from firing at exit."""
+        # This ensures the class cleans up explicitly.
+        # Prevents the driver’s background cleanup from firing at exit.
         try:
             self.session.close()
-        except Exception:
+        except (DriverError, AttributeError):
             pass

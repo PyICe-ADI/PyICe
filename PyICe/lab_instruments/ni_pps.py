@@ -1,26 +1,24 @@
-""" NI-DCPower for Programmable Power Supply instrument driver.
+""" Base for NI Programmable Power Supply instrument driver.
 
 >>> from PyICe.lab_instruments.ni_pps import ni_dcsupply
 
 """
-from PyICe.lab_core import *  # noqa: F403
-try:
-    import nidcpower
-except ImportError:
-    nidcpower = None
+import nidcpower
+from PyICe.lab_core import instrument, channel
 
 
-class ni_dcsupply(instrument):
-    def __init__(self):
-        instrument.__init__(self, None)
-        self.session = None
+class ni_dcsupply(instrument):  # pylint: disable=too-many-public-methods
 
-    """ General # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # """
+    def __init__(self, instr_name, resource_name=None):
+        instrument.__init__(self, instr_name)
+        self.session = nidcpower.Session(resource_name)
+
+    # GENERAL #
     def get_output_function(self, channel_number):
         return self.session.channels[channel_number].output_function.name
 
-    def get_compliance(self, channel_num):
-        return self.session.channels[channel_num].query_in_compliance()
+    def get_compliance(self, channel_number):
+        return self.session.channels[channel_number].query_in_compliance()
 
     def initiate_channel(self, channel_number):
         self.session.channels[channel_number].initiate()
@@ -38,7 +36,7 @@ class ni_dcsupply(instrument):
     def get_output_status(self, channel_number):
         return self.session.channels[channel_number].output_enabled
 
-    """ Voltage # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # """
+    # VOLTAGE
     def enable_voltage_limit_auto_range(self, channel_number):
         if not self.get_voltage_limit_auto_range(channel_number):
             if getattr(self, f'is_CH{channel_number}_initiated'):
@@ -73,7 +71,10 @@ class ni_dcsupply(instrument):
             return None
 
         if self.get_compliance(channel_number):
-            raise Exception(f"Channel {channel_number} is reporting a fault condition — VOLTAGE measurement data is invalid.")
+            raise RuntimeError(
+                f"Channel {channel_number} is reporting a fault condition "
+                f"— VOLTAGE measurement data is invalid."
+            )
 
         measurements = []
         for _ in range(20):
@@ -81,7 +82,7 @@ class ni_dcsupply(instrument):
             measurements.append(value)
         return sum(measurements) / len(measurements)
 
-    """ Current # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # """
+    # CURRENT
     def enable_current_limit_auto_range(self, channel_number):
         if not self.get_current_limit_auto_range(channel_number):
             if getattr(self, f'is_CH{channel_number}_initiated'):
@@ -100,12 +101,14 @@ class ni_dcsupply(instrument):
             ilim_ranges = getattr(self, f'CH{channel_number}_current_ranges')
 
             if value not in ilim_ranges:
-                raise ValueError(f"Valid current limit range on CH{channel_number} are: {list(ilim_ranges.keys())}.")
+                raise ValueError(
+                    f"Valid current limit range on CH{channel_number} are: {list(ilim_ranges.keys())}."
+                )
 
             if getattr(self, f'is_CH{channel_number}_initiated'):
                 self.abort_channel(channel_number)
                 self.session.channels[channel_number].current_limit_autorange = False  # MANUAL
-                if not (ilim_ranges[value]['min'] <= ilim <= ilim_ranges[value]['max']):
+                if ilim_ranges[value]['min'] >= ilim >= ilim_ranges[value]['max']:
                     self.set_current_limit(channel_number, ilim_ranges[value]['max'])
                 self.session.channels[channel_number].current_limit_range = value
                 self.initiate_channel(channel_number)
@@ -133,7 +136,10 @@ class ni_dcsupply(instrument):
             return None
 
         if self.get_compliance(channel_number):
-            raise Exception(f"Channel {channel_number} is reporting a fault condition — CURRENT measurement data is invalid.")
+            raise RuntimeError(
+                f"Channel {channel_number} is reporting a fault condition "
+                f"— CURRENT measurement data is invalid."
+            )
 
         measurements = []
         for _ in range(20):
@@ -141,7 +147,7 @@ class ni_dcsupply(instrument):
             measurements.append(value)
         return sum(measurements) / len(measurements)
 
-    """ Channels # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # """
+    # CHANNELS
     def add_channel_voltage(self, channel_name, channel_number):
         new_channel = channel(channel_name, write_function=lambda value: self.set_voltage_level(channel_number, value))
         self._add_channel(new_channel)
@@ -192,7 +198,7 @@ class ni_dcsupply(instrument):
         )
         new_channel.add_preset("ON", "")
         new_channel.add_preset("OFF", "")
-        new_channel._set_value(self.get_output_status(channel_number))
+        new_channel._set_value(self.get_output_status(channel_number))  # pylint: disable=protected-access
         self._add_channel(new_channel)
         return new_channel
 

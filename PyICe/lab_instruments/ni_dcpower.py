@@ -1,25 +1,23 @@
-""" NI-DCPower instrument driver.
+""" Base for NI SMU instrument driver.
 
 >>> from PyICe.lab_instruments.ni_dcpower import ni_dcpower
 
 """
-from PyICe.lab_core import *  # noqa: F403
-try:
-    import nidcpower
-except ImportError:
-    nidcpower = None
+import nidcpower
+from PyICe.lab_core import instrument, channel
 
 
-class ni_dcpower(instrument):
-    def __init__(self):
-        instrument.__init__(self, None)
-        self.session = None
-        self.set_current_limit = None
-        self.set_current_limit_range = None
-        self.current_limits = None
-        self.current_ranges = None
-        self.voltage_limits = None
-        self.voltage_ranges = None
+class ni_dcpower(instrument):  # pylint: disable=too-many-public-methods
+    def __init__(self, instr_name, resource_name=None):
+        instrument.__init__(self, instr_name)
+        self.session = nidcpower.Session(resource_name)
+        self.session.output_enabled = False
+        self.set_current_limit = False
+        self.set_current_limit_range = False
+        self.voltage_limits = {}
+        self.voltage_ranges = {}
+        self.current_limits = {}
+        self.current_ranges = {}
 
     def get_output_function(self, channel_number):
         return self.session.channels[channel_number].output_function.name
@@ -57,7 +55,7 @@ class ni_dcpower(instrument):
     def get_voltage_level_range(self, channel_number):
         return float(self.session.channels[channel_number].voltage_level_range)
 
-    '''Single Point DC_VOLTAGE Source Channels # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # '''
+    # Single Point DC_VOLTAGE Source Channels #
     def add_channel_output(self, channel_name, channel_number):
         new_channel = channel(
             f"{channel_name}_enable_output", write_function=lambda state: self.output_enabled(channel_number, state)
@@ -66,14 +64,14 @@ class ni_dcpower(instrument):
         new_channel.add_preset("OFF", "")
         return self._add_channel(new_channel)
 
-    '''Single Point DC_VOLTAGE Source Channels # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # '''
+    # Single Point DC_VOLTAGE Source Channels #
     def add_channel_voltage_force(self, channel_name, channel_number):
         new_channel = channel(
             f"{channel_name}_vforce", write_function=lambda value: self.set_voltage_level(channel_number, value)
         )
-        new_channel._write_min = self.voltage_limits['min']
-        new_channel._write_max = self.voltage_limits['max']
-        new_channel._set_value(self.get_voltage_level(channel_number))
+        new_channel._write_min = self.voltage_limits['min']  # pylint: disable=protected-access
+        new_channel._write_max = self.voltage_limits['max']  # pylint: disable=protected-access
+        new_channel._set_value(self.get_voltage_level(channel_number))  # pylint: disable=protected-access
         return self._add_channel(new_channel)
 
     def add_channel_voltage_force_readback(self, channel_name, channel_number):
@@ -92,7 +90,9 @@ class ni_dcpower(instrument):
         new_channel.add_preset("AUTO", "")
         for voltage_range in self.voltage_ranges:
             new_channel.add_preset(voltage_range, "")
-        new_channel._set_value(self.session.channels[channel_number].voltage_level_range)
+        new_channel._set_value(  # pylint: disable=protected-access
+            self.session.channels[channel_number].voltage_level_range
+        )
         return self._add_channel(new_channel)
 
     def add_channel_voltage_range_readback(self, channel_name, channel_number):
@@ -106,8 +106,8 @@ class ni_dcpower(instrument):
             if self.current_limits['min'] <= value <= self.current_limits['max']:
                 if not self.set_current_limit_range:
                     self.set_current_limit = True
-                    for icompl_range in self.current_ranges:
-                        if self.current_ranges[icompl_range]['min'] <= value <= self.current_ranges[icompl_range]['max']:
+                    for icompl_range, range_limits in self.current_ranges.items():
+                        if range_limits['min'] <= value <= range_limits['max']:
                             self.session.channels[channel_num].abort()
                             self.session.channels[channel_num].current_limit = value
                             self.write_channel(channel_name + "_ilim_range", icompl_range)
@@ -123,7 +123,9 @@ class ni_dcpower(instrument):
         new_channel = channel(
             f"{channel_name}_icompl", write_function=lambda value: write_current_limit(channel_number, value)
         )
-        new_channel._set_value(self.session.channels[channel_number].current_limit)
+        new_channel._set_value(  # pylint: disable=protected-access
+            self.session.channels[channel_number].current_limit
+        )
         return self._add_channel(new_channel)
 
     def add_channel_current_limit_readback(self, channel_name, channel_number):
@@ -146,11 +148,10 @@ class ni_dcpower(instrument):
                 self.set_current_limit = False
             else:
                 self.set_current_limit_range = True
-                for icompl_range in self.current_ranges:
-                    if self.current_ranges[icompl_range]['min'] <= value <= self.current_ranges[icompl_range]['max']:
+                for icompl_range, range_limits in self.current_ranges.items():
+                    if range_limits['min'] <= value <= range_limits['max']:
                         self.session.channels[channel_num].abort()
-
-                        self.write_channel(channel_name + "_icompl", self.current_ranges[value]['max'])
+                        self.write_channel(channel_name + "_icompl", range_limits['max'])
                         self.session.channels[channel_num].current_limit_range = icompl_range
                         self.session.channels[channel_num].initiate()
                         break
@@ -160,7 +161,9 @@ class ni_dcpower(instrument):
         )
         for current_range in self.current_ranges:
             new_channel.add_preset(current_range, "")
-        new_channel._set_value(self.session.channels[channel_number].current_limit_range)
+        new_channel._set_value(  # pylint: disable=protected-access
+            self.session.channels[channel_number].current_limit_range
+        )
         return self._add_channel(new_channel)
 
     def add_channel_current_limit_range_readback(self, channel_name, channel_number):
@@ -172,7 +175,7 @@ class ni_dcpower(instrument):
         )
         return self._add_channel(new_channel)
 
-    '''Single Point DC_CURRENT Channels # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # '''
+    # Single Point DC_CURRENT Channels #
     def add_channel_current_force(self, channel_name, channel_number):
         def write_current_force(channel_num, value):
             if self.get_output_function(channel_num) != "DC_CURRENT":
@@ -203,7 +206,9 @@ class ni_dcpower(instrument):
         )
         for current_range in self.current_ranges:
             new_channel.add_preset(current_range, "")
-        new_channel._set_value(self.session.channels[channel_number].current_limit_range)
+        new_channel._set_value(  # pylint: disable=protected-access
+            self.session.channels[channel_number].current_limit_range
+        )
         return self._add_channel(new_channel)
 
     def add_channel_voltage_limit(self, channel_name, channel_number):
@@ -213,7 +218,9 @@ class ni_dcpower(instrument):
         new_channel = channel(
             f"{channel_name}_vcompl", write_function=lambda value: write_voltage_limit(channel_number, value)
         )
-        new_channel._set_value(self.session.channels[channel_number].voltage_limit)
+        new_channel._set_value(  # pylint: disable=protected-access
+            self.session.channels[channel_number].voltage_limit
+        )
         return self._add_channel(new_channel)
 
     def add_channel_voltage_limit_range(self, channel_name, channel_number):
@@ -226,10 +233,12 @@ class ni_dcpower(instrument):
         )
         for voltage_range in self.voltage_ranges:
             new_channel.add_preset(voltage_range, "")
-        new_channel._set_value(self.session.channels[channel_number].voltage_limit_range)
+        new_channel._set_value(  # pylint: disable=protected-access
+            self.session.channels[channel_number].voltage_limit_range
+        )
         return self._add_channel(new_channel)
 
-    '''Single Point SENSE Channels # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # '''
+    # Single Point SENSE Channels #
     def add_channel_nplc(self, channel_name, channel_number):
         def write_nplc(channel_num, value):
             self.session.channels[channel_num].output_enabled = False

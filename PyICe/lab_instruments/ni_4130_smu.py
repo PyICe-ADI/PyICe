@@ -3,29 +3,26 @@
 >>> from PyICe.lab_instruments.ni_4130_smu import pxie_4130
 
 """
-from PyICe.lab_core import *  # noqa: F403
-from PyICe.lab_instruments.ni_dcpower import ni_dcpower
 import nidcpower
+from PyICe.lab_instruments.ni_dcpower import ni_dcpower
 
 
 class pxie_4130(ni_dcpower):
     def __init__(self, resource_name):
         self._base_name = "PXIe-4130"
-        instrument.__init__(self, f"{self._base_name} @ {resource_name}")  # noqa: F405
-        self.session = nidcpower.Session(resource_name=resource_name)
-        self.session.output_enabled = False
-        self.set_current_limit = False
-        self.set_current_limit_range = False
-        self.current_limits: dict = {'min': 200e-9, 'max': 2}
-        self.current_ranges: dict = {
+        self.instr_name = f"{self._base_name} @ {resource_name}"
+        super().__init__(self.instr_name, resource_name)
+
+        self.current_limits = {'min': 200e-9, 'max': 2}
+        self.current_ranges = {
             200e-6: {'min': 200e-9, 'max': 200e-6},  # resolution = 10nA / 1nA
             2e-3: {'min': 200e-6, 'max': 2e-3},      # resolution = 100nA / 10nA
             20e-3: {'min': 2e-3, 'max': 20e-3},      # resolution = 1uA / 0.1uA
             200e-3: {'min': 20e-3, 'max': 200e-3},   # resolution = 10uA / 1uA
             2: {'min': 200e-3, 'max': 2},            # resolution = 100uA / 10uA - Requires auxiliary power supply
         }
-        self.voltage_limits: dict = {'min': 0, 'max': 20}
-        self.voltage_ranges: dict = {
+        self.voltage_limits = {'min': 0, 'max': 20}
+        self.voltage_ranges = {
             6: {'min': 0, 'max': 6},  # resolution = 0.1mV / 0.10mV
             20: {'min': 0, 'max': 20},  # resolution = 0.33mV / 0.10mV
         }

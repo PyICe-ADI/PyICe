@@ -3,21 +3,18 @@
 >>> from PyICe.lab_instruments.ni_4139_smu import pxie_4139
 
 """
-from PyICe.lab_core import *  # noqa: F403
-from PyICe.lab_instruments.ni_dcpower import ni_dcpower
 import nidcpower
+from PyICe.lab_instruments.ni_dcpower import ni_dcpower
 
 
 class pxie_4139(ni_dcpower):
     def __init__(self, resource_name):
         self._base_name = "PXIe-4139"
-        instrument.__init__(self, f"{self._base_name} @ {resource_name}")  # noqa: F405
-        self.session = nidcpower.Session(resource_name=resource_name)
-        self.session.output_enabled = False
-        self.set_current_limit = False
-        self.set_current_limit_range = False
-        self.current_limits: dict = {'min': 1e-6, 'max': 3}
-        self.current_ranges: dict = {
+        self.instr_name = f"{self._base_name} @ {resource_name}"
+        super().__init__(self.instr_name, resource_name)
+
+        self.current_limits = {'min': 1e-6, 'max': 3}
+        self.current_ranges = {
             1e-6: {'min': 100e-9, 'max': 1e-6},     # resolution = 100fA
             10e-6: {'min': 1e-6, 'max': 10e-6},      # resolution = 1pA
             100e-6: {'min': 10e-6, 'max': 100e-6},   # resolution = 10pA
@@ -27,8 +24,8 @@ class pxie_4139(ni_dcpower):
             1: {'min': 100e-3, 'max': 1},            # resolution = 100nA
             3: {'min': 100e-3, 'max': 3},            # resolution = 1uA
         }
-        self.voltage_limits: dict = {'min': 0, 'max': 60}
-        self.voltage_ranges: dict = {
+        self.voltage_limits = {'min': 0, 'max': 60}
+        self.voltage_ranges = {
             600e-3: {'min': 0, 'max': 600e-3},  # resolution = 100nV
             6: {'min': 0, 'max': 6},            # resolution = 1uV
             60: {'min': 0, 'max': 60},          # resolution = 10uV
@@ -120,4 +117,4 @@ class pxie_4139(ni_dcpower):
                     channel_name=smu_channel['channel_name'], channel_number=smu_channel['channel_num']
                 )
             else:
-                raise ValueError(f"Channel mode must be one of: isource, isense, vsource, vsense.")
+                raise ValueError("Channel mode must be one of: isource, isense, vsource, vsense.")
