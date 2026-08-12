@@ -41,15 +41,7 @@ class agilent_n3301(scpi_instrument):
 
     def add_channel(self, channel_name, channel_num, add_sense_channel=True):
         """Add current force writable channel. Optionally add current readback _isense channel.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             add_sense_channel: Add sense channel to use.
             channel_name: Name for the new channel.
@@ -61,15 +53,7 @@ class agilent_n3301(scpi_instrument):
 
     def add_channel_current(self, channel_name, channel_num):
         """Add a channel current.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_num: Physical channel number.
@@ -83,15 +67,7 @@ class agilent_n3301(scpi_instrument):
 
     def add_channel_isense(self, channel_name, channel_num):
         """Add a channel isense.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_num: Physical channel number.

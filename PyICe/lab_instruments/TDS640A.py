@@ -33,15 +33,7 @@ class TDS640A(scpi_instrument, delegator):
 
     def add_channel_time(self, channel_name):
         """Add a channel time.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -56,15 +48,7 @@ class TDS640A(scpi_instrument, delegator):
 
     def add_channel(self, channel_name, scope_channel_number):
         """Add named channel to instrument. num is 1-4.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             scope_channel_number: Oscilloscope channel number (1-based).

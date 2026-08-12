@@ -277,15 +277,7 @@ class semiconductor_parameter_analyzer(scpi_instrument):
 
     def add_channel_integration_time(self, integration_time_channel_name):
         """Add a channel integration time.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             integration_time_channel_name: Integration time channel name to use.
 

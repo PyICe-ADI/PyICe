@@ -52,15 +52,7 @@ class kikusui_plz(scpi_instrument):
 
     def add_channel(self, channel_name, add_sense_channels=True):
         """Helper function adds primary current forcing channel of channel_name plus _vsense and _isense readback channels.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             add_sense_channels: Add sense channels to use.
             channel_name: Name for the new channel.
@@ -75,15 +67,7 @@ class kikusui_plz(scpi_instrument):
 
     def add_channel_current(self, channel_name):
         """Add a channel current.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
         """
@@ -92,15 +76,7 @@ class kikusui_plz(scpi_instrument):
 
     def add_channel_voltage(self, channel_name):
         """Add a channel voltage.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
         """
@@ -109,15 +85,7 @@ class kikusui_plz(scpi_instrument):
 
     def add_channel_vsense(self, channel_name):
         """Add a channel vsense.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
         """
@@ -126,15 +94,7 @@ class kikusui_plz(scpi_instrument):
 
     def add_channel_isense(self, channel_name):
         """Add a channel isense.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
         """
@@ -143,15 +103,7 @@ class kikusui_plz(scpi_instrument):
 
     def add_channel_power(self, channel_name):
         """Add a channel power.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
         """
@@ -160,15 +112,7 @@ class kikusui_plz(scpi_instrument):
 
     def add_channel_range_readback(self, channel_name):
         """Add a channel range readback.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
         """
@@ -177,15 +121,7 @@ class kikusui_plz(scpi_instrument):
 
     def add_channel_range(self, channel_name):
         """Add a channel range.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
         """
@@ -194,15 +130,7 @@ class kikusui_plz(scpi_instrument):
 
     def add_channel_slew_rate(self, channel_name):
         """Add a channel slew rate.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
         """
@@ -212,15 +140,7 @@ class kikusui_plz(scpi_instrument):
 
     def add_channel_pulse_on(self, channel_name):
         """Add a channel pulse on.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
         """
@@ -232,15 +152,7 @@ class kikusui_plz(scpi_instrument):
     # Duty cycle, frequency and current level are used for Switch operation
     def add_channel_duty_cycle(self, channel_name):
         """Add a channel duty cycle.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
         """
@@ -250,15 +162,7 @@ class kikusui_plz(scpi_instrument):
 
     def add_channel_frequency(self, channel_name):
         """Add a channel frequency.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
         """
@@ -268,15 +172,7 @@ class kikusui_plz(scpi_instrument):
 
     def add_channel_current_level(self, channel_name):
         """Add a channel current level.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
         """
@@ -290,15 +186,7 @@ class kikusui_plz(scpi_instrument):
         # Remember to input a high current in your own code to force the change
         # in Range
         """Add a channel short.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
         """
@@ -307,15 +195,7 @@ class kikusui_plz(scpi_instrument):
 
     def add_channel_enable(self, channel_name):
         """Add a channel enable.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
         """

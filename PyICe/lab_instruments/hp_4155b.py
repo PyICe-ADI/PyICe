@@ -94,15 +94,7 @@ class hp_4155b(semiconductor_parameter_analyzer):
     def add_channels_smu_voltage(
             self, smu_number, voltage_force_channel_name, current_compliance_channel_name):
         """Add a channels smu voltage.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             current_compliance_channel_name: Current compliance channel name to use.
             smu_number: Source-measure unit channel number (1-based).
@@ -118,15 +110,7 @@ class hp_4155b(semiconductor_parameter_analyzer):
     def add_channel_smu_voltage_output_range(
             self, smu_number, output_range_channel_name):
         """Add a channel smu voltage output range.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             output_range_channel_name: Output range channel name to use.
             smu_number: Source-measure unit channel number (1-based).
@@ -141,15 +125,7 @@ class hp_4155b(semiconductor_parameter_analyzer):
     def add_channels_smu_current(
             self, smu_number, current_force_channel_name, voltage_compliance_channel_name):
         """Add a channels smu current.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             current_force_channel_name: Current force channel name to use.
             smu_number: Source-measure unit channel number (1-based).
@@ -165,15 +141,7 @@ class hp_4155b(semiconductor_parameter_analyzer):
     def add_channel_smu_current_output_range(
             self, smu_number, output_range_channel_name):
         """Add a channel smu current output range.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             output_range_channel_name: Output range channel name to use.
             smu_number: Source-measure unit channel number (1-based).
@@ -188,15 +156,7 @@ class hp_4155b(semiconductor_parameter_analyzer):
     def add_channel_smu_voltage_sense(
             self, smu_number, voltage_sense_channel_name):
         """Add a channel smu voltage sense.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             smu_number: Source-measure unit channel number (1-based).
             voltage_sense_channel_name: Voltage sense channel name to use.
@@ -211,15 +171,7 @@ class hp_4155b(semiconductor_parameter_analyzer):
     def add_channel_smu_current_sense(
             self, smu_number, current_sense_channel_name):
         """Add a channel smu current sense.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             current_sense_channel_name: Current sense channel name to use.
             smu_number: Source-measure unit channel number (1-based).
@@ -233,15 +185,7 @@ class hp_4155b(semiconductor_parameter_analyzer):
 
     def add_channel_vsource(self, vsource_number, vsource_channel_name):
         """Add a channel vsource.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             vsource_channel_name: Vsource channel name to use.
             vsource_number: Vsource number to use.
@@ -254,15 +198,7 @@ class hp_4155b(semiconductor_parameter_analyzer):
 
     def add_channel_vmeter(self, vmeter_number, vmeter_channel_name):
         """Add a channel vmeter.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             vmeter_channel_name: Vmeter channel name to use.
             vmeter_number: Vmeter number to use.

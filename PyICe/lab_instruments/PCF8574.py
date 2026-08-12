@@ -33,15 +33,7 @@ class PCF8574(instrument):
 
     def add_channel_writepin(self, channel_name, pin):
         """Adds a single output pin to control. State is held locally since the pins are hi Z up they can't be relied upon to hold state.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             pin: Pin number.
@@ -59,15 +51,7 @@ class PCF8574(instrument):
 
     def add_channel_readpin(self, channel_name, pin):
         """Adds a single input pin to read back.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             pin: Pin number.
