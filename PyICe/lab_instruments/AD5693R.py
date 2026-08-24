@@ -155,15 +155,7 @@ class AD5693R(instrument):
 
     def add_channel(self, channel_name):
         """Add a channel.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -177,15 +169,7 @@ class AD5693R(instrument):
 
     def add_channel_code(self, channel_name):
         """Add a channel code.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -200,15 +184,7 @@ class AD5693R(instrument):
 
     def add_channel_outputz(self, channel_name):
         """Add a channel outputz.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -220,15 +196,7 @@ class AD5693R(instrument):
 
     def add_channel_gain(self, channel_name):
         """Add a channel gain.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 

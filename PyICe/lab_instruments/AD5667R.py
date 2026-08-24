@@ -186,15 +186,7 @@ class AD5667R(instrument):
 
     def add_channel_DAC_A(self, channel_name):
         """Add a channel DAC A.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -208,15 +200,7 @@ class AD5667R(instrument):
 
     def add_channel_DAC_B(self, channel_name):
         """Add a channel DAC B.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -230,15 +214,7 @@ class AD5667R(instrument):
 
     def add_channel_code_DAC_A(self, channel_name):
         """Add a channel code DAC A.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -253,15 +229,7 @@ class AD5667R(instrument):
 
     def add_channel_code_DAC_B(self, channel_name):
         """Add a channel code DAC B.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -276,15 +244,7 @@ class AD5667R(instrument):
 
     def add_channel_powerstate_DAC_A(self, channel_name):
         """Add a channel powerstate DAC A.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -301,15 +261,7 @@ class AD5667R(instrument):
 
     def add_channel_powerstate_DAC_B(self, channel_name):
         """Add a channel powerstate DAC B.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
