@@ -5,7 +5,6 @@
 """
 import nidcpower
 from nidcpower.errors import DriverError
-from colorama import Fore
 from PyICe.lab_core import instrument, channel
 
 
@@ -40,7 +39,7 @@ class pxie_4151(instrument):  # pylint: disable=too-many-public-methods
                 pass
             else:
                 raise RuntimeError(
-                    f"{Fore.LIGHTRED_EX}Error initiating the session: {e}{Fore.RESET}"
+                    f"Error initiating the session: {e}"
                 ) from e
 
     def set_output_status(self, state='OFF'):
@@ -62,10 +61,8 @@ class pxie_4151(instrument):  # pylint: disable=too-many-public-methods
     def set_voltage_level_range(self, value):
         if value not in ['AUTO', 6, 20]:
             raise RuntimeError(
-                f'{Fore.CYAN}Not a valid voltage range setting, '
-                f'valid settings are 6, 20, AUTO{Fore.RESET}'
+                'Not a valid voltage range setting, valid settings are 6, 20, AUTO'
             )
-
         self.session.abort()
         if isinstance(value, str):
             value = value.upper()
@@ -82,9 +79,7 @@ class pxie_4151(instrument):  # pylint: disable=too-many-public-methods
     def set_current_limit_range(self, value):
         if value not in ['AUTO', 0.1, 1.0, 25.0]:
             raise RuntimeError(
-                f'{Fore.CYAN}'
                 'Not a valid current range setting, valid settings are 0.1, 1.0, 25.0, AUTO'
-                f'{Fore.RESET}'
             )
         self.session.abort()
         if isinstance(value, str):
@@ -120,8 +115,7 @@ class pxie_4151(instrument):  # pylint: disable=too-many-public-methods
     def set_sensing(self, value):
         if value not in ['LOCAL', 'REMOTE']:
             raise RuntimeError(
-                f'{Fore.CYAN}Not a valid sensing setting, '
-                f'valid settings are LOCAL or REMOTE{Fore.RESET}'
+                'Not a valid sensing setting, valid settings are LOCAL or REMOTE'
             )
         self.session.abort()
         if value == "REMOTE":
@@ -136,17 +130,15 @@ class pxie_4151(instrument):  # pylint: disable=too-many-public-methods
     def get_current_sense(self):
         if self.get_compliance():
             raise RuntimeError(
-                f"{Fore.LIGHTRED_EX}"
                 "Reporting a fault condition — CURRENT measurement data is invalid."
-                f"{Fore.RESET}")
+            )
         return float(self.session.measure(nidcpower.MeasurementTypes.CURRENT))
 
     def get_voltage_sense(self):
         if self.get_compliance():
             raise RuntimeError(
-                f"{Fore.LIGHTRED_EX}"
                 "Reporting a fault condition — VOLTAGE measurement data is invalid."
-                f"{Fore.RESET}")
+            )
         return float(self.session.measure(nidcpower.MeasurementTypes.VOLTAGE))
 
     def get_compliance(self):
