@@ -63,7 +63,7 @@ class TestScopeServoConvergence:
         """Waveform history should contain entries from the servo run."""
         self.master.write('test_servo', 3.0)
         assert len(self.servo.history) > 0
-        value, wf = self.servo.history[-1]
+        value, _ = self.servo.history[-1]
         assert value is not None
 
 
@@ -81,7 +81,7 @@ class TestScopeServoStimulusRouting:
     def test_string_stimulus(self):
         """A string stimulus_channel should write via master.write()."""
         master, time_ch, data_ch = self._make_master_with_scope_channels()
-        servo = scope_servo(
+        scope_servo(
             master=master, name='str_test', stimulus_channel='stim_by_name',
             scope_time_channel=time_ch, scope_data_channel=data_ch,
             extraction_fn=lambda wf: wf.average_out() - wf.average_in(),
@@ -95,9 +95,9 @@ class TestScopeServoStimulusRouting:
         """A channel object stimulus should call .write() on it."""
         master, time_ch, data_ch = self._make_master_with_scope_channels()
         written = []
-        ch_obj = master.add_channel_virtual('stim_obj', write_function=lambda v: written.append(v))
-        servo = scope_servo(
-            master=master, name='obj_test', stimulus_channel=ch_obj,
+        stim_ch = master.add_channel_virtual('stim_obj', write_function=lambda v: written.append(v))
+        scope_servo(
+            master=master, name='obj_test', stimulus_channel=stim_ch,
             scope_time_channel=time_ch, scope_data_channel=data_ch,
             extraction_fn=lambda wf: wf.average_out() - wf.average_in(),
             arm_fn=lambda: None, trigger_fn=lambda: None,
@@ -110,7 +110,7 @@ class TestScopeServoStimulusRouting:
         """A bare callable stimulus should be invoked directly."""
         master, time_ch, data_ch = self._make_master_with_scope_channels()
         written = []
-        servo = scope_servo(
+        scope_servo(
             master=master, name='fn_test', stimulus_channel=lambda v: written.append(v),
             scope_time_channel=time_ch, scope_data_channel=data_ch,
             extraction_fn=lambda wf: wf.average_out() - wf.average_in(),
@@ -129,7 +129,7 @@ class TestScopeServoEdgeCases:
         master = lab_core.master()
         time_ch = master.add_channel_virtual('scope_time', read_function=lambda: None)
         data_ch = master.add_channel_virtual('scope_data', read_function=lambda: None)
-        servo = scope_servo(
+        scope_servo(
             master=master, name='notrig', stimulus_channel=lambda v: None,
             scope_time_channel=time_ch, scope_data_channel=data_ch,
             extraction_fn=lambda wf: wf.average_out(),
