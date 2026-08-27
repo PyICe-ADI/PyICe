@@ -56,7 +56,7 @@ class scope_servo:
         Args:
             master: PyICe channel_master to register channels with.
             name: Base name for generated channels.
-            stimulus_channel: Name (str) or channel object for the stimulus output.
+            stimulus_channel: Name (str), channel object, or callable for the stimulus output.
             scope_time_channel: Channel object for the scope time axis data.
             scope_data_channel: Channel object for the scope waveform data.
             extraction_fn: Callable taking a waveform object, returning a scalar.
@@ -115,7 +115,9 @@ class scope_servo:
 
     def _write_stimulus(self, value):
         self._last_stimulus_value = value
-        if isinstance(self._stimulus_channel, str):
+        if callable(self._stimulus_channel) and not hasattr(self._stimulus_channel, 'write'):
+            self._stimulus_channel(value)
+        elif isinstance(self._stimulus_channel, str):
             self._master.write(self._stimulus_channel, value)
         else:
             self._stimulus_channel.write(value)
