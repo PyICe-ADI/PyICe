@@ -1,7 +1,6 @@
 """Tests for scope_servo — scope-in-the-loop servo utility."""
 import numpy
-import pytest
-from PyICe import lab_core, virtual_instruments
+from PyICe import lab_core
 from PyICe.data_utils.scope_servo import scope_servo
 
 
