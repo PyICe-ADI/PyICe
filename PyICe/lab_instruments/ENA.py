@@ -197,7 +197,7 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
                 trace_name = f'{base_name}_{user_name}'
 
                 self.add_channel_ydata(trace_name, trace_number=trace_number, channel_number=channel_number)
-                self.get_channel(trace_name).set_attribute('measurement', measurement)
+                self.get_channel(trace_name).set_attribute('measurement', f'{measurement} {data_format}')
                 self._configured_traces[channel_number].append(trace_number)
 
                 if hasattr(self, 'add_channel_rlevel'):
@@ -1062,11 +1062,14 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
         y_columns = []  # (column_name, measurement_label, channel_number)
 
         if has_meta:
+            cls_module = cls.__module__
             rows_meta = conn.execute(
-                f'SELECT channel_name, channel_type, measurement, channel_number '
+                f'SELECT channel_name, channel_type, measurement, channel_number, instrument_class '
                 f'FROM [{meta_table}]'
             ).fetchall()
-            for ch_name, ch_type, measurement, ch_num in rows_meta:
+            for ch_name, ch_type, measurement, ch_num, inst_class in rows_meta:
+                if inst_class and not inst_class.startswith(cls_module):
+                    continue
                 if ch_type == 'x_data':
                     x_columns.append((ch_name, ch_num))
                 elif ch_type == 'y_data':
@@ -1143,11 +1146,49 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
         ydivs = 10
         yminor = 2
 
+        FORMAT_LABELS = {
+            'MLOG': 'MAGNITUDE (dB)',
+            'PHAS': 'PHASE (deg)',
+            'UPHAS': 'PHASE (deg)',
+            'PPHAS': 'PHASE (deg)',
+            'GDEL': 'GROUP DELAY (s)',
+            'MLIN': 'MAGNITUDE (linear)',
+            'SLIN': 'MAGNITUDE (linear)',
+            'SLOG': 'MAGNITUDE (dB)',
+            'SWR':  'VSWR',
+            'REAL': 'REAL',
+            'IMAG': 'IMAGINARY',
+            'SMIT': 'SMITH',
+            'SADM': 'ADMITTANCE (Smith)',
+            'PLIN': 'MAGNITUDE (linear)',
+            'PLOG': 'MAGNITUDE (dB)',
+            'POL':  'POLAR',
+        }
+
+        def _match_format(fmt_str):
+            key = fmt_str.upper()[:4]
+            for k, v in FORMAT_LABELS.items():
+                if key == k[:4]:
+                    return v
+            return None
+
+        formats_seen = set()
+        for _, label, _ in y_columns:
+            parts = label.rsplit(' ', 1)
+            if len(parts) == 2:
+                formats_seen.add(parts[1].strip())
+        if len(formats_seen) == 1:
+            fmt_key = formats_seen.pop()
+            matched = _match_format(fmt_key)
+            yaxis_label = matched if matched else fmt_key
+        else:
+            yaxis_label = 'MAGNITUDE (dB)'
+
         bode_plot = LTC_plot.plot(
             plot_title=f'{table_name}',
             plot_name=table_name,
             xaxis_label='FREQUENCY (Hz)',
-            yaxis_label='MAGNITUDE (dB)',
+            yaxis_label=yaxis_label,
             xlims=(freq_min, freq_max),
             ylims=(y_plot_min, y_plot_max),
             xminor=1,

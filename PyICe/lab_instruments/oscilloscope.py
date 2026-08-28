@@ -334,10 +334,14 @@ class oscilloscope(scpi_instrument, delegator):
         y_columns = []  # (column_name, label)
 
         if has_meta:
+            cls_module = cls.__module__
             rows_meta = conn.execute(
-                f'SELECT channel_name, channel_type, measurement FROM [{meta_table}]'
+                f'SELECT channel_name, channel_type, measurement, instrument_class '
+                f'FROM [{meta_table}]'
             ).fetchall()
-            for ch_name, ch_type, measurement in rows_meta:
+            for ch_name, ch_type, measurement, inst_class in rows_meta:
+                if inst_class and not inst_class.startswith(cls_module):
+                    continue
                 if ch_type == 'x_data':
                     x_columns.append(ch_name)
                 elif ch_type == 'y_data':
