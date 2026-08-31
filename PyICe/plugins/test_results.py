@@ -278,6 +278,7 @@ class generic_results():
             try:
                 res_dict['collection_date'] = self._traceability_info['datetime']
             except KeyError:
+                # The collection time was't saved. Moving on. 
                 pass
             res_dict['traceability'] = {}
             for channel_name, value in self._traceability_info.items():
