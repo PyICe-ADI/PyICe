@@ -212,9 +212,6 @@ class generic_results():
     def get_name(self):
         """Return the current name.
         Returns the stored name value from the object's internal state.
-        Returns the stored name from the object's internal state.
-
-        Returns the stored name from the object's internal state.
 
         Examples:
             >>> from PyICe.plugins.test_results import Test_Results
@@ -231,9 +228,6 @@ class generic_results():
         """Return the traceability info.
         Returns the stored traceability info value from the object's internal
         state.
-        Returns the stored traceability info from the object's internal state.
-
-        Returns the stored traceability info from the object's internal state.
 
         Examples:
             >>> from PyICe.plugins.test_results import Test_Results
@@ -364,8 +358,6 @@ class Test_Results(generic_results):
             """Implement deepcopy protocol.
             Enables deep copying via ``copy.deepcopy()``.
 
-            Implements the ``__deepcopy__`` protocol for this object.
-
 
             >>> from PyICe.plugins.test_results import Test_Results
             >>> hasattr(Test_Results, '__deepcopy__')
@@ -379,8 +371,6 @@ class Test_Results(generic_results):
         def __bool__(self):
             """Return boolean value.
             Enables truth-value testing with ``bool()``.
-
-            Controls truthiness when the object is used in boolean context.
 
 
             >>> from PyICe.plugins.test_results import Test_Results
@@ -498,8 +488,6 @@ class Test_Results(generic_results):
             Calls the parent class constructor and initializes
             instance-specific attributes for _test_results_list.
 
-            Calls the parent constructor to inherit base behavior, and initializes 4 instance attributes that configure the object's behavior.
-
 
             >>> from PyICe.plugins.test_results import Test_Results
             >>> obj = Test_Results('t')
@@ -522,8 +510,6 @@ class Test_Results(generic_results):
             """Return boolean value.
             Enables truth-value testing with ``bool()``.
 
-            Controls truthiness when the object is used in boolean context.
-
 
             >>> from PyICe.plugins.test_results import Test_Results
             >>> hasattr(Test_Results, '__bool__')
@@ -540,8 +526,6 @@ class Test_Results(generic_results):
         def __str__(self):
             """Return string representation.
             Provides a human-readable string for debugging and display.
-
-            Provides a human-readable representation for debugging and logging.
 
 
             >>> from PyICe.plugins.test_results import Test_Results
@@ -1157,8 +1141,6 @@ class Failed_Eval(Test_Results):
         """Return string representation.
         Provides a human-readable string for debugging and display.
 
-        Provides a human-readable representation for debugging and logging.
-
 
         >>> from PyICe.plugins.test_results import Failed_Eval
         >>> hasattr(Failed_Eval, '__str__')
@@ -1172,8 +1154,6 @@ class Failed_Eval(Test_Results):
     def __bool__(self):
         """Return boolean value.
         Enables truth-value testing with ``bool()``.
-
-        Controls truthiness when the object is used in boolean context.
 
         Examples:
             >>> from PyICe.plugins.test_results import Failed_Eval, Test_Results
