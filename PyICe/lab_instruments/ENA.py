@@ -119,7 +119,7 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
     # class keysight_e5061b_base(abc.ABC):
     """TODO: Add docstring."""
 
-    def __init__(self, interface_visa):
+    def __init__(self, interface_visa, halt_sweep=True):
         """Initialize Keysight E5061B ENA network analyzer.
         Calls the parent class constructor and initializes instance-specific
         attributes for keysight_e5061b_base.
@@ -128,6 +128,9 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
 
         Args:
             interface_visa: VISA interface address string.
+            halt_sweep: If True (default), stops continuous sweep on all
+                channels. Set to False to leave the instrument sweeping
+                (useful when reading existing front-panel data).
         """
         self._base_name = 'Keysight E5061B ENA network analyzer'
         super(keysight_e5061b_base, self).__init__(
@@ -137,8 +140,104 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
         self._configured_traces = {ch: [] for ch in range(1, 5)}
         # turn off unpoulated channels to avoid confusing status condition
         # register monitoring sweep/trigger status?
-        for i in range(1, 5):
-            self.get_interface().write(f':INITiate{i}:CONTinuous OFF')
+        if halt_sweep:
+            for i in range(1, 5):
+                self.get_interface().write(f':INITiate{i}:CONTinuous OFF')
+
+    def discover_and_configure(self, base_name='ena'):
+        """Query the instrument for its current front-panel configuration and register channels.
+
+        Discovers which channels/traces are active on the instrument and calls
+        the appropriate add_channel_* methods so that this instrument object has
+        registered PyICe channels matching the live hardware state. Includes
+        trace data, sweep settings, display layout, trigger, source power,
+        bias, and per-trace display scaling channels.
+
+        Prompts the user to name each discovered trace.
+
+        Args:
+            base_name: Prefix for auto-created setting channel names.
+
+        Returns:
+            A summary dict of what was discovered and configured.
+        """
+        iface = self.get_interface()
+        discovered = {}
+
+        display_split = iface.ask(':DISPlay:SPLit?').strip()
+        active_channels = set(int(ch) for ch in display_split if ch.isdigit())
+
+        for channel_number in range(1, 5):
+            if channel_number not in active_channels:
+                continue
+            trace_count = int(iface.ask(f':CALCulate{channel_number}:PARameter:COUNt?'))
+            if trace_count == 0:
+                continue
+
+            ch_key = f'ch{channel_number}'
+            discovered[ch_key] = {'traces': []}
+
+            if not self._configured_traces[channel_number]:
+                self.add_xchannels(f'{base_name}_{ch_key}', channel_number=channel_number)
+
+            self.add_channel_display_split(f'{base_name}_{ch_key}_display_split', channel_number=channel_number)
+
+            for trace_number in range(1, trace_count + 1):
+                if trace_number in self._configured_traces[channel_number]:
+                    continue
+
+                iface.write(f':CALCulate{channel_number}:PARameter{trace_number}:SELect')
+                measurement = iface.ask(f':CALCulate{channel_number}:PARameter{trace_number}:DEFine?')
+                data_format = iface.ask(f':CALCulate{channel_number}:SELected:FORMat?')
+
+                print(f"  Channel {channel_number}, Trace {trace_number}: {measurement} ({data_format})")
+                user_name = ''
+                while not len(user_name):
+                    user_name = input(f"    Name for this trace: ")
+                trace_name = f'{base_name}_{user_name}'
+
+                self.add_channel_ydata(trace_name, trace_number=trace_number, channel_number=channel_number)
+                self.get_channel(trace_name).set_attribute('measurement', f'{measurement} {data_format}')
+                self._configured_traces[channel_number].append(trace_number)
+
+                if hasattr(self, 'add_channel_rlevel'):
+                    self.add_channel_rlevel(f'{trace_name}_rlevel',
+                                            channel_number=channel_number, trace_number=trace_number)
+                if hasattr(self, 'add_channel_pdiv'):
+                    self.add_channel_pdiv(f'{trace_name}_pdiv',
+                                          channel_number=channel_number, trace_number=trace_number)
+
+                discovered[ch_key]['traces'].append({
+                    'trace_number': trace_number,
+                    'measurement': measurement,
+                    'format': data_format,
+                    'channel_name': trace_name,
+                })
+
+            if hasattr(self, 'add_channel_divisions'):
+                self.add_channel_divisions(f'{base_name}_{ch_key}_divisions', channel_number=channel_number)
+
+        # Trigger
+        trigger_names = [ch.get_name() for ch in self.get_all_channels_list()
+                         if ch.get_attribute('channel_type') == 'trig_control']
+        if not trigger_names:
+            self.add_channel_trigger(f'{base_name}')
+
+        # Source power
+        self.add_channels_source_power(f'{base_name}_source_power')
+
+        # Bias control
+        self.add_channels_bias_control(f'{base_name}_bias')
+
+        # GP port control
+        self.add_channels_gp_control(f'{base_name}_gp')
+
+        print(f"Discovered {sum(len(v['traces']) for v in discovered.values())} trace(s) "
+              f"across {len(discovered)} channel(s).")
+        for ch_key, info in discovered.items():
+            for t in info['traces']:
+                print(f"  {ch_key} trace {t['trace_number']}: {t['measurement']} ({t['format']})")
+        return discovered
 
     def _check_trace_unconfigured(self, trace_number, channel_number):
         # what about more than 4 measurements from the same sweep (logged but
@@ -215,7 +314,7 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
             channel_name, write_function=lambda layout: self.get_interface().write(
                 f':DISPlay:WINDow{channel_number}:SPLit {layout}'))
         new_channel._read = lambda: self.get_interface().ask(
-            ':DISPlay:WINDow{channel_number}:SPLit?')
+            f':DISPlay:WINDow{channel_number}:SPLit?')
         new_channel.add_preset("D1")
         new_channel.add_preset("D12")
         new_channel.add_preset("D1_2")
@@ -342,7 +441,9 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
                 trace_number,
                 channel_number))
         new_channel.set_attribute('trace_number', trace_number)
+        new_channel.set_attribute('channel_number', channel_number)
         new_channel.set_attribute('channel_type', 'y_data')
+        new_channel._set_type_affinity('PyICeBLOB')
         # new_channel.set_delegator(self)
         new_channel.set_description(
             self.get_name() + ': ' + self.add_channel_ydata.__doc__)
@@ -362,6 +463,8 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
             channel_name,
             read_function=lambda channel_number=channel_number: self._read_x_data(channel_number))
         new_channel.set_attribute('channel_type', 'x_data')
+        new_channel.set_attribute('channel_number', channel_number)
+        new_channel._set_type_affinity('PyICeBLOB')
         # new_channel.set_delegator(self)
         new_channel.set_description(
             self.get_name() + ': ' + self.add_channel_xdata.__doc__)
@@ -914,6 +1017,207 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
 
         return (mode_channel, source_channel, slope_channel)
         # todo read_delegated blocking / autotrigger??
+
+    @classmethod
+    def plot_from_database(cls, db_filename, table_name, rows=None, output_svg=True):
+        """Read logged ENA data from SQLite and produce a frequency-response plot.
+
+        Does not require an instrument connection. Identifies x_data (frequency)
+        and y_data (trace) columns using the companion metadata table written by
+        instrument_recorder, or falls back to naming conventions for older files.
+
+        Args:
+            db_filename: Path to the SQLite database file.
+            table_name: Name of the data table to plot.
+            rows: Which measurement rows to plot. Accepts:
+                - None: plot all rows (overlaid)
+                - int: plot a single row by index
+                - slice: plot a range of rows
+                - list of int: plot specific rows
+            output_svg: If True (default), render to SVG file alongside the
+                database. The file is named '{db_basename}_{table_name}.svg'.
+
+        Returns:
+            The LTC_plot.Page object for further customization or rendering.
+        """
+        from ..lab_utils.sqlite_data import sqlite_data
+        from .. import LTC_plot
+        import sqlite3
+        import numpy
+        import os
+
+        colors = [LTC_plot.LT_RED_1, LTC_plot.LT_BLUE_1, LTC_plot.LT_GREEN_1,
+                  LTC_plot.LT_COPPER_1, LTC_plot.LT_RED_2, LTC_plot.LT_BLUE_2,
+                  LTC_plot.LT_GREEN_2, LTC_plot.LT_COPPER_2]
+
+        # --- Discover column roles from metadata table or naming convention ---
+        meta_table = f'{table_name}_channel_meta'
+        conn = sqlite3.connect(db_filename)
+        cursor = conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+            (meta_table,))
+        has_meta = cursor.fetchone() is not None
+
+        x_columns = []  # (column_name, channel_number)
+        y_columns = []  # (column_name, measurement_label, channel_number)
+
+        if has_meta:
+            cls_module = cls.__module__
+            rows_meta = conn.execute(
+                f'SELECT channel_name, channel_type, measurement, channel_number, instrument_class '
+                f'FROM [{meta_table}]'
+            ).fetchall()
+            for ch_name, ch_type, measurement, ch_num, inst_class in rows_meta:
+                if inst_class and not inst_class.startswith(cls_module):
+                    continue
+                if ch_type == 'x_data':
+                    x_columns.append((ch_name, ch_num))
+                elif ch_type == 'y_data':
+                    label = measurement if measurement else ch_name
+                    y_columns.append((ch_name, label, ch_num))
+        else:
+            # Fallback: columns ending in '_fpoints' are frequency axes,
+            # other numpy array columns are traces
+            db_temp = sqlite_data(table_name=table_name, database_file=db_filename)
+            col_names = db_temp.get_column_names()
+            col_types = db_temp.get_column_types()
+            for name in col_names:
+                if name.endswith('_fpoints'):
+                    x_columns.append((name, None))
+                elif col_types.get(name) == numpy.ndarray:
+                    y_columns.append((name, name, None))
+
+        conn.close()
+
+        if not x_columns or not y_columns:
+            raise ValueError(
+                f"Could not identify trace data in table '{table_name}'. "
+                f"Found {len(x_columns)} x_data and {len(y_columns)} y_data columns.")
+
+        # --- Load data rows ---
+        db = sqlite_data(table_name=table_name, database_file=db_filename)
+        total_rows = len(db)
+
+        if rows is None:
+            row_indices = list(range(total_rows))
+        elif isinstance(rows, int):
+            row_indices = [rows]
+        elif isinstance(rows, slice):
+            row_indices = list(range(*rows.indices(total_rows)))
+        else:
+            row_indices = list(rows)
+
+        # --- Match y columns to their x column by channel_number ---
+        def find_x_for_y(y_ch_num):
+            for x_name, x_ch_num in x_columns:
+                if x_ch_num is not None and x_ch_num == y_ch_num:
+                    return x_name
+            return x_columns[0][0]
+
+        # --- Build the plot ---
+        freq_min = float('inf')
+        freq_max = 0
+        y_min = float('inf')
+        y_max = float('-inf')
+
+        trace_data_pairs = []
+        for row_idx in row_indices:
+            row = db[row_idx]
+            for y_col, label, y_ch_num in y_columns:
+                x_col = find_x_for_y(y_ch_num)
+                x_arr = row[x_col]
+                y_arr = row[y_col]
+                if x_arr is None or y_arr is None:
+                    continue
+                freq_min = min(freq_min, x_arr.min())
+                freq_max = max(freq_max, x_arr.max())
+                y_min = min(y_min, y_arr.min())
+                y_max = max(y_max, y_arr.max())
+                row_label = f'{label} [row {row_idx}]' if len(row_indices) > 1 else label
+                trace_data_pairs.append((x_arr, y_arr, row_label))
+
+        if not trace_data_pairs:
+            raise ValueError(f"No valid trace data found in selected rows of '{table_name}'.")
+
+        # Round axis limits to nice values
+        y_margin = (y_max - y_min) * 0.1 if y_max > y_min else 5
+        y_plot_min = y_min - y_margin
+        y_plot_max = y_max + y_margin
+        ydivs = 10
+        yminor = 2
+
+        FORMAT_LABELS = {
+            'MLOG': 'MAGNITUDE (dB)',
+            'PHAS': 'PHASE (deg)',
+            'UPHAS': 'PHASE (deg)',
+            'PPHAS': 'PHASE (deg)',
+            'GDEL': 'GROUP DELAY (s)',
+            'MLIN': 'MAGNITUDE (linear)',
+            'SLIN': 'MAGNITUDE (linear)',
+            'SLOG': 'MAGNITUDE (dB)',
+            'SWR':  'VSWR',
+            'REAL': 'REAL',
+            'IMAG': 'IMAGINARY',
+            'SMIT': 'SMITH',
+            'SADM': 'ADMITTANCE (Smith)',
+            'PLIN': 'MAGNITUDE (linear)',
+            'PLOG': 'MAGNITUDE (dB)',
+            'POL':  'POLAR',
+        }
+
+        def _match_format(fmt_str):
+            key = fmt_str.upper()[:4]
+            for k, v in FORMAT_LABELS.items():
+                if key == k[:4]:
+                    return v
+            return None
+
+        formats_seen = set()
+        for _, label, _ in y_columns:
+            parts = label.rsplit(' ', 1)
+            if len(parts) == 2:
+                formats_seen.add(parts[1].strip())
+        if len(formats_seen) == 1:
+            fmt_key = formats_seen.pop()
+            matched = _match_format(fmt_key)
+            yaxis_label = matched if matched else fmt_key
+        else:
+            yaxis_label = 'MAGNITUDE (dB)'
+
+        bode_plot = LTC_plot.plot(
+            plot_title=f'{table_name}',
+            plot_name=table_name,
+            xaxis_label='FREQUENCY (Hz)',
+            yaxis_label=yaxis_label,
+            xlims=(freq_min, freq_max),
+            ylims=(y_plot_min, y_plot_max),
+            xminor=1,
+            xdivs=10,
+            yminor=yminor,
+            ydivs=ydivs,
+            logx=True,
+            logy=False,
+        )
+
+        for i, (x_arr, y_arr, label) in enumerate(trace_data_pairs):
+            color = colors[i % len(colors)]
+            data = list(zip(x_arr.tolist(), y_arr.tolist()))
+            bode_plot.add_trace(axis=1, data=data, color=color, legend=label)
+
+        bode_plot.add_legend(axis=1, location=(1.02, 0.5),
+                             justification='center left', use_axes_scale=False)
+
+        # --- Render ---
+        page = LTC_plot.Page(rows_x_cols=None, page_size=None, plot_count=1)
+        page.add_plot(plot=bode_plot)
+
+        if output_svg:
+            base = os.path.splitext(db_filename)[0]
+            svg_name = f'{base}_{table_name}_bode'
+            page.create_svg(svg_name)
+            print(f'Plot saved to {svg_name}.svg')
+
+        return page
 
 
 class keysight_e5061b(keysight_e5061b_base):
