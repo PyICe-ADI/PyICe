@@ -204,6 +204,18 @@ class generic_results():
         # TODO https://docs.python.org/3/library/abc.html ?
 
     def _init(self, name, module=None):
+        """Initialize common state shared by Test_Results and Test_Results_Reload.
+
+        Args:
+            name (str): Test module name, used as the top-level key in the
+                JSON report and for identifying the metadata table.
+            module (Master_Test_Template, optional): Live test module instance.
+                When provided, _json_report() queries the module's database
+                for traceability metadata (the {name}_metadata table).
+                When None (e.g. Test_Results_Reload), traceability is sourced
+                from _traceability_info instead, which is populated from
+                the reloaded JSON.
+        """
         self._name = name
         self._module = module
         self._traceability_info = collections.OrderedDict()
@@ -272,7 +284,7 @@ class generic_results():
             try:
                 res_dict['collection_date'] = self._traceability_info['datetime']
             except KeyError:
-                # The collection time was't saved. Moving on. 
+                # The collection time wasn't saved. Moving on.
                 pass
             res_dict['traceability'] = {}
             for channel_name, value in self._traceability_info.items():
