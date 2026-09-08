@@ -41,15 +41,11 @@ dependencies=[
     "nifgen",
     "niscope",
     "objutils==0.6.4", #later versions through 0.8.7 won't run build script without crash
-    "openpyxl",
     "pandas",
     "vcdvcd",
-    "pybind11",
-    "pycairo",
     "python-pptx",
     "PyPDF2",
     "pyserial", #testing. Was previously held back to ==3.4
-    "pysocks",
     "pystdf",
     "python-usbtmc",
     "python-vxi11",
@@ -65,7 +61,6 @@ dependencies=[
     "svglib",
     "sympy",
     "windows-curses ; platform_system == \"Windows\"",
-    "xlrd",
     "xlsxwriter",
 ]
 
