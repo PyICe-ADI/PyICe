@@ -345,6 +345,9 @@ import os
 import shutil
 import io
 import csv
+import json
+import re
+import math
 
 
 class PyICe_data_base():
@@ -955,6 +958,416 @@ class plot(object):
                 writer.writerow(
                     {k: v[i] for k, v in trace_dict.items() if len(v) > i})
             f.close()
+
+    @staticmethod
+    def _fracRGB_to_hex(color):
+        if isinstance(color, str):
+            return color if color.startswith('#') else '#' + color
+        r = int(round(color[0] * 255))
+        g = int(round(color[1] * 255))
+        b = int(round(color[2] * 255))
+        return "#{:02X}{:02X}{:02X}".format(r, g, b)
+
+    @staticmethod
+    def _unicode_to_html_entities(text):
+        if text is None:
+            return ''
+        result = []
+        for ch in str(text):
+            if ord(ch) > 127:
+                result.append("&#{};".format(ord(ch)))
+            else:
+                result.append(ch)
+        return "".join(result)
+
+    @staticmethod
+    def _parse_axis_label(label):
+        if label is None:
+            return '', ''
+        match = re.match(r'^(.*?)\s*\(([^)]*)\)\s*$', str(label))
+        if match:
+            return match.group(1).strip(), match.group(2).strip()
+        return str(label).strip(), ''
+
+    def create_tc(self, file_basename, filepath=None, graph_id=None):
+        """Export plot data to ADI Data Sheet Tools .tc JSON format.
+
+        The .tc file can be opened with the web-based Typical Curve Editor
+        for final Marcom-style adjustments and SVG export for datasheets.
+
+        >>> from PyICe.LTC_plot import plot
+        >>> hasattr(plot, 'create_tc')
+        True
+
+        Args:
+            file_basename: Base filename without extension.
+            filepath: Directory path. Defaults to ``'./tc/'``.
+            graph_id: Graph identifier string. Defaults to ``plot_name``.
+        """
+        graph = {
+            "arrows": [],
+            "dataSet": {},
+            "id": graph_id if graph_id is not None else (self.plot_name or ""),
+            "labels": [],
+            "legend": {
+                "columnCount": 1,
+                "isVisible": (self.y1_axis_params.get("place_legend", False) or
+                              self.y2_axis_params.get("place_legend", False)),
+                "lineWidth": 15,
+                "transformString": "t10,10"
+            },
+            "lines": [],
+            "scope": {
+                "frameVisible": True,
+                "gridVisible": True,
+                "ticksVisible": True
+            },
+            "shapes": [],
+            "title": {
+                "text": [self._unicode_to_html_entities(self.plot_title), "", "", "", ""],
+                "visible": True
+            },
+        }
+
+        # --- Legend position from axis params ---
+        for y_params in [self.y1_axis_params, self.y2_axis_params]:
+            if y_params.get("place_legend") and y_params.get("legend_loc"):
+                loc = y_params["legend_loc"]
+                if isinstance(loc, (tuple, list)) and len(loc) >= 2:
+                    graph["legend"]["transformString"] = "t{}r0,0,0".format(
+                        ",".join(str(v) for v in loc[:2]))
+                graph["legend"]["isVisible"] = True
+
+        # --- X axis ---
+        x_title, x_units = self._parse_axis_label(self.xaxis_label)
+        x_auto = self.xlims in [None, "auto"]
+        x_min = 0 if x_auto else self.xlims[0]
+        x_max = 10 if x_auto else self.xlims[1]
+        x_grid_count = self.xdivs if self.xdivs else 10
+
+        x_axis = {
+            "gain": 13.1874,
+            "grid": {
+                "count": x_grid_count,
+                "decadeCount": 3,
+                "decadePerGrid": 1,
+                "log": bool(self.logx),
+                "showMinorLogGrid": False,
+                "visible": True,
+            },
+            "labels": {
+                "decimalCount": "1",
+                "textArray": [],
+                "visible": True,
+            },
+            "scale": {
+                "auto": x_auto,
+                "max": x_max,
+                "min": x_min,
+                "minLog": 0.1,
+                "multiplier": 1,
+                "range": 0,
+                "rangeEnabled": True,
+            },
+            "scope": {
+                "autoGenerateTitle": True,
+                "autoScale": True,
+                "decimalCount": 0,
+                "gain": 1,
+                "multiplier": 1,
+                "offset": 0,
+                "range": 0,
+                "title": "x Title",
+                "titleVisible": True,
+                "units": "s",
+                "unitsPerDiv": 0.001,
+            },
+            "title": {
+                "showUnits": bool(x_units),
+                "text": [self._unicode_to_html_entities(x_title), ""],
+                "units": self._unicode_to_html_entities(x_units),
+                "visible": True,
+            },
+        }
+
+        if self.logx and not x_auto:
+            try:
+                decades = int(round(math.log10(x_max / x_min)))
+            except (ValueError, ZeroDivisionError):
+                decades = 3
+            x_axis["grid"]["decadeCount"] = max(decades, 1)
+            x_axis["scale"]["minLog"] = x_min
+
+        graph["xAxis"] = x_axis
+
+        # --- Y axes ---
+        for y_params, y_key in [(self.y1_axis_params, "yAxis"),
+                                (self.y2_axis_params, "yAxis2")]:
+            y_label = y_params.get("yaxis_label", "")
+            y_title, y_units = self._parse_axis_label(y_label)
+            ylims = y_params.get("ylims")
+            y_auto = ylims in [None, "auto"]
+            y_min = 0 if y_auto else ylims[0]
+            y_max = 100 if y_auto else ylims[1]
+            y_divs = y_params.get("ydivs") or 10
+            y_log = y_params.get("logy", False)
+            y_used = y_params.get("axis_is_used", False)
+
+            y_axis = {
+                "gain": 1.31874,
+                "grid": {
+                    "count": y_divs,
+                    "decadeCount": 3,
+                    "decadePerGrid": 1,
+                    "log": bool(y_log),
+                    "showMinorLogGrid": True,
+                    "visible": y_used,
+                },
+                "labels": {
+                    "decimalCount": "0",
+                    "textArray": [],
+                    "visible": y_used,
+                },
+                "scale": {
+                    "auto": y_auto,
+                    "max": y_max,
+                    "min": y_min,
+                    "minLog": 0.1,
+                    "multiplier": 1,
+                    "range": 0,
+                    "rangeEnabled": True,
+                },
+                "title": {
+                    "showUnits": bool(y_units),
+                    "text": [self._unicode_to_html_entities(y_title), ""],
+                    "units": self._unicode_to_html_entities(y_units),
+                    "visible": y_used,
+                },
+            }
+
+            if y_log and not y_auto:
+                try:
+                    decades = int(round(math.log10(y_max / y_min)))
+                except (ValueError, ZeroDivisionError):
+                    decades = 3
+                y_axis["grid"]["decadeCount"] = max(decades, 1)
+                y_axis["scale"]["minLog"] = y_min
+
+            if y_key == "yAxis2":
+                y_axis["labels"]["showTickMarks"] = False
+
+            graph[y_key] = y_axis
+
+        # --- Dataset and traces ---
+        has_histograms = any(
+            y_params.get("histo_data", [])
+            for y_params in [self.y1_axis_params, self.y2_axis_params]
+        )
+        if self.plot_type == "scope_plot":
+            ds_type = "scope"
+        elif has_histograms:
+            ds_type = "bar"
+        else:
+            ds_type = "line"
+
+        dataset = {
+            "barFillIndex": "0",
+            "data": [],
+            "decimationCount": "512",
+            "fitPointCount": "5",
+            "groupCount": 1,
+            "isBlackAndWhite": False,
+            "isDefaultColor": True,
+            "isDefaultY2Color": False,
+            "isRed": False,
+            "isTemperatureData": False,
+            "maxX": 0,
+            "maxY": 0,
+            "minX": 0,
+            "minY": 0,
+            "showBarGap": True,
+            "showBarOutlineOnly": False,
+            "type": ds_type,
+        }
+
+        all_x = []
+        all_y = []
+
+        for y_params, is_y2 in [(self.y1_axis_params, False),
+                                (self.y2_axis_params, True)]:
+            for trace in y_params.get("trace_data", []):
+                if trace.get("vxline") or trace.get("hxline"):
+                    continue
+                if not trace.get("data"):
+                    continue
+
+                points = [[pt[0], pt[1]] for pt in trace["data"]]
+                y_values = [pt[1] for pt in points]
+                x_values = [pt[0] for pt in points]
+                all_x.extend(x_values)
+                all_y.extend(y_values)
+
+                tc_trace = {
+                    "addToLegend": bool(trace.get("legend")),
+                    "barFillIndex": 0,
+                    "dataMultiplier": 1,
+                    "fitBandwidth": 4,
+                    "fitPoints": [],
+                    "group": 0,
+                    "isDashed": trace.get("linestyle", "-") in ("--", "-.", ":"),
+                    "isVisible": True,
+                    "isY2": is_y2,
+                    "max": max(y_values),
+                    "min": min(y_values),
+                    "multiplier": 1,
+                    "name": self._unicode_to_html_entities(trace.get("legend", "")),
+                    "path": "",
+                    "points": points,
+                    "scope": {
+                        "autoGenerateTitle": True,
+                        "autoScale": True,
+                        "decimalCount": 0,
+                        "gain": 1,
+                        "groundVisible": True,
+                        "labelOffset": 0,
+                        "multiplier": 1,
+                        "offset": 0,
+                        "range": 0,
+                        "title": "y Title",
+                        "titleVisible": True,
+                        "transformString": "",
+                        "units": "A",
+                        "unitsPerDiv": 0.001,
+                    },
+                    "showFit": False,
+                    "showFitPoints": False,
+                    "showLines": trace.get("linestyle", "-") != "None",
+                    "showPath": False,
+                    "showPoints": (trace.get("marker") is not None
+                                   and trace.get("marker") != "None"
+                                   and trace.get("marker") != ""),
+                    "stroke": self._fracRGB_to_hex(trace["color"]),
+                    "sum": 1,
+                    "temperature": 25,
+                    "transformString": "",
+                }
+                dataset["data"].append(tc_trace)
+
+        # --- Histogram data as bar points ---
+        for y_params, is_y2 in [(self.y1_axis_params, False),
+                                (self.y2_axis_params, True)]:
+            for histo in y_params.get("histo_data", []):
+                counts, bin_edges = np.histogram(histo["xdata"],
+                                                 bins=histo["num_bins"])
+                points = []
+                for i in range(len(counts)):
+                    bin_center = (bin_edges[i] + bin_edges[i + 1]) / 2.0
+                    points.append([float(bin_center), int(counts[i])])
+                if points:
+                    all_x.extend(pt[0] for pt in points)
+                    all_y.extend(pt[1] for pt in points)
+
+                tc_trace = {
+                    "addToLegend": bool(histo.get("legend")),
+                    "barFillIndex": 0,
+                    "dataMultiplier": 1,
+                    "fitBandwidth": 4,
+                    "fitPoints": [],
+                    "group": 0,
+                    "isDashed": False,
+                    "isVisible": True,
+                    "isY2": is_y2,
+                    "max": max(pt[1] for pt in points) if points else 0,
+                    "min": min(pt[1] for pt in points) if points else 0,
+                    "multiplier": 1,
+                    "name": self._unicode_to_html_entities(
+                        histo.get("legend", "")),
+                    "path": "",
+                    "points": points,
+                    "scope": {
+                        "autoGenerateTitle": True,
+                        "autoScale": True,
+                        "decimalCount": 0,
+                        "gain": 1,
+                        "groundVisible": True,
+                        "labelOffset": 0,
+                        "multiplier": 1,
+                        "offset": 0,
+                        "range": 0,
+                        "title": "y Title",
+                        "titleVisible": True,
+                        "transformString": "",
+                        "units": "A",
+                        "unitsPerDiv": 0.001,
+                    },
+                    "showFit": False,
+                    "showFitPoints": False,
+                    "showLines": True,
+                    "showPath": False,
+                    "showPoints": False,
+                    "stroke": self._fracRGB_to_hex(histo["color"]),
+                    "sum": 1,
+                    "temperature": 25,
+                    "transformString": "",
+                }
+                dataset["data"].append(tc_trace)
+
+        if all_x:
+            dataset["minX"] = min(all_x)
+            dataset["maxX"] = max(all_x)
+        if all_y:
+            dataset["minY"] = min(all_y)
+            dataset["maxY"] = max(all_y)
+
+        graph["dataSet"] = dataset
+
+        # --- Notes → labels ---
+        for note_dict in self.notes:
+            loc = note_dict.get("location", (0, 0))
+            x_coord = loc[0] if loc else 0
+            y_coord = loc[1] if loc else 0
+            label = {
+                "text": self._unicode_to_html_entities(note_dict.get("note", "")),
+                "transformString": "t{},{}r0,0,0".format(x_coord, y_coord),
+                "x": x_coord,
+                "y": y_coord,
+            }
+            graph["labels"].append(label)
+
+        # --- Arrows → lines with arrowheads ---
+        for arrow_dict in self.arrows:
+            text_loc = arrow_dict.get("text_location", (0, 0))
+            tip = arrow_dict.get("arrow_tip", (0, 0))
+            line = {
+                "arrowHead1": True,
+                "arrowHead2": False,
+                "isDashed": False,
+                "isThick": False,
+                "points": [
+                    {"x": text_loc[0], "y": text_loc[1]},
+                    {"x": tip[0], "y": tip[1]},
+                ],
+            }
+            graph["lines"].append(line)
+            if arrow_dict.get("text"):
+                graph["labels"].append({
+                    "text": self._unicode_to_html_entities(arrow_dict["text"]),
+                    "transformString": "t{},{}r0,0,0".format(
+                        text_loc[0], text_loc[1]),
+                    "x": text_loc[0],
+                    "y": text_loc[1],
+                })
+
+        # --- Write .tc file ---
+        filepath = './tc/' if filepath is None else os.path.join(filepath, 'tc')
+        try:
+            os.makedirs(filepath)
+        except OSError:
+            pass
+        tc_filename = os.path.join(
+            filepath, "{}.tc".format(file_basename).replace(" ", "_"))
+        with open(tc_filename, 'w') as f:
+            json.dump(graph, f)
 
 
 class scope_plot(plot):
