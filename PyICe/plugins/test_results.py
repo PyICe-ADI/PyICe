@@ -743,9 +743,13 @@ class Test_Results(generic_results):
         resp = ''
         passes = bool(len(self._test_declarations))
         for test in self._test_declarations:
+            if not bool(self[test]):
+                resp += '***\n'
             for line in str(self[test]).splitlines():
                 resp += f'\t{line}\n'
             passes &= bool(self[test])
+            if not bool(self[test]):
+                resp += '***\n'
         return resp.expandtabs(3)
 
     def __bool__(self):

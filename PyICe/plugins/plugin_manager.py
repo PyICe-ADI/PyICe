@@ -280,25 +280,31 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                 if self._corr_results_str:
                     results_str += self._corr_results_str
             if results_str:
-                total_tests = len(self.failed_tests) + len(self.failed_evals)
-                tests_with_results = [t for t in self.tests if hasattr(t, '_test_results')]
-                total_tests = len(tests_with_results)
-                fail_count = len(self.failed_tests) + len(self.failed_evals)
-                pass_count = total_tests - fail_count
-                summary_header = f'RESULT: {pass_count}/{total_tests} PASS'
-                if fail_count:
-                    summary_header += f' | {fail_count} FAIL'
+                total_refids = 0
+                failed_refids = []
+                for test in self.tests:
+                    if hasattr(test, '_test_results') and not isinstance(test._test_results, Failed_Eval):
+                        for decl_name in test._test_results:
+                            total_refids += 1
+                            if not bool(test._test_results[decl_name]):
+                                failed_refids.append(decl_name)
+                for name in self.failed_evals:
+                    total_refids += 1
+                    failed_refids.append(f'{name} (evaluation crashed)')
+                refid_fail_count = len(failed_refids)
+                refid_pass_count = total_refids - refid_fail_count
+                summary_header = f'REFID RESULTS: {refid_pass_count}/{total_refids} PASS'
+                if refid_fail_count:
+                    summary_header += f' | {refid_fail_count} FAIL'
                 summary_header += '\n'
-                if self.failed_tests or self.failed_evals:
-                    summary_header += '\nFAILURES:\n'
-                    for name in self.failed_tests:
-                        summary_header += f'  {name}\n'
-                    for name in self.failed_evals:
-                        summary_header += f'  {name} (evaluation crashed)\n'
+                if failed_refids:
+                    summary_header += '\nFAILING REFIDS:\n'
+                    for refid in failed_refids:
+                        summary_header += f'  {refid}\n'
                 summary_header += '\n' + '─' * 42 + '\nDETAILS:\n'
                 results_str = summary_header + results_str
                 results_str += "\n*** END OF REPORT ***"
-                subject = f'Results: {pass_count} PASS / {fail_count} FAIL'
+                subject = f'Results: {refid_pass_count} PASS / {refid_fail_count} FAIL'
                 self.notify(results_str, subject=subject)
         except Exception:
             traceback.print_exc()
