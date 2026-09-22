@@ -224,6 +224,7 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
         if 'archive' in self.plugins:
             self._archive()
         results_str = ''
+        crashed_tests = {}
         try:
             if 'evaluate_tests' in self.plugins and self._send_notifications:
                 self.failed_tests = {}
@@ -236,11 +237,10 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                                 self.failed_evals.append(test.get_name())
                             else:
                                 self.failed_tests[test.get_name()] = ''
-                            if test._is_crashed:
-                                self.failed_tests[test.get_name()] = self._crash_str(
-                                    test)
+                            if test._is_crashed and test.get_name() not in crashed_tests:
+                                crashed_tests[test.get_name()] = self._crash_str(test)
                 if len(self.failed_evals):
-                    self._test_results_str += "\nThe following evaluation methods themselves crashed:\n"
+                    self._test_results_str += "\nThe evaluation methods of the following tests crashed:\n"
                     for failed_eval in self.failed_evals:
                         self._test_results_str += f"    {failed_eval}\n"
                     self._test_results_str += "\n"
@@ -248,11 +248,11 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                     self._test_results_str += '\nThe following tests failed:\n'
                     for failed_test in self.failed_tests.keys():
                         self._test_results_str += f'    {failed_test}\n'
-                        if len(self.failed_tests[failed_test]):
-                            self._test_results_str += f'{self.failed_tests[failed_test]}\n'
                 if self._test_results_str:
                     results_str += self._test_results_str
             if 'correlate_tests' in self.plugins and self._send_notifications:
+                if results_str:
+                    results_str += '\n' + '─' * 42 + '\nCORRELATION RESULTS:\n'
                 self.failed_corr_tests = {}
                 self.failed_corrs = []
                 for test in self.tests:
@@ -263,9 +263,8 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                                 self.failed_corrs.append(test.get_name())
                             else:
                                 self.failed_corr_tests[test.get_name()] = ''
-                            if test._is_crashed:
-                                self.failed_corr_tests[test.get_name()] = self._crash_str(
-                                    test)
+                            if test._is_crashed and test.get_name() not in crashed_tests:
+                                crashed_tests[test.get_name()] = self._crash_str(test)
                 if len(self.failed_corrs):
                     self._corr_results_str += "\nThe following correlation methods themselves crashed:\n"
                     for failed_eval in self.failed_corrs:
@@ -275,25 +274,59 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                     self._corr_results_str += '\nThe following tests failed:\n'
                     for failed_test in self.failed_corr_tests.keys():
                         self._corr_results_str += f'    {failed_test}\n'
-                        if len(self.failed_corr_tests[failed_test]):
-                            self._corr_results_str += f'{self.failed_corr_tests[failed_test]}\n'
                 if self._corr_results_str:
-                    results_str += self._corr_results_str
+                    corr_total_refids = 0
+                    corr_failed_refids = []
+                    corr_compromised_refids = []
+                    for test in self.tests:
+                        if hasattr(test, '_corr_results') and not isinstance(test._corr_results, Failed_Eval):
+                            if test._corr_results._failure_override:
+                                for decl_name in test._corr_results:
+                                    corr_total_refids += 1
+                                    corr_compromised_refids.append(decl_name)
+                            else:
+                                for decl_name in test._corr_results:
+                                    corr_total_refids += 1
+                                    if not bool(test._corr_results[decl_name]):
+                                        corr_failed_refids.append(decl_name)
+                    corr_fail_count = len(corr_failed_refids) + len(corr_compromised_refids) + len(self.failed_corrs)
+                    corr_pass_count = corr_total_refids + len(self.failed_corrs) - corr_fail_count
+                    corr_header = f'CORR REFID RESULTS: {corr_pass_count}/{corr_total_refids + len(self.failed_corrs)} PASS'
+                    if corr_fail_count:
+                        corr_header += f' | {corr_fail_count} FAIL'
+                    corr_header += '\n'
+                    if corr_failed_refids:
+                        corr_header += '\nFAILING REFIDS:\n'
+                        for refid in corr_failed_refids:
+                            corr_header += f'  {refid}\n'
+                    if corr_compromised_refids:
+                        corr_header += '\nCOMPROMISED REFIDS (collect crashed):\n'
+                        for refid in corr_compromised_refids:
+                            corr_header += f'  {refid}\n'
+                    if self.failed_corrs:
+                        corr_header += '\nCRASHED CORRELATIONS:\n'
+                        for name in self.failed_corrs:
+                            corr_header += f'  {name}\n'
+                    corr_header += '\n'
+                    results_str += corr_header + self._corr_results_str
             if results_str:
                 total_refids = 0
                 failed_refids = []
+                compromised_refids = []
                 for test in self.tests:
                     if hasattr(test, '_test_results') and not isinstance(test._test_results, Failed_Eval):
-                        for decl_name in test._test_results:
-                            total_refids += 1
-                            if not bool(test._test_results[decl_name]):
-                                failed_refids.append(decl_name)
-                for name in self.failed_evals:
-                    total_refids += 1
-                    failed_refids.append(f'{name} (evaluation crashed)')
-                refid_fail_count = len(failed_refids)
-                refid_pass_count = total_refids - refid_fail_count
-                summary_header = f'REFID RESULTS: {refid_pass_count}/{total_refids} PASS'
+                        if test._test_results._failure_override:
+                            for decl_name in test._test_results:
+                                total_refids += 1
+                                compromised_refids.append(decl_name)
+                        else:
+                            for decl_name in test._test_results:
+                                total_refids += 1
+                                if not bool(test._test_results[decl_name]):
+                                    failed_refids.append(decl_name)
+                refid_fail_count = len(failed_refids) + len(compromised_refids) + len(self.failed_evals)
+                refid_pass_count = total_refids + len(self.failed_evals) - refid_fail_count
+                summary_header = f'REFID RESULTS: {refid_pass_count}/{total_refids + len(self.failed_evals)} PASS'
                 if refid_fail_count:
                     summary_header += f' | {refid_fail_count} FAIL'
                 summary_header += '\n'
@@ -301,11 +334,31 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                     summary_header += '\nFAILING REFIDS:\n'
                     for refid in failed_refids:
                         summary_header += f'  {refid}\n'
+                if compromised_refids:
+                    summary_header += '\nCOMPROMISED REFIDS (collect crashed):\n'
+                    for refid in compromised_refids:
+                        summary_header += f'  {refid}\n'
+                if self.failed_evals:
+                    summary_header += '\nCRASHED EVALUATIONS:\n'
+                    for name in self.failed_evals:
+                        summary_header += f'  {name}\n'
+                if crashed_tests:
+                    summary_header += '\nCRASHED TESTS (see crash log attachments):\n'
+                    for name in crashed_tests:
+                        summary_header += f'  {name}\n'
                 summary_header += '\n' + '─' * 42 + '\nDETAILS:\n'
                 results_str = summary_header + results_str
                 results_str += "\n*** END OF REPORT ***"
                 subject = f'Results: {refid_pass_count} PASS / {refid_fail_count} FAIL'
-                self.notify(results_str, subject=subject)
+                attachment_filenames = []
+                for test in self.tests:
+                    if test._crash_logs is not None:
+                        for file_name in test._crash_logs:
+                            log_path = os.path.join(test._module_path, self.scratch_folder, f'{file_name}.json')
+                            if os.path.exists(log_path):
+                                attachment_filenames.append(log_path)
+                self.notify(results_str, subject=subject,
+                            attachment_filenames=attachment_filenames)
         except Exception:
             traceback.print_exc()
             print(
@@ -1641,6 +1694,8 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                     print_banner(
                         "*** ERROR ***", f"{test.get_name()} crashed during evaluation, skipping.")
                     print("\n")
+                    self._build_crash_log(test, crash_source='evaluate_results',
+                                          file_name=f'crash_log_evaluate_{datetime.datetime.now(datetime.timezone.utc).strftime("%Y_%m_%d_%H_%M")}')
                     database = None
                     table_name = None
                     test._test_results = Failed_Eval(test)
@@ -1710,8 +1765,10 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                                 'y', 'yes']:
                             pdb.post_mortem()
                     print_banner(
-                        "*** ERROR ***", f"{test.get_name()} crashed during evaluation, skipping.")
+                        "*** ERROR ***", f"{test.get_name()} crashed during correlation, skipping.")
                     print("\n")
+                    self._build_crash_log(test, crash_source='correlate_results',
+                                          file_name=f'crash_log_correlate_{datetime.datetime.now(datetime.timezone.utc).strftime("%Y_%m_%d_%H_%M")}')
                     database = None
                     table_name = None
                     test._corr_results = Failed_Eval(test)

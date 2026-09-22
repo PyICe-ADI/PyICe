@@ -1156,7 +1156,7 @@ class Failed_Eval(Test_Results):
         Returns:
             String representation.
         """
-        return f'Evaluation method itself failed for {self.test.get_name()}.\n\n'
+        return f'Evaluation method failed for {self.test.get_name()}. Check code.\n\n'
 
     def __bool__(self):
         """Return boolean value.
