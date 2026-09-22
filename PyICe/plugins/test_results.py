@@ -12,6 +12,7 @@ import datetime
 import functools
 import json
 import numbers
+import warnings
 from PyICe.lab_utils.json_encoder import PyICeJSONEncoder
 
 # https://stackoverflow.com/questions/5884066/hashing-a-dictionary/22003440#22003440
@@ -175,6 +176,10 @@ def none_abs(a):
     return abs(a)
 
 
+SCHEMA_VERSION = "1.0"
+SUPPORTED_SCHEMA_VERSIONS = {SCHEMA_VERSION}
+
+
 class generic_results():
     """Parent of Test_Results and correlation_results and keeper of any commonalities.
 
@@ -257,6 +262,7 @@ class generic_results():
 
         res_dict = {}
 
+        res_dict['schema_version'] = SCHEMA_VERSION
         res_dict['test_module'] = self.get_name()
         res_dict['test_crashed'] = self._failure_override
         res_dict['report_date'] = datetime.datetime.now(
@@ -1066,6 +1072,20 @@ class Test_Results_Reload(Test_Results):
         with open(results_json, mode='r', encoding='utf-8') as f:
             self._results = json.load(f)
             f.close()
+        loaded_version = self._results.get('schema_version')
+        if loaded_version is None:
+            if self._matches_schema_v1(self._results):
+                self._results['schema_version'] = "1.0"
+                warnings.warn(f"JSON report '{results_json}' has no schema_version field "
+                              f"but matches schema 1.0. Tagging as 1.0.")
+            else:
+                warnings.warn(f"JSON report '{results_json}' has no schema_version field "
+                              f"and does not match any known schema. "
+                              f"Results may not load correctly.")
+        elif loaded_version not in SUPPORTED_SCHEMA_VERSIONS:
+            warnings.warn(f"JSON report '{results_json}' has unrecognized schema_version "
+                          f"'{loaded_version}'. Supported versions: {SUPPORTED_SCHEMA_VERSIONS}. "
+                          f"Results may not load correctly.")
         self._init(name=self._results['test_module'], module=None)
         try:
             if self._results['test_crashed']:
@@ -1093,6 +1113,35 @@ class Test_Results_Reload(Test_Results):
                         **trial
                     )
                     )
+
+    @staticmethod
+    def _matches_schema_v1(data):
+        """Check whether an unversioned JSON dict matches the schema 1.0 structure.
+
+        If it matches, backfills any missing keys with defaults
+        so the reload can proceed without KeyError.
+        """
+        if 'test_module' not in data:
+            return False
+        tests = data.get('tests', {})
+        if not isinstance(tests, dict):
+            return False
+        for test_name, test_body in tests.items():
+            if not isinstance(test_body, dict):
+                return False
+            if 'declaration' not in test_body:
+                return False
+            if 'results' in test_body:
+                results = test_body['results']
+                if not isinstance(results, dict) or 'cases' not in results:
+                    return False
+        data.setdefault('test_crashed', False)
+        data.setdefault('report_date', 'UNKNOWN')
+        data.setdefault('collection_date', 'UNKNOWN')
+        data.setdefault('traceability', {})
+        data.setdefault('tests', {})
+        data.setdefault('summary', {'passes': False})
+        return True
 
     def json_report(self, filename='test_results_rewrite.json'):
         """Perform json report operation.
