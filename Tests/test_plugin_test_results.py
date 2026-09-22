@@ -11,6 +11,7 @@ from unittest.mock import MagicMock
 from PyICe.plugins.test_results import (
     freeze, make_hash, none_min, none_max, none_abs,
     Test_Results, Test_Results_Reload,
+    SCHEMA_VERSION, SUPPORTED_SCHEMA_VERSIONS,
 )
 
 # Prevent pytest from trying to collect these imported classes as test classes
@@ -959,3 +960,102 @@ class TestJSONRoundTrip:
                 for result in case['case_results']:
                     assert 'collected_data' in result
                     assert isinstance(result['collected_data'], list)
+
+
+class TestSchemaVersion:
+    """Verify schema versioning in JSON reports."""
+
+    @pytest.fixture
+    def full_json(self, tmp_path):
+        tr = build_populated_test_results()
+        json_path = str(tmp_path / "test_results.json")
+        json_str = write_json_report(tr, json_path)
+        data = json.loads(json_str)
+        data['collection_date'] = '2024-06-15T12:00:00Z'
+        data['traceability'] = {'dut_serial': 'SN001'}
+        return data, tmp_path
+
+    def _write_and_reload(self, data, tmp_path, warnings_list):
+        import warnings
+        path = str(tmp_path / "test_results.json")
+        with open(path, 'w', encoding='utf-8') as f:
+            json.dump(data, f)
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter('always')
+            reloaded = Test_Results_Reload(results_json=path)
+            warnings_list.extend(w)
+        return reloaded
+
+    def test_schema_version_written(self, full_json):
+        data, _ = full_json
+        assert data['schema_version'] == SCHEMA_VERSION
+
+    def test_current_version_no_warning(self, full_json):
+        data, tmp_path = full_json
+        w = []
+        self._write_and_reload(data, tmp_path, w)
+        assert len(w) == 0
+
+    def test_missing_version_matches_v1(self, full_json):
+        data, tmp_path = full_json
+        del data['schema_version']
+        w = []
+        reloaded = self._write_and_reload(data, tmp_path, w)
+        assert len(w) == 1
+        assert 'matches schema 1.0' in str(w[0].message)
+        assert bool(reloaded) == True
+
+    def test_missing_version_no_match(self, tmp_path):
+        data = {'not_a_test_module': 'garbage'}
+        w = []
+        import warnings
+        path = str(tmp_path / "bad.json")
+        with open(path, 'w') as f:
+            json.dump(data, f)
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter('always')
+            with pytest.raises(KeyError):
+                Test_Results_Reload(results_json=path)
+        assert any('does not match any known schema' in str(x.message) for x in w)
+
+    def test_unknown_version_warns(self, full_json):
+        data, tmp_path = full_json
+        data['schema_version'] = '99.0'
+        w = []
+        reloaded = self._write_and_reload(data, tmp_path, w)
+        assert len(w) == 1
+        assert 'unrecognized schema_version' in str(w[0].message)
+        assert '99.0' in str(w[0].message)
+
+    def test_backfill_missing_collection_date(self, full_json):
+        data, tmp_path = full_json
+        del data['schema_version']
+        del data['collection_date']
+        del data['traceability']
+        w = []
+        reloaded = self._write_and_reload(data, tmp_path, w)
+        assert reloaded._traceability_info['datetime'] == 'UNKNOWN'
+
+    def test_backfill_missing_tests_key(self, tmp_path):
+        data = {'test_module': 'empty'}
+        w = []
+        reloaded = self._write_and_reload(data, tmp_path, w)
+        assert list(reloaded) == []
+
+    def test_matches_schema_v1_requires_test_module(self):
+        assert Test_Results_Reload._matches_schema_v1({'test_module': 'x'}) == True
+        assert Test_Results_Reload._matches_schema_v1({'foo': 'bar'}) == False
+
+    def test_matches_schema_v1_rejects_bad_tests(self):
+        assert Test_Results_Reload._matches_schema_v1(
+            {'test_module': 'x', 'tests': 'not_a_dict'}) == False
+
+    def test_matches_schema_v1_rejects_missing_declaration(self):
+        assert Test_Results_Reload._matches_schema_v1(
+            {'test_module': 'x', 'tests': {'v': {'no_decl': True}}}) == False
+
+    def test_matches_schema_v1_rejects_bad_results_cases(self):
+        assert Test_Results_Reload._matches_schema_v1(
+            {'test_module': 'x', 'tests': {'v': {
+                'declaration': {'upper_limit': 5, 'lower_limit': 1},
+                'results': {'no_cases': True}}}}) == False
