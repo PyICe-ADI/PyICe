@@ -67,15 +67,7 @@ class chroma_63600(scpi_instrument):
 
     def add_channel_current(self, channel_name, num):
         """Add a channel current.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             num: Count or number.
@@ -99,15 +91,7 @@ class chroma_63600(scpi_instrument):
 
     def add_channel_voltage(self, channel_name, num):
         """Add a channel voltage.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             num: Count or number.
@@ -132,15 +116,7 @@ class chroma_63600(scpi_instrument):
     # current limit in CV  mode
     def add_channel_current_limit(self, channel_name, num):
         """Add a channel current limit.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             num: Count or number.
@@ -164,15 +140,7 @@ class chroma_63600(scpi_instrument):
 
     def add_channel_resistance(self, channel_name, num):
         """Add a channel resistance.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             num: Count or number.
@@ -198,15 +166,7 @@ class chroma_63600(scpi_instrument):
 
     def add_channel_power(self, channel_name, num):
         """Add a channel power.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             num: Count or number.
@@ -234,15 +194,7 @@ class chroma_63600(scpi_instrument):
 
     def add_channel_measured_current(self, channel_name, num):
         """Add a channel measured current.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             num: Count or number.
@@ -264,15 +216,7 @@ class chroma_63600(scpi_instrument):
 
     def add_channel_measured_voltage(self, channel_name, num):
         """Add a channel measured voltage.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             num: Count or number.
@@ -295,15 +239,7 @@ class chroma_63600(scpi_instrument):
 
     def add_channel_measured_power(self, channel_name, num):
         """Add a channel measured power.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             num: Count or number.

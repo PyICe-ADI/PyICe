@@ -6,6 +6,28 @@ SVG format. The standards used herein were compliant with a now defunct
 analog semiconductor company called Linear Technology:
 https://en.wikipedia.org/wiki/Linear_Technology
 
+**Main classes**
+
+- :class:`plot` — single axes object; add traces, histograms, scatter plots,
+  notes, legends, and arrows.
+- :class:`scope_plot` — specialised plot subclass for oscilloscope-style data.
+- :class:`Page` — arranges one or more plots in a grid and renders to PDF or SVG.
+- :class:`Multipage_pdf` — combines multiple :class:`Page` objects into one PDF.
+- :class:`PyICe_data_base` — SQLite reader that supplies data to plot methods.
+- :class:`color_gen` — automatic color cycling through the LT palette.
+
+**Utility functions**
+
+- :func:`smooth` / :func:`smooth_y_vector` — sliding-window smoothing.
+- :func:`data_from_file` — load tab- or comma-delimited data from a file.
+- :func:`list_markers` — print all valid matplotlib marker specifiers.
+
+**Color conversion utilities**
+
+- :func:`CMYK_to_fracRGB`, :func:`fracRGB_to_CMYK`
+- :func:`webRGB_to_fracRGB`, :func:`webRGB_to_RGB`
+- :func:`RGB_to_webRGB`, :func:`fracRGB_to_RGB`
+- :func:`RGB_to_fracRGB`, :func:`fracRGB_to_webRGB`
 
 The objects that can be created with this program are:
   1) plot
@@ -507,7 +529,7 @@ class plot(object):
             hxline=hxline)
 
     def add_horizontal_line(self, value, xrange=None, note=None,
-                            axis=1, color=None, linestyle=None, linewidth=None):
+                            axis=1, color=None, linestyle=None, linewidth=None, notesize=3):
         """This can be useful for annotating limit lines. It can make dotted red lines for example.
         Creates and registers a new horizontal line.
 
@@ -605,11 +627,11 @@ class plot(object):
                 note=note,
                 location=text_location,
                 use_axes_scale=True,
-                fontsize=3,
+                fontsize=notesize,
                 axis=axis)
 
     def add_vertical_line(self, value, yrange=None, note=None,
-                          axis=1, color=None, linestyle=None, linewidth=None):
+                          axis=1, color=None, linestyle=None, linewidth=None, notesize=3):
         """This can be useful for annotating limit lines. It can make dotted red lines for example.
         Creates and registers a new vertical line.
 
@@ -710,7 +732,7 @@ class plot(object):
                 note=note,
                 location=text_location,
                 use_axes_scale=True,
-                fontsize=3,
+                fontsize=notesize,
                 axis=axis)
 
     def add_histogram(self, axis, xdata, num_bins, color,
@@ -1165,7 +1187,7 @@ class scope_plot(plot):
         self.add_time_refmarker_open(xlocation_open)
         self.add_time_refmarker_closed(xlocation_closed)
 
-    def add_horizontal_line(self, value, xrange=None, note=None, color=None):
+    def add_horizontal_line(self, value, xrange=None, note=None, color=None, notesize=3):
         """Add a horizontal line.
         Creates and registers a new horizontal line.
 
@@ -1204,10 +1226,10 @@ class scope_plot(plot):
                           location=[xrange0 + 0.015 * (xrange1 - xrange0),
                                     value + 0.015 * (yrange1 - yrange0)],
                           use_axes_scale=True,
-                          fontsize=3,
+                          fontsize=notesize,
                           axis=1)
 
-    def add_vertical_line(self, value, yrange=None, note=None, color=None):
+    def add_vertical_line(self, value, yrange=None, note=None, color=None, notesize=3):
         """Add a vertical line.
         Creates and registers a new vertical line.
 
@@ -1244,7 +1266,7 @@ class scope_plot(plot):
                           location=[value,
                                     yrange0 + 0.015 * (yrange1 - yrange0)],
                           use_axes_scale=True,
-                          fontsize=3,
+                          fontsize=notesize,
                           axis=1)
 
 

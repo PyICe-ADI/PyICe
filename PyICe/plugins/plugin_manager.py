@@ -4,6 +4,7 @@
 
 """
 from PyICe.plugins.bench_configuration_management.bench_configuration_management import component_collection, connection_collection
+from PyICe.plugins.master_test_template import Master_Test_Template
 import os
 import inspect
 import importlib
@@ -18,6 +19,7 @@ import pdb
 import json
 import linecache
 import shutil
+import warnings
 from PyICe.plugins.bench_configuration_management import bench_visualizer
 from PyICe.plugins.test_results import Test_Results, Failed_Eval
 from PyICe.plugins.traceability_items import Traceability_items
@@ -26,9 +28,11 @@ from PyICe.lab_utils.communications import email, sms
 from PyICe.lab_utils.sqlite_data import sqlite_data
 from PyICe.lab_utils.banners import print_banner
 from PyICe.lab_core import logger, master, PartialReadException, ChannelReadException
+from PyICe.lab_utils.json_encoder import PyICeJSONEncoder
 from PyICe.plugins import test_archive
 from email.mime.image import MIMEImage
 from PyICe import LTC_plot
+from PyICe import virtual_instruments
 
 
 class Callback_logger(logger):
@@ -111,9 +115,15 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
         self.tests = []
         self.operator = getpass.getuser().lower()
         self.thismachine = socket.gethostname().replace("-", "_").split(".")[0]
-        self.ident_header = f'Operator: {self.operator}\n Machine: {self.thismachine}\n\n'
         self.scratch_folder = scratch_folder
         self.debug = False
+        self.cleanup_fns = []
+        self.temp_run_fns = []
+        self.startup_fns = []
+        self.shutdown_fns = []
+        self.temperature_channel = None
+        self._temperature_is_dummy = False
+        self.special_channel_actions = {}
         for attr in settings:
             setattr(self, attr, settings[attr])
         self._send_notifications = "notifications" in self.plugins
@@ -193,8 +203,12 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
         Args:
             temperatures: Temperatures to use.
         """
+        self.ident_header = f"Operator: {self.operator}\n Machine: {self.thismachine}\n   Tests: {', '.join([test.get_name() for test in self.tests])}\n"
         if temperatures is None:
             temperatures = []
+        else:
+            self.ident_header+=f"   Temps: {temperatures}\n"
+        self.ident_header+="\n"
         self._temperatures = temperatures
         self.far_enough = False
         self.collect(temperatures)
@@ -374,11 +388,6 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                         self.special_channel_actions.update(
                             instrument_dict['special_channel_action'])
             break
-        if self.temperature_channel is None:
-            self.temperature_channel = self.master.add_channel_dummy("tdegc")
-            self._temperature_is_dummy = True
-        if not self._temperatures:
-            self.temperature_channel.write(25)
 
     def _add_components(self):
         for component in self.component_list:
@@ -863,14 +872,14 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
             try:
                 scratch_path = os.path.join(test._module_path, self.scratch_folder, f'{file_name}.json')
                 with open(scratch_path, 'w') as f:
-                    json.dump(crash_log, f, indent=2, default=repr)
+                    json.dump(crash_log, f, indent=2, cls=PyICeJSONEncoder)
             except Exception as write_exc:
                 print_banner(f'WARNING: Failed to write crash_log.json: {write_exc}')
         except Exception as build_exc:
             print_banner(f'WARNING: Exception while building crash log: {build_exc}')
             traceback.print_exc()
             test._crash_logs[file_name] =  'crash log construction failed before completion'
-        self.notify(json.dumps(crash_log, indent=2), subject=f'{test.get_name()} CRASH LOG')
+        self.notify(json.dumps(crash_log, indent=2, cls=PyICeJSONEncoder), subject=f'{test.get_name()} CRASH LOG')
         return crash_log
 
     ###
@@ -1237,8 +1246,33 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
         """
         try:
             self.far_enough = False
+            self._run_timer = virtual_instruments.timer()
+            self._run_timer.add_channel_total_minutes('run_total_min')
+            self._run_timer.add_channel_delta_minutes('run_delta_min')
+            self._run_timer.resume_timer()
+            self._temp_timer = virtual_instruments.timer()
+            self._temp_timer.add_channel_total_minutes('temp_total_min')
+            self._temp_timer.add_channel_delta_minutes('temp_delta_min')
             self.master = master()
-            self.add_instrument_channels()
+            if type(self.tests[0]).build_a_bench is not Master_Test_Template.build_a_bench:
+                try:
+                    self.tests[0].build_a_bench()
+                except Exception as e:
+                    raise RuntimeError(
+                        f"BENCH MAKER: build_a_bench() failed in test '{self.tests[0].get_name()}': {e}"
+                    ) from e
+                if len(self.tests) > 1:
+                    warnings.warn(
+                        f"Only the first test's ({self.tests[0].get_name()}) build_a_bench() is used. "
+                        f"The remaining {len(self.tests) - 1} test(s) will share this bench configuration.",
+                        stacklevel=2)
+            else:
+                self.add_instrument_channels()
+            if self.temperature_channel is None:
+                self.temperature_channel = self.master.add_channel_dummy("tdegc")
+                self._temperature_is_dummy = True
+            if not self._temperatures:
+                self.temperature_channel.write(25)
             if 'bench_config_management' in self.plugins:
                 self.test_components = component_collection()
                 self._add_components()
@@ -1299,31 +1333,49 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
             if len(temperatures):
                 self.temperature_run_startup()
             idx=0
+            self._settle_times = []
+            self._test_times = {test.get_name(): [] for test in self.tests}
             for temp in temperatures or ["ambient"]:
                 summary_msg = ''
                 if temp != "ambient":
                     idx+=1
                     print_banner(f'Setting temperature to {temp}°C')
                     self.notify(f'Setting temperature to {temp}°C', subject='Next Temperature')
+                    self._temp_timer.resume_timer()
                     self.temperature_channel.write(temp)
+                    temp_timer_data = self._temp_timer.read_all_channels()
+                    self._temp_timer.pause_timer()
+                    self._settle_times.append(temp_timer_data["temp_delta_min"])
                     summary_msg=f'{temp}°C Summary\n'
-                
+                    summary_msg+=f'\tTemperature slew/settle took {temp_timer_data["temp_delta_min"]:.1f} minutes.\n'
                 for test in self.tests:
                     if not test._is_crashed:
                         try:
                             print_banner(f'{test.get_name()} Collecting. . .')
+                            test._test_timer = virtual_instruments.timer()
+                            test._test_timer.add_channel_delta_minutes('test_delta_min')
+                            test._test_timer.resume_timer()
                             self.startup()
                             test._reconfigure()
                             test._capture_crash = lambda crash_source='test_collect', _ct=(temp if temp != "ambient" else None), _test=test: self._build_crash_log(_test, temp=_ct, crash_source=crash_source, file_name=f'crash_log_{datetime.datetime.now(datetime.timezone.utc).strftime("%Y_%m_%d_%H_%M")}')
                             test.collect()
                             test._restore()
+                            test_time = test._test_timer.read_all_channels()
+                            self._test_times[test.get_name()].append(test_time['test_delta_min'])
                             if temp != "ambient":
-                                summary_msg+=f"{test.get_name()} ran successfully.\n"
-                        except (Exception, BaseException) as e:
+                                summary_msg+=f"\t{test.get_name()} ran successfully. {test_time['test_delta_min']:.1f} minutes.\n"
+                            else:
+                                print(f'{test.get_name()} completed in {test_time["test_delta_min"]:.1f} minutes.')
+                        except BaseException as e:  # noqa: BLE001 - intentional; handles KeyboardInterrupt and BdbQuit/SystemExit from debugger
+                            from bdb import BdbQuit
+                            # Python 3.14: pdb's do_quit calls sys.exit(1) instead of raising BdbQuit
+                            if isinstance(e, BdbQuit) or (isinstance(e, SystemExit) and 'pdb.py' in traceback.format_exc()):
+                                raise
                             traceback.print_exc()
+                            test_time = test._test_timer.read_all_channels()
                             test._is_crashed = True
                             if temp != "ambient":
-                                summary_msg+=f"{test.get_name()} crashed this temperature.\n"
+                                summary_msg+=f"\t{test.get_name()} crashed this temperature after {test_time['test_delta_min']:.1f} minutes. \n"
                             test._crash_info = sys.exc_info()
                             self.notify(
                                 self._crash_str(test), subject='CRASHED!!!')
@@ -1342,9 +1394,23 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                             break
                     else:
                         if temp != "ambient":
-                            summary_msg+=f'{test.get_name()} crashed/skipped.\n'
+                            summary_msg+=f'\t{test.get_name()} crashed/skipped.\n'
                 if temp != "ambient":
+                    # self._temp_timer.pause_timer()
+                    temp_timer_data = self._run_timer.read_all_channels()
                     summary_msg+=f'{idx} of {len(temperatures)} temperatures complete.\n'
+                    summary_msg+=f'\tTotal temperature time: {temp_timer_data["run_delta_min"]:.1f} minutes.\n'
+                    temps_remaining = len(temperatures) - idx
+                    if temps_remaining > 0:
+                        avg_settle = sum(self._settle_times) / len(self._settle_times)
+                        avg_test_total = sum(
+                            sum(self._test_times[test.get_name()]) / len(self._test_times[test.get_name()])
+                            for test in self.tests
+                            if not test._is_crashed
+                        )
+                        avg_per_temp = avg_settle + avg_test_total
+                        etr = datetime.timedelta(minutes=avg_per_temp * temps_remaining)
+                        summary_msg+=f'\tETR: {etr.total_seconds()/60:.0f} minutes. ETC: {(datetime.datetime.now()+etr).strftime("%a %b %d %H:%M")}.\n'
                     if all([x._is_crashed for x in self.tests]):
                         summary_msg+='All tests have crashed. Skipping remaining temperatures.'
                         print_banner(
@@ -1353,8 +1419,17 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                     self.notify(summary_msg, subject='TEMP SUMMARY')
                 if self.cleanup_failure:
                     break
+            run_time_data = self._run_timer.read_all_channels()
+            finish_msg = f'All tests completed. Total run time: {run_time_data["run_total_min"]:.1f} minutes.\n'
+            self.notify(finish_msg, subject='Collection Complete')
             self.shutdown()
-        except Exception:
+        except (Exception, SystemExit) as e:
+            from bdb import BdbQuit
+            # Python 3.14: pdb's do_quit calls sys.exit(1) instead of raising BdbQuit
+            if isinstance(e, BdbQuit) or (isinstance(e, SystemExit) and 'pdb.py' in traceback.format_exc()):
+                print_banner('Debugger quit. Ending run.')
+                self.shutdown()
+                return
             traceback.print_exc()
             for test in self.tests:
                 test._is_crashed = True

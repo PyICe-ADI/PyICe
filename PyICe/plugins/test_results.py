@@ -12,7 +12,7 @@ import datetime
 import functools
 import json
 import numbers
-from numpy import bool_, ndarray  # pylint: disable=import-error; numpy is a required dependency for this module but may not be installed in all environments
+from PyICe.lab_utils.json_encoder import PyICeJSONEncoder
 
 # https://stackoverflow.com/questions/5884066/hashing-a-dictionary/22003440#22003440
 
@@ -255,42 +255,6 @@ class generic_results():
         if ate_results is None:
             ate_results = []
 
-        class CustomJSONizer(json.JSONEncoder):
-            """Custom j s o nizer (j s o n encoder subclass)."""
-            def default(self, obj):
-                """Return the default.
-
-                Supports the ``CustomJSONizer`` workflow by performing the described operation.
-
-
-                >>> from PyICe.plugins.test_results import generic_results
-                >>> hasattr(generic_results, 'default')
-                True
-
-                Args:
-                    obj: Obj to use.
-
-                Returns:
-                    The default value.
-
-                Raises:
-                    TypeError: If an argument has an incompatible type.
-                """
-                if isinstance(obj, bool_):
-                    return bool(obj)
-                elif isinstance(obj, datetime.datetime):
-                    return obj.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-                elif isinstance(obj, ndarray):
-                    return obj.tolist()
-                else:
-                    try:
-                        return super().default(obj)
-                    except TypeError as e:
-                        print(
-                            f'JSON Serialization error with object of type {type(obj)}:')
-                        print(obj)
-                        breakpoint()
-                        raise e
         res_dict = {}
 
         res_dict['test_module'] = self.get_name()
@@ -349,7 +313,7 @@ class generic_results():
         else:
             res_dict['summary'] = {'passes': bool(self)}
         return json.dumps(res_dict, indent=2,
-                          ensure_ascii=False, cls=CustomJSONizer)
+                          ensure_ascii=False, cls=PyICeJSONEncoder)
 
 
 class Test_Results(generic_results):

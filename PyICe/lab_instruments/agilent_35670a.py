@@ -29,14 +29,8 @@ class agilent_35670a(scpi_instrument):
     def add_channel_noise(self, channel_name, channel_num=1,
                           freqs=None, res=None, count=None):
         """Add a channel noise.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``INPut1:COUPling`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the new channel.
             channel_num: Physical channel number.
@@ -75,15 +69,7 @@ class agilent_35670a(scpi_instrument):
 
     def add_channel(self, channel_name, channel_num):
         """Add named channel to instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_num: Physical channel number.

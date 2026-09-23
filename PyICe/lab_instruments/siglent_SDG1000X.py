@@ -84,15 +84,7 @@ class siglent_SDG1000X(scpi_instrument):
 
     def add_channel_burst(self, channel_name, channel_number):
         """Add a channel burst.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -137,15 +129,7 @@ class siglent_SDG1000X(scpi_instrument):
 
     def add_channel_continuous(self, channel_name, channel_number):
         """Add a channel continuous.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -197,15 +181,7 @@ class siglent_SDG1000X(scpi_instrument):
 
     def add_channel_enable(self, channel_name, channel_number):
         """Add a channel enable.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -228,15 +204,7 @@ class siglent_SDG1000X(scpi_instrument):
 
     def add_channel_outputz(self, channel_name, channel_number):
         """Add a channel outputz.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -263,15 +231,7 @@ class siglent_SDG1000X(scpi_instrument):
 
     def add_channel_DC(self, channel_name, channel_number):
         """Add a channel DC.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -293,15 +253,7 @@ class siglent_SDG1000X(scpi_instrument):
 
     def add_channel_burstwave_gate_ncyc(self, channel_name, channel_number):
         """Add a channel burstwave gate ncyc.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -322,15 +274,7 @@ class siglent_SDG1000X(scpi_instrument):
 
     def add_channel_burstwave_state(self, channel_name, channel_number):
         """Add a channel burstwave state.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -352,15 +296,7 @@ class siglent_SDG1000X(scpi_instrument):
     def add_channel_burstwave_trigger_source(
             self, channel_name, channel_number):
         """Add a channel burstwave trigger source.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -385,15 +321,7 @@ class siglent_SDG1000X(scpi_instrument):
     def add_channel_burstwave_trigger_out_mode(
             self, channel_name, channel_number):
         """Add a channel burstwave trigger out mode.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -417,15 +345,7 @@ class siglent_SDG1000X(scpi_instrument):
 
     def add_channel_burstwave_cycles(self, channel_name, channel_number):
         """Add a channel burstwave cycles.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -448,15 +368,7 @@ class siglent_SDG1000X(scpi_instrument):
     def add_channel_burstwave_trigger_delay(
             self, channel_name, channel_number):
         """Add a channel burstwave trigger delay.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -477,15 +389,7 @@ class siglent_SDG1000X(scpi_instrument):
 
     def add_channel_burstwave_shape(self, channel_name, channel_number):
         """Add a channel burstwave shape.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -522,15 +426,7 @@ class siglent_SDG1000X(scpi_instrument):
 
     def add_channel_burstwave_low_voltage(self, channel_name, channel_number):
         """Add a channel burstwave low voltage.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -551,15 +447,7 @@ class siglent_SDG1000X(scpi_instrument):
 
     def add_channel_burstwave_high_voltage(self, channel_name, channel_number):
         """Add a channel burstwave high voltage.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -580,15 +468,7 @@ class siglent_SDG1000X(scpi_instrument):
 
     def add_channel_burstwave_pulse_width(self, channel_name, channel_number):
         """Add a channel burstwave pulse width.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -614,15 +494,7 @@ class siglent_SDG1000X(scpi_instrument):
 
     def add_channel_burstwave_period(self, channel_name, channel_number):
         """Add a channel burstwave period.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -644,15 +516,7 @@ class siglent_SDG1000X(scpi_instrument):
 
     def add_channel_burstwave_rise_time(self, channel_name, channel_number):
         """Add a channel burstwave rise time.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -675,15 +539,7 @@ class siglent_SDG1000X(scpi_instrument):
 
     def add_channel_burstwave_fall_time(self, channel_name, channel_number):
         """Add a channel burstwave fall time.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -706,15 +562,7 @@ class siglent_SDG1000X(scpi_instrument):
 
     def add_channel_burstwave_delay(self, channel_name, channel_number):
         """Add a channel burstwave delay.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -735,15 +583,7 @@ class siglent_SDG1000X(scpi_instrument):
 
     def add_channel_burstwave_trigger(self, channel_name, channel_number):
         """Add a channel burstwave trigger.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -771,15 +611,7 @@ class siglent_SDG1000X(scpi_instrument):
 
     def add_channel_continuouswave_shape(self, channel_name, channel_number):
         """Add a channel continuouswave shape.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -809,15 +641,7 @@ class siglent_SDG1000X(scpi_instrument):
     def add_channel_continuouswave_low_voltage(
             self, channel_name, channel_number):
         """Add a channel continuouswave low voltage.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -839,15 +663,7 @@ class siglent_SDG1000X(scpi_instrument):
     def add_channel_continuouswave_high_voltage(
             self, channel_name, channel_number):
         """Add a channel continuouswave high voltage.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -868,15 +684,7 @@ class siglent_SDG1000X(scpi_instrument):
 
     def add_channel_continuouswave_width(self, channel_name, channel_number):
         """Add a channel continuouswave width.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -899,15 +707,7 @@ class siglent_SDG1000X(scpi_instrument):
 
     def add_channel_continuouswave_period(self, channel_name, channel_number):
         """Add a channel continuouswave period.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -930,15 +730,7 @@ class siglent_SDG1000X(scpi_instrument):
     def add_channel_continuouswave_rise_time(
             self, channel_name, channel_number):
         """Add a channel continuouswave rise time.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -962,15 +754,7 @@ class siglent_SDG1000X(scpi_instrument):
     def add_channel_continuouswave_fall_time(
             self, channel_name, channel_number):
         """Add a channel continuouswave fall time.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -993,15 +777,7 @@ class siglent_SDG1000X(scpi_instrument):
 
     def add_channel_phase_mode(self, channel_name):
         """Add a channel phase mode.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -1024,15 +800,7 @@ class siglent_SDG1000X(scpi_instrument):
 
     def add_channel_sync_out(self, channel_name, channel_number):
         """Add a channel sync out.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.

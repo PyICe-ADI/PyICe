@@ -35,15 +35,7 @@ class TestEquity_115(temperature_chamber):
 
     def add_channels(self, channel_name):
         """Add a channels.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -55,15 +47,7 @@ class TestEquity_115(temperature_chamber):
 
     def add_channel_enable_output(self, channel_name):
         """Enable/Disable heat and cool outputs.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument and maps it to the underlying device register for read/write access.
-
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Args:
             channel_name: Name for the new channel.
 

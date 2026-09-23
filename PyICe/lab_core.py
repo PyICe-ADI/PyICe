@@ -2,7 +2,61 @@
 
 ====================================
 
-changes to this file should be minimal!
+.. warning::
+    Changes to this file should be minimal!
+
+Core channel abstraction and instrument management for PyICe.  All
+higher-level modules (:mod:`~PyICe.twi_instrument`,
+:mod:`~PyICe.spi_instrument`, :mod:`~PyICe.lab_gui`, …) build on the
+classes defined here.
+
+**Channel classes**
+
+- :class:`channel` — base readable/writable channel with formatting,
+  limits, and delegation hooks.
+- :class:`integer_channel` — channel constrained to integer values with
+  bit-width and two's-complement support.
+- :class:`register` — integer_channel extended for hardware register
+  semantics (address, access type, reset value).
+- :class:`results_ord_dict` — :class:`~collections.OrderedDict` subclass
+  returned by bulk reads.
+
+**Grouping and instrument classes**
+
+- :class:`delegator` — metaclass mixin that batches channel I/O into
+  efficient instrument transactions.
+- :class:`channel_group` — collection of channels with bulk read/write
+  and SQLite logging helpers.
+- :class:`instrument` — channel_group subclass representing a single
+  physical instrument.
+- :class:`scpi_instrument` — instrument subclass for VISA/SCPI lab
+  equipment; wraps a VISA resource handle.
+
+**Master and logging**
+
+- :class:`channel_master` / :class:`master` — unified read/write
+  dispatcher across all registered instruments; entry point for most
+  test scripts.
+- :class:`logger` — master subclass that records every read into a
+  SQLite database via :class:`logger_backend`.
+- :class:`logger_backend` — low-level SQLite writer; can be used
+  independently for custom logging pipelines.
+
+**Remote / multiprocessing IPC**
+
+- :class:`remote_channel_group_server` — exposes a channel_group over a
+  multiprocessing Manager socket.
+- :class:`remote_channel_group_client` — client-side proxy that mirrors
+  the server's channels locally.
+- :class:`remote_channel` — channel subclass that forwards I/O to the
+  server.
+
+**Exception hierarchy**
+
+:class:`ChannelException` and subclasses (ChannelAccessException,
+ChannelNameException, ChannelAttributeException, ChannelValueException,
+IntegerChannelValueException, ChannelReadException,
+RemoteChannelGroupException, RegisterFormatException).
 
 Examples:
     >>> from PyICe import lab_core

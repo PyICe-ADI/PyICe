@@ -5,15 +5,30 @@
 Created on Feb 23, 2015
 Heavily modified August 2016 to be more generic.
 
-@author: JKapasi
-@author: DSimmons
+:author: JKapasi
+:author: DSimmons
 
 The SPI interface is composed of two separate classes:
 
-1) shift_register
-    abstracts individual bit-fields into integer representing contents of full-length shift register
-2) spiInterface: Defines the hardware interface including baudrate, mode (CPOL/CPHA), CS operation.
-    Specific hardware implementations should overload this class and implement _shift_data method.
+1) :class:`shift_register` — abstracts individual bit-fields into an integer
+   representing the full-length shift register.  Supports ``pack`` (assemble
+   field dict → integer) and ``unpack`` (integer → field dict).
+2) :class:`spiInterface` — defines the hardware interface including baudrate,
+   mode (CPOL/CPHA), and CS operation.  Concrete subclasses implement
+   ``_shift_data``.
+
+**Hardware backends**
+
+- :class:`spi_bbone` — BeagleBone Black SPI via *Adafruit_BBIO* (optional).
+- :class:`spi_cfgpro` — Linduino / DC590-compatible ConfigPro USB adapter.
+- :class:`spi_dc590` — Linear Technology DC590B USB serial bridge.
+- :class:`spi_buspirate` — Dangerous Prototypes Bus Pirate.
+- :class:`spi_bitbang` — software bit-bang SPI over GPIO.
+- :class:`spi_dummy` — no-op backend for unit testing without hardware.
+
+**Exception**
+
+- :class:`SPIMasterError` — raised when the SPI master reports a fault.
 
 Examples:
     >>> from PyICe.spi_interface import shift_register

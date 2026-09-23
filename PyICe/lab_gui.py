@@ -1,5 +1,54 @@
 """Graphical Interface to Channel Objects.
 
+==========================================
+
+PySide2 / PySide6 GUI for live monitoring and interactive control of
+:mod:`~PyICe.lab_core` channels.  PySide2 is preferred for Python ≤ 3.10;
+PySide6 is used automatically on Python ≥ 3.11.  If neither is installed
+the module still imports but all GUI classes are unavailable.
+
+**Shared data model**
+
+- :class:`data_store` — thread-safe dictionary that holds the latest
+  value, units, and metadata for every displayed channel; shared between
+  the background worker and all widgets.
+
+**Display widgets**
+
+- :class:`display_item` — QLabel that auto-refreshes with the current
+  channel value, coloured by limit status.
+- :class:`display_tag` — static QLabel used as a channel-name label.
+- :class:`display_item_group` — composite widget pairing a display_tag
+  with one or more display_items.
+- :class:`tab_view` — scrollable page of display_item_groups.
+- :class:`tab_group` — QTabWidget that organises multiple tab_views.
+
+**Interactive write**
+
+- :class:`write_channel_dialog` — modal dialog for typing a new value
+  into a writable channel; validates against channel limits before writing.
+
+**Logger subsystem**
+
+- :class:`gui_logger` — QObject that drives periodic SQLite-logging
+  triggered by a QTimer.
+- :class:`logger_item` — QCheckBox widget that enables / disables logging
+  for a single channel.
+- :class:`logger_view` — widget that collects logger_items and exposes
+  start / stop controls.
+
+**Background worker**
+
+- :class:`background_worker` — QThread subclass that polls channels at a
+  configurable rate and pushes results into data_store.
+
+**Main window and application**
+
+- :class:`ltc_lab_gui_main_window` — QMainWindow that hosts tab_group,
+  logger_view, and toolbar actions.
+- :class:`ltc_lab_gui_app` — QObject application wrapper; instantiate and
+  call ``exec_()`` to run the event loop.
+
 >>> from PyICe.lab_gui import data_store
 
 """

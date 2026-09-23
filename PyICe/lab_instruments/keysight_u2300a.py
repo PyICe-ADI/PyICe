@@ -116,15 +116,7 @@ class u2300a_scope(scpi_instrument, delegator):
 
     def add_channel_timeout(self, channel_name):
         """Add trigger timeout control channel.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -144,15 +136,7 @@ class u2300a_scope(scpi_instrument, delegator):
 
     def add_channel_time(self, channel_name):
         """Add timebase readback channel.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -443,15 +427,7 @@ class u2300a_scope(scpi_instrument, delegator):
 
     def add_channels_trigger(self, base_name):
         """Channel-ize options otherwise availabe from set_trigger() method. Unclear if there's a required order of operations that complicates this process. Untested.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             base_name: Root name for file or channel generation.
 
@@ -673,15 +649,7 @@ class u2300a_scope(scpi_instrument, delegator):
 
     def add_channel_acquisition_time(self, name):
         """Channel-ize option otherwise availabe from set_acquisition_time() method.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             name: Name identifier.
         """
@@ -726,15 +694,7 @@ class u2300a_scope(scpi_instrument, delegator):
 
     def add_channel_sample_rate(self, name):
         """Channel-ize option otherwise availabe from set_sample_rate() method.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             name: Name identifier.
         """

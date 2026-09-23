@@ -172,15 +172,7 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
 
     def add_channels(self, channel_name, channel_number=1):
         """Shortcut method to add chx/trace1 channels.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Base name for the channels.
             channel_number: Instrument channel number.
@@ -201,14 +193,8 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
 
     def add_channel_display_split(self, channel_name, channel_number):
         """Add a channel display split.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -297,15 +283,7 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
 
     def add_channel_error(self, channel_name):
         """Error readback channel.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the error channel.
 
@@ -348,15 +326,7 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
     def add_channel_ydata(self, channel_name,
                           trace_number=1, channel_number=1):
         """Trace data vector.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the y-data channel.
             trace_number: Trace number on the instrument.
@@ -380,15 +350,7 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
 
     def add_channel_xdata(self, channel_name, channel_number=1):
         """Frequency sweep data vector.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the x-data channel.
             channel_number: Instrument channel number.
@@ -407,14 +369,8 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
 
     def add_channel_start_freq(self, channel_name, channel_number=1):
         """Sweep start (low) frequency control.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the start frequency channel.
             channel_number: Instrument channel number.
@@ -445,14 +401,8 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
 
     def add_channel_stop_freq(self, channel_name, channel_number=1):
         """Sweep stop (high) frequency control.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the stop frequency channel.
             channel_number: Instrument channel number.
@@ -482,14 +432,8 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
 
     def add_channel_points(self, channel_name, channel_number=1):
         """Number of trace data points.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the points channel.
             channel_number: Instrument channel number.
@@ -515,14 +459,8 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
 
     def add_channel_sweep_type(self, channel_name, channel_number=1):
         """Sweep variable control.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the sweep type channel.
             channel_number: Instrument channel number.
@@ -550,14 +488,8 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
 
     def add_channel_IFBW(self, channel_name, channel_number=1):
         """IF/resolution bandwidth. TODO: Disrespected when IFBW set to AUTO.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the IFBW channel.
             channel_number: Instrument channel number.
@@ -595,14 +527,8 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
 
     def add_channel_sweep_time(self, channel_name, channel_number=1):
         """Sweep time control.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:SWEep:TIME:DATA`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the sweep time channel.
             channel_number: Instrument channel number.
@@ -635,7 +561,6 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
         """Display control channel.
 
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the display channel.
         """
@@ -644,14 +569,8 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
 
     def add_channels_gp_control(self, channel_name):  # todo channl number???
         """General purpose port control channels.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Base name for the GP control channels.
 
@@ -719,14 +638,8 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
 
     def add_channels_bias_control(self, channel_name):  # TODO channel number!
         """Bias sweep currently unsupported TODO.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Base name for the bias control channels.
 
@@ -781,14 +694,8 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
     # TODO channel number!
     def add_channels_source_power(self, channel_name, port='GP'):
         """Source power control in dBm.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the source power channel.
             port: Port selection, either 'GP' or a port number.
@@ -876,14 +783,8 @@ class keysight_e5061b_base(scpi_NA, metaclass=abc.ABCMeta):
         # TODO channel number!
         # todo all-channel controls?
         """Trigger control channels.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:TRIGger:SEQuence:SOURce`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Base name for the trigger channels.
 
@@ -1021,15 +922,7 @@ class keysight_e5061b(keysight_e5061b_base):
     # super(keysight_e5061b, self).__init__(interface_visa)
     def add_channels(self, channel_name, channel_number=1):
         """Add a channels.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -1050,7 +943,6 @@ class keysight_e5061b(keysight_e5061b_base):
         """Limit channel.
 
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the limit channel.
         """
@@ -1059,14 +951,8 @@ class keysight_e5061b(keysight_e5061b_base):
 
     def add_channel_TR_mag(self, channel_name, trace_number, channel_number=1):
         """T/R log magnitude measurement channel.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:SELect`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the TR magnitude channel.
             trace_number: Trace number on the instrument.
@@ -1112,14 +998,8 @@ class keysight_e5061b(keysight_e5061b_base):
 
     def add_channel_T_mag(self, channel_name, trace_number, channel_number=1):
         """T log magnitude measurement channel.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:SELect`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the T magnitude channel.
             trace_number: Trace number on the instrument.
@@ -1166,14 +1046,8 @@ class keysight_e5061b(keysight_e5061b_base):
 
     def add_channel_R_mag(self, channel_name, trace_number, channel_number=1):
         """R log magnitude measurement channel.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:SELect`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the R magnitude channel.
             trace_number: Trace number on the instrument.
@@ -1221,14 +1095,8 @@ class keysight_e5061b(keysight_e5061b_base):
     def add_channel_TR_phase(
             self, channel_name, trace_number, channel_number=1):
         """T/R expanded phase measurement channel.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:SELect`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the TR phase channel.
             trace_number: Trace number on the instrument.
@@ -1379,14 +1247,8 @@ class keysight_e5061b(keysight_e5061b_base):
     def add_channel_sparam(
             self, channel_name, trace_number, x, y, channel_number=1):
         """S-parameter log magnitude measurement channel.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:SELect`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the S-parameter channel.
             trace_number: Trace number on the instrument.
@@ -1439,7 +1301,6 @@ class keysight_e5061b(keysight_e5061b_base):
         """Calibration control channels.
 
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Base name for the calibration channels.
         """
@@ -1556,15 +1417,7 @@ class keysight_e5061b_impedance(keysight_e5061b_base):
 
     def add_channels(self, channel_name, channel_number=1):
         """Add a channels.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -1584,14 +1437,8 @@ class keysight_e5061b_impedance(keysight_e5061b_base):
 
     def add_channel_zmethod(self, channel_name, channel_number=1):
         """Impedance measurement method control channel.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the Z method channel.
             channel_number: Instrument channel number.
@@ -1648,14 +1495,8 @@ class keysight_e5061b_impedance(keysight_e5061b_base):
     def add_channel_zparameter(
             self, channel_name, trace_number=1, channel_number=1):
         """Impedance parameter selection channel.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:SELect`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the Z parameter channel.
             trace_number: Trace number on the instrument.
@@ -1703,14 +1544,8 @@ class keysight_e5061b_impedance(keysight_e5061b_base):
 
     def add_channel_zcorrection_open(self, channel_name, channel_number=1):
         """Open load complex correction vector.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the open correction channel.
             channel_number: Instrument channel number.
@@ -1731,14 +1566,8 @@ class keysight_e5061b_impedance(keysight_e5061b_base):
 
     def add_channel_zcorrection_short(self, channel_name, channel_number=1):
         """Shorted load complex correction vector.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the short correction channel.
             channel_number: Instrument channel number.
@@ -1759,14 +1588,8 @@ class keysight_e5061b_impedance(keysight_e5061b_base):
 
     def add_channel_zcorrection_load(self, channel_name, channel_number=1):
         """50 Ohm load complex correction vector.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the load correction channel.
             channel_number: Instrument channel number.
@@ -1787,15 +1610,7 @@ class keysight_e5061b_impedance(keysight_e5061b_base):
 
     def add_channels_impedance_setup(self, channel_name, channel_number=1):
         """Shortcut to add impedance measurement control channels.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Base name for the impedance setup channels.
             channel_number: Instrument channel number.
@@ -1821,15 +1636,7 @@ class keysight_e5061b_impedance(keysight_e5061b_base):
 
     def add_channels_zcorrection(self, channel_name, channel_number=1):
         """Z correction channels for open, short, and load.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Base name for the Z correction channels.
             channel_number: Instrument channel number.
@@ -1855,14 +1662,8 @@ class keysight_e5061b_impedance(keysight_e5061b_base):
 
     def add_channel_zcorrection_collect(self, channel_name, channel_number=1):
         """Z correction collection channel.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the Z correction collect channel.
             channel_number: Instrument channel number.
@@ -1941,11 +1742,7 @@ class keysight_e5061b_impedance(keysight_e5061b_base):
 
     def add_channels_impedance_equiv_A(self, channel_name, channel_number=1):
         """Parallel RLC. Model A - Generally suited to analyze inductors with high core loss.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Base name for the equivalent circuit channels.
             channel_number: Instrument channel number.
@@ -1958,11 +1755,7 @@ class keysight_e5061b_impedance(keysight_e5061b_base):
 
     def add_channels_impedance_equiv_B(self, channel_name, channel_number=1):
         """C parallel R+L. Model B - Generally suited to analyze general inductors and resistors.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Base name for the equivalent circuit channels.
             channel_number: Instrument channel number.
@@ -1975,11 +1768,7 @@ class keysight_e5061b_impedance(keysight_e5061b_base):
 
     def add_channels_impedance_equiv_C(self, channel_name, channel_number=1):
         """L series C//R. Model C - Generally suited to analyze resistors with high resistance.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Base name for the equivalent circuit channels.
             channel_number: Instrument channel number.
@@ -1992,11 +1781,7 @@ class keysight_e5061b_impedance(keysight_e5061b_base):
 
     def add_channels_impedance_equiv_D(self, channel_name, channel_number=1):
         """Series RLC. Model D - Generally suited to analyze capacitors.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Base name for the equivalent circuit channels.
             channel_number: Instrument channel number.
@@ -2009,15 +1794,7 @@ class keysight_e5061b_impedance(keysight_e5061b_base):
 
     def add_channels_impedance_equiv_E(self, channel_name, channel_number=1):
         """C0 parallel Series RLC. Model E - Generally suited to analyze resonators and oscillators.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Base name for the equivalent circuit channels.
             channel_number: Instrument channel number.

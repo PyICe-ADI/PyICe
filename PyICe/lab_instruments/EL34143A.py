@@ -68,14 +68,8 @@ class EL34143A(scpi_instrument):
 
     def add_channel_current(self, channel_name, curr_range='AUTO'):
         """Add single CC forcing channel and force zero current.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Sends the ``:`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
+        Sends the ``:`` SCPI command to the instrument.
         Args:
             channel_name: Name for the new channel.
             curr_range: Curr range to use.
@@ -123,15 +117,7 @@ class EL34143A(scpi_instrument):
 
     def add_channel_isense(self, channel_name):
         """Add single current readback channel.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -147,15 +133,7 @@ class EL34143A(scpi_instrument):
 
     def add_channel_vsense(self, channel_name):
         """Add single voltage readback channel.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -171,15 +149,7 @@ class EL34143A(scpi_instrument):
 
     def add_channel_psense(self, channel_name):
         """Read back computed power dissipated in load.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -195,15 +165,7 @@ class EL34143A(scpi_instrument):
 
     def add_channel_mode(self, channel_name):
         """Read back operating mode (Off, Constant Current, Constant Voltage, Constant Power, Constant Resistance).
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -260,14 +222,8 @@ class EL34143A(scpi_instrument):
 
     def add_channel_remote_sense(self, channel_name):
         """Enable/disable remote voltage sense through panel connectors.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Sends the ``:`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
+        Sends the ``:`` SCPI command to the instrument.
         Args:
             channel_name: Name for the new channel.
 
@@ -283,15 +239,7 @@ class EL34143A(scpi_instrument):
 
     def add_channel_voltage(self, channel_name, volt_range='AUTO'):
         """Add single CV forcing channel.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             volt_range: Volt range to use.
@@ -337,15 +285,7 @@ class EL34143A(scpi_instrument):
 
     def add_channel_power(self, channel_name, pow_range='AUTO'):
         """Add single CW forcing channel.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             pow_range: Pow range to use.
@@ -392,15 +332,7 @@ class EL34143A(scpi_instrument):
 
     def add_channel_resistance(self, channel_name):
         """Add single CR forcing channel.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 

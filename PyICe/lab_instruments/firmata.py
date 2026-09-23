@@ -272,15 +272,7 @@ class firmata(instrument):
 
     def add_channel_analog_input(self, channel_name, pin):
         """Analog input pin.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             pin: Pin number.
@@ -374,7 +366,6 @@ class firmata(instrument):
         """RC servo control (544ms-2400ms PWM) output.
 
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             pin: Pin number.

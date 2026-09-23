@@ -36,6 +36,10 @@ Version 0.0
 
 """
 import skrf
+try:
+    from skrf.circuit import Circuit
+except ImportError:
+    from skrf import Circuit
 import numpy as np
 import matplotlib.pyplot as mplt
 import scipy.optimize as optimize
@@ -157,33 +161,15 @@ class touchstone_utils():
         # TODO: Add input network
         # TODO: Add error handling for port_nums outside of N-port port count
         def open_terminator(name):  # implicit freqs, z0
-            """Return open terminator result.
-
-            Establishes the connection or prepares the resource for use.
-
-
-            >>> from PyICe.data_utils.touchstone_utils import touchstone_utils
-            >>> hasattr(touchstone_utils, 'open_terminator')
-            True
+            """Return a 1-port open-circuit network for terminating unused ports.
 
             Args:
                 name: Name identifier.
 
             Returns:
-                The open terminator result.
+                A 1-port open-circuit Network.
             """
-            open_port = skrf.Circuit.Port(
-                frequency=freqs, name='open_term_port', z0=z0)
-            open_series = skrf.Circuit.Open(
-                frequency=freqs, name='open', z0=z0)
-            shunt = skrf.Circuit.Ground(frequency=freqs, name='GND', z0=z0)
-            open_term_cnx = [[(open_port, 0), (open_series, 0)],
-                             [(open_series, 1), (shunt, 0)],
-                             ]
-            cir_open_term = skrf.Circuit(open_term_cnx)
-            nw_open_term = cir_open_term.network
-            nw_open_term.name = name
-            return nw_open_term
+            return Circuit.Open(frequency=freqs, name=name, z0=z0)
         n = self.network.nports
         z0 = self.network.z0[0][0]
         freqs = self.network.frequency
@@ -193,7 +179,7 @@ class touchstone_utils():
         for port_num in port_nums:
             capped_connections.append([(self.network,
                                         port_num - 1),
-                                       (skrf.Circuit.Port(frequency=freqs,
+                                       (Circuit.Port(frequency=freqs,
                                                           name=f"P{port_name_counter + 1}",
                                                           z0=z0),
                                         0)])
@@ -202,7 +188,7 @@ class touchstone_utils():
         for unused_port in unused_port_nums:
             capped_connections.append(
                 [(self.network, unused_port - 1), (open_terminator(f"open_term{unused_port}"), 0)])
-        capped_circuit = skrf.Circuit(capped_connections)
+        capped_circuit = Circuit(capped_connections)
         capped_circuit.plot_graph(network_labels=True,
                                   port_labels=True,
                                   edge_labels=True,
@@ -235,44 +221,19 @@ class touchstone_utils():
         """
         # TODO: Add functionality for load_port_num to be multiple load ports
         # that get shorted.
-        def short_terminator(name):  # implicit freqs
-            """Return short terminator result.
-
-            Performs the described operation on the object's internal state.
-
-
-            >>> from PyICe.data_utils.touchstone_utils import touchstone_utils
-            >>> hasattr(touchstone_utils, 'short_terminator')
-            True
-
-            Args:
-                name: Name identifier.
-
-            Returns:
-                The short terminator result.
-            """
-            short_port = skrf.Circuit.Port(
-                frequency=freqs, name='short_term_port', z0=z0)
-            shunt = skrf.Circuit.Ground(frequency=freqs, name='GND', z0=z0)
-            short_term_cnx = [[(short_port, 0), (shunt, 0)],
-                              ]
-            cir_short_term = skrf.Circuit(short_term_cnx)
-            nw_short_term = cir_short_term.network
-            nw_short_term.name = name
-            return nw_short_term
         z0 = self.network.z0[0][0]
         freqs = self.network.frequency
         # TODO: Have to do the trick with the Network constructor and getting
         # the s data to get around error
         reduced_2port = self.network_Nport_to_Mport(
             [source_port_num, load_port_num])
-        new_source_port = skrf.Circuit.Port(
+        new_source_port = Circuit.Port(
             frequency=freqs, name='source', z0=z0)
-        ground = skrf.Circuit.Ground(frequency=freqs, name='gnd', z0=z0)
+        ground = Circuit.Ground(frequency=freqs, name='gnd', z0=z0)
         connections_reduce_2_to_1_port = [[(reduced_2port, 0), (new_source_port, 0)],
                                           [(reduced_2port, 1), (ground, 0)],
                                           ]
-        circuit_1port = skrf.Circuit(connections_reduce_2_to_1_port)
+        circuit_1port = Circuit(connections_reduce_2_to_1_port)
         circuit_1port.plot_graph(network_labels=True,
                                  port_labels=True,
                                  edge_labels=True,
@@ -338,7 +299,7 @@ class touchstone_utils():
             Returns:
                 The port terminator result.
             """
-            return skrf.Circuit.Port(frequency=freqs, name=name, z0=z0)
+            return Circuit.Port(frequency=freqs, name=name, z0=z0)
 
         def series_resistor(name, resistance):
             """Return series resistor result.
@@ -357,7 +318,7 @@ class touchstone_utils():
             Returns:
                 The series resistor result.
             """
-            return skrf.Circuit.SeriesImpedance(
+            return Circuit.SeriesImpedance(
                 frequency=freqs, name=name, z0=z0, Z=resistance)
         freqs = skrf.frequency.Frequency(start=10, stop=10e6,
                                          npoints=1000, unit='Hz',
@@ -376,7 +337,7 @@ class touchstone_utils():
                 [(port_terminator(name=f"Port{i}"), 0), (resistors[i - 1], 0)])
             middle_resistor_node.append((resistors[i - 1], 1))
         connections_Nport.append(middle_resistor_node)
-        circuit = skrf.Circuit(connections_Nport)
+        circuit = Circuit(connections_Nport)
         circuit.plot_graph(network_labels=True,
                            port_labels=True,
                            edge_labels=True,
@@ -388,132 +349,9 @@ class touchstone_utils():
             name="Test N Port Network")
         return output_network
 
-
-def sweep_plots_to_pptx(ts_plots_dir, output_pptx_path, date_time_flag=1):
-    """Collects plots from an archive folder and adds them to a Microsoft PowerPoint presentation.
-
-    Searches through a directory for PNG or SVG files, creates a PowerPoint and adds them to it.
-    The titles of the slides is the filename of the image. There are no additional slides in the PowerPoint.
-    The slides have no background.
-
-
-    >>> from PyICe.data_utils.touchstone_utils import sweep_plots_to_pptx
-    >>> callable(sweep_plots_to_pptx)
-    True
-
-    Args:
-        ts_plots_dir: Directory of target touchstone plots to be swept into PowerPoint presentation.
-        output_pptx_path: Full file path of output pptx file. The directory must exist, but the output file can be created.
-        date_time_flag: Flag for including the current date and time at the beginning of the output pptx file name.
-    """
-    # TODO: Check that ts_plots_dir exists and has an image
-    # TODO: Check that output_pptx_path.parent exists, its okay for the file not to exist.
-    # TODO: Check the fomat of date_time_flag
-
-    pptx_output = pptx.Presentation()
-    pptx_output.slide_height = pptx.util.Inches(7.5)
-    pptx_output.slide_width = pptx.util.Inches(13.333)
-
-    plot_paths_list = Path(ts_plots_dir).glob('**/*.png')
-    for plot_path in plot_paths_list:
-        plot_file_name = str(plot_path)
-
-        blank_slide_layout = pptx_output.slide_layouts[6]
-        slide = pptx_output.slides.add_slide(blank_slide_layout)
-
-        left = pptx.util.Inches(0.36)
-        top = pptx.util.Inches(0.18)
-        width = pptx.util.Inches(8)
-        height = pptx.util.Inches(1)
-        title_textbox = slide.shapes.add_textbox(left, top, width, height)
-        title_textframe = title_textbox.text_frame
-        title_paragraph = title_textframe.paragraphs[0]
-        title_paragraph.font.size = pptx.util.Pt(44)
-        title_paragraph.font.name = "Calibri Light"
-        title_paragraph.text = plot_path.stem
-
-        position_top = pptx.util.Inches(1.3)
-        position_left = pptx.util.Inches(0)
-        plot_width = pptx.util.Inches(11.16)
-        plot_height = pptx.util.Inches(6.2)
-        _pic = slide.shapes.add_picture(  # noqa: F841
-            plot_file_name,
-            position_left,
-            position_top,
-            width=plot_width,
-            height=plot_height)
-
-    curr_date_time = datetime.datetime.now()
-    date_time_string = curr_date_time.strftime("%y_%m_%d__%H_%M_%S_")
-    output_path = Path(output_pptx_path)
-    if date_time_flag:
-        output_path = output_path.parent / f'{date_time_string}{output_path.name}'
-    pptx_output.save(str(output_path))
-
-
-def resistor_ladder_coefficient(r_dc, r_hf, num_stages):
-    """Return resistor ladder coefficient result.
-
-    Performs the described operation on the object's internal state.
-
-
-    >>> from PyICe.data_utils.touchstone_utils import resistor_ladder_coefficient
-    >>> callable(resistor_ladder_coefficient)
-    True
-
-    Args:
-        num_stages: Num stages to use.
-        r_dc: R dc to use.
-        r_hf: R hf to use.
-
-    Returns:
-        The result of the operation.
-    """
-    r_coeff = sympy.symbols('a')
-    r_inv = 1 / r_hf
-    for i in range(num_stages):
-        r_inv = r_inv + 1 / (r_hf * r_coeff ** (i + 1))
-    r_inv = sympy.simplify(r_inv)
-    r_eq = sympy.simplify(1 / r_inv)
-    equation = r_eq - r_dc
-    r_coeff_val = sympy.nsolve(equation, 1)
-    return r_coeff_val
-
-
-def inductor_ladder_coefficient(z_hf, z_lf, r_hf, r_coeff, num_stages):
-    """Perform inductor ladder coefficient operation.
-
-    Performs the described operation on the object's internal state.
-
-
-    >>> from PyICe.data_utils.touchstone_utils import inductor_ladder_coefficient
-    >>> callable(inductor_ladder_coefficient)
-    True
-
-    Args:
-        num_stages: Num stages to use.
-        r_coeff: R coeff to use.
-        r_hf: R hf to use.
-        z_hf: Z hf to use.
-        z_lf: Z lf to use.
-    """
-    pass
-
-
-def _parallel(Ra, Rb):
-    inv_par = sympy.simplify(1 / Ra + 1 / Rb)
-    return sympy.simplify(1 / inv_par)
-    # return sympy.simplify(sympy.simplify(Ra * Rb) / sympy.simplify(Ra + Rb))
-
-###################################################################
-###################################################################
-###################################################################
-###################################################################
-# End of Supported Development ###################
-###################################################################
-###################################################################
-###################################################################
-###################################################################
+    ###################################################################
+    # End of Supported Development
+    ###################################################################
 
     def dev_make_series_LR_model(self, outputFileName=None, R=1e3, L=1e-3):
         # Makes a zero for Z(1,1) at 160K Hz
@@ -536,18 +374,18 @@ def _parallel(Ra, Rb):
                                          npoints=1000, unit='Hz',
                                          sweep_type='log'
                                          )
-        source_port = skrf.Circuit.Port(frequency=freqs, name='in', z0=50)
-        # load_port = skrf.Circuit.Port(frequency=freqs,      name='out', z0=50)
-        res = skrf.Circuit.SeriesImpedance(
+        source_port = Circuit.Port(frequency=freqs, name='in', z0=50)
+        # load_port = Circuit.Port(frequency=freqs,      name='out', z0=50)
+        res = Circuit.SeriesImpedance(
             frequency=freqs, name='res', z0=50, Z=R)
-        ind = skrf.Circuit.SeriesImpedance(
+        ind = Circuit.SeriesImpedance(
             frequency=freqs, name='ind', z0=50, Z=1j * freqs.w * L)
-        ground = skrf.Circuit.Ground(frequency=freqs, name='gnd', z0=50)
+        ground = Circuit.Ground(frequency=freqs, name='gnd', z0=50)
         connections = [[(source_port, 0), (res, 0)],
                        [(res, 1), (ind, 0),],
                        [(ind, 1), (ground, 0)]
                        ]
-        circuit = skrf.Circuit(connections)
+        circuit = Circuit(connections)
         network = circuit.network
         self.network = network
         # z = skrf.network.s2z(network.s, z0=50)
@@ -930,6 +768,7 @@ def _parallel(Ra, Rb):
 
         # return x, success
 
+    @staticmethod
     def dev_plot_parallel(Req):
         """Return dev plot parallel result.
         Configures or updates the plot with the specified parameters.
@@ -975,6 +814,7 @@ def _parallel(Ra, Rb):
         mplt.xlabel('R1')
         mplt.legend()
 
+    @staticmethod
     def dev_plot_log_spaces():
         """Perform dev plot log spaces operation.
 
@@ -1000,6 +840,7 @@ def _parallel(Ra, Rb):
         mplt.yscale('log')
         mplt.legend()
 
+    @staticmethod
     def dev_partial_fractions():
         # Make a transfer function that we know has a real pole and a complex pole pair
         # See if we get complex coefficients. There may be another unexpected solution
@@ -1017,6 +858,7 @@ def _parallel(Ra, Rb):
         a = [3, 4, 5]
         print(signal.residue(b, a))
 
+    @staticmethod
     def dev_solve():  # Not used, imported SymPy for this but haven't needed it.
         """Perform dev solve operation.
 
@@ -1060,17 +902,17 @@ def _parallel(Ra, Rb):
         R, L = params
         freq_obj = self.network.frequency
         freqs = self.network.f
-        in_port = skrf.Circuit.Port(frequency=freq_obj, name='in', z0=50)
-        ind = skrf.Circuit.SeriesImpedance(
+        in_port = Circuit.Port(frequency=freq_obj, name='in', z0=50)
+        ind = Circuit.SeriesImpedance(
             frequency=freq_obj, name='L', z0=50, Z=1j * freq_obj.w * L)
-        res = skrf.Circuit.SeriesImpedance(
+        res = Circuit.SeriesImpedance(
             frequency=freq_obj, name='R', z0=50, Z=R)
-        ground = skrf.Circuit.Ground(frequency=freq_obj, name='gnd', z0=50)
+        ground = Circuit.Ground(frequency=freq_obj, name='gnd', z0=50)
         connections = [[(in_port, 0), (ind, 0)],
                        [(ind, 1), (res, 0)],
                        [(res, 1), (ground, 0)],
                        ]
-        series_LR_circuit = skrf.Circuit(connections)
+        series_LR_circuit = Circuit(connections)
         series_LR_network = series_LR_circuit.network
         # series_LR_circuit.plot_graph(network_labels=True,
         # port_labels=True,
@@ -1113,20 +955,20 @@ def _parallel(Ra, Rb):
         L0, R1, L1, LL, RR = params
         freq_obj = self.network.frequency
         freqs = self.network.f
-        in_port = skrf.Circuit.Port(frequency=freq_obj, name='in', z0=50)
-        ind0 = skrf.Circuit.SeriesImpedance(
+        in_port = Circuit.Port(frequency=freq_obj, name='in', z0=50)
+        ind0 = Circuit.SeriesImpedance(
             frequency=freq_obj, name='L0', z0=50, Z=1j * freq_obj.w * L0)
-        res1 = skrf.Circuit.SeriesImpedance(
+        res1 = Circuit.SeriesImpedance(
             frequency=freq_obj, name='R1', z0=50, Z=R1)
-        ind1 = skrf.Circuit.SeriesImpedance(
+        ind1 = Circuit.SeriesImpedance(
             frequency=freq_obj, name='L1', z0=50, Z=1j * freq_obj.w * L1)
-        res2 = skrf.Circuit.SeriesImpedance(
+        res2 = Circuit.SeriesImpedance(
             frequency=freq_obj, name='R2', z0=50, Z=R1 * RR)
-        ind2 = skrf.Circuit.SeriesImpedance(
+        ind2 = Circuit.SeriesImpedance(
             frequency=freq_obj, name='L2', z0=50, Z=1j * freq_obj.w * L1 * LL)
-        res3 = skrf.Circuit.SeriesImpedance(
+        res3 = Circuit.SeriesImpedance(
             frequency=freq_obj, name='R3', z0=50, Z=R1 * RR**2)
-        ind3 = skrf.Circuit.SeriesImpedance(
+        ind3 = Circuit.SeriesImpedance(
             frequency=freq_obj,
             name='L3',
             z0=50,
@@ -1134,9 +976,9 @@ def _parallel(Ra, Rb):
             freq_obj.w *
             L1 *
             LL**2)
-        res4 = skrf.Circuit.SeriesImpedance(
+        res4 = Circuit.SeriesImpedance(
             frequency=freq_obj, name='R4', z0=50, Z=R1 * RR**3)
-        ground = skrf.Circuit.Ground(frequency=freq_obj, name='gnd', z0=50)
+        ground = Circuit.Ground(frequency=freq_obj, name='gnd', z0=50)
         connections = [[(in_port, 0), (ind0, 0)],
                        [(ind0, 1), (res1, 0), (ind1, 0)],
                        [(ind1, 1), (res2, 0), (ind2, 0)],
@@ -1144,7 +986,7 @@ def _parallel(Ra, Rb):
                        [(ind3, 1), (res4, 0)],
                        [(res1, 1), (res2, 1), (res3, 1), (res4, 1), (ground, 0)],
                        ]
-        ladder_circuit = skrf.Circuit(connections)
+        ladder_circuit = Circuit(connections)
         ladder_network = ladder_circuit.network
         # ladder_circuit.plot_graph(network_labels=True,
         # port_labels=True,
@@ -1188,27 +1030,27 @@ def _parallel(Ra, Rb):
         L0, R1, L1, R2, L2, R3 = params
         freq_obj = self.network.frequency
         freqs = self.network.f
-        in_port = skrf.Circuit.Port(frequency=freq_obj, name='in', z0=50)
-        ind0 = skrf.Circuit.SeriesImpedance(
+        in_port = Circuit.Port(frequency=freq_obj, name='in', z0=50)
+        ind0 = Circuit.SeriesImpedance(
             frequency=freq_obj, name='L0', z0=50, Z=1j * freq_obj.w * L0)
-        res1 = skrf.Circuit.SeriesImpedance(
+        res1 = Circuit.SeriesImpedance(
             frequency=freq_obj, name='R1', z0=50, Z=R1)
-        ind1 = skrf.Circuit.SeriesImpedance(
+        ind1 = Circuit.SeriesImpedance(
             frequency=freq_obj, name='L1', z0=50, Z=1j * freq_obj.w * L1)
-        res2 = skrf.Circuit.SeriesImpedance(
+        res2 = Circuit.SeriesImpedance(
             frequency=freq_obj, name='R2', z0=50, Z=R2)
-        ind2 = skrf.Circuit.SeriesImpedance(
+        ind2 = Circuit.SeriesImpedance(
             frequency=freq_obj, name='L2', z0=50, Z=1j * freq_obj.w * L2)
-        res3 = skrf.Circuit.SeriesImpedance(
+        res3 = Circuit.SeriesImpedance(
             frequency=freq_obj, name='R3', z0=50, Z=R3)
-        ground = skrf.Circuit.Ground(frequency=freq_obj, name='gnd', z0=50)
+        ground = Circuit.Ground(frequency=freq_obj, name='gnd', z0=50)
         connections = [[(in_port, 0), (ind0, 0)],
                        [(ind0, 1), (res1, 0), (ind1, 0)],
                        [(ind1, 1), (res2, 0), (ind2, 0)],
                        [(ind2, 1), (res3, 0)],
                        [(res1, 1), (res2, 1), (res3, 1), (ground, 0)],
                        ]
-        ladder_circuit = skrf.Circuit(connections)
+        ladder_circuit = Circuit(connections)
         ladder_network = ladder_circuit.network
         # ladder_circuit.plot_graph(network_labels=True,
         # port_labels=True,
@@ -1252,22 +1094,22 @@ def _parallel(Ra, Rb):
         L0, R1, L1, R2 = params
         freq_obj = self.network.frequency
         freqs = self.network.f
-        in_port = skrf.Circuit.Port(frequency=freq_obj, name='in', z0=50)
-        ind0 = skrf.Circuit.SeriesImpedance(
+        in_port = Circuit.Port(frequency=freq_obj, name='in', z0=50)
+        ind0 = Circuit.SeriesImpedance(
             frequency=freq_obj, name='L0', z0=50, Z=1j * freq_obj.w * L0)
-        res1 = skrf.Circuit.SeriesImpedance(
+        res1 = Circuit.SeriesImpedance(
             frequency=freq_obj, name='R1', z0=50, Z=R1)
-        ind1 = skrf.Circuit.SeriesImpedance(
+        ind1 = Circuit.SeriesImpedance(
             frequency=freq_obj, name='L1', z0=50, Z=1j * freq_obj.w * L1)
-        res2 = skrf.Circuit.SeriesImpedance(
+        res2 = Circuit.SeriesImpedance(
             frequency=freq_obj, name='R2', z0=50, Z=R2)
-        ground = skrf.Circuit.Ground(frequency=freq_obj, name='gnd', z0=50)
+        ground = Circuit.Ground(frequency=freq_obj, name='gnd', z0=50)
         connections = [[(in_port, 0), (ind0, 0)],
                        [(ind0, 1), (res1, 0), (ind1, 0)],
                        [(ind1, 1), (res2, 0)],
                        [(res1, 1), (res2, 1), (ground, 0)],
                        ]
-        ladder_circuit = skrf.Circuit(connections)
+        ladder_circuit = Circuit(connections)
         ladder_network = ladder_circuit.network
         # ladder_circuit.plot_graph(network_labels=True,
         # port_labels=True,
@@ -1349,6 +1191,7 @@ def _parallel(Ra, Rb):
         # print(self.network.z.shape)
         ####
 
+    @staticmethod
     def dev_aprx_ckt_values(corners, Rdc, Rhf):
         """Return dev aprx ckt values result.
 
@@ -1397,6 +1240,7 @@ def _parallel(Ra, Rb):
         print(f"R1={R1}; R2={R2}; R3={R3}; L0={L0}; L1={L1}; L2={L2}")
         return [L0, R1, L1, R2, L2, R3]
 
+    @staticmethod
     def dev_S11_coefficients_Z11(y, x):
         # Z11 = Zo*(1+S11)/(1-S11)
         # TODO: instead of returning the numerator and denominator coefficients, just use the substitution stuff
@@ -1608,6 +1452,7 @@ def _parallel(Ra, Rb):
         mplt.grid(visible=True, which='both', axis='both')
         mplt.legend()
 
+    @staticmethod
     def adice_rpc_to_impedance(a, b, k, z0, model_type=1):
         """Converts adiceRPC (root polynomial coefficient) file parameters, (a,b,k) to an impedance Z(s).
 
@@ -1658,6 +1503,7 @@ def _parallel(Ra, Rb):
         r, p, k = signal.residue(z_num_coeff, z_den_coeff)
         return z_num_coeff, z_num_coeff, r, p, k
 
+    @staticmethod
     def adice_rpc_to_rational(a, b, k):
         """Converts adiceRPC (root polynomial coefficient) file parameters, (a,b,k) to rational.
 
@@ -1683,6 +1529,7 @@ def _parallel(Ra, Rb):
         y, x = signal.invres(r=r, p=b, k=k)
         return y, x
 
+    @staticmethod
     def dev_parse_RPC(input_file_name, port_num=1):
         """Perform dev parse RPC operation.
 
@@ -1740,7 +1587,7 @@ def _parallel(Ra, Rb):
             Returns:
                 The make port result.
             """
-            return skrf.Circuit.Port(frequency=freq_obj, name=name, z0=50)
+            return Circuit.Port(frequency=freq_obj, name=name, z0=50)
 
         def make_resistor(name):
             """Return make resistor result.
@@ -1758,7 +1605,7 @@ def _parallel(Ra, Rb):
             Returns:
                 The make resistor result.
             """
-            return skrf.Circuit.SeriesImpedance(
+            return Circuit.SeriesImpedance(
                 frequency=freq_obj, name=name, z0=50, Z=50)
         connections = []
         resistors = []
@@ -1772,13 +1619,13 @@ def _parallel(Ra, Rb):
         connections.append(middle_resistor_node)
         # print(connections)
         # return
-        circuit = skrf.Circuit(connections)
+        circuit = Circuit(connections)
         network = circuit.network
         circuit.plot_graph(network_labels=True,
                            port_labels=True,
                            edge_labels=True,
                            )
-        network.write_touchstone(file_name=output_file_name)
+        network.write_touchstone(filename=output_file_name)
         return network
         # network_z11 = self.network.z[:,0,0]
         # ladder_z11 = network.z[:,0,0]
@@ -1940,3 +1787,125 @@ def _parallel(Ra, Rb):
     # customer_touchstone = 'C:\\Users\\BLeveret\\projects\\stowe_eval\\tests\\applications\\LT3390_4\\s_parameters_aptiv\\1V2.s4p'
     # tr = touchstone_utils(customer_touchstone)
     # mplt.show()
+
+
+###################################################################
+# Module-level utility functions
+###################################################################
+
+
+def sweep_plots_to_pptx(ts_plots_dir, output_pptx_path, date_time_flag=1):
+    """Collects plots from an archive folder and adds them to a Microsoft PowerPoint presentation.
+
+    Searches through a directory for PNG or SVG files, creates a PowerPoint and adds them to it.
+    The titles of the slides is the filename of the image. There are no additional slides in the PowerPoint.
+    The slides have no background.
+
+
+    >>> from PyICe.data_utils.touchstone_utils import sweep_plots_to_pptx
+    >>> callable(sweep_plots_to_pptx)
+    True
+
+    Args:
+        ts_plots_dir: Directory of target touchstone plots to be swept into PowerPoint presentation.
+        output_pptx_path: Full file path of output pptx file. The directory must exist, but the output file can be created.
+        date_time_flag: Flag for including the current date and time at the beginning of the output pptx file name.
+    """
+    # TODO: Check that ts_plots_dir exists and has an image
+    # TODO: Check that output_pptx_path.parent exists, its okay for the file not to exist.
+    # TODO: Check the fomat of date_time_flag
+
+    pptx_output = pptx.Presentation()
+    pptx_output.slide_height = pptx.util.Inches(7.5)
+    pptx_output.slide_width = pptx.util.Inches(13.333)
+
+    plot_paths_list = Path(ts_plots_dir).glob('**/*.png')
+    for plot_path in plot_paths_list:
+        plot_file_name = str(plot_path)
+
+        blank_slide_layout = pptx_output.slide_layouts[6]
+        slide = pptx_output.slides.add_slide(blank_slide_layout)
+
+        left = pptx.util.Inches(0.36)
+        top = pptx.util.Inches(0.18)
+        width = pptx.util.Inches(8)
+        height = pptx.util.Inches(1)
+        title_textbox = slide.shapes.add_textbox(left, top, width, height)
+        title_textframe = title_textbox.text_frame
+        title_paragraph = title_textframe.paragraphs[0]
+        title_paragraph.font.size = pptx.util.Pt(44)
+        title_paragraph.font.name = "Calibri Light"
+        title_paragraph.text = plot_path.stem
+
+        position_top = pptx.util.Inches(1.3)
+        position_left = pptx.util.Inches(0)
+        plot_width = pptx.util.Inches(11.16)
+        plot_height = pptx.util.Inches(6.2)
+        slide.shapes.add_picture(
+            plot_file_name,
+            position_left,
+            position_top,
+            width=plot_width,
+            height=plot_height)
+
+    curr_date_time = datetime.datetime.now()
+    date_time_string = curr_date_time.strftime("%y_%m_%d__%H_%M_%S_")
+    output_path = Path(output_pptx_path)
+    if date_time_flag:
+        output_path = output_path.parent / f'{date_time_string}{output_path.name}'
+    pptx_output.save(str(output_path))
+
+
+def resistor_ladder_coefficient(r_dc, r_hf, num_stages):
+    """Return resistor ladder coefficient result.
+
+    Performs the described operation on the object's internal state.
+
+
+    >>> from PyICe.data_utils.touchstone_utils import resistor_ladder_coefficient
+    >>> callable(resistor_ladder_coefficient)
+    True
+
+    Args:
+        num_stages: Num stages to use.
+        r_dc: R dc to use.
+        r_hf: R hf to use.
+
+    Returns:
+        The result of the operation.
+    """
+    r_coeff = sympy.symbols('a')
+    r_inv = 1 / r_hf
+    for i in range(num_stages):
+        r_inv = r_inv + 1 / (r_hf * r_coeff ** (i + 1))
+    r_inv = sympy.simplify(r_inv)
+    r_eq = sympy.simplify(1 / r_inv)
+    equation = r_eq - r_dc
+    r_coeff_val = sympy.nsolve(equation, 1)
+    return r_coeff_val
+
+
+def inductor_ladder_coefficient(z_hf, z_lf, r_hf, r_coeff, num_stages):
+    """Perform inductor ladder coefficient operation.
+
+    Performs the described operation on the object's internal state.
+
+
+    >>> from PyICe.data_utils.touchstone_utils import inductor_ladder_coefficient
+    >>> callable(inductor_ladder_coefficient)
+    True
+
+    Args:
+        num_stages: Num stages to use.
+        r_coeff: R coeff to use.
+        r_hf: R hf to use.
+        z_hf: Z hf to use.
+        z_lf: Z lf to use.
+    """
+    pass
+
+
+def _parallel(Ra, Rb):
+    """Return the parallel combination of two impedances."""
+    inv_par = sympy.simplify(1 / Ra + 1 / Rb)
+    return sympy.simplify(1 / inv_par)

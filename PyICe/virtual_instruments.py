@@ -1,4 +1,56 @@
-"""Virtual instruments module.
+"""Software-only instruments that compute derived quantities from hardware channels.
+
+All classes extend :class:`lab_core.instrument` and integrate with the PyICe
+channel/measurement framework without requiring physical hardware.
+
+**Math / signal-processing instruments**
+
+- :class:`ramp_to` — incrementally ramp a forcing channel to a target value.
+- :class:`calibrator` — remap write values through a two-point or polynomial transform.
+- :class:`expression_eval` — evaluate arbitrary Python expressions over channel values.
+- :class:`polynomial` — apply a polynomial to a channel reading.
+- :class:`accumulator` — running sum of channel readings.
+- :class:`integrator` — time-integrated accumulator.
+- :class:`differencer` — difference between two channel readings.
+- :class:`differentiator` — numerical derivative of a channel over time.
+- :class:`vector_to_scalar_converter` — reduce a vector channel to a scalar via a supplied function.
+
+**Timing**
+
+- :class:`timer` — elapsed-time channel with start/stop/reset.
+- :class:`delay_loop` — instrument wrapper around :mod:`lab_utils.delay_loop`.
+
+**Control loops**
+
+- :class:`servo` — general PID-style servo controller (e.g. Kelvin forcing).
+- :class:`servo_group` — coordinate multiple servo instances into simultaneous regulation.
+- :class:`simple_servo` — lightweight single-parameter servo.
+- :class:`leakage_nuller` — nulls leakage current by adjusting a compensation channel.
+- :class:`servo_binary_search` — binary-search servo for threshold finding.
+- :class:`threshold_finder` — automatic threshold and hysteresis finder.
+
+**Peak / search**
+
+- :class:`peak_finder` — tracks running peak (min or max) of a channel.
+
+**Digital I/O helpers**
+
+- :class:`dummy` / :class:`dummy_read` / :class:`dummy_write` — no-op channels for
+  replacing missing equipment or logging only.
+- :class:`dummy_quantum_twin` — mirrors live channel state for post-shutdown logging.
+
+**Thermal**
+
+- :class:`Virtual_Oven` — shell temperature-chamber instrument for tests without a real oven.
+
+**Other**
+
+- :class:`instrument_humanoid` — prompt a human operator as part of an automated sequence.
+- :class:`expect` — assert a channel reading is within tolerance of an expected value.
+- :class:`clipboard` — read/write system clipboard as a channel.
+- :class:`aggregator` — combine multiple channels into one composite channel.
+- :class:`smart_battery_emulator` — threaded writers for smart-battery charger control.
+- :class:`digital_analog_io` — digital I/O using analog force/measure channels.
 
 Examples:
     >>> from PyICe import virtual_instruments

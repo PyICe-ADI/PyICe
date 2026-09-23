@@ -74,15 +74,7 @@ class temptronic_4310(instrument):
 
     def add_channel_temp(self, channel_name):
         """Channel_name represents PID loop forcing temperature setpoint.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -96,15 +88,7 @@ class temptronic_4310(instrument):
 
     def add_channel_sense_dut(self, channel_name):
         """Channel_name represents primary PID control loop thermocouple readback.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Args:
             channel_name: Name for the new channel.
 
@@ -118,15 +102,7 @@ class temptronic_4310(instrument):
 
     def add_channel_sense_air(self, channel_name):
         """Channel_name represents secondary air stream thermocouple readback.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Args:
             channel_name: Name for the new channel.
 
@@ -140,15 +116,7 @@ class temptronic_4310(instrument):
 
     def add_channel_soak(self, channel_name):
         """Channel_name represents soak time setpoint in seconds. Soak timer runs while temperature is continuously within 'window' and resets to zero otherwise.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -161,15 +129,7 @@ class temptronic_4310(instrument):
 
     def add_channel_window(self, channel_name):
         """Channel_name represents width setpoint of tolerance window to start soak timer. Setpoint is total window width in degrees (temp must be +/-window/2).
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -182,15 +142,7 @@ class temptronic_4310(instrument):
 
     def add_channel_soak_settling_time(self, channel_name):
         """Channel_name represents soak timer elapsed time readback.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -202,15 +154,7 @@ class temptronic_4310(instrument):
 
     def add_channel_max_air(self, channel_name):
         """Channel_name represents maximum airflow temperature setting.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -223,15 +167,7 @@ class temptronic_4310(instrument):
 
     def add_channel_max_air2dut(self, channel_name):
         """Channel_name represents maximum allowed temperature difference between airflow and dut setting.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 

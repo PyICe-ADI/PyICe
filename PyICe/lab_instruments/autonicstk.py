@@ -84,15 +84,7 @@ class autonicstk(instrument):
 
     def add_channel_measured(self, channel_name):
         """Measured Temperature Readback (PV).
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -112,15 +104,7 @@ class autonicstk(instrument):
 
     def add_channel_units(self, channel_name):
         """Select Celsius or Farenheit. CAUTION: Units also change PID gains.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument and maps it to the underlying device register for read/write access.
-
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Args:
             channel_name: Name for the new channel.
 
@@ -142,15 +126,7 @@ class autonicstk(instrument):
 
     def add_channel_setpoint(self, channel_name):
         """Target Temperature Setpoint (SV).
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument and maps it to the underlying device register for read/write access.
-
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Args:
             channel_name: Name for the new channel.
 
@@ -182,15 +158,7 @@ class autonicstk(instrument):
 
     def add_channel_heat_mv(self, channel_name):
         """Heater percent power manipulated variable (MV). Can be written directly in manual mode.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument and maps it to the underlying device register for read/write access.
-
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Args:
             channel_name: Name for the new channel.
 
@@ -207,15 +175,7 @@ class autonicstk(instrument):
 
     def add_channel_cool_mv(self, channel_name):
         """Cooler percent power manipulated variable (MV). Can be written directly in manual mode.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument and maps it to the underlying device register for read/write access.
-
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Args:
             channel_name: Name for the new channel.
 
@@ -232,15 +192,7 @@ class autonicstk(instrument):
 
     def add_channel_mode(self, channel_name):
         """Automatic/Manual mode selector. Automatic uses temperature setpoint (SV). Manual uses heat and cool MV setpoints.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument and maps it to the underlying device register for read/write access.
-
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Args:
             channel_name: Name for the new channel.
 
@@ -262,15 +214,7 @@ class autonicstk(instrument):
 
     def add_channel_presets(self, channel_name):
         """Select one of 4 pre-selected temperatures.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument and maps it to the underlying device register for read/write access.
-
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Args:
             channel_name: Name for the new channel.
 
@@ -294,15 +238,7 @@ class autonicstk(instrument):
 
     def add_channel_alarm1(self, channel_name):
         """Alarm 1 output status.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument and maps it to the underlying device register for read/write access.
-
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Args:
             channel_name: Name for the new channel.
 
@@ -322,15 +258,7 @@ class autonicstk(instrument):
 
     def add_channel_alarm2(self, channel_name):
         """Alarm 2 output status.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument and maps it to the underlying device register for read/write access.
-
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Args:
             channel_name: Name for the new channel.
 
@@ -350,15 +278,7 @@ class autonicstk(instrument):
 
     def add_channel_enable_output(self, channel_name):
         """Enable/Disable heat and cool outputs.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument and maps it to the underlying device register for read/write access.
-
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Args:
             channel_name: Name for the new channel.
 
@@ -383,15 +303,7 @@ class autonicstk(instrument):
 
     def add_channel_heat_cool_mode(self, channel_name):
         """Enable heat only, cool only or heat-cool mode.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument and maps it to the underlying device register for read/write access.
-
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Args:
             channel_name: Name for the new channel.
 
@@ -414,15 +326,7 @@ class autonicstk(instrument):
 
     def add_channel_autotune(self, channel_name):
         """Start autotune sequence.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument and maps it to the underlying device register for read/write access.
-
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Args:
             channel_name: Name for the new channel.
 
@@ -444,15 +348,7 @@ class autonicstk(instrument):
 
     def add_channels_tuning(self, channel_name):
         """PID control gain settings. See: https://en.wikipedia.org/wiki/PID_controller#Alternative_nomenclature_and_PID_forms.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument and maps it to the underlying device register for read/write access.
-
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Args:
             channel_name: Name for the new channel.
 
@@ -579,15 +475,7 @@ class autonicstk(instrument):
 
     def add_channel_sensor_type(self, channel_name):
         """Add a channel sensor type.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument and maps it to the underlying device register for read/write access.
-
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Args:
             channel_name: Name for the new channel.
         """
@@ -626,15 +514,7 @@ class autonicstk(instrument):
 
     def add_channels_alarm_config(self, channel_name):
         """Add a channels alarm config.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument and maps it to the underlying device register for read/write access.
-
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Args:
             channel_name: Name for the new channel.
         """

@@ -76,10 +76,10 @@ for a handy cheatsheet on how to use git.  If you find yourself in a pickle,
 there is also [oh s***, git!](https://ohshitgit.com/), which has a several ways to
 clean up a Git disaster.
 
-When you beging working on a feature, please branch off of the master branch
+When you begin working on a feature, please branch off of the main branch
 ```commandline
-git checkout master
-git branch new_feature_name
+git checkout main
+git checkout -b new_feature_name
 ```
 Make your commits small - that makes it much easier for other contributors to
 see your workflow.

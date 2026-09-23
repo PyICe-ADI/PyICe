@@ -269,7 +269,6 @@ class oscilloscope(scpi_instrument, delegator):
         """Add time channel that stores the x-axis data points in seconds.
 
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             name: Name identifier.
         """

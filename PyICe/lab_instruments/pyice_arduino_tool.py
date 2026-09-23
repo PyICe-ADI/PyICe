@@ -254,7 +254,6 @@ class pyice_arduino_tool(instrument):
         def write_magic(message):
             """Perform write magic operation.
             Formats and sends the command to the instrument.
-            Formats and sends the command to the instrument.
 
             Writes data to the underlying target.
 
@@ -278,7 +277,6 @@ class pyice_arduino_tool(instrument):
     def _add_write_channel(self, channel_name, command):
         def write_jumbo(message):
             """Perform write jumbo operation.
-            Formats and sends the command to the instrument.
             Formats and sends the command to the instrument.
 
             Writes data to the underlying target.
@@ -1102,7 +1100,6 @@ class pyice_arduino_tool(instrument):
     def write_chip(self, command_code, write_data):
         """Return write chip result.
         Formats and sends the command to the instrument.
-        Formats and sends the command to the instrument.
 
         Writes data to the underlying target.
 
@@ -1175,7 +1172,6 @@ class pyice_arduino_tool(instrument):
 
     def write_pin(self, pin_num, pin_edge):
         """Perform write pin operation.
-        Formats and sends the command to the instrument.
         Formats and sends the command to the instrument.
 
         Writes data to the underlying target.
@@ -1379,15 +1375,7 @@ class pyice_arduino_tool(instrument):
 
     def add_channel_pin_control(self, channel_name, pin_num):
         """Add a channel pin control.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             pin_num: GPIO pin number (zero-based).
@@ -1422,15 +1410,7 @@ class pyice_arduino_tool(instrument):
     def add_channels_pwm(self, logger_instance,
                          channel_name, pin_num, pwm_freq):
         """Add a channels pwm.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             logger_instance: Logger instance to use.

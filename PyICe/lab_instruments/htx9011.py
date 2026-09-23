@@ -121,15 +121,7 @@ class htx9011(scpi_instrument):
 
     def add_channel_dvcc(self, channel_name):
         """Adds a channel controlling the dvcc voltage.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -183,15 +175,7 @@ class htx9011(scpi_instrument):
 
     def add_channel_master_relay_bias(self, channel_name):
         """Adds a Master Relay Arm Channel.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -308,15 +292,7 @@ class htx9011(scpi_instrument):
 
     def add_channel_range(self, channel_name, channel_number):
         """Add a channel range.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -685,11 +661,31 @@ class htx9011(scpi_instrument):
                 out += str(value)
         return out
 
+    def _supports_atomic_gpio(self):
+        if not hasattr(self, '_atomic_gpio_supported'):
+            try:
+                year, month, day = [int(v) for v in self.get_firmware_version().split(".")]
+                self._atomic_gpio_supported = (year, month, day) >= (2026, 6, 30)
+            except (ValueError, IndexError, AttributeError):
+                self._atomic_gpio_supported = False
+            if not self._atomic_gpio_supported:
+                print("WARNING: HTX9011 firmware does not support "
+                      "atomic GPIO writes. Falling back to single-pin mode. "
+                      "Update firmware to 2026.06.30 or later for atomic operation.")
+        return self._atomic_gpio_supported
+
+    def _write_pins(self, pins, values):
+        if not self._supports_atomic_gpio():
+            for pin, val in zip(pins, values):
+                self._write_pin(pin, val)
+            return
+        pinvals = ','.join([f'{pins[i]}={values[i]}' for i in range(len(pins))])
+        write_str = f':SETPin (@{pinvals});'
+        self.get_interface().write(write_str)
+
     def _write_gpio(self, gpio_list, value):
         bit_list = self._to_bit_list(value, len(gpio_list))
-        pin_values = list(zip(gpio_list, bit_list))
-        for pin_name, pin_value in pin_values:
-            self._write_pin(self.gpio_pins[pin_name], pin_value)
+        self._write_pins([self.gpio_pins[p] for p in gpio_list], bit_list)
 
     def _write_relay_bypass(self, relay_number, value):
         value = self._clean_value(value)
@@ -820,15 +816,7 @@ class htx9011(scpi_instrument):
 
     def add_channel_pwm(self, channel_name, pin):
         """Add a channel pwm.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             pin: Pin number.
@@ -963,15 +951,7 @@ class htx9011(scpi_instrument):
 
     def add_channel_servo(self, channel_name, servo_number):
         """Add a channel servo.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             servo_number: Servo number to use.
@@ -1000,15 +980,7 @@ class htx9011(scpi_instrument):
 
     def add_channel_servo_enable(self, channel_name, servo_number):
         """Add a channel servo enable.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             servo_number: Servo number to use.
@@ -1031,14 +1003,8 @@ class htx9011(scpi_instrument):
 
     def add_channel_interrupt(self, channel_name, interrupt_number):
         """Add a channel interrupt.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the new channel.
             interrupt_number: Interrupt number to use.
@@ -1112,14 +1078,8 @@ class htx9011(scpi_instrument):
 
     def add_channel_pcint(self, channel_name, pcint_number):
         """Control channel for each PCINT. Silently creates captured value channel.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``:`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the new channel.
             pcint_number: Pcint number to use.
@@ -1508,15 +1468,7 @@ class PCF8574_on_ConfiguratorXT(instrument):
 
     def add_channel_covering_all_pins(self, channel_name):
         """Add a channel covering all pins.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 

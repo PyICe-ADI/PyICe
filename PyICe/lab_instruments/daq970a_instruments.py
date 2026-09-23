@@ -325,15 +325,7 @@ class agilent_a970a_20ch_40ch(daq970a_instrument):
     def add_channel_dc_voltage(self, channel_name, channel_num, NPLC=1, range="AUTO",
                                high_z=True, delay=None, disable_autozero=True, Rsource=None):
         """Shortcut method to add voltage channel and configure in one step.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Args:
             channel_name: Name for the new voltage channel.
             channel_num: Physical channel number on the mux.
@@ -382,15 +374,7 @@ class agilent_a970a_20ch_40ch(daq970a_instrument):
     def add_channel_thermocouple(
             self, channel_name, channel_num, tcouple_type, NPLC=1, disable_autozero=True):
         """Shortcut method to add thermistor measurement channel and configure in one step.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new thermocouple channel.
             channel_num: Physical channel number on the mux.
@@ -551,14 +535,8 @@ class agilent_a970a_20ch_40ch(daq970a_instrument):
 
     def add_channel_nplc(self, channel_name, base_channel):
         """Adds a secondary channel that can modify the nplc setting of an existing channel.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Sends the ``:`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
+        Sends the ``:`` SCPI command to the instrument.
         Args:
             channel_name: Name for the new NPLC control channel.
             base_channel: The measurement channel whose NPLC to modify.
@@ -581,14 +559,8 @@ class agilent_a970a_20ch_40ch(daq970a_instrument):
 
     def add_channel_delay(self, channel_name, base_channel):
         """Adds a secondary channel that can modify the delay of an existing channel.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Sends the ``:`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
+        Sends the ``:`` SCPI command to the instrument.
         Args:
             channel_name: Name for the new delay control channel.
             base_channel: The measurement channel whose delay to modify.
@@ -668,14 +640,8 @@ class agilent_a970a_20ch_40ch(daq970a_instrument):
 
     def add_channel_range_readback(self, channel_name, base_channel):
         """Add a channel that reads back the current voltage range setting.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
+        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
         Sends the ``SENSe:VOLTage:DC:RANGe`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
-        Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output. Sends the appropriate SCPI configuration commands to the hardware.
-
         Args:
             channel_name: Name for the new range readback channel.
             base_channel: The measurement channel to read range from.
@@ -689,14 +655,8 @@ class agilent_a970a_20ch_40ch(daq970a_instrument):
 
     def add_channel_gain(self, channel_name, base_channel):
         """Adds a secondary channel that can modify the gain (span multiplier) of an existing channel.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Sends the ``:`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
+        Sends the ``:`` SCPI command to the instrument.
         Args:
             channel_name: Name for the new gain control channel.
             base_channel: The measurement channel whose gain to modify.
@@ -724,14 +684,8 @@ class agilent_a970a_20ch_40ch(daq970a_instrument):
 
     def add_channel_offset(self, channel_name, base_channel):
         """Adds a secondary channel that can modify the offset of an existing channel.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Sends the ``:`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
+        Sends the ``:`` SCPI command to the instrument.
         Args:
             channel_name: Name for the new offset control channel.
             base_channel: The measurement channel whose offset to modify.
@@ -759,14 +713,8 @@ class agilent_a970a_20ch_40ch(daq970a_instrument):
 
     def add_channel_unit(self, channel_name, base_channel):
         """Adds a secondary channel that can modify the displayed unit (V/A/etc) of an existing channel.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Sends the ``:`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
+        Sends the ``:`` SCPI command to the instrument.
         Args:
             channel_name: Name for the new unit control channel.
             base_channel: The measurement channel whose display unit to modify.
@@ -826,15 +774,7 @@ class agilent_a970a_20ch(agilent_a970a_20ch_40ch):
     def add_channel_dc_current(self, channel_name, channel_num,
                                NPLC=1, range='AUTO', delay=None, disable_autozero=True):
         """DC current measurement only allowed on 34901A channels 21 and 22.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new current channel.
             channel_num: Physical channel number (must be 21 or 22).
@@ -883,14 +823,8 @@ class agilent_a970a_20ch(agilent_a970a_20ch_40ch):
 
     def add_channel_ammeter_range(self, channel_name, base_channel):
         """Modify ammeter current range shunt.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Sends the ``:`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
+        Sends the ``:`` SCPI command to the instrument.
         Args:
             channel_name: Name for the new range control channel.
             base_channel: The current measurement channel whose range to modify.
@@ -1054,15 +988,7 @@ class agilent_a970a_dacs(daq970a_instrument):
 
     def add_channel(self, channel_name, channel_num):
         """Add named DAC channel to instrument.  num is 1-2, mapping to physical channel 4-5.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new DAC channel.
             channel_num: DAC number (1 or 2), mapping to physical channel 4-5.
@@ -1090,7 +1016,6 @@ class agilent_a970a_dacs(daq970a_instrument):
         """Set named DAC to voltage.  Range is +/-12V with 16bit (366uV) resolution.
         Formats and sends the command to the instrument.
         Sends the ``SOURCE:VOLT`` SCPI command to the instrument.
-        Formats and sends the command to the instrument.
 
         Sends the corresponding SCPI command string to the instrument over the bus.
 
@@ -1134,15 +1059,7 @@ class agilent_a970a_actuator(daq970a_instrument):
 
     def add_channel(self, channel_name, channel_num):
         """Channel_num is 1-20.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new relay channel.
             channel_num: Physical channel number (1-20).

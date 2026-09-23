@@ -32,15 +32,7 @@ class bk8600(scpi_instrument):
 
     def add_channel(self, channel_name, add_extended_channels=True):
         """Helper channel adds primary current forcing channel.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             add_extended_channels: If True, add sense and mode channels.
             channel_name: Name for the new channel.
@@ -64,15 +56,7 @@ class bk8600(scpi_instrument):
 
     def add_channel_voltage(self, channel_name):
         """Add single CV forcing channel.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -87,15 +71,7 @@ class bk8600(scpi_instrument):
 
     def add_channel_vsense(self, channel_name):
         """Add output voltage reading channel.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -110,15 +86,7 @@ class bk8600(scpi_instrument):
 
     def add_channel_current(self, channel_name):
         """Add single CC forcing channel.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -133,15 +101,7 @@ class bk8600(scpi_instrument):
 
     def add_channel_isense(self, channel_name):
         """Add output current reading channel.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -156,15 +116,7 @@ class bk8600(scpi_instrument):
 
     def add_channel_power(self, channel_name):
         """Add single CW forcing channel.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -179,15 +131,7 @@ class bk8600(scpi_instrument):
 
     def add_channel_psense(self, channel_name):
         """Add output power reading channel.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -202,15 +146,7 @@ class bk8600(scpi_instrument):
 
     def add_channel_mode(self, channel_name):
         """Add a channel mode.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
 
@@ -222,14 +158,8 @@ class bk8600(scpi_instrument):
 
     def add_channel_remote_sense(self, channel_name):
         """Enable/disable remote voltage sense through rear panel connectors.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Sends the ``:`` SCPI command to the instrument.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
+        Sends the ``:`` SCPI command to the instrument.
         Args:
             channel_name: Name for the new channel.
 

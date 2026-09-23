@@ -61,11 +61,7 @@ class smu(instrument):
 
     def add_channels(self, channel_name, channel_number=1):
         """Shortcut.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -89,15 +85,7 @@ class smu(instrument):
 
     def add_channel_voltage_force(self, channel_name, channel_number=1):
         """Voltage force. Mutually exclusive at any moment with current force.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -124,15 +112,7 @@ class smu(instrument):
 
     def add_channel_current_force(self, channel_name, channel_number=1):
         """Current force. Mutually exclusive at any moment with voltage force.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -159,15 +139,7 @@ class smu(instrument):
 
     def add_channel_voltage_sense(self, channel_name, channel_number=1):
         """Voltage readback.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -192,15 +164,7 @@ class smu(instrument):
 
     def add_channel_current_sense(self, channel_name, channel_number=1):
         """Current readback.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -225,15 +189,7 @@ class smu(instrument):
 
     def add_channel_voltage_compliance(self, channel_name, channel_number=1):
         """Max voltage in current forcing modes.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -261,15 +217,7 @@ class smu(instrument):
 
     def add_channel_current_compliance(self, channel_name, channel_number=1):
         """Max current in voltage forcing modes.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -297,15 +245,7 @@ class smu(instrument):
 
     def add_channel_remote_sense(self, channel_name, channel_number=1):
         """Remote (4-wire) sense enable control.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -335,15 +275,7 @@ class smu(instrument):
 
     def add_channel_high_capacitance(self, channel_name, channel_number):
         """Stabilize forcing source for higher DUT capacitance, typically tens of uF.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.
@@ -373,15 +305,7 @@ class smu(instrument):
 
     def add_channel_terminal_select(self, channel_name, channel_number):
         """Select between front and rear panel terminals.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             channel_number: Physical channel number.

@@ -29,15 +29,7 @@ class powermux(scpi_instrument):
 
     def add_channel_relay_names(self, channel_name, column_name, row_name):
         """Add a channel relay names.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             column_name: Name of the database column.
@@ -53,15 +45,7 @@ class powermux(scpi_instrument):
 
     def add_channel_relay(self, channel_name, column_number, row_number):
         """Add a channel relay.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-        Registers the channel with the parent instrument so that it appears in
-        read-all sweeps and logger output.
-
         Registers the channel with the parent instrument so that it appears in read-all sweeps and logger output.
-
         Args:
             channel_name: Name for the new channel.
             column_number: Column number to use.
