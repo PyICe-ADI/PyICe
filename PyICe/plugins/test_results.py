@@ -743,9 +743,13 @@ class Test_Results(generic_results):
         resp = ''
         passes = bool(len(self._test_declarations))
         for test in self._test_declarations:
+            if not bool(self[test]):
+                resp += '***\n'
             for line in str(self[test]).splitlines():
                 resp += f'\t{line}\n'
             passes &= bool(self[test])
+            if not bool(self[test]):
+                resp += '***\n'
         return resp.expandtabs(3)
 
     def __bool__(self):
@@ -1152,7 +1156,7 @@ class Failed_Eval(Test_Results):
         Returns:
             String representation.
         """
-        return f'Evaluation method itself failed for {self.test.get_name()}.\n\n'
+        return f'Evaluation method failed for {self.test.get_name()}. Check code.\n\n'
 
     def __bool__(self):
         """Return boolean value.
