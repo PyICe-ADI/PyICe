@@ -2051,13 +2051,3 @@ class TestCommunicationNode:
 
 class TestDeprecationDeadlines:
     """Scheduled removal tests. When these fail, remove the associated shim code."""
-
-    def test_isense_remapper_shim_deadline(self):
-        """Remove the inspect-based compatibility shim for add_channel_isense_remapper
-        in morpheus_eval, then delete this test."""
-        import datetime
-        deadline = datetime.date(2026, 9, 11)
-        assert datetime.date.today() <= deadline, (
-            "SHIM EXPIRED: Remove the inspect-based compatibility shim for "
-            "add_channel_isense_remapper() in morpheus_eval, then delete this test. "
-            "See PR #207 for details.")
