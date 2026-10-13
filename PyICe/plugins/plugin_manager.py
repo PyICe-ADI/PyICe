@@ -250,6 +250,7 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                         self._test_results_str += f'    {failed_test}\n'
                 if self._test_results_str:
                     results_str += self._test_results_str
+            corr_header = ''
             if 'correlate_tests' in self.plugins and self._send_notifications:
                 if results_str:
                     results_str += '\n' + '─' * 42 + '\nCORRELATION RESULTS:\n'
@@ -290,10 +291,10 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                                     if not bool(test._corr_results[decl_name]):
                                         corr_failed_refids.append(decl_name)
                     corr_fail_count = len(corr_failed_refids) + len(corr_compromised_refids) + len(self.failed_corrs)
-                    corr_pass_count = corr_total_refids + len(self.failed_corrs) - corr_fail_count
-                    corr_header = f'CORR REFID RESULTS: {corr_pass_count}/{corr_total_refids + len(self.failed_corrs)} PASS'
                     if corr_fail_count:
-                        corr_header += f' | {corr_fail_count} FAIL'
+                        corr_header = f'CORR REFID RESULTS: {corr_fail_count} FAIL'
+                    else:
+                        corr_header = f'CORR REFID RESULTS: ALL PASS'
                     corr_header += '\n'
                     if corr_failed_refids:
                         corr_header += '\nFAILING REFIDS:\n'
@@ -308,7 +309,7 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                         for name in self.failed_corrs:
                             corr_header += f'  {name}\n'
                     corr_header += '\n'
-                    results_str += corr_header + self._corr_results_str
+                    results_str += self._corr_results_str
             if results_str:
                 total_refids = 0
                 failed_refids = []
@@ -325,10 +326,10 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                                 if not bool(test._test_results[decl_name]):
                                     failed_refids.append(decl_name)
                 refid_fail_count = len(failed_refids) + len(compromised_refids) + len(self.failed_evals)
-                refid_pass_count = total_refids + len(self.failed_evals) - refid_fail_count
-                summary_header = f'REFID RESULTS: {refid_pass_count}/{total_refids + len(self.failed_evals)} PASS'
                 if refid_fail_count:
-                    summary_header += f' | {refid_fail_count} FAIL'
+                    summary_header = f'REFID RESULTS: {refid_fail_count} FAIL'
+                else:
+                    summary_header = f'REFID RESULTS: ALL PASS'
                 summary_header += '\n'
                 if failed_refids:
                     summary_header += '\nFAILING REFIDS:\n'
@@ -346,10 +347,11 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                     summary_header += '\nCRASHED TESTS (see crash log attachments):\n'
                     for name in crashed_tests:
                         summary_header += f'  {name}\n'
+                summary_header += corr_header
                 summary_header += '\n' + '─' * 42 + '\nDETAILS:\n'
                 results_str = summary_header + results_str
                 results_str += "\n*** END OF REPORT ***"
-                subject = f'Results: {refid_pass_count} PASS / {refid_fail_count} FAIL'
+                subject = f'Results: {refid_fail_count} FAIL' if refid_fail_count else 'Results: ALL PASS'
                 attachment_filenames = []
                 for test in self.tests:
                     if test._crash_logs is not None:
