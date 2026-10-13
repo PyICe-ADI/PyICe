@@ -1133,12 +1133,13 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                         # write locked? exists?
                         print(type(e))
                         print(e)
-                    with contextlib.redirect_stdout(io.StringIO()):
-                        with contextlib.redirect_stderr(io.StringIO()):
-                            self.evaluate(
-                                database=os.path.relpath(db_file),
-                                table_name=db_table,
-                                test_list=[test])
+                    if not isinstance(getattr(test, '_test_results', None), Failed_Eval):
+                        with contextlib.redirect_stdout(io.StringIO()):
+                            with contextlib.redirect_stderr(io.StringIO()):
+                                self.evaluate(
+                                    database=os.path.relpath(db_file),
+                                    table_name=db_table,
+                                    test_list=[test])
                 if 'correlate_tests' in self.plugins:
                     dest_file = os.path.join(
                         os.path.dirname(db_file), "recorr_data.py")
@@ -1159,12 +1160,13 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                         # write locked? exists?
                         print(type(e))
                         print(e)
-                    with contextlib.redirect_stdout(io.StringIO()):
-                        with contextlib.redirect_stderr(io.StringIO()):
-                            self.correlate(
-                                database=os.path.relpath(db_file),
-                                table_name=db_table,
-                                test_list=[test])
+                    if not isinstance(getattr(test, '_corr_results', None), Failed_Eval):
+                        with contextlib.redirect_stdout(io.StringIO()):
+                            with contextlib.redirect_stderr(io.StringIO()):
+                                self.correlate(
+                                    database=os.path.relpath(db_file),
+                                    table_name=db_table,
+                                    test_list=[test])
                 if 'bench_image_creation' in self.plugins:
                     self.visualizer.generate(
                         file_base_name="Bench_Config",
@@ -1275,12 +1277,13 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                         # write locked? exists?
                         print(type(e))
                         print(e)
-                    with contextlib.redirect_stdout(io.StringIO()):
-                        with contextlib.redirect_stderr(io.StringIO()):
-                            self.evaluate(
-                                database=os.path.relpath(db_file),
-                                table_name=db_table,
-                                test_list=[test])
+                    if not isinstance(getattr(test, '_test_results', None), Failed_Eval):
+                        with contextlib.redirect_stdout(io.StringIO()):
+                            with contextlib.redirect_stderr(io.StringIO()):
+                                self.evaluate(
+                                    database=os.path.relpath(db_file),
+                                    table_name=db_table,
+                                    test_list=[test])
                 if 'correlate_tests' in self.plugins:
                     dest_file = os.path.join(
                         os.path.dirname(db_file), "recorr_data.py")
@@ -1301,12 +1304,13 @@ class Plugin_Manager():  # pylint: disable=no-member; attributes (plugins, proje
                         # write locked? exists?
                         print(type(e))
                         print(e)
-                    with contextlib.redirect_stdout(io.StringIO()):
-                        with contextlib.redirect_stderr(io.StringIO()):
-                            self.correlate(
-                                database=os.path.relpath(db_file),
-                                table_name=db_table,
-                                test_list=[test])
+                    if not isinstance(getattr(test, '_corr_results', None), Failed_Eval):
+                        with contextlib.redirect_stdout(io.StringIO()):
+                            with contextlib.redirect_stderr(io.StringIO()):
+                                self.correlate(
+                                    database=os.path.relpath(db_file),
+                                    table_name=db_table,
+                                    test_list=[test])
 
     ###
     # SCRIPT METHODS
