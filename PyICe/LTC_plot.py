@@ -388,7 +388,8 @@ class plot(object):
 
     """
     def __init__(self, plot_title, plot_name, xaxis_label, yaxis_label,
-                 xlims, ylims, xminor, xdivs, yminor, ydivs, logx, logy):
+                 xlims, ylims, xminor, xdivs, yminor, ydivs, logx, logy,
+                 xscale_sci=False):
         """A plot is just a record of what you want to plot and how you want it to look.
 
         It must be added to a Page before it can be exported.
@@ -422,6 +423,7 @@ class plot(object):
         self.xdivs = xdivs
         self.xminor = xminor
         self.logx = logx
+        self.xscale_sci = xscale_sci
         self.notes = []
         self.arrows = []
         self.y1_axis_params = {}
@@ -1623,9 +1625,13 @@ class Page():
                 ymax=plot.y1_axis_params["ylims"][1])
         if plot.logx:
             graph.set_xscale('log')
-            graph.xaxis.set_major_formatter(
-                matplotlib.ticker.FuncFormatter(
-                    lambda x, pos: self.LTC_LOG10_Formatter(x)))
+            if plot.xscale_sci:
+                graph.xaxis.set_major_formatter(
+                    matplotlib.ticker.LogFormatterSciNotation())
+            else:
+                graph.xaxis.set_major_formatter(
+                    matplotlib.ticker.FuncFormatter(
+                        lambda x, pos: self.LTC_LOG10_Formatter(x)))
             if plot.xminor != 0:
                 graph.xaxis.set_minor_formatter(FormatStrFormatter(""))
                 graph.xaxis.set_minor_locator(matplotlib.ticker.LogLocator(
