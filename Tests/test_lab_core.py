@@ -882,6 +882,44 @@ class TestIntegerChannelPresetRange:
         ic.write('MAX')
 
 
+class TestIntegerChannelSizeValidation:
+    """Tests for integer_channel size validation (issue #246)."""
+
+    @pytest.mark.parametrize('size', [0, -1])
+    def test_size_below_one_rejected(self, size):
+        """Reject size less than 1 with ValueError.
+
+        Args:
+            size: Invalid channel bit width.
+        """
+        with pytest.raises(ValueError, match='below minimum'):
+            integer_channel(name='bad_size', size=size)
+
+    @pytest.mark.parametrize('size', [8.0, '8', None])
+    def test_non_integer_size_rejected(self, size):
+        """Reject a non-integer size with TypeError.
+
+        Args:
+            size: Invalid channel bit width.
+        """
+        with pytest.raises(TypeError, match='must be an integer'):
+            integer_channel(name='bad_type', size=size)
+
+    def test_signed_out_of_range_raises_value_error(self):
+        """Signed conversion and signed unformat raise ValueError out of range."""
+        ic = integer_channel(name='sgn', size=8, write_function=write_function)
+        with pytest.raises(ValueError):
+            ic.signedToTwosComplement(128)
+        with pytest.raises(ValueError):
+            ic.signedToTwosComplement(-129)
+        ic.add_format('sgn_fmt', format_function=lambda x: x,
+                      unformat_function=lambda x: x, signed=True)
+        ic.set_format('sgn_fmt')
+        assert ic.format_write(-1) == 255
+        with pytest.raises(ValueError):
+            ic.format_write(-129)
+
+
 class TestChannelGroup:
     """Tests for Channel Group."""
     def test_copy(self, loaded_group):

@@ -14,6 +14,15 @@ the first write. This also applies to `twi_instrument.populate_from_file`,
 `populate_from_ipxact` and `populate_from_yoda_json_bridge`. Presets are raw
 bit patterns; negative values on signed channels must be supplied in two's
 complement. (#245)
+- Input validation no longer relies on `assert`, so it is not bypassed under
+`python -O`. `lab_utils.signedToTwosComplement()` (and the signed-format
+unformat path of `integer_channel`) raises `ValueError` for out-of-range
+values, matching `twosComplementToSigned()`. Both helpers raise `TypeError`
+for a non-integer `bitCount` and `ValueError` for `bitCount < 1`.
+`integer_channel()` raises
+`TypeError` for a non-integer `size` and `ValueError` for `size < 1`.
+`twi_instrument` raises `ValueError` when a bitfield's offset + size exceeds
+the register width. Callers catching `AssertionError` must update. (#246)
 ### Fixed
 - Exception handling in the hameg_4040 driver.
 - `lab_gui` now raises `ImportError` with the PySide2 and PySide6 failure

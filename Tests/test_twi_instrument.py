@@ -195,3 +195,29 @@ class TestPopulatePresetRange:
         path.write_text(_IPXACT_TEMPLATE.format(value=4))
         with pytest.raises(ChannelValueException, match='MODE'):
             twi_inst.populate_from_ipxact(str(path), 0x70)
+
+
+class TestTwiReplaceValidation:
+    """Tests for twi_instrument._replace bitfield bounds validation (issue #246)."""
+
+    def test_bitfield_at_register_boundary(self, twi_inst):
+        """Accept a bitfield ending exactly at the register MSB.
+
+        Args:
+            twi_inst: Twi inst.
+        """
+        assert twi_inst._replace(bf_data=0xF, bf_size=4, bf_offset=4,  # pylint: disable=protected-access
+                                 reg_data=0x00, reg_size=8) == 0xF0
+
+    @pytest.mark.parametrize('bf_size, bf_offset', [(4, 5), (9, 0)])
+    def test_bitfield_exceeding_register_rejected(self, twi_inst, bf_size, bf_offset):
+        """Reject a bitfield that extends past the register width.
+
+        Args:
+            twi_inst: Twi inst.
+            bf_size: Bitfield size.
+            bf_offset: Bitfield offset.
+        """
+        with pytest.raises(ValueError, match='exceeds 8-bit register'):
+            twi_inst._replace(bf_data=0, bf_size=bf_size, bf_offset=bf_offset,  # pylint: disable=protected-access
+                              reg_data=0, reg_size=8)

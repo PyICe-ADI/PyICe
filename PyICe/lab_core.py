@@ -2181,13 +2181,22 @@ class integer_channel(channel):
             size: Bit width of the integer value.
             read_function: Callable that returns the channel value, or None.
             write_function: Callable that accepts a value to write, or None.
+
+        Raises:
+            TypeError: If size is not an integer.
+            ValueError: If size is less than 1.
         """
         channel.__init__(
             self,
             name,
             read_function=read_function,
             write_function=write_function)
-        assert isinstance(size, numbers.Integral)
+        if not isinstance(size, numbers.Integral):
+            raise TypeError(
+                f'integer_channel {name} size must be an integer, got {type(size).__name__}')
+        if size < 1:
+            raise ValueError(
+                f'integer_channel {name} size {size} is below minimum (min 1)')
         self._size = size
         self.set_attribute("size", size)
         self._formats = results_ord_dict()
@@ -2197,7 +2206,6 @@ class integer_channel(channel):
         self._use_presets_read = False
         self._use_presets_write = True
         self._add_default_formats()
-        assert self._size >= 1
         self.set_min_write_limit(0)
         self.set_max_write_limit(2**size - 1)
         self.set_attribute("min", 0)
@@ -3079,6 +3087,9 @@ class integer_channel(channel):
 
         Returns:
             The twosComplementToSigned result.
+
+        Raises:
+            ValueError: If binary is negative or exceeds the channel size range.
         """
         return twosComplementToSigned(binary, self._size)
 
@@ -3096,10 +3107,13 @@ class integer_channel(channel):
         127
 
         Args:
-            signed: If True, interpret as signed value.
+            signed: Signed integer value within the channel size signed range.
 
         Returns:
             The signedToTwosComplement result.
+
+        Raises:
+            ValueError: If signed is outside the channel size signed range.
         """
         return signedToTwosComplement(signed, self._size)
 
