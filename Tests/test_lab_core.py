@@ -914,8 +914,10 @@ class TestIntegerChannelSizeValidation:
             ic.signedToTwosComplement(-129)
         ic.add_format('sgn_fmt', format_function=lambda x: x,
                       unformat_function=lambda x: x, signed=True)
+        ic.set_format('sgn_fmt')
+        assert ic.format_write(-1) == 255
         with pytest.raises(ValueError):
-            ic.unformat(-129, 'sgn_fmt', use_presets=False)
+            ic.format_write(-129)
 
 
 class TestChannelGroup:
