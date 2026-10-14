@@ -83,12 +83,12 @@ class TestSignedToTwosComplement:
 
     def test_overflow_positive_raises(self):
         """Perform test overflow positive raises operation."""
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError, match='exceeds 8-bit signed range'):
             signedToTwosComplement(128, 8)
 
     def test_overflow_negative_raises(self):
         """Perform test overflow negative raises operation."""
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError, match='below 8-bit signed range'):
             signedToTwosComplement(-129, 8)
 
 

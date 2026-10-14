@@ -356,7 +356,9 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
 
     def _replace(self, bf_data, bf_size, bf_offset, reg_data, reg_size):
         # Step 1: Safety checks
-        assert reg_size >= bf_offset + bf_size
+        if bf_offset + bf_size > reg_size:
+            raise ValueError(
+                f'bitfield (offset {bf_offset}, size {bf_size}) exceeds {reg_size}-bit register (max offset + size {reg_size})')
 
         # Step 2: Compute mask
         mask = (2**bf_size - 1) << bf_offset
@@ -380,7 +382,7 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
 
         # Step 5: Insert
         reg_data = reg_data | bf_data
-        reg_data &= 2**reg_size - 1  # necessary with offset/size assert?
+        reg_data &= 2**reg_size - 1
         return reg_data
 
     def get_bitfield_writeback_data(
