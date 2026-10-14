@@ -704,13 +704,6 @@ class TestPageRendering:
         assert isinstance(result, bytes)
         assert b"<svg" in result
 
-    def test_create_svg_contains_title(self, basic_plot):
-        """Verify SVG output contains the plot title."""
-        page = Page(plot_count=1)
-        page.add_plot(basic_plot)
-        result = page.create_svg(file_basename=None)
-        assert b"Test Plot" in result
-
     def test_create_svg_writes_file(self, basic_plot, tmp_path):
         """Verify create_svg writes file when basename specified."""
         page = Page(plot_count=1)
@@ -816,52 +809,8 @@ class TestPageRendering:
         assert isinstance(result, bytes)
 
 
-def _find_text_element(svg, text_content):
-    """Find the <text ...> element containing the given text and return its attributes."""
-    pattern = r"<text\s([^>]*)>[^<]*" + re.escape(text_content)
-    match = re.search(pattern, svg)
-    if match:
-        return match.group(1)
-    pattern = r"<text\s([^>]*)>\s*<[^>]*>[^<]*" + re.escape(text_content)
-    match = re.search(pattern, svg)
-    return match.group(1) if match else None
-
-
-def _has_style_prop(attrs, prop, value_pattern):
-    """Check if an attribute string contains a CSS property matching a value pattern.
-
-    Handles both individual properties (font-size: 7px) and the CSS font
-    shorthand (font: 700 7px 'Arial') used by different matplotlib versions.
-    """
-    if re.search(prop + r":\s*" + value_pattern, attrs):
-        return True
-    font_match = re.search(r"font:\s*([^;\"]+)", attrs)
-    if font_match:
-        font_val = font_match.group(1)
-        if prop == "font-size":
-            return bool(re.search(r"(?<!\w)" + value_pattern, font_val))
-        if prop == "font-weight":
-            return bool(re.search(value_pattern, font_val))
-        if prop == "font-family":
-            return bool(re.search(r"['\"]?\w+['\"]?\s*$", font_val))
-    return False
-
-
 class TestSvgContent:
     """End-to-end SVG content assertions verifying matplotlib interface surface."""
-
-    @pytest.fixture
-    def svg_with_note(self, basic_plot):
-        """Render a plot with a custom-fontsize note to SVG."""
-        basic_plot.add_trace(
-            axis=1, data=[(x, x * 10) for x in range(-10, 11)],
-            color=LT_RED_1, legend="Trace A",
-        )
-        basic_plot.add_note(note="ANNOTATION_XYZ", location=[0.5, 0.5],
-                           use_axes_scale=False, fontsize=12)
-        page = Page(plot_count=1)
-        page.add_plot(basic_plot)
-        return page.create_svg(file_basename=None).decode("utf-8")
 
     @pytest.fixture
     def svg_basic(self, basic_plot):
@@ -875,51 +824,11 @@ class TestSvgContent:
         page.add_plot(basic_plot)
         return page.create_svg(file_basename=None).decode("utf-8")
 
-    def test_title_bold_9pt5(self, svg_basic):
-        """Verify title appears with bold weight and 9.5px font size."""
-        attrs = _find_text_element(svg_basic, "Test Plot")
-        assert attrs is not None, "Title text element not found in SVG"
-        assert _has_style_prop(attrs, "font-size", r"9\.5px")
-        assert _has_style_prop(attrs, "font-weight", r"(700|bold)")
-
-    def test_axis_label_fontsize_7(self, svg_basic):
-        """Verify axis labels are rendered with font-size 7px."""
-        for label in ["VOLTAGE (V)", "CURRENT (mA)"]:
-            attrs = _find_text_element(svg_basic, label)
-            assert attrs is not None, f"Axis label '{label}' not found in SVG"
-            assert _has_style_prop(attrs, "font-size", r"7px")
-
-    def test_plot_name_fontsize_4(self, svg_basic):
-        """Verify plot name appears with font-size 4px."""
-        attrs = _find_text_element(svg_basic, "TP01")
-        assert attrs is not None, "Plot name text element not found in SVG"
-        assert _has_style_prop(attrs, "font-size", r"4px")
-
-    def test_font_family_set(self, svg_basic):
-        """Verify font-family is set on text elements (Arial or platform fallback)."""
-        attrs = _find_text_element(svg_basic, "Test Plot")
-        assert attrs is not None
-        assert _has_style_prop(attrs, "font-family", r".+")
-
-    def test_note_text_present(self, svg_with_note):
-        """Verify note text appears in SVG output."""
-        assert "ANNOTATION_XYZ" in svg_with_note
-
-    def test_note_fontsize_rendered(self, svg_with_note):
-        """Verify the custom note fontsize appears on the note element."""
-        attrs = _find_text_element(svg_with_note, "ANNOTATION_XYZ")
-        assert attrs is not None, "Note text element not found in SVG"
-        assert _has_style_prop(attrs, "font-size", r"12px")
-
-    def test_default_note_fontsize_7(self, basic_plot):
-        """Verify default note fontsize 7 appears on the note element."""
-        basic_plot.add_note(note="DEFAULT_NOTE_ABC")
-        page = Page(plot_count=1)
-        page.add_plot(basic_plot)
-        svg = page.create_svg(file_basename=None).decode("utf-8")
-        attrs = _find_text_element(svg, "DEFAULT_NOTE_ABC")
-        assert attrs is not None, "Default note text element not found in SVG"
-        assert _has_style_prop(attrs, "font-size", r"7px")
+    def test_svg_uses_path_fonttype(self, svg_basic):
+        """Verify text is rendered as paths, not <text> elements with font styling."""
+        assert not re.search(
+            r"<text\s[^>]*font-family:", svg_basic
+        ), "SVG contains <text> elements with font-family — svg.fonttype should be 'path'"
 
     def test_trace_color_in_svg(self, svg_basic):
         """Verify trace color appears in SVG as rgb or hex."""
@@ -927,44 +836,9 @@ class TestSvgContent:
             r"rgb\(153,\s*0,\s*51\)|#990033|rgb\(60%,\s*0%,\s*20%\)",
             svg_basic)
 
-    def test_tick_label_fontsize_7(self, svg_basic):
-        """Verify tick labels use font-size 7px (multiple text elements)."""
-        matches = re.findall(
-            r"<text[^>]*(?:font-size:\s*7px|font:\s*7px|font:\s*\S+\s+7px)[^>]*>",
-            svg_basic)
-        assert len(matches) >= 2
-
     def test_linear_helv_cond_replacement(self, svg_basic):
-        """Verify 'Linear Helv Cond' is collapsed to 'LinearHelvCond' if present."""
+        """Verify legacy 'Linear Helv Cond' font name does not appear."""
         assert "Linear Helv Cond" not in svg_basic
-
-    def test_scope_plot_xaxis_label(self, scope):
-        """Verify scope plot renders x-axis label at 7px."""
-        scope.add_trace(
-            data=[(t * 5e-7, 2.5) for t in range(11)],
-            color=LT_RED_1,
-        )
-        page = Page(plot_count=1)
-        page.add_plot(scope)
-        svg = page.create_svg(file_basename=None).decode("utf-8")
-        attrs = _find_text_element(svg, "500ns/DIV")
-        assert attrs is not None, "Scope x-axis label not found in SVG"
-        assert _has_style_prop(attrs, "font-size", r"7px")
-
-    def test_arrow_text_in_svg(self, basic_plot):
-        """Verify arrow annotation text appears in SVG output."""
-        basic_plot.add_arrow(
-            text="ARROW_MARKER_42", text_location=[0.3, 0.7],
-            arrow_tip=[0.5, 0.5], use_axes_scale=False,
-        )
-        page = Page(plot_count=1)
-        page.add_plot(basic_plot)
-        svg = page.create_svg(file_basename=None).decode("utf-8")
-        assert "ARROW_MARKER_42" in svg
-
-    def test_legend_text_in_svg(self, svg_basic):
-        """Verify legend text appears in SVG output."""
-        assert "Trace A" in svg_basic
 
 
 class TestPlotCreateSvgShortcut:

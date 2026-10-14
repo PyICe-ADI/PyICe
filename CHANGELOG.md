@@ -14,6 +14,11 @@ the first write. This also applies to `twi_instrument.populate_from_file`,
 `populate_from_ipxact` and `populate_from_yoda_json_bridge`. Presets are raw
 bit patterns; negative values on signed channels must be supplied in two's
 complement. (#245)
+- `LTC_plot` SVG output now converts text to vector paths
+(`svg.fonttype = "path"`), eliminating font-availability issues on Linux
+renderers. SVG text is no longer searchable/selectable but renders identically
+across all environments. Font family falls back through Arial, Liberation Sans,
+DejaVu Sans.
 ### Fixed
 - Exception handling in the hameg_4040 driver.
 ### Changed 

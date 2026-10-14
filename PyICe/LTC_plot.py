@@ -1316,13 +1316,11 @@ class Page():
         self.next_position = 0
         self._svg_comments = []
         matplotlib.rcParams['axes.linewidth'] = 0.6
-        matplotlib.rcParams['font.family'] = 'Arial'  # 'Linear Helv Cond'
-        # 'Linear Helv Cond'
+        matplotlib.rcParams['font.family'] = ['Arial', 'Liberation Sans', 'DejaVu Sans']
         matplotlib.rcParams['font.stretch'] = 'ultra-condensed'
         matplotlib.rcParams['text.color'] = LT_TEXT
         matplotlib.rcParams['axes.labelcolor'] = LT_TEXT
-        # Prevents characters from being converted to paths.
-        matplotlib.rcParams['svg.fonttype'] = "none"
+        matplotlib.rcParams['svg.fonttype'] = "path"
         matplotlib.rcParams['text.usetex'] = False     # Not Sure
         # Prevents subscripts from changing fonts.
         matplotlib.rcParams['mathtext.default'] = 'regular'
@@ -2044,11 +2042,7 @@ class Page():
         FigureCanvasSVG(self.Figure)
         figdata = io.StringIO()
         self.Figure.savefig(figdata, format="svg")
-        output = figdata.getvalue().replace("Linear Helv Cond",
-                                            "LinearHelvCond").replace("font-size:9.5px;font-style:normal",
-                                                                      "font-size:9.5px;font-weight:bold").replace("font-size:8.14285714286px;font-style:bold",
-                                                                                                                  "font-size:8.14285714286px;font-weight:bold").replace("font-size:9.5px;font-style:bold",
-                                                                                                                                                                        "font-size:9.5px;font-weight:bold").encode("utf-8")
+        output = figdata.getvalue().encode("utf-8")
         if self._svg_comments:
             comment_block = b"\n".join(
                 b"<!-- " + c.encode("utf-8") + b" -->" for c in self._svg_comments)
