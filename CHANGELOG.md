@@ -17,7 +17,9 @@ complement. (#245)
 - Input validation no longer relies on `assert`, so it is not bypassed under
 `python -O`. `lab_utils.signedToTwosComplement()` (and the signed-format
 unformat path of `integer_channel`) raises `ValueError` for out-of-range
-values, matching `twosComplementToSigned()`. `integer_channel()` raises
+values, matching `twosComplementToSigned()`. Both helpers raise `TypeError`
+for a non-integer `bitCount` and `ValueError` for `bitCount < 1`.
+`integer_channel()` raises
 `TypeError` for a non-integer `size` and `ValueError` for `size < 1`.
 `twi_instrument` raises `ValueError` when a bitfield's offset + size exceeds
 the register width. Callers catching `AssertionError` must update. (#246)
