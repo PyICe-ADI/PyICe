@@ -16,6 +16,11 @@ bit patterns; negative values on signed channels must be supplied in two's
 complement. (#245)
 ### Fixed
 - Exception handling in the hameg_4040 driver.
+- `lab_gui` now raises `ImportError` with the PySide2 and PySide6 failure
+reasons when no Qt binding can be imported. Previously the error was reduced
+to a warning and the import then failed with
+`AttributeError: 'NoneType' object has no attribute 'QLabel'`, hiding the
+cause (e.g. a conflicting Qt library on `LD_LIBRARY_PATH`).
 ### Changed 
 - Large import infrastructure change. lab_utils and data_utils are now 
 separated from their large files into smaller files within folders.  This will
