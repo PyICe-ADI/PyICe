@@ -2380,6 +2380,7 @@ class integer_channel(channel):
         if not isinstance(preset_value, (numbers.Integral, bool, type(None))):
             raise Exception(
                 'Preset value {} neither numeric nor boolean'.format(preset_value))
+        self._check_preset_range(preset_name, preset_value)
         if preset_name in self._presets:
             raise Exception('Preset name duplicated: {}.'.format(preset_name))
         if preset_value in self._presets_reverse:
@@ -2389,6 +2390,46 @@ class integer_channel(channel):
         self._presets[preset_name] = preset_value
         self._presets_reverse[preset_value] = preset_name
         self._preset_descriptions[preset_name] = preset_description
+
+    def _check_preset_range(self, preset_name, preset_value):
+        """Raise ChannelValueException if a preset value cannot be written.
+
+        Presets are raw bit patterns (formats are not applied to them), so the
+        value is checked against the native write limits.  ``None`` and
+        ``bool`` presets are not checked.
+
+        >>> from PyICe.lab_core import integer_channel
+        >>> ic = integer_channel(name='mode', size=3, write_function=lambda v: v)
+        >>> _ = ic.add_preset('MAX', 7)
+        >>> ic.add_preset('BAD', 8)
+        Traceback (most recent call last):
+            ...
+        PyICe.lab_core.ChannelValueException: Preset BAD value 8 of channel mode is outside the writable range 0..7.
+
+        Args:
+            preset_name: Name of the preset.
+            preset_value: Raw value of the preset.
+
+        Raises:
+            ChannelValueException: If preset_value is outside the write limits.
+        """
+        if preset_value is None or isinstance(preset_value, bool):
+            return
+        low = self._write_min
+        high = self._write_max
+        if (low is None or preset_value >= low) and (high is None or preset_value <= high):
+            return
+        msg = 'Preset {} value {} of channel {} is outside the writable range {}..{}.'.format(
+            preset_name, preset_value, self.get_name(),
+            None if low is None else int(low),
+            None if high is None else int(high))
+        if preset_value < 0 and any(fmt.get('signed') for fmt in self._formats.values()):
+            msg += (' Presets are raw bit patterns and are not passed through signed formats;'
+                    ' supply the two\'s-complement value (see PyICe.lab_utils.signedToTwosComplement).')
+            if preset_value >= -2**(self._size - 1):
+                msg += ' signedToTwosComplement({}, {}) = {}.'.format(
+                    preset_value, self._size, self.signedToTwosComplement(preset_value))
+        raise ChannelValueException(msg)
 
     def set_format(self, format):
         """Set active transformation format. reads and writes happen in transformed (real) units instead of native integer.
