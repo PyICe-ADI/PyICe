@@ -4,8 +4,9 @@
 
 PySide2 / PySide6 GUI for live monitoring and interactive control of
 :mod:`~PyICe.lab_core` channels.  PySide2 is preferred for Python ≤ 3.10;
-PySide6 is used automatically on Python ≥ 3.11.  If neither is installed
-the module still imports but all GUI classes are unavailable.
+PySide6 is used automatically on Python ≥ 3.11.  If neither can be
+imported, importing this module raises :class:`ImportError` reporting the
+failure from each binding.
 
 **Shared data model**
 
@@ -67,7 +68,7 @@ try:
     from PySide2 import QtWidgets
     from PySide2 import QtCore
     from PySide2.QtCore import SIGNAL, SLOT, QObject, Signal
-except ImportError:
+except ImportError as pyside2_err:
     try:
         # PySide6 is required for Python >=3.11.
         # QAction moved from QtWidgets to QtGui in Qt6; monkey-patch it back into
@@ -78,16 +79,16 @@ except ImportError:
         from PySide6 import QtCore
         from PySide6.QtCore import SIGNAL, SLOT, QObject, Signal
         QtWidgets.QAction = QtGui.QAction
-    except ImportError as e:
-        import warnings
-        warnings.warn(f"Neither PySide2 nor PySide6 could be imported; GUI functionality is unavailable: {e}")
-        QtGui = None
-        QtWidgets = None
-        QtCore = None
-        SIGNAL = None
-        SLOT = None
-        QObject = None
-        Signal = None
+    except ImportError as pyside6_err:
+        # Qt classes are subclassed at module scope below, so this module cannot
+        # load without a working Qt binding.  Fail here with both root causes
+        # rather than later with an opaque AttributeError on None.
+        raise ImportError(
+            "PyICe.lab_gui requires PySide2 (Python <=3.10) or PySide6 (Python >=3.11), "
+            "but neither could be imported.\n"
+            f"  PySide2: {pyside2_err}\n"
+            f"  PySide6: {pyside6_err}"
+        ) from pyside6_err
 import queue
 import datetime
 import collections
