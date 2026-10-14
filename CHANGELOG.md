@@ -7,6 +7,13 @@ releases will be made unless a summary is documented here.  Please use
 
 ## Unreleased - 2023-10-04
 
+### Changed
+- `integer_channel.add_preset()` now raises `ChannelValueException` when a
+numeric preset is outside the channel's write limits, instead of failing on
+the first write. This also applies to `twi_instrument.populate_from_file`,
+`populate_from_ipxact` and `populate_from_yoda_json_bridge`. Presets are raw
+bit patterns; negative values on signed channels must be supplied in two's
+complement. (#245)
 ### Fixed
 - Exception handling in the hameg_4040 driver.
 ### Changed 
