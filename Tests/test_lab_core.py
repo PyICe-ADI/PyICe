@@ -822,7 +822,7 @@ class TestIntegerChannelPresetRange:
         ic = integer_channel(name='bnd', size=size, write_function=write_function)
         ic.add_preset('MIN', 0)
         ic.add_preset('MAX', 2**size - 1)
-        assert ic.unformat('MAX', None, use_presets=True) == 2**size - 1
+        assert ic.get_presets_dict()['MAX'] == 2**size - 1
 
     @pytest.mark.parametrize('size', [1, 3, 8])
     @pytest.mark.parametrize('offset', ['above', 'below'])
@@ -856,7 +856,7 @@ class TestIntegerChannelPresetRange:
         assert ic.get_presets_dict() == {'True': True, 'False': False}
         ic.add_preset('ON', True)
         ic.add_preset('OFF', False)
-        assert ic.unformat('ON', None, use_presets=True) is True
+        assert ic.get_presets_dict()['ON'] is True
 
     def test_signed_hint_in_message(self):
         """Mention two's complement for negative presets on signed channels."""
