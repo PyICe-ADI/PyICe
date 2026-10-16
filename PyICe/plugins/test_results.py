@@ -743,9 +743,13 @@ class Test_Results(generic_results):
         resp = ''
         passes = bool(len(self._test_declarations))
         for test in self._test_declarations:
+            if not bool(self[test]):
+                resp += '***\n'
             for line in str(self[test]).splitlines():
                 resp += f'\t{line}\n'
             passes &= bool(self[test])
+            if not bool(self[test]):
+                resp += '***\n'
         return resp.expandtabs(3)
 
     def __bool__(self):
@@ -1152,7 +1156,7 @@ class Failed_Eval(Test_Results):
         Returns:
             String representation.
         """
-        return f'Evaluation method itself failed for {self.test.get_name()}.\n\n'
+        return f'Evaluation method failed for {self.test.get_name()}. Check code.\n\n'
 
     def __bool__(self):
         """Return boolean value.
@@ -1171,3 +1175,103 @@ class Failed_Eval(Test_Results):
             Boolean evaluation of this object.
         """
         return False
+
+
+def _build_results_section(results, header_label, details_crashed_msg, header_crashed_label):
+    details_str = ''
+    failed_names = []
+    crashed_names = []
+    failed_refids = []
+    compromised_refids = []
+    for result in results:
+        details_str += str(result)
+        if not result:
+            if isinstance(result, Failed_Eval):
+                crashed_names.append(result.test.get_name())
+            else:
+                failed_names.append(result.get_name())
+        if not isinstance(result, Failed_Eval):
+            if result._failure_override:
+                for decl_name in result:
+                    compromised_refids.append(decl_name)
+            else:
+                for decl_name in result:
+                    if not bool(result[decl_name]):
+                        failed_refids.append(decl_name)
+    if crashed_names:
+        details_str += f"\n{details_crashed_msg}:\n"
+        for name in crashed_names:
+            details_str += f"    {name}\n"
+        details_str += "\n"
+    if failed_names:
+        details_str += '\nThe following tests failed:\n'
+        for name in failed_names:
+            details_str += f'    {name}\n'
+    fail_count = len(failed_refids) + len(compromised_refids)
+    header = ''
+    if details_str:
+        if fail_count:
+            header = f'{header_label}: {fail_count} FAIL'
+        else:
+            header = f'{header_label}: ALL PASS'
+        header += '\n'
+        if failed_refids:
+            header += '\nFAILING REFIDS:\n'
+            for refid in failed_refids:
+                header += f'  {refid}\n'
+        if compromised_refids:
+            header += '\nCOMPROMISED REFIDS (collect crashed):\n'
+            for refid in compromised_refids:
+                header += f'  {refid}\n'
+        if crashed_names:
+            header += f'\n{header_crashed_label}:\n'
+            for name in crashed_names:
+                header += f'  {name}\n'
+    return header, details_str, fail_count, len(crashed_names)
+
+
+def build_results_summary(eval_results, corr_results=None):
+    eval_header, eval_details, eval_fail_count, eval_crash_count = _build_results_section(
+        eval_results,
+        header_label='REFID RESULTS',
+        details_crashed_msg='The evaluation methods of the following tests crashed',
+        header_crashed_label='CRASHED EVALUATIONS')
+    crashed_tests = []
+    for result in eval_results:
+        if not isinstance(result, Failed_Eval) and result._failure_override:
+            crashed_tests.append(result.get_name())
+    if crashed_tests:
+        eval_header += '\nCRASHED TESTS (see crash log attachments):\n'
+        for name in crashed_tests:
+            eval_header += f'  {name}\n'
+    corr_header = ''
+    corr_details = ''
+    corr_fail_count = 0
+    corr_crash_count = 0
+    if corr_results is not None:
+        corr_header, corr_details, corr_fail_count, corr_crash_count = _build_results_section(
+            corr_results,
+            header_label='\nCORR REFID RESULTS',
+            details_crashed_msg='The correlation methods of the following tests crashed',
+            header_crashed_label='CRASHED CORRELATIONS')
+    results_str = eval_details
+    if corr_details:
+        results_str += '\n' + '─' * 42 + '\nCORRELATION RESULTS:\n'
+        results_str += corr_details
+    if not results_str:
+        return None, None
+    body = eval_header + corr_header
+    body += '\n' + '─' * 42 + '\nDETAILS:\n'
+    body += results_str
+    body += "\n*** END OF REPORT ***"
+    parts = []
+    if eval_fail_count:
+        parts.append(f'{eval_fail_count} REFID FAIL')
+    if corr_fail_count:
+        parts.append(f'{corr_fail_count} CORR REFID FAIL')
+    if eval_crash_count:
+        parts.append(f'{eval_crash_count} EVAL METHOD CRASHED')
+    if corr_crash_count:
+        parts.append(f'{corr_crash_count} CORR METHOD CRASHED')
+    subject = f'Results: {" | ".join(parts)}' if parts else 'Results: ALL PASS'
+    return subject, body
