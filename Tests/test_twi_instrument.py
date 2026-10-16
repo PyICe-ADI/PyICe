@@ -86,16 +86,17 @@ class TestTwiInstrument:
         assert type(result) is int  # bad practice to return random numbers
 
 
-def _yoda_json(enums):
+def _yoda_json(enums, data_format=None):
     """Return a one-register yoda JSON bridge map with a 2-bit MODE field.
 
     Args:
         enums: Dict of enum name to value for the MODE bitfield.
+        data_format: Optional 'Signed' or 'Unsigned' data_format key.
 
     Returns:
         List suitable for json.dump.
     """
-    return [{
+    regmap = [{
         'address': 0x10,
         'width': 8,
         'functionalgroups': ['ctrl'],
@@ -109,6 +110,9 @@ def _yoda_json(enums):
             },
         },
     }]
+    if data_format is not None:
+        regmap[0]['bitfields']['MODE']['data_format'] = data_format
+    return regmap
 
 
 _IPXACT_TEMPLATE = """<?xml version="1.0" encoding="UTF-8"?>
@@ -193,6 +197,60 @@ class TestPopulatePresetRange:
         """
         path = tmp_path / 'map.xml'
         path.write_text(_IPXACT_TEMPLATE.format(value=4))
+        with pytest.raises(ChannelValueException, match='MODE'):
+            twi_inst.populate_from_ipxact(str(path), 0x70)
+
+
+class TestPopulateSignedPresets:
+    """Signed enums are encoded in two's complement during populate_* (issue #247)."""
+
+    def test_yoda_json_signed_negative_enum(self, twi_inst, tmp_path):
+        """Encode negative enums on a Signed yoda field.
+
+        Args:
+            twi_inst: Twi inst.
+            tmp_path: Tmp path.
+        """
+        path = tmp_path / 'map.json'
+        path.write_text(json.dumps(_yoda_json({'M2': -2, 'M1': -1, 'P1': 1}, 'Signed')))
+        twi_inst.populate_from_yoda_json_bridge(str(path), 0x70)
+        assert twi_inst.get_channel('MODE').get_presets_dict() == {'M2': 2, 'M1': 3, 'P1': 1}
+
+    def test_yoda_json_signed_below_range(self, twi_inst, tmp_path):
+        """Reject a signed enum below the field's signed range.
+
+        Args:
+            twi_inst: Twi inst.
+            tmp_path: Tmp path.
+        """
+        path = tmp_path / 'map.json'
+        path.write_text(json.dumps(_yoda_json({'LOW': -3}, 'Signed')))
+        with pytest.raises(ChannelValueException, match='MODE'):
+            twi_inst.populate_from_yoda_json_bridge(str(path), 0x70)
+
+    @pytest.mark.parametrize('data_format', [None, 'Unsigned'])
+    def test_yoda_json_unsigned_negative_enum(self, twi_inst, tmp_path, data_format):
+        """Reject a negative enum on an unsigned or untyped yoda field.
+
+        Args:
+            twi_inst: Twi inst.
+            tmp_path: Tmp path.
+            data_format: data_format key value, or None for the old schema.
+        """
+        path = tmp_path / 'map.json'
+        path.write_text(json.dumps(_yoda_json({'M1': -1}, data_format)))
+        with pytest.raises(ChannelValueException, match='MODE'):
+            twi_inst.populate_from_yoda_json_bridge(str(path), 0x70)
+
+    def test_ipxact_negative_enum(self, twi_inst, tmp_path):
+        """Reject a negative IP-XACT enumeratedValue (IP-XACT fields are unsigned).
+
+        Args:
+            twi_inst: Twi inst.
+            tmp_path: Tmp path.
+        """
+        path = tmp_path / 'map.xml'
+        path.write_text(_IPXACT_TEMPLATE.format(value=-1))
         with pytest.raises(ChannelValueException, match='MODE'):
             twi_inst.populate_from_ipxact(str(path), 0x70)
 
