@@ -83,12 +83,12 @@ class TestSignedToTwosComplement:
 
     def test_overflow_positive_raises(self):
         """Perform test overflow positive raises operation."""
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError, match='exceeds 8-bit signed range'):
             signedToTwosComplement(128, 8)
 
     def test_overflow_negative_raises(self):
         """Perform test overflow negative raises operation."""
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError, match='below 8-bit signed range'):
             signedToTwosComplement(-129, 8)
 
 
@@ -128,6 +128,41 @@ class TestTwosComplementToSigned:
         """Perform test negative input raises operation."""
         with pytest.raises(ValueError):
             twosComplementToSigned(-1, 8)
+
+
+@pytest.mark.parametrize('func', [signedToTwosComplement, twosComplementToSigned])
+class TestTwosComplementBitCountValidation:
+    """Tests for bitCount validation in both two's complement helpers (issue #246)."""
+
+    @pytest.mark.parametrize('bit_count', [0, -1])
+    def test_bit_count_below_one_rejected(self, func, bit_count):
+        """Reject bitCount less than 1 with ValueError.
+
+        Args:
+            func: Helper under test.
+            bit_count: Invalid bit count.
+        """
+        with pytest.raises(ValueError, match='bitCount .* is below minimum'):
+            func(0, bit_count)
+
+    @pytest.mark.parametrize('bit_count', [8.0, '8', None])
+    def test_non_integer_bit_count_rejected(self, func, bit_count):
+        """Reject a non-integer bitCount with TypeError.
+
+        Args:
+            func: Helper under test.
+            bit_count: Invalid bit count.
+        """
+        with pytest.raises(TypeError, match='bitCount must be an integer'):
+            func(0, bit_count)
+
+    def test_one_bit_accepted(self, func):
+        """Accept the minimum bitCount of 1.
+
+        Args:
+            func: Helper under test.
+        """
+        assert func(0, 1) == 0
 
 
 class TestRoundtrip:
