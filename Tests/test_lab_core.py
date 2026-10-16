@@ -882,6 +882,79 @@ class TestIntegerChannelPresetRange:
         ic.write('MAX')
 
 
+class TestIntegerChannelSignedPreset:
+    """Tests for signed preset encoding in integer_channel.add_preset (issue #247)."""
+
+    @pytest.mark.parametrize('size', [2, 4, 8])
+    def test_explicit_signed(self, size):
+        """Encode negative presets in two's complement with signed=True.
+
+        Args:
+            size: Channel bit width.
+        """
+        ic = integer_channel(name='sgn', size=size, write_function=write_function)
+        ic.add_preset('M1', -1, signed=True)
+        ic.add_preset('MIN', -2**(size - 1), signed=True)
+        ic.add_preset('MAX', 2**(size - 1) - 1, signed=True)
+        presets = ic.get_presets_dict()
+        assert presets['M1'] == 2**size - 1
+        assert presets['MIN'] == 2**(size - 1)
+        assert presets['MAX'] == 2**(size - 1) - 1
+
+    def test_signed_below_range_rejected(self):
+        """Reject a negative preset below the signed range."""
+        ic = integer_channel(name='sgn', size=4, write_function=write_function)
+        with pytest.raises(ChannelValueException, match='4-bit signed range -8..7') as excinfo:
+            ic.add_preset('LOW', -9, signed=True)
+        assert 'sgn' in str(excinfo.value)
+        assert 'LOW' not in ic.get_presets()
+
+    def test_signed_too_wide_rejected(self):
+        """Reject 2**size even when signed=True."""
+        ic = integer_channel(name='sgn', size=4, write_function=write_function)
+        with pytest.raises(ChannelValueException, match='0..15'):
+            ic.add_preset('HIGH', 16, signed=True)
+
+    def test_active_signed_format(self):
+        """Infer signed from the active format when signed is omitted."""
+        ic = integer_channel(name='sgn', size=8, write_function=write_function)
+        ic.set_format('signed dec')
+        ic.add_preset('M1', -1)
+        assert ic.get_presets_dict()['M1'] == 255
+        assert ic.format(255, 'signed dec', use_presets=True) == 'M1'
+
+    def test_active_unsigned_format(self):
+        """Keep rejecting negatives when the active format is unsigned."""
+        ic = integer_channel(name='uns', size=8, write_function=write_function)
+        ic.set_format('hex')
+        with pytest.raises(ChannelValueException):
+            ic.add_preset('M1', -1)
+
+    def test_signed_false_overrides_active_format(self):
+        """signed=False disables encoding even with a signed active format."""
+        ic = integer_channel(name='sgn', size=8, write_function=write_function)
+        ic.set_format('signed dec')
+        with pytest.raises(ChannelValueException):
+            ic.add_preset('M1', -1, signed=False)
+
+    def test_none_and_bool_unaffected(self):
+        """None and bool presets bypass signed encoding."""
+        ic = integer_channel(name='sgn', size=4, write_function=write_function)
+        ic.add_preset('Send', None, signed=True)
+        assert ic.get_presets_dict()['Send'] is None
+        bit = integer_channel(name='bit', size=1, write_function=write_function)
+        bit.add_preset('ON', True, signed=True)
+        assert bit.get_presets_dict()['ON'] is True
+
+    def test_signed_preset_writes(self):
+        """A signed preset writes its raw two's-complement pattern."""
+        written = []
+        ic = integer_channel(name='wr', size=4, write_function=written.append)
+        ic.add_preset('M1', -1, signed=True)
+        ic.write('M1')
+        assert written == [15]
+
+
 class TestIntegerChannelSizeValidation:
     """Tests for integer_channel size validation (issue #246)."""
 
