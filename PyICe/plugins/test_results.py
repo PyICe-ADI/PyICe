@@ -203,7 +203,19 @@ class generic_results():
             "This class isn't supposed to be instantiated directly.")
         # TODO https://docs.python.org/3/library/abc.html ?
 
-    def _init(self, name, module):
+    def _init(self, name, module=None):
+        """Initialize common state shared by Test_Results and Test_Results_Reload.
+
+        Args:
+            name (str): Test module name, used as the top-level key in the
+                JSON report and for identifying the metadata table.
+            module (Master_Test_Template, optional): Live test module instance.
+                When provided, _json_report() queries the module's database
+                for traceability metadata (the {name}_metadata table).
+                When None (e.g. Test_Results_Reload), traceability is sourced
+                from _traceability_info instead, which is populated from
+                the reloaded JSON.
+        """
         self._name = name
         self._module = module
         self._traceability_info = collections.OrderedDict()
@@ -212,13 +224,10 @@ class generic_results():
     def get_name(self):
         """Return the current name.
         Returns the stored name value from the object's internal state.
-        Returns the stored name from the object's internal state.
-
-        Returns the stored name from the object's internal state.
 
         Examples:
             >>> from PyICe.plugins.test_results import Test_Results
-            >>> tr = Test_Results(name='my_suite', module=None)
+            >>> tr = Test_Results(name='my_suite')
             >>> tr.get_name()
             'my_suite'
 
@@ -231,14 +240,11 @@ class generic_results():
         """Return the traceability info.
         Returns the stored traceability info value from the object's internal
         state.
-        Returns the stored traceability info from the object's internal state.
-
-        Returns the stored traceability info from the object's internal state.
 
         Examples:
             >>> from PyICe.plugins.test_results import Test_Results
             >>> import collections
-            >>> tr = Test_Results(name='my_suite', module=None)
+            >>> tr = Test_Results(name='my_suite')
             >>> tr.get_traceability_info()
             OrderedDict()
 
@@ -262,7 +268,7 @@ class generic_results():
         res_dict['report_date'] = datetime.datetime.now(
             datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
 
-        if self._module.get_name() + '_metadata' in self._module.get_database().get_table_names():
+        if self._module and (self._module.get_name() + '_metadata' in self._module.get_database().get_table_names()):
             trace_database = self._module.get_database()
             trace_data = trace_database.query(
                 f'SELECT * FROM {self._module.get_name()}_metadata WHERE rowid is 1').fetchone()
@@ -274,6 +280,17 @@ class generic_results():
                     continue
                 res_dict['traceability'][channel_name] = trace_data[trace_data.keys().index(
                     channel_name)]
+        elif self._traceability_info:
+            try:
+                res_dict['collection_date'] = self._traceability_info['datetime']
+            except KeyError:
+                # The collection time wasn't saved. Moving on.
+                pass
+            res_dict['traceability'] = {}
+            for channel_name, value in self._traceability_info.items():
+                if channel_name == 'datetime' or channel_name == 'rowid':
+                    continue
+                res_dict['traceability'][channel_name] = value
 
         res_dict['tests'] = {}
         for t_d in declarations:
@@ -353,8 +370,6 @@ class Test_Results(generic_results):
             """Implement deepcopy protocol.
             Enables deep copying via ``copy.deepcopy()``.
 
-            Implements the ``__deepcopy__`` protocol for this object.
-
 
             >>> from PyICe.plugins.test_results import Test_Results
             >>> hasattr(Test_Results, '__deepcopy__')
@@ -368,8 +383,6 @@ class Test_Results(generic_results):
         def __bool__(self):
             """Return boolean value.
             Enables truth-value testing with ``bool()``.
-
-            Controls truthiness when the object is used in boolean context.
 
 
             >>> from PyICe.plugins.test_results import Test_Results
@@ -487,11 +500,9 @@ class Test_Results(generic_results):
             Calls the parent class constructor and initializes
             instance-specific attributes for _test_results_list.
 
-            Calls the parent constructor to inherit base behavior, and initializes 4 instance attributes that configure the object's behavior.
-
 
             >>> from PyICe.plugins.test_results import Test_Results
-            >>> obj = Test_Results('t', module=None)
+            >>> obj = Test_Results('t')
             >>> isinstance(obj, Test_Results)
             True
 
@@ -511,8 +522,6 @@ class Test_Results(generic_results):
             """Return boolean value.
             Enables truth-value testing with ``bool()``.
 
-            Controls truthiness when the object is used in boolean context.
-
 
             >>> from PyICe.plugins.test_results import Test_Results
             >>> hasattr(Test_Results, '__bool__')
@@ -529,8 +538,6 @@ class Test_Results(generic_results):
         def __str__(self):
             """Return string representation.
             Provides a human-readable string for debugging and display.
-
-            Provides a human-readable representation for debugging and logging.
 
 
             >>> from PyICe.plugins.test_results import Test_Results
@@ -645,7 +652,7 @@ class Test_Results(generic_results):
                 ret.append(data_group)
             return ret
 
-    def __init__(self, name, module):
+    def __init__(self, name, module=None):
         """TODO.
         Initializes 5 instance attributes that configure the object's
         behavior.
@@ -654,7 +661,7 @@ class Test_Results(generic_results):
 
         Examples:
             >>> from PyICe.plugins.test_results import Test_Results
-            >>> tr = Test_Results(name='power_tests', module=None)
+            >>> tr = Test_Results(name='power_tests')
             >>> tr.get_name()
             'power_tests'
             >>> len(tr)
@@ -679,12 +686,7 @@ class Test_Results(generic_results):
         Examples:
             >>> import json
             >>> from PyICe.plugins.test_results import Test_Results
-            >>> class FakeDB:
-            ...     def get_table_names(self): return []
-            >>> class FakeModule:
-            ...     def get_name(self): return 'test_module'
-            ...     def get_database(self): return FakeDB()
-            >>> tr = Test_Results(name='my_results', module=FakeModule())
+            >>> tr = Test_Results(name='suite')
             >>> tr.test_limits['voltage'] = {'test_name': 'voltage', 'upper_limit': 5.0, 'lower_limit': 1.0}
             >>> _ = tr._evaluate_list(name='voltage', iter_data=[3.0], conditions=None)
             >>> report = tr.json_report()
@@ -712,7 +714,7 @@ class Test_Results(generic_results):
 
         Examples:
             >>> from PyICe.plugins.test_results import Test_Results
-            >>> tr = Test_Results(name='suite', module=None)
+            >>> tr = Test_Results(name='suite')
             >>> tr.get_test_declarations()
             []
             >>> tr.test_limits['v'] = {'test_name': 'v', 'upper_limit': 5.0, 'lower_limit': 1.0}
@@ -756,7 +758,7 @@ class Test_Results(generic_results):
 
         Examples:
             >>> from PyICe.plugins.test_results import Test_Results
-            >>> tr = Test_Results(name='suite', module=None)
+            >>> tr = Test_Results(name='suite')
             >>> bool(tr)
             True
             >>> tr.test_limits['v'] = {'test_name': 'v', 'upper_limit': 5.0, 'lower_limit': 1.0}
@@ -785,7 +787,7 @@ class Test_Results(generic_results):
 
         Examples:
             >>> from PyICe.plugins.test_results import Test_Results
-            >>> tr = Test_Results(name='suite', module=None)
+            >>> tr = Test_Results(name='suite')
             >>> tr.test_limits['v'] = {'test_name': 'v', 'upper_limit': 5.0, 'lower_limit': 1.0}
             >>> tr.test_limits['i'] = {'test_name': 'i', 'upper_limit': 2.0, 'lower_limit': 0.0}
             >>> _ = tr._evaluate_list(name='v', iter_data=[3.0], conditions=None)
@@ -806,7 +808,7 @@ class Test_Results(generic_results):
 
         Examples:
             >>> from PyICe.plugins.test_results import Test_Results
-            >>> tr = Test_Results(name='suite', module=None)
+            >>> tr = Test_Results(name='suite')
             >>> len(tr)
             0
             >>> tr.test_limits['voltage'] = {'test_name': 'voltage', 'upper_limit': 5.0, 'lower_limit': 1.0}
@@ -827,7 +829,7 @@ class Test_Results(generic_results):
 
         Examples:
             >>> from PyICe.plugins.test_results import Test_Results
-            >>> tr = Test_Results(name='suite', module=None)
+            >>> tr = Test_Results(name='suite')
             >>> tr.test_limits['voltage'] = {'test_name': 'voltage', 'upper_limit': 5.0, 'lower_limit': 1.0}
             >>> _ = tr._evaluate_list(name='voltage', iter_data=[3.0], conditions=None)
             >>> bool(tr['voltage'])
@@ -977,7 +979,7 @@ class Test_Results(generic_results):
 
         Examples:
             >>> from PyICe.plugins.test_results import Test_Results
-            >>> tr = Test_Results(name='suite', module=None)
+            >>> tr = Test_Results(name='suite')
             >>> tr.test_limits['v'] = {'test_name': 'v', 'upper_limit': 5.0, 'lower_limit': 1.0}
             >>> _ = tr._evaluate_list(name='v', iter_data=[3.0], conditions=None)
             >>> len(tr)
@@ -1065,16 +1067,19 @@ class Test_Results_Reload(Test_Results):
         self.max_con_len = 0
         with open(results_json, mode='r', encoding='utf-8') as f:
             self._results = json.load(f)
-            f.close()
         self._init(name=self._results['test_module'], module=None)
         try:
             if self._results['test_crashed']:
                 self._failure_override = True
         except KeyError:
             print("JSON came to be before we started tracking test crashes. Regenerating this json will remove this notice.")
-        self._set_traceability_info(
-            datetime=self._results["collection_date"],
-            **self._results["traceability"])
+        try:
+            self._set_traceability_info(
+                datetime=self._results["collection_date"],
+                **self._results["traceability"])
+        except KeyError:
+            # no traceability added to this test.
+            pass
         for test in self._results['tests']:
             self._test_declarations.append(test)
             self.test_limits[test] = self._results['tests'][test]['declaration']
@@ -1083,6 +1088,12 @@ class Test_Results_Reload(Test_Results):
                 upper_limit=self.test_limits[test]['upper_limit'],
                 lower_limit=self.test_limits[test]['lower_limit'],
                 override=self._failure_override)
+            if 'results' not in self._results['tests'][test]:
+                self._register_test_failure(
+                    name=test,
+                    reason="No results were collected for this test.",
+                    conditions=None)
+                continue
             for case in self._results['tests'][test]['results']['cases']:
                 for trial in case['case_results']:
                     self._test_results[test].append(self._test_result(
@@ -1128,7 +1139,7 @@ class Failed_Eval(Test_Results):
 
         Examples:
             >>> from PyICe.plugins.test_results import Failed_Eval, Test_Results
-            >>> tr = Test_Results(name='my_suite', module=None)
+            >>> tr = Test_Results(name='my_suite')
             >>> fe = Failed_Eval(test=tr)
             >>> bool(fe)
             False
@@ -1141,8 +1152,6 @@ class Failed_Eval(Test_Results):
     def __str__(self):
         """Return string representation.
         Provides a human-readable string for debugging and display.
-
-        Provides a human-readable representation for debugging and logging.
 
 
         >>> from PyICe.plugins.test_results import Failed_Eval
@@ -1158,11 +1167,9 @@ class Failed_Eval(Test_Results):
         """Return boolean value.
         Enables truth-value testing with ``bool()``.
 
-        Controls truthiness when the object is used in boolean context.
-
         Examples:
             >>> from PyICe.plugins.test_results import Failed_Eval, Test_Results
-            >>> tr = Test_Results(name='my_suite', module=None)
+            >>> tr = Test_Results(name='my_suite')
             >>> fe = Failed_Eval(test=tr)
             >>> bool(fe)
             False
