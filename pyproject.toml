@@ -40,6 +40,7 @@ dependencies=[
     "nidcpower",
     "nifgen",
     "niscope",
+    "niswitch",
     "objutils==0.6.4", #later versions through 0.8.7 won't run build script without crash
     "openpyxl",
     "pandas",
