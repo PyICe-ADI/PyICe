@@ -86,6 +86,7 @@ from PyICe.lab_utils.clean_sql import clean_sql
 from PyICe.lab_utils.eng_string import eng_string
 from PyICe.lab_utils.signedToTwosComplement import signedToTwosComplement
 from PyICe.lab_utils.twosComplementToSigned import twosComplementToSigned
+from PyICe.lab_utils.preset_to_raw import preset_to_raw
 from PyICe.lab_utils.egg_timer import egg_timer
 from PyICe import lab_interfaces
 from PyICe import logo
@@ -2353,7 +2354,7 @@ class integer_channel(channel):
         else:
             return int(self._write_min)
 
-    def add_preset(self, preset_name, preset_value, preset_description=None):
+    def add_preset(self, preset_name, preset_value, preset_description=None, signed=None):
         """Adds a preset named preset_name with value preset_value.
         Adds a new preset to the object's internal collection.
 
@@ -2368,10 +2369,24 @@ class integer_channel(channel):
         >>> ic.unformat('CH_B', 'dec', use_presets=True)
         1
 
+        Presets are raw bit patterns.  With signed=True, a negative value is
+        stored in two's complement (see PyICe.lab_utils.preset_to_raw):
+
+        >>> ic = integer_channel(name='offset', size=4, write_function=lambda v: v)
+        >>> ic.add_preset('MINUS_ONE', -1, signed=True).get_presets_dict()['MINUS_ONE']
+        15
+        >>> ic.add_preset('MOST_NEG', -8, signed=True).get_presets_dict()['MOST_NEG']
+        8
+
         Args:
             preset_description: Human-readable description of the preset.
             preset_name: Name of the preset.
             preset_value: Value to associate with the preset.
+            signed: If True, encode a negative preset_value in two's
+                complement.  If None (default), use the signed flag of the
+                active format (see set_format()); with no active format the
+                value is taken as unsigned.  A preset_value that cannot be
+                written raises ChannelValueException.
 
         Returns:
             The add preset result.
@@ -2381,13 +2396,26 @@ class integer_channel(channel):
             # remove True/False presets if custom presets are added
             self._presets = results_ord_dict()
             self._presets_reverse = results_ord_dict()
-        self._add_preset(preset_name, preset_value, preset_description)
+        # REVISIT #252: interim signedness inference; replace with the
+        # channel's intrinsic signed property when #252 lands.
+        if signed is None:
+            signed = self._format is not None and bool(
+                self._formats.get(self._format, {}).get('signed'))
+        self._add_preset(preset_name, preset_value, preset_description, signed)
         return self
 
-    def _add_preset(self, preset_name, preset_value, preset_description):
+    def _add_preset(self, preset_name, preset_value, preset_description, signed=False):
         if not isinstance(preset_value, (numbers.Integral, bool, type(None))):
             raise Exception(
                 'Preset value {} neither numeric nor boolean'.format(preset_value))
+        if signed and not isinstance(preset_value, bool) and preset_value is not None and preset_value < 0:
+            try:
+                preset_value = preset_to_raw(preset_value, self._size, signed=True)
+            except ValueError as err:
+                raise ChannelValueException(
+                    'Preset {} value {} of channel {} is outside the {}-bit signed range {}..{}.'.format(
+                        preset_name, preset_value, self.get_name(), self._size,
+                        -2**(self._size - 1), 2**(self._size - 1) - 1)) from err
         self._check_preset_range(preset_name, preset_value)
         if preset_name in self._presets:
             raise Exception('Preset name duplicated: {}.'.format(preset_name))
@@ -2433,7 +2461,8 @@ class integer_channel(channel):
             None if high is None else int(high))
         if preset_value < 0 and any(fmt.get('signed') for fmt in self._formats.values()):
             msg += (' Presets are raw bit patterns and are not passed through signed formats;'
-                    ' supply the two\'s-complement value (see PyICe.lab_utils.signedToTwosComplement).')
+                    ' supply the two\'s-complement value (see PyICe.lab_utils.preset_to_raw)'
+                    ' or pass signed=True to add_preset().')
             if preset_value >= -2**(self._size - 1):
                 msg += ' signedToTwosComplement({}, {}) = {}.'.format(
                     preset_value, self._size, self.signedToTwosComplement(preset_value))

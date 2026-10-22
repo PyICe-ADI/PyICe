@@ -7,6 +7,19 @@ releases will be made unless a summary is documented here.  Please use
 
 ## Unreleased - 2023-10-04
 
+### Added
+- `lab_utils.preset_to_raw(value, bitCount, signed=False)` converts a preset or
+enumerated value to the raw bit pattern an `integer_channel` writes: negative
+values are encoded in two's complement when `signed` is true, and the result
+must fit in `0..2**bitCount - 1` or `ValueError` is raised. Register-map
+importers can use it instead of calling `signedToTwosComplement` and
+`twi_interface.check_size` themselves. (#247)
+- `integer_channel.add_preset()` takes an optional `signed` argument. With
+`signed=True` a negative preset is stored in two's complement; the default
+(`None`) uses the signed flag of the active format. Out-of-range signed presets
+raise `ChannelValueException`. `populate_from_yoda_json_bridge` passes the
+field's `data_format` so negative enums on `Signed` fields are encoded;
+`populate_from_ipxact` passes `signed=False`. (#247)
 ### Changed
 - `integer_channel.add_preset()` now raises `ChannelValueException` when a
 numeric preset is outside the channel's write limits, instead of failing on

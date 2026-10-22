@@ -801,7 +801,8 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
                             if pyice_access is not None:
                                 register.set_special_access(pyice_access)
                         for ev_name, ev_value, ev_desc in fld.enumerated_values:
-                            register.add_preset(ev_name, ev_value, ev_desc or None)
+                            # REVISIT #252: drop signed= once integer_channel carries signedness.
+                            register.add_preset(ev_name, ev_value, ev_desc or None, signed=False)
 
     def populate_from_yoda_json_bridge(
             self, filename, i2c_addr7, extended_addressing=False):
@@ -882,6 +883,7 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
                     else:
                         raise Exception(
                             f'Register side effect {bf["write_side_effect"]} unknown. Contact PyICe developers.')
+                signed = False
                 try:
                     bf['data_format']
                 except KeyError:
@@ -944,7 +946,8 @@ class twi_instrument(lab_core.instrument, lab_core.delegator):
                 register.set_description(bf['documentation'])
                 if len(bf["enums"]):
                     for name, value in list(bf["enums"].items()):
-                        register.add_preset(name, value)
+                        # REVISIT #252: drop signed= once integer_channel carries signedness.
+                        register.add_preset(name, value, signed=signed)
 
     def create_format(self, format_name, format_function, unformat_function,
                       signed=False, description=None, units='', xypoints=None):
