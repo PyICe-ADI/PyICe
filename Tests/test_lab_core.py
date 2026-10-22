@@ -509,15 +509,20 @@ class TestIntegerReadChannel:
         """
         int_read_chan.add_preset(preset_name='TEST_PRESET',
                                  preset_value=1)
-        int_read_chan.add_preset(preset_name='TEST_PRESET2',
-                                 preset_value=2)
         with pytest.raises(Exception):
             int_read_chan.add_preset(preset_name='TEST_PRESET3',
                                      preset_value=2.1)
         with pytest.raises(Exception):
             int_read_chan.add_preset(preset_name='TEST_PRESET',
-                                     preset_value=3)
-        int_read_chan.add_preset(preset_name='TEST_PRESET4', preset_value=4)
+                                     preset_value=0)
+        if int_read_chan.get_size() == 1:
+            with pytest.raises(ChannelValueException):
+                int_read_chan.add_preset(preset_name='TEST_PRESET2',
+                                         preset_value=2)
+        else:
+            int_read_chan.add_preset(preset_name='TEST_PRESET2',
+                                     preset_value=2)
+            int_read_chan.add_preset(preset_name='TEST_PRESET4', preset_value=3)
 
     @pytest.mark.parametrize('format_type', ['dec',
                                              'hex',
@@ -802,6 +807,190 @@ def thread_group(group):
     group.add(c4 := channel(name='chan4',
                             write_function=write_function))
     return group, [c0, c1, c2, c3, c4]
+
+
+class TestIntegerChannelPresetRange:
+    """Tests for integer_channel preset range validation (issue #245)."""
+
+    @pytest.mark.parametrize('size', [1, 3, 8])
+    def test_boundary_values_accepted(self, size):
+        """Accept presets at 0 and 2**size - 1.
+
+        Args:
+            size: Channel bit width.
+        """
+        ic = integer_channel(name='bnd', size=size, write_function=write_function)
+        ic.add_preset('MIN', 0)
+        ic.add_preset('MAX', 2**size - 1)
+        assert ic.get_presets_dict()['MAX'] == 2**size - 1
+
+    @pytest.mark.parametrize('size', [1, 3, 8])
+    @pytest.mark.parametrize('offset', ['above', 'below'])
+    def test_out_of_range_rejected(self, size, offset):
+        """Reject presets at 2**size and -1.
+
+        Args:
+            size: Channel bit width.
+            offset: Which side of the range to violate.
+        """
+        ic = integer_channel(name='oor', size=size, write_function=write_function)
+        value = 2**size if offset == 'above' else -1
+        with pytest.raises(ChannelValueException) as excinfo:
+            ic.add_preset('BAD', value)
+        msg = str(excinfo.value)
+        assert 'oor' in msg
+        assert 'BAD' in msg
+        assert str(value) in msg
+        assert '0..{}'.format(2**size - 1) in msg
+        assert 'BAD' not in ic.get_presets()
+
+    def test_none_preset_accepted(self):
+        """Accept a None preset."""
+        ic = integer_channel(name='none_p', size=4, write_function=write_function)
+        ic.add_preset('Send', None)
+        assert 'Send' in ic.get_presets()
+
+    def test_bool_presets_on_one_bit_channel(self):
+        """Accept default and user True/False presets on a 1-bit channel."""
+        ic = integer_channel(name='bit', size=1, write_function=write_function)
+        assert ic.get_presets_dict() == {'True': True, 'False': False}
+        ic.add_preset('ON', True)
+        ic.add_preset('OFF', False)
+        assert ic.get_presets_dict()['ON'] is True
+
+    def test_signed_hint_in_message(self):
+        """Mention two's complement for negative presets on signed channels."""
+        ic = integer_channel(name='sgn', size=8, write_function=write_function)
+        with pytest.raises(ChannelValueException, match="two's-complement") as excinfo:
+            ic.add_preset('NEG', -1)
+        assert 'signedToTwosComplement(-1, 8) = 255' in str(excinfo.value)
+        with pytest.raises(ChannelValueException, match="two's-complement"):
+            ic.add_preset('WAY_NEG', -1000)
+        ic.add_preset('NEG', 255)
+
+    def test_no_signed_hint_without_signed_format(self):
+        """Omit the two's-complement hint when no signed format exists."""
+        ic = integer_channel(name='bit', size=1, write_function=write_function)
+        with pytest.raises(ChannelValueException) as excinfo:
+            ic.add_preset('NEG', -1)
+        assert "two's-complement" not in str(excinfo.value)
+
+    def test_preset_writes_without_error(self):
+        """A preset accepted at add time can be written."""
+        ic = integer_channel(name='wr', size=3, write_function=write_function)
+        ic.add_preset('MAX', 7)
+        ic.write('MAX')
+
+
+class TestIntegerChannelSignedPreset:
+    """Tests for signed preset encoding in integer_channel.add_preset (issue #247)."""
+
+    @pytest.mark.parametrize('size', [2, 4, 8])
+    def test_explicit_signed(self, size):
+        """Encode negative presets in two's complement with signed=True.
+
+        Args:
+            size: Channel bit width.
+        """
+        ic = integer_channel(name='sgn', size=size, write_function=write_function)
+        ic.add_preset('M1', -1, signed=True)
+        ic.add_preset('MIN', -2**(size - 1), signed=True)
+        ic.add_preset('MAX', 2**(size - 1) - 1, signed=True)
+        presets = ic.get_presets_dict()
+        assert presets['M1'] == 2**size - 1
+        assert presets['MIN'] == 2**(size - 1)
+        assert presets['MAX'] == 2**(size - 1) - 1
+
+    def test_signed_below_range_rejected(self):
+        """Reject a negative preset below the signed range."""
+        ic = integer_channel(name='sgn', size=4, write_function=write_function)
+        with pytest.raises(ChannelValueException, match='4-bit signed range -8..7') as excinfo:
+            ic.add_preset('LOW', -9, signed=True)
+        assert 'sgn' in str(excinfo.value)
+        assert 'LOW' not in ic.get_presets()
+
+    def test_signed_too_wide_rejected(self):
+        """Reject 2**size even when signed=True."""
+        ic = integer_channel(name='sgn', size=4, write_function=write_function)
+        with pytest.raises(ChannelValueException, match='0..15'):
+            ic.add_preset('HIGH', 16, signed=True)
+
+    def test_active_signed_format(self):
+        """Infer signed from the active format when signed is omitted."""
+        ic = integer_channel(name='sgn', size=8, write_function=write_function)
+        ic.set_format('signed dec')
+        ic.add_preset('M1', -1)
+        assert ic.get_presets_dict()['M1'] == 255
+        assert ic.format(255, 'signed dec', use_presets=True) == 'M1'
+
+    def test_active_unsigned_format(self):
+        """Keep rejecting negatives when the active format is unsigned."""
+        ic = integer_channel(name='uns', size=8, write_function=write_function)
+        ic.set_format('hex')
+        with pytest.raises(ChannelValueException):
+            ic.add_preset('M1', -1)
+
+    def test_signed_false_overrides_active_format(self):
+        """signed=False disables encoding even with a signed active format."""
+        ic = integer_channel(name='sgn', size=8, write_function=write_function)
+        ic.set_format('signed dec')
+        with pytest.raises(ChannelValueException):
+            ic.add_preset('M1', -1, signed=False)
+
+    def test_none_and_bool_unaffected(self):
+        """None and bool presets bypass signed encoding."""
+        ic = integer_channel(name='sgn', size=4, write_function=write_function)
+        ic.add_preset('Send', None, signed=True)
+        assert ic.get_presets_dict()['Send'] is None
+        bit = integer_channel(name='bit', size=1, write_function=write_function)
+        bit.add_preset('ON', True, signed=True)
+        assert bit.get_presets_dict()['ON'] is True
+
+    def test_signed_preset_writes(self):
+        """A signed preset writes its raw two's-complement pattern."""
+        written = []
+        ic = integer_channel(name='wr', size=4, write_function=written.append)
+        ic.add_preset('M1', -1, signed=True)
+        ic.write('M1')
+        assert written == [15]
+
+
+class TestIntegerChannelSizeValidation:
+    """Tests for integer_channel size validation (issue #246)."""
+
+    @pytest.mark.parametrize('size', [0, -1])
+    def test_size_below_one_rejected(self, size):
+        """Reject size less than 1 with ValueError.
+
+        Args:
+            size: Invalid channel bit width.
+        """
+        with pytest.raises(ValueError, match='below minimum'):
+            integer_channel(name='bad_size', size=size)
+
+    @pytest.mark.parametrize('size', [8.0, '8', None])
+    def test_non_integer_size_rejected(self, size):
+        """Reject a non-integer size with TypeError.
+
+        Args:
+            size: Invalid channel bit width.
+        """
+        with pytest.raises(TypeError, match='must be an integer'):
+            integer_channel(name='bad_type', size=size)
+
+    def test_signed_out_of_range_raises_value_error(self):
+        """Signed conversion and signed unformat raise ValueError out of range."""
+        ic = integer_channel(name='sgn', size=8, write_function=write_function)
+        with pytest.raises(ValueError):
+            ic.signedToTwosComplement(128)
+        with pytest.raises(ValueError):
+            ic.signedToTwosComplement(-129)
+        ic.add_format('sgn_fmt', format_function=lambda x: x,
+                      unformat_function=lambda x: x, signed=True)
+        ic.set_format('sgn_fmt')
+        assert ic.format_write(-1) == 255
+        with pytest.raises(ValueError):
+            ic.format_write(-129)
 
 
 class TestChannelGroup:
