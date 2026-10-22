@@ -86,6 +86,7 @@ from PyICe.lab_utils.clean_sql import clean_sql
 from PyICe.lab_utils.eng_string import eng_string
 from PyICe.lab_utils.signedToTwosComplement import signedToTwosComplement
 from PyICe.lab_utils.twosComplementToSigned import twosComplementToSigned
+from PyICe.lab_utils.preset_to_raw import preset_to_raw
 from PyICe.lab_utils.egg_timer import egg_timer
 from PyICe import lab_interfaces
 from PyICe import logo
@@ -2181,13 +2182,22 @@ class integer_channel(channel):
             size: Bit width of the integer value.
             read_function: Callable that returns the channel value, or None.
             write_function: Callable that accepts a value to write, or None.
+
+        Raises:
+            TypeError: If size is not an integer.
+            ValueError: If size is less than 1.
         """
         channel.__init__(
             self,
             name,
             read_function=read_function,
             write_function=write_function)
-        assert isinstance(size, numbers.Integral)
+        if not isinstance(size, numbers.Integral):
+            raise TypeError(
+                f'integer_channel {name} size must be an integer, got {type(size).__name__}')
+        if size < 1:
+            raise ValueError(
+                f'integer_channel {name} size {size} is below minimum (min 1)')
         self._size = size
         self.set_attribute("size", size)
         self._formats = results_ord_dict()
@@ -2197,7 +2207,6 @@ class integer_channel(channel):
         self._use_presets_read = False
         self._use_presets_write = True
         self._add_default_formats()
-        assert self._size >= 1
         self.set_min_write_limit(0)
         self.set_max_write_limit(2**size - 1)
         self.set_attribute("min", 0)
@@ -2345,7 +2354,7 @@ class integer_channel(channel):
         else:
             return int(self._write_min)
 
-    def add_preset(self, preset_name, preset_value, preset_description=None):
+    def add_preset(self, preset_name, preset_value, preset_description=None, signed=None):
         """Adds a preset named preset_name with value preset_value.
         Adds a new preset to the object's internal collection.
 
@@ -2360,10 +2369,24 @@ class integer_channel(channel):
         >>> ic.unformat('CH_B', 'dec', use_presets=True)
         1
 
+        Presets are raw bit patterns.  With signed=True, a negative value is
+        stored in two's complement (see PyICe.lab_utils.preset_to_raw):
+
+        >>> ic = integer_channel(name='offset', size=4, write_function=lambda v: v)
+        >>> ic.add_preset('MINUS_ONE', -1, signed=True).get_presets_dict()['MINUS_ONE']
+        15
+        >>> ic.add_preset('MOST_NEG', -8, signed=True).get_presets_dict()['MOST_NEG']
+        8
+
         Args:
             preset_description: Human-readable description of the preset.
             preset_name: Name of the preset.
             preset_value: Value to associate with the preset.
+            signed: If True, encode a negative preset_value in two's
+                complement.  If None (default), use the signed flag of the
+                active format (see set_format()); with no active format the
+                value is taken as unsigned.  A preset_value that cannot be
+                written raises ChannelValueException.
 
         Returns:
             The add preset result.
@@ -2373,13 +2396,27 @@ class integer_channel(channel):
             # remove True/False presets if custom presets are added
             self._presets = results_ord_dict()
             self._presets_reverse = results_ord_dict()
-        self._add_preset(preset_name, preset_value, preset_description)
+        # REVISIT #252: interim signedness inference; replace with the
+        # channel's intrinsic signed property when #252 lands.
+        if signed is None:
+            signed = self._format is not None and bool(
+                self._formats.get(self._format, {}).get('signed'))
+        self._add_preset(preset_name, preset_value, preset_description, signed)
         return self
 
-    def _add_preset(self, preset_name, preset_value, preset_description):
+    def _add_preset(self, preset_name, preset_value, preset_description, signed=False):
         if not isinstance(preset_value, (numbers.Integral, bool, type(None))):
             raise Exception(
                 'Preset value {} neither numeric nor boolean'.format(preset_value))
+        if signed and not isinstance(preset_value, bool) and preset_value is not None and preset_value < 0:
+            try:
+                preset_value = preset_to_raw(preset_value, self._size, signed=True)
+            except ValueError as err:
+                raise ChannelValueException(
+                    'Preset {} value {} of channel {} is outside the {}-bit signed range {}..{}.'.format(
+                        preset_name, preset_value, self.get_name(), self._size,
+                        -2**(self._size - 1), 2**(self._size - 1) - 1)) from err
+        self._check_preset_range(preset_name, preset_value)
         if preset_name in self._presets:
             raise Exception('Preset name duplicated: {}.'.format(preset_name))
         if preset_value in self._presets_reverse:
@@ -2389,6 +2426,47 @@ class integer_channel(channel):
         self._presets[preset_name] = preset_value
         self._presets_reverse[preset_value] = preset_name
         self._preset_descriptions[preset_name] = preset_description
+
+    def _check_preset_range(self, preset_name, preset_value):
+        """Raise ChannelValueException if a preset value cannot be written.
+
+        Presets are raw bit patterns (formats are not applied to them), so the
+        value is checked against the native write limits.  ``None`` and
+        ``bool`` presets are not checked.
+
+        >>> from PyICe.lab_core import integer_channel
+        >>> ic = integer_channel(name='mode', size=3, write_function=lambda v: v)
+        >>> _ = ic.add_preset('MAX', 7)
+        >>> ic.add_preset('BAD', 8)
+        Traceback (most recent call last):
+            ...
+        PyICe.lab_core.ChannelValueException: Preset BAD value 8 of channel mode is outside the writable range 0..7.
+
+        Args:
+            preset_name: Name of the preset.
+            preset_value: Raw value of the preset.
+
+        Raises:
+            ChannelValueException: If preset_value is outside the write limits.
+        """
+        if preset_value is None or isinstance(preset_value, bool):
+            return
+        low = self._write_min
+        high = self._write_max
+        if (low is None or preset_value >= low) and (high is None or preset_value <= high):
+            return
+        msg = 'Preset {} value {} of channel {} is outside the writable range {}..{}.'.format(
+            preset_name, preset_value, self.get_name(),
+            None if low is None else int(low),
+            None if high is None else int(high))
+        if preset_value < 0 and any(fmt.get('signed') for fmt in self._formats.values()):
+            msg += (' Presets are raw bit patterns and are not passed through signed formats;'
+                    ' supply the two\'s-complement value (see PyICe.lab_utils.preset_to_raw)'
+                    ' or pass signed=True to add_preset().')
+            if preset_value >= -2**(self._size - 1):
+                msg += ' signedToTwosComplement({}, {}) = {}.'.format(
+                    preset_value, self._size, self.signedToTwosComplement(preset_value))
+        raise ChannelValueException(msg)
 
     def set_format(self, format):
         """Set active transformation format. reads and writes happen in transformed (real) units instead of native integer.
@@ -3038,6 +3116,9 @@ class integer_channel(channel):
 
         Returns:
             The twosComplementToSigned result.
+
+        Raises:
+            ValueError: If binary is negative or exceeds the channel size range.
         """
         return twosComplementToSigned(binary, self._size)
 
@@ -3055,10 +3136,13 @@ class integer_channel(channel):
         127
 
         Args:
-            signed: If True, interpret as signed value.
+            signed: Signed integer value within the channel size signed range.
 
         Returns:
             The signedToTwosComplement result.
+
+        Raises:
+            ValueError: If signed is outside the channel size signed range.
         """
         return signedToTwosComplement(signed, self._size)
 

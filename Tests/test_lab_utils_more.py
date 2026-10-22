@@ -4,6 +4,7 @@ import pytest
 from PyICe.lab_utils.swap_endian import swap_endian
 from PyICe.lab_utils.signedToTwosComplement import signedToTwosComplement
 from PyICe.lab_utils.twosComplementToSigned import twosComplementToSigned
+from PyICe.lab_utils.preset_to_raw import preset_to_raw
 from PyICe.lab_utils.bounded import bounded
 from PyICe.lab_utils.isclose import isclose
 from PyICe.lab_utils.parse_list import parse_list
@@ -83,13 +84,106 @@ class TestSignedToTwosComplement:
 
     def test_overflow_positive_raises(self):
         """Perform test overflow positive raises operation."""
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError, match='exceeds 8-bit signed range'):
             signedToTwosComplement(128, 8)
 
     def test_overflow_negative_raises(self):
         """Perform test overflow negative raises operation."""
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError, match='below 8-bit signed range'):
             signedToTwosComplement(-129, 8)
+
+
+class TestPresetToRaw:
+    """Tests for preset_to_raw (issue #247)."""
+
+    @pytest.mark.parametrize('bits', [1, 3, 8, 16])
+    @pytest.mark.parametrize('signed', [False, True])
+    def test_boundaries_accepted(self, bits, signed):
+        """Pass 0 and 2**bits - 1 through unchanged.
+
+        Args:
+            bits: Bit width.
+            signed: Signed flag.
+        """
+        assert preset_to_raw(0, bits, signed) == 0
+        assert preset_to_raw(2**bits - 1, bits, signed) == 2**bits - 1
+
+    @pytest.mark.parametrize('bits', [1, 3, 8, 16])
+    @pytest.mark.parametrize('signed', [False, True])
+    def test_too_wide_raises(self, bits, signed):
+        """Reject 2**bits.
+
+        Args:
+            bits: Bit width.
+            signed: Signed flag.
+        """
+        with pytest.raises(ValueError, match='exceeds {}-bit range'.format(bits)):
+            preset_to_raw(2**bits, bits, signed)
+
+    @pytest.mark.parametrize('bits', [1, 3, 8, 16])
+    def test_negative_unsigned_raises(self, bits):
+        """Reject -1 when unsigned.
+
+        Args:
+            bits: Bit width.
+        """
+        with pytest.raises(ValueError, match='negative'):
+            preset_to_raw(-1, bits)
+
+    @pytest.mark.parametrize('bits', [1, 3, 8, 16])
+    def test_signed_minus_one(self, bits):
+        """Encode signed -1 as 2**bits - 1.
+
+        Args:
+            bits: Bit width.
+        """
+        assert preset_to_raw(-1, bits, signed=True) == 2**bits - 1
+
+    @pytest.mark.parametrize('bits', [1, 3, 8, 16])
+    def test_signed_most_negative(self, bits):
+        """Encode signed -2**(bits-1) as 2**(bits-1).
+
+        Args:
+            bits: Bit width.
+        """
+        assert preset_to_raw(-2**(bits - 1), bits, signed=True) == 2**(bits - 1)
+
+    @pytest.mark.parametrize('bits', [1, 3, 8, 16])
+    def test_signed_below_range_raises(self, bits):
+        """Reject signed values below -2**(bits-1).
+
+        Args:
+            bits: Bit width.
+        """
+        with pytest.raises(ValueError, match='below {}-bit signed range'.format(bits)):
+            preset_to_raw(-2**(bits - 1) - 1, bits, signed=True)
+
+    def test_matches_signed_to_twos_complement(self):
+        """Agree with signedToTwosComplement over the full 8-bit signed range."""
+        for value in range(-128, 128):
+            assert preset_to_raw(value, 8, signed=True) == signedToTwosComplement(value, 8)
+
+    def test_bool_is_int(self):
+        """Treat bool as 0/1."""
+        assert preset_to_raw(True, 1) == 1
+        assert preset_to_raw(False, 1) == 0
+
+    @pytest.mark.parametrize('value', [None, 1.0, '1'])
+    def test_non_integer_value_raises(self, value):
+        """Reject non-integer values.
+
+        Args:
+            value: Non-integer value.
+        """
+        with pytest.raises(TypeError, match='Preset value must be an integer'):
+            preset_to_raw(value, 8)
+
+    def test_bad_bitcount_raises(self):
+        """Reject non-integer and < 1 bit counts."""
+        with pytest.raises(TypeError, match='bitCount must be an integer'):
+            preset_to_raw(0, 8.0)
+        with pytest.raises(ValueError, match='bitCount 0 is below minimum'):
+            preset_to_raw(0, 0)
 
 
 class TestTwosComplementToSigned:
@@ -128,6 +222,41 @@ class TestTwosComplementToSigned:
         """Perform test negative input raises operation."""
         with pytest.raises(ValueError):
             twosComplementToSigned(-1, 8)
+
+
+@pytest.mark.parametrize('func', [signedToTwosComplement, twosComplementToSigned])
+class TestTwosComplementBitCountValidation:
+    """Tests for bitCount validation in both two's complement helpers (issue #246)."""
+
+    @pytest.mark.parametrize('bit_count', [0, -1])
+    def test_bit_count_below_one_rejected(self, func, bit_count):
+        """Reject bitCount less than 1 with ValueError.
+
+        Args:
+            func: Helper under test.
+            bit_count: Invalid bit count.
+        """
+        with pytest.raises(ValueError, match='bitCount .* is below minimum'):
+            func(0, bit_count)
+
+    @pytest.mark.parametrize('bit_count', [8.0, '8', None])
+    def test_non_integer_bit_count_rejected(self, func, bit_count):
+        """Reject a non-integer bitCount with TypeError.
+
+        Args:
+            func: Helper under test.
+            bit_count: Invalid bit count.
+        """
+        with pytest.raises(TypeError, match='bitCount must be an integer'):
+            func(0, bit_count)
+
+    def test_one_bit_accepted(self, func):
+        """Accept the minimum bitCount of 1.
+
+        Args:
+            func: Helper under test.
+        """
+        assert func(0, 1) == 0
 
 
 class TestRoundtrip:
