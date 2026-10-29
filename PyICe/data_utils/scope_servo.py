@@ -10,20 +10,23 @@ Usage:
     from PyICe.data_utils.scope_servo import scope_servo
 
     servo = scope_servo(
-        master            = master,
         name              = 'iload',
-        stimulus_channel  = 'pulse_gen_high_voltage',
-        scope_time_channel= master.get_channel('scope_timedata'),
-        scope_data_channel= master.get_channel('scope_ch1'),
+        stimulus_channel  = master['pulse_gen_high_voltage'],
+        scope_time_channel= master['scope_timedata'],
+        scope_data_channel= master['scope_ch1'],
         extraction_fn     = lambda wf: wf.average_out() - wf.average_in(),
         arm_fn            = lambda: master.write('scope_run_mode', 'SINGLE'),
         trigger_fn        = lambda: master.write('loadstep_trigger', 'TRIGGER'),
         minimum           = 0.1,
         maximum           = 1.8,
     )
-    # Adds '{name}_servo' write channel and '{name}_feedback' read channel to master.
-    # Writing to '{name}_servo' triggers a servo loop converging on the written target.
+    # The servo is an instrument owning '{name}_servo' (write) and '{name}_feedback' (read) channels.
+    # Nothing is registered with the master until you add the servo yourself.
+    master.add(servo)
     master.write('iload_servo', 2.0)  # Servo until scope reads 2.0A
+    # The same operations are available directly, without a master:
+    servo.run(2.0)
+    amplitude = servo.read_feedback()  # Measure whatever is on the scope now
 
 >>> from PyICe.data_utils.scope_servo import scope_servo
 
@@ -31,15 +34,20 @@ Usage:
 import time
 import numpy
 from PyICe import virtual_instruments
+from PyICe.lab_core import channel, instrument
 from PyICe.data_utils.wave_analysis import waveform
 
 
-class scope_servo:
+class scope_servo(instrument):
     """Scope-in-the-loop servo.
 
     Wraps a simple_servo with scope acquisition logic: arm, trigger, capture,
     analyze. The user provides an extraction function that reduces a waveform
     to a scalar feedback value.
+
+    Exposes '{name}_servo' (write a target to servo to it) and '{name}_feedback'
+    (read the current scalar measurement) channels, which only reach a master
+    when the caller adds this instrument to it.
 
     >>> from PyICe.data_utils.scope_servo import scope_servo
     >>> scope_servo is not None
@@ -47,16 +55,15 @@ class scope_servo:
 
     """
 
-    def __init__(self, master, name, stimulus_channel, scope_time_channel,
+    def __init__(self, name, stimulus_channel, scope_time_channel,
                  scope_data_channel, extraction_fn, arm_fn, trigger_fn,
                  minimum, maximum, reltol=0.02, abstol=None, settle_time=0.5,
                  max_tries=13, step_method="BINARY", verbose=True, debug=False):
         """Initialize scope_servo.
 
         Args:
-            master: PyICe channel_master to register channels with.
-            name: Base name for generated channels.
-            stimulus_channel: Name (str), channel object, or callable for the stimulus output.
+            name: Label for the servo's internal channels and messages.
+            stimulus_channel: Channel object or callable for the stimulus output.
             scope_time_channel: Channel object for the scope time axis data.
             scope_data_channel: Channel object for the scope waveform data.
             extraction_fn: Callable taking a waveform object, returning a scalar.
@@ -70,10 +77,12 @@ class scope_servo:
             max_tries: Maximum servo iterations.
             step_method: Search method ("BINARY" or "GEOMETRIC").
             verbose: Print servo progress.
-            debug: Plot waveforms on failure.
+            debug: Also plot each waveform as it is captured. Failed runs always plot every attempt.
         """
-        self._master = master
-        self._name = name
+        if isinstance(stimulus_channel, str):
+            raise TypeError("stimulus_channel must be a channel object or callable, not a channel name.")
+        self._base_name = 'scope_servo'
+        instrument.__init__(self, f"Scope servo {name}")
         self._stimulus_channel = stimulus_channel
         self._scope_time_channel = scope_time_channel
         self._scope_data_channel = scope_data_channel
@@ -85,14 +94,8 @@ class scope_servo:
         self._waveform_history = []
         self._last_stimulus_value = None
 
-        stimulus_ch = master.add_channel_virtual(
-            f"{name}_stimulus",
-            write_function=self._write_stimulus,
-        )
-        feedback_ch = master.add_channel_virtual(
-            f"{name}_feedback",
-            read_function=self._read_feedback,
-        )
+        stimulus_ch = channel(f"{name}_stimulus", write_function=self._write_stimulus)
+        feedback_ch = channel(f"{name}_feedback", read_function=self.read_feedback)
 
         self.servo = virtual_instruments.simple_servo(
             fb_channel=feedback_ch,
@@ -105,34 +108,28 @@ class scope_servo:
             step_method=step_method,
             max_tries=max_tries,
         )
-        self.servo.add_channel_target(f"{name}_servo_target")
-        master.add(self.servo)
-
-        master.add_channel_virtual(
-            f"{name}_servo",
-            write_function=self._run_servo,
-        )
+        self._add_channel(channel(f"{name}_servo", write_function=self.run))
+        self._add_channel(channel(f"{name}_feedback", read_function=self.read_feedback))
 
     def _write_stimulus(self, value):
         self._last_stimulus_value = value
         if callable(self._stimulus_channel) and not hasattr(self._stimulus_channel, 'write'):
             self._stimulus_channel(value)
-        elif isinstance(self._stimulus_channel, str):
-            self._master.write(self._stimulus_channel, value)
         else:
             self._stimulus_channel.write(value)
         self._arm_fn()
         time.sleep(self._settle_time)
         self._trigger_fn()
 
-    def _read_feedback(self):
-        time_ch_name = self._scope_time_channel.get_name()
-        data_ch_name = self._scope_data_channel.get_name()
-        scope_data = self._master.read_channels(
-            (self._scope_time_channel, self._scope_data_channel))
-        if scope_data[time_ch_name] is None:
+    def read_feedback(self):
+        """Measure the scalar feedback from the waveform currently on the scope.
+
+        Returns 0 if the scope has no data (no trigger).
+        """
+        time_data = self._scope_time_channel.read()
+        if time_data is None:
             return 0
-        data = numpy.column_stack((scope_data[time_ch_name], scope_data[data_ch_name]))
+        data = numpy.column_stack((time_data, self._scope_data_channel.read()))
         wf = waveform(data=data, debug=self._debug)
         self._waveform_history.append((self._last_stimulus_value, wf))
         result = self._extraction_fn(wf)
@@ -140,16 +137,24 @@ class scope_servo:
             wf.plot()
         return result
 
-    def _run_servo(self, target):
+    def run(self, target):
+        """Servo the stimulus until the extracted feedback matches target.
+
+        Returns:
+            The number of servo iterations used.
+
+        Raises:
+            ServoException: If the servo fails to converge. Every attempted
+                waveform is plotted before the exception propagates.
+        """
         self._waveform_history.clear()
         try:
-            self._master.write(f"{self._name}_servo_target", target)
+            return self.servo.servo(target)
         except Exception:
-            if self._debug:
-                for i, (value, wf) in enumerate(self._waveform_history):
-                    wf.plt.title.text = f"attempt {i + 1}: {value}"
-                    wf._plot()
-                    wf.plot()
+            for i, (value, wf) in enumerate(self._waveform_history):
+                wf.plt.title.text = f"attempt {i + 1}: {value}"
+                wf._plot()
+                wf.plot()
             raise
 
     @property
@@ -166,5 +171,10 @@ class scope_servo:
         self.servo.set_maximum(value)
 
     def set_search_direction_override_fn(self, fn):
-        """Set a custom search direction override for non-monotonic behavior."""
+        """Set a custom search direction override for non-monotonic behavior.
+
+        Args:
+            fn: Callable accepting the keyword arguments and returning None, True or False,
+                as documented on simple_servo.search_direction_override.
+        """
         self.servo.set_search_direction_override_fn(fn)

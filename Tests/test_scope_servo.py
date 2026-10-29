@@ -32,7 +32,6 @@ class TestScopeServoConvergence:
             'scope_data', read_function=lambda: make_synthetic_pulse(self.stimulus_value[0])[1])
 
         self.servo = scope_servo(
-            master=self.master,
             name='test',
             stimulus_channel=write_stimulus,
             scope_time_channel=self.time_ch,
@@ -47,6 +46,7 @@ class TestScopeServoConvergence:
             max_tries=15,
             verbose=False,
         )
+        self.master.add(self.servo)
 
     def test_converges_on_target(self):
         """Servo should find a stimulus that produces feedback matching the target."""
@@ -70,7 +70,7 @@ class TestScopeServoConvergence:
 
 
 class TestScopeServoStimulusRouting:
-    """Verify stimulus_channel accepts string, channel object, or callable."""
+    """Verify stimulus_channel accepts a channel object or callable, and rejects a name."""
 
     def _make_master_with_scope_channels(self):
         master = lab_core.master()
@@ -80,31 +80,31 @@ class TestScopeServoStimulusRouting:
         data_ch = master.add_channel_virtual('scope_data', read_function=lambda: make_synthetic_pulse(1.0)[1])
         return master, time_ch, data_ch
 
-    def test_string_stimulus(self):
-        """A string stimulus_channel should write via master.write()."""
+    def test_string_stimulus_rejected(self):
+        """A channel name can't be resolved without a master, so it should be refused."""
         master, time_ch, data_ch = self._make_master_with_scope_channels()
-        scope_servo(
-            master=master, name='str_test', stimulus_channel='stim_by_name',
-            scope_time_channel=time_ch, scope_data_channel=data_ch,
-            extraction_fn=lambda wf: wf.average_out() - wf.average_in(),
-            arm_fn=lambda: None, trigger_fn=lambda: None,
-            minimum=0, maximum=5, settle_time=0, verbose=False,
-        )
-        master.write('str_test_servo', 1.0)
-        assert any(mode == 'name' for mode, _ in self.written_values)
+        with pytest.raises(TypeError):
+            scope_servo(
+                name='str_test', stimulus_channel='stim_by_name',
+                scope_time_channel=time_ch, scope_data_channel=data_ch,
+                extraction_fn=lambda wf: wf.average_out() - wf.average_in(),
+                arm_fn=lambda: None, trigger_fn=lambda: None,
+                minimum=0, maximum=5, settle_time=0, verbose=False,
+            )
 
     def test_channel_object_stimulus(self):
         """A channel object stimulus should call .write() on it."""
         master, time_ch, data_ch = self._make_master_with_scope_channels()
         written = []
         stim_ch = master.add_channel_virtual('stim_obj', write_function=lambda v: written.append(v))
-        scope_servo(
-            master=master, name='obj_test', stimulus_channel=stim_ch,
+        servo = scope_servo(
+            name='obj_test', stimulus_channel=stim_ch,
             scope_time_channel=time_ch, scope_data_channel=data_ch,
             extraction_fn=lambda wf: wf.average_out() - wf.average_in(),
             arm_fn=lambda: None, trigger_fn=lambda: None,
             minimum=0, maximum=5, settle_time=0, verbose=False,
         )
+        master.add(servo)
         master.write('obj_test_servo', 1.0)
         assert len(written) > 0
 
@@ -112,13 +112,14 @@ class TestScopeServoStimulusRouting:
         """A bare callable stimulus should be invoked directly."""
         master, time_ch, data_ch = self._make_master_with_scope_channels()
         written = []
-        scope_servo(
-            master=master, name='fn_test', stimulus_channel=lambda v: written.append(v),
+        servo = scope_servo(
+            name='fn_test', stimulus_channel=lambda v: written.append(v),
             scope_time_channel=time_ch, scope_data_channel=data_ch,
             extraction_fn=lambda wf: wf.average_out() - wf.average_in(),
             arm_fn=lambda: None, trigger_fn=lambda: None,
             minimum=0, maximum=5, settle_time=0, verbose=False,
         )
+        master.add(servo)
         master.write('fn_test_servo', 1.0)
         assert len(written) > 0
 
@@ -131,13 +132,14 @@ class TestScopeServoEdgeCases:
         master = lab_core.master()
         time_ch = master.add_channel_virtual('scope_time', read_function=lambda: None)
         data_ch = master.add_channel_virtual('scope_data', read_function=lambda: None)
-        scope_servo(
-            master=master, name='notrig', stimulus_channel=lambda v: None,
+        servo = scope_servo(
+            name='notrig', stimulus_channel=lambda v: None,
             scope_time_channel=time_ch, scope_data_channel=data_ch,
             extraction_fn=lambda wf: wf.average_out(),
             arm_fn=lambda: None, trigger_fn=lambda: None,
             minimum=0, maximum=5, settle_time=0, verbose=False,
         )
+        master.add(servo)
         feedback = master.read('notrig_feedback')
         assert feedback == 0
 
@@ -147,7 +149,7 @@ class TestScopeServoEdgeCases:
         time_ch = master.add_channel_virtual('scope_time', read_function=lambda: make_synthetic_pulse(1.0)[0])
         data_ch = master.add_channel_virtual('scope_data', read_function=lambda: make_synthetic_pulse(1.0)[1])
         s = scope_servo(
-            master=master, name='bounds', stimulus_channel=lambda v: None,
+            name='bounds', stimulus_channel=lambda v: None,
             scope_time_channel=time_ch, scope_data_channel=data_ch,
             extraction_fn=lambda wf: wf.average_out() - wf.average_in(),
             arm_fn=lambda: None, trigger_fn=lambda: None,
@@ -187,7 +189,7 @@ class TestScopeServoCrashHistory:
                 stimulus_val[0] * gain)[1],
         )
         s = scope_servo(
-            master=master, name='crash',
+            name='crash',
             stimulus_channel=write_stim,
             scope_time_channel=time_ch,
             scope_data_channel=data_ch,
@@ -201,6 +203,7 @@ class TestScopeServoCrashHistory:
             max_tries=max_tries,
             verbose=True,
         )
+        master.add(s)
         return master, s
 
     def test_history_contains_all_attempts_on_max_tries(self):
@@ -270,7 +273,7 @@ class TestScopeServoCrashHistory:
                 10.0 - 2 * stimulus_val[0])[1],
         )
         s = scope_servo(
-            master=master, name='invert',
+            name='invert',
             stimulus_channel=write_stim,
             scope_time_channel=time_ch,
             scope_data_channel=data_ch,
@@ -284,6 +287,7 @@ class TestScopeServoCrashHistory:
             max_tries=10,
             verbose=True,
         )
+        master.add(s)
         with pytest.raises(ServoException, match="Error is growing"):
             master.write('invert_servo', 4.0)
         assert len(s.history) >= 2

@@ -6925,12 +6925,10 @@ class simple_servo(instrument):
         """Use extra (multivariate or more complex) logic to control servo direction in the face of non-monotonic behavior.
 
         For example, current measurement too low because too much current caused compliance/dropout problem with servo'd load, measurable though compliance voltage waveform, current limit status bit, etc.
-        return None to allow loop decision to stand
-        return True to force an upward search
-        return False to foece a downward search
 
         This dummy method doesn't alter behavior, but can be replaced with inheritance or the set_search_direction_override_fn method to point to something with more smarts.
-        Should accept **kwargs dict argument containing servo state information
+        A replacement must accept these keyword arguments (always all of them, so **kwargs is fine for ignoring some).
+        It is called once per iteration, after the feedback has been read and found out of tolerance, and before the bounds are updated.
 
 
         >>> from PyICe.virtual_instruments import simple_servo
@@ -6938,10 +6936,23 @@ class simple_servo(instrument):
         True
 
         Args:
-            **kwargs: Additional keyword arguments.
+            count: Iteration number, starting at 1.
+            step_method: Search method name, e.g. "BINARY" or "GEOMETRIC".
+            setting: Output value just written, which produced fb_read_val.
+            max_tries: Configured iteration limit, or None if unlimited.
+            lower_bound: Current lower edge of the search window.
+            upper_bound: Current upper edge of the search window.
+            target: Feedback value being servoed to.
+            error: fb_read_val - target for this iteration. Positive means feedback is too high.
+            previous_error: error from the prior iteration, or None on the first.
+            fb_read_val: Feedback value read back for this iteration.
 
         Returns:
-            The search direction override result.
+            None to let the normal decision stand (error > 0 lowers upper_bound, otherwise lower_bound is raised).
+            True to force an upward search (lower_bound = setting).
+            False to force a downward search (upper_bound = setting).
+            Anything else raises ServoException.
+            Returning True or False also skips the "error is growing" check.
         """
         return None
 
