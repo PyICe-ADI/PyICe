@@ -91,6 +91,49 @@ class keysight_e4440a(scpi_SA):
             # Remote Command:
             self.get_interface().write(':COUPle ALL')  # ALL|NONE
 
+    def discover_and_configure(self, base_name='psa'):
+        """Query the instrument for active traces and register channels.
+
+        Discovers which traces (1-3) are active on the PSA and calls
+        add_channel_ydata for each, plus a shared x-axis channel and
+        sweep control channels.
+
+        Args:
+            base_name: Prefix for auto-created channel names.
+
+        Returns:
+            A summary dict of what was discovered and configured.
+        """
+        iface = self.get_interface()
+        discovered = {'traces': []}
+
+        self.add_channel_xdata(f'{base_name}_xpoints')
+        self.add_channel_sweep_control(f'{base_name}')
+        self.add_channel_RBW(f'{base_name}_RBW')
+        self.add_channel_VBW(f'{base_name}_VBW')
+        self.add_channel_attenuator(f'{base_name}_attenuator')
+        self.add_channel_sweep_time(f'{base_name}_sweep_time')
+
+        for trace_number in range(1, 4):
+            trace_type = iface.ask(f':TRACe{trace_number}:TYPE?').strip()
+            if trace_type in ('BLAN', 'BLANk'):
+                continue
+
+            trace_name = f'{base_name}_trace{trace_number}'
+            self.add_channel_ydata(trace_name, trace_number=trace_number)
+            self.get_channel(trace_name).set_attribute('measurement', trace_type)
+
+            discovered['traces'].append({
+                'trace_number': trace_number,
+                'trace_type': trace_type,
+                'channel_name': trace_name,
+            })
+
+        print(f"Discovered {len(discovered['traces'])} active trace(s).")
+        for t in discovered['traces']:
+            print(f"  Trace {t['trace_number']}: {t['trace_type']} -> {t['channel_name']}")
+        return discovered
+
     def add_channel_system_preset(self, channel_name):
         """Remote Command Notes: The SYSTem:PRESet command immediately presets the instrument state.
 

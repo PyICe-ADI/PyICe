@@ -216,12 +216,16 @@ class sqlite_data(
             A 1-D ``numpy.ndarray`` with the dtype specified in the blob
             header.
         """
-        fmt_str_size = col_data_bytes[0]
-        # ascii dtype format string, ex "<d" little endian double precision
-        # float 64.
-        fmt_str = col_data_bytes[1:fmt_str_size + 1]
-        return numpy.frombuffer(
-            col_data_bytes, offset=1 + fmt_str_size, dtype=numpy.dtype(fmt_str))
+        try:
+            fmt_str_size = col_data_bytes[0]
+            fmt_str = col_data_bytes[1:fmt_str_size + 1]
+            return numpy.frombuffer(
+                col_data_bytes, offset=1 + fmt_str_size, dtype=numpy.dtype(fmt_str))
+        except (TypeError, ValueError):
+            result = self.convert_vector(col_data_bytes)
+            if isinstance(result, list):
+                return numpy.array(result)
+            return result
 
     def __getitem__(self, key):
         """Retrieve one row by integer index, or a list of rows by slice.
