@@ -151,11 +151,21 @@ class scope_servo(instrument):
         try:
             return self.servo.servo(target)
         except Exception:
-            for i, (value, wf) in enumerate(self._waveform_history):
-                wf.plt.title.text = f"attempt {i + 1}: {value}"
-                wf._plot()
-                wf.plot()
+            self._plot_history()
             raise
+
+    def _plot_history(self):
+        # One show() for all attempts: Bokeh writes every show() to the same default html file,
+        # so consecutive calls overwrite each other before the browser tabs finish loading.
+        from bokeh.layouts import gridplot
+        from bokeh.plotting import show
+        figures = []
+        for i, (value, wf) in enumerate(self._waveform_history):
+            wf.plt.title.text = f"attempt {i + 1}: {value}"
+            wf._plot()
+            figures.append(wf.plt)
+        if figures:
+            show(gridplot(figures, ncols=3))
 
     @property
     def history(self):
