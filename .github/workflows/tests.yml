@@ -11,7 +11,8 @@ permissions:
 jobs:
   test:
     name: Test (Python ${{ matrix.python-version }})
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest is now 26.04, which has no Python 3.9 builds for setup-python
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
